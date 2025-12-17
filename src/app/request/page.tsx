@@ -181,7 +181,7 @@ export default function RequestPage() {
     <main className="flex flex-col min-h-screen">
       <Navbar />
       <PageHero title="تقديم طلب جديد" />
-      <div className="max-w-2xl mx-auto px-4 py-12 -mt-8 relative z-10">
+      <div className="w-full md:max-w-2xl mx-auto px-4 py-12 -mt-8 relative z-10">
         <Suspense fallback={<div className="text-center p-10">جاري تحميل النموذج...</div>}>
           <RequestForm />
         </Suspense>

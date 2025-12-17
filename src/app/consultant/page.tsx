@@ -177,7 +177,7 @@ export default function ConsultantPage() {
   };
 
   return (
-    <main className="flex flex-col min-h-screen">
+    <main className="flex flex-col min-h-screen overflow-x-hidden">
       <Navbar />
 
       {/* Header */}
@@ -190,28 +190,32 @@ export default function ConsultantPage() {
         }
         description="النظام الخبير: تشخيص دقيق لأكثر من 200 حالة قانونية وخدمية."
         icon={<Briefcase className="w-9 h-9 md:w-14 md:h-14 text-emerald-400" />}
-        titleClassName="text-5xl md:text-7xl tracking-tight leading-snug pb-1"
+        titleClassName="text-4xl sm:text-5xl md:text-7xl tracking-tight leading-snug pb-1"
         descriptionClassName="text-primary-100/80 leading-relaxed"
       />
 
-      <div className="max-w-6xl mx-auto px-4 -mt-24 relative z-20 pb-16">
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative">
+      {/* ✅ إصلاح 1: إزالة max-w-6xl الثابت وتقليل px على الجوال */}
+      <div className="w-full max-w-full lg:max-w-6xl mx-auto px-2 sm:px-4 -mt-12 sm:-mt-16 relative z-20 pb-16">
+        {/* ✅ إصلاح 2: تقليل rounded على الجوال */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] lg:rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative">
           {/* Progress Bar */}
           <div className="bg-slate-50 dark:bg-slate-800 h-2 w-full">
             <motion.div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-600" initial={{ width: 0 }} animate={{ width: `${(step / 3) * 100}%` }} />
           </div>
 
-          <div className="px-6 md:px-12 pt-6 md:pt-8 pb-6 md:pb-8 flex-grow flex flex-col justify-start">
+          {/* ✅ إصلاح 3: تقليل padding الداخلي على الجوال */}
+          <div className="px-3 sm:px-6 md:px-12 pt-4 sm:pt-6 md:pt-8 pb-4 sm:pb-6 md:pb-8 flex-grow flex flex-col justify-start">
             <AnimatePresence mode="wait">
               {/* Step 1 */}
               {step === 1 && (
-                <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-10">
+                <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6 sm:space-y-10">
                   <div className="text-center space-y-2">
-                    <span className="text-emerald-600 font-bold text-sm tracking-widest uppercase">الخطوة 1 من 3</span>
-                    <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">من أنت؟ (الصفة القانونية)</h2>
+                    <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة 1 من 3</span>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">من أنت؟ (الصفة القانونية)</h2>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+                  {/* ✅ إصلاح 4: grid-cols-2 مع gap أصغر على الجوال */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 md:gap-5">
                     {[
                       { id: 'syrian', icon: '🪪', t: 'سوري (كملك)', d: 'حماية مؤقتة' },
                       { id: 'tourist', icon: '✈️', t: 'سائح / إقامة', d: 'إقامات قصيرة' },
@@ -226,12 +230,12 @@ export default function ConsultantPage() {
                           setAnswers({ ...answers, q1: b.id });
                           setStep(2);
                         }}
-                        className="group relative p-6 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 flex flex-col items-center gap-4 bg-white dark:bg-slate-950 overflow-hidden text-center"
+                        className="group relative p-3 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 flex flex-col items-center gap-2 sm:gap-4 bg-white dark:bg-slate-950 overflow-hidden text-center"
                       >
-                        <div className="text-4xl mb-1 group-hover:scale-110 transition-transform duration-300">{b.icon}</div>
+                        <div className="text-2xl sm:text-3xl md:text-4xl mb-0 sm:mb-1 group-hover:scale-110 transition-transform duration-300">{b.icon}</div>
                         <div>
-                          <span className="block font-bold text-lg text-slate-800 dark:text-slate-100 mb-1">{b.t}</span>
-                          <span className="block text-xs text-slate-400 font-medium">{b.d}</span>
+                          <span className="block font-bold text-sm sm:text-base md:text-lg text-slate-800 dark:text-slate-100 mb-0.5 sm:mb-1">{b.t}</span>
+                          <span className="block text-[10px] sm:text-xs text-slate-400 font-medium">{b.d}</span>
                         </div>
                       </button>
                     ))}
@@ -241,13 +245,14 @@ export default function ConsultantPage() {
 
               {/* Step 2 */}
               {step === 2 && (
-                <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-8">
+                <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6 sm:space-y-8">
                   <div className="text-center space-y-2">
-                    <span className="text-emerald-600 font-bold text-sm tracking-widest uppercase">الخطوة 2 من 3</span>
-                    <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">ما هو المجال؟</h2>
+                    <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة 2 من 3</span>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">ما هو المجال؟</h2>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  {/* ✅ إصلاح 5: grid-cols-1 على الجوال الصغير */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-full sm:max-w-2xl mx-auto">
                     {answers.q1 === 'syrian' && (
                       <>
                         <Btn text="أوراق (كملك/فقدان/نقل)" icon={<FileText />} onClick={() => { setAnswers({ ...answers, q2: 'docs' }); setStep(3); }} />
@@ -297,8 +302,6 @@ export default function ConsultantPage() {
                         <Btn text="إذن العمل والتأمين (SGK)" icon={<Briefcase />} onClick={() => { setAnswers({ ...answers, q2: 'permit' }); setStep(3); }} />
                         <Btn text="تأسيس/إدارة شركة" icon={<Building2 />} onClick={() => { setAnswers({ ...answers, q2: 'company' }); setStep(3); }} />
                         <Btn text="ضرائب ومحاسبة" icon={<Wallet />} onClick={() => { setAnswers({ ...answers, q2: 'tax' }); setStep(3); }} />
-                        <Btn text="حقوق العامل ومشاكل العمل" icon={<Gavel />} onClick={() => { setAnswers({ ...answers, q2: 'rights' }); setStep(3); }} />
-                        <Btn text="ديون/حجز/تجميد" icon={<AlertTriangle />} onClick={() => { setAnswers({ ...answers, q2: 'debt' }); setStep(3); }} />
                         <Btn text="قضايا وتبليغات (UYAP/UETS)" icon={<Scale />} onClick={() => { setAnswers({ ...answers, q2: 'legal' }); setStep(3); }} />
                       </>
                     )}
@@ -321,13 +324,14 @@ export default function ConsultantPage() {
 
               {/* Step 3 */}
               {step === 3 && (
-                <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6">
+                <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
                   <div className="text-center space-y-2">
-                    <span className="text-emerald-600 font-bold text-sm tracking-widest uppercase">الخطوة الأخيرة</span>
-                    <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة:</h2>
+                    <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة الأخيرة</span>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة:</h2>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                  {/* ✅ إصلاح 6: grid-cols-1 على الجوال */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-full sm:max-w-2xl mx-auto">
                     {answers.q1 === 'syrian' && answers.q2 === 'docs' && (
                       <>
                         <BtnSmall text="فقدت الكملك (بدل ضائع)" onClick={() => processLogic('syrian_lost_id')} />
@@ -338,17 +342,18 @@ export default function ConsultantPage() {
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'travel' && (
                       <>
-                        <div className="sm:col-span-2 bg-amber-50 dark:bg-amber-950/30 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/40 text-right">
+                        {/* ✅ إصلاح 7: تنبيه متجاوب */}
+                        <div className="col-span-1 sm:col-span-2 bg-amber-50 dark:bg-amber-950/30 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-amber-100 dark:border-amber-900/40 text-right">
                           <div className="flex items-center justify-end gap-2 mb-2">
-                            <span className="font-black text-amber-900 dark:text-amber-100">مهم قبل اختيار نوع إذن السفر</span>
-                            <AlertTriangle size={18} className="text-amber-600" />
+                            <span className="font-black text-amber-900 dark:text-amber-100 text-sm sm:text-base">مهم قبل اختيار نوع إذن السفر</span>
+                            <AlertTriangle size={18} className="text-amber-600 flex-shrink-0" />
                           </div>
-                          <p className="text-sm font-bold text-amber-900/90 dark:text-amber-100/90 leading-relaxed">
-                            للولايات المفتوحة: غالباً التقديم العادي يكون عبر خيار “زيارة (Ziyaret)”.
-                            للولايات المحظورة/الحساسة: لا يحق السفر عادةً إلا بمبررات قوية موثّقة (مثل: إذن عمل، إحالة/تقرير طبي، موعد قنصلية، موعد/دعوة معرض أو فعالية، حالة وفاة، أو لمّ شمل أسرة بوثائق رسمية مثل دفتر عائلة تركي عند الانطباق).
+                          <p className="text-xs sm:text-sm font-bold text-amber-900/90 dark:text-amber-100/90 leading-relaxed">
+                            للولايات المفتوحة: غالباً التقديم العادي يكون عبر خيار "زيارة (Ziyaret)".
+                            للولايات المحظورة/الحساسة: لا يحق السفر عادةً إلا بمبررات قوية موثّقة.
                           </p>
-                          <p className="mt-2 text-xs font-bold text-amber-800 dark:text-amber-200 leading-relaxed">
-                            أمثلة ولايات محظورة/حساسة متداولة: أنقرة، أنطاليا، آيدن، بورصة، شناق قلعة، دوزجة، أدرنة، هاتاي، إسطنبول، إزمير، كيركرلارلي، كوجلي، موغلا، سكاريا، تيكيرداغ، يالوفا.
+                          <p className="mt-2 text-[10px] sm:text-xs font-bold text-amber-800 dark:text-amber-200 leading-relaxed">
+                            أمثلة ولايات محظورة/حساسة: أنقرة، أنطاليا، بورصة، إسطنبول، إزمير...
                           </p>
                         </div>
                         <BtnSmall text="إذن سفر (طبي)" onClick={() => processLogic('syrian_travel_medical')} />
@@ -506,8 +511,6 @@ export default function ConsultantPage() {
                         <BtnSmall text="استخراج كشف درجات (Transcript)" onClick={() => processLogic('student_transcript')} />
                         <BtnSmall text="امتحان اليوس" onClick={() => processLogic('student_yos')} />
                         <BtnSmall text="تومر (TÖMER)" onClick={() => processLogic('student_tomer')} />
-                        <BtnSmall text="الثانوية المفتوحة" onClick={() => processLogic('student_open_highschool')} />
-                        <BtnSmall text="مافي دبلوم (Mavi Diploma)" onClick={() => processLogic('student_mavi_diploma')} />
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'address' && (
@@ -525,9 +528,7 @@ export default function ConsultantPage() {
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'fin' && (
                       <>
-                        <BtnSmall text="فتح حساب بنكي" onClick={() => processLogic('daily_bank_open')} />
                         <BtnSmall text="فحص الديون (GSS/İcra)" onClick={() => processLogic('debt_check')} />
-                        <BtnSmall text="تقييم/نقطة الائتمان" onClick={() => processLogic('daily_credit_score')} />
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank_block')} />
                       </>
                     )}
@@ -535,61 +536,40 @@ export default function ConsultantPage() {
                       <>
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily_uets')} />
                         <BtnSmall text="CIMER (شكوى/استعلام)" onClick={() => processLogic('daily_cimer')} />
-                        <BtnSmall text="UYAP (متابعة قضايا/تنفيذ)" onClick={() => processLogic('daily_uyap')} />
                       </>
                     )}
 
                     {answers.q1 === 'worker' && answers.q2 === 'permit' && (
                       <>
                         <BtnSmall text="إذن عمل (موظف)" onClick={() => processLogic('work_permit_employee')} />
-                        <BtnSmall text="إذن عمل عبر شركة (صاحب شركة)" onClick={() => processLogic('work_permit_company')} />
+                        <BtnSmall text="إذن عمل (صاحب شركة)" onClick={() => processLogic('work_permit_company')} />
                         <BtnSmall text="تكلفة إذن العمل 2025" onClick={() => processLogic('work_permit_cost')} />
-                        <BtnSmall text="صاحب العمل لا يدفع SGK" onClick={() => processLogic('work_sgk_missing')} />
+                        <BtnSmall text="تسجيل SGK" onClick={() => processLogic('work_sgk')} />
                       </>
                     )}
                     {answers.q1 === 'worker' && answers.q2 === 'company' && (
                       <>
                         <BtnSmall text="تأسيس شركة" onClick={() => processLogic('company_setup')} />
-                        <BtnSmall text="الالتزامات الشهرية (ضرائب/محاسب/SGK)" onClick={() => processLogic('company_monthly_obligations')} />
+                        <BtnSmall text="الالتزامات الشهرية" onClick={() => processLogic('company_monthly_obligations')} />
                         <BtnSmall text="إغلاق/تصفية شركة" onClick={() => processLogic('company_closure')} />
                       </>
                     )}
                     {answers.q1 === 'worker' && answers.q2 === 'tax' && (
                       <>
-                        <BtnSmall text="الالتزامات الشهرية (ضرائب/محاسب/SGK)" onClick={() => processLogic('company_monthly_obligations')} />
-                        <BtnSmall text="تأسيس شركة (من البداية)" onClick={() => processLogic('company_setup')} />
-                        <BtnSmall text="إغلاق/تصفية شركة" onClick={() => processLogic('company_closure')} />
+                        <BtnSmall text="الرقم الضريبي" onClick={() => processLogic('daily_tax_number')} />
+                        <BtnSmall text="الالتزامات الشهرية" onClick={() => processLogic('company_monthly_obligations')} />
                       </>
                     )}
-                    {answers.q1 === 'worker' && answers.q2 === 'rights' && (
-                      <>
-                        <BtnSmall text="خصم راتب/خلاف مع صاحب العمل" onClick={() => processLogic('work_employee_rights')} />
-                        <BtnSmall text="صاحب العمل لا يدفع SGK" onClick={() => processLogic('work_sgk_missing')} />
-                        <BtnSmall text="ترك العمل والسفر" onClick={() => processLogic('work_resign_leave')} />
-                      </>
-                    )}
-
-                    {answers.q1 === 'worker' && answers.q2 === 'debt' && (
-                      <>
-                        <BtnSmall text="فحص الديون (GSS/İcra)" onClick={() => processLogic('debt_check')} />
-                        <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank_block')} />
-                        <BtnSmall text="UYAP (متابعة قضايا/تنفيذ)" onClick={() => processLogic('daily_uyap')} />
-                      </>
-                    )}
-
                     {answers.q1 === 'worker' && answers.q2 === 'legal' && (
                       <>
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily_uets')} />
-                        <BtnSmall text="UYAP (متابعة قضايا/تنفيذ)" onClick={() => processLogic('daily_uyap')} />
-                        <BtnSmall text="CIMER (شكوى/استعلام)" onClick={() => processLogic('daily_cimer')} />
+                        <BtnSmall text="UYAP (متابعة قضايا)" onClick={() => processLogic('daily_uyap')} />
                       </>
                     )}
 
                     {answers.q1 === 'daily' && answers.q2 === 'gov' && (
                       <>
-                        <BtnSmall text="استخراج إي دولات" onClick={() => processLogic('daily_edevlet')} />
-                        <BtnSmall text="UETS (تفعيل/متابعة تبليغات)" onClick={() => processLogic('daily_uets')} />
-                        <BtnSmall text="CIMER (تقديم شكوى/استعلام)" onClick={() => processLogic('daily_cimer')} />
+                        <BtnSmall text="e-Devlet (التسجيل/الدخول)" onClick={() => processLogic('daily_edevlet')} />
                         <BtnSmall text="e-Nabız (الوصول للملف الصحي)" onClick={() => processLogic('daily_enabiz')} />
                         <BtnSmall text="اختيار طبيب العائلة" onClick={() => processLogic('daily_family_doctor')} />
                         <BtnSmall text="تغيير طبيب العائلة" onClick={() => processLogic('daily_family_doctor_change')} />
@@ -649,12 +629,13 @@ export default function ConsultantPage() {
                 </motion.div>
               )}
 
-              {/* Step 4 */}
+              {/* Step 4 - Results */}
               {step === 4 && shownResult && (
                 <motion.div key="res" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col h-full">
-                  <div className="mb-8 text-center bg-slate-50 dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  {/* ✅ إصلاح 8: Result header متجاوب */}
+                  <div className="mb-6 sm:mb-8 text-center bg-slate-50 dark:bg-slate-800 p-4 sm:p-6 rounded-xl sm:rounded-3xl border border-slate-100 dark:border-slate-700">
                     <div
-                      className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold mb-4 ${
+                      className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold mb-3 sm:mb-4 ${
                         shownResult.risk === 'safe'
                           ? 'bg-green-100 text-green-700'
                           : shownResult.risk === 'medium'
@@ -662,83 +643,85 @@ export default function ConsultantPage() {
                             : 'bg-red-100 text-red-700 animate-pulse'
                       }`}
                     >
-                      {shownResult.risk === 'safe' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+                      {shownResult.risk === 'safe' ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
                       {shownResult.risk === 'safe' ? 'إجراء روتيني' : shownResult.risk === 'medium' ? 'يتطلب انتباهاً' : 'وضع قانوني حرج'}
                     </div>
-                    <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">{shownResult.title}</h2>
-                    <p className="text-slate-500 dark:text-slate-300 max-w-2xl mx-auto mb-4">{shownResult.desc}</p>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">{shownResult.title}</h2>
+                    <p className="text-slate-500 dark:text-slate-300 max-w-2xl mx-auto mb-4 text-sm sm:text-base">{shownResult.desc}</p>
 
                     <div className="max-w-xs mx-auto">
                       <ShareMenu title={`خطة: ${shownResult.title}`} text={`التشخيص: ${shownResult.desc}\nالخطورة: ${shownResult.risk}`} />
                     </div>
                   </div>
 
-                  <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl mb-8">
-                    <TabBtn active={activeTab === 'steps'} onClick={() => setActiveTab('steps')} icon={<CheckCircle size={18} />} text="الخطة" />
-                    <TabBtn active={activeTab === 'docs'} onClick={() => setActiveTab('docs')} icon={<FileText size={18} />} text="الأوراق" />
-                    <TabBtn active={activeTab === 'info'} onClick={() => setActiveTab('info')} icon={<ShieldAlert size={18} />} text="القانون" />
+                  {/* ✅ إصلاح 9: Tabs متجاوبة */}
+                  <div className="flex bg-slate-100 dark:bg-slate-800 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl mb-6 sm:mb-8">
+                    <TabBtn active={activeTab === 'steps'} onClick={() => setActiveTab('steps')} icon={<CheckCircle size={16} />} text="الخطة" />
+                    <TabBtn active={activeTab === 'docs'} onClick={() => setActiveTab('docs')} icon={<FileText size={16} />} text="الأوراق" />
+                    <TabBtn active={activeTab === 'info'} onClick={() => setActiveTab('info')} icon={<ShieldAlert size={16} />} text="القانون" />
                   </div>
 
-                  <div className="flex-grow min-h-[300px]">
+                  <div className="flex-grow min-h-[250px] sm:min-h-[300px]">
                     {activeTab === 'steps' && (
-                      <div className="space-y-4 animate-in fade-in">
+                      <div className="space-y-3 sm:space-y-4 animate-in fade-in">
                         {shownResult.steps.map((s, i) => (
-                          <div key={i} className="flex gap-4 p-5 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
-                            <span className="w-8 h-8 rounded-full bg-primary-700 text-white flex items-center justify-center font-bold flex-shrink-0 text-sm">{i + 1}</span>
-                            <p className="text-slate-700 dark:text-slate-200 font-bold pt-1">{s}</p>
+                          <div key={i} className="flex gap-3 sm:gap-4 p-3 sm:p-5 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl sm:rounded-2xl shadow-sm">
+                            <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-700 text-white flex items-center justify-center font-bold flex-shrink-0 text-xs sm:text-sm">{i + 1}</span>
+                            <p className="text-slate-700 dark:text-slate-200 font-bold pt-0.5 sm:pt-1 text-sm sm:text-base">{s}</p>
                           </div>
                         ))}
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-2xl border border-amber-100 dark:border-amber-900/40 mt-6">
-                          <h3 className="font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2">
-                            <Lightbulb size={20} /> نصيحة الخبير
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-100 dark:border-amber-900/40 mt-4 sm:mt-6">
+                          <h3 className="font-bold text-amber-900 dark:text-amber-100 mb-2 flex items-center gap-2 text-sm sm:text-base">
+                            <Lightbulb size={18} /> نصيحة الخبير
                           </h3>
-                          <p className="text-amber-800 dark:text-amber-200 text-sm font-medium">{shownResult.tip}</p>
+                          <p className="text-amber-800 dark:text-amber-200 text-xs sm:text-sm font-medium">{shownResult.tip}</p>
                         </div>
                       </div>
                     )}
 
                     {activeTab === 'docs' && (
-                      <div className="space-y-6 animate-in fade-in">
-                        <div className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <FileCheck size={20} className="text-emerald-500" /> المستندات المطلوبة
+                      <div className="space-y-4 animate-in fade-in">
+                        <div className="bg-white dark:bg-slate-950 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
+                          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2 text-sm sm:text-base">
+                            <FileCheck size={18} className="text-emerald-500" /> المستندات المطلوبة
                           </h3>
+                          {/* ✅ إصلاح 10: Documents list متجاوب */}
                           <div className="flex flex-wrap gap-2">
                             {shownResult.docs.map((d, i) => (
-                              <span key={i} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200">
+                              <span key={i} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
                                 {d}
                               </span>
                             ))}
                           </div>
                         </div>
-                        <div className="bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 flex justify-between">
-                          <h3 className="font-bold text-emerald-900 dark:text-emerald-100">التكلفة:</h3>
-                          <p className="text-2xl font-black text-emerald-600">{shownResult.cost}</p>
+                        <div className="bg-emerald-50 dark:bg-emerald-950/30 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-emerald-100 dark:border-emerald-900/40 flex flex-col sm:flex-row sm:justify-between gap-2">
+                          <h3 className="font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base">التكلفة:</h3>
+                          <p className="text-xl sm:text-2xl font-black text-emerald-600">{shownResult.cost}</p>
                         </div>
                       </div>
                     )}
 
                     {activeTab === 'info' && (
                       <div className="space-y-4 animate-in fade-in">
-                        <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
-                          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex gap-2">
-                            <Scale size={20} /> السند القانوني
+                        <div className="bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800">
+                          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex gap-2 text-sm sm:text-base">
+                            <Scale size={18} /> السند القانوني
                           </h3>
-                          <p className="text-slate-600 dark:text-slate-300 text-sm font-mono">{shownResult.legal}</p>
+                          <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-mono break-words">{shownResult.legal}</p>
                         </div>
 
                         {(shownResult.lastUpdate || (shownResult.sources && shownResult.sources.some((s) => isAllowedOfficialUrl(s.url)))) && (
-                          <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                          <div className="bg-white dark:bg-slate-950 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800">
                             {shownResult.lastUpdate && (
                               <div className="mb-4">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">آخر تحديث</h3>
-                                <p className="text-slate-600 dark:text-slate-300 text-sm">{shownResult.lastUpdate}</p>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1 text-sm sm:text-base">آخر تحديث</h3>
+                                <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">{shownResult.lastUpdate}</p>
                               </div>
                             )}
 
                             {shownResult.sources && shownResult.sources.some((s) => isAllowedOfficialUrl(s.url)) && (
                               <div>
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2">مصادر ومراجع</h3>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 text-sm sm:text-base">مصادر ومراجع</h3>
                                 <div className="space-y-2">
                                   {shownResult.sources.filter((s) => isAllowedOfficialUrl(s.url)).map((s, i) => (
                                     <a
@@ -746,7 +729,7 @@ export default function ConsultantPage() {
                                       href={s.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="block text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400"
+                                      className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 break-words"
                                     >
                                       {s.label}
                                     </a>
@@ -761,21 +744,22 @@ export default function ConsultantPage() {
                   </div>
 
                   {relatedHits.length > 0 && (
-                    <div className="mt-8 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-                      <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center justify-between">
+                    <div className="mt-6 sm:mt-8 bg-white dark:bg-slate-950 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800">
+                      <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-3 sm:mb-4 flex items-center justify-between text-sm sm:text-base">
                         <span>الأكثر صلة</span>
-                        <span className="text-xs font-black text-slate-400">أفضل 5</span>
+                        <span className="text-[10px] sm:text-xs font-black text-slate-400">أفضل 5</span>
                       </h3>
-                      <div className="space-y-3">{relatedHits.map((hit) => <KBLinkCard key={hit.entry.id} hit={hit} />)}</div>
+                      <div className="space-y-2 sm:space-y-3">{relatedHits.map((hit) => <KBLinkCard key={hit.entry.id} hit={hit} />)}</div>
                     </div>
                   )}
 
-                  <div className="flex justify-center pt-8 mt-auto border-t border-slate-100 dark:border-slate-800 gap-4">
-                    <button onClick={reset} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold py-3">
+                  {/* ✅ إصلاح 11: Footer buttons متجاوبة */}
+                  <div className="flex flex-col sm:flex-row justify-center pt-6 sm:pt-8 mt-auto border-t border-slate-100 dark:border-slate-800 gap-3 sm:gap-4">
+                    <button onClick={reset} className="flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 font-bold py-3 order-2 sm:order-1">
                       <RefreshCw size={18} /> استشارة جديدة
                     </button>
                     {detailLink && (
-                      <Link href={detailLink} className="flex items-center gap-2 bg-primary-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-600">
+                      <Link href={detailLink} className="flex items-center justify-center gap-2 bg-primary-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-600 order-1 sm:order-2">
                         <FileText size={18} /> قراءة التفاصيل
                       </Link>
                     )}
@@ -784,9 +768,9 @@ export default function ConsultantPage() {
               )}
 
               {step === 3 && loading && (
-                <div className="text-center py-20 animate-pulse">
-                  <RefreshCw className="animate-spin mx-auto text-emerald-500 mb-6" size={48} />
-                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">جاري تحليل البيانات...</h3>
+                <div className="text-center py-16 sm:py-20 animate-pulse">
+                  <RefreshCw className="animate-spin mx-auto text-emerald-500 mb-4 sm:mb-6" size={40} />
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">جاري تحليل البيانات...</h3>
                 </div>
               )}
             </AnimatePresence>
@@ -803,11 +787,11 @@ function Btn({ text, icon, onClick }: { text: string; icon: ReactNode; onClick: 
   return (
     <button
       onClick={onClick}
-      className="w-full p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:shadow-lg transition-all duration-300 text-right font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 flex items-center gap-4 group"
+      className="w-full p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:shadow-lg transition-all duration-300 text-right font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 flex items-center gap-3 sm:gap-4 group"
     >
-      <div className="p-3 rounded-full bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-900 group-hover:text-emerald-500 transition-colors">{icon}</div>
-      <span className="flex-grow">{text}</span>
-      <ChevronRight size={20} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 transition-colors" />
+      <div className="p-2 sm:p-3 rounded-full bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-900 group-hover:text-emerald-500 transition-colors flex-shrink-0">{icon}</div>
+      <span className="flex-grow text-sm sm:text-base">{text}</span>
+      <ChevronRight size={18} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
     </button>
   );
 }
@@ -816,7 +800,7 @@ function BtnSmall({ text, onClick }: { text: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 shadow-sm hover:shadow-md text-center"
+      className="w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 shadow-sm hover:shadow-md text-center text-xs sm:text-sm"
     >
       {text}
     </button>
@@ -837,7 +821,7 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 ${
+      className={`flex-1 py-2 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2 transition-all duration-300 ${
         active
           ? 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 shadow-md'
           : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
@@ -876,12 +860,12 @@ function KBLinkCard({ hit }: { hit: KnowledgeSearchHit }) {
   const badge = kbTypeLabel(hit.entry.type);
 
   const content = (
-    <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition">
-      <div className="flex items-start justify-between gap-3">
+    <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
-          <div className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">{hit.entry.title}</div>
+          <div className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 truncate">{hit.entry.title}</div>
         </div>
-        <span className="flex-shrink-0 text-[11px] font-black px-2 py-1 rounded-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-500">{badge}</span>
+        <span className="flex-shrink-0 text-[10px] sm:text-[11px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-500">{badge}</span>
       </div>
     </div>
   );

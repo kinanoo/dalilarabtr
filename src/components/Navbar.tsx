@@ -200,7 +200,7 @@ export default function Navbar() {
         </Link>
 
         {/* روابط الكمبيوتر */}
-        <div className="hidden lg:flex items-center justify-center gap-1 flex-1 min-w-0 overflow-x-hidden">
+        <div className="hidden lg:flex items-center justify-center gap-0.5 flex-1 min-w-0 overflow-x-hidden">
           {navLinks.map((item) => {
             const isActive = pathname === item.href;
 
@@ -208,7 +208,7 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
                   isActive 
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' 
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
