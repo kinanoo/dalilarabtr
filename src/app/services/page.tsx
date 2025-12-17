@@ -6,34 +6,49 @@ import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { SERVICES_LIST, SITE_CONFIG } from '@/lib/data';
 import Link from 'next/link';
-import { Briefcase, ArrowLeft } from 'lucide-react';
-import ShareMenu from '@/components/ShareMenu'; // 👈 استيراد
+import { Briefcase, ArrowLeft, Sparkles, Loader2 } from 'lucide-react';
+import ShareMenu from '@/components/ShareMenu';
 import { useEffect, useMemo, useState } from 'react';
-import { fetchRemoteServices, mergeServices, subscribeDemoDataUpdated, type RuntimeService } from '@/lib/remoteData';
+import { useAdminServices, isNewContent } from '@/lib/useAdminData';
 import { buildWhatsAppHref } from '@/lib/whatsapp';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
+// دمج بيانات لوحة التحكم مع الأيقونات والألوان من الملفات الثابتة
+type MergedService = {
+  id: string;
+  title: string;
+  desc: string;
+  price: number | null;
+  whatsapp: string | null;
+  active: boolean;
+  image?: string;
+  // من الملفات الثابتة
+  icon: typeof Briefcase;
+  color: string;
+};
+
 export default function ServicesPage() {
-  const [services, setServices] = useState<RuntimeService[]>(SERVICES_LIST);
+  const { services: adminServices, loading } = useAdminServices();
   const [query, setQuery] = useState('');
 
-  useEffect(() => {
-    let cancelled = false;
-    const reload = async () => {
-      const [remoteServices] = await Promise.all([fetchRemoteServices()]);
-      if (cancelled) return;
-      setServices(mergeServices(remoteServices));
-    };
+  // دمج البيانات: لوحة التحكم + الأيقونات/الألوان الثابتة
+  const services = useMemo((): MergedService[] => {
+    // إنشاء خريطة من الخدمات الثابتة للحصول على الأيقونة واللون
+    const staticMap = new Map(
+      SERVICES_LIST.map(s => [s.id, { icon: s.icon, color: s.color }])
+    );
 
-    void reload();
-    const unsubscribe = subscribeDemoDataUpdated(() => void reload());
+    return adminServices.map(s => {
+      const staticData = staticMap.get(s.id);
+      return {
+        ...s,
+        icon: staticData?.icon || Briefcase,
+        color: staticData?.color || 'bg-gradient-to-br from-slate-600 to-slate-800',
+      };
+    });
+  }, [adminServices]);
 
-    return () => {
-      cancelled = true;
-      unsubscribe();
-    };
-  }, []);
-
+  // فلترة البحث
   const filteredServices = useMemo(() => {
     const normalizedQuery = normalizeArabic(query);
     if (!normalizedQuery) return services;
@@ -63,101 +78,132 @@ export default function ServicesPage() {
       </PageHero>
 
       <div className="max-w-screen-2xl mx-auto px-4 py-16">
-        {query && filteredServices.length === 0 ? (
-          <p className="text-center text-sm text-slate-600 dark:text-slate-300 mb-6">
-            لا توجد خدمات مطابقة لكلمة البحث.
-          </p>
-        ) : null}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service, idx) => (
-            <div key={idx} className="group bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:border-primary-500 transition-all duration-300 flex flex-col relative">
-              
-              {/* Header Image/Icon Area */}
-              <div className={`h-32 ${service.color} relative flex items-center justify-center`}>
-                <div className="bg-white/20 p-4 rounded-full backdrop-blur-sm">
-                  <service.icon size={40} className="text-white" />
-                </div>
-                <div className="absolute bottom-0 inset-x-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-                
-                {/* زر المشاركة داخل الكرت */}
-                 <div className="absolute top-4 end-4">
-                   <ShareMenu title={`خدمة ${service.title}`} text={service.desc} url={`${SITE_CONFIG.siteUrl}/request?service=${service.id}`} mini={true} customClass="!bg-white/20 !text-white hover:!bg-white hover:!text-slate-800 backdrop-blur-md" />
-                </div>
-              </div>
-
-              <div className="p-6 flex-grow flex flex-col">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-primary-700 transition-colors">
-                  {service.title}
-                </h3>
-                <p className="text-slate-500 dark:text-slate-300 text-sm leading-relaxed mb-6 flex-grow">
-                  {service.desc}
-                </p>
-                
-                {(() => {
-                  const phone = service.whatsapp || SITE_CONFIG.whatsapp;
-                  const text = `السلام عليكم، أريد طلب خدمة: ${service.title}`;
-                  const href = buildWhatsAppHref(phone, text);
-                  if (href) {
-                    return (
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-primary-600 group-hover:text-white transition-all"
-                        aria-label={`اطلب خدمة ${service.title} عبر واتساب`}
-                      >
-                        طلب الخدمة <ArrowLeft size={18} />
-                      </a>
-                    );
-                  }
-                  return (
-                    <Link
-                      href={`/request?service=${service.id}`}
-                      className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-primary-600 group-hover:text-white transition-all"
-                    >
-                      طلب الخدمة <ArrowLeft size={18} />
-                    </Link>
-                  );
-                })()}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ترويج للواتساب المباشر */}
-        <div className="mt-16 bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900/40 rounded-2xl p-8 text-center relative overflow-hidden">
-          <div className="relative z-10">
-            <h3 className="text-2xl font-bold text-green-900 dark:text-green-100 mb-4">لديك طلب خاص غير موجود؟</h3>
-            <p className="text-green-800 dark:text-green-200 mb-6">راسلنا مباشرة عبر واتساب وسنرد عليك بأسرع وقت.</p>
-            <div className="flex justify-center">
-              {(() => {
-                const href = buildWhatsAppHref(SITE_CONFIG.whatsapp, 'السلام عليكم، لدي طلب خاص غير موجود في القائمة.');
-                if (href) {
-                  return (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20"
-                      aria-label="اطلب خدمة عبر واتساب"
-                    >
-                      طلب خدمة <ArrowLeft size={18} />
-                    </a>
-                  );
-                }
-                return (
-                  <Link
-                    href="/request"
-                    className="inline-flex items-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20"
-                  >
-                    طلب خدمة <ArrowLeft size={18} />
-                  </Link>
-                );
-              })()}
-            </div>
+        {/* حالة التحميل */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={40} className="animate-spin text-emerald-600" />
           </div>
-        </div>
+        ) : (
+          <>
+            {query && filteredServices.length === 0 ? (
+              <p className="text-center text-sm text-slate-600 dark:text-slate-300 mb-6">
+                لا توجد خدمات مطابقة لكلمة البحث.
+              </p>
+            ) : null}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredServices.map((service, idx) => (
+                <div key={service.id || idx} className="group bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:border-primary-500 transition-all duration-300 flex flex-col relative">
+                  
+                  {/* Header Image/Icon Area */}
+                  <div className={`h-32 ${service.color} relative flex items-center justify-center`}>
+                    {/* صورة الخدمة إذا وجدت */}
+                    {service.image ? (
+                      <img 
+                        src={service.image} 
+                        alt={service.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="bg-white/20 p-4 rounded-full backdrop-blur-sm">
+                        <service.icon size={40} className="text-white" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 inset-x-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    
+                    {/* زر المشاركة */}
+                    <div className="absolute top-4 end-4">
+                      <ShareMenu 
+                        title={`خدمة ${service.title}`} 
+                        text={service.desc} 
+                        url={`${SITE_CONFIG.siteUrl}/request?service=${service.id}`} 
+                        mini={true} 
+                        customClass="!bg-white/20 !text-white hover:!bg-white hover:!text-slate-800 backdrop-blur-md" 
+                      />
+                    </div>
+
+                    {/* السعر إذا وجد */}
+                    {service.price && (
+                      <div className="absolute top-4 start-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                        <span className="text-sm font-bold text-emerald-600">{service.price} ₺</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-6 flex-grow flex flex-col">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-primary-700 transition-colors">
+                      {service.title}
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-300 text-sm leading-relaxed mb-6 flex-grow">
+                      {service.desc}
+                    </p>
+                    
+                    {(() => {
+                      const phone = service.whatsapp || SITE_CONFIG.whatsapp;
+                      const text = `السلام عليكم، أريد طلب خدمة: ${service.title}`;
+                      const href = buildWhatsAppHref(phone, text);
+                      if (href) {
+                        return (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-primary-600 group-hover:text-white transition-all"
+                            aria-label={`اطلب خدمة ${service.title} عبر واتساب`}
+                          >
+                            طلب الخدمة <ArrowLeft size={18} />
+                          </a>
+                        );
+                      }
+                      return (
+                        <Link
+                          href={`/request?service=${service.id}`}
+                          className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-primary-600 group-hover:text-white transition-all"
+                        >
+                          طلب الخدمة <ArrowLeft size={18} />
+                        </Link>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ترويج للواتساب المباشر */}
+            <div className="mt-16 bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900/40 rounded-2xl p-8 text-center relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold text-green-900 dark:text-green-100 mb-4">لديك طلب خاص غير موجود؟</h3>
+                <p className="text-green-800 dark:text-green-200 mb-6">راسلنا مباشرة عبر واتساب وسنرد عليك بأسرع وقت.</p>
+                <div className="flex justify-center">
+                  {(() => {
+                    const href = buildWhatsAppHref(SITE_CONFIG.whatsapp, 'السلام عليكم، لدي طلب خاص غير موجود في القائمة.');
+                    if (href) {
+                      return (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20"
+                          aria-label="اطلب خدمة عبر واتساب"
+                        >
+                          طلب خدمة <ArrowLeft size={18} />
+                        </a>
+                      );
+                    }
+                    return (
+                      <Link
+                        href="/request"
+                        className="inline-flex items-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20"
+                      >
+                        طلب خدمة <ArrowLeft size={18} />
+                      </Link>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
       <Footer />
     </main>

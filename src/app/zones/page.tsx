@@ -1,5 +1,6 @@
 'use client';
-
+import { Metadata } from 'next';
+import ToolSchema from '@/components/ToolSchema';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -145,7 +146,7 @@ export default function ZonesPage() {
   return (
     <main className="flex flex-col min-h-screen font-cairo">
       <Navbar />
-
+      <ToolSchema tool="restricted-areas" />
       <PageHero
         title="فاحص المناطق المحظورة (الرسمي)"
         description="ابحث باسم الحي (Mahalle) أو المنطقة (İlçe) أو الولاية."
@@ -158,7 +159,6 @@ export default function ZonesPage() {
           dir="ltr"
           lang="tr"
           inputClassName="placeholder:text-right placeholder:[direction:rtl] placeholder:[unicode-bidi:plaintext]"
-          // onClear أزيلت لأن المكوّن لم يعد يدعمها
         />
       </PageHero>
 
@@ -170,84 +170,85 @@ export default function ZonesPage() {
             </div>
 
             <div className="mt-5">
-                            {/* شريط الإحصائيات بعد النتائج */}
-                            <div className="mt-6 mb-2 flex flex-row-reverse justify-between items-center text-sm bg-slate-50 dark:bg-slate-800/60 rounded-xl px-4 py-3 shadow-sm border border-slate-100 dark:border-slate-800">
-                              <span className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-100">
-                                <MapPin size={17} className="text-accent-600 dark:text-accent-400" />
-                                عدد المناطق المحظورة
-                                <strong className="text-accent-600 dark:text-accent-400 text-base font-extrabold">{data?.items?.length ?? '—'}</strong>
-                              </span>
-                              <span className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-100">
-                                <span className="text-accent-600 dark:text-accent-400">آخر تحديث</span>
-                                <strong className="text-accent-600 dark:text-accent-400 text-base font-extrabold">{data?.updatedAt ?? '—'}</strong>
-                              </span>
-                            </div>
-                {!showResults && !loading && (
-                  <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">
-                    اكتب اسم المنطقة لبدء البحث.
-                  </p>
-                )}
+              {/* شريط الإحصائيات */}
+              <div className="mt-6 mb-2 flex flex-row-reverse justify-between items-center text-sm bg-slate-50 dark:bg-slate-800/60 rounded-xl px-4 py-3 shadow-sm border border-slate-100 dark:border-slate-800">
+                <span className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-100">
+                  <MapPin size={17} className="text-accent-600 dark:text-accent-400" />
+                  عدد المناطق المحظورة
+                  <strong className="text-accent-600 dark:text-accent-400 text-base font-extrabold">{data?.items?.length ?? '—'}</strong>
+                </span>
+                <span className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-100">
+                  <span className="text-accent-600 dark:text-accent-400">آخر تحديث</span>
+                  <strong className="text-accent-600 dark:text-accent-400 text-base font-extrabold">{data?.updatedAt ?? '—'}</strong>
+                </span>
+              </div>
 
-                {loading && (
-                  <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">جاري تحميل قاعدة البيانات…</p>
-                )}
-
-                {!loading && loadError && (
-                  <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-4 text-center text-sm text-rose-700 dark:text-rose-300">
-                    {loadError}
-                  </div>
-                )}
-
-                {!loading && !loadError && !hasData && (
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 text-center text-sm text-slate-700 dark:text-slate-300">
-                    قاعدة البيانات غير متوفرة بعد. ضع الملف في <strong>public/data/closed-areas.json</strong> ثم أعد المحاولة.
-                  </div>
-                )}
-
-                {showResults && !loading && hasData && (
-                  <div className="mt-3 max-h-[420px] overflow-y-auto space-y-2">
-                    {totalMatches > 0 ? (
-                      <>
-                        {matches.map((zone, idx) => (
-                          <div
-                            key={`${zone.c}-${zone.d}-${zone.n}-${idx}`}
-                            className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/30 p-4 flex items-center justify-between gap-3"
-                          >
-                            <div className="text-right">
-                              <div className="font-extrabold text-slate-900 dark:text-slate-100">
-                                🚫 {zone.n}
-                              </div>
-                              <div className="text-xs md:text-sm text-rose-700 dark:text-rose-300 mt-1">
-                                {zone.c} — {zone.d}
-                              </div>
-                            </div>
-                            <span className="shrink-0 rounded-md bg-rose-600 text-white px-3 py-1 text-xs font-bold">محظورة</span>
-                          </div>
-                        ))}
-
-                        {totalMatches > 100 && (
-                          <div className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400 py-2">
-                            … وهناك {totalMatches - 100} نتيجة أخرى. اكتب الاسم بدقة أكثر.
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-5 text-center">
-                        <div className="text-2xl mb-2">✅</div>
-                        <div className="font-bold text-slate-900 dark:text-slate-100">
-                          المحلة المطلوبة غير مضافة في قائمة المحلات المحظورة
-                        </div>
-                        <p className="mt-2 text-xs md:text-sm text-slate-600 dark:text-slate-300">
-                          بالتالي تكون متاحة ويمكنك تثبيت النفوس فيها.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <p className="mt-5 text-center text-[11px] md:text-xs text-slate-500 dark:text-slate-500">
-                  * البيانات مرجعية وتعتمد على قوائم “المناطق/الأحياء المغلقة” الرسمية. تحقق دائمًا من آخر تحديث عند الجهات الرسمية.
+              {!showResults && !loading && (
+                <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">
+                  اكتب اسم المنطقة لبدء البحث.
                 </p>
+              )}
+
+              {loading && (
+                <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">جاري تحميل قاعدة البيانات…</p>
+              )}
+
+              {!loading && loadError && (
+                <div className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-4 text-center text-sm text-rose-700 dark:text-rose-300">
+                  {loadError}
+                </div>
+              )}
+
+              {!loading && !loadError && !hasData && (
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 text-center text-sm text-slate-700 dark:text-slate-300">
+                  قاعدة البيانات غير متوفرة بعد. ضع الملف في <strong>public/data/closed-areas.json</strong> ثم أعد المحاولة.
+                </div>
+              )}
+
+              {showResults && !loading && hasData && (
+                <div className="mt-3 max-h-[420px] overflow-y-auto space-y-2">
+                  {totalMatches > 0 ? (
+                    <>
+                      {matches.map((zone, idx) => (
+                        <div
+                          key={`${zone.c}-${zone.d}-${zone.n}-${idx}`}
+                          className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/30 p-4 flex items-center justify-between gap-3"
+                        >
+                          <div className="text-right">
+                            <div className="font-extrabold text-slate-900 dark:text-slate-100">
+                              🚫 {zone.n}
+                            </div>
+                            <div className="text-xs md:text-sm text-rose-700 dark:text-rose-300 mt-1">
+                              {zone.c} — {zone.d}
+                            </div>
+                          </div>
+                          <span className="shrink-0 rounded-md bg-rose-600 text-white px-3 py-1 text-xs font-bold">محظورة</span>
+                        </div>
+                      ))}
+
+                      {totalMatches > 100 && (
+                        <div className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400 py-2">
+                          … وهناك {totalMatches - 100} نتيجة أخرى. اكتب الاسم بدقة أكثر.
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-5 text-center">
+                      <div className="text-2xl mb-2">✅</div>
+                      <div className="font-bold text-slate-900 dark:text-slate-100">
+                        المحلة المطلوبة غير مضافة في قائمة المحلات المحظورة
+                      </div>
+                      <p className="mt-2 text-xs md:text-sm text-slate-600 dark:text-slate-300">
+                        بالتالي تكون متاحة ويمكنك تثبيت النفوس فيها.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p className="mt-5 text-center text-[11px] md:text-xs text-slate-500 dark:text-slate-500">
+                * البيانات مرجعية وتعتمد على قوائم "المناطق/الأحياء المغلقة" الرسمية. تحقق دائماً من آخر تحديث عند الجهات الرسمية.
+              </p>
             </div>
           </div>
         </div>

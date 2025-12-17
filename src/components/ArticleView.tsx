@@ -1,17 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { ArticleData, ARTICLES } from '@/lib/articles';
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, MessageCircle, ListOrdered, Printer, ArrowLeft, Share2, Sparkles, Lightbulb, Coins, Info, ExternalLink, Check, BrainCircuit } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, MessageCircle, ListOrdered, Printer, ArrowLeft, Share2, Sparkles, Lightbulb, Coins, Info, ExternalLink, Check, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import ShareMenu from './ShareMenu'; // 👈 استيراد المكون الجديد
+import { motion, AnimatePresence } from 'framer-motion';
+import ShareMenu from './ShareMenu';
 import { buildWhatsAppHref } from '@/lib/whatsapp';
-import { SITE_CONFIG } from '@/lib/data';
+import { SITE_CONFIG, CATEGORY_SLUGS } from '@/lib/data';
+import Breadcrumbs from './Breadcrumbs';
 
 export default function ArticleView({ article, slug }: { article: ArticleData, slug: string }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
+  const [showDetails, setShowDetails] = useState(false);
+  const summaryRef = useRef<HTMLDivElement>(null);
   const officialSources = getOfficialSourceUrls(article.source);
 
   const whatsAppHref = useMemo(() => {
@@ -20,14 +23,12 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
     return buildWhatsAppHref(SITE_CONFIG.whatsapp, text);
   }, [article.title, slug]);
 
-  // مهم: لا تقرأ localStorage أثناء أول render حتى لا يحدث Hydration mismatch.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(`progress-${slug}`);
       if (!saved) return;
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCheckedItems(parsed);
       }
     } catch {
@@ -35,7 +36,6 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
     }
   }, [slug]);
 
-  // حفظ التقدم
   const toggleItem = (index: number) => {
     let newItems;
     if (checkedItems.includes(index)) {
@@ -45,6 +45,23 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
     }
     setCheckedItems(newItems);
     localStorage.setItem(`progress-${slug}`, JSON.stringify(newItems));
+  };
+
+  // دالة تبديل التفاصيل مع التمرير السلس
+  const handleToggleDetails = () => {
+    if (showDetails) {
+      // عند الإخفاء: نخفي أولاً ثم نمرر للقسم
+      setShowDetails(false);
+      // انتظر حتى ينتهي الإخفاء ثم مرر للقسم
+      setTimeout(() => {
+        summaryRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+      }, 100);
+    } else {
+      setShowDetails(true);
+    }
   };
 
   const relatedArticles = Object.entries(ARTICLES)
@@ -65,23 +82,26 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
         />
       </div>
 
-      {/* ✅ إصلاح 1: إزالة max-w-6xl على الجوال وإضافة overflow-hidden */}
       <article className="w-full max-w-full lg:max-w-6xl mx-auto px-3 sm:px-4 py-8 overflow-hidden">
-        <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-300 mb-8 font-medium overflow-x-auto whitespace-nowrap pb-2">
-            <Link href="/" className="hover:text-primary-600 transition">الرئيسية</Link>
-            <span className="text-slate-300 dark:text-slate-600">/</span>
-            <Link href="/directory" className="hover:text-primary-600 transition">الدليل</Link>
-            <span className="text-slate-300 dark:text-slate-600">/</span>
-            <span className="text-primary-600 dark:text-primary-300 font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-md">{article.category}</span>
-        </nav>
+        {/* Breadcrumbs محسّن */}
+        <Breadcrumbs 
+          items={[
+            { name: 'الدليل', href: '/directory' },
+            ...(article.category ? (() => {
+              const categorySlug = Object.entries(CATEGORY_SLUGS).find(([_, name]) => name === article.category)?.[0];
+              return categorySlug 
+                ? [{ name: article.category, href: `/category/${categorySlug}` }]
+                : [{ name: article.category, href: '/directory' }];
+            })() : []),
+            { name: article.title, href: '#', isActive: true },
+          ]}
+        />
         
-        {/* ✅ إصلاح 2: تقليل gap على الجوال */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 w-full max-w-full">
           <div className="lg:col-span-8 space-y-6 lg:space-y-8 min-w-0">
-            {/* ✅ إصلاح 3: إزالة md:max-w-2xl على الجوال */}
             <div className="w-full max-w-full lg:max-w-2xl lg:mx-auto bg-white dark:bg-slate-900 rounded-2xl lg:rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
                     
-                    {/* ✅ إصلاح 4: Header متجاوب */}
+                    {/* Header */}
                     <div className="bg-primary-900 text-white p-4 sm:p-6 lg:p-12 relative overflow-hidden rounded-2xl lg:rounded-[2.5rem] w-full">
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 mb-4 lg:mb-6 flex-wrap">
@@ -102,61 +122,106 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20"></div>
                     </div>
                     
-                    {/* ✅ إصلاح 5: Content area متجاوب */}
-                    <div className="p-4 sm:p-6 lg:p-12 space-y-8 lg:space-y-12 break-words overflow-x-hidden w-full max-w-full">
-                        <div className="text-base lg:text-lg text-slate-600 dark:text-slate-200 leading-loose font-medium border-r-4 border-emerald-500 pr-4 lg:pr-6 pl-2">
+                    {/* Content */}
+                    <div className="p-4 sm:p-6 lg:p-12 space-y-6 lg:space-y-8 break-words overflow-x-hidden w-full max-w-full">
+                        
+                        {/* ✅ ملخص الإجراء - مع زر "تفاصيل أكثر" */}
+                        <div 
+                          ref={summaryRef}
+                          className="text-base lg:text-lg text-slate-600 dark:text-slate-200 leading-loose font-medium border-r-4 border-emerald-500 pr-4 lg:pr-6 pl-2 scroll-mt-20"
+                        >
                           <h3 className="flex items-center text-lg lg:text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 gap-2">
                             <Info className="text-emerald-500 flex-shrink-0" size={20} /> ملخص الإجراء
                           </h3>
 
+                          {/* 👇 الجزء الظاهر دائماً - العنوان/المقدمة */}
                           <p className="text-slate-700 dark:text-slate-100 font-bold mb-3">
                             {article.intro}
                           </p>
-                          <p className="text-slate-600 dark:text-slate-200">
-                            {article.details}
-                          </p>
 
-                          {/* ✅ إصلاح 6: Grid داخلي متجاوب */}
-                          <div className="mt-6 grid grid-cols-1 gap-4">
-                            <div className="bg-white/70 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4">
-                              <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">أهم الأوراق</div>
-                              <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-200">
-                                {article.documents.slice(0, 5).map((doc, i) => (
-                                  <li key={i} className="flex gap-2">
-                                    <span className="text-emerald-500 mt-1 flex-shrink-0">•</span>
-                                    <span>{doc}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
+                          {/* 👇 الجزء القابل للطي */}
+                          <AnimatePresence initial={false}>
+                            {showDetails && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="overflow-hidden"
+                              >
+                                {/* التفاصيل */}
+                                <p className="text-slate-600 dark:text-slate-200 mb-6">
+                                  {article.details}
+                                </p>
 
-                            <div className="bg-white/70 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4">
-                              <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">الخطة السريعة</div>
-                              <ol className="space-y-1 text-sm text-slate-700 dark:text-slate-200">
-                                {article.steps.slice(0, 5).map((step, i) => (
-                                  <li key={i} className="flex gap-2">
-                                    <span className="text-blue-600 dark:text-blue-400 font-black flex-shrink-0">{i + 1}.</span>
-                                    <span>{step}</span>
-                                  </li>
-                                ))}
-                              </ol>
-                            </div>
-                          </div>
+                                {/* أهم الأوراق + الخطة السريعة */}
+                                <div className="grid grid-cols-1 gap-4">
+                                  <div className="bg-white/70 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4">
+                                    <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">أهم الأوراق</div>
+                                    <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-200">
+                                      {article.documents.slice(0, 5).map((doc, i) => (
+                                        <li key={i} className="flex gap-2">
+                                          <span className="text-emerald-500 mt-1 flex-shrink-0">•</span>
+                                          <span>{doc}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
 
-                          {article.warning && (
-                            <div className="mt-6 text-sm font-bold text-red-700 dark:text-red-300">
-                              تنبيه مهم: {article.warning}
-                            </div>
-                          )}
+                                  <div className="bg-white/70 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4">
+                                    <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">الخطة السريعة</div>
+                                    <ol className="space-y-1 text-sm text-slate-700 dark:text-slate-200">
+                                      {article.steps.slice(0, 5).map((step, i) => (
+                                        <li key={i} className="flex gap-2">
+                                          <span className="text-blue-600 dark:text-blue-400 font-black flex-shrink-0">{i + 1}.</span>
+                                          <span>{step}</span>
+                                        </li>
+                                      ))}
+                                    </ol>
+                                  </div>
+                                </div>
+
+                                {/* التنبيه المهم */}
+                                {article.warning && (
+                                  <div className="mt-6 text-sm font-bold text-red-700 dark:text-red-300">
+                                    تنبيه مهم: {article.warning}
+                                  </div>
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* 👇 زر تفاصيل أكثر / إخفاء - محسّن */}
+                          <button
+                            type="button"
+                            onClick={handleToggleDetails}
+                            className={`mt-4 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                              showDetails
+                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800'
+                            }`}
+                          >
+                            {showDetails ? (
+                              <>
+                                <ChevronUp size={18} />
+                                <span>إخفاء التفاصيل</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>📖 عرض التفاصيل الكاملة</span>
+                                <ChevronDown size={18} />
+                              </>
+                            )}
+                          </button>
                         </div>
 
-            {/* 🌟 بطاقة المساعدة المباشرة */}
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-100 dark:border-emerald-900/30 p-4 lg:p-6 rounded-2xl flex flex-col gap-4">
+                        {/* بطاقة المساعدة المباشرة */}
+                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-100 dark:border-emerald-900/30 p-4 lg:p-6 rounded-2xl flex flex-col gap-4">
                             <div>
-                      <h3 className="font-bold text-emerald-900 dark:text-emerald-100 text-base lg:text-lg mb-1 flex items-center gap-2">
-                                    <MessageCircle size={20} className="flex-shrink-0" /> هل الإجراء معقد؟
-                                </h3>
-                      <p className="text-emerald-700 dark:text-emerald-200 text-sm">فريقنا يمكنه مساعدتك في إنجاز هذه المعاملة بسرعة.</p>
+                              <h3 className="font-bold text-emerald-900 dark:text-emerald-100 text-base lg:text-lg mb-1 flex items-center gap-2">
+                                <MessageCircle size={20} className="flex-shrink-0" /> هل الإجراء معقد؟
+                              </h3>
+                              <p className="text-emerald-700 dark:text-emerald-200 text-sm">فريقنا يمكنه مساعدتك في إنجاز هذه المعاملة بسرعة.</p>
                             </div>
                             {whatsAppHref ? (
                               <a
@@ -174,6 +239,7 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                             )}
                         </div>
 
+                        {/* المصدر الرسمي */}
                         {officialSources.length > 0 && (
                           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 p-4 lg:p-6 rounded-2xl flex flex-col gap-4">
                             <div>
@@ -186,6 +252,7 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                           </div>
                         )}
 
+                        {/* التكلفة */}
                         {article.fees && (
                           <div className="bg-gradient-to-br from-primary-800 to-primary-900 text-white p-4 lg:p-6 rounded-2xl shadow-lg relative overflow-hidden">
                             <div className="relative z-10 flex items-start gap-4">
@@ -203,27 +270,7 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                           </div>
                         )}
 
-                        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem]">
-                            <div className="flex items-center justify-between mb-4 lg:mb-6 gap-2 flex-wrap">
-                            <h3 className="flex items-center text-lg lg:text-2xl font-bold text-slate-800 dark:text-slate-100">
-                                    <CheckCircle className="ml-2 text-emerald-500 flex-shrink-0" /> الأوراق المطلوبة
-                                </h3>
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-300 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
-                                    {progress}% جاهز
-                                </span>
-                            </div>
-                            <div className="space-y-3">
-                                {article.documents.map((doc, i) => (
-                            <div key={i} onClick={() => toggleItem(i)} className={`group flex items-center p-3 lg:p-4 rounded-xl cursor-pointer transition-all duration-200 border-2 ${checkedItems.includes(i) ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/40 shadow-none' : 'bg-white dark:bg-slate-950 border-transparent hover:border-emerald-200 dark:hover:border-emerald-900/40 shadow-sm'}`}>
-                              <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ml-3 lg:ml-4 transition-all ${checkedItems.includes(i) ? 'bg-emerald-500 border-emerald-500 scale-110' : 'border-slate-300 dark:border-slate-600 group-hover:border-emerald-400'}`}>
-                                        {checkedItems.includes(i) && <Check size={14} className="text-white" />}
-                                    </div>
-                              <span className={`text-sm lg:text-base font-medium transition-all ${checkedItems.includes(i) ? 'text-emerald-800 dark:text-emerald-200 line-through opacity-50' : 'text-slate-700 dark:text-slate-200'}`}>{doc}</span>
-                                </div>
-                                ))}
-                            </div>
-                        </div>
-
+                        {/* النصائح الذهبية */}
                         {article.tips && (
                           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40 p-4 lg:p-6 rounded-2xl">
                             <h3 className="font-bold text-amber-900 dark:text-amber-100 text-base lg:text-lg mb-4 flex items-center gap-2">
@@ -239,23 +286,7 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                           </div>
                         )}
 
-                        <div>
-                          <h3 className="flex items-center text-lg lg:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 lg:mb-8">
-                                <ListOrdered className="ml-2 text-blue-600 flex-shrink-0" /> خطوات التنفيذ
-                            </h3>
-                          <div className="space-y-0 relative border-r-2 border-slate-200 dark:border-slate-700 mr-4 pb-2">
-                                {article.steps.map((step, i) => (
-                                <div key={i} className="mb-6 lg:mb-8 relative pr-6 lg:pr-8 group">
-                              <span className="absolute -right-[9px] top-0 w-4 h-4 rounded-full bg-slate-100 dark:bg-slate-800 border-4 border-slate-300 dark:border-slate-600 group-hover:border-blue-500 transition-colors z-10"></span>
-                              <div className="bg-white dark:bg-slate-950 p-4 lg:p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm group-hover:shadow-md transition-all">
-                                      <h4 className="text-xs font-bold text-blue-500 mb-2 uppercase tracking-wider">خطوة {i + 1}</h4>
-                                <p className="text-base lg:text-lg text-slate-700 dark:text-slate-200 leading-relaxed font-medium">{step}</p>
-                                    </div>
-                                </div>
-                                ))}
-                            </div>
-                        </div>
-
+                        {/* التحذير القانوني */}
                         {article.warning && (
                             <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 p-4 lg:p-6 rounded-2xl flex gap-4 items-start">
                                 <AlertTriangle className="text-red-500 flex-shrink-0 fill-red-100" size={28} />
@@ -265,9 +296,11 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                                 </div>
                             </div>
                         )}
+
                     </div>
                 </div>
 
+                {/* المقالات ذات الصلة */}
                 {relatedArticles.length > 0 && (
                   <div className="mt-8 lg:mt-16 bg-emerald-50/40 dark:bg-emerald-950/15 border border-emerald-100/70 dark:border-emerald-900/30 rounded-2xl p-4 lg:p-5">
                     <h3 className="text-lg lg:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4 lg:mb-6">قد يهمك أيضاً</h3>
@@ -291,57 +324,44 @@ export default function ArticleView({ article, slug }: { article: ArticleData, s
                 )}
             </div>
 
-            {/* ✅ إصلاح 7: Sidebar - إخفاؤه على الجوال أو جعله متجاوب */}
+            {/* Sidebar */}
             <div className="lg:col-span-4 space-y-6 hidden lg:block">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 sticky top-24">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-6 text-lg">إجراءات سريعة</h3>
+              <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 sticky top-24">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-6 text-lg">إجراءات سريعة</h3>
                     
-                    {/* 👇 زر المشاركة الجديد هنا */}
-                    <div className="mb-3">
-                      <ShareMenu title={article.title} />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        try {
-                          window.focus();
-                          window.print();
-                        } catch {
-                          // ignore
-                        }
-                      }}
-                      className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-3 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition group"
-                    >
-                      <span className="text-sm">طباعة / PDF</span>
-                      <Printer size={18} className="text-slate-400 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"/>
-                    </button>
-                    
-                    <div className="mt-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white text-center shadow-lg shadow-emerald-500/20">
-                        <BrainCircuit className="mx-auto mb-3 opacity-90" size={32} />
-                        <h3 className="font-bold mb-2">محتار في الإجراءات؟</h3>
-                        <p className="text-emerald-50 text-xs mb-4 leading-relaxed">دع المستشار الذكي يحلل وضعك ويعطيك الحل القانوني المناسب.</p>
-                        <Link href="/consultant" className="block bg-white dark:bg-slate-950 text-emerald-700 dark:text-emerald-200 px-4 py-3 rounded-xl font-bold text-sm hover:bg-emerald-50 dark:hover:bg-slate-900 transition">
-                            استشارة مجانية
-                        </Link>
-                    </div>
+                <div className="mb-3">
+                  <ShareMenu title={article.title} />
                 </div>
-            </div>
-        </div>
 
-        {/* ✅ إصلاح 8: أزرار سريعة للجوال (تظهر فقط على الشاشات الصغيرة) */}
-        <div className="lg:hidden fixed bottom-20 left-4 right-4 z-40 flex gap-2">
-          <ShareMenu title={article.title} customClass="flex-1" />
-          <Link 
-            href="/consultant" 
-            className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 px-4 rounded-xl font-bold shadow-lg"
-          >
-            <BrainCircuit size={18} />
-            <span className="text-sm">استشارة</span>
-          </Link>
-        </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                      window.focus();
+                      window.print();
+                    } catch {
+                      // ignore
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-3 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition group"
+                >
+                  <span className="text-sm">طباعة / PDF</span>
+                  <Printer size={18} className="text-slate-400 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200"/>
+                </button>
+                    
+                <div className="mt-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white text-center shadow-lg shadow-emerald-500/20">
+                  <BrainCircuit className="mx-auto mb-3 opacity-90" size={32} />
+                  <h3 className="font-bold mb-2">محتار في الإجراءات؟</h3>
+                  <p className="text-emerald-50 text-xs mb-4 leading-relaxed">دع المستشار الذكي يحلل وضعك ويعطيك الحل القانوني المناسب.</p>
+                  <Link href="/consultant" className="block bg-white dark:bg-slate-950 text-emerald-700 dark:text-emerald-200 px-4 py-3 rounded-xl font-bold text-sm hover:bg-emerald-50 dark:hover:bg-slate-900 transition">
+                    استشارة مجانية
+                  </Link>
+                </div>
+              </div>
+            </div>
+        </div>  
       </article>
     </>
   );

@@ -1,5 +1,6 @@
 'use client';
-
+import { Metadata } from 'next';
+import ToolSchema from '@/components/ToolSchema';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
@@ -47,6 +48,7 @@ export default function ConsultantPage() {
 
   const [detailLink, setDetailLink] = useState<string | null>(null);
 
+  
 
   const shownResult = useMemo<PlanResult | null>(() => {
     if (!result) return null;
@@ -179,7 +181,7 @@ export default function ConsultantPage() {
   return (
     <main className="flex flex-col min-h-screen overflow-x-hidden">
       <Navbar />
-
+      <ToolSchema tool="consultant" />
       {/* Header */}
       <PageHero
         title={

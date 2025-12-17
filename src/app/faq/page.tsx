@@ -1,14 +1,16 @@
-import FAQClient from '@/components/FAQClient';
+import FAQClientNew from '@/components/FAQClientNew';
 import { getFAQData } from '@/lib/faq';
 
 export default function FAQPage() {
-  const data = getFAQData();
-  const totalCount = data.reduce((sum, cat) => sum + cat.questions.length, 0);
+  // قراءة البيانات الثابتة على السيرفر (600+ سؤال)
+  const staticData = getFAQData();
+  const totalCount = staticData.reduce((sum, cat) => sum + cat.questions.length, 0);
 
+  // Schema.org للـ SEO
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: data
+    mainEntity: staticData
       .flatMap(cat => cat.questions)
       .slice(0, 200)
       .map(q => ({
@@ -25,10 +27,9 @@ export default function FAQPage() {
     <>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <FAQClient data={data} totalCount={totalCount} />
+      <FAQClientNew staticData={staticData} totalCount={totalCount} />
     </>
   );
 }

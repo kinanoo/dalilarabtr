@@ -1,24 +1,84 @@
-# SEO و robots.txt - يخبر محركات البحث عن الصفحات المهمة والمسموح بها
+# ===========================================
+# 🤖 robots.txt - دليل العرب في تركيا
+# ===========================================
 
+# السماح لجميع محركات البحث
 User-agent: *
 Allow: /
-Disallow: /.next/
+
+# منع الملفات التقنية فقط (بدون كشف مسارات حساسة)
+Disallow: /_next/
 Disallow: /api/
 Disallow: /*.json$
-Disallow: /admin/
+Disallow: /*?*
+Disallow: /404
+Disallow: /500
 
-# تحديد موقع Sitemap
-Sitemap: /sitemap.xml
-
-# تحديد وقت الزحف
-Crawl-delay: 1
-
-# Google
+# ===========================================
+# 🔍 Google - الأولوية القصوى
+# ===========================================
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0
 
-# Bing
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+# ===========================================
+# 🔍 Bing
+# ===========================================
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
+
+User-agent: msnbot
+Allow: /
+
+# ===========================================
+# 🔍 محركات بحث أخرى
+# ===========================================
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+# ===========================================
+# 🚫 حظر البوتات الضارة
+# ===========================================
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+# ===========================================
+# 🗺️ Sitemap
+# ===========================================
+Sitemap: https://taupe-tanuki-ca4d14.netlify.app/sitemap.xml
+
+# ===========================================
+# ℹ️ معلومات
+# ===========================================
+# الموقع: دليل العرب في تركيا
+# آخر تحديث: 2025

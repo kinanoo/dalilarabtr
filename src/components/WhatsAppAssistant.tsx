@@ -2,13 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { X, ArrowLeft, Search, FileText, Briefcase, Bell, BookOpen, BrainCircuit } from 'lucide-react';
+import { X, ArrowLeft, Search, FileText, Briefcase, Bell, BookOpen, BrainCircuit, Send, MessageCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SERVICES_LIST, FORMS, LATEST_UPDATES } from '@/lib/data';
 import { ARTICLES } from '@/lib/articles';
 import { CONSULTANT_SCENARIOS } from '@/lib/consultant-data';
 import { DICTIONARY } from '@/lib/dictionary';
 import { minTokenMatches, normalizeArabic, scoreMatch, tokenizeArabicQuery } from '@/lib/arabicSearch';
+
+// =====================================================
+// ⚙️ رقم الواتساب - غيّره لرقمك
+// =====================================================
+const WHATSAPP_NUMBER = '966580757487';
 
 type AssistantResult = {
   id: string;
@@ -140,7 +145,6 @@ function buildResults(query: string): AssistantResult[] {
   const scored: Array<AssistantResult & { _score: number }> = [];
 
   const maybeAdd = (item: AssistantIndexItem) => {
-    // If tokenization yields nothing, fall back to phrase includes.
     if (tokens.length === 0) {
       if (!needle || needle.length < 2) return;
       if (!item.haystack.includes(needle)) return;
@@ -181,7 +185,22 @@ export default function WhatsAppAssistant() {
     setOpen(false);
     setRequest('');
   };
+
   const canSuggest = request.trim().length > 0;
+
+  // =====================================================
+  // 📱 إرسال للواتساب
+  // =====================================================
+  const handleSendWhatsApp = () => {
+    if (!request.trim()) return;
+    
+    const message = encodeURIComponent(
+      `مرحباً، لدي استفسار:\n\n${request.trim()}\n\n[من موقع دليل العرب في تركيا]`
+    );
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+    reset();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -216,13 +235,17 @@ export default function WhatsAppAssistant() {
             className="absolute -inset-2 rounded-full bg-green-400/25 blur-lg animate-ping [animation-duration:2.8s] pointer-events-none"
             aria-hidden="true"
           />
-          <span className="relative z-10 text-sm">اسأل خبير</span>
+          <span className="relative z-10 text-sm flex items-center gap-1.5">
+            <MessageCircle size={14} />
+            اسأل خبير
+          </span>
         </button>
       )}
 
       {/* Panel */}
       {open && (
         <div className="w-[92vw] max-w-sm rounded-3xl overflow-hidden border-2 border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/95 dark:bg-slate-950 shadow-2xl shadow-emerald-600/10 flex flex-col max-h-[80vh]">
+          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-l from-emerald-700 to-teal-700 text-white border-b border-white/10">
             <div className="flex items-center gap-2 font-bold">
               <Search size={18} className="text-white/90" />
@@ -237,9 +260,10 @@ export default function WhatsAppAssistant() {
             </button>
           </div>
 
+          {/* Content */}
           <div className="p-3 flex-1 overflow-y-auto">
             <div className="text-[11px] text-emerald-900/80 dark:text-slate-300 mb-2">
-              اكتب طلبك وسأقترح روابط من الموقع.
+              اكتب طلبك وسأقترح روابط من الموقع
             </div>
 
             <div className="space-y-2">
@@ -251,47 +275,60 @@ export default function WhatsAppAssistant() {
                 placeholder="اكتب طلبك باختصار..."
               />
 
-              {request.trim() && (
-                <div className="text-[11px] text-slate-600 dark:text-slate-300">
-                  ملاحظة: هذه النتائج مقاربة. ولو أردت نتيجة أوضح اكتب كلمات أدق ومخصصة أكثر حول طلبك.
+              {canSuggest && (
+                <div className="rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-white/80 dark:bg-slate-950/60 overflow-hidden">
+                  <div className="px-3 py-2 bg-emerald-100/80 dark:bg-emerald-950/30 text-[11px] font-bold text-emerald-900 dark:text-emerald-100">
+                    نتائج من الموقع (اضغط للانتقال)
+                  </div>
+                  {results.length ? (
+                    <div className="divide-y divide-emerald-200/60 dark:divide-slate-800">
+                      {results.map((r) => (
+                        <Link
+                          key={r.id}
+                          href={r.url}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 hover:bg-emerald-50/60 dark:hover:bg-slate-900 transition"
+                        >
+                          <div className="p-2 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200">
+                            <r.icon size={16} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{r.title}</div>
+                            <div className="text-[11px] text-emerald-900/70 dark:text-slate-300">{r.type}</div>
+                          </div>
+                          <ArrowLeft size={14} className="text-emerald-800/40 dark:text-slate-500" />
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-3 py-3 text-sm bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-b-xl">
+                      ⚠️ لا يوجد شيء مطابق. جرّب كلمات أدق أو أرسل رسالة واتس.
+                    </div>
+                  )}
                 </div>
               )}
 
-                {canSuggest && (
-                  <div className="rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-white/80 dark:bg-slate-950/60 overflow-hidden">
-                    <div className="px-3 py-2 bg-emerald-100/80 dark:bg-emerald-950/30 text-[11px] font-bold text-emerald-900 dark:text-emerald-100">
-                      نتائج من الموقع (اضغط للانتقال)
-                    </div>
-                    {results.length ? (
-                      <div className="divide-y divide-emerald-200/60 dark:divide-slate-800">
-                        {results.map((r) => (
-                          <Link
-                            key={r.id}
-                            href={r.url}
-                            onClick={() => setOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 hover:bg-emerald-50/60 dark:hover:bg-slate-900 transition"
-                          >
-                            <div className="p-2 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200">
-                              <r.icon size={16} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{r.title}</div>
-                              <div className="text-[11px] text-emerald-900/70 dark:text-slate-300">{r.type}</div>
-                            </div>
-                            <ArrowLeft size={14} className="text-emerald-800/40 dark:text-slate-500" />
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="px-3 py-3 text-sm text-slate-700 dark:text-slate-300">
-                        لا يوجد شيء مطابق. جرّب كلمات أدق أو ابحث في الدليل.
-                      </div>
-                    )}
+              {/* =====================================================
+                  📱 زر الواتساب - يظهر دائماً عند الكتابة
+                  ===================================================== */}
+              {canSuggest && (
+                <div className="pt-2 border-t border-emerald-200/60 dark:border-slate-800 mt-3">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-2 text-center">
+                    لم تجد ما تبحث عنه؟ تواصل معنا مباشرة
                   </div>
-                )}
-              </div>
+                  <button
+                    onClick={handleSendWhatsApp}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-green-500/20 transition-all"
+                  >
+                    <Send size={16} />
+                    <span>إرسال عبر واتساب</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
+          {/* Footer */}
           <div className="p-3 bg-white/85 dark:bg-slate-950/80 border-t border-emerald-200/70 dark:border-slate-800 shrink-0">
             <button
               onClick={reset}

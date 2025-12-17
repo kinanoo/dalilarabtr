@@ -1,4 +1,6 @@
 'use client';
+import { Metadata } from 'next';
+import ToolSchema from '@/components/ToolSchema';
 import Navbar from '@/components/Navbar';
 import { useState } from 'react';
 
@@ -15,6 +17,7 @@ export default function CalculatorPage() {
   return (
     <div className="min-h-screen">
       <Navbar />
+      <ToolSchema tool="ban-calculator" />
       <div className="max-w-xl mx-auto mt-20 p-6 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-transparent dark:border-slate-800">
         <h1 className="text-2xl font-bold text-center mb-6 text-slate-900 dark:text-slate-100">حاسبة تكاليف الإقامة التقريبية</h1>
         

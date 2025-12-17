@@ -1,3 +1,15 @@
+/**
+ * 🏠 الصفحة الرئيسية مع Schema.org
+ * =================================
+ * 
+ * 📁 انسخ هذا الملف إلى: src/app/page.tsx
+ * 
+ * التحسينات:
+ * - ربط مع لوحة التحكم (useAdminData)
+ * - إضافة قسم "آخر الأخبار"
+ * - علامة "جديد" للمحتوى الحديث
+ */
+
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -6,10 +18,54 @@ import Footer from '@/components/Footer';
 import GlobalSearch from '@/components/GlobalSearch';
 import { CATEGORY_SLUGS, QUICK_ACTIONS, SITE_CONFIG } from '@/lib/data';
 import { ARTICLES } from '@/lib/articles';
+import { useAdminArticles, useAdminUpdates, isNewContent } from '@/lib/useAdminData';
 import Link from 'next/link';
-import { BrainCircuit, Briefcase, FileText, GraduationCap, HeartPulse, IdCard, Plane, Sparkles } from 'lucide-react';
+import { 
+  BrainCircuit, Briefcase, FileText, GraduationCap, HeartPulse, 
+  IdCard, Plane, Sparkles, Bell, Calendar, ArrowLeft, Loader2 
+} from 'lucide-react';
 import ShareMenu from '@/components/ShareMenu';
 import { motion } from 'framer-motion';
+
+// ============================================
+// 🔍 Schema.org للـ SEO
+// ============================================
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE_CONFIG.name,
+  description: SITE_CONFIG.slogan,
+  url: SITE_CONFIG.siteUrl,
+  logo: `${SITE_CONFIG.siteUrl}/logo.png`,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: `+${SITE_CONFIG.whatsapp}`,
+    contactType: 'customer service',
+    availableLanguage: ['Arabic', 'Turkish'],
+  },
+};
+
+const webSiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_CONFIG.name,
+  description: SITE_CONFIG.slogan,
+  url: SITE_CONFIG.siteUrl,
+  inLanguage: 'ar',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${SITE_CONFIG.siteUrl}/faq?q={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+// ============================================
+// 🎨 الأنيميشن
+// ============================================
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 28 },
@@ -20,6 +76,10 @@ const fadeInUp = {
   },
 } as const;
 
+// ============================================
+// 📦 البيانات
+// ============================================
+
 const CATEGORY_TILES = [
   { name: 'الكملك', icon: IdCard, color: 'bg-cyan-500 dark:bg-cyan-600', href: '/category/kimlik', categorySlug: 'kimlik' },
   { name: 'الإقامة', icon: FileText, color: 'bg-blue-500 dark:bg-blue-600', href: '/category/residence', categorySlug: 'residence' },
@@ -29,33 +89,24 @@ const CATEGORY_TILES = [
   { name: 'الدراسة', icon: GraduationCap, color: 'bg-indigo-500 dark:bg-indigo-600', href: '/category/education', categorySlug: 'education' },
 ] as const;
 
-const COUNTS_BY_CATEGORY_NAME = (() => {
-  const counts = new Map<string, number>();
-  for (const article of Object.values(ARTICLES)) {
-    counts.set(article.category, (counts.get(article.category) ?? 0) + 1);
-  }
-  return counts;
-})();
-
-const VISIBLE_CATEGORY_TILES = CATEGORY_TILES.filter((tile) => {
-  if (!('categorySlug' in tile)) return true;
-  const categoryName = CATEGORY_SLUGS[tile.categorySlug];
-  if (!categoryName) return false;
-  return (COUNTS_BY_CATEGORY_NAME.get(categoryName) ?? 0) > 0;
-});
+// ============================================
+// 🏠 المكون الرئيسي
+// ============================================
 
 export default function Home() {
+  // 🆕 استخدام بيانات لوحة التحكم
+  const { articles, loading: articlesLoading } = useAdminArticles();
+  const { updates, loading: updatesLoading } = useAdminUpdates();
+  
   const storageKey = 'quickActions.clickCounts.v1';
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
 
-  // مهم: لا تقرأ localStorage أثناء أول render حتى لا يحدث Hydration mismatch.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Record<string, number>;
       if (parsed && typeof parsed === 'object') {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setClickCounts(parsed);
       }
     } catch {
@@ -75,6 +126,26 @@ export default function Home() {
     });
   };
 
+  // 🆕 حساب عدد المقالات من لوحة التحكم
+  const countsByCategory = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const article of articles) {
+      counts.set(article.category, (counts.get(article.category) ?? 0) + 1);
+    }
+    return counts;
+  }, [articles]);
+
+  // فلترة التصنيفات التي بها مقالات
+  const visibleCategoryTiles = useMemo(() => {
+    return CATEGORY_TILES.filter((tile) => {
+      if (!('categorySlug' in tile)) return true;
+      const categoryName = CATEGORY_SLUGS[tile.categorySlug];
+      if (!categoryName) return false;
+      return (countsByCategory.get(categoryName) ?? 0) > 0;
+    });
+  }, [countsByCategory]);
+
+  // ترتيب الاختصارات السريعة
   const sortedQuickActions = useMemo(() => {
     const originalIndex = new Map<string, number>();
     QUICK_ACTIONS.forEach((a, idx) => originalIndex.set(a.href, idx));
@@ -86,8 +157,24 @@ export default function Home() {
     });
   }, [clickCounts]);
 
+  // 🆕 آخر 3 أخبار
+  const latestUpdates = useMemo(() => {
+    return updates.slice(0, 3);
+  }, [updates]);
+
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-slate-100 dark:bg-slate-950 selection:bg-emerald-200 dark:selection:bg-emerald-700">
+      
+      {/* Schema.org للـ SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+      />
+
       <Navbar />
 
       {/* 1. HERO SECTION */}
@@ -108,16 +195,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🌟 منطقة البحث (مرفوعة للأعلى) */}
+      {/* 🌟 منطقة البحث */}
       <div className="relative z-30 -mt-20 md:-mt-24 px-4">
         <GlobalSearch />
       </div>
 
-      {/* 2. الأقسام الرئيسية (شبكة متجاوبة) */}
-        <section className="relative z-20 mt-[50px] px-4">
+      {/* 2. الأقسام الرئيسية */}
+      <section className="relative z-20 mt-[50px] px-4">
         <div className="max-w-screen-2xl mx-auto">
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
-            {VISIBLE_CATEGORY_TILES.map((tile, idx) => (
+            {visibleCategoryTiles.map((tile, idx) => (
               <Link
                 key={idx}
                 href={tile.href}
@@ -136,68 +223,139 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. المستشار الذكي (بانر) */}
+      {/* 🆕 3. آخر الأخبار */}
+      {latestUpdates.length > 0 && (
+        <section className="px-4 py-10">
+          <div className="max-w-screen-2xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <Bell className="text-amber-500" size={24} />
+                آخر الأخبار
+              </h2>
+              <Link 
+                href="/updates" 
+                className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+              >
+                عرض الكل <ArrowLeft size={16} />
+              </Link>
+            </div>
+            
+            {updatesLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 size={32} className="animate-spin text-emerald-600" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {latestUpdates.map((update) => (
+                  <Link
+                    key={update.id}
+                    href={`/updates#upd-${update.id}`}
+                    className="group bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:border-emerald-300 dark:hover:border-emerald-600 transition"
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* صورة الخبر */}
+                      {update.image && (
+                        <img 
+                          src={update.image} 
+                          alt="" 
+                          className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        {/* النوع + جديد */}
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            update.type === 'هام' || update.type === 'عاجل'
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                          }`}>
+                            {update.type}
+                          </span>
+                          {isNewContent(update.date) && (
+                            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
+                              <Sparkles size={10} /> جديد
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* العنوان */}
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm line-clamp-2 group-hover:text-emerald-600 transition">
+                          {update.title}
+                        </h3>
+                        
+                        {/* التاريخ */}
+                        <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                          <Calendar size={12} />
+                          {update.date}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 4. المستشار الذكي (بانر) */}
       <section className="px-2 sm:px-4 py-10">
         <div className="bg-primary-900 dark:bg-primary-950 rounded-3xl p-6 md:p-10 text-center relative overflow-hidden text-white shadow-xl dark:shadow-2xl dark:shadow-slate-900/50 w-full">
-           <div className="relative z-10">
-             <BrainCircuit size={40} className="mx-auto text-emerald-400 mb-4 motion-safe:animate-pulse" />
-             <h2 className="text-2xl font-bold mb-2">المستشار القانوني الذكي</h2>
-             <p className="text-primary-100/80 dark:text-primary-100/80 text-sm mb-6 max-w-xl mx-auto">
-               لديك مشكلة معقدة؟ (ترحيل، كود، رفض إقامة)؟ دع الذكاء الاصطناعي يحللها لك مجاناً.
-             </p>
-             <span className="relative inline-block">
-               <span className="absolute inset-0 rounded-xl bg-emerald-400/20 motion-safe:animate-ping" aria-hidden="true" />
-               <span className="absolute inset-0 rounded-xl bg-emerald-400/10 motion-safe:animate-pulse" aria-hidden="true" />
-               <Link
-                 href="/consultant"
-                 className="relative inline-block bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-600 dark:hover:bg-emerald-700 transition shadow-lg shadow-emerald-500/20 dark:shadow-emerald-500/30 transform hover:-translate-y-0.5"
-               >
-                 ابدأ التشخيص
-               </Link>
-             </span>
-           </div>
-           {/* زخرفة خلفية */}
-           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl motion-safe:animate-pulse"></div>
-           <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl motion-safe:animate-pulse"></div>
+          <div className="relative z-10">
+            <BrainCircuit size={40} className="mx-auto text-emerald-400 mb-4 motion-safe:animate-pulse" />
+            <h2 className="text-2xl font-bold mb-2">المستشار القانوني الذكي</h2>
+            <p className="text-primary-100/80 dark:text-primary-100/80 text-sm mb-6 max-w-xl mx-auto">
+              لديك مشكلة معقدة؟ (ترحيل، كود، رفض إقامة)؟ دع الذكاء الاصطناعي يحللها لك مجاناً.
+            </p>
+            <span className="relative inline-block">
+              <span className="absolute inset-0 rounded-xl bg-emerald-400/20 motion-safe:animate-ping" aria-hidden="true" />
+              <span className="absolute inset-0 rounded-xl bg-emerald-400/10 motion-safe:animate-pulse" aria-hidden="true" />
+              <Link
+                href="/consultant"
+                className="relative inline-block bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-600 dark:hover:bg-emerald-700 transition shadow-lg shadow-emerald-500/20 dark:shadow-emerald-500/30 transform hover:-translate-y-0.5"
+              >
+                ابدأ التشخيص
+              </Link>
+            </span>
+          </div>
+          {/* زخرفة خلفية */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl motion-safe:animate-pulse"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl motion-safe:animate-pulse"></div>
         </div>
       </section>
 
-      {/* 4. الإجراءات السريعة */}
-      <section className="py-10 px-4 max-w-screen-2xl mx-auto">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Sparkles className="text-emerald-500" size={20} /> الأكثر شيوعاً
+      {/* 5. اختصارات سريعة */}
+      <section className="px-4 py-10">
+        <div className="max-w-screen-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+            <Sparkles className="text-amber-500" size={24} />
+            اختصارات سريعة
           </h2>
-          <Link
-            href="/faq"
-            className="inline-flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 px-3 py-1.5 text-xs md:text-sm font-bold text-slate-800 dark:text-slate-100 hover:bg-white dark:hover:bg-slate-900 transition"
-            aria-label="اذهب إلى صفحة الأسئلة الشائعة"
-          >
-            الأسئلة الشائعة
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {sortedQuickActions.map((action, idx) => (
-            <div key={idx} className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-slate-700/50" role="listitem">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {sortedQuickActions.map((action, idx) => (
+              <Link
+                key={idx}
+                href={action.href}
+                onClick={() => trackQuickActionClick(action.href)}
+                className="group flex items-center gap-3 p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition"
+              >
+                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 group-hover:bg-primary-100 dark:group-hover:bg-primary-900 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
                   <action.icon size={20} />
                 </div>
-                <div className="flex-shrink-0">
-                  <ShareMenu title={action.title} text={action.desc} url={`${SITE_CONFIG.siteUrl}${action.href}`} mini={true} />
-                </div>
-              </div>
-              <Link
-                href={action.href}
-                className="block"
-                aria-label={action.title}
-                onClick={() => trackQuickActionClick(action.href)}
-              >
-                <h3 className="text-xs md:text-sm font-bold text-slate-800 dark:text-white mb-1 line-clamp-2">{action.title}</h3>
-                <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{action.desc}</p>
+                <span className="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400">
+                {action.title}
+                </span>
               </Link>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. مشاركة الموقع */}
+      <section className="px-4 py-8">
+        <div className="max-w-screen-2xl mx-auto text-center">
+          <p className="text-slate-600 dark:text-slate-400 mb-4">شارك الموقع مع من يحتاجه:</p>
+          <ShareMenu title={SITE_CONFIG.name} />
         </div>
       </section>
 

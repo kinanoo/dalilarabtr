@@ -1,3 +1,10 @@
+import { 
+  SchemaScript, 
+  generateArticleSchema, 
+  generateBreadcrumbSchema,
+  toISODate,
+  toFullUrl,
+} from '@/lib/schemaOrg';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ARTICLES } from '@/lib/articles';
@@ -78,14 +85,45 @@ function getCategorySlugFromName(categoryName: string): string | undefined {
   return Object.entries(CATEGORY_SLUGS).find(([_, name]) => name === categoryName)?.[0];
 }
 
-function buildJsonLd(args: { slug: string; title: string; description: string; lastUpdate: string; categoryName: string; categorySlug?: string; url: string; siteName: string; siteUrl: string }): { article: unknown; breadcrumbs: unknown } {
+function calculateWordCount(text: string): number {
+  if (!text) return 0;
+  // حساب الكلمات العربية والإنجليزية
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function buildJsonLd(args: { 
+  slug: string; 
+  title: string; 
+  description: string; 
+  lastUpdate: string; 
+  categoryName: string; 
+  categorySlug?: string; 
+  url: string; 
+  siteName: string; 
+  siteUrl: string;
+  articleBody?: string;
+  keywords?: string[];
+  image?: string;
+}): { article: unknown; breadcrumbs: unknown } {
+  // حساب عدد الكلمات
+  const wordCount = args.articleBody ? calculateWordCount(args.articleBody) : 0;
+  
+  // تحويل التاريخ إلى ISO format
+  const dateModified = args.lastUpdate.includes('T') 
+    ? args.lastUpdate 
+    : `${args.lastUpdate}T00:00:00Z`;
+  
+  // استخدام lastUpdate كـ datePublished إذا لم يكن هناك تاريخ منفصل
+  const datePublished = dateModified;
+
   const article = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: args.title,
     description: args.description,
     inLanguage: 'ar',
-    dateModified: args.lastUpdate,
+    datePublished,
+    dateModified,
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': args.url,
@@ -99,8 +137,20 @@ function buildJsonLd(args: { slug: string; title: string; description: string; l
       '@type': 'Organization',
       name: args.siteName,
       url: args.siteUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${args.siteUrl}/og-image.png`,
+      },
     },
     articleSection: args.categoryName,
+    // إضافة articleBody إذا كان متوفراً
+    ...(args.articleBody && { articleBody: args.articleBody }),
+    // إضافة wordCount إذا كان متوفراً
+    ...(wordCount > 0 && { wordCount }),
+    // إضافة keywords إذا كانت متوفرة
+    ...(args.keywords && args.keywords.length > 0 && { keywords: args.keywords.join(', ') }),
+    // إضافة image
+    image: args.image || `${args.siteUrl}/og-image.png`,
   };
 
   const breadcrumbItems = [
@@ -168,6 +218,19 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     explicit: article.seoKeywords,
   });
 
+  // تحضير articleBody للمحتوى الكامل
+  const articleBody = [article.intro, article.details, ...article.steps, ...article.tips]
+    .filter(Boolean)
+    .join(' ');
+
+  // تحضير الصورة (يمكن إضافة دعم لصور المقالات لاحقاً)
+  const ogImage = `${SITE_CONFIG.siteUrl}/og-image.png`;
+
+  // تحويل التاريخ إلى ISO format
+  const dateModified = article.lastUpdate.includes('T') 
+    ? article.lastUpdate 
+    : `${article.lastUpdate}T00:00:00Z`;
+
   return {
     title,
     description,
@@ -181,11 +244,24 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description,
       type: 'article',
       url,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+      publishedTime: dateModified,
+      modifiedTime: dateModified,
+      section: article.category,
+      tags: keywords.slice(0, 10), // أول 10 كلمات مفتاحية
     },
     twitter: {
       card: 'summary_large_image',
       title: article.title,
       description,
+      images: [ogImage],
     },
   };
 }
@@ -210,6 +286,23 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
 
   const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
   const categorySlug = getCategorySlugFromName(article.category);
+  
+  // تحضير articleBody للمحتوى الكامل
+  const articleBody = [article.intro, article.details, ...article.steps, ...article.tips]
+    .filter(Boolean)
+    .join(' ');
+
+  // تحضير keywords
+  const keywords = buildArticleKeywords({
+    slug: params.id,
+    title: article.title,
+    category: article.category,
+    intro: article.intro,
+    lastUpdate: article.lastUpdate,
+    source: article.source,
+    explicit: article.seoKeywords,
+  });
+
   const jsonLd = buildJsonLd({
     slug: params.id,
     title: article.seoTitle?.trim() || article.title,
@@ -220,6 +313,9 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     url,
     siteName: SITE_CONFIG.name,
     siteUrl: SITE_CONFIG.siteUrl,
+    articleBody,
+    keywords,
+    image: `${SITE_CONFIG.siteUrl}/og-image.png`,
   });
 
   return (

@@ -10,7 +10,7 @@ type ArticleIndexItem = {
   haystack: string;
 };
 
-const POLICY_VERB_RE = /(لا\s*يمكن|غير\s*ممكن|مستحيل|ممنوع|لا\s*يسمح|لا\s*يحق|يمكن|ممكن|متاح|يسمح|يحق)/;
+const POLICY_VERB_RE = /(لا\s*يمكن|غير\s*ممكن|مستحيل|ممنوع|لا\s*يسمح|لا\s*|بدي|عايز|رايد|عم دور|عندي|لازمني|يحق|يمكن|ممكن|متاح|يسمح|يحق)/;
 
 let memoArticleIndex: ArticleIndexItem[] | null = null;
 

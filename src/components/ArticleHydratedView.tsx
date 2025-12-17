@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { ArticleData } from '@/lib/articles';
 import ArticleView from '@/components/ArticleView';
-import { fetchRemoteArticleDataById } from '@/lib/remoteData';
+import { useAdminArticle } from '@/lib/useAdminData';
 
 export default function ArticleHydratedView({
   slug,
@@ -12,23 +12,11 @@ export default function ArticleHydratedView({
   slug: string;
   initialArticle: ArticleData;
 }) {
-  const [article, setArticle] = useState<ArticleData>(initialArticle);
-
-  useEffect(() => {
-    let mounted = true;
-    fetchRemoteArticleDataById(slug)
-      .then((remote) => {
-        if (!mounted) return;
-        if (remote) setArticle(remote);
-      })
-      .catch(() => {
-        // ignore
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [slug]);
+  // 🆕 جلب المقال من لوحة التحكم
+  const { articleData, loading } = useAdminArticle(slug);
+  
+  // استخدم بيانات لوحة التحكم إذا وجدت، وإلا استخدم البيانات الأولية
+  const article = articleData || initialArticle;
 
   return <ArticleView article={article} slug={slug} />;
 }

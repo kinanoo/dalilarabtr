@@ -7,7 +7,7 @@ import {
   OFFICIAL_SOURCES,
   NAVIGATION,
 } from '@/lib/data';
-import { FAQ_FALLBACK_DATA } from '@/lib/faq-fallback';
+import { FAQ_DATA } from '@/lib/faq-data';
 import type { FAQCategory } from '@/lib/faq-types';
 import { normalizeArabic, tokenizeArabicQuery, minTokenMatches, scoreMatch } from '@/lib/arabicSearch';
 import { canonicalizeFaqCategories } from '@/lib/faqCanonical';
@@ -154,7 +154,7 @@ let memoEntries: KnowledgeEntry[] | null = null;
 export function getKnowledgeBaseEntries(): KnowledgeEntry[] {
   if (memoEntries) return memoEntries;
 
-  const canonicalFaq = canonicalizeFaqCategories(FAQ_FALLBACK_DATA);
+  const canonicalFaq = canonicalizeFaqCategories(FAQ_DATA);
 
   const entries: KnowledgeEntry[] = [
     ...buildArticleEntries(),
