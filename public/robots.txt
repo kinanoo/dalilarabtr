@@ -1,0 +1,24 @@
+# SEO و robots.txt - يخبر محركات البحث عن الصفحات المهمة والمسموح بها
+
+User-agent: *
+Allow: /
+Disallow: /.next/
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /admin/
+
+# تحديد موقع Sitemap
+Sitemap: /sitemap.xml
+
+# تحديد وقت الزحف
+Crawl-delay: 1
+
+# Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1

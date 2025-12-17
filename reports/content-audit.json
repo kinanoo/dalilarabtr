@@ -1,0 +1,94 @@
+{
+  "generatedAt": "2025-12-16T16:14:46.229Z",
+  "totals": {
+    "articles": 141,
+    "keyWhitespace": 0,
+    "normalizedDuplicates": 0,
+    "missingRequired": 0,
+    "emptyArrays": 0,
+    "placeholderFields": 3,
+    "sourceIssues": 14
+  },
+  "keyWhitespace": [],
+  "normalizedDuplicates": [],
+  "missingRequired": [],
+  "emptyArrays": [],
+  "placeholderFields": [
+    {
+      "slug": "kimlik-to-residence",
+      "placeholders": [
+        "details"
+      ]
+    },
+    {
+      "slug": "family-residence",
+      "placeholders": [
+        "details"
+      ]
+    },
+    {
+      "slug": "real-estate-citizenship",
+      "placeholders": [
+        "details"
+      ]
+    }
+  ],
+  "sourceIssues": [
+    {
+      "slug": "buying-car-foreigner",
+      "issue": "missing"
+    },
+    {
+      "slug": "car-insurance",
+      "issue": "missing"
+    },
+    {
+      "slug": "driver-theory-prep",
+      "issue": "missing"
+    },
+    {
+      "slug": "bitaksi-app",
+      "issue": "missing"
+    },
+    {
+      "slug": "cimri-price-compare",
+      "issue": "missing"
+    },
+    {
+      "slug": "marti-scooter-rental",
+      "issue": "missing"
+    },
+    {
+      "slug": "istanbul-mavi-kart",
+      "issue": "missing"
+    },
+    {
+      "slug": "nearest-notary-map",
+      "issue": "missing"
+    },
+    {
+      "slug": "tuvturk-appointment",
+      "issue": "missing"
+    },
+    {
+      "slug": "tiktak-car-rental",
+      "issue": "missing"
+    },
+    {
+      "slug": "tomer-registration",
+      "issue": "missing"
+    },
+    {
+      "slug": "notary-fees",
+      "issue": "missing"
+    },
+    {
+      "slug": "kizilay-card-apply",
+      "issue": "missing"
+    },
+    {
+      "slug": "istanbulkart-hes-code",
+      "issue": "missing"
+    }
+  ]
+}

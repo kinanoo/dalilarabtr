@@ -1,0 +1,240 @@
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { ARTICLES } from '@/lib/articles';
+import { CATEGORY_SLUGS, SITE_CONFIG } from '@/lib/data';
+import ArticleHydratedView from '@/components/ArticleHydratedView';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+function uniqStrings(values: Array<string | undefined | null>): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const v = (value || '').trim();
+    if (!v) continue;
+    if (seen.has(v)) continue;
+    seen.add(v);
+    out.push(v);
+  }
+  return out;
+}
+
+function inferExtraKeywordsByCategory(categoryName: string): string[] {
+  const c = categoryName.toLowerCase();
+
+  // ملاحظة: الكلمات هنا “مساندة” وليست حشو؛ نحافظ على عدد معقول.
+  if (c.includes('e-devlet') || c.includes('edevlet') || c.includes('إي دولات')) {
+    return ['e-Devlet', 'edevlet', 'turkiye.gov.tr', 'بوابة الحكومة الإلكترونية'];
+  }
+
+  if (c.includes('الإقامات') || c.includes('ikamet') || c.includes('إقامة')) {
+    return ['ikamet', 'ikamet izni', 'e-ikamet', 'إقامة تركيا', 'YKN'];
+  }
+
+  if (c.includes('الفيزا') || c.includes('تأشيرات') || c.includes('visa')) {
+    return ['vize', 'e-vize', 'تأشيرة تركيا'];
+  }
+
+  if (c.includes('العمل') || c.includes('استثمار') || c.includes('شركة')) {
+    return ['çalışma izni', 'إذن عمل', 'عمل في تركيا'];
+  }
+
+  if (c.includes('الصحة') || c.includes('تأمين') || c.includes('sgk') || c.includes('gss')) {
+    return ['SGK', 'GSS', 'تأمين صحي', 'صحة في تركيا'];
+  }
+
+  if (c.includes('السكن') || c.includes('الحياة')) {
+    return ['سكن في تركيا', 'إيجار', 'نفوس', 'عنوان'];
+  }
+
+  return [];
+}
+
+function buildArticleKeywords(args: { slug: string; title: string; category: string; intro: string; lastUpdate: string; source?: string; explicit?: string[] }): string[] {
+  const year = (args.lastUpdate || '').slice(0, 4);
+
+  const base = uniqStrings([
+    ...(args.explicit || []),
+    args.title,
+    args.category,
+    'الدليل الشامل',
+    'تركيا',
+    year && year !== '0000' ? year : undefined,
+    args.source ? new URL(args.source).hostname : undefined,
+  ]);
+
+  const extra = inferExtraKeywordsByCategory(args.category);
+
+  // أضف شكل URL كمفتاح (يدعم البحث عن “عنوان” شائع مثل IMEI/SGK/YKN)
+  const slugParts = args.slug
+    .split(/[-_]/g)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  return uniqStrings([...base, ...extra, ...slugParts]);
+}
+
+function getCategorySlugFromName(categoryName: string): string | undefined {
+  return Object.entries(CATEGORY_SLUGS).find(([_, name]) => name === categoryName)?.[0];
+}
+
+function buildJsonLd(args: { slug: string; title: string; description: string; lastUpdate: string; categoryName: string; categorySlug?: string; url: string; siteName: string; siteUrl: string }): { article: unknown; breadcrumbs: unknown } {
+  const article = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: args.title,
+    description: args.description,
+    inLanguage: 'ar',
+    dateModified: args.lastUpdate,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': args.url,
+    },
+    author: {
+      '@type': 'Organization',
+      name: args.siteName,
+      url: args.siteUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: args.siteName,
+      url: args.siteUrl,
+    },
+    articleSection: args.categoryName,
+  };
+
+  const breadcrumbItems = [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'الرئيسية',
+      item: args.siteUrl,
+    },
+    ...(args.categorySlug
+      ? [
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: args.categoryName,
+            item: `${args.siteUrl}/category/${args.categorySlug}`,
+          },
+        ]
+      : []),
+    {
+      '@type': 'ListItem',
+      position: args.categorySlug ? 3 : 2,
+      name: args.title,
+      item: args.url,
+    },
+  ];
+
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbItems,
+  };
+
+  return { article, breadcrumbs };
+}
+
+export async function generateStaticParams() {
+  return Object.keys(ARTICLES).map((slug) => ({
+    id: slug,
+  }));
+}
+
+// 🆕 تحسين SEO: إضافة metadata ديناميكي لكل مقالة
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const params = await props.params;
+  const article = ARTICLES[params.id];
+
+  if (!article) {
+    return {
+      title: '404 - المقالة غير موجودة',
+      description: 'عذراً، هذه المقالة لم تعد موجودة',
+    };
+  }
+
+  const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
+  const title = article.seoTitle?.trim() || `${article.title} | ${SITE_CONFIG.name}`;
+  const description = article.seoDescription?.trim() || article.intro;
+  const keywords = buildArticleKeywords({
+    slug: params.id,
+    title: article.title,
+    category: article.category,
+    intro: article.intro,
+    lastUpdate: article.lastUpdate,
+    source: article.source,
+    explicit: article.seoKeywords,
+  });
+
+  return {
+    title,
+    description,
+    keywords,
+    authors: [{ name: SITE_CONFIG.name }],
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: article.title,
+      description,
+      type: 'article',
+      url,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description,
+    },
+  };
+}
+
+export default async function ArticlePage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const article = ARTICLES[params.id];
+
+  if (!article) {
+    return (
+      <main className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
+          <h1 className="text-4xl font-bold text-slate-300 mb-4">404</h1>
+          <p className="text-xl text-slate-600 mb-8">عذراً، هذا الدليل غير متوفر حالياً.</p>
+          <Link href="/" className="bg-primary-600 text-white px-6 py-3 rounded-lg font-bold">العودة للرئيسية</Link>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
+  const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
+  const categorySlug = getCategorySlugFromName(article.category);
+  const jsonLd = buildJsonLd({
+    slug: params.id,
+    title: article.seoTitle?.trim() || article.title,
+    description: article.seoDescription?.trim() || article.intro,
+    lastUpdate: article.lastUpdate,
+    categoryName: article.category,
+    categorySlug,
+    url,
+    siteName: SITE_CONFIG.name,
+    siteUrl: SITE_CONFIG.siteUrl,
+  });
+
+  return (
+    <main className="min-h-screen flex flex-col">
+      <Navbar />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }}
+      />
+      <ArticleHydratedView initialArticle={article} slug={params.id} />
+      <Footer />
+    </main>
+  );
+}

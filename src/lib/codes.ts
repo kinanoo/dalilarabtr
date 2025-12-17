@@ -1,0 +1,151 @@
+export type CodeData = {
+  code: string;
+  category: string;
+  title: string;
+  desc: string;
+  // 👇 تم إضافة 'safe' هنا لحل مشكلة البناء
+  severity: 'safe' | 'low' | 'medium' | 'high' | 'critical';
+};
+
+export const SECURITY_CODES: CodeData[] = [
+  // ==========================================
+  // ⚫ الفئة G: الأمن القومي والجرائم (الأخطر)
+  // ==========================================
+  { code: 'G26', category: 'أمن وجرائم', title: 'منظمات محظورة', desc: 'نشاطات غير قانونية / الاشتباه بالانتماء لمنظمات محظورة.', severity: 'critical' },
+  { code: 'G34', category: 'أمن وجرائم', title: 'تزوير', desc: 'جريمة التزوير (تزوير أوراق رسمية للدولة).', severity: 'critical' },
+  { code: 'G42', category: 'أمن وجرائم', title: 'مخدرات', desc: 'جرائم المخدرات (تجارة، تعاطي، أو حيازة).', severity: 'critical' },
+  { code: 'G43', category: 'أمن وجرائم', title: 'تهريب', desc: 'تهريب الآثار والكنوز الثقافية والتاريخية.', severity: 'critical' },
+  { code: 'G48', category: 'أمن وجرائم', title: 'دعارة', desc: 'التورط في الدعارة (وساطة، توفير مكان، أو ممارسة).', severity: 'high' },
+  { code: 'G55', category: 'أمن وجرائم', title: 'فساد مالي', desc: 'جرائم الاختلاس المالي / الفساد المالي.', severity: 'high' },
+  { code: 'G58', category: 'أمن وجرائم', title: 'قتل', desc: 'جرائم القتل (أو التورط في جريمة قتل).', severity: 'critical' },
+  { code: 'G64', category: 'أمن وجرائم', title: 'تهديد', desc: 'التهديد (تهديد أشخاص أو مؤسسات).', severity: 'high' },
+  { code: 'G65', category: 'أمن وجرائم', title: 'سرقة', desc: 'حكم قضائي بالسرقة.', severity: 'high' },
+  { code: 'G66', category: 'أمن وجرائم', title: 'نهب', desc: 'الابتزاز والنهب (Gasb ve Yağma).', severity: 'high' },
+  { code: 'G67', category: 'أمن وجرائم', title: 'احتيال', desc: 'النصب والاحتيال (Dolandırıcılık).', severity: 'high' },
+  { code: 'G78', category: 'أمن وجرائم', title: 'أمراض معدية', desc: 'أمراض معدية (إيدز، سل، وباء) تهدد الصحة العامة.', severity: 'medium' },
+  { code: 'G82', category: 'أمن وجرائم', title: 'كود استخباراتي', desc: 'نشاط ضد الأمن القومي التركي (Milli Güvenlik).', severity: 'critical' },
+  { code: 'G87', category: 'أمن وجرائم', title: 'تهديد الأمن العام', desc: 'كود الترحيل الفوري الأكثر استخداماً للإرهاب أو التهديد.', severity: 'critical' },
+  { code: 'G89', category: 'أمن وجرائم', title: 'مقاتل إرهابي', desc: 'مقاتل إرهابي أجنبي (YTS - Foreign Terrorist Fighter).', severity: 'critical' },
+  { code: 'G99', category: 'أمن وجرائم', title: 'جرائم أخرى', desc: 'جرائم جنائية غير مصنفة.', severity: 'high' },
+  { code: 'G208', category: 'أمن وجرائم', title: 'جرائم أخرى', desc: 'يشير الى ان حامله يشكل تهديدا للأمن العام.', severity: 'high' },
+
+  // ==========================================
+  // 🔴 الفئة Ç: منع الدخول (Giriş Yasakları)
+  // ==========================================
+  { code: 'Ç101', category: 'منع دخول', title: 'مخالفة 3 أشهر', desc: 'مخالفة فيزا/إقامة (منع دخول 3 أشهر + غرامة).', severity: 'medium' },
+  { code: 'Ç102', category: 'منع دخول', title: 'مخالفة 6 أشهر', desc: 'مخالفة فيزا/إقامة (منع دخول 6 أشهر + غرامة).', severity: 'medium' },
+  { code: 'Ç103', category: 'منع دخول', title: 'مخالفة سنة', desc: 'مخالفة فيزا/إقامة (منع دخول سنة واحدة + غرامة).', severity: 'high' },
+  { code: 'Ç104', category: 'منع دخول', title: 'مخالفة سنتين', desc: 'مخالفة فيزا/إقامة (منع دخول سنتين + غرامة).', severity: 'high' },
+  { code: 'Ç105', category: 'منع دخول', title: 'مخالفة 5 سنوات', desc: 'مخالفة فيزا/إقامة (منع دخول 5 سنوات + غرامة).', severity: 'critical' },
+  { code: 'Ç113', category: 'منع دخول', title: 'دخول غير شرعي', desc: 'دخول أو خروج غير شرعي (تسلل عبر الحدود).', severity: 'high' },
+  { code: 'Ç114', category: 'منع دخول', title: 'إجراء قضائي', desc: 'إجراء قضائي مستمر (يمنع الدخول حتى صدور الحكم).', severity: 'high' },
+  { code: 'Ç115', category: 'منع دخول', title: 'إخلاء سبيل', desc: 'إخلاء سبيل من السجن (بعد قضاء المحكومية والترحيل).', severity: 'high' },
+  { code: 'Ç116', category: 'منع دخول', title: 'آداب عامة', desc: 'سلوك يهدد الآداب العامة والصحة العامة.', severity: 'high' },
+  { code: 'Ç117', category: 'منع دخول', title: 'عمالة غير قانونية', desc: 'العمل بدون إذن / إذن منتهي.', severity: 'medium' },
+  { code: 'Ç118', category: 'منع دخول', title: 'إلغاء إقامة (صحة)', desc: 'إلغاء تصريح الإقامة لأسباب صحية.', severity: 'medium' },
+  { code: 'Ç119', category: 'منع دخول', title: 'غرامة عمل (موظف)', desc: 'عدم دفع غرامة العمل غير القانوني (للموظف).', severity: 'medium' },
+  { code: 'Ç120', category: 'منع دخول', title: 'غرامة فيزا', desc: 'عدم دفع غرامة مخالفة الفيزا أو الإقامة.', severity: 'medium' },
+  { code: 'Ç129', category: 'منع دخول', title: 'رفض حماية', desc: 'طالبي الحماية الدولية الذين تم رفضهم أو ترحيلهم.', severity: 'high' },
+  { code: 'Ç135', category: 'منع دخول', title: 'قانون الأجانب', desc: 'مخالفة قانون الأجانب والحماية الدولية.', severity: 'medium' },
+  { code: 'Ç136', category: 'منع دخول', title: 'نفقات ترحيل', desc: 'عدم سداد نفقات السفر التي دفعتها الدولة.', severity: 'medium' },
+  { code: 'Ç137', category: 'منع دخول', title: 'تجاوز مهلة', desc: 'تجاوز مهلة الدعوة للمغادرة (Terke Davet).', severity: 'high' },
+  { code: 'Ç138', category: 'منع دخول', title: 'INAD', desc: 'المسافر المعاند - منع دخول من المطار وإعادة فورية.', severity: 'high' },
+  { code: 'Ç141', category: 'منع دخول', title: 'منع دولي', desc: 'منع دخول أمني دولي (مطلوب تقرير استخباراتي).', severity: 'critical' },
+  { code: 'Ç149', category: 'منع دخول', title: 'أمن عام', desc: 'تهديد الأمن العام (تصنيف أمني).', severity: 'critical' },
+  { code: 'Ç150', category: 'منع دخول', title: 'وثائق مزورة', desc: 'تقديم وثائق رسمية مزورة.', severity: 'critical' },
+  { code: 'Ç151', category: 'منع دخول', title: 'تهريب بشر', desc: 'مهرب مهاجرين / جرائم الاتجار بالبشر.', severity: 'critical' },
+  { code: 'Ç152', category: 'منع دخول', title: 'منع احترازي', desc: 'منع وقائي لمنع مخالفة محتملة.', severity: 'medium' },
+  { code: 'Ç166', category: 'منع دخول', title: 'عدم تبرير', desc: 'عدم تبرير سبب الدخول / عدم كفاية الموارد المالية.', severity: 'medium' },
+  { code: 'Ç167', category: 'منع دخول', title: 'منع شهر', desc: 'منع دخول قصير الأمد (شهر واحد) لمخالفات بسيطة.', severity: 'low' },
+  { code: 'Ç179', category: 'منع دخول', title: 'تأشيرة طبية', desc: 'إساءة استخدام التأشيرة الطبية وتجارة الأعضاء.', severity: 'critical' },
+  { code: 'Ç184', category: 'منع دخول', title: 'صلة بمناطق نزاع', desc: 'يُمنع من الدخول بسبب الاشتباه بالارتباط بمناطق نزاع أو عبور مناطق حروب (منع 5 سنوات قابل للتمديد).', severity: 'critical' },
+
+  // ==========================================
+  // 🔵 الفئة N: غرامات وإذن مسبق (İstizan)
+  // ==========================================
+  { code: 'N82', category: 'غرامات', title: 'كود استشاري', desc: 'الدخول يحتاج موافقة مسبقة من أنقرة (Ön İzin).', severity: 'high' },
+  { code: 'N95', category: 'غرامات', title: 'غرامة دخول', desc: 'غرامة دخول غير مدفوعة (يمنع الدخول حتى الدفع).', severity: 'medium' },
+  { code: 'N96', category: 'غرامات', title: 'تجاوز ودفع', desc: 'تجاوز المدة القانونية ودفع الغرامة (تنبيه إداري).', severity: 'low' },
+  { code: 'N97', category: 'غرامات', title: 'مخالفة عنوان', desc: 'مخالفة إعلان العنوان (مشابه لـ V160).', severity: 'medium' },
+  { code: 'N99', category: 'غرامات', title: 'إنتربول', desc: 'كود الإنتربول (نشرة حمراء / بحث دولي).', severity: 'critical' },
+  { code: 'N119', category: 'غرامات', title: 'منع خروج', desc: 'منع خروج لعدم دفع غرامة إدارية.', severity: 'medium' },
+  { code: 'N120', category: 'غرامات', title: 'غرامة فيزا/إقامة/عمل', desc: 'عدم دفع الغرامات الإدارية الناتجة عن انتهاك الفيزا أو الإقامة أو تصريح العمل.', severity: 'medium' },
+  { code: 'N135', category: 'غرامات', title: 'انتهاك قانون الحماية الدولية', desc: 'مخالفة قانون الحماية الدولية أو الدخول غير المشروع.', severity: 'medium' },
+  { code: 'N136', category: 'غرامات', title: 'مصاريف ترحيل', desc: 'عدم دفع مصاريف السفر أو الترحيل التي تحملتها الدولة.', severity: 'medium' },
+  { code: 'N137', category: 'غرامات', title: 'دعوة للمغادرة', desc: 'تجاوز مهلة الدعوة لمغادرة البلاد.', severity: 'high' },
+  { code: 'N168', category: 'غرامات', title: 'غرامة احتجاز إداري', desc: 'عدم دفع الغرامة أثناء الاحتجاز الإداري أو في مركز الترحيل.', severity: 'medium' },
+  { code: 'N169', category: 'غرامات', title: 'غرامة وزارة', desc: 'عدم دفع غرامة إدارية مفروضة من الوزارة.', severity: 'medium' },
+  { code: 'N170', category: 'غرامات', title: 'غرامة قانون المخالفات', desc: 'غرامة بموجب قانون المخالفات أو قوانين أخرى ذات صلة.', severity: 'medium' },
+  { code: 'N171', category: 'غرامات', title: 'عدم دفع غرامة', desc: 'عدم دفع غرامة إدارية مفروضة.', severity: 'medium' },
+  { code: 'N172', category: 'غرامات', title: 'مصاريف العودة الطوعية', desc: 'عدم دفع مصاريف السفر للعودة الطوعية.', severity: 'medium' },
+  { code: 'N26', category: 'غرامات', title: 'منظمات (إذن)', desc: 'أنشطة منظمات غير قانونية (يتطلب إذن دخول).', severity: 'high' },
+  { code: 'N34', category: 'غرامات', title: 'تزوير (إذن)', desc: 'سوابق تزوير (يتطلب إذن دخول).', severity: 'high' },
+  { code: 'N42', category: 'غرامات', title: 'مخدرات (إذن)', desc: 'سوابق مخدرات.', severity: 'high' },
+  { code: 'N43', category: 'غرامات', title: 'تهريب (إذن)', desc: 'سوابق تهريب.', severity: 'high' },
+  { code: 'N48', category: 'غرامات', title: 'دعارة (إذن)', desc: 'سوابق دعارة.', severity: 'high' },
+  { code: 'N58', category: 'غرامات', title: 'قتل (إذن)', desc: 'سوابق قتل.', severity: 'high' },
+  { code: 'N64', category: 'غرامات', title: 'تهديد (إذن)', desc: 'سوابق تهديد.', severity: 'high' },
+  { code: 'N65', category: 'غرامات', title: 'سرقة (إذن)', desc: 'سوابق سرقة.', severity: 'high' },
+  { code: 'N66', category: 'غرامات', title: 'نهب (إذن)', desc: 'سوابق سلب ونهب.', severity: 'high' },
+  { code: 'N67', category: 'غرامات', title: 'احتيال (إذن)', desc: 'سوابق نصب واحتيال.', severity: 'high' },
+  { code: 'N78', category: 'غرامات', title: 'أمراض (إذن)', desc: 'حمل أمراض معدية.', severity: 'medium' },
+  { code: 'N82', category: 'غرامات', title: 'أمن قومي (إذن)', desc: 'أنشطة ضد الأمن القومي (مشروط).', severity: 'critical' },
+  { code: 'N87', category: 'غرامات', title: 'أمن عام (إذن)', desc: 'تهديد الأمن العام.', severity: 'high' },
+  { code: 'N98', category: 'غرامات', title: 'ضحية اتجار', desc: 'تم تصنيفه كضحية اتجار بالبشر.', severity: 'medium' },
+
+  // ==========================================
+  // 🟢 الفئة V: الإقامة والملفات الإدارية
+  // ==========================================
+  { code: 'V68', category: 'إداري', title: 'موافقة وزارة', desc: 'إذن الإقامة خاضع لموافقة الوزارة.', severity: 'medium' },
+  { code: 'V69', category: 'إداري', title: 'إلغاء إقامة', desc: 'الأجانب الذين تم إلغاء تصريح إقامتهم.', severity: 'high' },
+  { code: 'V70', category: 'إداري', title: 'زواج صوري', desc: 'الزواج الصوري (احتيال للحصول على الجنسية).', severity: 'high' },
+  { code: 'V71', category: 'إداري', title: 'عنوان مجهول', desc: 'عدم الإبلاغ عن العنوان أو بيان كاذب.', severity: 'medium' },
+  { code: 'V74', category: 'إداري', title: 'إبلاغ خروج', desc: 'يجب إبلاغ الوزارة/الولاية عند الخروج.', severity: 'medium' },
+  { code: 'V77', category: 'إداري', title: 'ليس أهيسكا', desc: 'المتقدم ليس من أتراك الأهيسكا.', severity: 'low' },
+  { code: 'V84', category: 'إداري', title: 'دخول مشروط', desc: 'تعهد باستخراج إقامة خلال 10 أيام.', severity: 'medium' },
+  { code: 'V87', category: 'إداري', title: 'عودة طوعية', desc: 'للسوريين الذين غادروا طواعية (يمنع العودة).', severity: 'critical' },
+  { code: 'V88', category: 'إداري', title: 'إلغاء عمل', desc: 'إلغاء تصريح العمل (ترك العمل/إفلاس).', severity: 'medium' },
+  { code: 'V89', category: 'إداري', title: 'إعادة قبول', desc: 'الأجانب الذين تم قبول إعادتهم.', severity: 'medium' },
+  { code: 'V91', category: 'إداري', title: 'حماية مؤقتة', desc: 'خاضع للحماية المؤقتة (إذن سفر مطلوب).', severity: 'low' },
+  { code: 'V92', category: 'إداري', title: 'سجل مزدوج', desc: 'قيود مكررة لنفس الشخص.', severity: 'medium' },
+  { code: 'V137', category: 'إداري', title: 'دعوة مغادرة', desc: 'انتهاء فترة السماح (Terke Davet).', severity: 'high' },
+  { code: 'V144', category: 'إداري', title: 'إطلاق مشروط', desc: 'إطلاق سراح مشروط (توقيع دوري).', severity: 'high' },
+  { code: 'V145', category: 'إداري', title: 'عودة طوعية (خاص)', desc: 'للمهاجرين غير الشرعيين/ضحايا الاتجار.', severity: 'medium' },
+  { code: 'V146', category: 'إداري', title: 'جواز مزور', desc: 'جواز سفر تركي مشروح عليه (مزور/مشكلة).', severity: 'high' },
+  { code: 'V147', category: 'إداري', title: 'زوج مواطن', desc: 'زوج/زوجة مواطن تركي (للتدقيق).', severity: 'low' },
+  { code: 'V153', category: 'إداري', title: 'منع ترحيل (AYM)', desc: 'قرار محكمة دستورية يمنع الترحيل.', severity: 'safe' },
+  { code: 'V154', category: 'إداري', title: 'طعن على الترحيل', desc: 'تقديم طعن على قرار الترحيل أمام المحكمة الإدارية.', severity: 'medium' },
+  { code: 'V155', category: 'إداري', title: 'منع ترحيل (أوروبي)', desc: 'قرار المحكمة الأوروبية لحقوق الإنسان.', severity: 'safe' },
+  { code: 'V156', category: 'إداري', title: 'وكالة محامي', desc: 'ملاحظة بوجود تمثيل قانوني.', severity: 'safe' },
+  { code: 'V157', category: 'إداري', title: 'رفض إقامة', desc: 'رفض طلب الإقامة.', severity: 'medium' },
+  { code: 'V158', category: 'إداري', title: 'إلغاء بطاقة بعثة', desc: 'إلغاء بطاقة هوية موظفي البعثات الأجنبية أو أفراد عائلاتهم.', severity: 'medium' },
+  { code: 'V163', category: 'إداري', title: 'تحذير أمني', desc: 'ليس منع دخول، بل تحذير لمزيد من التدقيق الأمني عند الدخول.', severity: 'safe' },
+  { code: 'V164', category: 'إداري', title: 'قلق أمني', desc: 'تطبيق الكود بسبب قلق أمني أو قرار ترحيل سابق.', severity: 'high' },
+  { code: 'V228', category: 'إداري', title: 'سحب طلب حماية', desc: 'سحب طلب الحماية الدولية بغرض الحصول على إقامة.', severity: 'medium' },
+  { code: 'V147', category: 'إداري', title: 'زوج مواطن', desc: 'زوج/زوجة مواطن تركي (للتدقيق).', severity: 'low' },
+  { code: 'V148', category: 'إداري', title: 'مراكز إيواء', desc: 'شخص يقيم في مراكز الإيواء المؤقتة.', severity: 'medium' },
+  { code: 'V153', category: 'إداري', title: 'منع ترحيل (AYM)', desc: 'قرار محكمة دستورية يمنع الترحيل.', severity: 'safe' },
+  { code: 'V155', category: 'إداري', title: 'منع ترحيل (أوروبي)', desc: 'قرار المحكمة الأوروبية لحقوق الإنسان.', severity: 'safe' },
+  { code: 'V156', category: 'إداري', title: 'وكالة محامي', desc: 'ملاحظة بوجود تمثيل قانوني.', severity: 'safe' },
+  { code: 'V159', category: 'إداري', title: 'ترانزيت', desc: 'دخول للمرور لدولة ثالثة.', severity: 'low' },
+  { code: 'V160', category: 'إداري', title: 'تجميد عنوان', desc: 'عدم التواجد في العنوان المثبت.', severity: 'high' },
+  { code: 'V161', category: 'إداري', title: 'منع ترحيل (أصلي)', desc: 'قرار يمنع الترحيل للبلد الأصلي.', severity: 'safe' },
+  { code: 'V162', category: 'إداري', title: 'إنهاء توقيف', desc: 'محكمة أنهت التوقيف الإداري.', severity: 'safe' },
+  { code: 'V163', category: 'إداري', title: 'تدقيق مفصل', desc: 'Risk Analysis عند الدخول.', severity: 'medium' },
+  { code: 'V165', category: 'إداري', title: 'بيانات كاذبة', desc: 'تزوير في التسجيل/بصمات متعددة.', severity: 'high' },
+  { code: 'V173', category: 'إداري', title: 'دخول مؤقت', desc: 'لغير الحماية المؤقتة.', severity: 'low' },
+  { code: 'V174', category: 'إداري', title: 'دخول علاجي', desc: 'للسوريين القادمين للعلاج.', severity: 'low' },
+  { code: 'V175', category: 'إداري', title: 'خروج وعودة', desc: 'إذن خروج وعودة دون إنهاء الحماية.', severity: 'low' },
+  { code: 'V177', category: 'إداري', title: 'منع لجوء', desc: 'طلب حماية مرفوض نهائياً (منع 5 سنوات).', severity: 'critical' },
+  { code: 'V181', category: 'إداري', title: 'عودة طوعية', desc: 'للسوريين الذين غادروا طواعية (يمنع العودة).', severity: 'medium' },
+  { code: 'V210', category: 'إداري', title: 'منع مؤقت', desc: 'مخالفة إقامة أو خروج غير قانوني.', severity: 'medium' },
+  { code: 'V215', category: 'إداري', title: 'قرار اداري', desc: 'بصمة ادارية تم اقرارها من الهجرة في انقرة.', severity: 'medium' },
+
+
+  // --- الفئة O و K (نادرة) ---
+  { code: 'O100', category: 'حماية دولية', title: 'سحب طلب الحماية', desc: 'سحب طلب الحماية الدولية أو عدم التواجد في العنوان المصرح به.', severity: 'high' },
+  { code: 'O176', category: 'حماية دولية', title: 'رفض حماية دولية', desc: 'رفض طلب الحماية الدولية بعد التقييم (منع دخول 3 سنوات).', severity: 'high' },
+  { code: 'O177', category: 'حماية دولية', title: 'رفض نهائي حماية دولية', desc: 'رفض نهائي لطلب الحماية الدولية (منع دخول 5 سنوات).', severity: 'high' },
+  { code: 'K113', category: 'قديم', title: 'تهريب أموال', desc: 'كود أرشيفي نادر.', severity: 'medium' },
+  { code: 'K', category: 'قديم', title: 'تهريب عام', desc: 'كان يستخدم لجرائم التهريب.', severity: 'medium' },
+];

@@ -1,0 +1,225 @@
+{
+  "generatedAt": "2025-12-16T12:38:45.953Z",
+  "totals": {
+    "articles": 139,
+    "uniqueCategories": 12
+  },
+  "primarySections": [
+    {
+      "slug": "kimlik",
+      "title": "الكملك",
+      "categoryName": "الكملك والحماية المؤقتة",
+      "count": 16,
+      "articleIds": [
+        "syrian_kimlik_transfer",
+        "kimlik-to-residence",
+        "kimlik-lost-damaged",
+        "kimlik-address-proof",
+        "kimlik-newborn-addition",
+        "kimlik-appointments",
+        "kimlik-health-services",
+        "kimlik-school-enrollment",
+        "kimlik-work-and-sgk",
+        "kimlik-bank-sim",
+        "kimlik-leaving-turkey",
+        "kimlik-data-update",
+        "travel-permit",
+        "identity-name-dob-fix",
+        "identity-lost-card-replacement",
+        "identity-kimlik-iptal-v160"
+      ]
+    },
+    {
+      "slug": "residence",
+      "title": "الإقامة",
+      "categoryName": "أنواع الإقامات",
+      "count": 33,
+      "articleIds": [
+        "tourist-residence",
+        "student-residence",
+        "tourist-vs-student-residence-2025",
+        "family-residence",
+        "work-permit-residence",
+        "humanitarian-residence",
+        "real-estate-residence",
+        "identity-adres-beyani-20-days-uavt",
+        "identity-closed-address-reset",
+        "identity-passport-renewal-update",
+        "auto-ehliyet-conversion",
+        "auto-ehliyet-new-from-zero",
+        "auto-license-suspension-points-alcohol",
+        "auto-plates-foreigner-m-plaka",
+        "auto-ekspertiz-guide",
+        "auto-noter-satis-transfer",
+        "auto-tuvturk-inspection",
+        "auto-insurance-trafik-vs-kasko",
+        "auto-hgs-ogs",
+        "auto-mtv-payment",
+        "digital-imei-120-days-extension",
+        "digital-tourist-line-vs-normal",
+        "digital-line-transfer-citizenship",
+        "family-civil-marriage-municipality",
+        "family-register-foreign-marriage",
+        "family-divorce-basics",
+        "family-birth-registration-flow",
+        "family-death-procedures",
+        "housing-advanced-aidat-dispute",
+        "housing-advanced-neighbor-noise",
+        "housing-advanced-dask",
+        "travel-muzekart",
+        "travel-tcdd-yht-app"
+      ]
+    },
+    {
+      "slug": "visa",
+      "title": "الفيزا",
+      "categoryName": "الفيزا والتأشيرات",
+      "count": 13,
+      "articleIds": [
+        "turkey-visa-overview",
+        "turkey-evisa-guide",
+        "turkey-medical-visa",
+        "turkey-visa-from-syria",
+        "turkey-visa-from-lebanon",
+        "turkey-visa-arab-countries",
+        "turkey-visa-europe-foreigners",
+        "identity-apostille-kaymakam-valilik",
+        "family-cenaze-nakil",
+        "exit-sell-used-furniture-spotcu",
+        "exit-close-bank-accounts",
+        "exit-utility-deposit-refund",
+        "exit-cancel-residence-return-card"
+      ]
+    },
+    {
+      "slug": "work",
+      "title": "العمل",
+      "categoryName": "العمل والاستثمار",
+      "count": 20,
+      "articleIds": [
+        "syrian-property-ownership",
+        "work-without-permit-risks-2025",
+        "real-estate-citizenship",
+        "buying-car-foreigner",
+        "company-setup",
+        "business-licenses-turkey",
+        "digital-e-imza",
+        "digital-kep",
+        "family-inheritance-veraset-ilami",
+        "employment-work-permit-kimlik-vs-tourist",
+        "employment-5-turks-rule",
+        "employment-worker-rights-kidem-alo170",
+        "employment-freelance-legal",
+        "consumer-14-day-return",
+        "consumer-common-frauds",
+        "consumer-cybercrime-report",
+        "finance-findeks-credit-score",
+        "finance-kkm-status",
+        "finance-luxury-property-tax",
+        "finance-taxfree-vat-refund"
+      ]
+    },
+    {
+      "slug": "health",
+      "title": "الصحة",
+      "categoryName": "الصحة والتأمين",
+      "count": 9,
+      "articleIds": [
+        "gss_debt_inquiry",
+        "car-insurance",
+        "hospital-appointment",
+        "health-insurance-types",
+        "pharmacy-duty",
+        "e-nabiz-guide",
+        "hair-transplant-guide",
+        "earthquake-insurance",
+        "emergency-guide"
+      ]
+    },
+    {
+      "slug": "education",
+      "title": "الدراسة",
+      "categoryName": "الدراسة والتعليم",
+      "count": 6,
+      "articleIds": [
+        "highschool-denklik",
+        "btk-akademi-courses",
+        "school-registration",
+        "yos-exam-guide",
+        "tomer-registration",
+        "school-transfer"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "key": "أنواع الإقامات",
+      "count": 33
+    },
+    {
+      "key": "العمل والاستثمار",
+      "count": 20
+    },
+    {
+      "key": "الكملك والحماية المؤقتة",
+      "count": 16
+    },
+    {
+      "key": "معاملات رسمية",
+      "count": 15
+    },
+    {
+      "key": "السكن والحياة",
+      "count": 14
+    },
+    {
+      "key": "الفيزا والتأشيرات",
+      "count": 13
+    },
+    {
+      "key": "الصحة والتأمين",
+      "count": 9
+    },
+    {
+      "key": "الدراسة والتعليم",
+      "count": 6
+    },
+    {
+      "key": "الحياة اليومية",
+      "count": 5
+    },
+    {
+      "key": "الإقامة والأوراق",
+      "count": 3
+    },
+    {
+      "key": "خدمات السوريين",
+      "count": 3
+    },
+    {
+      "key": "العمل والدخل",
+      "count": 2
+    }
+  ],
+  "freshness": {
+    "newest": {
+      "id": "syrian-consular-appointments-app",
+      "lastUpdate": "2025-12-16"
+    },
+    "oldest": {
+      "id": "phone_imei_register",
+      "lastUpdate": "2025-01-01"
+    },
+    "updatedWithinDays": {
+      "d7": 135,
+      "d30": 136,
+      "d90": 137
+    }
+  },
+  "sources": {
+    "missingSourceField": 14,
+    "hasAnySourceText": 125,
+    "hasOfficialSourceUrl": 125,
+    "hasOnlyNonOfficialOrInvalid": 0
+  }
+}

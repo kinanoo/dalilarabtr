@@ -1,0 +1,1591 @@
+{
+  "generatedAt": "2025-12-16T12:19:51.857Z",
+  "totals": {
+    "occurrences": 282,
+    "unique": 96,
+    "officialGov": 83,
+    "nonOfficial": 13,
+    "invalid": 0
+  },
+  "urls": [
+    {
+      "url": "https://{s",
+      "protocol": "https:",
+      "host": "{s",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/components/LeafletMap.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://ar.goc.gov.tr/",
+      "protocol": "https:",
+      "host": "ar.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://ar.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://calismaizni.gov.tr",
+      "protocol": "https:",
+      "host": "calismaizni.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://calismaizni.gov.tr/"
+      }
+    },
+    {
+      "url": "https://dask.gov.tr",
+      "protocol": "https:",
+      "host": "dask.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": 401,
+        "finalUrl": "https://dask.gov.tr/"
+      }
+    },
+    {
+      "url": "https://e-ikamet.goc.gov.tr",
+      "protocol": "https:",
+      "host": "e-ikamet.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://e-ikamet.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://e-ikamet.goc.gov.tr/",
+      "protocol": "https:",
+      "host": "e-ikamet.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://e-ikamet.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://e-ikamet.goc.gov.tr/Ikamet/DevamEdenBasvuruGiris",
+      "protocol": "https:",
+      "host": "e-ikamet.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://e-ikamet.goc.gov.tr/Ikamet/DevamEdenBasvuruGiris"
+      }
+    },
+    {
+      "url": "https://e-okul.meb.gov.tr/",
+      "protocol": "https:",
+      "host": "e-okul.meb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://e-okul.meb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://enabiz.gov.tr",
+      "protocol": "https:",
+      "host": "enabiz.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://enabiz.gov.tr/Account/Login?_st=1"
+      }
+    },
+    {
+      "url": "https://enabiz.gov.tr/",
+      "protocol": "https:",
+      "host": "enabiz.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://enabiz.gov.tr/Account/Login?_st=1"
+      }
+    },
+    {
+      "url": "https://intvd.gib.gov.tr/internetvd/template.jsp?page=IVD_VKNO",
+      "protocol": "https:",
+      "host": "intvd.gib.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://intvd.gib.gov.tr/internetvd/template.jsp?page=IVD_VKNO"
+      }
+    },
+    {
+      "url": "https://istanbulism.saglik.gov.tr/TR,53947/nobetci-eczane.html",
+      "protocol": "https:",
+      "host": "istanbulism.saglik.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.istanbuleczaciodasi.org.tr/nobetci-eczane/"
+      }
+    },
+    {
+      "url": "https://izinsorgula.csgb.gov.tr/#/app/giris",
+      "protocol": "https:",
+      "host": "izinsorgula.csgb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://izinsorgula.csgb.gov.tr/"
+      }
+    },
+    {
+      "url": "http://localhost:3000",
+      "protocol": "http:",
+      "host": "localhost",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/app/article/[id]/page.tsx",
+        "src/app/sitemap.ts",
+        "src/lib/data.ts"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://meb.gov.tr",
+      "protocol": "https:",
+      "host": "meb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://meb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://mersis.ticaret.gov.tr",
+      "protocol": "https:",
+      "host": "mersis.ticaret.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://mersis.ticaret.gov.tr/"
+      }
+    },
+    {
+      "url": "https://mersis.ticaret.gov.tr/",
+      "protocol": "https:",
+      "host": "mersis.ticaret.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://mersis.ticaret.gov.tr/"
+      }
+    },
+    {
+      "url": "https://mhrs.gov.tr",
+      "protocol": "https:",
+      "host": "mhrs.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://mhrs.gov.tr/"
+      }
+    },
+    {
+      "url": "https://mofaex.gov.sy/eservices-app",
+      "protocol": "https:",
+      "host": "mofaex.gov.sy",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://mofaex.gov.sy/eservices-app"
+      }
+    },
+    {
+      "url": "https://muze.gov.tr",
+      "protocol": "https:",
+      "host": "muze.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://muze.gov.tr/"
+      }
+    },
+    {
+      "url": "https://osym.gov.tr",
+      "protocol": "https:",
+      "host": "osym.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://osym.gov.tr/"
+      }
+    },
+    {
+      "url": "https://randevu.goc.gov.tr",
+      "protocol": "https:",
+      "host": "randevu.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://randevu.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://randevu.goc.gov.tr/#/",
+      "protocol": "https:",
+      "host": "randevu.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://randevu.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://randevu.nvi.gov.tr",
+      "protocol": "https:",
+      "host": "randevu.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://randevu.nvi.gov.tr/"
+      }
+    },
+    {
+      "url": "https://randevu.nvi.gov.tr/#/nvi/randevu-al",
+      "protocol": "https:",
+      "host": "randevu.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://randevu.nvi.gov.tr/"
+      }
+    },
+    {
+      "url": "https://schema.org",
+      "protocol": "https:",
+      "host": "schema.org",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/app/faq/page.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://t.me/share/url?url=${encodeURIComponent(shareUrl",
+      "protocol": "https:",
+      "host": "t.me",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/components/ShareMenu.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://tckimlik.nvi.gov.tr/Modul/VatandaslikBasvuruDurumSorgula",
+      "protocol": "https:",
+      "host": "tckimlik.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://tckimlik.nvi.gov.tr/Modul/VatandaslikBasvuruDurumSorgula"
+      }
+    },
+    {
+      "url": "https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula",
+      "protocol": "https:",
+      "host": "tckimlik.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
+      }
+    },
+    {
+      "url": "https://vatan.nvi.gov.tr",
+      "protocol": "https:",
+      "host": "vatan.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://kimlikdogrulama.nvi.gov.tr/Login.aspx?ReturnUrl=%2f%3fwa%3dwsignin1.0%26wtrealm%3dhttps%253a%252f%252fvatan.nvi.gov.tr%252f%26wctx%3drm%253d0%2526id%253dpassive%2526ru%253d%25252f%26wct%3d2025-12-16T12%253a19%253a14Z&wa=wsignin1.0&wtrealm=https%3a%2f%2fvatan.nvi.gov.tr%2f&wctx=rm%3d0%26id%3dpassive%26ru%3d%252f&wct=2025-12-16T12%3a19%3a14Z"
+      }
+    },
+    {
+      "url": "https://vatandas.uyap.gov.tr",
+      "protocol": "https:",
+      "host": "vatandas.uyap.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://vatandas.uyap.gov.tr/main/index.jsp"
+      }
+    },
+    {
+      "url": "https://vatandas.uyap.gov.tr/",
+      "protocol": "https:",
+      "host": "vatandas.uyap.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://vatandas.uyap.gov.tr/main/index.jsp"
+      }
+    },
+    {
+      "url": "https://wa.me/?text=${encodeURIComponent(shareText",
+      "protocol": "https:",
+      "host": "wa.me",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/components/ShareMenu.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://wa.me/${defaultWhatsApp",
+      "protocol": "https:",
+      "host": "wa.me",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/app/services/page.tsx",
+        "src/app/services/page.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://wa.me/${SITE_CONFIG.whatsapp",
+      "protocol": "https:",
+      "host": "wa.me",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/app/contact/page.tsx",
+        "src/components/ArticleView.tsx",
+        "src/components/WhatsAppAssistant.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://wa.me/${targetPhone",
+      "protocol": "https:",
+      "host": "wa.me",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/app/request/page.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://webihlaltakip.kgm.gov.tr/WebIhlalSorgulama/Sayfalar/Sorgulama",
+      "protocol": "https:",
+      "host": "webihlaltakip.kgm.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://webihlaltakip.kgm.gov.tr/WebIhlalSorgulama/Sayfalar/Sorgulama"
+      }
+    },
+    {
+      "url": "https://www.bddk.org.tr/",
+      "protocol": "https:",
+      "host": "www.bddk.org.tr",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://www.btk.gov.tr",
+      "protocol": "https:",
+      "host": "www.btk.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.btk.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.btk.gov.tr/",
+      "protocol": "https:",
+      "host": "www.btk.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.btk.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.btkakademi.gov.tr",
+      "protocol": "https:",
+      "host": "www.btkakademi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.btkakademi.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.cimer.gov.tr/",
+      "protocol": "https:",
+      "host": "www.cimer.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": null,
+        "finalUrl": null,
+        "error": "TypeError"
+      }
+    },
+    {
+      "url": "https://www.csgb.gov.tr/",
+      "protocol": "https:",
+      "host": "www.csgb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.csgb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.dask.gov.tr",
+      "protocol": "https:",
+      "host": "www.dask.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": 401,
+        "finalUrl": "https://www.dask.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.epdk.gov.tr",
+      "protocol": "https:",
+      "host": "www.epdk.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.epdk.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.evisa.gov.tr",
+      "protocol": "https:",
+      "host": "www.evisa.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://dtvgroup.com.tr/"
+      }
+    },
+    {
+      "url": "https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl",
+      "protocol": "https:",
+      "host": "www.facebook.com",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/components/ShareMenu.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://www.gib.gov.tr",
+      "protocol": "https:",
+      "host": "www.gib.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.gib.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.gib.gov.tr/",
+      "protocol": "https:",
+      "host": "www.gib.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.gib.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.goc.gov.tr",
+      "protocol": "https:",
+      "host": "www.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.goc.gov.tr/",
+      "protocol": "https:",
+      "host": "www.goc.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.goc.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.googletagmanager.com/gtag/js?id=${gaId",
+      "protocol": "https:",
+      "host": "www.googletagmanager.com",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/components/GoogleAnalytics.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://www.icisleri.gov.tr/",
+      "protocol": "https:",
+      "host": "www.icisleri.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.icisleri.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.ktb.gov.tr/",
+      "protocol": "https:",
+      "host": "www.ktb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.ktb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl",
+      "protocol": "https:",
+      "host": "www.linkedin.com",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/components/ShareMenu.tsx"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://www.meb.gov.tr",
+      "protocol": "https:",
+      "host": "www.meb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.meb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.meb.gov.tr/",
+      "protocol": "https:",
+      "host": "www.meb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.meb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.mevzuat.gov.tr",
+      "protocol": "https:",
+      "host": "www.mevzuat.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.mevzuat.gov.tr/Anasayfa/ErrorPage?code=405"
+      }
+    },
+    {
+      "url": "https://www.mevzuat.gov.tr/",
+      "protocol": "https:",
+      "host": "www.mevzuat.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.mevzuat.gov.tr/Anasayfa/ErrorPage?code=405"
+      }
+    },
+    {
+      "url": "https://www.mfa.gov.tr/turkish-representations.en.mfa",
+      "protocol": "https:",
+      "host": "www.mfa.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.mfa.gov.tr/turkish-representations.en.mfa"
+      }
+    },
+    {
+      "url": "https://www.mfa.gov.tr/visa-information-for-foreigners.en.mfa",
+      "protocol": "https:",
+      "host": "www.mfa.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.mfa.gov.tr/visa-information-for-foreigners.en.mfa"
+      }
+    },
+    {
+      "url": "https://www.nvi.gov.tr",
+      "protocol": "https:",
+      "host": "www.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.nvi.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.nvi.gov.tr/",
+      "protocol": "https:",
+      "host": "www.nvi.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.nvi.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.osym.gov.tr/",
+      "protocol": "https:",
+      "host": "www.osym.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.osym.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.ptt.gov.tr",
+      "protocol": "https:",
+      "host": "www.ptt.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": null,
+        "finalUrl": null,
+        "error": "TypeError"
+      }
+    },
+    {
+      "url": "https://www.ptt.gov.tr/",
+      "protocol": "https:",
+      "host": "www.ptt.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": null,
+        "finalUrl": null,
+        "error": "TypeError"
+      }
+    },
+    {
+      "url": "https://www.saglik.gov.tr",
+      "protocol": "https:",
+      "host": "www.saglik.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.saglik.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.sgk.gov.tr",
+      "protocol": "https:",
+      "host": "www.sgk.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.sgk.gov.tr/Home/Index2/"
+      }
+    },
+    {
+      "url": "https://www.sgk.gov.tr/",
+      "protocol": "https:",
+      "host": "www.sgk.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.sgk.gov.tr/Home/Index2/"
+      }
+    },
+    {
+      "url": "https://www.tarimorman.gov.tr/",
+      "protocol": "https:",
+      "host": "www.tarimorman.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tarimorman.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.tbb.org.tr/",
+      "protocol": "https:",
+      "host": "www.tbb.org.tr",
+      "officialGov": false,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": null
+    },
+    {
+      "url": "https://www.tcddtasimacilik.gov.tr",
+      "protocol": "https:",
+      "host": "www.tcddtasimacilik.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tcddtasimacilik.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.tcmb.gov.tr",
+      "protocol": "https:",
+      "host": "www.tcmb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tcmb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.tcmb.gov.tr/",
+      "protocol": "https:",
+      "host": "www.tcmb.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tcmb.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.ticaret.gov.tr",
+      "protocol": "https:",
+      "host": "www.ticaret.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.ticaret.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.ticaret.gov.tr/",
+      "protocol": "https:",
+      "host": "www.ticaret.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.ticaret.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.tkgm.gov.tr",
+      "protocol": "https:",
+      "host": "www.tkgm.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tkgm.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.tkgm.gov.tr/",
+      "protocol": "https:",
+      "host": "www.tkgm.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tkgm.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.tuik.gov.tr",
+      "protocol": "https:",
+      "host": "www.tuik.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.tuik.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/articles.ts",
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/4a-hizmet-dokumu",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/4a-hizmet-dokumu"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/4b-borc-durumu",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/4b-borc-durumu"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/btk-imei-kaydet",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/btk-imei-kaydet"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/davalarim",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/davalarim"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/emniyet-arac-plakasina-yazilan-ceza-sorgulama",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/emniyet-arac-plakasina-yazilan-ceza-sorgulama"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/imei-sorgulama",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/imei-sorgulama"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/mobil-hat-sorgulama",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/mobil-hat-sorgulama"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/nvi-nufus-kayit-ornegi-belgesi-sorgulama",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/nvi-nufus-kayit-ornegi-belgesi-sorgulama"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/nvi-yerlesim-yeri-ve-diger-adres-belgesi-sorgulama",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/nvi-yerlesim-yeri-ve-diger-adres-belgesi-sorgulama"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/ptt-gonderi-takip",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/ptt-gonderi-takip"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/sgk-gss-borc-dokumu",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/sgk-gss-borc-dokumu"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/tapu-bilgileri-sorgulama",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/data.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/tapu-bilgileri-sorgulama"
+      }
+    },
+    {
+      "url": "https://www.turkiye.gov.tr/ticaret-tuketici-hakem-heyeti-basvurusu",
+      "protocol": "https:",
+      "host": "www.turkiye.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/articles.ts"
+      ],
+      "check": {
+        "ok": true,
+        "status": 200,
+        "finalUrl": "https://www.turkiye.gov.tr/404.html"
+      }
+    },
+    {
+      "url": "https://www.uets.gov.tr/",
+      "protocol": "https:",
+      "host": "www.uets.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": null,
+        "finalUrl": null,
+        "error": "TypeError"
+      }
+    },
+    {
+      "url": "https://www.yok.gov.tr/",
+      "protocol": "https:",
+      "host": "www.yok.gov.tr",
+      "officialGov": true,
+      "valid": true,
+      "samples": [
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts",
+        "src/lib/consultant-data.ts"
+      ],
+      "check": {
+        "ok": false,
+        "status": null,
+        "finalUrl": null,
+        "error": "TypeError"
+      }
+    }
+  ]
+}
