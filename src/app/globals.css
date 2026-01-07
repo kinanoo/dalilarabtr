@@ -124,3 +124,21 @@ html.dark .card-hover:hover {
     display: none;
   }
 }
+
+/* 🎨 Hero Background Animations */
+@keyframes gradientSlide {
+
+  0%,
+  100% {
+    transform: translateX(-50%);
+  }
+
+  50% {
+    transform: translateX(50%);
+  }
+}
+
+/* Premium Gradient Utility */
+.bg-gradient-premium {
+  @apply bg-gradient-to-br from-primary-900 via-primary-800 to-emerald-900 dark:from-primary-950 dark:via-primary-900 dark:to-emerald-950;
+}

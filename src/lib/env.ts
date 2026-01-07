@@ -30,15 +30,15 @@ function getEnv(key: string, defaultValue: string): string {
  * يحصل على متغير بيئة مطلوب (يرمي خطأ إذا لم يكن موجوداً)
  */
 function getRequiredEnv(key: string): string {
-  const value = typeof window !== 'undefined' 
-    ? undefined 
+  const value = typeof window !== 'undefined'
+    ? undefined
     : process.env[key];
-  
+
   if (!value) {
     console.warn(`⚠️ متغير البيئة ${key} غير موجود. استخدم قيمة افتراضية.`);
     throw new Error(`متغير البيئة المطلوب ${key} غير موجود`);
   }
-  
+
   return value;
 }
 
@@ -49,20 +49,20 @@ function getRequiredEnv(key: string): string {
 export const ENV = {
   // الموقع
   SITE_URL: getEnv('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000'),
-  
+
   // واتساب
   WHATSAPP_PHONE: getEnv('NEXT_PUBLIC_WHATSAPP_PHONE', '966580757487'),
-  
+
   // Supabase (اختياري)
   SUPABASE_URL: getEnv('NEXT_PUBLIC_SUPABASE_URL', ''),
   SUPABASE_ANON_KEY: getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', ''),
-  
+
   // Google Analytics (اختياري)
   GOOGLE_ANALYTICS_ID: getEnv('NEXT_PUBLIC_GOOGLE_ANALYTICS_ID', ''),
-  
+
   // Admin Demo Mode
   ADMIN_DEMO: getEnv('NEXT_PUBLIC_ADMIN_DEMO', '0') === '1',
-  
+
   // Node Environment
   NODE_ENV: getEnv('NODE_ENV', 'development'),
   IS_PRODUCTION: getEnv('NODE_ENV', 'development') === 'production',

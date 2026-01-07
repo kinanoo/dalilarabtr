@@ -2,7 +2,6 @@
 
 import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import Footer from '@/components/Footer';
 
 import { Metadata } from 'next';
 
@@ -80,8 +79,6 @@ export default function PharmacyPage() {
 
                 </div>
             </main>
-
-            <Footer />
-        </div>
+</div>
     );
 }

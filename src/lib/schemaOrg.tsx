@@ -14,7 +14,7 @@
  * @lastUpdate 2025-12-20
  */
 
-import { SITE_CONFIG } from '@/lib/data';
+import { SITE_CONFIG } from '@/lib/config';
 
 // ============================================
 // 📦 أنواع البيانات (Types)
@@ -294,7 +294,7 @@ export function SchemaScript({ schema }: SchemaScriptProps) {
 
   // دمج عدة schemas في array واحد
   const schemas = Array.isArray(schema) ? schema.filter(Boolean) : [schema];
-  
+
   if (schemas.length === 0) return null;
 
   return (
@@ -319,10 +319,10 @@ export function SchemaScript({ schema }: SchemaScriptProps) {
  */
 export function toISODate(dateStr: string): string {
   if (!dateStr) return new Date().toISOString();
-  
+
   // إذا كان بالفعل ISO
   if (dateStr.includes('T')) return dateStr;
-  
+
   // تحويل YYYY-MM-DD إلى ISO
   try {
     return new Date(dateStr).toISOString();

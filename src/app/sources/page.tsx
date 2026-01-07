@@ -1,6 +1,5 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useAdminSources } from '@/lib/useAdminData';
 import { Building2, ExternalLink, ShieldCheck, Globe, Copy, Check, Loader2 } from 'lucide-react';
@@ -129,8 +128,6 @@ export default function SourcesPage() {
           </>
         )}
       </div>
-
-      <Footer />
-    </main>
+</main>
   );
 }

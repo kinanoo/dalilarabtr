@@ -14,7 +14,6 @@ export function ThemeToggle() {
 
   // تجنب hydration mismatch (مشكلة شائعة في Next.js)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

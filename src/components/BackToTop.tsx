@@ -43,8 +43,8 @@ export default function BackToTop({
     };
 
     const positionClasses = {
-        'bottom-right': 'bottom-20 right-4 md:bottom-8 md:right-8',
-        'bottom-left': 'bottom-20 left-4 md:bottom-8 md:left-8',
+        'bottom-right': 'bottom-1 right-4 md:bottom-2 md:right-8',
+        'bottom-left': 'bottom-1 left-4 md:bottom-2 md:left-8',
     };
 
     if (!isVisible) return null;
@@ -54,18 +54,15 @@ export default function BackToTop({
             onClick={scrollToTop}
             className={`
         fixed ${positionClasses[position]} z-40
-        w-12 h-12
-        bg-emerald-600 hover:bg-emerald-700
-        text-white
-        rounded-full
-        shadow-lg hover:shadow-xl
+        w-10 h-10 flex items-center justify-center
+        text-emerald-600 dark:text-emerald-400
         transition-all
-        btn-hover-lift
+        opacity-70 hover:opacity-100 hover:-translate-y-1
         animate-fadeIn
       `}
             aria-label="العودة للأعلى"
         >
-            <ArrowUp size={24} className="mx-auto" />
+            <ArrowUp size={32} className="mx-auto drop-shadow-sm" strokeWidth={3} />
         </button>
     );
 }

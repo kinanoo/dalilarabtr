@@ -7,10 +7,11 @@ import { useBookmarks } from '@/hooks/useBookmarks';
 interface BookmarkButtonProps {
     id: string;
     mini?: boolean;
+    variant?: 'default' | 'glass' | 'subtle';
     className?: string;
 }
 
-export default function BookmarkButton({ id, mini = false, className = '' }: BookmarkButtonProps) {
+export default function BookmarkButton({ id, mini = false, variant = 'default', className = '' }: BookmarkButtonProps) {
     const { toggleBookmark, isBookmarked, isLoaded } = useBookmarks();
     const [active, setActive] = useState(false);
     const [animating, setAnimating] = useState(false);
@@ -35,13 +36,43 @@ export default function BookmarkButton({ id, mini = false, className = '' }: Boo
 
     if (!isLoaded) return null; // Hydration match
 
+    // Glass Variant (Header Style - Always White)
+    if (variant === 'glass') {
+        return (
+            <button
+                type="button"
+                onClick={handleClick}
+                className={`bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-white/10 ${active ? 'text-amber-400' : 'text-white'} ${className} ${animating ? 'scale-125' : 'scale-100'}`}
+                title={active ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+            >
+                <Star size={14} fill={active ? "currentColor" : "none"} className={`transition-all ${animating ? 'rotate-12' : ''}`} />
+                <span>{active ? "تم الحفظ" : "حفظ"}</span>
+            </button>
+        );
+    }
+
+    // Subtle Variant (Adaptive - for Light/Dark cards)
+    if (variant === 'subtle') {
+        return (
+            <button
+                type="button"
+                onClick={handleClick}
+                className={`bg-slate-900/5 hover:bg-slate-900/10 dark:bg-white/10 dark:hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-slate-900/5 dark:border-white/10 ${active ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-200'} ${className} ${animating ? 'scale-125' : 'scale-100'}`}
+                title={active ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+            >
+                <Star size={14} fill={active ? "currentColor" : "none"} className={`transition-all ${animating ? 'rotate-12' : ''}`} />
+                <span>{active ? "تم الحفظ" : "حفظ"}</span>
+            </button>
+        );
+    }
+
     const baseClasses = mini
         ? "p-2 rounded-full transition shadow-sm border"
-        : "flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition w-full shadow-md";
+        : "flex items-center justify-start gap-2 font-medium transition-colors";
 
     const activeClasses = active
-        ? (mini ? "bg-amber-100 text-amber-500 border-amber-200" : "bg-amber-500 text-white hover:bg-amber-600")
-        : (mini ? "bg-white/50 hover:bg-white text-slate-400 hover:text-amber-500 border-transparent" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-slate-700");
+        ? (mini ? "bg-amber-100 text-amber-500 border-amber-200" : "text-amber-500")
+        : (mini ? "bg-white/50 hover:bg-white text-slate-400 hover:text-amber-500 border-transparent" : "text-slate-500 dark:text-slate-400 hover:text-amber-500");
 
     return (
         <button

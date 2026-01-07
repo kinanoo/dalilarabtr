@@ -245,12 +245,12 @@ html:not(.theme-transitioning) * {
    🎨 Navbar & Footer في Dark Mode
    ============================================ */
 
-.dark nav,
+/* .dark nav,
 .dark header {
     background-color: rgba(15, 23, 42, 0.95);
     border-bottom-color: var(--border-primary);
     backdrop-filter: blur(10px);
-}
+} */
 
 .dark footer {
     background-color: var(--bg-primary);
@@ -336,8 +336,8 @@ html:not(.theme-transitioning) * {
 }
 
 /* Force GPU acceleration for smooth transitions */
-.dark * {
+/* .dark * {
     transform: translateZ(0);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
+} */

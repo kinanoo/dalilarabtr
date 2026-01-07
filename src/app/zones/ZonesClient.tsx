@@ -1,6 +1,9 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Footer from '@/components/Footer';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
+
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { MapPin, ShieldAlert } from 'lucide-react';
@@ -9,6 +12,8 @@ type ClosedAreaItem = {
   c: string; // City
   d: string; // District
   n: string; // Neighborhood (Mahalle)
+  slug?: string;
+  id?: string;
 };
 
 type ClosedAreasPayload = {
@@ -50,6 +55,7 @@ function normalizeText(text: string): string {
 }
 
 export default function ZonesPage() {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
   const [data, setData] = useState<ClosedAreasPayload | null>(null);
@@ -63,30 +69,73 @@ export default function ZonesPage() {
 
   const normalizedQuery = useMemo(() => normalizeText(query), [query]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && query.trim().length > 0) {
+      // Redirect raw query to Server Page (Smart Routing)
+      router.push(`/zones/${query.trim()}`);
+    }
+  };
+
   useEffect(() => {
     if (data) return;
 
-    const controller = new AbortController();
     let active = true;
-
-    const buildDataUrl = () => {
-      const endsWithSlash = window.location.pathname.endsWith('/');
-      const relative = endsWithSlash ? '../data/closed-areas.json' : './data/closed-areas.json';
-      return new URL(relative, window.location.href).toString();
-    };
 
     async function load() {
       setLoading(true);
       setLoadError(null);
       try {
-        const response = await fetch(buildDataUrl(), { signal: controller.signal });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = (await response.json()) as ClosedAreasPayload;
-        if (!payload || !Array.isArray(payload.items)) throw new Error('Invalid payload');
+        if (!supabase) throw new Error('Supabase client not initialized');
+
+        let allRows: any[] = [];
+        let from = 0;
+        const step = 1000;
+        let more = true;
+
+        while (more) {
+          const { data: rows, error } = await supabase
+            .from('zones')
+            .select('city, district, neighborhood, updated_at') // Removed slug, id to fix fetch error
+            .eq('status', 'closed')
+            .range(from, from + step - 1);
+
+          if (error) throw error;
+
+          if (rows && rows.length > 0) {
+            allRows = [...allRows, ...rows];
+            if (rows.length < step) {
+              more = false;
+            } else {
+              from += step;
+            }
+          } else {
+            more = false;
+          }
+        }
+
+        // Map to client format
+        const items: ClosedAreaItem[] = allRows.map((r: any) => ({
+          c: r.city,
+          d: r.district,
+          n: r.neighborhood
+          // slug/id removed
+        }));
+
+        // Get latest update date
+        const latestInfo = allRows.length > 0
+          ? new Date(Math.max(...allRows.map((r: any) => new Date(r.updated_at).getTime()))).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0];
+
+        const payload: ClosedAreasPayload = {
+          updatedAt: latestInfo,
+          source: 'Admin Panel (Live DB)',
+          items
+        };
+
         if (active) setData(payload);
       } catch (error) {
-        if (controller.signal.aborted) return;
         if (active) setLoadError('تعذر تحميل قاعدة البيانات.');
+        console.error(error);
       } finally {
         if (active) setLoading(false);
       }
@@ -96,7 +145,6 @@ export default function ZonesPage() {
 
     return () => {
       active = false;
-      controller.abort();
     };
   }, [data]);
 
@@ -150,11 +198,15 @@ export default function ZonesPage() {
         <HeroSearchInput
           value={query}
           onChange={setQuery}
+          onKeyDown={handleKeyDown}
           placeholder="اكتب اسم المنطقة (مثال: Fatih, Esenyurt)..."
           dir="ltr"
           lang="tr"
           inputClassName="placeholder:text-right placeholder:[direction:rtl] placeholder:[unicode-bidi:plaintext]"
         />
+        <p className="text-center text-white/90 text-sm md:text-base mt-3 font-medium">
+          اضغط <b>Enter</b> للبحث المتقدم أو اختر من القائمة أدناه
+        </p>
       </PageHero>
 
       <section className="px-4 py-10">
@@ -180,7 +232,7 @@ export default function ZonesPage() {
 
               {!showResults && !loading && (
                 <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">
-                  اكتب اسم المنطقة لبدء البحث.
+                  اكتب اسم المنطقة لبدء البحث، أو اضغط Enter للذهاب للصفحة المخصصة.
                 </p>
               )}
 
@@ -205,9 +257,10 @@ export default function ZonesPage() {
                   {totalMatches > 0 ? (
                     <>
                       {matches.map((zone, idx) => (
-                        <div
+                        <Link
                           key={`${zone.c}-${zone.d}-${zone.n}-${idx}`}
-                          className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/30 p-4 flex items-center justify-between gap-3"
+                          href={`/zones/${zone.n}`} // Use neighborhood name as slug
+                          className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/30 p-4 flex items-center justify-between gap-3 hover:bg-rose-100 dark:hover:bg-rose-950/50 transition cursor-pointer"
                         >
                           <div className="text-right">
                             <div className="font-extrabold text-slate-900 dark:text-slate-100">
@@ -218,7 +271,7 @@ export default function ZonesPage() {
                             </div>
                           </div>
                           <span className="shrink-0 rounded-md bg-rose-600 text-white px-3 py-1 text-xs font-bold">محظورة</span>
-                        </div>
+                        </Link>
                       ))}
 
                       {totalMatches > 100 && (
@@ -236,6 +289,9 @@ export default function ZonesPage() {
                       <p className="mt-2 text-xs md:text-sm text-slate-600 dark:text-slate-300">
                         بالتالي تكون متاحة ويمكنك تثبيت النفوس فيها.
                       </p>
+                      <button onClick={() => router.push(`/zones/${query}`)} className="mt-4 text-xs bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+                        عرض الشهادة الرسمية (اضغط هنا)
+                      </button>
                     </div>
                   )}
                 </div>
@@ -249,7 +305,7 @@ export default function ZonesPage() {
         </div>
       </section>
 
-      <Footer />
+
     </main>
   );
 }

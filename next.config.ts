@@ -1,16 +1,25 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  //   output: 'export',
 
 
-  // 🖼️ تحسين الصور - تم التفعيل!
-  // Next.js سيحسّن الصور تلقائياً ويحولها لـ WebP
+  // 🖼️ تحسين الصور
+  // في وضع التصدير الثابت (Static Export)، لا يمكن استخدام سيرفر تحسين الصور الافتراضي.
+  // لذلك يجب تفعيل وضع unoptimized أو استخدام خدمة خارجية.
   images: {
-    unoptimized: false, // ✅ تفعيل التحسين التلقائي
-    formats: ['image/webp', 'image/avif'], // تنسيقات حديثة أصغر حجماً
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920], // أحجام متجاوبة
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // أحجام الأيقونات
+    //     unoptimized: true, // ✅ مطلوب ليعمل مع output: 'export'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'bcgwbffwzdlzlyjvlyhr.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   // ⚡ تحسين الأداء

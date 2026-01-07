@@ -1,17 +1,28 @@
-import Footer from '@/components/Footer';
+import { supabase } from '@/lib/supabaseClient';
 import EDevletServicesHub from '@/components/EDevletServicesHub';
-import { EDEVLET_ARTICLES } from '@/lib/articles/edevlet';
+import type { Article } from '@/lib/types';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
 
-export default function EDevletServicesPage() {
-  const services = Object.entries(EDEVLET_ARTICLES)
-    .map(([id, article]) => ({ id, article }))
+export default async function EDevletServicesPage() {
+  if (!supabase) return null;
+
+  const { data: articles } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('category', 'خدمات e-Devlet')
+    .eq('active', true); // Ensure we only get active services
+
+  const services = (articles || [])
+    .map((article: any) => ({
+      id: article.id, // slug
+      article: article as Article
+    }))
     .sort((a, b) => a.article.title.localeCompare(b.article.title, 'ar'));
 
   return (
     <main className="min-h-screen flex flex-col">
-
       <EDevletServicesHub
         services={services.map(({ id, article }) => ({
           id,
@@ -21,8 +32,6 @@ export default function EDevletServicesPage() {
           source: article.source ?? undefined,
         }))}
       />
-
-      <Footer />
     </main>
   );
 }

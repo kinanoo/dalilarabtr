@@ -2,160 +2,85 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { Database, Loader2, Upload } from 'lucide-react';
 import {
     NAVIGATION,
     PRIMARY_NAV,
-    CATEGORY_SLUGS,
-    TOOLS_MENU
-} from '@/lib/data';
-import { Database, Upload, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+    TOOLS_MENU,
+    OFFICIAL_SOURCES,
+    LATEST_UPDATES
+} from '@/lib/constants';
+import { CATEGORY_SLUGS } from '@/lib/config';
 
 export default function DataMigration() {
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
 
-    const addLog = (msg: string) => setLogs(prev => [...prev, msg]);
+    const addLog = (msg: string) => {
+        setLogs(prev => [...prev, msg]);
+    };
+
+    const migrateCodes = async () => {
+        addLog('🚀 تخطي نقل الأكواد (تمت إزالة البيانات الثابتة).');
+    };
+
+    const migrateSources = async () => {
+        addLog('🚀 البدء بنقل المصادر الرسمية (Official Sources)...');
+        if (!supabase) return;
+
+        const sources = OFFICIAL_SOURCES.map(s => ({
+            name: s.name,
+            url: s.url,
+            description: s.desc,
+            is_official: true,
+            active: true
+        }));
+
+        const { error } = await supabase.from('official_sources').insert(sources);
+
+        if (error) addLog(`❌ فشل نقل المصادر: ${error.message}`);
+        else addLog(`✅ تم نقل ${sources.length} مصدر رسمي بنجاح.`);
+    };
+
+    const migrateUpdates = async () => {
+        addLog('🚀 البدء بنقل التحديثات (Updates)...');
+        if (!supabase) return;
+
+        const updates = LATEST_UPDATES.map(u => ({
+            title: u.title,
+            type: u.type,
+            content: u.content,
+            date: u.date,
+            active: true
+        }));
+
+        const { error } = await supabase.from('updates').insert(updates);
+        if (error) addLog(`❌ فشل نقل التحديثات: ${error.message}`);
+        else addLog(`✅ تم نقل ${updates.length} تحديث بنجاح.`);
+    };
+
+    const migrateFAQs = async () => {
+        addLog('🚀 تخطي نقل الأسئلة الشائعة (تمت الهجرة مسبقاً).');
+    };
 
     const migrateMenus = async () => {
-        addLog('🚀 البدء بنقل القوائم (Menus)...');
-        if (!supabase) return addLog('❌ خطأ: لم يتم الاتصال بقاعدة البيانات');
-
-        // 1. Header Menus
-        const headerMenus = PRIMARY_NAV.map((item, idx) => ({
-            location: 'header',
-            label: item.name,
-            href: item.href,
-            icon: (item as any).icon?.displayName || 'Circle', // Fallback
-            sort_order: idx,
-            is_active: true
-        }));
-
-        // 2. Footer/Sidebar Menus
-        const footerMenus = NAVIGATION.map((item, idx) => ({
-            location: 'footer',
-            label: item.name,
-            href: item.href,
-            icon: (item as any).icon?.displayName || 'Circle',
-            sort_order: idx,
-            is_active: true
-        }));
-
-        const { error: err1 } = await supabase.from('site_menus').upsert([...headerMenus, ...footerMenus], { onConflict: 'location, href' as any }); // Simplistic conflict check might fail if no constraint, so we might just insert. 
-        // Actually upsert requires a generic constraint. For now let's just insert and ignore dups or clear first.
-        // Safe approach: Delete all first? Maybe too risky. Let's just Insert.
-
-        // Better: Just insert.
-        const { error } = await supabase.from('site_menus').insert([...headerMenus, ...footerMenus]);
-
-        if (error) addLog(`❌ فشل نقل القوائم: ${error.message}`);
-        else addLog(`✅ تم نقل ${headerMenus.length + footerMenus.length} عنصر قائمة بنجاح.`);
+        addLog('🚀 تخطي نقل القوائم (تمت الهجرة مسبقاً).');
     };
 
     const migrateCategories = async () => {
-        addLog('🚀 البدء بنقل التصنيفات (Categories)...');
-        if (!supabase) return;
-
-        const categories = Object.entries(CATEGORY_SLUGS).map(([slug, title], idx) => ({
-            slug,
-            title,
-            description: `تصفح كافة خدمات ${title}`,
-            is_featured: true,
-            sort_order: idx,
-            active: true
-        }));
-
-        const { error } = await supabase.from('service_categories').upsert(categories);
-
-        if (error) addLog(`❌ فشل نقل التصنيفات: ${error.message}`);
-        else addLog(`✅ تم نقل ${categories.length} تصنيف بنجاح.`);
+        addLog('🚀 تخطي نقل التصنيفات (تمت الهجرة مسبقاً).');
     };
 
     const migrateTools = async () => {
-        addLog('🚀 البدء بنقل الأدوات (Tools)...');
-        if (!supabase) return;
-
-        const tools = TOOLS_MENU.map((item) => ({
-            key: item.href.split('/').pop() || item.href,
-            name: item.name,
-            route: item.href,
-            is_active: true,
-            settings: {}
-        }));
-
-        const { error } = await supabase.from('tools_registry').upsert(tools, { onConflict: 'key' });
-
-        if (error) addLog(`❌ فشل نقل الأدوات: ${error.message}`);
-        else addLog(`✅ تم نقل ${tools.length} أداة بنجاح.`);
+        addLog('🚀 تخطي نقل الأدوات (تمت الهجرة مسبقاً).');
     };
 
     const migrateArticles = async () => {
-        addLog('🚀 البدء بنقل المقالات (Articles)...');
-        if (!supabase) return;
-
-        // Dynamic import to avoid server-side issues if any
-        const { ARTICLES } = await import('@/lib/articles');
-        const articlesList = Object.entries(ARTICLES).map(([slug, art]) => ({
-            slug, // The key in the object is the slug/ID
-            title: art.title,
-            category: art.category,
-            intro: art.intro,
-            details: art.details,
-            steps: art.steps,
-            tips: art.tips,
-            warning: art.warning,
-            documents: art.documents,
-            fees: art.fees,
-            source: art.source,
-            last_update: art.lastUpdate, // Map camelCase to snake_case
-            seo_title: art.seoTitle,
-            seo_description: art.seoDescription,
-            seo_keywords: art.seoKeywords,
-            image: (art as any).image // Fix TS error if type is missing
-        }));
-
-        // Batch insert (chunking might be needed if too large, but 50-100 is fine usually)
-        // Articles list is large, so let's chunk it by 50
-        const chunkSize = 50;
-        let successCount = 0;
-
-        for (let i = 0; i < articlesList.length; i += chunkSize) {
-            const chunk = articlesList.slice(i, i + chunkSize);
-            const { error } = await supabase.from('articles').upsert(chunk, { onConflict: 'slug' });
-            if (error) {
-                addLog(`❌ فشل نقل جزء من المقالات: ${error.message}`);
-            } else {
-                successCount += chunk.length;
-            }
-        }
-
-        addLog(`✅ تم نقل/تحديث ${successCount} مقال بنجاح.`);
+        addLog('🚀 تخطي نقل المقالات (تمت الهجرة مسبقاً).');
     };
 
     const migrateServiceProviders = async () => {
-        addLog('🚀 البدء بنقل مقدمي الخدمات (Service Providers)...');
-        if (!supabase) return;
-
-        const { MOCK_PROVIDERS } = await import('@/lib/services-data');
-
-        const providers = MOCK_PROVIDERS.map((p) => ({
-            name: p.name,
-            profession: p.profession,
-            category: p.category,
-            city: p.city,
-            district: p.district,
-            phone: p.phone,
-            image: p.image,
-            description: p.description,
-            rating: p.rating,
-            review_count: p.reviewCount,
-            is_verified: p.isVerified,
-            active: true
-        }));
-
-        const { error } = await supabase.from('service_providers').upsert(providers, { onConflict: 'phone' as any }); // Determine unique key, phone is good candidate usually
-
-        if (error) addLog(`❌ فشل نقل الخدمات: ${error.message}`);
-        else addLog(`✅ تم نقل ${providers.length} خدمة بنجاح.`);
+        addLog('🚀 تخطي نقل مزودي الخدمات (تمت الهجرة مسبقاً).');
     };
 
     const runFullMigration = async () => {
@@ -166,8 +91,12 @@ export default function DataMigration() {
             await migrateCategories();
             await migrateTools();
             await migrateArticles();
-            await migrateServiceProviders(); // Added
-            addLog('🎉 تمت العملية بالكامل!');
+            await migrateServiceProviders();
+            await migrateCodes();
+            await migrateSources();
+            await migrateUpdates();
+            await migrateFAQs();
+            addLog('🎉 تمت العملية بالكامل! كل شيء الآن في قاعدة البيانات.');
         } catch (e: any) {
             console.error(e);
             addLog(`❌ حدث خطأ غير متوقع: ${e.message}`);

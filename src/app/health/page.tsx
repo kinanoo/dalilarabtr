@@ -1,11 +1,11 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 import { HeartPulse, ArrowLeft, Loader2, Sparkles, Calendar } from 'lucide-react';
 import { useAdminArticles, isNewContent } from '@/lib/useAdminData';
 import { useMemo } from 'react';
+import Image from 'next/image';
 
 export default function HealthPage() {
   const { articles: allArticles, loading } = useAdminArticles();
@@ -38,11 +38,13 @@ export default function HealthPage() {
                 >
                   {/* صورة المقال */}
                   {article.image && (
-                    <div className="h-40 overflow-hidden">
-                      <img
+                    <div className="h-40 overflow-hidden relative">
+                      <Image
                         src={article.image}
                         alt={article.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
                   )}
@@ -50,7 +52,7 @@ export default function HealthPage() {
                   <div className="p-6 flex flex-col flex-grow">
                     {/* علامة جديد + التاريخ */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      {isNewContent(article.createdAt) && (
+                      {isNewContent(article.created_at || '') && (
                         <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
                           <Sparkles size={10} /> جديد
                         </span>
@@ -81,7 +83,6 @@ export default function HealthPage() {
           </div>
         )}
       </div>
-      <Footer />
     </main>
   );
 }

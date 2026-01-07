@@ -11,6 +11,7 @@ type HeroSearchInputProps = {
   autoFocus?: boolean;
   inputClassName?: string;
   wrapperClassName?: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 };
 
 export default function HeroSearchInput({
@@ -22,6 +23,7 @@ export default function HeroSearchInput({
   autoFocus,
   inputClassName,
   wrapperClassName,
+  onKeyDown,
 }: HeroSearchInputProps) {
   return (
     <div className={`relative max-w-3xl mx-auto ${wrapperClassName || ''}`.trim()}>
@@ -37,6 +39,7 @@ export default function HeroSearchInput({
           dir={dir}
           lang={lang}
           autoFocus={autoFocus}
+          onKeyDown={onKeyDown}
           className={`w-full py-4 md:py-5 ps-11 md:ps-12 pe-16 rounded-2xl text-sm md:text-base shadow-sm focus:outline-none focus:ring-4 focus:ring-accent-500/50 border-0 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-xs md:placeholder:text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400 ${inputClassName || ''}`.trim()}
         />
         {/* زر المسح أزيل بناءً على طلب المستخدم */}

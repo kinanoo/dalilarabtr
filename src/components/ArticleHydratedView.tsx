@@ -1,22 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import type { ArticleData } from '@/lib/articles';
-import ArticleView from '@/components/ArticleView';
-import { useAdminArticle } from '@/lib/useAdminData';
+import ArticleView from '@/components/ArticleViewPremium';
+import type { Article } from '@/lib/types';
 
 export default function ArticleHydratedView({
+  articleData,
   slug,
-  initialArticle,
+  initialComments
 }: {
-  slug: string;
-  initialArticle: ArticleData;
+  articleData?: Article | null,
+  slug: string,
+  initialComments?: any[]
 }) {
-  // 🆕 جلب المقال من لوحة التحكم
-  const { articleData, loading } = useAdminArticle(slug);
-  
-  // استخدم بيانات لوحة التحكم إذا وجدت، وإلا استخدم البيانات الأولية
-  const article = articleData || initialArticle;
+  if (!articleData) return null;
 
-  return <ArticleView article={article} slug={slug} />;
+  return (
+    <ArticleView
+      article={articleData}
+      slug={slug}
+      initialComments={initialComments}
+    />
+  );
 }

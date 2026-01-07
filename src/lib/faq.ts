@@ -9,22 +9,20 @@
  * =====================================================
  */
 
+// import { FAQ_DATA } from '@/lib/faq-data'; // REMOVED
+// import { canonicalizeFaqCategories } from '@/lib/faqCanonical'; 
 import type { FAQCategory, FAQQuestion } from '@/lib/faq-types';
-import { FAQ_DATA } from '@/lib/faq-data';
-import { canonicalizeFaqCategories } from '@/lib/faqCanonical';
 
-// تصدير البيانات للاستخدام المباشر
-export { FAQ_DATA };
-
-// البيانات الاحتياطية (نفس البيانات الرئيسية)
+// Empty data for static consumers
+export const FAQ_DATA: FAQCategory[] = [];
 export const FAQ_FALLBACK_DATA = FAQ_DATA;
 
 /**
  * دالة جلب بيانات الأسئلة الشائعة
- * تعمل على السيرفر والكلاينت
+ * يجب استبدال استخدامها بـ useAdminFAQ أو الجلب من Supabase
  */
 export function getFAQData(): FAQCategory[] {
-  return canonicalizeFaqCategories(FAQ_DATA);
+  return [];
 }
 
 // تصدير الأنواع للاستخدام الخارجي

@@ -230,7 +230,7 @@ export default function ServicesManager() {
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 {service.image ? (
-                                                    <img src={service.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                                    <Image src={service.image} alt="" width={40} height={40} className="rounded-lg object-cover" />
                                                 ) : (
                                                     <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                                                         <Briefcase size={20} />

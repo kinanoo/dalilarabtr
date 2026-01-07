@@ -1,167 +1,63 @@
-// ============================================
-// 📊 Structured Data (Schema.org) Helpers
-// ============================================
+import { z } from 'zod';
 
-// ============================================
-// 📄 Article Schema
-// ============================================
+// Helper for optional strings that should be null if empty
+const optionalString = z.string().trim().optional().transform(v => v === '' ? null : v);
+// Helper for required strings
+const requiredString = z.string().trim().min(1, { message: "هذا الحقل مطلوب" });
 
-export interface ArticleSchemaProps {
-    title: string;
-    description: string;
-    image?: string;
-    datePublished?: string;
-    dateModified?: string;
-    author?: string;
-    url: string;
-}
+// --- Article Schema ---
+export const articleSchema = z.object({
+    title: requiredString.min(3, { message: "العنوان يجب أن يكون 3 أحرف على الأقل" }),
+    category: requiredString,
+    intro: optionalString,
+    details: requiredString.min(20, { message: "التفاصيل يجب أن تكون 20 حرفاً على الأقل" }),
+    fees: optionalString,
+    source: z.string().trim().url({ message: "رابط غير صالح" }).optional().or(z.literal('')),
+    warning: optionalString,
+    lastUpdate: optionalString, // Date string
+    steps: z.array(z.string()).optional(),
+    documents: z.array(z.string()).optional(),
+    tips: z.array(z.string()).optional(),
+    image: optionalString,
+    published_at: optionalString, // Date string (ISO)
+    // active: z.boolean().optional().default(true), // REMOVED: Table has no active column
+});
 
-export function generateArticleSchema(props: ArticleSchemaProps) {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: props.title,
-        description: props.description,
-        image: props.image || 'https://daleel-arab-turkiye.com/og-default.jpg',
-        datePublished: props.datePublished || new Date().toISOString(),
-        dateModified: props.dateModified || new Date().toISOString(),
-        author: {
-            '@type': 'Organization',
-            name: props.author || 'دليل العرب في تركيا',
-        },
-        publisher: {
-            '@type': 'Organization',
-            name: 'دليل العرب في تركيا',
-            logo: {
-                '@type': 'ImageObject',
-                url: 'https://daleel-arab-turkiye.com/logo.png',
-            },
-        },
-        mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': props.url,
-        },
-    };
-}
+// --- Service Schema ---
+export const serviceSchema = z.object({
+    name: requiredString.min(2, { message: "الاسم مطلوب" }),
+    whatsapp: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الواتساب غير صحيح (يجب أن يكون رقم تركي)" }),
+    city: requiredString, // Replaces location
+    bio: z.string().trim().max(150, { message: "النبذة يجب ألا تتجاوز 150 حرفاً" }).optional().transform(v => v === '' ? null : v),
+    description: requiredString.min(20, { message: "الوصف يجب أن يكون 20 حرفاً على الأقل" }),
+    category: requiredString,
+    image: optionalString,
+    phone: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الواتساب غير صحيح (يجب أن يكون رقم تركي)" }),
+    active: z.boolean().optional().default(true),
+});
 
-// ============================================
-// ❓ FAQ Schema
-// ============================================
+// --- Newsletter Schema ---
+export const newsletterSchema = z.object({
+    email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
+});
 
-export interface FAQItem {
-    question: string;
-    answer: string;
-}
+// --- Request Service Schema ---
+export const requestServiceSchema = z.object({
+    name: z.string().trim().optional(),
+    serviceId: requiredString,
+    details: z.string().trim().optional(),
+});
 
-export function generateFAQSchema(faqs: FAQItem[]) {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: faqs.map((faq) => ({
-            '@type': 'Question',
-            name: faq.question,
-            acceptedAnswer: {
-                '@type': 'Answer',
-                text: faq.answer,
-            },
-        })),
-    };
-}
+// --- Static Page Schema ---
+export const staticPageSchema = z.object({
+    title: requiredString.min(3, { message: "عنوان الصفحة مطلوب" }),
+    slug: requiredString.regex(/^[a-z0-9-]+$/, { message: "الرابط يجب أن يحتوي فقط على أحرف إنجليزية صغيرة وأرقام وشرطات" }),
+    content: requiredString.min(10, { message: "المحتوى قصير جداً" }),
+});
 
-// ============================================
-// 💼 Local Business Schema
-// ============================================
-
-export interface ServiceSchemaProps {
-    name: string;
-    description: string;
-    image?: string;
-    address?: {
-        city: string;
-        country: string;
-    };
-    telephone?: string;
-    avgRating?: number;
-    reviewCount?: number;
-}
-
-export function generateServiceSchema(props: ServiceSchemaProps) {
-    const schema: any = {
-        '@context': 'https://schema.org',
-        '@type': 'ProfessionalService',
-        name: props.name,
-        description: props.description,
-        image: props.image,
-    };
-
-    if (props.address) {
-        schema.address = {
-            '@type': 'PostalAddress',
-            addressLocality: props.address.city,
-            addressCountry: props.address.country || 'TR',
-        };
-    }
-
-    if (props.telephone) {
-        schema.telephone = props.telephone;
-    }
-
-    if (props.avgRating && props.reviewCount) {
-        schema.aggregateRating = {
-            '@type': 'AggregateRating',
-            ratingValue: props.avgRating,
-            reviewCount: props.reviewCount,
-        };
-    }
-
-    return schema;
-}
-
-// ============================================
-// 🌐 Website Schema (للصفحة الرئيسية)
-// ============================================
-
-export function generateWebsiteSchema() {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'دليل العرب في تركيا',
-        description: 'الدليل الشامل للعرب في تركيا - خدمات، استشارات، معلومات قانونية',
-        url: 'https://daleel-arab-turkiye.com',
-        potentialAction: {
-            '@type': 'SearchAction',
-            target: {
-                '@type': 'EntryPoint',
-                urlTemplate: 'https://daleel-arab-turkiye.com/?search={search_term_string}',
-            },
-            'query-input': 'required name=search_term_string',
-        },
-    };
-}
-
-// ============================================
-// 🏢 Organization Schema
-// ============================================
-
-export function generateOrganizationSchema() {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'دليل العرب في تركيا',
-        description: 'منصة شاملة تقدم معلومات وخدمات للعرب المقيمين في تركيا',
-        url: 'https://daleel-arab-turkiye.com',
-        logo: 'https://daleel-arab-turkiye.com/logo.png',
-        sameAs: [
-            // يمكن إضافة روابط السوشال ميديا هنا
-            // 'https://facebook.com/daleel-arab-turkiye',
-            // 'https://twitter.com/daleelarabtr',
-        ],
-    };
-}
-
-// ============================================
-// 🔧 Helper: Render Schema in Component
-// ============================================
-// Note: Use this in your React components:
-// <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-
+// --- General/Shared Types ---
+export type ArticleForm = z.infer<typeof articleSchema>;
+export type ServiceForm = z.infer<typeof serviceSchema>;
+export type RequestServiceInputs = z.infer<typeof requestServiceSchema>;
+export type StaticPageForm = z.infer<typeof staticPageSchema>;
+export type NewsletterInputs = z.infer<typeof newsletterSchema>;

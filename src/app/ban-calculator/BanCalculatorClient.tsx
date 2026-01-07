@@ -1,7 +1,6 @@
 
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useState } from 'react';
 import { Calculator, AlertTriangle, CheckCircle, Info, Plane, ArrowRight } from 'lucide-react';
@@ -81,8 +80,8 @@ export default function BanCalculator() {
       {/* Main Container - Widened for horizontal layout */}
       <div className="max-w-5xl mx-auto px-4 py-8 mt-10 relative z-10">
 
-        {/* Compact Card */}
-        <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-300 dark:border-slate-800">
+        {/* Compact Card - Taller & Square-like */}
+        <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-300 dark:border-slate-800 min-h-[550px] flex flex-col">
 
           {/* Grid Layout for Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -138,8 +137,8 @@ export default function BanCalculator() {
 
           </div>
 
-          {/* Calculate Button */}
-          <div className="mt-8 flex justify-center">
+          {/* Calculate Button - Pushed to Bottom */}
+          <div className="mt-auto pt-8 flex justify-center pb-4">
             <button
               onClick={calculateBan}
               className="w-full md:w-1/3 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"
@@ -185,7 +184,6 @@ export default function BanCalculator() {
 
         </div>
       </div>
-      <Footer />
     </main>
   );
 }

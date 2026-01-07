@@ -1,4 +1,4 @@
-import { SITE_CONFIG } from '@/lib/data';
+import { SITE_CONFIG } from '@/lib/config';
 
 export function normalizeWhatsAppPhone(phone: string) {
   return String(phone || '').replace(/\D/g, '');

@@ -11,7 +11,7 @@
  *    <ToolSchema tool="ban-calculator" />
  */
 
-import { SITE_CONFIG } from '@/lib/data';
+import { SITE_CONFIG } from '@/lib/config';
 
 type ToolType =
   | 'ban-calculator'

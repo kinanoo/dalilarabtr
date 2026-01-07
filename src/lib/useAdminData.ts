@@ -1,207 +1,85 @@
 'use client';
 
 /**
- * 🔗 Hook لربط بيانات لوحة التحكم بالموقع
- * الإصدار الشامل - يشمل كل الأقسام
+ * 🔗 Hook لربط بيانات لوحة التحكم بالموقع (Admin Data Hook) - Refactored with SWR
+ * 
+ * المبدأ:
+ * يستخدم `useResource` (SWR) لجلب البيانات وإدارة الكاش والدمج تلقائياً.
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { ARTICLES, ArticleData } from '@/lib/articles';
-import { SERVICES_LIST, LATEST_UPDATES, OFFICIAL_SOURCES, FORMS } from '@/lib/data';
-import { SECURITY_CODES } from '@/lib/codes';
+import { useMemo } from 'react';
+// import { ARTICLES, ArticleData } from '@/lib/articles'; // REMOVED
+import { CATEGORY_SLUGS } from '@/lib/config';
+import { SERVICES_LIST, LATEST_UPDATES, OFFICIAL_SOURCES, FORMS, PRIMARY_NAV, NAVIGATION, TOOLS_MENU } from '@/lib/constants';
+
+import {
+  AdminArticle, ArticleData, AdminService, AdminUpdate, AdminCode, AdminFAQ,
+  AdminSource, AdminForm, AdminMenu, AdminCategory, AdminTool
+} from '@/lib/types';
+import { useResource, standardMerger } from '@/lib/hooks/useResource';
 
 // ============================================
-// 🔑 مفاتيح التخزين
+// 🪝 Hooks - Codes
 // ============================================
 
-export const STORAGE_KEYS = {
-  articles: 'admin_articles_v2',
-  services: 'admin_services_v2',
-  updates: 'admin_updates_v2',
-  codes: 'admin_codes_v2',
-  faq: 'admin_faq_v2',
-  forms: 'admin_forms_v2',
-  sources: 'admin_sources_v2',
-};
 
-/**
- * 🛠️ دالة لتطبيع المعرّفات (IDs) لضمان استخدام الواصلات (-) بدلاً من الشرطة السفلية (_)
- * هذا يمنع أخطاء الـ Routing في التصدير الثابت.
- */
-export function normalizeId(id: string): string {
-  if (!id) return id;
-  return id.toLowerCase().replace(/_/g, '-').trim();
+export function useAdminCodes() {
+  // Static Fallback removed - strictly remote
+  const { data: codes, loading } = useResource<AdminCode>(
+    'codes',
+    'security_codes',
+    [],
+    (statics, remotes) => {
+      const transformed: AdminCode[] = remotes.map((d: any) => ({
+        id: d.code,
+        code: d.code,
+        title: d.title,
+        desc: d.description,
+        category: d.category,
+        severity: d.severity as any,
+        active: d.active !== false
+      }));
+      // Just return transformed, no static merge needed if we want fully dynamic
+      return transformed;
+    }
+  );
+
+  return { codes, loading };
 }
 
-// ============================================
-// 📦 أنواع البيانات
-// ============================================
-
-export type AdminArticle = {
-  id: string;
-  title: string;
-  category: string;
-  lastUpdate: string;
-  intro: string;
-  details: string;
-  documents: string[];
-  steps: string[];
-  tips: string[];
-  fees: string;
-  warning: string | null;
-  source: string;
-  active: boolean;
-  createdAt: string;
-  image?: string;
-  imageAlt?: string;
-
-};
-
-export type AdminService = {
-  id: string;
-  title: string;
-  desc: string;
-  price: number | null;
-  whatsapp: string | null;
-  active: boolean;
-  image?: string;
-  imageAlt?: string;
-
-};
-
-export type AdminUpdate = {
-  id: string;
-  type: string;
-  title: string;
-  date: string;
-  content: string | null;
-  active: boolean;
-  image?: string;
-  imageAlt?: string;
-
-};
-
-export type AdminCode = {
-  id: string;
-  code: string;
-  title: string;
-  desc: string;
-  category: string;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'safe';
-  active: boolean;
-};
-
-export type AdminFAQ = {
-  id: string;
-  category: string;
-  question: string;
-  answer: string;
-  active: boolean;
-};
-
-export type AdminForm = {
-  id: string;
-  name: string;
-  desc: string;
-  type: string;
-  url: string;
-  active: boolean;
-};
-
-export type AdminSource = {
-  id: string;
-  name: string;
-  url: string;
-  desc: string;
-  active: boolean;
-};
+// ... (Types ignored for brevity in prompt, they match)
 
 // ============================================
-// 📖 دوال القراءة
+// 🪝 Hooks - Articles
 // ============================================
 
-function safeGet<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-function toArticleData(admin: AdminArticle): ArticleData {
-  return {
-    title: admin.title,
-    category: admin.category,
-    lastUpdate: admin.lastUpdate,
-    intro: admin.intro,
-    details: admin.details,
-    documents: admin.documents,
-    steps: admin.steps,
-    tips: admin.tips,
-    fees: admin.fees,
-    warning: admin.warning || undefined,
-    source: admin.source,
-  };
-}
-
-// ============================================
-// 🪝 Hooks - المقالات
-// ============================================
+// import { STATIC_ARTICLES } from '@/lib/staticArticles'; // REMOVED
 
 export function useAdminArticles() {
-  const [articles, setArticles] = useState<AdminArticle[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Static Fallback + DB
+  const { data: articles, loading } = useResource<AdminArticle>(
+    'articles',
+    'articles',
+    [], // No static fallback
+    standardMerger
+  );
 
-  useEffect(() => {
-    const saved = safeGet<AdminArticle[]>(STORAGE_KEYS.articles, []);
-
-    if (saved.length > 0) {
-      setArticles(saved.filter(a => a.active).map(a => ({ ...a, id: normalizeId(a.id) })));
-    } else {
-      const staticArticles: AdminArticle[] = Object.entries(ARTICLES).map(([id, a]) => ({
-        id: normalizeId(id),
+  const articlesMap = useMemo(() => {
+    const map: Record<string, ArticleData> = {};
+    articles.forEach(a => {
+      map[a.id] = {
         title: a.title,
         category: a.category,
         lastUpdate: a.lastUpdate,
         intro: a.intro,
         details: a.details,
-        documents: a.documents || [],
-        steps: a.steps || [],
-        tips: a.tips || [],
-        fees: a.fees || '',
-        warning: a.warning || null,
-        source: a.source || '',
-        active: true,
-        createdAt: a.lastUpdate,
-      }));
-      setArticles(staticArticles);
-    }
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminArticle[]>(STORAGE_KEYS.articles, []);
-      if (updated.length > 0) {
-        setArticles(updated.filter(a => a.active).map(a => ({ ...a, id: normalizeId(a.id) })));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
-
-  const articlesMap = useMemo(() => {
-    const map: Record<string, ArticleData> = {};
-    articles.forEach(a => {
-      map[a.id] = toArticleData(a);
+        documents: a.documents,
+        steps: a.steps,
+        tips: a.tips,
+        fees: a.fees,
+        warning: a.warning ?? undefined,
+        source: a.source,
+      };
     });
     return map;
   }, [articles]);
@@ -209,219 +87,112 @@ export function useAdminArticles() {
   return { articles, articlesMap, loading };
 }
 
-export function useAdminArticle(id: string) {
-  const [article, setArticle] = useState<AdminArticle | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const normalizedId = normalizeId(id);
-    const saved = safeGet<AdminArticle[]>(STORAGE_KEYS.articles, []);
-    const found = saved.find(a => normalizeId(a.id) === normalizedId && a.active);
-
-    if (found) {
-      setArticle({ ...found, id: normalizedId });
-    } else if (ARTICLES[id] || ARTICLES[normalizedId]) {
-      const a = ARTICLES[id] || ARTICLES[normalizedId];
-      setArticle({
-        id: normalizedId,
-        title: a.title,
-        category: a.category,
-        lastUpdate: a.lastUpdate,
-        intro: a.intro,
-        details: a.details,
-        documents: a.documents || [],
-        steps: a.steps || [],
-        tips: a.tips || [],
-        fees: a.fees || '',
-        warning: a.warning || null,
-        source: a.source || '',
-        active: true,
-        createdAt: a.lastUpdate,
-      });
-    }
-
-    setLoading(false);
-  }, [id]);
-
-  const articleData = article ? toArticleData(article) : null;
-
-  return { article, articleData, loading };
-}
-
 // ============================================
-// 🪝 Hooks - الخدمات
+// 🪝 Hooks - Services
 // ============================================
 
 export function useAdminServices() {
-  const [services, setServices] = useState<AdminService[]>([]);
-  const [loading, setLoading] = useState(true);
+  const staticServices: AdminService[] = useMemo(() => SERVICES_LIST.map(s => ({
+    id: s.id,
+    title: s.title,
+    description: s.desc, // Normalize prop name if needed, but keeping types aligned is better
+    desc: s.desc,
+    price: null,
+    whatsapp: null,
+    active: true,
+  })), []);
 
-  useEffect(() => {
-    const saved = safeGet<AdminService[]>(STORAGE_KEYS.services, []);
+  // Custom merger for Services since DB structure (service_providers) differs slightly from static
+  const serviceMerger = (statics: AdminService[], remotes: any[]): AdminService[] => {
+    // Transform remote raw data to AdminService first
+    const transformedRemotes: AdminService[] = remotes.map((d: any) => ({
+      id: d.id,
+      title: d.name,
+      desc: d.profession + (d.description ? ` - ${d.description.slice(0, 50)}...` : ''),
+      description: d.description,
+      price: null,
+      whatsapp: d.phone,
+      active: true,
+      image: d.image,
+      profession: d.profession,
+      city: d.city
+    }));
+    return standardMerger(statics, transformedRemotes);
+  };
 
-    if (saved.length > 0) {
-      setServices(saved.filter(s => s.active));
-    } else {
-      const staticServices: AdminService[] = SERVICES_LIST.map(s => ({
-        id: s.id,
-        title: s.title,
-        desc: s.desc,
-        price: null,
-        whatsapp: null,
-        active: true,
-      }));
-      setServices(staticServices);
-    }
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminService[]>(STORAGE_KEYS.services, []);
-      if (updated.length > 0) {
-        setServices(updated.filter(s => s.active));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
+  const { data: services, loading } = useResource<AdminService>(
+    'services',
+    'service_providers', // Table name
+    staticServices,
+    serviceMerger
+  );
 
   return { services, loading };
 }
 
 // ============================================
-// 🪝 Hooks - الأخبار
+// 🪝 Hooks - Updates
 // ============================================
 
 export function useAdminUpdates() {
-  const [updates, setUpdates] = useState<AdminUpdate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const staticUpdates: AdminUpdate[] = useMemo(() => LATEST_UPDATES.map(u => ({
+    id: String(u.id),
+    type: u.type as any,
+    title: u.title,
+    date: u.date,
+    content: u.content || null,
+    active: true,
+  })), []);
 
-  useEffect(() => {
-    const saved = safeGet<AdminUpdate[]>(STORAGE_KEYS.updates, []);
+  const updateMerger = (statics: AdminUpdate[], remotes: any[]): AdminUpdate[] => {
+    const transformed: AdminUpdate[] = remotes.map((d: any) => ({
+      id: d.id,
+      type: d.type,
+      title: d.title,
+      date: d.date || (d.created_at ? d.created_at.split('T')[0] : ''),
+      content: d.content,
+      active: d.active !== false,
+      image: d.image
+    }));
+    // FIX: Do not merge statics. Return DB data only to prevent duplicates/ghosts.
+    // const merged = standardMerger(statics, transformed);
+    return transformed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
 
-    if (saved.length > 0) {
-      setUpdates(saved.filter(u => u.active).sort((a, b) => b.date.localeCompare(a.date)));
-    } else {
-      const staticUpdates: AdminUpdate[] = LATEST_UPDATES.map(u => ({
-        id: String(u.id),
-        type: u.type,
-        title: u.title,
-        date: u.date,
-        content: u.content || null,
-        active: true,
-      }));
-      setUpdates(staticUpdates);
-    }
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminUpdate[]>(STORAGE_KEYS.updates, []);
-      if (updated.length > 0) {
-        setUpdates(updated.filter(u => u.active).sort((a, b) => b.date.localeCompare(a.date)));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
+  const { data: updates, loading } = useResource<AdminUpdate>(
+    'updates',
+    'updates',
+    staticUpdates,
+    updateMerger
+  );
 
   return { updates, loading };
 }
 
 // ============================================
-// 🪝 Hooks - الأكواد الأمنية
+// 🪝 Hooks - Codes
 // ============================================
 
-export function useAdminCodes() {
-  const [codes, setCodes] = useState<AdminCode[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const saved = safeGet<AdminCode[]>(STORAGE_KEYS.codes, []);
-
-    if (saved.length > 0) {
-      setCodes(saved.filter(c => c.active));
-    } else {
-      const staticCodes: AdminCode[] = SECURITY_CODES.map((c, i) => ({
-        id: `code-${i}`,
-        code: c.code,
-        title: c.title,
-        desc: c.desc,
-        category: c.category,
-        severity: c.severity,
-        active: true,
-      }));
-      setCodes(staticCodes);
-    }
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminCode[]>(STORAGE_KEYS.codes, []);
-      if (updated.length > 0) {
-        setCodes(updated.filter(c => c.active));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
-
-  return { codes, loading };
-}
+// useAdminCodes moved to top
 
 // ============================================
-// 🪝 Hooks - الأسئلة الشائعة
+// 🪝 Hooks - FAQ
 // ============================================
 
 export function useAdminFAQ() {
-  const [faq, setFaq] = useState<AdminFAQ[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: faq, loading } = useResource<AdminFAQ>(
+    'faq',
+    'faqs',
+    [], // No static FAQs defined in old file logic, so empty
+    (s, r) => r.map((d: any) => ({
+      id: d.id,
+      question: d.question,
+      answer: d.answer,
+      category: d.category,
+      active: d.active !== false
+    }))
+  );
 
-  useEffect(() => {
-    const saved = safeGet<AdminFAQ[]>(STORAGE_KEYS.faq, []);
-
-    if (saved.length > 0) {
-      setFaq(saved.filter(f => f.active));
-    }
-    // لا يوجد fallback ثابت هنا - سيُحمّل من الملف الأصلي إذا لزم
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminFAQ[]>(STORAGE_KEYS.faq, []);
-      if (updated.length > 0) {
-        setFaq(updated.filter(f => f.active));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
-
-  // تجميع الأسئلة حسب التصنيف
   const faqByCategory = useMemo(() => {
     const grouped: Record<string, AdminFAQ[]> = {};
     faq.forEach(f => {
@@ -435,98 +206,239 @@ export function useAdminFAQ() {
 }
 
 // ============================================
-// 🪝 Hooks - النماذج
-// ============================================
-
-export function useAdminForms() {
-  const [forms, setForms] = useState<AdminForm[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const saved = safeGet<AdminForm[]>(STORAGE_KEYS.forms, []);
-
-    if (saved.length > 0) {
-      setForms(saved.filter(f => f.active));
-    } else {
-      const staticForms: AdminForm[] = FORMS.map((f, i) => ({
-        id: `form-${i}`,
-        name: f.name,
-        desc: f.desc,
-        type: f.type,
-        url: (f as any).url || '',
-        active: true,
-      }));
-      setForms(staticForms);
-    }
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminForm[]>(STORAGE_KEYS.forms, []);
-      if (updated.length > 0) {
-        setForms(updated.filter(f => f.active));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
-
-  return { forms, loading };
-}
-
-// ============================================
-// 🪝 Hooks - المصادر الرسمية
+// 🪝 Hooks - Sources
 // ============================================
 
 export function useAdminSources() {
-  const [sources, setSources] = useState<AdminSource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const staticSources: AdminSource[] = useMemo(() => OFFICIAL_SOURCES.map((s, i) => ({
+    id: `source-${i}`,
+    name: s.name,
+    url: s.url,
+    desc: s.desc,
+    active: true,
+    is_official: true
+  })), []);
 
-  useEffect(() => {
-    const saved = safeGet<AdminSource[]>(STORAGE_KEYS.sources, []);
+  const sourceMerger = (statics: AdminSource[], remotes: any[]): AdminSource[] => {
+    const transformed: AdminSource[] = remotes.map((d: any) => ({
+      id: d.id,
+      name: d.name,
+      url: d.url,
+      desc: d.description,
+      active: d.active !== false,
+      is_official: d.is_official
+    }));
+    // Append strategy instead of by-ID override for sources usually
+    return [...statics, ...transformed];
+  };
 
-    if (saved.length > 0) {
-      setSources(saved.filter(s => s.active));
-    } else {
-      const staticSources: AdminSource[] = OFFICIAL_SOURCES.map((s, i) => ({
-        id: `source-${i}`,
-        name: s.name,
-        url: s.url,
-        desc: s.desc,
-        active: true,
-      }));
-      setSources(staticSources);
-    }
-
-    setLoading(false);
-
-    const handler = () => {
-      const updated = safeGet<AdminSource[]>(STORAGE_KEYS.sources, []);
-      if (updated.length > 0) {
-        setSources(updated.filter(s => s.active));
-      }
-    };
-
-    window.addEventListener('admin-data-updated', handler);
-    window.addEventListener('storage', handler);
-
-    return () => {
-      window.removeEventListener('admin-data-updated', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
+  const { data: sources, loading } = useResource<AdminSource>(
+    'sources',
+    'official_sources',
+    staticSources,
+    sourceMerger
+  );
 
   return { sources, loading };
 }
 
 // ============================================
-// 🛠️ دوال مساعدة
+// 🪝 Hooks - Forms
+// ============================================
+
+export function useAdminForms() {
+  // Currently purely static as per old implementation
+  const staticForms: AdminForm[] = useMemo(() => FORMS.map(f => ({
+    id: f.id,
+    name: f.name,
+    desc: f.desc,
+    type: f.type,
+    url: f.url,
+    active: true
+  })), []);
+
+  // Pass null table name to skip fetching
+  const { data: forms, loading } = useResource<AdminForm>(
+    'forms',
+    null,
+    staticForms,
+    (s) => s
+  );
+
+  return { forms, loading };
+}
+
+// ============================================
+// 🪝 Hooks - Menus
+// ============================================
+
+export function useAdminMenus() {
+  const staticMenus = useMemo(() => {
+    const h = PRIMARY_NAV.map((item, idx) => ({
+      id: `menu-h-${idx}`, label: item.name, href: item.href, location: 'header', sortOrder: idx, active: true
+    }));
+    const f = NAVIGATION.map((item, idx) => ({
+      id: `menu-f-${idx}`, label: item.name, href: item.href, location: 'footer', sortOrder: idx, active: true
+    }));
+    return [...h, ...f];
+  }, []);
+
+  const menuMerger = (statics: AdminMenu[], remotes: any[]): AdminMenu[] => {
+    if (remotes.length === 0) return statics;
+    return remotes.map((d: any) => ({
+      id: d.id,
+      label: d.label,
+      href: d.href,
+      location: d.location,
+      sortOrder: d.sort_order,
+      active: d.is_active !== false
+    }));
+  };
+
+  const { data: menus, loading } = useResource<AdminMenu>(
+    'menus',
+    'site_menus',
+    staticMenus,
+    menuMerger
+  );
+
+  return { menus, loading };
+}
+
+// ============================================
+// 🪝 Hooks - Categories
+// ============================================
+
+export function useAdminCategories() {
+  const staticCats = useMemo(() => Object.entries(CATEGORY_SLUGS).map(([slug, title]) => ({
+    slug, title, description: '', active: true
+  })), []);
+
+  // Merger logic: if DB has data, use it (it likely has all categories), else static fallback
+  // Note: The generic hook standardMerger expects ID. Here we have 'slug'.
+  // We'll write a custom simple selection:
+  const catMerger = (statics: AdminCategory[], remotes: any[]): AdminCategory[] => {
+    if (remotes && remotes.length > 0) {
+      return remotes.map((d: any) => ({
+        slug: d.slug,
+        title: d.title,
+        description: d.description || '',
+        active: d.active !== false
+      }));
+    }
+    return statics;
+  };
+
+  // We pass 'dummy' ID type by asserting generic, or just ignore ID constraint since we use custom merger
+  // AdminCategory doesn't have 'id', so we cast strictly in useResource usage if strict
+  // For simplicity, we can just use any casting or adapt type.
+  // The generic useResource expects T extends {id: string}. AdminCategory has slug.
+  // Let's cheat slightly and add id computed property or just use 'as any' for this special case.
+  const { data: categories, loading } = useResource<AdminCategory & { id: string }>(
+    'categories',
+    'service_categories',
+    staticCats.map(c => ({ ...c, id: c.slug })),
+    catMerger as any
+  );
+
+  return { categories, loading };
+}
+
+// ============================================
+// 🪝 Hooks - Tools
+// ============================================
+
+export function useAdminTools() {
+  const staticTools = useMemo(() => TOOLS_MENU.map(t => ({
+    key: t.href, name: t.name, route: t.href, active: true, id: t.href // Add ID for compliance
+  })), []);
+
+  const toolMerger = (statics: any[], remotes: any[]): any[] => {
+    if (remotes && remotes.length > 0) {
+      return remotes.map((d: any) => ({
+        key: d.key, name: d.name, route: d.route, active: d.is_active !== false, id: d.key
+      }));
+    }
+    return statics;
+  };
+
+  const { data: tools, loading } = useResource<AdminTool & { id: string }>(
+    'tools',
+    'tools_registry',
+    staticTools,
+    toolMerger
+  );
+
+  return { tools, loading };
+}
+
+// ============================================
+// 🪝 Single Article (Kept as is or refactored? Refactoring with SWR is trickier for dynamic args)
+// ============================================
+
+// useSWR supports dynamic keys: key = slug ? ['article', slug] : null
+import useSWR from 'swr';
+import { supabase } from '@/lib/supabaseClient';
+
+export function useAdminArticle(slug: string) {
+  const fetcher = async () => {
+    if (!slug) return null;
+    const normalizedSlug = normalizeId(slug);
+
+    let foundArticle: ArticleData | null = null;
+    // 1. Static - REMOVED
+    // if (ARTICLES[normalizedSlug]) {
+    //   foundArticle = ARTICLES[normalizedSlug];
+    // }
+    // 2. DB
+    if (supabase) {
+      const { data } = await supabase.from('articles').select('*').eq('id', normalizedSlug).single();
+      if (data) {
+        foundArticle = {
+          title: data.title,
+          category: data.category,
+          lastUpdate: data.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          intro: data.intro || '',
+          details: data.details || '',
+          documents: data.documents || [],
+          steps: data.steps || [],
+          tips: data.tips || [],
+          fees: data.fees || '',
+          warning: data.warning || null,
+          source: data.source || '',
+          image: data.image
+        };
+      }
+    }
+    return foundArticle;
+  };
+
+  const { data: articleData, isLoading } = useSWR(slug ? ['article', slug] : null, fetcher, {
+    revalidateOnFocus: false
+  });
+
+  return { articleData, loading: isLoading };
+}
+
+// ============================================
+// 🪝 Hooks - Scenarios (Consultant)
+// ============================================
+
+import { PlanResult } from '@/lib/types';
+
+export function useAdminScenarios() {
+  const { data: scenarios, loading } = useResource<PlanResult>(
+    'scenarios',
+    'consultant_scenarios',
+    [],
+    (statics, remotes) => remotes // No merger needed for now, DB is source of truth
+  );
+
+  return { scenarios, loading };
+}
+
+// ============================================
+// 🛠️ Utils
 // ============================================
 
 export function isNewContent(dateStr: string): boolean {
@@ -550,6 +462,15 @@ export function formatDate(dateStr: string): string {
   }
 }
 
+
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+export function normalizeId(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\u0600-\u06FF\-]/g, '');
 }

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Bell, HelpCircle, Save, Loader2, Trash2, Edit, Plus, X } from 'lucide-react';
-
+import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock } from 'lucide-react';
+import { toast } from 'sonner';
+import { LATEST_UPDATES } from '@/lib/constants';
 // === Types ===
 type DBUpdate = {
     id: string;
@@ -12,6 +13,7 @@ type DBUpdate = {
     content: string;
     date: string;
     active: boolean;
+    link?: string;
 };
 
 type DBFAQ = {
@@ -24,9 +26,10 @@ type DBFAQ = {
 
 // === Updates Manager Component ===
 export function UpdatesManager() {
+    // ... (State)
     const [updates, setUpdates] = useState<DBUpdate[]>([]);
     const [loading, setLoading] = useState(true);
-    const [formData, setFormData] = useState<Partial<DBUpdate>>({ type: 'news', title: '', content: '', active: true });
+    const [formData, setFormData] = useState<Partial<DBUpdate>>({ type: 'news', title: '', content: '', active: true, link: '' });
     const [editingId, setEditingId] = useState<string | null>(null);
 
     const fetchUpdates = async () => {
@@ -47,15 +50,25 @@ export function UpdatesManager() {
         if (!error) {
             alert('تم الحفظ!');
             setEditingId(null);
-            setFormData({ type: 'news', title: '', content: '', active: true });
+            setFormData({ type: 'news', title: '', content: '', active: true, link: '' });
             fetchUpdates();
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('حذف؟')) return;
-        await supabase!.from('updates').delete().eq('id', id);
-        fetchUpdates();
+    const handleDelete = async (id: string, title?: string) => {
+        const toastId = toast.loading(`جاري حذف: ${title || 'التحديث'}...`);
+        console.log('🗑️ Attempting to delete ID:', id);
+
+        const { error } = await supabase!.from('updates').delete().eq('id', id);
+
+        if (error) {
+            console.error('❌ Delete failed:', error);
+            toast.error(`فشل الحذف: ${error.message}`, { id: toastId });
+        } else {
+            console.log('✅ Delete successful');
+            toast.success('تم الحذف بنجاح', { id: toastId });
+            fetchUpdates();
+        }
     }
 
     return (
@@ -77,6 +90,10 @@ export function UpdatesManager() {
                         </select>
                     </div>
                     <div>
+                        <label className="text-sm font-bold block mb-1">رابط التوجيه (اختياري)</label>
+                        <input type="url" placeholder="مثلاً: /article/123 أو https://example.com" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" dir="ltr" />
+                    </div>
+                    <div>
                         <label className="text-sm font-bold block mb-1">المحتوى</label>
                         <textarea rows={3} value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
                     </div>
@@ -90,7 +107,7 @@ export function UpdatesManager() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold">سجل التحديثات</div>
                 <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[500px] overflow-y-auto">
-                    {updates.map(u => (
+                    {updates.map((u) => (
                         <div key={u.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex justify-between group">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
@@ -101,7 +118,7 @@ export function UpdatesManager() {
                             </div>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => { setEditingId(u.id); setFormData(u); }} className="text-blue-500"><Edit size={16} /></button>
-                                <button onClick={() => handleDelete(u.id)} className="text-red-500"><Trash2 size={16} /></button>
+                                <button onClick={() => handleDelete(u.id, u.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors" title="حذف"><Trash2 size={16} /></button>
                             </div>
                         </div>
                     ))}
@@ -139,9 +156,14 @@ export function FAQManager() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('حذف؟')) return;
-        await supabase!.from('faqs').delete().eq('id', id);
-        fetchFaqs();
+        if (!confirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
+        const { error } = await supabase!.from('faqs').delete().eq('id', id);
+        if (error) {
+            console.error('Delete FAQ Error:', error);
+            alert('❌ فشل الحذف: ' + error.message);
+        } else {
+            fetchFaqs();
+        }
     }
 
     return (

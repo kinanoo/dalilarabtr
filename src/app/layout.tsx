@@ -10,8 +10,13 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import ClientComponents from "@/components/ClientComponents";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import BottomNav from "@/components/mobile/BottomNav";
 import BackToTop from "@/components/BackToTop";
+import UrgencyBanner from '@/components/UrgencyBanner';
+import AmbientBackground from "@/components/ui/AmbientBackground";
+import SelectionShareMenu from '@/components/ui/SelectionShareMenu';
+import CopyProtection from '@/components/ui/CopyProtection';
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -65,8 +70,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.png", type: "image/png" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
@@ -74,7 +78,7 @@ export const metadata: Metadata = {
   },
 
   // ✅ PWA Settings
-  manifest: "/manifest.json",
+  manifest: "/site.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -105,71 +109,26 @@ export default function RootLayout({
         <meta name="googlebot" content="index, follow" />
         <meta name="description-scrape" content="unauthorized" />
 
-        {/* Favicons */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#10b981" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="msapplication-TileColor" content="#10b981" />
-        <meta name="theme-color" content="#ffffff" />
-
         {/* Google Analytics */}
         {GA_ID && <GoogleAnalytics />}
 
-        <script dangerouslySetInnerHTML={{
-          __html: `
-          (function() {
-            if (typeof window === 'undefined') return;
-            
-            // تعطيل الاختصارات الشائعة للمعاينة (F12, Ctrl+Shift+I, Ctrl+U)
-            window.addEventListener('keydown', function(e) {
-              if (
-                e.key === 'F12' ||
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                (e.ctrlKey && e.key === 'u')
-              ) {
-                e.preventDefault();
-                return false;
-              }
-            });
-
-            // محاولة اكتشاف فتح نافذة المطورين
-            var checkDevTools = function() {
-              const threshold = 160;
-              const isDevToolsOpen = window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold;
-              if (isDevToolsOpen) {
-                // يمكن إضافة منطق لإخفاء المحتوى أو التنبيه هنا
-              }
-            };
-            setInterval(checkDevTools, 2000);
-          })();
-        `}} />
         <GoogleAnalytics />
       </head>
       <body className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
         <ThemeProviderWrapper>
-          <div className="flex flex-col min-h-screen relative overflow-hidden">
-            {/* Background Texture & Blobs - Replicated from Netlify */}
-            <div className="fixed inset-0 z-[-1] pointer-events-none">
-              {/* 1. Base Gradient/Color */}
-              <div className="absolute inset-0 bg-slate-50 dark:bg-slate-950 transition-colors duration-300" />
+          <div className="flex flex-col min-h-screen relative">
+            {/* New Animated & Interactive Background */}
+            <AmbientBackground />
 
-              {/* 2. Cubes Pattern */}
-              <div
-                className="absolute inset-0 opacity-[0.15] dark:opacity-[0.05]"
-                style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')" }}
-              />
+            {/* Viral Growth Tools */}
+            <SelectionShareMenu />
+            <CopyProtection />
 
-              {/* 3. Decorative Blobs */}
-              <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-normal animate-blob" />
-              <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-normal animate-blob animation-delay-2000" />
-              <div className="absolute -bottom-32 left-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-normal animate-blob animation-delay-4000" />
-            </div>
-
-            <div className="pb-20 lg:pb-0 relative z-10">
+            <div className="relative z-10">
+              <UrgencyBanner />
               <Navbar />
               {children}
+              <Footer />
             </div>
             <ClientComponents />
             <BackToTop />

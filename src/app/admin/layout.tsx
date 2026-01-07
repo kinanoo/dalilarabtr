@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Loader2 } from 'lucide-react';
 import LoginPage from '@/components/admin/LoginPage';
 import { ToastProvider } from '@/components/ui/Toast';
-import AdminSidebar from '@/components/admin/AdminSidebar';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 export default function AdminLayout({
     children,
@@ -14,6 +14,7 @@ export default function AdminLayout({
 }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [sidebarCollapsed] = useState(false);
 
     useEffect(() => {
         if (!supabase) return;
@@ -36,6 +37,11 @@ export default function AdminLayout({
         return () => subscription.unsubscribe();
     }, []);
 
+    const handleLogout = async () => {
+        await supabase!.auth.signOut();
+        setIsAuthenticated(false);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
@@ -50,12 +56,13 @@ export default function AdminLayout({
 
     return (
         <ToastProvider>
-            <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-                <AdminSidebar />
-                <main className="flex-1 lg:mr-64 transition-all duration-300">
-                    <div className="p-6 md:p-8 max-w-7xl mx-auto">
-                        {children}
-                    </div>
+            <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+                <AdminSidebar
+                    collapsed={sidebarCollapsed}
+                    onLogout={handleLogout}
+                />
+                <main className="flex-1 transition-all duration-300 overflow-y-auto">
+                    {children}
                 </main>
             </div>
         </ToastProvider>

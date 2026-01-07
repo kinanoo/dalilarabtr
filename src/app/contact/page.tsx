@@ -1,6 +1,5 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 
@@ -27,8 +26,6 @@ export default function ContactPage() {
           </p>
         </section>
       </div>
-
-      <Footer />
-    </main>
+</main>
   );
 }

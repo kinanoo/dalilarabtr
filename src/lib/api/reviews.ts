@@ -129,7 +129,7 @@ export async function addReview(reviewData: AddReviewData): Promise<{ data: Serv
             .insert([
                 {
                     ...reviewData,
-                    is_approved: false, // ينتظر موافقة الإدارة
+                    is_approved: true, // Auto-approve for now (تفعيل فوري)
                 },
             ])
             .select()

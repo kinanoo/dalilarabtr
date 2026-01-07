@@ -1,4 +1,4 @@
-import { ARTICLES } from '@/lib/articles';
+// import { ARTICLES } from '@/lib/articles'; // REMOVED
 import type { FAQCategory, FAQQuestion } from '@/lib/faq-types';
 import { minTokenMatches, normalizeArabic, scoreMatch, tokenizeArabicQuery } from '@/lib/arabicSearch';
 
@@ -12,23 +12,11 @@ type ArticleIndexItem = {
 
 const POLICY_VERB_RE = /(لا\s*يمكن|غير\s*ممكن|مستحيل|ممنوع|لا\s*يسمح|لا\s*|بدي|عايز|رايد|عم دور|عندي|لازمني|يحق|يمكن|ممكن|متاح|يسمح|يحق)/;
 
-let memoArticleIndex: ArticleIndexItem[] | null = null;
+const memoArticleIndex: ArticleIndexItem[] | null = null;
 
 function getArticleIndex(): ArticleIndexItem[] {
-  if (memoArticleIndex) return memoArticleIndex;
-
-  memoArticleIndex = Object.entries(ARTICLES).map(([id, a]) => {
-    const raw = [a.title, a.intro, a.details].filter(Boolean).join(' ');
-    return {
-      id,
-      title: a.title,
-      lastUpdate: a.lastUpdate,
-      intro: a.intro,
-      haystack: normalizeArabic(raw),
-    };
-  });
-
-  return memoArticleIndex;
+  // Static article index is removed.
+  return [];
 }
 
 function shouldCanonicalize(q: FAQQuestion): boolean {
@@ -60,16 +48,8 @@ function pickBestArticle(questionText: string): { id: string; score: number } | 
 }
 
 function buildCanonicalAnswer(articleId: string): string | null {
-  const a = ARTICLES[articleId];
-  if (!a) return null;
-
-  const intro = (a.intro || '').trim();
-  if (!intro) return null;
-
-  const update = a.lastUpdate ? `آخر تحديث: ${a.lastUpdate}` : '';
-  const meta = update ? ` (${update})` : '';
-
-  return `${intro}\n\nالمرجع الأحدث: ${a.title}${meta}`.trim();
+  // Logic disabled
+  return null;
 }
 
 function replaceArticlePathsWithTitles(answer: string): string {
@@ -79,7 +59,8 @@ function replaceArticlePathsWithTitles(answer: string): string {
   // Replace any raw article paths with their article titles (no URLs in the output).
   const replaced = input.replace(/\/article\/([A-Za-z0-9_-]+)/g, (_m, rawId: string) => {
     const id = String(rawId || '').trim();
-    const title = ARTICLES[id]?.title;
+    // const title = ARTICLES[id]?.title;
+    const title = ''; // Disabled static lookup
     return title ? `«${title}»` : '«مقال داخل الموقع»';
   });
 

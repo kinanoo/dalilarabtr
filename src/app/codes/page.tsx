@@ -1,24 +1,50 @@
 'use client';
 import { Metadata } from 'next';
 import ToolSchema from '@/components/ToolSchema';
-import Footer from '@/components/Footer';
+
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { useAdminCodes } from '@/lib/useAdminData';
 import { useState } from 'react';
 import { ShieldAlert, AlertTriangle, Info, CheckCircle, Loader2 } from 'lucide-react';
 import ShareMenu from '@/components/ShareMenu';
+import { intelligentTokenize } from '@/lib/intelligentSearch';
+import { normalizeArabic } from '@/lib/arabicSearch';
 
 export default function CodesPage() {
   const { codes, loading } = useAdminCodes();
   const [query, setQuery] = useState('');
 
-  // فلترة الأكواد
-  const filteredCodes = codes.filter(item =>
-    item.code.toLowerCase().includes(query.toLowerCase()) ||
-    item.title.toLowerCase().includes(query.toLowerCase()) ||
-    item.desc.toLowerCase().includes(query.toLowerCase())
-  );
+  // 🧠 فلترة الأكواد بالبحث الذكي
+  const filteredCodes = codes.filter(item => {
+    if (!query.trim()) return true;
+
+    const { originalTokens, expandedTokens } = intelligentTokenize(query);
+    const searchText = normalizeArabic(`${item.code} ${item.title} ${item.desc}`);
+    const needle = normalizeArabic(query);
+
+    let score = 0;
+    let hasOriginalKeyword = false;
+
+    originalTokens.forEach((token: string) => {
+      if (searchText.includes(normalizeArabic(token))) {
+        hasOriginalKeyword = true;
+        score += 20;
+      }
+    });
+
+    if (!hasOriginalKeyword) return false;
+
+    expandedTokens.forEach((term: string) => {
+      if (!originalTokens.includes(term) && searchText.includes(normalizeArabic(term))) {
+        score += 8;
+      }
+    });
+
+    if (searchText.includes(needle)) score += 25;
+
+    return score >= 10;
+  });
 
   const getSeverityLabel = (severity: string) => {
     switch (severity) {
@@ -54,15 +80,16 @@ export default function CodesPage() {
   return (
     <main className="flex flex-col min-h-screen">
       <ToolSchema tool="security-codes" />
+
       <PageHero
-        title="دليل الأكواد الأمنية (Tahdit Kodları)"
-        description="ابحث عن أي كود (V87, G87, Ç114) واعرف معناه القانوني ومدى خطورته."
+        title="كاشف ومحلل الأكواد الأمنية"
+        description="افهم كل أكواد المنع والحظر بالتفصيل"
         icon={<ShieldAlert className="w-10 h-10 md:w-12 md:h-12 text-red-500" />}
       >
         <HeroSearchInput
           value={query}
           onChange={setQuery}
-          placeholder="اكتب الكود هنا... (مثال: V87)"
+          placeholder="اكتب الكود أو ابحث بالوصف... (مثال: V87، منع السفر...)"
           dir="ltr"
           inputClassName="font-bold uppercase tracking-wider placeholder:text-right placeholder:[direction:rtl]"
         />
@@ -98,29 +125,27 @@ export default function CodesPage() {
                           {getSeverityLabel(item.severity)}
                         </span>
                       </div>
-                      <p className="text-sm opacity-90 leading-relaxed mt-2">{item.desc}</p>
-                      <div className="flex items-center justify-between mt-3">
-                        <ShareMenu
-                          title={`شرح الكود ${item.code}: ${item.title}`}
-                          text={item.desc}
-                          mini={true}
-                          customClass="!bg-white/60 hover:!bg-white dark:!bg-white/10 dark:hover:!bg-white/20"
-                        />
-                      </div>
+                      <p className="text-xs sm:text-sm mt-2 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 </div>
-                <div className="h-1 w-full border-t border-black/5 dark:border-white/5" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-slate-500 dark:text-slate-300">
-            لا توجد أكواد تطابق بحثك.
+          <div className="text-center py-20">
+            <ShieldAlert size={64} className="mx-auto mb-4 text-slate-300 dark:text-slate-700" />
+            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">
+              لا توجد أكواد مطابقة لـ &quot;{query}&quot;
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              جرب البحث بكود مختلف أو كلمات أخرى
+            </p>
           </div>
         )}
       </div>
-      <Footer />
+
+      <ShareMenu title="كاشف الأكواد الأمنية - دليل العرب في تركيا" />
     </main>
   );
 }

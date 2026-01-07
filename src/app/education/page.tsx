@@ -1,11 +1,11 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 import { GraduationCap, ArrowLeft, Loader2, Sparkles, Calendar } from 'lucide-react';
 import { useAdminArticles, isNewContent } from '@/lib/useAdminData';
 import { useMemo } from 'react';
+import Image from 'next/image';
 
 export default function EducationPage() {
   const { articles: allArticles, loading } = useAdminArticles();
@@ -37,13 +37,19 @@ export default function EducationPage() {
                   className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
                 >
                   {article.image && (
-                    <div className="h-40 overflow-hidden">
-                      <img src={article.image} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="h-40 overflow-hidden relative">
+                      <Image
+                        src={article.image}
+                        alt={article.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
                     </div>
                   )}
                   <div className="p-6 flex flex-col flex-grow">
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      {isNewContent(article.createdAt) && (
+                      {isNewContent(article.created_at || '') && (
                         <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
                           <Sparkles size={10} /> جديد
                         </span>
@@ -64,7 +70,6 @@ export default function EducationPage() {
           </div>
         )}
       </div>
-      <Footer />
     </main>
   );
 }

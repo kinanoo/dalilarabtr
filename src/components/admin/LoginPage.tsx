@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader2, Lock, ShieldCheck, AlertCircle } from 'lucide-react';
-import { SITE_CONFIG } from '@/lib/data';
+import { SITE_CONFIG } from '@/lib/config';
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);

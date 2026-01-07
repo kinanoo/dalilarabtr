@@ -1,16 +1,19 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
 import { Bell, Sparkles, Loader2, Calendar } from 'lucide-react';
+import Image from 'next/image';
 
 export default function UpdatesPage() {
   // 🆕 استخدام الـ hook الجديد بدلاً من fetchRemoteUpdates
-  const { updates, loading } = useAdminUpdates();
+  const { updates: dbUpdates, loading } = useAdminUpdates();
+
+  // Use only DB updates (Filtered for News only)
+  const allUpdates = dbUpdates.filter(u => u.type === 'news');
 
   return (
-    <main className="flex flex-col min-h-screen font-cairo">
+    <main className="flex flex-col min-h-screen font-cairo bg-slate-50 dark:bg-slate-950">
 
 
       <PageHero
@@ -23,34 +26,38 @@ export default function UpdatesPage() {
       <section className="px-4 py-10">
         <div className="max-w-4xl mx-auto">
           {/* حالة التحميل */}
-          {loading ? (
+          {loading && allUpdates.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 size={40} className="animate-spin text-emerald-600" />
             </div>
-          ) : updates.length ? (
+          ) : allUpdates.length ? (
             <div className="space-y-3">
-              {updates.map((u) => (
+              {allUpdates.map((u: any) => (
                 <div
                   key={u.id}
                   id={`upd-${u.id}`}
                   className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-4">
-                    {/* 🆕 صورة الخبر إذا وجدت */}
+                    {/* Fix: Check for image safely */}
                     {u.image && (
-                      <img
-                        src={u.image}
-                        alt=""
-                        className="w-20 h-20 rounded-xl object-cover flex-shrink-0 hidden sm:block"
-                      />
+                      <div className="relative w-20 h-20 flex-shrink-0 hidden sm:block">
+                        <Image
+                          src={u.image}
+                          alt={u.title || "صورة التحديث"}
+                          fill
+                          className="rounded-xl object-cover"
+                          sizes="80px"
+                        />
+                      </div>
                     )}
 
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         {/* نوع الخبر */}
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${u.type === 'هام' || u.type === 'عاجل'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
                           }`}>
                           {u.type}
                         </span>
@@ -93,8 +100,6 @@ export default function UpdatesPage() {
           )}
         </div>
       </section>
-
-      <Footer />
     </main>
   );
 }

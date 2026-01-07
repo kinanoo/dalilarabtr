@@ -1,148 +1,290 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
-import Footer from './Footer';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, Filter, ChevronRight, ChevronLeft } from 'lucide-react';
 import Accordion from '@/components/ui/Accordion';
 import EmptyState from '@/components/EmptyState';
-import PageHeader from '@/components/ui/PageHeader';
 import { FAQCategory } from '@/lib/faq-types';
+import { intelligentTokenize } from '@/lib/intelligentSearch';
+import { normalizeArabic } from '@/lib/arabicSearch';
+
+import { useSearchParams } from 'next/navigation';
 
 interface FAQClientProps {
   staticData: FAQCategory[];
   totalCount: number;
 }
 
-export default function FAQClientNew({ staticData, totalCount }: FAQClientProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState<number | null>(null);
+const ITEMS_PER_PAGE = 15;
 
-  // البحث والفلترة
+export default function FAQClientNew({ staticData, totalCount }: FAQClientProps) {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
+  // 🧠 Smart Search & Filter
   const filteredData = useMemo(() => {
     let filtered = staticData;
 
-    // Filter by category
-    if (selectedCategoryIndex !== null) {
-      filtered = [staticData[selectedCategoryIndex]];
+    // 1. Filter by Category
+    if (selectedCategory) {
+      filtered = staticData.filter(cat => cat.category === selectedCategory);
     }
 
-    // Filter by search
+    // 2. Smart Search
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const { originalTokens, expandedTokens } = intelligentTokenize(searchQuery);
+      const needle = normalizeArabic(searchQuery);
+
       filtered = filtered
         .map((cat) => ({
           ...cat,
-          questions: cat.questions.filter(
-            (q) =>
-              q.q.toLowerCase().includes(query) ||
-              q.a.toLowerCase().includes(query)
-          ),
+          questions: cat.questions.filter((q) => {
+            const searchText = normalizeArabic(`${q.q} ${q.a}`);
+            let score = 0;
+            let matchedTokens = 0;
+
+            // Original tokens - High Value
+            originalTokens.forEach((token: string) => {
+              if (searchText.includes(normalizeArabic(token))) {
+                matchedTokens++;
+                score += 20;
+              }
+            });
+
+            // Strict Mode: If query has 3+ words, require >60% match ratio
+            if (originalTokens.length >= 3) {
+              const ratio = matchedTokens / originalTokens.length;
+              if (ratio < 0.6) return false;
+            } else {
+              // Standard Mode: Require at least one original keyword match
+              if (matchedTokens === 0) return false;
+            }
+
+            // Expanded tokens (synonyms) - Bonus only
+            expandedTokens.forEach((term: string) => {
+              if (!originalTokens.includes(term) && searchText.includes(normalizeArabic(term))) {
+                score += 8;
+              }
+            });
+
+            // Exact phrase match
+            if (searchText.includes(needle)) score += 25;
+
+            return score >= 12;
+          }),
         }))
         .filter((cat) => cat.questions.length > 0);
     }
 
     return filtered;
-  }, [staticData, searchQuery, selectedCategoryIndex]);
+  }, [staticData, searchQuery, selectedCategory]);
 
-  const totalFiltered = filteredData.reduce(
-    (sum, cat) => sum + cat.questions.length,
-    0
+  // Flatten for Pagination
+  const flattenedQuestions = useMemo(() => {
+    return filteredData.flatMap(cat =>
+      cat.questions.map(q => ({ ...q, category: cat.category }))
+    );
+  }, [filteredData]);
+
+  const totalFilteredCount = flattenedQuestions.length;
+  const totalPages = Math.ceil(totalFilteredCount / ITEMS_PER_PAGE);
+
+  const currentQuestions = flattenedQuestions.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
-    <>
-      <PageHeader
-        title="الأسئلة الشائعة"
-        description={`أكثر من ${totalCount} سؤال وجواب عن الحياة في تركيا`}
-        icon={<Search size={48} />}
-        breadcrumbs={[
-          { label: 'الأسئلة الشائعة', href: '/faq' },
-        ]}
-      />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo">
 
-      <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-8">
-        <div className="max-w-5xl mx-auto px-4">
-          {/* Search Bar */}
-          <div className="mb-6">
+      {/* 
+        Custom Hero Section - "Slightly Different" 
+        Differences:
+        1. No "Legal Guide" text.
+        2. Gradient is more Slate/Emerald focused, less Gold/Cyan.
+        3. Background shapes are different (Nebula glow instead of curves).
+      */}
+      <section className="relative z-50 bg-slate-900 border-b border-emerald-500/10 pb-12 pt-10 rounded-b-[2.5rem] overflow-hidden shadow-2xl">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '10s' }} />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+          {/* Main Title - ONLY FAQ */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-white to-teal-200 mb-6 drop-shadow-sm">
+            الأسئلة الشائعة
+          </h1>
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8 font-medium">
+            مجتمع تفاعلي يغطي كل جوانب الحياة في تركيا. {totalCount} إجابة موثقة.
+          </p>
+
+          {/* Search Box */}
+          <div className="relative group max-w-xl mx-auto transform hover:scale-[1.01] transition-transform duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
             <div className="relative">
-              <Search
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                size={20}
-              />
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors" size={22} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن سؤال..."
-                className="w-full pr-12 pl-4 py-4 text-lg border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                placeholder="ابحث عن سؤال... (إقامة، تأمين، جواز...)"
+                className="w-full pr-12 pl-4 py-4 rounded-2xl border border-slate-700 bg-slate-800/80 backdrop-blur-xl text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-emerald-500/50 shadow-xl transition-all outline-none font-bold text-lg"
               />
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Categories Filter */}
-          <div className="mb-6 flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedCategoryIndex(null)}
-              className={`px-4 py-2 rounded-lg font-bold transition-all ${selectedCategoryIndex === null
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                }`}
-            >
-              الكل ({totalCount})
-            </button>
-            {staticData.map((cat, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedCategoryIndex(index)}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${selectedCategoryIndex === index
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                  }`}
-              >
-                {cat.category} ({cat.questions.length})
-              </button>
-            ))}
-          </div>
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
 
-          {/* Results Count */}
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-            عرض {totalFiltered} من {totalCount} سؤال
-          </p>
+          {/* Sidebar / Mobile Filter */}
+          <aside className="lg:w-1/4 shrink-0">
+            <div className="sticky top-24 space-y-6">
 
-          {/* FAQ Categories with Accordion */}
-          {totalFiltered === 0 ? (
-            <EmptyState
-              type="search"
-              message={`لم نعثر على أسئلة تطابق "${searchQuery}"`}
-            />
-          ) : (
-            <div className="space-y-6">
-              {filteredData.map((category, catIndex) => (
-                <div key={catIndex}>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
-                    {category.category}
-                  </h2>
-
-                  <Accordion
-                    items={category.questions.map((q) => ({
-                      title: q.q,
-                      content: (
-                        <div
-                          className="prose dark:prose-invert max-w-none"
-                          dangerouslySetInnerHTML={{ __html: q.a }}
-                        />
-                      ),
-                    }))}
-                    allowMultiple={true}
-                  />
+              {/* Categories (Desktop) */}
+              <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
+                <div className="p-3 border-b border-slate-100 dark:border-slate-800 mb-2">
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <Filter size={18} className="text-emerald-600" /> التصنيفات
+                  </h3>
                 </div>
-              ))}
+                <div className="space-y-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className={`w-full text-right px-4 py-3 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${selectedCategory === null
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                  >
+                    <span>الكل</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${selectedCategory === null ? 'bg-emerald-500/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{totalCount}</span>
+                  </button>
+                  {staticData.map((cat) => (
+                    <button
+                      key={cat.category}
+                      onClick={() => setSelectedCategory(cat.category)}
+                      className={`w-full text-right px-4 py-3 rounded-xl text-sm font-medium transition-all flex justify-between items-center ${selectedCategory === cat.category
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
+                    >
+                      <span className="truncate ml-2">{cat.category}</span>
+                      <span className="text-xs opacity-60">({cat.questions.length})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Categories (Mobile via Horizontal Scroll) */}
+              <div className="lg:hidden">
+                <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold border transition-all ${selectedCategory === null
+                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/20 shadow-lg'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                  >
+                    الكل
+                  </button>
+                  {staticData.map((cat) => (
+                    <button
+                      key={cat.category}
+                      onClick={() => setSelectedCategory(cat.category)}
+                      className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-all ${selectedCategory === cat.category
+                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/20 shadow-lg'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                        }`}
+                    >
+                      {cat.category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             </div>
-          )}
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1 min-w-0">
+            {flattenedQuestions.length === 0 ? (
+              <EmptyState
+                message={`لا توجد نتائج لـ "${searchQuery}". جرب كلمات مختلفة.`}
+              />
+            ) : (
+              <div className="space-y-4">
+                {/* Questions List */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                  {currentQuestions.map((q, idx) => (
+                    <div key={q.id || idx} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                      <Accordion
+                        items={[{
+                          title: q.q,
+                          content: (
+                            <div className="space-y-2">
+                              {/* Removed category badge as per user request */}
+                              <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-right font-medium">
+                                {q.a}
+                              </div>
+                            </div>
+                          )
+                        }]}
+                        defaultOpen={[]}
+                        className="border-none shadow-none bg-transparent"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-3 mt-10">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold text-slate-600 disabled:hover:scale-100 bg-white dark:bg-slate-900 shadow-sm"
+                    >
+                      <ChevronRight size={18} className="rtl:rotate-180" />
+                      السابق
+                    </button>
+
+                    <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl font-mono font-bold text-slate-600 dark:text-slate-300">
+                      {currentPage} / {totalPages}
+                    </div>
+
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold text-slate-600 disabled:hover:scale-100 bg-white dark:bg-slate-900 shadow-sm"
+                    >
+                      التالي
+                      <ChevronRight size={18} className="ltr:rotate-180" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
         </div>
       </div>
-
-      <Footer />
-    </>
+    </div>
   );
 }

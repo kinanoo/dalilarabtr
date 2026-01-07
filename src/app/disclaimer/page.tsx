@@ -1,6 +1,5 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 
 export default function DisclaimerPage() {
@@ -31,8 +30,6 @@ export default function DisclaimerPage() {
           </p>
         </section>
       </div>
-
-      <Footer />
-    </main>
+</main>
   );
 }

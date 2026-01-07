@@ -1,4 +1,4 @@
-import { ARTICLES } from '@/lib/articles';
+// import { ARTICLES } from '@/lib/articles'; // REMOVED
 import {
   LATEST_UPDATES,
   SERVICES_LIST,
@@ -6,155 +6,48 @@ import {
   FORMS,
   OFFICIAL_SOURCES,
   NAVIGATION,
-} from '@/lib/data';
-import { FAQ_DATA } from '@/lib/faq-data';
-import type { FAQCategory } from '@/lib/faq-types';
-import { normalizeArabic, tokenizeArabicQuery, minTokenMatches, scoreMatch } from '@/lib/arabicSearch';
-import { canonicalizeFaqCategories } from '@/lib/faqCanonical';
+} from '@/lib/constants';
+import { FAQCategory } from '@/lib/faq-types';
+// import { FAQ_DATA } from '@/lib/faq-data'; // REMOVED
+import {
+  normalizeArabic,
+  tokenizeArabicQuery,
+  minTokenMatches,
+  scoreMatch
+} from '@/lib/arabicSearch';
 
-export type KnowledgeEntryType =
-  | 'article'
-  | 'faq'
-  | 'update'
-  | 'service'
-  | 'quick_action'
-  | 'form'
-  | 'official_source'
-  | 'navigation';
+// ...
 
-export type KnowledgeEntry = {
-  id: string;
+// KnowledgeEntry type definition
+export type KnowledgeEntryType = 'article' | 'service' | 'faq' | 'code' | 'update' | 'form' | 'source' | 'nav';
+
+export interface KnowledgeEntry {
   type: KnowledgeEntryType;
   title: string;
-  text: string;
   url: string;
-  lastUpdate?: string;
-};
+  text: string;
+  description?: string;
+  icon?: any;
+  metadata?: any;
+}
 
-export type KnowledgeSearchHit = {
+export interface KnowledgeSearchHit {
   entry: KnowledgeEntry;
   score: number;
   matched: number;
   excerpt: string;
-};
-
-function safeJoin(parts: Array<string | undefined | null>, sep = '\n'): string {
-  return parts
-    .filter((p): p is string => Boolean(p && String(p).trim()))
-    .map((p) => String(p).trim())
-    .join(sep)
-    .trim();
 }
 
-function buildArticleEntries(): KnowledgeEntry[] {
-  return Object.entries(ARTICLES).map(([id, a]) => {
-    const text = safeJoin([
-      a.intro,
-      a.details,
-      a.documents?.length ? `المستندات:\n${a.documents.join('\n')}` : '',
-      a.steps?.length ? `الخطوات:\n${a.steps.join('\n')}` : '',
-      a.tips?.length ? `نصائح:\n${a.tips.join('\n')}` : '',
-      a.fees ? `الرسوم/التكلفة: ${a.fees}` : '',
-      a.warning ? `تحذير: ${a.warning}` : '',
-    ]);
-
-    return {
-      id: `article:${id}`,
-      type: 'article',
-      title: a.title,
-      text,
-      url: `/article/${id}`,
-      lastUpdate: a.lastUpdate,
-    };
-  });
-}
-
-function buildFaqEntries(categories: FAQCategory[]): KnowledgeEntry[] {
-  const out: KnowledgeEntry[] = [];
-  for (const cat of categories) {
-    for (const q of cat.questions) {
-      const text = safeJoin([`التصنيف: ${cat.category}`, q.a]);
-      out.push({
-        id: `faq:${q.id}`,
-        type: 'faq',
-        title: q.q,
-        text,
-        url: '/faq',
-      });
-    }
-  }
-  return out;
-}
-
-function buildUpdatesEntries(): KnowledgeEntry[] {
-  return (LATEST_UPDATES || []).map((u) => ({
-    id: `update:${u.id}`,
-    type: 'update',
-    title: u.title,
-    text: safeJoin([u.type ? `النوع: ${u.type}` : '', u.content]),
-    url: `/updates#upd-${u.id}`,
-    lastUpdate: u.date,
-  }));
-}
-
-function buildServicesEntries(): KnowledgeEntry[] {
-  return (SERVICES_LIST || []).map((s) => ({
-    id: `service:${s.id}`,
-    type: 'service',
-    title: s.title,
-    text: s.desc || '',
-    url: '/services',
-  }));
-}
-
-function buildQuickActionsEntries(): KnowledgeEntry[] {
-  return (QUICK_ACTIONS || []).map((q, idx) => ({
-    id: `quick:${idx}:${q.href}`,
-    type: 'quick_action',
-    title: q.title,
-    text: q.desc || '',
-    url: q.href,
-  }));
-}
-
-function buildFormsEntries(): KnowledgeEntry[] {
-  return (FORMS || []).map((f, idx) => ({
-    id: `form:${idx}:${f.name}`,
-    type: 'form',
-    title: f.name,
-    text: safeJoin([f.desc, f.type ? `النوع: ${f.type}` : '', f.size ? `الحجم: ${f.size}` : '']),
-    url: '/forms',
-  }));
-}
-
-function buildOfficialSourcesEntries(): KnowledgeEntry[] {
-  return (OFFICIAL_SOURCES || []).map((s) => ({
-    id: `official:${s.url}`,
-    type: 'official_source',
-    title: s.name,
-    text: s.desc || '',
-    url: s.url,
-  }));
-}
-
-function buildNavigationEntries(): KnowledgeEntry[] {
-  return (NAVIGATION || [])
-    .filter((n) => typeof n?.href === 'string')
-    .map((n) => ({
-      id: `nav:${n.href}`,
-      type: 'navigation',
-      title: n.name,
-      text: n.name,
-      url: n.href,
-    }));
-}
-
+// Cache variable
 let memoEntries: KnowledgeEntry[] | null = null;
+
+
 
 export function getKnowledgeBaseEntries(): KnowledgeEntry[] {
   if (memoEntries) return memoEntries;
 
-  const canonicalFaq = canonicalizeFaqCategories(FAQ_DATA);
+  // const canonicalFaq = canonicalizeFaqCategories(FAQ_DATA);
+  const canonicalFaq: FAQCategory[] = []; // Static FAQs removed
 
   const entries: KnowledgeEntry[] = [
     ...buildArticleEntries(),
@@ -230,4 +123,78 @@ export function searchKnowledgeBase(
 
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, limit);
+}
+
+function buildArticleEntries(): KnowledgeEntry[] {
+  // Static articles removed in favor of DB
+  return [];
+}
+
+function buildFaqEntries(faqs: FAQCategory[]): KnowledgeEntry[] {
+  // Static FAQs removed or passed in as empty
+  return [];
+}
+
+function buildUpdatesEntries(): KnowledgeEntry[] {
+  return LATEST_UPDATES.map(update => ({
+    type: 'update',
+    title: update.title,
+    url: '/news', // General news page, as updates don't have individual pages yet
+    text: update.content || '',
+    description: update.type,
+    metadata: { date: update.date, type: update.type }
+  }));
+}
+
+function buildServicesEntries(): KnowledgeEntry[] {
+  return SERVICES_LIST.map(service => ({
+    type: 'service',
+    title: service.title,
+    url: '/services', // Could be refined if services have pages
+    text: service.desc,
+    icon: service.icon,
+    metadata: { id: service.id, color: service.color }
+  }));
+}
+
+function buildQuickActionsEntries(): KnowledgeEntry[] {
+  return QUICK_ACTIONS.map(action => ({
+    type: 'nav', // Treated as nav items
+    title: action.title,
+    url: action.href,
+    text: action.desc,
+    icon: action.icon,
+    description: action.desc
+  }));
+}
+
+function buildFormsEntries(): KnowledgeEntry[] {
+  return FORMS.map(form => ({
+    type: 'form',
+    title: form.name,
+    url: form.url,
+    text: form.desc,
+    description: form.desc,
+    metadata: { type: form.type, size: form.size }
+  }));
+}
+
+function buildOfficialSourcesEntries(): KnowledgeEntry[] {
+  return OFFICIAL_SOURCES.map(source => ({
+    type: 'source',
+    title: source.name,
+    url: source.url,
+    text: source.desc,
+    description: source.desc
+  }));
+}
+
+function buildNavigationEntries(): KnowledgeEntry[] {
+  return NAVIGATION.map(nav => ({
+    type: 'nav',
+    title: nav.name,
+    url: nav.href,
+    text: nav.name,
+    icon: nav.icon
+  }));
 }

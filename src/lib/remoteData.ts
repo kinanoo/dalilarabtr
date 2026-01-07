@@ -1,7 +1,8 @@
-import { SITE_CONFIG, SERVICES_LIST } from '@/lib/data';
+import { SITE_CONFIG } from '@/lib/config';
+import { SERVICES_LIST } from '@/lib/constants';
 import { supabase } from '@/lib/supabaseClient';
 import { Briefcase } from 'lucide-react';
-import type { ArticleData } from '@/lib/articles';
+import type { Article } from '@/lib/types';
 
 export type RemoteUpdateRow = {
   id: string;
@@ -42,7 +43,7 @@ function asStringArray(value: unknown): string[] {
   return [];
 }
 
-export function mapRemoteArticleToArticleData(row: RemoteArticleRow): ArticleData {
+export function mapRemoteArticleToArticleData(row: RemoteArticleRow): Article {
   return {
     title: row.title,
     category: row.category,
@@ -94,7 +95,7 @@ export function notifyDemoDataUpdated() {
 }
 
 export function subscribeDemoDataUpdated(onUpdate: () => void) {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === 'undefined') return () => { };
 
   const onCustom = () => onUpdate();
   const onStorage = (e: StorageEvent) => {
@@ -146,7 +147,7 @@ function readDemoArticles(): RemoteArticleRow[] {
   }
 }
 
-export async function fetchRemoteArticles(): Promise<Array<{ id: string; article: ArticleData }> | null> {
+export async function fetchRemoteArticles(): Promise<Array<{ id: string; article: Article }> | null> {
   if (!supabase) {
     if (!isDemoMode()) return null;
     const rows = readDemoArticles().filter((a) => a.active !== false);
@@ -213,7 +214,7 @@ export async function fetchRemoteArticleById(id: string): Promise<RemoteArticleR
   return row;
 }
 
-export async function fetchRemoteArticleDataById(id: string): Promise<ArticleData | null> {
+export async function fetchRemoteArticleDataById(id: string): Promise<Article | null> {
   const row = await fetchRemoteArticleById(id);
   if (!row) return null;
   return mapRemoteArticleToArticleData(row);

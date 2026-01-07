@@ -13,9 +13,8 @@
 
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
-import { OFFICIAL_SOURCES } from '@/lib/data';
+import { OFFICIAL_SOURCES } from '@/lib/constants';
 import { ExternalLink, Link2, ShieldCheck, Users, Globe, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 
@@ -191,11 +190,25 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
 // 🏠 الصفحة الرئيسية
 // ============================================
 
+import HeroSearchInput from '@/components/HeroSearchInput';
 import { useAdminSources } from '@/lib/useAdminData';
 import { Loader2, Building2 } from 'lucide-react';
 
 export default function ImportantLinksPage() {
   const { sources, loading } = useAdminSources();
+  const [query, setQuery] = useState('');
+
+  const normalizedQuery = query.toLowerCase().trim();
+
+  const filteredSources = sources.filter(s =>
+    s.name.toLowerCase().includes(normalizedQuery) ||
+    s.desc.toLowerCase().includes(normalizedQuery)
+  );
+
+  const filteredResources = TRUSTED_RESOURCES.filter(r =>
+    r.name.toLowerCase().includes(normalizedQuery) ||
+    r.desc.toLowerCase().includes(normalizedQuery)
+  );
 
   return (
     <main className="flex flex-col min-h-screen">
@@ -203,61 +216,77 @@ export default function ImportantLinksPage() {
         title="روابط هامة"
         description="دليلك الشامل للمواقع الحكومية والمنظمات الإنسانية الموثوقة في تركيا."
         icon={<Link2 className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
-      />
+      >
+        <HeroSearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="ابحث عن رابط، جهة حكومية، أو منظمة..."
+        />
+      </PageHero>
 
       <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-16">
 
         {/* القسم 1: المصادر الحكومية */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-2.5 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
-              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+        {filteredSources.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2.5 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
+                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  المصادر الحكومية الرسمية
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  روابط مباشرة وآمنة لجميع البوابات الخدمية والوزارات التركية
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
-                المصادر الحكومية الرسمية
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                روابط مباشرة وآمنة لجميع البوابات الخدمية والوزارات التركية
-              </p>
-            </div>
-          </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 size={32} className="animate-spin text-blue-600" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-              {sources.map((source, idx) => (
-                <LinkCard key={source.id} source={source} index={idx} />
-              ))}
-            </div>
-          )}
-        </section>
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 size={32} className="animate-spin text-blue-600" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {filteredSources.map((source, idx) => (
+                  <LinkCard key={source.id} source={source} index={idx} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* القسم 2: منظمات وموارد */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
+        {filteredResources.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  منظمات وموارد مفيدة
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  منظمات ومنصات دولية ومحلية معتمدة للمساعدة القانونية والإنسانية
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
-                منظمات وموارد مفيدة
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                منظمات ومنصات دولية ومحلية معتمدة للمساعدة القانونية والإنسانية
-              </p>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {TRUSTED_RESOURCES.map((resource, idx) => (
-              <TrustedResourceCard key={idx} resource={resource} />
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {filteredResources.map((resource, idx) => (
+                <TrustedResourceCard key={idx} resource={resource} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {filteredSources.length === 0 && filteredResources.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-slate-500 dark:text-slate-400 font-bold">لا يوجد نتائج تطابق بحثك.</p>
           </div>
-        </section>
+        )}
 
         {/* ملاحظة أسفل الصفحة */}
         <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800">
@@ -267,8 +296,6 @@ export default function ImportantLinksPage() {
           </p>
         </div>
       </div>
-
-      <Footer />
     </main>
   );
 }

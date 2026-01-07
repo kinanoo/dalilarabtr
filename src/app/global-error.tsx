@@ -22,7 +22,7 @@ export default function GlobalError({
               <AlertTriangle className="text-red-600" size={40} />
             </div>
           </div>
-          
+
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-3">خطأ في الخادم</h1>
           <p className="text-slate-600 dark:text-slate-300 mb-2">عذراً، حدثت مشكلة غير متوقعة في النظام</p>
           {error.message && (
@@ -30,7 +30,7 @@ export default function GlobalError({
               {error.message}
             </p>
           )}
-          
+
           <div className="space-y-3">
             <button
               onClick={() => reset()}
@@ -39,7 +39,7 @@ export default function GlobalError({
               <RefreshCw size={18} />
               محاولة مجدداً
             </button>
-            
+
             <Link
               href="/"
               className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2 text-center"

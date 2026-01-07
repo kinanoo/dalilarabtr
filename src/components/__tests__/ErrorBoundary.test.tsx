@@ -1,10 +1,11 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 describe('ErrorBoundary Component', () => {
   // يجب تعطيل console.error لأن ErrorBoundary يطبعها
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Briefcase, FileText, Bell, Users, Eye, TrendingUp, Clock, Plus, ExternalLink } from 'lucide-react';
+import { Briefcase, FileText, Bell, Users, TrendingUp, Clock, Plus, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 
@@ -15,11 +15,9 @@ export default function DashboardHome({ onNavigate }: { onNavigate: (tab: string
         pendingReviews: 0
     });
     const [recentServices, setRecentServices] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchDashboardData() {
-            setLoading(true);
             try {
                 if (!supabase) return;
 
@@ -47,8 +45,6 @@ export default function DashboardHome({ onNavigate }: { onNavigate: (tab: string
             } catch (err) {
                 console.error(err);
                 showToast('فشل تحميل بيانات اللوحة', 'error');
-            } finally {
-                setLoading(false);
             }
         }
 
@@ -182,6 +178,14 @@ export default function DashboardHome({ onNavigate }: { onNavigate: (tab: string
                         >
                             <div className="p-2 bg-blue-500 rounded-lg"><FileText size={16} /></div>
                             <span className="font-bold text-sm">كتابة مقال جديد</span>
+                        </button>
+
+                        <button
+                            onClick={() => onNavigate('home_manager')}
+                            className="w-full flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition backdrop-blur-sm"
+                        >
+                            <div className="p-2 bg-purple-500 rounded-lg"><FileText size={16} /></div>
+                            <span className="font-bold text-sm">إدارة الصفحة الرئيسية</span>
                         </button>
                     </div>
                 </div>

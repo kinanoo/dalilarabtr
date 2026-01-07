@@ -1,6 +1,5 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useAdminForms } from '@/lib/useAdminData';
 import { FileText, Download, Shield, Loader2, ExternalLink } from 'lucide-react';
@@ -71,7 +70,6 @@ export default function FormsPage() {
           </div>
         )}
       </div>
-      <Footer />
-    </main>
+</main>
   );
 }

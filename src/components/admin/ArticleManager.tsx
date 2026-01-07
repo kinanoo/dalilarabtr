@@ -153,7 +153,7 @@ export default function ArticleManager() {
                                 <option value="الحياة اليومية">الحياة اليومية</option>
                                 <option value="أفكار مشاريع">أفكار مشاريع</option>
                                 <option value="إقامات">إقامات</option>
-                                <option value="عام">عام</option>
+
                             </select>
                         </div>
                     </div>
@@ -279,6 +279,19 @@ export default function ArticleManager() {
                                     className="w-full pr-10 pl-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 ltr text-right"
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold mb-1">رابط الصورة (Image URL)</label>
+                        <div className="relative">
+                            <ImageIcon size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                value={formData.image}
+                                onChange={e => setFormData({ ...formData, image: e.target.value })}
+                                className="w-full pr-10 pl-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 ltr text-right"
+                                placeholder="https://example.com/image.jpg"
+                            />
                         </div>
                     </div>
 

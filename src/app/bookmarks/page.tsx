@@ -1,30 +1,42 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { useBookmarks } from '@/hooks/useBookmarks';
-import { ARTICLES } from '@/lib/articles';
+// import { ARTICLES } from '@/lib/articles'; // REMOVED
 import { Bookmark, FileText } from 'lucide-react';
 import BookmarkButton from '@/components/BookmarkButton';
 import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/EmptyState';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function BookmarksPage() {
     const { bookmarks, isLoaded } = useBookmarks();
     const [savedArticles, setSavedArticles] = useState<any[]>([]);
+    const [fetching, setFetching] = useState(false);
 
     useEffect(() => {
-        if (isLoaded) {
-            const list = bookmarks
-                .map(id => {
-                    const art = ARTICLES[id];
-                    if (!art) return null;
-                    return { id, ...art };
-                })
-                .filter(Boolean);
-            setSavedArticles(list);
-        }
+        const fetchBookmarks = async () => {
+            if (isLoaded && bookmarks.length > 0 && supabase) {
+                setFetching(true);
+                const { data } = await supabase
+                    .from('articles')
+                    .select('id, title, intro, category, last_update')
+                    .in('id', bookmarks);
+
+                if (data) {
+                    setSavedArticles(data.map(d => ({
+                        ...d,
+                        lastUpdate: d.last_update // Map snake_case to camelCase
+                    })));
+                }
+                setFetching(false);
+            } else if (isLoaded && bookmarks.length === 0) {
+                setSavedArticles([]);
+            }
+        };
+
+        fetchBookmarks();
     }, [bookmarks, isLoaded]);
 
     return (
@@ -38,7 +50,7 @@ export default function BookmarksPage() {
             />
 
             <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 pb-20">
-                {!isLoaded ? (
+                {!isLoaded || fetching ? (
                     <div className="text-center py-20 opacity-50">جاري التحميل...</div>
                 ) : savedArticles.length === 0 ? (
                     <EmptyState
@@ -75,8 +87,6 @@ export default function BookmarksPage() {
                     </div>
                 )}
             </div>
-
-            <Footer />
         </main>
     );
 }

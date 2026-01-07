@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { ShieldAlert, Plus, Save, Loader2, Trash2, Edit, X, Search, Filter } from 'lucide-react';
+import { ShieldAlert, Save, Loader2, Trash2, Edit, Search } from 'lucide-react';
 
 // Types
 type DBCode = {

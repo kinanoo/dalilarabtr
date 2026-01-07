@@ -6,7 +6,6 @@ import {
     ExternalLink, Info, Copy, ArrowRight, UserCheck
 } from 'lucide-react';
 import Link from 'next/link';
-import Footer from '@/components/Footer';
 
 import { Metadata } from 'next';
 
@@ -203,8 +202,6 @@ export default function KimlikCheckPage() {
                     </div>
                 </div>
             </main>
-
-            <Footer />
-        </div>
+</div>
     );
 }

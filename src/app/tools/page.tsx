@@ -7,7 +7,7 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Footer from '@/components/Footer';
+
 import PageHero from '@/components/PageHero';
 import {
   Calculator,
@@ -265,7 +265,7 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      <Footer />
+
     </main>
   );
 }

@@ -1,6 +1,5 @@
-'use client';
 
-import Footer from '@/components/Footer';
+
 import PageHero from '@/components/PageHero';
 
 export default function PrivacyPage() {
@@ -33,8 +32,6 @@ export default function PrivacyPage() {
           </p>
         </section>
       </div>
-
-      <Footer />
     </main>
   );
 }

@@ -4,10 +4,10 @@
  * 📰 صفحة الأخبار - تقرأ من لوحة التحكم
  */
 
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+
 import PageHero from '@/components/PageHero';
 import { useAdminUpdates, isNewContent, formatDate } from '@/lib/useAdminData';
+import Image from 'next/image';
 import { Bell, Calendar, Sparkles, Loader2 } from 'lucide-react';
 
 export default function UpdatesPage() {
@@ -15,7 +15,6 @@ export default function UpdatesPage() {
 
   return (
     <main className="flex flex-col min-h-screen font-cairo">
-      <Navbar />
 
       <PageHero
         title="آخر التحديثات"
@@ -43,14 +42,16 @@ export default function UpdatesPage() {
                 >
                   <div className="flex items-start gap-4">
                     {/* الصورة إذا وجدت */}
-                {update.image && (
-                  <img
-                    src={update.image}
-                    alt={update.imageAlt || update.title}
-                    className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                  />
-                )}
-                    
+                    {update.image && (
+                      <Image
+                        src={update.image}
+                        alt={update.title}
+                        width={80}
+                        height={80}
+                        className="rounded-xl object-cover flex-shrink-0"
+                      />
+                    )}
+
                     <div className="flex-1">
                       {/* العنوان مع علامة جديد */}
                       <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -66,11 +67,10 @@ export default function UpdatesPage() {
 
                       {/* النوع والتاريخ */}
                       <div className="flex items-center gap-3 text-sm mb-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          update.type === 'هام' || update.type === 'عاجل'
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                            : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${(update.type as any) === 'هام' || (update.type as any) === 'عاجل'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          }`}>
                           {update.type}
                         </span>
                         <span className="text-slate-500 flex items-center gap-1">
@@ -94,7 +94,7 @@ export default function UpdatesPage() {
         </div>
       </section>
 
-      <Footer />
+
     </main>
   );
 }
