@@ -23,15 +23,6 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     const animationRef = useRef<number>();
     const hasDraggedRef = useRef(false);
 
-    if (!updates || updates.length === 0) return null;
-
-    // Ensure enough items for infinite loop
-    const minBaseCount = 10;
-    let baseList = [...updates];
-    while (baseList.length < minBaseCount) {
-        baseList = [...baseList, ...updates];
-    }
-
     // Animation Loop
     useEffect(() => {
         const animate = () => {
@@ -51,6 +42,15 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
     }, [isHovered, isDragging]);
+
+    // Construct base list safely
+    if (!updates || updates.length === 0) return null;
+
+    const minBaseCount = 10;
+    let baseList = [...updates];
+    while (baseList.length < minBaseCount) {
+        baseList = [...baseList, ...updates];
+    }
 
     // Drag Handlers
     const handleMouseDown = (e: React.MouseEvent) => {

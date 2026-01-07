@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Search, Calculator, Wallet, Map, Stethoscope, GraduationCap, Building2, Scale, FileText, Plane, Shield, Activity, Home, HeartHandshake, Flag, AlertTriangle } from 'lucide-react';
 
 // --- DATA PAYLOAD (VERIFIED LINKS) ---
@@ -192,18 +193,18 @@ export default function BubbleHeroDiamond() {
 
                     {/* Quick Links for Mobile */}
                     <div className="md:hidden grid grid-cols-2 gap-3 mt-8 px-4">
-                        <a href="/residence" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
+                        <Link href="/residence" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
                             <Home size={16} className="text-indigo-400" /> الإقامة
-                        </a>
-                        <a href="/ban-calculator" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
+                        </Link>
+                        <Link href="/ban-calculator" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
                             <Calculator size={16} className="text-emerald-400" /> الحاسبة
-                        </a>
-                        <a href="/work" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
+                        </Link>
+                        <Link href="/work" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
                             <Building2 size={16} className="text-cyan-400" /> العمل
-                        </a>
-                        <a href="/codes" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
+                        </Link>
+                        <Link href="/codes" className="bg-slate-800/50 border border-white/5 p-3 rounded-xl text-slate-300 text-sm flex items-center justify-center gap-2">
                             <Shield size={16} className="text-slate-400" /> الأكواد
-                        </a>
+                        </Link>
                     </div>
 
                 </motion.div>
