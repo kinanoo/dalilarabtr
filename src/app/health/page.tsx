@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
@@ -17,7 +16,6 @@ export default function HealthPage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
       <PageHero
         title="الصحة والتأمين"
         description="نظام المشافي، أنواع التأمين الصحي، وأرقام الطوارئ."
@@ -33,22 +31,22 @@ export default function HealthPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.length > 0 ? (
               articles.map((article) => (
-                <Link 
-                  key={article.id} 
-                  href={`/article/${article.id}`} 
+                <Link
+                  key={article.id}
+                  href={`/article/${article.id}`}
                   className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
                 >
                   {/* صورة المقال */}
                   {article.image && (
                     <div className="h-40 overflow-hidden">
-                      <img 
-                        src={article.image} 
+                      <img
+                        src={article.image}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   )}
-                  
+
                   <div className="p-6 flex flex-col flex-grow">
                     {/* علامة جديد + التاريخ */}
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -62,7 +60,7 @@ export default function HealthPage() {
                         {article.lastUpdate}
                       </span>
                     </div>
-                    
+
                     <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-primary-600 transition">
                       {article.title}
                     </h3>

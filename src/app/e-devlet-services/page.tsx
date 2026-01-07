@@ -1,4 +1,3 @@
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EDevletServicesHub from '@/components/EDevletServicesHub';
 import { EDEVLET_ARTICLES } from '@/lib/articles/edevlet';
@@ -12,7 +11,6 @@ export default function EDevletServicesPage() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      <Navbar />
 
       <EDevletServicesHub
         services={services.map(({ id, article }) => ({

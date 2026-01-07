@@ -1,15 +1,15 @@
-import { 
-  FileText, Home, Briefcase, GraduationCap, HeartPulse, MapPin, 
-  Shield, BookOpen, Bell, FolderOpen, Building2, RefreshCw, 
-  Car, Plane, Languages, ScrollText, Stamp, FileCheck, 
-  CalendarClock, Newspaper, Smartphone, BrainCircuit, ShieldAlert, Calculator
+import {
+  FileText, Home, Briefcase, GraduationCap, HeartPulse, MapPin,
+  Shield, BookOpen, Bell, FolderOpen, Building2, RefreshCw,
+  Car, Plane, Languages, ScrollText, Stamp, FileCheck,
+  CalendarClock, Newspaper, Smartphone, BrainCircuit, ShieldAlert, Calculator, UserCheck, Link
 } from 'lucide-react';
 
 const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 const siteUrl = rawSiteUrl.replace(/\/$/, '');
 
 export const SITE_CONFIG = {
-  name: "الدليل الشامل",
+  name: "دليل العرب في تركيا",
   slogan: "خدماتك القانونية والمعيشية في مكان واحد",
   lang: "ar",
   country: "تركيا",
@@ -28,7 +28,7 @@ export const NAVIGATION = [
   { name: "الإقامات", href: "/category/residence", icon: FileText },
   { name: "المناطق المحظورة", href: "/zones", icon: MapPin },
   { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen },
-  { name: "حاسبة المنع", href: "/ban-calculator", icon: Calculator }, 
+  { name: "حاسبة المنع", href: "/ban-calculator", icon: Calculator },
 ];
 
 type NavigationItem = (typeof NAVIGATION)[number];
@@ -37,18 +37,33 @@ function isNavigationItem(item: NavigationItem | undefined): item is NavigationI
   return Boolean(item);
 }
 
-export const TOP_NAVIGATION: NavigationItem[] = [
-  '/',
-  '/services',
-  '/directory',
-  '/e-devlet-services',
-  '/codes',
-  '/zones',
-  '/faq',
-  '/ban-calculator',
-]
-  .map((href) => NAVIGATION.find((item) => item.href === href))
-  .filter(isNavigationItem);
+export const PRIMARY_NAV = [
+  { name: "الرئيسية", href: "/", icon: Home },
+  { name: "خدمات", href: "/services", icon: Briefcase, isNew: true }, // The Mega Directory
+  { name: "المستشار الذكي", href: "/consultant", icon: BrainCircuit },
+];
+
+export const GUIDES_MENU = [
+  { name: "الدليل الشامل", href: "/directory", icon: FolderOpen },
+  { name: "خدمات السوريين", href: "/category/syrians", icon: Building2 },
+  { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone },
+  { name: "الإقامات", href: "/category/residence", icon: FileText },
+  { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen },
+  { name: "نماذج جاهزة", href: "/forms", icon: FileText },
+  { name: "اطلب خدمة خاصة", href: "/request", icon: ScrollText },
+];
+
+export const TOOLS_MENU = [
+  { name: "فحص الكملك", href: "/tools/kimlik-check", icon: UserCheck },
+  { name: "حاسبة المنع", href: "/ban-calculator", icon: Calculator },
+  { name: "حاسبة تكاليف الإقامة", href: "/calculator", icon: Calculator },
+  { name: "رموز المنع (الأكواد)", href: "/codes", icon: ShieldAlert },
+  { name: "المناطق المحظورة", href: "/zones", icon: MapPin },
+  { name: "الصيدليات المناوبة", href: "/tools/pharmacy", icon: HeartPulse },
+];
+
+export const TOP_NAVIGATION = []; // Deprecated, kept for safety if used elsewhere temporarily
+
 // قائمة الخدمات المأجورة
 export const SERVICES_LIST = [
   { id: 'syria-docs', title: "جلب أوراق من سوريا", desc: "إخراج قيد، بيان عائلي، ووثائق رسمية.", icon: ScrollText, color: "bg-green-600" },
@@ -112,26 +127,27 @@ export const OFFICIAL_SOURCES = [
 ];
 
 export const QUICK_ACTIONS = [
-  { title: "حساب مدة المنع", desc: "اعرف هل لديك منع دخول؟", icon: Calculator, href: "/ban-calculator" }, // 👈 أول خيار
-  { title: "حجز القنصلية السورية", desc: "رابط الحجز والخطوات", icon: Building2, href: "/article/syrian-passport-istanbul" },
-  { title: "تجديد الإقامة السياحية", desc: "الملف المضمون 2025", icon: FileText, href: "/article/tourist-residence" },
-  { title: "شراء سيارة للأجانب", desc: "الإجراءات واللوحات", icon: Car, href: "/article/buying-car-foreigner" },
-  { title: "إذن السفر", desc: "رابط التقديم والشروط", icon: MapPin, href: "/article/travel-permit" },
-  { title: "لم الشمل العائلي", desc: "من سوريا ولبنان", icon: Plane, href: "/article/syrian-embassy-beirut" },
-  { title: "تحديث البيانات", desc: "حجز موعد الهجرة", icon: RefreshCw, href: "/article/kimlik-data-update" },
-  { title: "اطلب خدمة", desc: "قدّم طلبك وسنتواصل معك", icon: Briefcase, href: "/services" },
-  { title: "النماذج", desc: "تحميل نماذج جاهزة", icon: ScrollText, href: "/forms" },
-  { title: "القاموس", desc: "مصطلحات مهمة بالعربية", icon: BookOpen, href: "/dictionary" },
-  { title: "الأسئلة الشائعة", desc: "أجوبة واضحة ومباشرة", icon: BookOpen, href: "/faq" },
-  { title: "الخريطة", desc: "مواقع مهمة وخدمات", icon: MapPin, href: "/map" },
+  { title: "المستشار الذكي", desc: "أداة التشخيص القانوني الشامل", icon: BrainCircuit, href: "/consultant" },
+  { title: "الدليل الشامل", desc: "دليل الخدمات والمواقع الهامة", icon: FolderOpen, href: "/directory" },
+  { title: "فحص الكملك", desc: "تأكد من صلاحية القيد (TC)", icon: UserCheck, href: "/tools/kimlik-check" },
+  { title: "الأكواد الأمنية", desc: "افحص رموز المنع (V-87, G-87...)", icon: ShieldAlert, href: "/codes" },
+  { title: "المناطق المحظورة", desc: "خريطة الأحياء المغلقة للسوريين", icon: MapPin, href: "/zones" },
+  { title: "حساب المنع", desc: "حاسبة مدة منع الدخول", icon: Calculator, href: "/ban-calculator" },
+  { title: "النماذج الجاهزة", desc: "عقود واستمارات مترجمة", icon: FileText, href: "/forms" },
+  { title: "الصيدليات المناوبة", desc: "بوابة e-Devlet الرسمية", icon: HeartPulse, href: "/tools/pharmacy" },
+  { title: "روابط هامة", desc: "أهم المواقع الخدمية والمنظمات", icon: Link, href: "/important-links" }, // sources directory exists
 ];
 
-export const LATEST_UPDATES = [
+const RAW_UPDATES = [
   { id: 1, type: "هام", title: "القنصلية السورية تحصر الدفع بالدولار الجديد", date: "2025-12-10", content: "تم رفض الدولار القديم." },
   { id: 2, type: "استثمار", title: "شروط/تأكيدات للجنسية عبر العقار (400 ألف دولار)", date: "2025-11-01", content: "تنبيه: رقم 400 ألف يرتبط عادةً بمسار الجنسية عبر الاستثمار العقاري، وليس الإقامة العقارية (التي قد يكون لها حد مختلف)." },
   { id: 3, type: "اقتصاد", title: "زيادة رسوم جواز السفر التركي بنسبة 40%", date: "2025-10-01", content: "اعتباراً من العام الجديد." },
   { id: 4, type: "خدمات مالية", title: "كرت بابارا رجع اشتغل بعد اخر توقف.", date: "2025-12-18", content: "اعلنت منصة بابارا الرقمية الخاصة بالمعاملات البنكية فك الحظر عنها بموجب قرار حكومي جديد صدر مؤخرا بتاريخ 18/12/2025" },
 ];
+
+export const LATEST_UPDATES = [...RAW_UPDATES].sort((a, b) => {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
+});
 
 export const UPDATES_STORAGE_KEY = 'daleel.lastSeenUpdatesVersion.v1';
 

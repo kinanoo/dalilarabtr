@@ -97,32 +97,10 @@ export function canonicalizeFaqCategories(categories: FAQCategory[]): FAQCategor
     const questions: FAQQuestion[] = [];
 
     for (const q of cat.questions) {
+      // Apply basic sanitization (e.g. replacing internal links with titles) 
+      // but keep the original manually-written answer.
       const sanitizedAnswer = replaceArticlePathsWithTitles(q.a);
-
-      if (!shouldCanonicalize(q)) {
-        questions.push({ ...q, a: sanitizedAnswer });
-        continue;
-      }
-
-      // Never emit raw /article/... in the FAQ surface.
-      if (q.a.includes('/article/')) {
-        questions.push({ ...q, a: sanitizedAnswer });
-        continue;
-      }
-
-      const best = pickBestArticle(q.q);
-      if (!best) {
-        questions.push({ ...q, a: sanitizedAnswer });
-        continue;
-      }
-
-      const canonical = buildCanonicalAnswer(best.id);
-      if (!canonical) {
-        questions.push({ ...q, a: sanitizedAnswer });
-        continue;
-      }
-
-      questions.push({ ...q, a: replaceArticlePathsWithTitles(canonical) });
+      questions.push({ ...q, a: sanitizedAnswer });
     }
 
     out.push({ ...cat, questions });

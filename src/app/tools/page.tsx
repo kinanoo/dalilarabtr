@@ -7,15 +7,14 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
-import { 
-  Calculator, 
-  ShieldAlert, 
-  MapPin, 
-  BrainCircuit, 
-  CreditCard, 
+import {
+  Calculator,
+  ShieldAlert,
+  MapPin,
+  BrainCircuit,
+  CreditCard,
   BookOpen,
   ArrowLeft,
   Sparkles,
@@ -96,11 +95,11 @@ const TOOLS = [
     title: 'فاحص صلاحية الكملك',
     description: 'تحقق من حالة بطاقة الإقامة (الكملك)',
     icon: CreditCard,
-    href: '/kimlik-checker',
+    href: '/tools/kimlik-check',
     color: 'from-purple-500 to-violet-600',
     bgLight: 'bg-purple-50 dark:bg-purple-950/30',
     borderColor: 'border-purple-200 dark:border-purple-800',
-    badge: 'قريباً',
+    badge: null,
     features: ['تحقق فوري', 'حالة الإقامة', 'تنبيهات']
   },
   {
@@ -164,13 +163,12 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
     <div className={`relative group ${isComingSoon ? 'opacity-70' : ''}`}>
       {/* البادج */}
       {tool.badge && (
-        <div className={`absolute -top-3 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold ${
-          tool.badge === 'قريباً' 
-            ? 'bg-slate-500 text-white' 
-            : tool.badge === 'الأكثر استخداماً'
+        <div className={`absolute -top-3 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold ${tool.badge === 'قريباً'
+          ? 'bg-slate-500 text-white'
+          : tool.badge === 'الأكثر استخداماً'
             ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
             : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-        }`}>
+          }`}>
           {tool.badge === 'الأكثر استخداماً' && <Sparkles size={12} className="inline ml-1" />}
           {tool.badge}
         </div>
@@ -185,7 +183,7 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{tool.description}</p>
         </div>
       ) : (
-        <Link 
+        <Link
           href={tool.href}
           className={`block h-full ${tool.bgLight} border ${tool.borderColor} rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}
         >
@@ -196,7 +194,7 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
             {tool.title}
           </h3>
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">{tool.description}</p>
-          
+
           {/* المميزات */}
           <ul className="space-y-1 mb-4">
             {tool.features.map((feature, i) => (
@@ -223,7 +221,6 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
 export default function ToolsPage() {
   return (
     <main className="flex flex-col min-h-screen font-cairo">
-      <Navbar />
       <ToolsPageSchema />
 
       <PageHero
@@ -234,7 +231,7 @@ export default function ToolsPage() {
 
       <section className="px-4 py-10 flex-grow">
         <div className="max-w-6xl mx-auto">
-          
+
           {/* شريط المعلومات */}
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4 mb-8 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
@@ -257,8 +254,8 @@ export default function ToolsPage() {
           <div className="mt-12 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center">
             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">لم تجد ما تبحث عنه؟</h3>
             <p className="text-slate-600 dark:text-slate-300 mb-4">تواصل معنا وأخبرنا بالأداة التي تحتاجها</p>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/contact"
               className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
             >
               تواصل معنا <ArrowLeft size={16} />

@@ -1,13 +1,11 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 
 export default function DisclaimerPage() {
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
 
       <PageHero title="إخلاء المسؤولية" description="تنويه مهم قبل الاعتماد على المحتوى." />
 

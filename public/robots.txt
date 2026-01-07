@@ -75,7 +75,7 @@ Disallow: /
 # ===========================================
 # 🗺️ Sitemap
 # ===========================================
-Sitemap: https://taupe-tanuki-ca4d14.netlify.app/sitemap.xml
+Sitemap: https://dalilarab.netlify.app/sitemap.xml
 
 # ===========================================
 # ℹ️ معلومات

@@ -13,19 +13,20 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import GlobalSearch from '@/components/GlobalSearch';
-import { CATEGORY_SLUGS, QUICK_ACTIONS, SITE_CONFIG } from '@/lib/data';
-import { ARTICLES } from '@/lib/articles';
+import CategoryCard from '@/components/ui/CategoryCard';
+import { QUICK_ACTIONS, SITE_CONFIG } from '@/lib/data';
 import { useAdminArticles, useAdminUpdates, isNewContent } from '@/lib/useAdminData';
 import Link from 'next/link';
-import { 
-  BrainCircuit, Briefcase, FileText, GraduationCap, HeartPulse, 
-  IdCard, Plane, Sparkles, Bell, Calendar, ArrowLeft, Loader2 
+import {
+  BrainCircuit, Briefcase, FileText, GraduationCap, HeartPulse,
+  IdCard, Plane, Sparkles, Bell, Calendar, ArrowLeft, Loader2, UserCheck, ShieldCheck
 } from 'lucide-react';
 import ShareMenu from '@/components/ShareMenu';
 import { motion } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient';
+
 
 // ============================================
 // 🔍 Schema.org للـ SEO
@@ -77,17 +78,25 @@ const fadeInUp = {
 } as const;
 
 // ============================================
-// 📦 البيانات
+// 📦 البيانات والمساعدات
 // ============================================
 
-const CATEGORY_TILES = [
-  { name: 'الكملك', icon: IdCard, color: 'bg-cyan-500 dark:bg-cyan-600', href: '/category/kimlik', categorySlug: 'kimlik' },
-  { name: 'الإقامة', icon: FileText, color: 'bg-blue-500 dark:bg-blue-600', href: '/category/residence', categorySlug: 'residence' },
-  { name: 'الفيزا', icon: Plane, color: 'bg-purple-500 dark:bg-purple-600', href: '/category/visa', categorySlug: 'visa' },
-  { name: 'العمل', icon: Briefcase, color: 'bg-amber-500 dark:bg-amber-600', href: '/category/work', categorySlug: 'work' },
-  { name: 'الصحة', icon: HeartPulse, color: 'bg-rose-500 dark:bg-rose-600', href: '/category/health', categorySlug: 'health' },
-  { name: 'الدراسة', icon: GraduationCap, color: 'bg-indigo-500 dark:bg-indigo-600', href: '/category/education', categorySlug: 'education' },
-] as const;
+const IconMap: any = {
+  IdCard, FileText, Plane, Briefcase, HeartPulse, GraduationCap,
+  UserCheck, ShieldCheck, Sparkles, BrainCircuit
+};
+
+// ألوان دورية للكروت
+const TILE_COLORS = [
+  'bg-cyan-500 dark:bg-cyan-600',
+  'bg-blue-500 dark:bg-blue-600',
+  'bg-purple-500 dark:bg-purple-600',
+  'bg-amber-500 dark:bg-amber-600',
+  'bg-rose-500 dark:bg-rose-600',
+  'bg-indigo-500 dark:bg-indigo-600',
+  'bg-teal-500 dark:bg-teal-600',
+  'bg-pink-500 dark:bg-pink-600',
+];
 
 // ============================================
 // 🏠 المكون الرئيسي
@@ -97,7 +106,28 @@ export default function Home() {
   // 🆕 استخدام بيانات لوحة التحكم
   const { articles, loading: articlesLoading } = useAdminArticles();
   const { updates, loading: updatesLoading } = useAdminUpdates();
-  
+  const [categories, setCategories] = useState<any[]>([]);
+  const [catsLoading, setCatsLoading] = useState(true);
+
+  // جلب التصنيفات من السيرفر
+  useEffect(() => {
+    async function fetchCategories() {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from('service_categories')
+        .select('*')
+        .eq('is_featured', true)
+        .eq('active', true)
+        .order('sort_order');
+
+      if (data) {
+        setCategories(data);
+      }
+      setCatsLoading(false);
+    }
+    fetchCategories();
+  }, []);
+
   const storageKey = 'quickActions.clickCounts.v1';
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
 
@@ -126,25 +156,6 @@ export default function Home() {
     });
   };
 
-  // 🆕 حساب عدد المقالات من لوحة التحكم
-  const countsByCategory = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const article of articles) {
-      counts.set(article.category, (counts.get(article.category) ?? 0) + 1);
-    }
-    return counts;
-  }, [articles]);
-
-  // فلترة التصنيفات التي بها مقالات
-  const visibleCategoryTiles = useMemo(() => {
-    return CATEGORY_TILES.filter((tile) => {
-      if (!('categorySlug' in tile)) return true;
-      const categoryName = CATEGORY_SLUGS[tile.categorySlug];
-      if (!categoryName) return false;
-      return (countsByCategory.get(categoryName) ?? 0) > 0;
-    });
-  }, [countsByCategory]);
-
   // ترتيب الاختصارات السريعة
   const sortedQuickActions = useMemo(() => {
     const originalIndex = new Map<string, number>();
@@ -164,7 +175,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-slate-100 dark:bg-slate-950 selection:bg-emerald-200 dark:selection:bg-emerald-700">
-      
+
       {/* Schema.org للـ SEO */}
       <script
         type="application/ld+json"
@@ -175,7 +186,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
       />
 
-      <Navbar />
+
 
       {/* 1. HERO SECTION */}
       <section className="relative bg-primary-900 dark:bg-primary-950 text-white py-16 px-4 overflow-hidden rounded-b-[80px]">
@@ -203,23 +214,31 @@ export default function Home() {
       {/* 2. الأقسام الرئيسية */}
       <section className="relative z-20 mt-[50px] px-4">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
-            {visibleCategoryTiles.map((tile, idx) => (
-              <Link
-                key={idx}
-                href={tile.href}
-                className="group flex flex-col items-center p-3 md:p-4 bg-gradient-to-b from-white to-slate-100/80 dark:from-slate-900 dark:to-slate-800 rounded-3xl shadow-sm border border-slate-300/60 dark:border-slate-700/80 hover:shadow-lg dark:hover:shadow-slate-900/40 hover:border-emerald-300/70 dark:hover:border-emerald-500/40 hover:-translate-y-0.5 transition active:scale-95"
-                aria-label={`قسم ${tile.name}`}
-              >
-                <div className={`p-3 md:p-3.5 rounded-2xl text-white mb-2 ${tile.color} shadow-sm group-hover:shadow-md transition`}>
-                  <tile.icon size={20} />
-                </div>
-                <span className="font-extrabold text-xs md:text-sm text-slate-800 dark:text-slate-100 tracking-tight">
-                  {tile.name}
-                </span>
-              </Link>
-            ))}
-          </div>
+          {catsLoading ? (
+            <div className="flex justify-center py-10"><Loader2 className="animate-spin text-emerald-600" /></div>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-5">
+              {categories.map((tile, idx) => {
+                const Icon = IconMap[tile.icon] || FileText;
+                const colorClass = TILE_COLORS[idx % TILE_COLORS.length];
+                return (
+                  <Link
+                    key={tile.id || `cat-${idx}`}
+                    href={`/category/${tile.slug}`}
+                    className="group flex flex-col items-center justify-center gap-3 p-4 md:p-5 bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 hover:shadow-xl hover:border-emerald-400 dark:hover:border-emerald-500 hover:-translate-y-1 transition-all duration-300 active:scale-95"
+                    aria-label={`قسم ${tile.title}`}
+                  >
+                    <div className={`p-3.5 md:p-4 rounded-xl text-white ${colorClass} shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}>
+                      <Icon size={24} className="md:w-7 md:h-7" />
+                    </div>
+                    <span className="font-bold text-sm md:text-base text-center text-slate-800 dark:text-slate-100 leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      {tile.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -232,14 +251,14 @@ export default function Home() {
                 <Bell className="text-amber-500" size={24} />
                 آخر الأخبار
               </h2>
-              <Link 
-                href="/updates" 
+              <Link
+                href="/updates"
                 className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
               >
                 عرض الكل <ArrowLeft size={16} />
               </Link>
             </div>
-            
+
             {updatesLoading ? (
               <div className="flex justify-center py-8">
                 <Loader2 size={32} className="animate-spin text-emerald-600" />
@@ -255,20 +274,19 @@ export default function Home() {
                     <div className="flex items-start gap-3">
                       {/* صورة الخبر */}
                       {update.image && (
-                        <img 
-                          src={update.image} 
-                          alt="" 
+                        <img
+                          src={update.image}
+                          alt="صورة الخبر"
                           className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                         />
                       )}
                       <div className="flex-1 min-w-0">
                         {/* النوع + جديد */}
                         <div className="flex items-center gap-2 flex-wrap mb-2">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            update.type === 'هام' || update.type === 'عاجل'
-                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                          }`}>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${update.type === 'هام' || update.type === 'عاجل'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                            }`}>
                             {update.type}
                           </span>
                           {isNewContent(update.date) && (
@@ -277,12 +295,12 @@ export default function Home() {
                             </span>
                           )}
                         </div>
-                        
+
                         {/* العنوان */}
                         <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm line-clamp-2 group-hover:text-emerald-600 transition">
                           {update.title}
                         </h3>
-                        
+
                         {/* التاريخ */}
                         <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
                           <Calendar size={12} />
@@ -327,24 +345,37 @@ export default function Home() {
       {/* 5. اختصارات سريعة */}
       <section className="px-4 py-10">
         <div className="max-w-screen-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-            <Sparkles className="text-amber-500" size={24} />
-            اختصارات سريعة
-          </h2>
+          <div className="flex items-center gap-2 mb-6">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <Sparkles className="text-amber-500" size={24} />
+              اختصارات سريعة
+            </h2>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {sortedQuickActions.map((action, idx) => (
+            {sortedQuickActions.map((action) => (
               <Link
-                key={idx}
+                key={action.href}
                 href={action.href}
                 onClick={() => trackQuickActionClick(action.href)}
-                className="group flex items-center gap-3 p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition"
+                className="group relative flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-emerald-300 dark:hover:border-emerald-700 overflow-hidden"
               >
-                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 group-hover:bg-primary-100 dark:group-hover:bg-primary-900 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
-                  <action.icon size={20} />
+
+                {/* الخلفية المتدرجة عند التحويم */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent dark:from-emerald-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="relative z-10 p-3 bg-slate-50 dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 mb-3 shadow-sm group-hover:shadow-md">
+                  <action.icon size={28} />
                 </div>
-                <span className="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400">
-                {action.title}
-                </span>
+
+                <h3 className="relative z-10 font-bold text-base text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 text-center mb-1">
+                  {action.title}
+                </h3>
+
+                {action.desc && (
+                  <p className="relative z-10 text-xs text-slate-500 dark:text-slate-400 text-center line-clamp-2">
+                    {action.desc}
+                  </p>
+                )}
               </Link>
             ))}
           </div>

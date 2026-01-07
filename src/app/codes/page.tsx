@@ -1,7 +1,6 @@
 'use client';
 import { Metadata } from 'next';
 import ToolSchema from '@/components/ToolSchema';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
@@ -54,7 +53,6 @@ export default function CodesPage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
       <ToolSchema tool="security-codes" />
       <PageHero
         title="دليل الأكواد الأمنية (Tahdit Kodları)"

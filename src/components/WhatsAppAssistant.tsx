@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { X, ArrowLeft, Search, FileText, Briefcase, Bell, BookOpen, BrainCircuit, Send, MessageCircle } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { X, ArrowLeft, Search, FileText, Briefcase, Bell, BookOpen, BrainCircuit, Send, MessageCircle, Clock } from 'lucide-react';
+import QuickReplyButtons from './QuickReplyButtons';
+import { trackWhatsAppClick, trackWhatsAppMessageSent, trackSearch } from '@/lib/analytics';
 import type { LucideIcon } from 'lucide-react';
 import { SERVICES_LIST, FORMS, LATEST_UPDATES } from '@/lib/data';
 import { ARTICLES } from '@/lib/articles';
@@ -50,17 +53,17 @@ const CONSULTANT_INDEX: AssistantIndexItem[] = Object.entries(CONSULTANT_SCENARI
 
   const articleText = article
     ? [
-        article.title,
-        article.intro,
-        article.details,
-        ...(article.documents || []),
-        ...(article.steps || []),
-        ...(article.tips || []),
-        article.fees || '',
-        article.warning || '',
-      ]
-        .filter(Boolean)
-        .join(' ')
+      article.title,
+      article.intro,
+      article.details,
+      ...(article.documents || []),
+      ...(article.steps || []),
+      ...(article.tips || []),
+      article.fees || '',
+      article.warning || '',
+    ]
+      .filter(Boolean)
+      .join(' ')
     : '';
 
   const desc = article?.intro?.trim() ? article.intro : value.desc;
@@ -170,10 +173,21 @@ function buildResults(query: string): AssistantResult[] {
     .map(({ _score, ...rest }) => rest);
 }
 
+// Helper: Check if support is online (9 AM - 6 PM Turkey time)
+function isOnlineNow(): boolean {
+  const now = new Date();
+  const turkeyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
+  const hour = turkeyTime.getHours();
+  return hour >= 9 && hour < 18;
+}
+
 export default function WhatsAppAssistant() {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [request, setRequest] = useState('');
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
+  const pathname = usePathname();
+  const isOnline = isOnlineNow();
 
   const results = useMemo(() => {
     const trimmed = request.trim();
@@ -193,11 +207,16 @@ export default function WhatsAppAssistant() {
   // =====================================================
   const handleSendWhatsApp = () => {
     if (!request.trim()) return;
-    
-    const message = encodeURIComponent(
-      `مرحباً، لدي استفسار:\n\n${request.trim()}\n\n[من موقع دليل العرب في تركيا]`
+
+    const whatsappMessage = encodeURIComponent(
+      `${request}\n\n---\n📱 مرسل من: دليل العرب في تركيا`
     );
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+
+    // Track WhatsApp click
+    trackWhatsAppClick('assistant');
+    trackWhatsAppMessageSent(request || 'direct_message');
+
     window.open(whatsappUrl, '_blank');
     reset();
   };
@@ -247,9 +266,23 @@ export default function WhatsAppAssistant() {
         <div className="w-[92vw] max-w-sm rounded-3xl overflow-hidden border-2 border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/95 dark:bg-slate-950 shadow-2xl shadow-emerald-600/10 flex flex-col max-h-[80vh]">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-l from-emerald-700 to-teal-700 text-white border-b border-white/10">
-            <div className="flex items-center gap-2 font-bold">
-              <Search size={18} className="text-white/90" />
-              اسأل خبير
+            <div className="flex-1">
+              <div className="flex items-center gap-2 font-bold">
+                <Search size={18} className="text-white/90" />
+                اسأل خبير
+              </div>
+              {isOnline && (
+                <div className="flex items-center gap-1 text-xs text-emerald-200 mt-1">
+                  <span className="w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></span>
+                  الدعم متصل الآن
+                </div>
+              )}
+              {!isOnline && (
+                <div className="flex items-center gap-1 text-xs text-amber-200 mt-1">
+                  <Clock size={12} />
+                  نرد خلال ساعة (9ص - 6م)
+                </div>
+              )}
             </div>
             <button
               onClick={reset}
@@ -306,6 +339,17 @@ export default function WhatsAppAssistant() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Quick Replies */}
+              {!canSuggest && showQuickReplies && (
+                <QuickReplyButtons
+                  onSelect={(message) => {
+                    setRequest(message);
+                    setShowQuickReplies(false);
+                  }}
+                  currentPage={pathname}
+                />
               )}
 
               {/* =====================================================

@@ -1,7 +1,6 @@
 'use client';
 import { Metadata } from 'next';
 import ToolSchema from '@/components/ToolSchema';
-import Navbar from '@/components/Navbar';
 import { useState } from 'react';
 
 export default function CalculatorPage() {
@@ -16,16 +15,15 @@ export default function CalculatorPage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
       <ToolSchema tool="ban-calculator" />
       <div className="max-w-xl mx-auto mt-20 p-6 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-transparent dark:border-slate-800">
         <h1 className="text-2xl font-bold text-center mb-6 text-slate-900 dark:text-slate-100">حاسبة تكاليف الإقامة التقريبية</h1>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block font-bold mb-2 text-slate-900 dark:text-slate-100">نوع المعاملة</label>
-            <select 
-              value={type} 
+            <select
+              value={type}
               onChange={(e) => setType(e.target.value)}
               className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100"
             >
@@ -36,8 +34,8 @@ export default function CalculatorPage() {
 
           <div>
             <label className="block font-bold mb-2 text-slate-900 dark:text-slate-100">العمر: {age} سنة</label>
-            <input 
-              type="range" min="18" max="65" value={age} 
+            <input
+              type="range" min="18" max="65" value={age}
               onChange={(e) => setAge(Number(e.target.value))}
               className="w-full accent-accent-500"
             />

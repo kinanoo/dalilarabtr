@@ -8,31 +8,14 @@
 
 'use client';
 
-import dynamic from 'next/dynamic';
+import { lazy, Suspense } from 'react';
 
-// ⚡ Lazy Loading للمكونات الثقيلة
-const WhatsAppAssistant = dynamic(() => import('@/components/WhatsAppAssistant'), {
-  ssr: false,
-});
+const WhatsAppAssistant = lazy(() => import('./WhatsAppAssistant'));
 
-const MobileNav = dynamic(() => import('@/components/MobileNav'), {
-  ssr: false,
-});
-
-const ScrollToTop = dynamic(() => import('@/components/ScrollToTop'), {
-  ssr: false,
-});
-
-/**
- * مكون يجمع جميع Client Components
- */
 export default function ClientComponents() {
   return (
-    <>
-      <MobileNav />
+    <Suspense fallback={null}>
       <WhatsAppAssistant />
-      <ScrollToTop />
-    </>
+    </Suspense>
   );
 }
-

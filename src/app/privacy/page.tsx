@@ -1,13 +1,11 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 
 export default function PrivacyPage() {
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
 
       <PageHero title="سياسة الخصوصية" description="توضيح مبسّط لكيفية التعامل مع البيانات." />
 

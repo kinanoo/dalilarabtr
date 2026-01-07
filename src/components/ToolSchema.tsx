@@ -13,13 +13,14 @@
 
 import { SITE_CONFIG } from '@/lib/data';
 
-type ToolType = 
-  | 'ban-calculator' 
-  | 'security-codes' 
-  | 'restricted-areas' 
+type ToolType =
+  | 'ban-calculator'
+  | 'security-codes'
+  | 'restricted-areas'
   | 'consultant'
   | 'kimlik-checker'
-  | 'dictionary';
+  | 'dictionary'
+  | 'pharmacy';
 
 interface ToolData {
   name: string;
@@ -118,7 +119,7 @@ const TOOLS_DATA: Record<ToolType, ToolData> = {
   'kimlik-checker': {
     name: 'التحقق من صلاحية الكملك التركي',
     description: 'أداة للتحقق من حالة الكملك (بطاقة الإقامة) إذا كانت سارية أو منتهية أو ملغاة.',
-    url: '/kimlik-checker',
+    url: '/tools/kimlik-check',
     category: 'UtilityApplication',
     keywords: ['كملك', 'بطاقة الإقامة', 'صلاحية الكملك', 'إقامة تركيا', 'kimlik'],
     faqs: [
@@ -142,6 +143,23 @@ const TOOLS_DATA: Record<ToolType, ToolData> = {
       {
         question: 'ما المصطلحات المتوفرة في القاموس؟',
         answer: 'يشمل القاموس مصطلحات الإقامة، الهجرة، العمل، الصحة، التعليم، والمعاملات الحكومية في تركيا.'
+      }
+    ]
+  },
+  'pharmacy': {
+    name: 'فاحص الصيدليات المناوبة (الرسمي)',
+    description: 'أداة للوصول السريع والموثوق لمعلومات الصيدليات المناوبة في جميع المحافظات التركية عبر بوابة الحكومة الإلكترونية.',
+    url: '/tools/pharmacy',
+    category: 'MedicalApplication',
+    keywords: ['صيدليات مناوبة', 'نوبتشي اجزاني', 'دواء تركيا', 'صيدلية مناوبة اسطنبول', 'nobetci eczane'],
+    faqs: [
+      {
+        question: 'كيف أجد أقرب صيدلية مناوبة؟',
+        answer: 'استخدم الرابط الرسمي عبر بوابتنا للوصول إلى قائمة الصيدليات المناوبة المحدثة لحظياً من وزارة الصحة.'
+      },
+      {
+        question: 'هل الخدمة تغطي جميع المدن؟',
+        answer: 'نعم، الخدمة مرتبطة بنظام الحكومة الإلكترونية وتغطي كافة الولايات التركية الـ 81.'
       }
     ]
   }

@@ -1,35 +1,20 @@
+import { Article } from './types';
 import { EDEVLET_ARTICLES } from './articles/edevlet';
 
-export interface ArticleData {
-  title: string;
-  category: string;
-  lastUpdate: string;
-  intro: string;
-  details: string;
-  documents: string[];
-  steps: string[];
-  tips: string[];
-  fees: string;
-  warning?: string;
-  source?: string;
+export type { Article };
+export type ArticleData = Article;
 
-  // SEO (اختياري): عند غيابها سيتم توليد قيم افتراضية ذكية.
-  seoTitle?: string;
-  seoDescription?: string;
-  seoKeywords?: string[];
-}
-
-export const ARTICLES: Record<string, ArticleData> = {
+export const ARTICLES: Record<string, Article> = {
 
   // ==========================
   // 🏛️ خدمات e-Devlet (37 خدمة)
   // ==========================
   ...EDEVLET_ARTICLES,
 
-// ==========================
+  // ==========================
   // 📱 الهواتف والاتصالات (مهم جداً 2025)
   // ==========================
-  'phone_imei_register': {
+  'phone-imei-register': {
     title: 'تتريك الهواتف (تقييد IMEI)',
     category: 'الحياة اليومية',
     lastUpdate: '2025-01-01',
@@ -42,7 +27,7 @@ export const ARTICLES: Record<string, ArticleData> = {
     warning: 'إذا دفعت الضريبة ولم تكمل التسجيل في e-Devlet، لن يعمل الهاتف ولن تسترد المال.',
     source: 'https://www.turkiye.gov.tr/btk-imei-kaydet'
   },
-  'internet_debt_check': {
+  'internet-debt-check': {
     title: 'الاستعلام عن ديون الإنترنت والاتصالات',
     category: 'الحياة اليومية',
     lastUpdate: '2025-12-14',
@@ -73,7 +58,7 @@ export const ARTICLES: Record<string, ArticleData> = {
   // ==========================
   // ⚖️ القانون والمستهلك (جديد من القناة)
   // ==========================
-  'consumer_rights_complaint': {
+  'consumer-rights-complaint': {
     title: 'تقديم شكوى حماية المستهلك (Tüketici Hakem Heyeti)',
     category: 'معاملات رسمية',
     lastUpdate: '2025-05-20',
@@ -85,7 +70,7 @@ export const ARTICLES: Record<string, ArticleData> = {
     fees: 'مجاني تماماً.',
     source: 'https://www.turkiye.gov.tr/ticaret-tuketici-hakem-heyeti-basvurusu'
   },
-  'uyap_execution_files': {
+  'uyap-execution-files': {
     title: 'الاستعلام عن ملفات التنفيذ (İcra Dosyası)',
     category: 'معاملات رسمية',
     lastUpdate: '2025-12-14',
@@ -117,7 +102,7 @@ export const ARTICLES: Record<string, ArticleData> = {
   // ==========================
   // 🩺 الصحة والديون (GSS)
   // ==========================
-  'gss_debt_inquiry': {
+  'gss-debt-inquiry': {
     title: 'الاستعلام عن ديون التأمين الصحي (GSS Borcu)',
     category: 'الصحة والتأمين',
     lastUpdate: '2025-12-14',
@@ -148,7 +133,7 @@ export const ARTICLES: Record<string, ArticleData> = {
   // ==========================
   // 🇸🇾 خدمات السوريين (القنصلية والتنقل)
   // ==========================
-  'syrian_kimlik_transfer': {
+  'syrian-kimlik-transfer': {
     title: 'نقل الكملك (من ولاية لأخرى)',
     category: 'الكملك والحماية المؤقتة',
     lastUpdate: '2025-12-14',
@@ -507,7 +492,7 @@ export const ARTICLES: Record<string, ArticleData> = {
   },
 
   // ==========================
-  'address_registration_closed': {
+  'address-registration-closed': {
     title: 'تثبيت النفوس في المناطق المحظورة',
     category: 'الإقامة والأوراق',
     lastUpdate: '2025-12-14',
@@ -615,7 +600,7 @@ export const ARTICLES: Record<string, ArticleData> = {
     warning: 'تجنب الحلول غير النظامية لأنها قد تؤدي لضياع المال أو نزاع طويل.',
     source: 'https://www.tkgm.gov.tr'
   },
-  'rent_increase_limit': {
+  'rent-increase-limit': {
     title: 'الحد القانوني لزيادة الإيجار 2025',
     category: 'السكن والحياة',
     lastUpdate: '2025-12-14',
@@ -648,7 +633,7 @@ export const ARTICLES: Record<string, ArticleData> = {
   // ==========================
   // 💼 العمل والشركات
   // ==========================
-  'work_permit_students': {
+  'work-permit-students': {
     title: 'إذن العمل للطلاب الجامعيين',
     category: 'العمل والدخل',
     lastUpdate: '2025-12-14',
@@ -677,8 +662,8 @@ export const ARTICLES: Record<string, ArticleData> = {
     fees: 'رسوم إذن العمل والتأمين عادة تكون على صاحب العمل، وقد تختلف حسب المدة والقطاع.',
     source: 'https://calismaizni.gov.tr'
   },
-  
-    // =================================================================
+
+  // =================================================================
   // 🇸🇾 خدمات السوريين (معلومات مصححة ودقيقة)
   // =================================================================
   'syrian-passport-istanbul': {
@@ -801,7 +786,7 @@ export const ARTICLES: Record<string, ArticleData> = {
       'جواز سفر صالح.',
       'بطاقة دفع إلكترونية (Credit/Debit) للدفع أونلاين.',
       'بريد إلكتروني لاستلام التأشيرة.',
-      'أي مستند يطلبه النظام لجنسيتك (إن ظهر ضمن الشروط).' 
+      'أي مستند يطلبه النظام لجنسيتك (إن ظهر ضمن الشروط).'
     ],
     steps: [
       'ادخل إلى الموقع الرسمي لـ e-Visa واختر جنسيتك ووثيقة السفر.',
@@ -1320,7 +1305,7 @@ export const ARTICLES: Record<string, ArticleData> = {
       'تحقق من الحد المالي والمتطلبات الرسمية الحالية للمسار قبل أي التزام مالي.',
       'نفّذ كل الدفعات عبر تحويلات بنكية موثقة وبأسماء صحيحة، واحتفظ بالـ Dekont.',
       'حضّر ملفاً كاملاً حسب المسار، وتجنب الوعود “السريعة المضمونة” لأنها غالباً تتجاهل مراحل التحقق الرسمية.',
-      'تابع حالة الملف عبر القنوات الرسمية عند توفرها (مثل الاستعلامات المرتبطة بالنفوس/e-Devlet).' 
+      'تابع حالة الملف عبر القنوات الرسمية عند توفرها (مثل الاستعلامات المرتبطة بالنفوس/e-Devlet).'
     ],
     tips: [
       'أي رقم تسمعه (400k/500k…): اعتبره “مرجعاً شائعاً” وليس ضماناً إلا إذا تحققته من مصدر رسمي محدث.',
@@ -2147,7 +2132,7 @@ DASK (تأمين الزلازل) قد يُطلب ضمن ملف الإقامة ا
       'صورة شخصية حسب طلب المعهد.',
       'رسوم/إيصال دفع التسجيل.',
       'عنوان سكن ورقم هاتف للتواصل.',
-      'إن كان الهدف إقامة طالب: وثائق الجامعة/القبول (بحسب المسار).' 
+      'إن كان الهدف إقامة طالب: وثائق الجامعة/القبول (بحسب المسار).'
     ],
     steps: [
       'اختر مركزاً معتمداً (يفضل تابعاً لجامعة) وتحقق من المستويات المتاحة ومواعيد الدورات.',

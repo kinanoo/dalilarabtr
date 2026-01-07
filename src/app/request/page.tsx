@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useSearchParams } from 'next/navigation';
@@ -48,7 +47,7 @@ function RequestForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // تجهيز رسالة الواتساب
     const message = `
 *طلب خدمة جديدة من الموقع* 🚀
@@ -92,48 +91,48 @@ function RequestForm() {
     }
   };
 
-return (
+  return (
     <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">نموذج طلب خدمة</h2>
         <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">عند الإرسال سيفتح واتساب مباشرة وسيتم أيضاً نسخ نص الطلب.</p>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
-        
+
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <User size={18} className="text-primary-500"/> الاسم الكامل
+            <User size={18} className="text-primary-500" /> الاسم الكامل
           </label>
-          <input 
+          <input
             required
-            type="text" 
+            type="text"
             className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
             placeholder="مثال: محمد أحمد"
             value={formData.name}
-            onChange={e => setFormData({...formData, name: e.target.value})}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
           />
         </div>
 
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <Phone size={18} className="text-primary-500"/> رقم الهاتف (مع النداء الدولي)
+            <Phone size={18} className="text-primary-500" /> رقم الهاتف (مع النداء الدولي)
           </label>
-          <input 
+          <input
             required
-            type="tel" 
+            type="tel"
             className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition text-left text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
             placeholder="+90 5XX XXX XX XX"
             value={formData.phone}
-            onChange={e => setFormData({...formData, phone: e.target.value})}
+            onChange={e => setFormData({ ...formData, phone: e.target.value })}
           />
         </div>
 
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <CheckCircle size={18} className="text-primary-500"/> نوع الخدمة
+            <CheckCircle size={18} className="text-primary-500" /> نوع الخدمة
           </label>
-          <select 
+          <select
             className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition cursor-pointer text-slate-900 dark:text-slate-100"
             value={serviceId}
             onChange={e => setServiceId(e.target.value)}
@@ -147,19 +146,19 @@ return (
 
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <FileText size={18} className="text-primary-500"/> تفاصيل إضافية (اختياري)
+            <FileText size={18} className="text-primary-500" /> تفاصيل إضافية (اختياري)
           </label>
-          <textarea 
+          <textarea
             rows={4}
             className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
             placeholder="اكتب تفاصيل طلبك هنا... (مثال: أريد حجز موعد قنصلية لجواز مستعجل لعائلة مكونة من 3 أشخاص)"
             value={formData.details}
-            onChange={e => setFormData({...formData, details: e.target.value})}
+            onChange={e => setFormData({ ...formData, details: e.target.value })}
           ></textarea>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
         >
           <span>{copied ? 'تم النسخ وفتح واتساب' : 'إرسال الطلب عبر واتساب'}</span>
@@ -179,7 +178,6 @@ return (
 export default function RequestPage() {
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
       <PageHero title="تقديم طلب جديد" />
       <div className="w-full md:max-w-2xl mx-auto px-4 py-12 -mt-8 relative z-10">
         <Suspense fallback={<div className="text-center p-10">جاري تحميل النموذج...</div>}>

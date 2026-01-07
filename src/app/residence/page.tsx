@@ -1,7 +1,7 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 import { FileText, ArrowLeft, Loader2, Sparkles, Calendar } from 'lucide-react';
@@ -12,8 +12,8 @@ export default function ResidencePage() {
   const { articles: allArticles, loading } = useAdminArticles();
 
   const articles = useMemo(() => {
-    return allArticles.filter(a => 
-      a.category === 'الإقامة والأوراق' || 
+    return allArticles.filter(a =>
+      a.category === 'الإقامة والأوراق' ||
       a.category === 'أنواع الإقامات' ||
       a.category === 'معاملات رسمية'
     );
@@ -21,7 +21,6 @@ export default function ResidencePage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
       <PageHero
         title="الإقامة والأوراق"
         description="أنواع الإقامات، التجديد، التحويل، والأوراق المطلوبة."
@@ -37,9 +36,9 @@ export default function ResidencePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.length > 0 ? (
               articles.map((article) => (
-                <Link 
-                  key={article.id} 
-                  href={`/article/${article.id}`} 
+                <Link
+                  key={article.id}
+                  href={`/article/${article.id}`}
                   className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
                 >
                   {article.image && (

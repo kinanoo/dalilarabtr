@@ -1,11 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 // استيراد الخريطة بشكل ديناميكي (يمنع أخطاء السيرفر)
-const LeafletMap = dynamic(() => import('@/components/LeafletMap'), { 
+const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
   ssr: false,
   loading: () => <div className="h-96 w-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-300">جاري تحميل الخريطة...</div>
 });
@@ -13,11 +12,10 @@ const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
 export default function MapPage() {
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
-      
+
       <div className="flex-grow max-w-screen-2xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-primary-900 dark:text-slate-100 mb-6">خريطة الخدمات والأماكن المهمة</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
           {/* قسم القائمة الجانبية */}
           <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-y-auto">

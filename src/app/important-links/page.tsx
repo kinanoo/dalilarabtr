@@ -13,7 +13,6 @@
 
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { OFFICIAL_SOURCES } from '@/lib/data';
@@ -28,19 +27,49 @@ type ImportantLink = {
 
 const TRUSTED_RESOURCES: ImportantLink[] = [
   {
-    name: 'RefuPortal (Turkey)',
-    url: 'https://www.refuportal.com/',
-    desc: 'منصة معلومات وخدمات للاجئين/الأجانب.',
-  },
-  {
     name: 'UNHCR Help – Türkiye',
     url: 'https://help.unhcr.org/turkiye/ar/',
-    desc: 'إرشادات من مفوضية الأمم المتحدة للاجئين.',
+    desc: 'إرشادات رسمية من مفوضية الأمم المتحدة للاجئين حول الحقوق والخدمات في تركيا.',
+  },
+  {
+    name: 'RefuPortal (Turkey)',
+    url: 'https://www.refuportal.com/',
+    desc: 'منصة معلومات شاملة وخدمات مخصصة للاجئين والأجانب المقيمين.',
   },
   {
     name: 'الهلال الأحمر التركي',
     url: 'https://www.kizilay.org.tr/',
-    desc: 'خدمات وبرامج إنسانية.',
+    desc: 'خدمات وبرامج المساعدات الإنسانية والاجتماعية في مختلف الولايات.',
+  },
+  {
+    name: 'ASAM (جمعية التضامن)',
+    url: 'https://asam.org.tr/',
+    desc: 'جمعية التضامن مع طالبين اللجوء والمهاجرين (دعم قانوني واجتماعي).',
+  },
+  {
+    name: 'Refugee Rights (حقوق اللاجئين)',
+    url: 'https://www.mhd.org.tr/',
+    desc: 'مركز حقوق اللاجئين بتركيا يوفر المساعدة القانونية المجانية.',
+  },
+  {
+    name: 'IOM Turkey (المنظمة الدولية للهجرة)',
+    url: 'https://turkiye.iom.int/',
+    desc: 'خدمات الهجرة والعودة الطوعية والبرامج الإنسانية التابعة للأمم المتحدة.',
+  },
+  {
+    name: 'فريق ملهم التطوعي',
+    url: 'https://molhamteam.com/',
+    desc: 'مؤسسة خيرية لدعم السوريين في حالات الطوارئ والتعليم والطبابة.',
+  },
+  {
+    name: 'Hayata Destek (دعم الحياة)',
+    url: 'https://www.hayatadestek.org/',
+    desc: 'منظمة إنسانية تعمل على توفير المساعدات الأساسية والحماية في تركيا.',
+  },
+  {
+    name: 'Syrian American Medical Society (SAMS)',
+    url: 'https://www.sams-usa.net/',
+    desc: 'جمعية طبية توفر خدمات صحية متخصصة ومجانية للسوريين.',
   },
 ];
 
@@ -92,7 +121,7 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
             </h3>
           </div>
         </div>
-        
+
         <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">
           {source.desc}
         </p>
@@ -162,60 +191,68 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
 // 🏠 الصفحة الرئيسية
 // ============================================
 
+import { useAdminSources } from '@/lib/useAdminData';
+import { Loader2, Building2 } from 'lucide-react';
+
 export default function ImportantLinksPage() {
+  const { sources, loading } = useAdminSources();
+
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
-
       <PageHero
         title="روابط هامة"
-        description="روابط مباشرة وموثوقة للخدمات الحكومية والمنظمات."
+        description="دليلك الشامل للمواقع الحكومية والمنظمات الإنسانية الموثوقة في تركيا."
         icon={<Link2 className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
       />
 
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full">
-        
-        {/* القسم 1: الروابط الحكومية */}
-        <section className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
-              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-16">
+
+        {/* القسم 1: المصادر الحكومية */}
+        <section>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-2.5 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
-                روابط حكومية رسمية
+                المصادر الحكومية الرسمية
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                مواقع موثوقة 100% من الحكومة التركية
+                روابط مباشرة وآمنة لجميع البوابات الخدمية والوزارات التركية
               </p>
             </div>
           </div>
 
-          {/* شبكة البطاقات - متجاوبة */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {OFFICIAL_SOURCES.map((source, idx) => (
-              <LinkCard key={idx} source={source} index={idx} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={32} className="animate-spin text-blue-600" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {sources.map((source, idx) => (
+                <LinkCard key={source.id} source={source} index={idx} />
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* القسم 2: موارد موثوقة */}
+        {/* القسم 2: منظمات وموارد */}
         <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
               <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
-                موارد موثوقة أخرى
+                منظمات وموارد مفيدة
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                منظمات ومنصات معتمدة للمساعدة
+                منظمات ومنصات دولية ومحلية معتمدة للمساعدة القانونية والإنسانية
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {TRUSTED_RESOURCES.map((resource, idx) => (
               <TrustedResourceCard key={idx} resource={resource} />
             ))}
@@ -223,9 +260,10 @@ export default function ImportantLinksPage() {
         </section>
 
         {/* ملاحظة أسفل الصفحة */}
-        <div className="mt-12 text-center">
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            💡 انقر على أي بطاقة للانتقال للموقع مباشرة، أو انقر على أيقونة النسخ لنسخ الرابط
+        <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2">
+            <ShieldCheck size={12} className="text-green-500" />
+            يتم تحديث هذه الروابط بشكل دوري لضمان الدقة والموثوقية
           </p>
         </div>
       </div>
@@ -234,3 +272,4 @@ export default function ImportantLinksPage() {
     </main>
   );
 }
+

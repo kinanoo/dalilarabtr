@@ -1,23 +1,10 @@
-/**
- * 🔍 فهرس البحث الموحد (Unified Search Index)
- * ============================================
- * 
- * هذا الملف يجمع كل فهارس البحث في مكان واحد بدلاً من تكرارها
- * في كل مكون (GlobalSearch, WhatsAppAssistant, etc.)
- * 
- * الفوائد:
- * - تحسين الأداء على الأجهزة الضعيفة
- * - تقليل استهلاك الذاكرة
- * - سهولة الصيانة والتحديث
- * 
- * @author Claude AI
- * @lastUpdate 2025-12-20
- */
-
 import type { LucideIcon } from 'lucide-react';
-import { FileText, Bell, File, Briefcase, BrainCircuit } from 'lucide-react';
+import {
+  FileText, Bell, File, Briefcase, BrainCircuit,
+  MapPin, Calculator, ShieldAlert, BookOpen, UserCheck, HeartPulse
+} from 'lucide-react';
 import { ARTICLES } from '@/lib/articles';
-import { SERVICES_LIST, FORMS, LATEST_UPDATES } from '@/lib/data';
+import { SERVICES_LIST, FORMS, LATEST_UPDATES, SITE_CONFIG } from '@/lib/data';
 import { CONSULTANT_SCENARIOS } from '@/lib/consultant-data';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
@@ -81,6 +68,8 @@ function buildArticleIndex(): SearchIndexItem[] {
       ...(data.steps || []),
       ...(data.tips || []),
       data.fees || '',
+      ...((data.seoKeywords || []).join(' ')), // ✅ إضافة الكلمات المفتاحية للبحث
+      data.fees || '',
       data.warning || '',
     ]
       .filter(Boolean)
@@ -125,17 +114,17 @@ function buildConsultantIndex(): SearchIndexItem[] {
     const desc = article?.intro?.trim() ? article.intro : value.desc;
     const articleText = article
       ? [
-          article.title,
-          article.intro,
-          article.details,
-          ...(article.documents || []),
-          ...(article.steps || []),
-          ...(article.tips || []),
-          article.fees || '',
-          article.warning || '',
-        ]
-          .filter(Boolean)
-          .join(' ')
+        article.title,
+        article.intro,
+        article.details,
+        ...(article.documents || []),
+        ...(article.steps || []),
+        ...(article.tips || []),
+        article.fees || '',
+        article.warning || '',
+      ]
+        .filter(Boolean)
+        .join(' ')
       : '';
 
     return {
@@ -149,6 +138,81 @@ function buildConsultantIndex(): SearchIndexItem[] {
       haystack: normalizeArabic(`${value.title} ${desc || ''} ${value.legal || ''} ${articleText}`),
     };
   });
+}
+
+/**
+ * فهرس الأدوات والصفحات المهمة
+ */
+function buildToolsIndex(): SearchIndexItem[] {
+  const tools = [
+    {
+      id: 'tool-consultant',
+      title: 'المستشار القانوني الذكي',
+      desc: 'أداة تفاعلية تجيب عن أسئلتك القانونية (إقامة، كملك، عمل، ترحيل) وتعطيك خطة عمل.',
+      url: '/consultant',
+      icon: BrainCircuit,
+      keywords: 'مستشار قانوني محامي ذكي استشارة مجانية سؤال وجواب اقامة لجوء كملك استثمار'
+    },
+    {
+      id: 'tool-zones',
+      title: 'فاحص المناطق المحظورة',
+      desc: 'تحقق من الأحياء المحظورة لتثبيت النفوس للسوريين والأجانب.',
+      url: '/zones',
+      icon: MapPin,
+      keywords: 'مناطق محظورة مغلقة احياء كملك سوريين نفوس تثبيت عنوان'
+    },
+    {
+      id: 'tool-ban-calculator',
+      title: 'حاسبة منع الدخول (الكودات)',
+      desc: 'احسب مدة المنع التقريبية بناءً على مدة المخالفة.',
+      url: '/ban-calculator',
+      icon: Calculator,
+      keywords: 'منع دخول كود V87 ترحيل مخالفت فيزا'
+    },
+    {
+      id: 'tool-codes',
+      title: 'دليل الأكواد الأمنية',
+      desc: 'شرح معاني أكواد المنع والترحيل (G-87, V-160, Ç-114).',
+      url: '/codes',
+      icon: ShieldAlert,
+      keywords: 'كود اكواد ترحيل منع امني'
+    },
+    {
+      id: 'tool-faq',
+      title: 'الأسئلة الشائعة',
+      desc: 'أجوبة سريعة عن الإقامة والكملك والعمل.',
+      url: '/faq',
+      icon: BookOpen,
+      keywords: 'اسئلة سؤال جواب استفسار'
+    },
+    {
+      id: 'tool-kimlik',
+      title: 'فاحص الكملك (TC Check)',
+      desc: 'تحقق من صحة رقم الكملك واستعلم عن حالته (فعال/مبطل) عبر الرابط الرسمي.',
+      url: '/tools/kimlik-check',
+      icon: UserCheck,
+      keywords: 'فحص كملك صلاحية ابطال رقم تي جي TC NVI'
+    },
+    {
+      id: 'tool-pharmacy',
+      title: 'الصيدليات المناوبة',
+      desc: 'ابحث عن أقرب صيدلية مناوبة في ولايتك الآن.',
+      url: '/tools/pharmacy',
+      icon: HeartPulse,
+      keywords: 'صيدلية مناوبة دواء مفتوح eczane nöbetçi'
+    },
+  ];
+
+  return tools.map(tool => ({
+    id: tool.id,
+    title: tool.title,
+    type: 'أداة',
+    typeKey: 'service', // نصنفها كخدمة للسهولة
+    url: tool.url,
+    icon: tool.icon,
+    desc: tool.desc,
+    haystack: normalizeArabic(`${tool.title} ${tool.desc} ${tool.keywords} ${tool.url}`)
+  }));
 }
 
 /**
@@ -198,7 +262,8 @@ let _unifiedIndex: SearchIndexItem[] | null = null;
 export function getUnifiedSearchIndex(): SearchIndexItem[] {
   if (_unifiedIndex === null) {
     _unifiedIndex = [
-      ...buildConsultantIndex(),  // الاستشارات أولاً (الأهم)
+      ...buildConsultantIndex(),  // الاستشارات أولاً
+      ...buildToolsIndex(),       // 🆕 الأدوات المهمة جداً
       ...buildArticleIndex(),     // ثم المقالات
       ...buildServiceIndex(),     // ثم الخدمات
       ...buildFormsIndex(),       // ثم النماذج
@@ -221,11 +286,11 @@ export function getIndexByType(typeKey: SearchIndexItem['typeKey']): SearchIndex
 export function getIndexStats(): Record<string, number> {
   const index = getUnifiedSearchIndex();
   const stats: Record<string, number> = { total: index.length };
-  
+
   for (const item of index) {
     stats[item.typeKey] = (stats[item.typeKey] || 0) + 1;
   }
-  
+
   return stats;
 }
 
@@ -239,18 +304,18 @@ export function getIndexStats(): Record<string, number> {
  */
 export function isLowEndDevice(): boolean {
   if (typeof navigator === 'undefined') return false;
-  
+
   // عدد النوى المنطقية (Logical Processors)
   const cores = navigator.hardwareConcurrency || 4;
-  
+
   // أجهزة بـ 2 نواة أو أقل تعتبر ضعيفة
   if (cores <= 2) return true;
-  
+
   // فحص الذاكرة إن كانت متاحة (Chrome فقط)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memory = (navigator as any).deviceMemory;
   if (memory && memory <= 2) return true;
-  
+
   return false;
 }
 
@@ -262,21 +327,21 @@ export function isLowEndDevice(): boolean {
  */
 export function getOptimalDebounceTime(): number {
   if (typeof navigator === 'undefined') return 150;
-  
+
   const cores = navigator.hardwareConcurrency || 4;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memory = (navigator as any).deviceMemory;
-  
+
   // جهاز ضعيف جداً
   if (cores <= 2 || (memory && memory <= 2)) {
     return 300;
   }
-  
+
   // جهاز متوسط
   if (cores <= 4 || (memory && memory <= 4)) {
     return 200;
   }
-  
+
   // جهاز قوي
   return 120;
 }

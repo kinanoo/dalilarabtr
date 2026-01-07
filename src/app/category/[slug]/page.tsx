@@ -1,4 +1,3 @@
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { ARTICLES } from '@/lib/articles';
@@ -32,7 +31,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
   if (!categoryName) {
     return (
       <main className="min-h-screen flex flex-col">
-        <Navbar />
+
         <div className="flex-grow flex flex-col items-center justify-center">
           <h1 className="text-4xl font-bold text-slate-300">404</h1>
           <p>القسم غير موجود</p>
@@ -44,7 +43,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
+
 
       <PageHero
         title={categoryName}
@@ -57,9 +56,9 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
       />
 
       {/* 🆕 مكون Client لعرض المقالات من لوحة التحكم */}
-      <CategoryArticlesList 
-        categoryName={categoryName} 
-        initialArticles={staticArticles} 
+      <CategoryArticlesList
+        categoryName={categoryName}
+        initialArticles={staticArticles}
       />
 
       <Footer />

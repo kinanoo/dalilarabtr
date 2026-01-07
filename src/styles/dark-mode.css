@@ -1,0 +1,343 @@
+/* ============================================
+   🌙 Dark Mode Enhancements
+   ============================================
+   نظام ألوان محسّن ومريح للعين
+   ============================================ */
+
+/* ============================================
+   🎨 Color System - Dark Mode
+   ============================================ */
+
+:root[class~="dark"] {
+    /* Backgrounds - تدرجات أفضل */
+    --bg-primary: #0f172a;
+    /* slate-900 - خلفية رئيسية */
+    --bg-secondary: #1e293b;
+    /* slate-800 - خلفية ثانوية */
+    --bg-tertiary: #334155;
+    /* slate-700 - خلفية للكروت */
+
+    /* Text - تباين محسّن */
+    --text-primary: #f1f5f9;
+    /* slate-100 - نص رئيسي */
+    --text-secondary: #cbd5e1;
+    /* slate-300 - نص ثانوي */
+    --text-tertiary: #94a3b8;
+    /* slate-400 - نص خفيف */
+    --text-muted: #64748b;
+    /* slate-500 - نص باهت */
+
+    /* Accent Colors - أخضر مريح */
+    --accent-primary: #10b981;
+    /* emerald-500 */
+    --accent-hover: #059669;
+    /* emerald-600 */
+    --accent-light: #34d399;
+    /* emerald-400 */
+
+    /* Borders - واضحة بدون قساوة */
+    --border-primary: #334155;
+    /* slate-700 */
+    --border-secondary: #475569;
+    /* slate-600 */
+    --border-light: #64748b;
+    /* slate-500 */
+
+    /* Shadows - ظلال ناعمة */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
+
+    /* Overlays */
+    --overlay-light: rgba(0, 0, 0, 0.3);
+    --overlay-medium: rgba(0, 0, 0, 0.5);
+    --overlay-heavy: rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================
+   🔄 Smooth Transitions
+   ============================================ */
+
+/* Prevent flash on initial load */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *:before,
+html.theme-transitioning *:after {
+    transition: none !important;
+}
+
+/* Smooth theme transitions */
+html:not(.theme-transitioning) {
+    transition: background-color 0.3s ease;
+}
+
+html:not(.theme-transitioning) * {
+    transition: background-color 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+/* ============================================
+   🎯 Component Improvements
+   ============================================ */
+
+/* Cards في Dark Mode */
+.dark .card,
+.dark [class*="bg-white"] {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.dark .card:hover {
+    background-color: var(--bg-tertiary);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Buttons في Dark Mode */
+.dark button,
+.dark .btn {
+    border-color: var(--border-secondary);
+}
+
+.dark .btn-primary {
+    background-color: var(--accent-primary);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.dark .btn-primary:hover {
+    background-color: var(--accent-hover);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Input Fields */
+.dark input,
+.dark textarea,
+.dark select {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* ============================================
+   🖼️ Images في Dark Mode
+   ============================================ */
+
+.dark img {
+    opacity: 0.9;
+    filter: brightness(0.9) contrast(1.05);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.dark img:hover {
+    opacity: 1;
+    filter: brightness(1) contrast(1);
+}
+
+/* Logo في Dark Mode */
+.dark .logo {
+    filter: brightness(1.2);
+}
+
+/* ============================================
+   📝 Code Blocks في Dark Mode
+   ============================================ */
+
+.dark pre,
+.dark code {
+    background-color: #1e293b;
+    border: 1px solid var(--border-primary);
+    color: #f8fafc;
+}
+
+.dark pre {
+    box-shadow: var(--shadow-md);
+}
+
+/* Syntax Highlighting */
+.dark .token.comment {
+    color: #64748b;
+}
+
+.dark .token.string {
+    color: #34d399;
+}
+
+.dark .token.keyword {
+    color: #60a5fa;
+}
+
+.dark .token.function {
+    color: #c084fc;
+}
+
+/* ============================================
+   🌈 Accent Colors في Dark Mode
+   ============================================ */
+
+/* Success */
+.dark .bg-success,
+.dark .text-success {
+    color: #34d399;
+}
+
+/* Warning */
+.dark .bg-warning,
+.dark .text-warning {
+    color: #fbbf24;
+}
+
+/* Error */
+.dark .bg-error,
+.dark .text-error {
+    color: #f87171;
+}
+
+/* Info */
+.dark .bg-info,
+.dark .text-info {
+    color: #60a5fa;
+}
+
+/* ============================================
+   📊 Shadows & Overlays
+   ============================================ */
+
+/* Enhanced shadows */
+.dark .shadow-sm {
+    box-shadow: var(--shadow-sm);
+}
+
+.dark .shadow-md {
+    box-shadow: var(--shadow-md);
+}
+
+.dark .shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+
+.dark .shadow-xl {
+    box-shadow: var(--shadow-xl);
+}
+
+/* Modal overlays */
+.dark .overlay,
+.dark .backdrop {
+    background-color: var(--overlay-heavy);
+    backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   🎨 Navbar & Footer في Dark Mode
+   ============================================ */
+
+.dark nav,
+.dark header {
+    background-color: rgba(15, 23, 42, 0.95);
+    border-bottom-color: var(--border-primary);
+    backdrop-filter: blur(10px);
+}
+
+.dark footer {
+    background-color: var(--bg-primary);
+    border-top-color: var(--border-primary);
+}
+
+/* ============================================
+   🔍 Search في Dark Mode
+   ============================================ */
+
+.dark .search-bar {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+}
+
+.dark .search-bar:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.dark .search-results {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-xl);
+}
+
+/* ============================================
+   📱 Mobile في Dark Mode
+   ============================================ */
+
+.dark .mobile-menu {
+    background-color: var(--bg-primary);
+    border-color: var(--border-primary);
+}
+
+.dark .bottom-nav {
+    background-color: rgba(15, 23, 42, 0.98);
+    border-top-color: var(--border-primary);
+    backdrop-filter: blur(10px);
+}
+
+/* ============================================
+   ✨ Glows & Highlights
+   ============================================ */
+
+.dark .glow-emerald {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.dark .glow-blue {
+    box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+}
+
+/* Highlighted text */
+.dark mark,
+.dark .highlight {
+    background-color: rgba(16, 185, 129, 0.3);
+    color: var(--text-primary);
+}
+
+/* ============================================
+   🎭 Skeleton Loaders في Dark Mode
+   ============================================ */
+
+.dark .skeleton,
+.dark .animate-shimmer {
+    background: linear-gradient(90deg,
+            #1e293b 25%,
+            #334155 50%,
+            #1e293b 75%);
+    background-size: 1000px 100%;
+}
+
+/* ============================================
+   ⚡ Performance Optimizations
+   ============================================ */
+
+/* Reduce motion preference */
+@media (prefers-color-scheme: dark) {
+    :root:not([class~="light"]) {
+        color-scheme: dark;
+    }
+}
+
+/* Force GPU acceleration for smooth transitions */
+.dark * {
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

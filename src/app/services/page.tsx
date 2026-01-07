@@ -1,211 +1,230 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import PageHero from '@/components/PageHero';
-import HeroSearchInput from '@/components/HeroSearchInput';
-import { SERVICES_LIST, SITE_CONFIG } from '@/lib/data';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Briefcase, ArrowLeft, Sparkles, Loader2 } from 'lucide-react';
-import ShareMenu from '@/components/ShareMenu';
-import { useEffect, useMemo, useState } from 'react';
-import { useAdminServices, isNewContent } from '@/lib/useAdminData';
-import { buildWhatsAppHref } from '@/lib/whatsapp';
-import { normalizeArabic } from '@/lib/arabicSearch';
+import { Search, MapPin, Phone, Briefcase, Star, ImageIcon, X, Mail, ExternalLink, SlidersHorizontal } from 'lucide-react';
+import { MOCK_PROVIDERS, SERVICE_CATEGORIES } from '@/lib/services-data';
+import RatingModal from '@/components/rating/RatingModal';
+import Footer from '@/components/Footer';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/EmptyState';
 
-// دمج بيانات لوحة التحكم مع الأيقونات والألوان من الملفات الثابتة
-type MergedService = {
-  id: string;
-  title: string;
-  desc: string;
-  price: number | null;
-  whatsapp: string | null;
-  active: boolean;
-  image?: string;
-  // من الملفات الثابتة
-  icon: typeof Briefcase;
-  color: string;
-};
+// Note: Metadata cannot be exported from client components
+// SEO is handled by the parent layout or server component
 
 export default function ServicesPage() {
-  const { services: adminServices, loading } = useAdminServices();
-  const [query, setQuery] = useState('');
+  // --- State ---
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // دمج البيانات: لوحة التحكم + الأيقونات/الألوان الثابتة
-  const services = useMemo((): MergedService[] => {
-    // إنشاء خريطة من الخدمات الثابتة للحصول على الأيقونة واللون
-    const staticMap = new Map(
-      SERVICES_LIST.map(s => [s.id, { icon: s.icon, color: s.color }])
-    );
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [ratingModal, setRatingModal] = useState<{ isOpen: boolean, id: any, name: string }>({ isOpen: false, id: null, name: '' });
 
-    return adminServices.map(s => {
-      const staticData = staticMap.get(s.id);
-      return {
-        ...s,
-        icon: staticData?.icon || Briefcase,
-        color: staticData?.color || 'bg-gradient-to-br from-slate-600 to-slate-800',
-      };
-    });
-  }, [adminServices]);
-
-  // فلترة البحث
+  // --- Filtering Logic ---
   const filteredServices = useMemo(() => {
-    const normalizedQuery = normalizeArabic(query);
-    if (!normalizedQuery) return services;
+    return MOCK_PROVIDERS.filter(service => {
+      const matchesCategory = activeCategory === 'all' || service.category === activeCategory;
+      const matchesSearch =
+        service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.profession.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (service.description && service.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    return services.filter((service) => {
-      const haystack = normalizeArabic(`${service.title} ${service.desc}`);
-      return haystack.includes(normalizedQuery);
+      return matchesCategory && matchesSearch;
     });
-  }, [query, services]);
+  }, [activeCategory, searchQuery]);
+
+  // --- WhatsApp Helper ---
+  const buildWhatsAppHref = (phone: string, text: string) => {
+    if (!phone) return '';
+    const cleanPhone = phone.replace(/\D/g, '');
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+  };
 
   return (
-    <main className="flex flex-col min-h-screen">
-      <Navbar />
+    <div className="min-h-screen bg-transparent font-cairo" dir="rtl">
 
-      <PageHero
-        title="مكتب الخدمات الخاصة"
-        description="ننجز معاملاتك الصعبة والمعقدة بخبرة وموثوقية. راسلنا وسنتواصل معك فوراً."
-        icon={<Briefcase className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
-      >
-        <HeroSearchInput
-          value={query}
-          onChange={setQuery}
-          placeholder="ابحث عن خدمة (مثال: ترجمة، تصديق، تأمين)..."
-          dir="rtl"
-          lang="ar"
-        />
-      </PageHero>
+      {/* Hero / Search Section - Dark Theme as requested */}
+      <section className="relative bg-slate-900 border-b border-slate-800 py-16 px-4 overflow-hidden rounded-b-[80px]">
+        {/* Background Pattern for Hero */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')" }} />
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-16">
-        {/* حالة التحميل */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={40} className="animate-spin text-emerald-600" />
+        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
+          <h1 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
+            ابحث عن <span className="text-emerald-500">مهنتك</span> أو <span className="text-blue-500">خدمتك</span>
+          </h1>
+          <p className="text-slate-300 text-lg">
+            دليل الخدمات الشامل: أطباء، محامون، حرفيون، وخدمات عامة في تركيا.
+          </p>
+
+          <div className="relative max-w-2xl mx-auto group">
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="جرب البحث عن: نجار في الفاتح، مترجم محلف، طبيب أسنان..."
+              className="w-full bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl py-4 pe-4 ps-12 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-lg shadow-xl"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
+          </div>
+
+          {/* Service Categories (Filters) */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={`px-4 py-2 rounded-full font-bold text-sm transition-all ${activeCategory === 'all'
+                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                : 'bg-slate-800/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 border border-slate-700'}`}
+            >
+              الكل
+            </button>
+            {SERVICE_CATEGORIES.filter(c => c.id !== 'all').map((cat) => {
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${isActive
+                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                    : 'bg-slate-800/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
+                >
+                  {cat.icon && <cat.icon size={16} />}
+                  {cat.name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Results Grid - Netlify Style with Stars and Contact Buttons */}
+      <section className="max-w-screen-2xl mx-auto px-4 py-12 w-full flex-grow">
+
+        <div className="flex items-center justify-end mb-6">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Briefcase className="text-emerald-500" />
+            نتائج البحث ({filteredServices.length})
+          </h2>
+        </div>
+
+        {filteredServices.length === 0 ? (
+          <div className="text-center py-20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800 border-dashed">
+            <Search size={48} className="mx-auto text-slate-300 mb-4" />
+            <h3 className="text-lg font-bold text-slate-600 dark:text-slate-400">لا توجد نتائج مطابقة</h3>
+            <p className="text-slate-500 text-sm">حاول تغيير كلمات البحث أو الفئة المختارة</p>
           </div>
         ) : (
-          <>
-            {query && filteredServices.length === 0 ? (
-              <p className="text-center text-sm text-slate-600 dark:text-slate-300 mb-6">
-                لا توجد خدمات مطابقة لكلمة البحث.
-              </p>
-            ) : null}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredServices.map((service, idx) => (
-                <div key={service.id || idx} className="group bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:border-primary-500 transition-all duration-300 flex flex-col relative">
-                  
-                  {/* Header Image/Icon Area */}
-                  <div className={`h-32 ${service.color} relative flex items-center justify-center`}>
-                    {/* صورة الخدمة إذا وجدت */}
-                    {service.image ? (
-                      <img 
-                        src={service.image} 
-                        alt={service.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="bg-white/20 p-4 rounded-full backdrop-blur-sm">
-                        <service.icon size={40} className="text-white" />
-                      </div>
-                    )}
-                    <div className="absolute bottom-0 inset-x-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-                    
-                    {/* زر المشاركة */}
-                    <div className="absolute top-4 end-4">
-                      <ShareMenu 
-                        title={`خدمة ${service.title}`} 
-                        text={service.desc} 
-                        url={`${SITE_CONFIG.siteUrl}/request?service=${service.id}`} 
-                        mini={true} 
-                        customClass="!bg-white/20 !text-white hover:!bg-white hover:!text-slate-800 backdrop-blur-md" 
-                      />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredServices.map((provider) => (
+              <div
+                key={provider.id}
+                className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:border-emerald-400 transition-all duration-300 flex flex-col"
+              >
+                {/* Header */}
+                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
+                      {provider.image ? <img src={provider.image} className="w-full h-full object-cover" /> : <Briefcase size={24} className="text-slate-400" />}
                     </div>
-
-                    {/* السعر إذا وجد */}
-                    {service.price && (
-                      <div className="absolute top-4 start-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                        <span className="text-sm font-bold text-emerald-600">{service.price} ₺</span>
-                      </div>
-                    )}
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight group-hover:text-emerald-600 transition-colors">
+                        {provider.name}
+                      </h3>
+                      <p className="text-xs font-bold text-emerald-600 mt-1">{provider.profession}</p>
+                    </div>
                   </div>
 
-                  <div className="p-6 flex-grow flex flex-col">
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-primary-700 transition-colors">
-                      {service.title}
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-300 text-sm leading-relaxed mb-6 flex-grow">
-                      {service.desc}
-                    </p>
-                    
-                    {(() => {
-                      const phone = service.whatsapp || SITE_CONFIG.whatsapp;
-                      const text = `السلام عليكم، أريد طلب خدمة: ${service.title}`;
-                      const href = buildWhatsAppHref(phone, text);
-                      if (href) {
-                        return (
-                          <a
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-primary-600 group-hover:text-white transition-all"
-                            aria-label={`اطلب خدمة ${service.title} عبر واتساب`}
-                          >
-                            طلب الخدمة <ArrowLeft size={18} />
-                          </a>
-                        );
-                      }
-                      return (
-                        <Link
-                          href={`/request?service=${service.id}`}
-                          className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-primary-600 group-hover:text-white transition-all"
-                        >
-                          طلب الخدمة <ArrowLeft size={18} />
-                        </Link>
-                      );
-                    })()}
+                  {/* Rating - USER REQUESTED THIS */}
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-800">
+                      <Star size={12} className="fill-amber-400 text-amber-400" />
+                      <span className="text-xs font-bold text-amber-900 dark:text-amber-100">{provider.rating}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">({provider.reviewCount})</span>
+                    <button
+                      onClick={() => setRatingModal({ isOpen: true, id: provider.id, name: provider.name })}
+                      className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+                    >
+                      قيم الآن
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* ترويج للواتساب المباشر */}
-            <div className="mt-16 bg-green-50 dark:bg-green-950/25 border border-green-200 dark:border-green-900/40 rounded-2xl p-8 text-center relative overflow-hidden">
-              <div className="relative z-10">
-                <h3 className="text-2xl font-bold text-green-900 dark:text-green-100 mb-4">لديك طلب خاص غير موجود؟</h3>
-                <p className="text-green-800 dark:text-green-200 mb-6">راسلنا مباشرة عبر واتساب وسنرد عليك بأسرع وقت.</p>
-                <div className="flex justify-center">
+                {/* Body */}
+                <div className="p-5 flex-grow">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
+                    <MapPin size={14} />
+                    <span>{provider.city} {provider.district && `، ${provider.district}`}</span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                    {provider.description}
+                  </p>
+                </div>
+
+                {/* Footer Buttons - STRONG CARDS */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 mt-auto flex gap-2 h-[72px] items-center">
+                  {provider.image && (
+                    <button
+                      onClick={() => setPreviewImage(provider.image!)}
+                      className="w-14 flex flex-col items-center justify-center gap-1 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-1.5 rounded-xl font-bold text-[10px] hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors shrink-0 h-full"
+                      title="عرض كرت الفيزيت"
+                    >
+                      <ImageIcon size={18} />
+                      <span>الكرت</span>
+                    </button>
+                  )}
+
                   {(() => {
-                    const href = buildWhatsAppHref(SITE_CONFIG.whatsapp, 'السلام عليكم، لدي طلب خاص غير موجود في القائمة.');
-                    if (href) {
-                      return (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20"
-                          aria-label="اطلب خدمة عبر واتساب"
-                        >
-                          طلب خدمة <ArrowLeft size={18} />
-                        </a>
-                      );
-                    }
+                    const href = buildWhatsAppHref(provider.phone, `مرحباً، رأيت خدمتك "${provider.profession}" على موقع دليل العرب.`);
                     return (
-                      <Link
-                        href="/request"
-                        className="inline-flex items-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg shadow-green-600/20"
+                      <a
+                        href={href || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-sm h-full"
                       >
-                        طلب خدمة <ArrowLeft size={18} />
-                      </Link>
+                        <Phone size={18} />
+                        <span>تواصل واتساب</span>
+                      </a>
                     );
                   })()}
                 </div>
+
               </div>
-            </div>
-          </>
+            ))}
+          </div>
         )}
-      </div>
+      </section>
+
+      {/* Image Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-in fade-in"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            onClick={() => setPreviewImage(null)}
+            className="absolute top-4 right-4 text-white hover:text-red-400 transition-colors"
+          >
+            <X size={32} />
+          </button>
+          <img
+            src={previewImage}
+            alt="Business Card"
+            className="max-w-full max-h-[90vh] rounded-xl shadow-2xl animate-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
+      <RatingModal
+        isOpen={ratingModal.isOpen}
+        onClose={() => setRatingModal({ ...ratingModal, isOpen: false })}
+        serviceId={ratingModal.id}
+        serviceName={ratingModal.name}
+      />
+
       <Footer />
-    </main>
+    </div>
   );
 }

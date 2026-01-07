@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useAdminForms } from '@/lib/useAdminData';
@@ -11,8 +10,6 @@ export default function FormsPage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
-
       <PageHero
         title="مكتبة النماذج الجاهزة"
         description="عقود مترجمة، عرائض اعتراض، وطلبات رسمية جاهزة للتحميل والتعديل."
@@ -35,8 +32,8 @@ export default function FormsPage() {
         ) : forms.length > 0 ? (
           <div className="space-y-4">
             {forms.map((form) => (
-              <div 
-                key={form.id} 
+              <div
+                key={form.id}
                 className="group bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 transition-all flex flex-col md:flex-row md:items-center gap-6"
               >
                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-primary-600">
@@ -49,7 +46,7 @@ export default function FormsPage() {
                   </div>
                   <p className="text-slate-500 dark:text-slate-300 text-sm">{form.desc}</p>
                 </div>
-                
+
                 {form.url ? (
                   <a
                     href={form.url}

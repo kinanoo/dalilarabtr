@@ -1,15 +1,16 @@
-import { 
-  SchemaScript, 
-  generateArticleSchema, 
+import {
+  SchemaScript,
+  generateArticleSchema,
   generateBreadcrumbSchema,
   toISODate,
   toFullUrl,
 } from '@/lib/schemaOrg';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ARTICLES } from '@/lib/articles';
 import { CATEGORY_SLUGS, SITE_CONFIG } from '@/lib/data';
 import ArticleHydratedView from '@/components/ArticleHydratedView';
+import SuggestionBox from '@/components/ui/SuggestionBox';
+import ContributorsList from '@/components/ui/ContributorsList'; // Import added
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -29,7 +30,6 @@ function uniqStrings(values: Array<string | undefined | null>): string[] {
 function inferExtraKeywordsByCategory(categoryName: string): string[] {
   const c = categoryName.toLowerCase();
 
-  // ملاحظة: الكلمات هنا “مساندة” وليست حشو؛ نحافظ على عدد معقول.
   if (c.includes('e-devlet') || c.includes('edevlet') || c.includes('إي دولات')) {
     return ['e-Devlet', 'edevlet', 'turkiye.gov.tr', 'بوابة الحكومة الإلكترونية'];
   }
@@ -72,7 +72,6 @@ function buildArticleKeywords(args: { slug: string; title: string; category: str
 
   const extra = inferExtraKeywordsByCategory(args.category);
 
-  // أضف شكل URL كمفتاح (يدعم البحث عن “عنوان” شائع مثل IMEI/SGK/YKN)
   const slugParts = args.slug
     .split(/[-_]/g)
     .map((p) => p.trim())
@@ -87,33 +86,29 @@ function getCategorySlugFromName(categoryName: string): string | undefined {
 
 function calculateWordCount(text: string): number {
   if (!text) return 0;
-  // حساب الكلمات العربية والإنجليزية
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-function buildJsonLd(args: { 
-  slug: string; 
-  title: string; 
-  description: string; 
-  lastUpdate: string; 
-  categoryName: string; 
-  categorySlug?: string; 
-  url: string; 
-  siteName: string; 
+function buildJsonLd(args: {
+  slug: string;
+  title: string;
+  description: string;
+  lastUpdate: string;
+  categoryName: string;
+  categorySlug?: string;
+  url: string;
+  siteName: string;
   siteUrl: string;
   articleBody?: string;
   keywords?: string[];
   image?: string;
 }): { article: unknown; breadcrumbs: unknown } {
-  // حساب عدد الكلمات
   const wordCount = args.articleBody ? calculateWordCount(args.articleBody) : 0;
-  
-  // تحويل التاريخ إلى ISO format
-  const dateModified = args.lastUpdate.includes('T') 
-    ? args.lastUpdate 
+
+  const dateModified = args.lastUpdate.includes('T')
+    ? args.lastUpdate
     : `${args.lastUpdate}T00:00:00Z`;
-  
-  // استخدام lastUpdate كـ datePublished إذا لم يكن هناك تاريخ منفصل
+
   const datePublished = dateModified;
 
   const article = {
@@ -143,13 +138,9 @@ function buildJsonLd(args: {
       },
     },
     articleSection: args.categoryName,
-    // إضافة articleBody إذا كان متوفراً
     ...(args.articleBody && { articleBody: args.articleBody }),
-    // إضافة wordCount إذا كان متوفراً
     ...(wordCount > 0 && { wordCount }),
-    // إضافة keywords إذا كانت متوفرة
     ...(args.keywords && args.keywords.length > 0 && { keywords: args.keywords.join(', ') }),
-    // إضافة image
     image: args.image || `${args.siteUrl}/og-image.png`,
   };
 
@@ -162,13 +153,13 @@ function buildJsonLd(args: {
     },
     ...(args.categorySlug
       ? [
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: args.categoryName,
-            item: `${args.siteUrl}/category/${args.categorySlug}`,
-          },
-        ]
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: args.categoryName,
+          item: `${args.siteUrl}/category/${args.categorySlug}`,
+        },
+      ]
       : []),
     {
       '@type': 'ListItem',
@@ -193,7 +184,6 @@ export async function generateStaticParams() {
   }));
 }
 
-// 🆕 تحسين SEO: إضافة metadata ديناميكي لكل مقالة
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params;
   const article = ARTICLES[params.id];
@@ -218,17 +208,14 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     explicit: article.seoKeywords,
   });
 
-  // تحضير articleBody للمحتوى الكامل
-  const articleBody = [article.intro, article.details, ...article.steps, ...article.tips]
+  const articleBody = [article.intro, article.details, ...(article.steps || []), ...(article.tips || [])]
     .filter(Boolean)
     .join(' ');
 
-  // تحضير الصورة (يمكن إضافة دعم لصور المقالات لاحقاً)
   const ogImage = `${SITE_CONFIG.siteUrl}/og-image.png`;
 
-  // تحويل التاريخ إلى ISO format
-  const dateModified = article.lastUpdate.includes('T') 
-    ? article.lastUpdate 
+  const dateModified = article.lastUpdate.includes('T')
+    ? article.lastUpdate
     : `${article.lastUpdate}T00:00:00Z`;
 
   return {
@@ -273,7 +260,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
   if (!article) {
     return (
       <main className="min-h-screen flex flex-col">
-        <Navbar />
         <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
           <h1 className="text-4xl font-bold text-slate-300 mb-4">404</h1>
           <p className="text-xl text-slate-600 mb-8">عذراً، هذا الدليل غير متوفر حالياً.</p>
@@ -286,13 +272,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
 
   const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
   const categorySlug = getCategorySlugFromName(article.category);
-  
-  // تحضير articleBody للمحتوى الكامل
-  const articleBody = [article.intro, article.details, ...article.steps, ...article.tips]
-    .filter(Boolean)
-    .join(' ');
-
-  // تحضير keywords
+  const articleBody = [article.intro, article.details, ...(article.steps || []), ...(article.tips || [])].filter(Boolean).join(' ');
   const keywords = buildArticleKeywords({
     slug: params.id,
     title: article.title,
@@ -320,7 +300,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
 
   return (
     <main className="min-h-screen flex flex-col">
-      <Navbar />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }}
@@ -330,6 +309,27 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }}
       />
       <ArticleHydratedView initialArticle={article} slug={params.id} />
+
+      {/* Contributors, CTA, and Suggestion Box */}
+      <div className="max-w-4xl mx-auto px-4 w-full mt-8 mb-16">
+        {/* Contributors List - Shows only if there are approved contributions */}
+        <ContributorsList articleId={params.id} />
+
+        {/* CTA */}
+        <div className="text-center mb-6 animate-in slide-in-from-bottom-4 duration-700 delay-300">
+          <p className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">
+            📢 "المحتوى تجربتك، وأنت جزء منه!"
+          </p>
+          <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto leading-relaxed">
+            هل مررت بتجربة مختلفة في هذه المعاملة؟ أو تغيرت القوانين مؤخراً؟
+            <br />
+            <span className="text-emerald-600 font-bold">شاركنا تجربتك في الصندوق بالأسفل</span> لتعم الفائدة على الجميع.
+          </p>
+        </div>
+
+        <SuggestionBox articleId={params.id} source="article" title={article.title} />
+      </div>
+
       <Footer />
     </main>
   );

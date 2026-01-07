@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
@@ -17,7 +16,6 @@ export default function EducationPage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
       <PageHero
         title="الدراسة والتعليم"
         description="المدارس، الجامعات، المنح الدراسية، ومعادلة الشهادات."
@@ -33,9 +31,9 @@ export default function EducationPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.length > 0 ? (
               articles.map((article) => (
-                <Link 
-                  key={article.id} 
-                  href={`/article/${article.id}`} 
+                <Link
+                  key={article.id}
+                  href={`/article/${article.id}`}
                   className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
                 >
                   {article.image && (

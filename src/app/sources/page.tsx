@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import { useAdminSources } from '@/lib/useAdminData';
@@ -39,7 +38,7 @@ function SourceCard({ source }: { source: { id: string; name: string; url: strin
       className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full"
     >
       <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:h-1.5 transition-all" />
-      
+
       <div className="p-4 sm:p-5 flex-grow flex flex-col">
         <div className="flex items-start gap-3 mb-3">
           <div className="p-2.5 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
@@ -49,7 +48,7 @@ function SourceCard({ source }: { source: { id: string; name: string; url: strin
             {source.name}
           </h3>
         </div>
-        
+
         <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2 flex-grow">
           {source.desc}
         </p>
@@ -88,8 +87,6 @@ export default function SourcesPage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
-
       <PageHero
         title="المصادر الحكومية الرسمية"
         description="روابط مباشرة وآمنة من المواقع الحكومية التركية."

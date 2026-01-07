@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
@@ -8,7 +7,7 @@ import Link from 'next/link';
 export default function ContactPage() {
   return (
     <main className="flex flex-col min-h-screen">
-      <Navbar />
+
 
       <PageHero title="اتصل بنا" description="نردّ بأسرع وقت ممكن حسب ضغط الرسائل." />
 

@@ -24,6 +24,15 @@ export const STORAGE_KEYS = {
   sources: 'admin_sources_v2',
 };
 
+/**
+ * 🛠️ دالة لتطبيع المعرّفات (IDs) لضمان استخدام الواصلات (-) بدلاً من الشرطة السفلية (_)
+ * هذا يمنع أخطاء الـ Routing في التصدير الثابت.
+ */
+export function normalizeId(id: string): string {
+  if (!id) return id;
+  return id.toLowerCase().replace(/_/g, '-').trim();
+}
+
 // ============================================
 // 📦 أنواع البيانات
 // ============================================
@@ -148,12 +157,12 @@ export function useAdminArticles() {
 
   useEffect(() => {
     const saved = safeGet<AdminArticle[]>(STORAGE_KEYS.articles, []);
-    
+
     if (saved.length > 0) {
-      setArticles(saved.filter(a => a.active));
+      setArticles(saved.filter(a => a.active).map(a => ({ ...a, id: normalizeId(a.id) })));
     } else {
       const staticArticles: AdminArticle[] = Object.entries(ARTICLES).map(([id, a]) => ({
-        id,
+        id: normalizeId(id),
         title: a.title,
         category: a.category,
         lastUpdate: a.lastUpdate,
@@ -162,7 +171,7 @@ export function useAdminArticles() {
         documents: a.documents || [],
         steps: a.steps || [],
         tips: a.tips || [],
-        fees: a.fees,
+        fees: a.fees || '',
         warning: a.warning || null,
         source: a.source || '',
         active: true,
@@ -170,13 +179,13 @@ export function useAdminArticles() {
       }));
       setArticles(staticArticles);
     }
-    
+
     setLoading(false);
 
     const handler = () => {
       const updated = safeGet<AdminArticle[]>(STORAGE_KEYS.articles, []);
       if (updated.length > 0) {
-        setArticles(updated.filter(a => a.active));
+        setArticles(updated.filter(a => a.active).map(a => ({ ...a, id: normalizeId(a.id) })));
       }
     };
 
@@ -205,15 +214,16 @@ export function useAdminArticle(id: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const normalizedId = normalizeId(id);
     const saved = safeGet<AdminArticle[]>(STORAGE_KEYS.articles, []);
-    const found = saved.find(a => a.id === id && a.active);
-    
+    const found = saved.find(a => normalizeId(a.id) === normalizedId && a.active);
+
     if (found) {
-      setArticle(found);
-    } else if (ARTICLES[id]) {
-      const a = ARTICLES[id];
+      setArticle({ ...found, id: normalizedId });
+    } else if (ARTICLES[id] || ARTICLES[normalizedId]) {
+      const a = ARTICLES[id] || ARTICLES[normalizedId];
       setArticle({
-        id,
+        id: normalizedId,
         title: a.title,
         category: a.category,
         lastUpdate: a.lastUpdate,
@@ -222,14 +232,14 @@ export function useAdminArticle(id: string) {
         documents: a.documents || [],
         steps: a.steps || [],
         tips: a.tips || [],
-        fees: a.fees,
+        fees: a.fees || '',
         warning: a.warning || null,
         source: a.source || '',
         active: true,
         createdAt: a.lastUpdate,
       });
     }
-    
+
     setLoading(false);
   }, [id]);
 
@@ -248,7 +258,7 @@ export function useAdminServices() {
 
   useEffect(() => {
     const saved = safeGet<AdminService[]>(STORAGE_KEYS.services, []);
-    
+
     if (saved.length > 0) {
       setServices(saved.filter(s => s.active));
     } else {
@@ -262,7 +272,7 @@ export function useAdminServices() {
       }));
       setServices(staticServices);
     }
-    
+
     setLoading(false);
 
     const handler = () => {
@@ -294,7 +304,7 @@ export function useAdminUpdates() {
 
   useEffect(() => {
     const saved = safeGet<AdminUpdate[]>(STORAGE_KEYS.updates, []);
-    
+
     if (saved.length > 0) {
       setUpdates(saved.filter(u => u.active).sort((a, b) => b.date.localeCompare(a.date)));
     } else {
@@ -308,7 +318,7 @@ export function useAdminUpdates() {
       }));
       setUpdates(staticUpdates);
     }
-    
+
     setLoading(false);
 
     const handler = () => {
@@ -340,7 +350,7 @@ export function useAdminCodes() {
 
   useEffect(() => {
     const saved = safeGet<AdminCode[]>(STORAGE_KEYS.codes, []);
-    
+
     if (saved.length > 0) {
       setCodes(saved.filter(c => c.active));
     } else {
@@ -355,7 +365,7 @@ export function useAdminCodes() {
       }));
       setCodes(staticCodes);
     }
-    
+
     setLoading(false);
 
     const handler = () => {
@@ -387,12 +397,12 @@ export function useAdminFAQ() {
 
   useEffect(() => {
     const saved = safeGet<AdminFAQ[]>(STORAGE_KEYS.faq, []);
-    
+
     if (saved.length > 0) {
       setFaq(saved.filter(f => f.active));
     }
     // لا يوجد fallback ثابت هنا - سيُحمّل من الملف الأصلي إذا لزم
-    
+
     setLoading(false);
 
     const handler = () => {
@@ -434,7 +444,7 @@ export function useAdminForms() {
 
   useEffect(() => {
     const saved = safeGet<AdminForm[]>(STORAGE_KEYS.forms, []);
-    
+
     if (saved.length > 0) {
       setForms(saved.filter(f => f.active));
     } else {
@@ -448,7 +458,7 @@ export function useAdminForms() {
       }));
       setForms(staticForms);
     }
-    
+
     setLoading(false);
 
     const handler = () => {
@@ -480,7 +490,7 @@ export function useAdminSources() {
 
   useEffect(() => {
     const saved = safeGet<AdminSource[]>(STORAGE_KEYS.sources, []);
-    
+
     if (saved.length > 0) {
       setSources(saved.filter(s => s.active));
     } else {
@@ -493,7 +503,7 @@ export function useAdminSources() {
       }));
       setSources(staticSources);
     }
-    
+
     setLoading(false);
 
     const handler = () => {

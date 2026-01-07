@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 // 🎬 أنواع الحركات المختلفة
 // ============================================
 
-type AnimationType = 
+type AnimationType =
   | 'fadeUp'
   | 'fadeDown'
   | 'slideRight'
@@ -77,8 +77,8 @@ const animations: Record<AnimationType, Variants> = {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { 
-        duration: 0.6, 
+      transition: {
+        duration: 0.6,
         type: 'spring',
         stiffness: 300,
         damping: 15
@@ -116,8 +116,8 @@ const animations: Record<AnimationType, Variants> = {
       opacity: 1,
       scale: 1,
       y: 0,
-      transition: { 
-        duration: 0.8, 
+      transition: {
+        duration: 0.8,
         type: 'spring',
         stiffness: 200,
         damping: 10
@@ -148,26 +148,26 @@ function getAnimationByPath(pathname: string): AnimationType {
   // الدليل وخدمات e-Devlet
   if (pathname.includes('/directory')) return 'rotate';
   if (pathname.includes('/e-devlet')) return 'blur';
-  
+
   // الأدوات
   if (pathname.includes('/tools')) return 'scale';
   if (pathname.includes('/consultant')) return 'elastic';
   if (pathname.includes('/codes')) return 'slideRight';
   if (pathname.includes('/zones')) return 'slideLeft';
   if (pathname.includes('/ban-calculator')) return 'zoom';
-  
+
   // الأخبار والتحديثات
   if (pathname.includes('/updates') || pathname.includes('/news')) return 'fadeDown';
-  
+
   // المقالات والأقسام
   if (pathname.includes('/articles') || pathname.includes('/guide')) return 'swing';
   if (pathname.includes('/residency') || pathname.includes('/الإقامة')) return 'slideRight';
   if (pathname.includes('/work') || pathname.includes('/العمل')) return 'slideLeft';
   if (pathname.includes('/health') || pathname.includes('/الصحة')) return 'scale';
-  
+
   // الخدمات
   if (pathname.includes('/services')) return 'flip';
-  
+
   // صفحات أخرى
   if (pathname.includes('/faq') || pathname.includes('/questions')) return 'bounce';
   if (pathname.includes('/forms')) return 'swing';
@@ -175,10 +175,10 @@ function getAnimationByPath(pathname: string): AnimationType {
   if (pathname.includes('/dictionary')) return 'elastic';
   if (pathname.includes('/contact')) return 'slideLeft';
   if (pathname.includes('/about')) return 'rotate';
-  
+
   // الرئيسية أو أي صفحة أخرى
   if (pathname === '/') return 'scale';
-  
+
   // افتراضي
   return 'fadeUp';
 }
@@ -211,18 +211,18 @@ export default function PageHero({
 }: PageHeroProps) {
   const reduceMotion = useReducedMotion();
   const pathname = usePathname();
-  
+
   // استخدم الحركة المحددة أو اختر تلقائياً حسب المسار
   const selectedAnimation = animation || getAnimationByPath(pathname);
-  
+
   const variants: Variants = reduceMotion ? reducedMotionVariants : animations[selectedAnimation];
 
   return (
     <section className={`bg-primary-900 text-white py-16 px-4 relative overflow-hidden ${className || ''}`.trim()}>
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
+        <motion.div
+          initial="hidden"
+          animate="visible"
           variants={variants}
           style={{ perspective: selectedAnimation === 'flip' ? 1000 : undefined }}
         >
