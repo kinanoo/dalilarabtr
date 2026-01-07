@@ -57,7 +57,7 @@ export function UpdatesManager() {
 
     const handleDelete = async (id: string, title?: string) => {
         const toastId = toast.loading(`جاري حذف: ${title || 'التحديث'}...`);
-        console.log('🗑️ Attempting to delete ID:', id);
+
 
         const { error } = await supabase!.from('updates').delete().eq('id', id);
 
@@ -65,7 +65,7 @@ export function UpdatesManager() {
             console.error('❌ Delete failed:', error);
             toast.error(`فشل الحذف: ${error.message}`, { id: toastId });
         } else {
-            console.log('✅ Delete successful');
+
             toast.success('تم الحذف بنجاح', { id: toastId });
             fetchUpdates();
         }

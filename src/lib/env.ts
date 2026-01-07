@@ -106,12 +106,5 @@ if (ENV.WHATSAPP_PHONE && !isValidPhone(ENV.WHATSAPP_PHONE)) {
 // 📝 معلومات للتصحيح
 // ============================================
 
-if (ENV.IS_DEVELOPMENT) {
-  console.log('🔧 متغيرات البيئة:', {
-    SITE_URL: ENV.SITE_URL,
-    WHATSAPP_PHONE: ENV.WHATSAPP_PHONE ? '***' : 'غير موجود',
-    HAS_SUPABASE: !!(ENV.SUPABASE_URL && ENV.SUPABASE_ANON_KEY),
-    HAS_GA: !!ENV.GOOGLE_ANALYTICS_ID,
-  });
-}
+
 
