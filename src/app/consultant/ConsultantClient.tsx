@@ -219,6 +219,11 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
   }, []);
 
   const processLogic = (key: string) => {
+    // Check if key is actually a direct URL (simple heuristic)
+    if (key.startsWith('/') || key.startsWith('http')) {
+      window.location.href = key;
+      return;
+    }
     loadScenario(key);
   };
 

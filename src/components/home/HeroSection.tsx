@@ -49,10 +49,11 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 </div>
 
                 {/* 🟢 AMBIENT BUBBLES RESTORED - STRONGER VISIBILITY */}
+                {/* 🟢 AMBIENT BUBBLES RESTORED - STRONGER VISIBILITY */}
                 {/* Top Right - Stronger Emerald */}
-                <div className="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] bg-emerald-500/40 rounded-full blur-[80px] pointer-events-none animate-pulse-slow z-0" />
+                <div className="absolute -top-[10%] -right-[20%] md:-right-[5%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-emerald-500/40 rounded-full blur-[60px] md:blur-[80px] pointer-events-none animate-pulse-slow z-0" />
                 {/* Bottom Left - Stronger Cyan */}
-                <div className="absolute -bottom-[10%] -left-[5%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-[80px] pointer-events-none z-0" />
+                <div className="absolute -bottom-[10%] -left-[20%] md:-left-[5%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-cyan-500/30 rounded-full blur-[60px] md:blur-[80px] pointer-events-none z-0" />
 
                 {/* --- SIDE PILLARS (Desktop) --- */}
                 <SideColumn items={SIDE_ITEMS_LEFT} direction="up" className="left-4 xl:left-16" />

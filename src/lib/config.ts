@@ -4,7 +4,7 @@ export const SITE_CONFIG = {
     lang: "ar",
     country: "تركيا",
     whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487",
-    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
+    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab1.netlify.app').replace(/\/$/, '')
 };
 
 export const CATEGORY_SLUGS: Record<string, string> = {

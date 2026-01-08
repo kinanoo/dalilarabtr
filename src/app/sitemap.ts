@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 export const dynamic = 'force-dynamic'; // Change to dynamic to allow DB fetch
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab1.netlify.app').replace(/\/$/, '');
 
   // الصفحات الثابتة الرئيسية
   const staticPages: MetadataRoute.Sitemap = NAVIGATION.map((item) => ({
