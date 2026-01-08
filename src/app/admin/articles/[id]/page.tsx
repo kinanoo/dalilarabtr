@@ -36,7 +36,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 const { data, error } = await supabase
                     .from('articles')
                     .select('*')
-                    .eq('id', id)
+                    .eq('id', decodeURIComponent(id))
                     .single();
 
                 if (error) {

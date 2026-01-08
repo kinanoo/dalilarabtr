@@ -4,6 +4,7 @@ import { inputStyles, textareaStyles, ltrInputStyles } from '../ui/styles';
 import { ArrayInput } from '../ui/ArrayInput';
 import { ArticleForm } from '@/lib/schemas';
 import { ImageUploader } from '../ui/ImageUploader';
+import { CATEGORY_SLUGS } from '@/lib/config';
 
 interface ArticleEditorProps {
     form: Partial<ArticleForm>;
@@ -52,14 +53,9 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                         onChange={e => setForm({ ...form, category: e.target.value })}
                     >
                         <option value="">اختر القسم...</option>
-                        <option value="إقامة">إقامة وقوانين</option>
-                        <option value="صحة">صحة وتأمين</option>
-                        <option value="تعليم">تعليم وجامعات</option>
-                        <option value="سياحة">سياحة وترفيه</option>
-                        <option value="عمل">عمل واستثمار</option>
-                        <option value="الجنسية">الجنسية التركية</option>
-                        <option value="عقارات">عقارات</option>
-                        <option value="عام">تنبيهات عامة</option>
+                        {Object.entries(CATEGORY_SLUGS).map(([slug, title]) => (
+                            <option key={slug} value={slug}>{title}</option>
+                        ))}
                     </select>
                 </Field>
 
