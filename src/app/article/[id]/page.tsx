@@ -22,7 +22,7 @@ async function fetchArticleData(slug: string) {
     const { data } = await supabase
       .from('articles')
       .select('*')
-      .eq('id', slug)
+      .eq('id', decodeURIComponent(slug))
       .maybeSingle();
 
     if (data) {
