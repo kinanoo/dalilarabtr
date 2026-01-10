@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
   devIndicators: ({ buildActivity: false } as unknown) as NextConfig['devIndicators'],
 
   // 🛡️ تجاوز أخطاء البناء (للنشر السريع)
-  eslint: { ignoreDuringBuilds: true },
+
   typescript: { ignoreBuildErrors: true },
 };
 
