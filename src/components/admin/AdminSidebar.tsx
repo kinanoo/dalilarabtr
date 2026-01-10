@@ -11,7 +11,8 @@ import {
     LogOut,
     Menu,
     Bell,
-    Star
+    Star,
+    MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -58,6 +59,7 @@ export function AdminSidebar({ collapsed = false, onLogout, currentView, setView
             items: [
                 { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
                 { href: '/admin/reviews', label: 'التقييمات', icon: Star },
+                { href: '/admin/community', label: 'المجتمع', icon: MessageSquare },
                 { href: '/admin/scenarios', label: 'سيناريوهات المستشار', icon: HelpCircle }, // Added Scenarios
             ]
         },

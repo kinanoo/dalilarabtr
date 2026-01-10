@@ -8,11 +8,19 @@ export const metadata: Metadata = {
     keywords: 'المناطق المحظورة, تثبيت النفوس, كملك, سوريين تركيا, احياء مغلقة, نفوس اسطنبول, المناطق المحظورة للسوريين',
 };
 
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+
 export default function ZonesPage() {
     return (
-        <>
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
             <ToolSchema tool="restricted-areas" />
             <ZonesClient />
-        </>
+
+            <div className="max-w-4xl mx-auto px-4 mt-12 space-y-8">
+                <ContentHelpfulWidget entityType="zone" entityId="main-map" />
+                <UniversalComments entityType="zone" entityId="main-map" title="نقاش المناطق المحظورة" />
+            </div>
+        </main>
     );
 }

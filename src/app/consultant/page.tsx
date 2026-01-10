@@ -13,18 +13,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ConsultantPage() {
-  if (!supabase) {
-    return <ConsultantClient initialComments={[]} />;
-  }
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
-  const { data: comments } = await supabase
-    .from('comments')
-    .select('*')
-    .eq('page_slug', 'consultant-tool')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-    .limit(50);
+export default function ConsultantPage() {
+  return (
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
+      <ConsultantClient initialComments={[]} />
 
-  return <ConsultantClient initialComments={comments || []} />;
+      <div className="max-w-4xl mx-auto px-4 mt-12 space-y-8">
+        <ContentHelpfulWidget entityType="scenario" entityId="consultant-main" />
+        <UniversalComments entityType="scenario" entityId="consultant-main" title="مجتمع المستشار القانوني" />
+      </div>
+    </main>
+  );
 }

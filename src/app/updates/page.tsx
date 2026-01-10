@@ -2,8 +2,10 @@
 
 import PageHero from '@/components/PageHero';
 import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
-import { Bell, Sparkles, Loader2, Calendar } from 'lucide-react';
+import { Bell, Sparkles, Loader2, Calendar, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
 export default function UpdatesPage() {
   // 🆕 استخدام الـ hook الجديد بدلاً من fetchRemoteUpdates
@@ -85,6 +87,23 @@ export default function UpdatesPage() {
                           {u.content}
                         </p>
                       )}
+
+                      {/* Community Interaction */}
+                      <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-col gap-4">
+                          <ContentHelpfulWidget entityType="update" entityId={u.id} className="bg-slate-50 dark:bg-slate-800/50" />
+
+                          <details className="group">
+                            <summary className="cursor-pointer list-none font-bold text-sm text-emerald-600 flex items-center gap-2 select-none">
+                              <MessageSquare size={16} />
+                              التعليقات والمناقشة
+                            </summary>
+                            <div className="mt-4 animate-in slide-in-from-top-2">
+                              <UniversalComments entityType="update" entityId={u.id} title="نقاش التحديث" className="shadow-none border-none bg-slate-50 dark:bg-slate-800/30" />
+                            </div>
+                          </details>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

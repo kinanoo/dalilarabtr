@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import ServiceProfileHeader from '@/components/services/ServiceProfileHeader';
 import ServiceReviews from '@/components/services/ServiceReviews';
 import { Phone, AlertTriangle } from 'lucide-react';
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 export const dynamicParams = true;
@@ -69,45 +71,52 @@ export default async function ServiceProfilePage({ params }: { params: Promise<{
                             )}
                         </div>
                     </div>
-
-                    {/* Reviews System */}
-                    <ServiceReviews serviceId={service.id} />
-
                 </div>
 
-                {/* Sidebar (Left Column) */}
-                <div className="space-y-6">
+                <ContentHelpfulWidget entityType="service" entityId={service.id} />
 
-                    {/* Sticky Contact Card */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 sticky top-24">
-                        <h3 className="font-bold text-lg mb-4 text-center">تواصل مع مقدم الخدمة</h3>
+                {/* Service QA / Discussion */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <UniversalComments entityType="service" entityId={service.id} title="أسئلة ومناقشات" />
+                </div>
 
-                        {securePhone ? (
-                            <a
-                                href={whatsappLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block w-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-center py-4 rounded-xl font-bold mb-4 shadow-lg shadow-green-500/20 transition-transform active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                <Phone size={20} />
-                                <span>تواصل عبر واتساب</span>
-                            </a>
-                        ) : (
-                            <div className="bg-slate-100 text-slate-500 text-center py-4 rounded-xl font-bold mb-4">
-                                الرقم غير متوفر
-                            </div>
-                        )}
+                {/* Reviews System */}
+                <ServiceReviews serviceId={service.id} serviceName={service.name} />
+            </div>
 
-                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-4 rounded-xl text-xs text-amber-800 dark:text-amber-200 leading-relaxed flex items-start gap-2">
-                            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                            <p>
-                                <strong>إخلاء مسؤولية:</strong> موقع دليل العرب هو منصة وسيطة للإعلان فقط. لسنا مسؤولين عن جودة الخدمة أو الاتفاقات المالية. يرجى توخي الحذر والاتفاق بوضوح قبل الدفع.
-                            </p>
+            {/* Sidebar (Left Column) */}
+            <div className="space-y-6">
+
+                {/* Sticky Contact Card */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 sticky top-24">
+                    <h3 className="font-bold text-lg mb-4 text-center">تواصل مع مقدم الخدمة</h3>
+
+                    {securePhone ? (
+                        <a
+                            href={whatsappLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-center py-4 rounded-xl font-bold mb-4 shadow-lg shadow-green-500/20 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <Phone size={20} />
+                            <span>تواصل عبر واتساب</span>
+                        </a>
+                    ) : (
+                        <div className="bg-slate-100 text-slate-500 text-center py-4 rounded-xl font-bold mb-4">
+                            الرقم غير متوفر
                         </div>
-                    </div>
+                    )}
 
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-4 rounded-xl text-xs text-amber-800 dark:text-amber-200 leading-relaxed flex items-start gap-2">
+                        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                        <p>
+                            <strong>إخلاء مسؤولية:</strong> موقع دليل العرب هو منصة وسيطة للإعلان فقط. لسنا مسؤولين عن جودة الخدمة أو الاتفاقات المالية. يرجى توخي الحذر والاتفاق بوضوح قبل الدفع.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
+            </div >
+        </main >
     );
 }
