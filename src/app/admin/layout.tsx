@@ -67,7 +67,7 @@ export default function AdminLayout({
 
                 <main className="flex-1 transition-all duration-300 overflow-y-auto flex flex-col min-w-0">
                     {/* Mobile Header */}
-                    <div className="md:hidden p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+                    <div className="lg:hidden p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white font-bold text-sm">D</div>
                             <span className="font-bold text-slate-800 dark:text-white">دليلك (Admin)</span>

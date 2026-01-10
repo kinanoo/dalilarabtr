@@ -76,20 +76,20 @@ export function AdminSidebar({ collapsed = false, onLogout, currentView, setView
             {/* Mobile Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"
+                    className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden"
                     onClick={onClose}
                 />
             )}
 
             <aside className={`
                 fixed inset-y-0 right-0 z-40 bg-[#0f172a] text-slate-300 transition-transform duration-300 border-l border-white/5 shadow-2xl
-                ${isOpen ? 'translate-x-0' : 'translate-x-full'} 
-                md:relative md:translate-x-0 md:flex flex-col h-full
-                ${collapsed ? 'md:w-20' : 'md:w-64'}
+                ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+                lg:relative lg:translate-x-0 lg:flex flex-col h-full
+                ${collapsed ? 'lg:w-20' : 'lg:w-64'}
                 w-72
             `}>
                 {/* Close Button Mobile */}
-                <div className="md:hidden absolute top-4 left-4 z-50">
+                <div className="lg:hidden absolute top-4 left-4 z-50">
                     {/* Can place close button here if needed, but overlay click is enough */}
                 </div>
 
@@ -108,7 +108,7 @@ export function AdminSidebar({ collapsed = false, onLogout, currentView, setView
                         <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold mx-auto">D</div>
                     )}
                     {/* Mobile Close Icon */}
-                    <button onClick={onClose} className="md:hidden p-2 text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="lg:hidden p-2 text-slate-400 hover:text-white">
                         <Menu size={20} />
                     </button>
                 </div>
