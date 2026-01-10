@@ -213,80 +213,144 @@ export default function ServicesManager() {
 
             {/* List View */}
             {view === 'list' && (
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-right">
-                            <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold border-b border-slate-100 dark:border-slate-800">
-                                <tr>
-                                    <th className="p-4">الخدمة</th>
-                                    <th className="p-4 hidden md:table-cell">التصنيف</th>
-                                    <th className="p-4 hidden sm:table-cell">الموقع</th>
-                                    <th className="p-4">إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {services.map((service) => (
-                                    <tr key={service.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                {service.image ? (
-                                                    <Image src={service.image} alt="" width={40} height={40} className="rounded-lg object-cover" />
-                                                ) : (
-                                                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                                                        <Briefcase size={20} />
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <div className="font-bold text-slate-800 dark:text-slate-200">{service.name}</div>
-                                                    <div className="text-xs text-slate-500">{service.profession}</div>
-                                                </div>
+                <>
+                    {/* Mobile Cards View (< 768px) */}
+                    <div className="md:hidden grid grid-cols-1 gap-4">
+                        {loading && services.length === 0 ? (
+                            <div className="py-12 flex justify-center text-emerald-500"><Loader2 className="animate-spin" size={32} /></div>
+                        ) : services.map((service) => (
+                            <div key={service.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-3 relative overflow-hidden">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        {service.image ? (
+                                            <Image src={service.image} alt="" width={48} height={48} className="rounded-xl object-cover flex-shrink-0 bg-slate-100" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 flex-shrink-0">
+                                                <Briefcase size={20} />
                                             </div>
-                                        </td>
-                                        <td className="p-4 hidden md:table-cell text-slate-600 dark:text-slate-400">
-                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">
-                                                {service.category}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 hidden sm:table-cell text-slate-600 dark:text-slate-400">
-                                            <div className="flex items-center gap-1">
-                                                <MapPin size={14} />
-                                                {service.city}
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => handleEdit(service)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="تعديل">
-                                                    <Edit size={18} />
-                                                </button>
-                                                <button onClick={() => handleDelete(service.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف">
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        )}
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="font-bold text-slate-800 dark:text-slate-100 truncate">{service.name}</h3>
+                                            <p className="text-xs text-slate-500 truncate">{service.profession}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        <button onClick={() => handleEdit(service)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                                            <Edit size={16} />
+                                        </button>
+                                        <button onClick={() => handleDelete(service.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 text-xs flex-wrap">
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                                        <MapPin size={12} /> {service.city}
+                                    </span>
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                        {service.category}
+                                    </span>
+                                    {service.phone && (
+                                        <span className="bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-1 dir-ltr ml-auto">
+                                            <Phone size={12} /> {service.phone}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
-                    {loading && (
-                        <div className="p-8 flex justify-center text-emerald-500"><Loader2 className="animate-spin" size={32} /></div>
-                    )}
-
-                    {!loading && services.length === 0 && (
-                        <div className="p-12 text-center text-slate-400">
-                            <p>لا توجد نتائج مطابقة</p>
+                    {/* Desktop Table View (>= 768px) */}
+                    <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-right">
+                                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold border-b border-slate-100 dark:border-slate-800">
+                                    <tr>
+                                        <th className="p-4">الخدمة</th>
+                                        <th className="p-4">التصنيف</th>
+                                        <th className="p-4">الموقع</th>
+                                        <th className="p-4">الهاتف</th>
+                                        <th className="p-4">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {services.map((service) => (
+                                        <tr key={service.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    {service.image ? (
+                                                        <Image src={service.image} alt="" width={40} height={40} className="rounded-lg object-cover" />
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                                            <Briefcase size={20} />
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <div className="font-bold text-slate-800 dark:text-slate-200">{service.name}</div>
+                                                        <div className="text-xs text-slate-500">{service.profession}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-slate-600 dark:text-slate-400">
+                                                <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">
+                                                    {service.category}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-slate-600 dark:text-slate-400">
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin size={14} />
+                                                    {service.city}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-slate-600 dark:text-slate-400 font-mono text-xs" dir="ltr">
+                                                {service.phone}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => handleEdit(service)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="تعديل">
+                                                        <Edit size={18} />
+                                                    </button>
+                                                    <button onClick={() => handleDelete(service.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف">
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
 
+                        {loading && (
+                            <div className="p-8 flex justify-center text-emerald-500"><Loader2 className="animate-spin" size={32} /></div>
+                        )}
+
+                        {!loading && services.length === 0 && (
+                            <div className="p-12 text-center text-slate-400">
+                                <p>لا توجد نتائج مطابقة</p>
+                            </div>
+                        )}
+
+                        {!loading && hasMore && (
+                            <div className="p-4 border-t border-slate-100 dark:border-slate-800 text-center">
+                                <button onClick={() => fetchServices()} className="text-emerald-600 font-bold hover:underline">
+                                    تحميل المزيد...
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Link Load More for Mobile (outside the hidden desktop div) */}
                     {!loading && hasMore && (
-                        <div className="p-4 border-t border-slate-100 dark:border-slate-800 text-center">
-                            <button onClick={() => fetchServices()} className="text-emerald-600 font-bold hover:underline">
-                                تحميل المزيد...
+                        <div className="md:hidden mt-4 text-center">
+                            <button onClick={() => fetchServices()} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full py-3 rounded-xl text-emerald-600 font-bold shadow-sm">
+                                تحميل المزيد
                             </button>
                         </div>
                     )}
-                </div>
+                </>
             )}
 
             {/* Form View */}

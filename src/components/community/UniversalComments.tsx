@@ -35,13 +35,13 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name.trim() || !content.trim()) return;
+        if (!content.trim()) return;
 
         setSubmitting(true);
         const { error } = await postComment({
             entity_type: entityType,
             entity_id: entityId,
-            author_name: name,
+            author_name: name.trim() || 'زائر',
             content: content,
             is_correction: isCorrection
         });
@@ -49,9 +49,30 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
         setSubmitting(false);
 
         if (error) {
-            toast.error('حدث خطأ أثناء الإرسال. حاول مرة أخرى.');
+            console.error('Comment Error:', JSON.stringify(error, null, 2));
+            toast.error(`خطأ: ${(error as any).message || 'فشل الإرسال'}`, {
+                description: (error as any).details || (error as any).hint || 'يرجى تصوير هذا الخطأ وإرساله للمطور',
+                duration: 5000
+            });
         } else {
-            toast.success(isCorrection ? 'تم إرسال بلاغك بنجاح للمراجعة!' : 'تم إرسال تعليقك للنشر!');
+            toast.success('تم نشر تعليقك بنجاح!');
+
+            // Optimistic Update
+            const newComment: Comment = {
+                id: crypto.randomUUID(),
+                entity_type: entityType,
+                entity_id: entityId,
+                author_name: name.trim() || 'زائر',
+                content: content,
+                is_correction: isCorrection,
+                is_official: false,
+                status: 'approved', // Auto-approved
+                created_at: new Date().toISOString(),
+                replies: []
+            };
+
+            setComments(prev => [newComment, ...prev]);
+
             setContent('');
             setName('');
             setIsCorrection(false);
@@ -59,7 +80,7 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
     };
 
     return (
-        <section className={`bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200 dark:border-slate-800 ${className}`}>
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 ${className}`}>
             {/* Header */}
             <div className="flex items-center gap-3 mb-8">
                 <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-xl">
@@ -89,6 +110,7 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
                                 </span>
                                 {c.is_official && <span className="text-[10px] bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-100 px-1.5 rounded font-bold">رد رسمي</span>}
                                 {c.is_correction && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 rounded font-bold flex items-center gap-0.5"><AlertTriangle size={10} /> تصحيح</span>}
+                                {c.status === 'pending' && <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 rounded font-bold">بانتظار النشر</span>}
                                 <span className="text-xs text-slate-400 mr-auto">
                                     {new Date(c.created_at).toLocaleDateString('ar-EG')}
                                 </span>
@@ -118,8 +140,7 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
                             value={name}
                             onChange={e => setName(e.target.value)}
                             className="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg text-sm outline-none border border-transparent focus:border-emerald-500 w-full"
-                            placeholder="الاسم (مطلوب)"
-                            required
+                            placeholder="الاسم (اختياري)"
                         />
                     </div>
 

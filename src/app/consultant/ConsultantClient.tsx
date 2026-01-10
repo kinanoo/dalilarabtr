@@ -14,6 +14,8 @@ import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import BookmarkButton from '@/components/BookmarkButton';
 import CommentsClient from '@/components/comments/CommentsClient';
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
 import { useAdminScenarios } from '@/lib/useAdminData';
 import { fetchRemoteArticleDataById } from '@/lib/remoteData';
@@ -864,7 +866,12 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row justify-center pt-6 sm:pt-8 mt-auto border-t border-slate-100 dark:border-slate-800 gap-3 sm:gap-4">
+                  <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-8 space-y-6">
+                    <ContentHelpfulWidget entityType="scenario" entityId={shownResult.id} />
+                    <UniversalComments entityType="scenario" entityId={shownResult.id} title="مجتمع المستشار" />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row justify-center pt-8 mt-auto border-t border-slate-100 dark:border-slate-800 gap-3 sm:gap-4">
                     <button onClick={reset} className="flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 font-bold py-3 order-2 sm:order-1">
                       <RefreshCw size={18} /> استشارة جديدة
                     </button>

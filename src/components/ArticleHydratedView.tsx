@@ -6,11 +6,13 @@ import type { Article } from '@/lib/types';
 export default function ArticleHydratedView({
   articleData,
   slug,
-  initialComments
+  initialComments,
+  children
 }: {
   articleData?: Article | null,
   slug: string,
-  initialComments?: any[]
+  initialComments?: any[],
+  children?: React.ReactNode
 }) {
   if (!articleData) return null;
 
@@ -19,6 +21,8 @@ export default function ArticleHydratedView({
       article={articleData}
       slug={slug}
       initialComments={initialComments}
-    />
+    >
+      {children}
+    </ArticleView>
   );
 }

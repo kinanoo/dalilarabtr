@@ -47,7 +47,8 @@ export async function postComment(payload: {
         .from('comments')
         .insert([{
             ...payload,
-            status: 'pending' // Default to pending
+            page_slug: payload.entity_id, // Backward compatibility for legacy schema
+            status: 'approved' // Auto-approve by default as requested
         }])
         .select()
         .single();

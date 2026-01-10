@@ -302,12 +302,10 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     <main className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }} />
-      <ArticleHydratedView articleData={article} slug={params.id} />
-
-      <div className="max-w-4xl mx-auto px-4 mt-8 space-y-8">
+      <ArticleHydratedView articleData={article} slug={params.id}>
         <ContentHelpfulWidget entityType="article" entityId={params.id} />
         <UniversalComments entityType="article" entityId={params.id} title="نقاش دليل المقال" />
-      </div>
+      </ArticleHydratedView>
 
       <hr className="my-12 border-slate-200 dark:border-slate-800 max-w-4xl mx-auto opacity-50" />
       <RelatedArticles currentArticleId={params.id} category={article.category} />

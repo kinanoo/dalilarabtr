@@ -45,8 +45,8 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
     }
 
     return (
-        <div className={`flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 ${className}`}>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+        <div className={`w-full flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm ${className}`}>
+            <span className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-300">
                 هل كان هذا المحتوى مفيداً؟
             </span>
             <div className="flex items-center gap-2">

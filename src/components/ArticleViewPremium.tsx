@@ -16,7 +16,7 @@ import { deobfuscate, isObfuscated } from '@/lib/security';
 import NativeConsultCard from '@/components/article/NativeConsultCard';
 import CommentsClient from '@/components/comments/CommentsClient';
 
-export default function ArticleView({ article, slug, initialComments }: { article: Article, slug: string, initialComments?: any[] }) {
+export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
   const [showDetails, setShowDetails] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -306,9 +306,13 @@ export default function ArticleView({ article, slug, initialComments }: { articl
                 </details>
               </div>
 
+
+              {/* Widgets (Comments/Helpful) passed as children */}
+              <div className="mt-12 space-y-8">
+                {children}
+              </div>
+
             </div>
-
-
 
           </div>
 
