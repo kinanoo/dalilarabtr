@@ -253,9 +253,9 @@ export default function ServicesManager() {
                                         {service.category}
                                     </span>
                                     {service.phone && (
-                                        <span className="bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-1 max-w-full">
+                                        <span className="bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-1 max-w-full overflow-hidden min-w-0">
                                             <Phone size={12} className="shrink-0" />
-                                            <span className="truncate dir-ltr">{service.phone}</span>
+                                            <span className="truncate dir-ltr flex-1">{service.phone}</span>
                                         </span>
                                     )}
                                 </div>

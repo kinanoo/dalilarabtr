@@ -15,7 +15,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
 
             {/* Header / Identity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Field label="اسم الخدمة / الطبيب" icon={Briefcase}>
+                <Field label="اسم الخدمة" icon={Briefcase}>
                     <input
                         className={`${inputStyles} text-xl font-bold`}
                         value={form.name || ''}

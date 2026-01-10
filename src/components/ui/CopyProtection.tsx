@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 
 export default function CopyProtection() {
+    const pathname = usePathname();
+
     useEffect(() => {
+        // Disable protection on admin pages or if explicitly disabled
+        if (pathname?.startsWith('/admin')) {
+            return;
+        }
+
         const handleCopy = (e: ClipboardEvent) => {
             // Check if what is being copied is text
             const selection = window.getSelection();

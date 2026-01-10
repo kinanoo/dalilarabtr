@@ -56,7 +56,7 @@ export async function postComment(payload: {
     return { data, error };
 }
 
-export async function voteContent(entityType: string, entityId: string, voteType: 'up' | 'down') {
+export async function voteContent(entityType: string, entityId: string, voteType: 'up' | 'down', feedback?: string, reason?: string) {
     if (!supabase) return { error: 'Supabase not initialized' };
 
     // Simple ip check handled by DB unique constraint usually, or client side fingerprint.
@@ -66,7 +66,9 @@ export async function voteContent(entityType: string, entityId: string, voteType
         .insert([{
             entity_type: entityType,
             entity_id: entityId,
-            vote_type: voteType
+            vote_type: voteType,
+            feedback,
+            reason
         }]);
 
     return { error };

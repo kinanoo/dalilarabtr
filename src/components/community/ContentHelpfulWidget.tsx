@@ -13,19 +13,43 @@ interface ContentHelpfulWidgetProps {
 
 export default function ContentHelpfulWidget({ entityType, entityId, className }: ContentHelpfulWidgetProps) {
     const [voted, setVoted] = useState<'up' | 'down' | null>(null);
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [feedback, setFeedback] = useState('');
+    const [reason, setReason] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleVote = async (type: 'up' | 'down') => {
         if (voted) return;
-        setVoted(type);
 
-        const { error } = await voteContent(entityType, entityId, type);
+        if (type === 'down') {
+            setShowFeedback(true);
+            return;
+        }
+
+        submitVote(type);
+    };
+
+    const submitVote = async (type: 'up' | 'down', feedbackText?: string, reasonText?: string) => {
+        const { error } = await voteContent(entityType, entityId, type, feedbackText, reasonText);
 
         if (error) {
-            // Revert if error (optional, but keep it simple)
             console.error(error);
+            toast.error('حدث خطأ في استلام تقييمك');
         } else {
+            setVoted(type);
             toast.success(type === 'up' ? 'شكراً لك! يسعدنا أنك استفدت.' : 'شكراً لملاحظتك، سنعمل على التحسين.');
         }
+    };
+
+    const handleSubmitFeedback = async () => {
+        if (!reason && !feedback) {
+            toast.error('يرجى توضيح السبب أو كتابة ملاحظة');
+            return;
+        }
+        setIsSubmitting(true);
+        await submitVote('down', feedback, reason);
+        setIsSubmitting(false);
+        setShowFeedback(false);
     };
 
     if (voted) {
@@ -40,6 +64,51 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
                         <ThumbsDown size={16} /> شكراً لملاحظتك.
                     </span>
                 )}
+            </div>
+        );
+    }
+
+    if (showFeedback) {
+        return (
+            <div className={`w-full p-4 sm:p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-2 ${className}`}>
+                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">لماذا لم يكن المحتوى مفيداً؟</h4>
+
+                <div className="flex flex-wrap gap-2">
+                    {['معلومات غير دقيقة', 'قديم', 'غير واضح', 'أخرى'].map(r => (
+                        <button
+                            key={r}
+                            onClick={() => setReason(r)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${reason === r
+                                ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900'
+                                : 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
+                        >
+                            {r}
+                        </button>
+                    ))}
+                </div>
+
+                <textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    placeholder="اكتب التصحيح أو ملاحظاتك هنا..."
+                    className="w-full text-sm p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 resize-none min-h-[80px]"
+                />
+
+                <div className="flex justify-end gap-2">
+                    <button
+                        onClick={() => setShowFeedback(false)}
+                        className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                    >
+                        إلغاء
+                    </button>
+                    <button
+                        onClick={handleSubmitFeedback}
+                        disabled={isSubmitting}
+                        className="px-4 py-2 text-xs font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                    >
+                        {isSubmitting ? 'جاري الإرسال...' : 'إرسال الملاحظات'}
+                    </button>
+                </div>
             </div>
         );
     }
