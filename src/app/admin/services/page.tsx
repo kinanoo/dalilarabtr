@@ -74,9 +74,9 @@ export default function AdminServicesPage() {
             });
 
             // Validation
-            if (!clean.name) throw new Error("اسم الخدمة مطلوب");
-            if (!clean.city) throw new Error("المدينة مطلوبة"); // City is required
-            if (!clean.description) throw new Error("الوصف مطلوب");
+            if (!clean.name) { alert("يرجى إدخال اسم الخدمة"); throw new Error("اسم الخدمة مطلوب"); }
+            if (!clean.city) { alert("يرجى إدخال المدينة"); throw new Error("المدينة مطلوبة"); }
+            if (!clean.description) { alert("يرجى إدخال الوصف"); throw new Error("الوصف مطلوب"); }
 
             // Prepare Payload
             const payload = selectedItem.id === 'new' ? { ...clean } : { id: selectedItem.id, ...clean };
@@ -96,6 +96,7 @@ export default function AdminServicesPage() {
 
         } catch (err: any) {
             console.error("Supabase Error:", JSON.stringify(err, null, 2));
+            alert('❌ حدث خطأ: ' + (err.message || 'خطأ غير معروف'));
             toast.error('❌ حدث خطأ: ' + (err.message || 'خطأ غير معروف'));
         } finally {
             setSaving(false);
@@ -161,8 +162,8 @@ export default function AdminServicesPage() {
 
             {/* Editor Modal */}
             {selectedItem && (
-                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex justify-center overflow-y-auto custom-scrollbar pt-10 pb-10" onClick={() => setSelectedItem(null)}>
-                    <div className="w-full max-w-5xl bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm flex justify-center items-end md:items-center overflow-hidden md:py-10" onClick={() => setSelectedItem(null)}>
+                    <div className="w-full max-w-5xl bg-white dark:bg-slate-900 shadow-2xl md:rounded-2xl border-t md:border border-slate-200 dark:border-slate-800 flex flex-col relative h-[90vh] md:h-auto md:max-h-[85vh]" onClick={e => e.stopPropagation()}>
                         {/* Modal Header */}
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
                             <div>
