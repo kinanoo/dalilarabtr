@@ -245,16 +245,17 @@ export default function ServicesManager() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 text-xs flex-wrap">
-                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                                <div className="flex items-center gap-2 text-xs flex-wrap mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 w-full">
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 flex items-center gap-1 shrink-0">
                                         <MapPin size={12} /> {service.city}
                                     </span>
-                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shrink-0">
                                         {service.category}
                                     </span>
                                     {service.phone && (
-                                        <span className="bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-1 dir-ltr ml-auto">
-                                            <Phone size={12} /> {service.phone}
+                                        <span className="bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-1 max-w-full">
+                                            <Phone size={12} className="shrink-0" />
+                                            <span className="truncate dir-ltr">{service.phone}</span>
                                         </span>
                                     )}
                                 </div>
