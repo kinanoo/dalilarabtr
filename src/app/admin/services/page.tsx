@@ -78,6 +78,11 @@ export default function AdminServicesPage() {
             if (!clean.city) { alert("يرجى إدخال المدينة"); throw new Error("المدينة مطلوبة"); }
             if (!clean.description) { alert("يرجى إدخال الوصف"); throw new Error("الوصف مطلوب"); }
 
+            // Auto-fill category if missing (DB constraint)
+            if (!clean.category) {
+                clean.category = clean.profession || 'عام';
+            }
+
             // Prepare Payload
             const payload = selectedItem.id === 'new' ? { ...clean } : { id: selectedItem.id, ...clean };
             if (selectedItem.id === 'new') delete payload.id;
