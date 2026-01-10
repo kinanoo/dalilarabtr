@@ -115,8 +115,6 @@ export default async function ServiceProfilePage({ params }: { params: Promise<{
                     </div>
                 </div>
             </div>
-        </div>
-            </div >
-        </main >
+        </main>
     );
 }
