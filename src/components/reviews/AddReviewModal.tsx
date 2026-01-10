@@ -64,7 +64,8 @@ export default function AddReviewModal({
         setSubmitting(false);
 
         if (apiError) {
-            setError('حدث خطأ. الرجاء المحاولة مرة أخرى.');
+            console.error('Review Error:', apiError);
+            setError('حدث خطأ: ' + (apiError.message || apiError.details || JSON.stringify(apiError)));
             return;
         }
 
