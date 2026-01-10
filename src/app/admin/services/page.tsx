@@ -155,7 +155,7 @@ export default function AdminServicesPage() {
                     ]}
                     searchFields={['name', 'profession', 'description', 'city']}
                     onEdit={(item) => setSelectedItem({ id: item.id, data: item })}
-                    onCreate={() => setSelectedItem({ id: 'new', data: { profession: 'طبيب' } })} // Removed rating: 5
+                    onCreate={() => setSelectedItem({ id: 'new', data: { profession: '' } })} // Removed rating: 5
                 />
             </div>
 

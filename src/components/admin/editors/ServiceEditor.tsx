@@ -24,20 +24,31 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
                 </Field>
 
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">التصنيف (النوع)</label>
-                    <div className="flex flex-wrap gap-2">
-                        {['طبيب', 'محامي', 'مترجم', 'عقارات', 'تعليم', 'تجميل', 'تأمين', 'سيارات', 'مطاعم', 'شحن', 'سياحة', 'خدمات عامة'].map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setForm({ ...form, category: cat })}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${form.category === cat
-                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105'
-                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-300'
-                                    }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
+                    <div className="md:col-span-2">
+                        <Field label="التخصص / المهنة (يمكنك الكتابة أو الاختيار)" icon={Briefcase}>
+                            <div className="space-y-3">
+                                <input
+                                    className={inputStyles}
+                                    value={form.profession || ''}
+                                    onChange={e => setForm({ ...form, profession: e.target.value })}
+                                    placeholder="اكتب التخصص هنا (مثلاً: صناعة سجاد، طبيب أسنان...)"
+                                />
+                                <div className="flex flex-wrap gap-2">
+                                    {['طبيب', 'محامي', 'مترجم', 'عقارات', 'تعليم', 'تجميل', 'تأمين', 'سيارات', 'مطاعم', 'شحن', 'سياحة', 'خدمات عامة'].map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setForm({ ...form, profession: cat })}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${form.profession === cat
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 border-transparent'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </Field>
                     </div>
                 </div>
 

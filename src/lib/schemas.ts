@@ -30,7 +30,8 @@ export const serviceSchema = z.object({
     city: requiredString, // Replaces location
     bio: z.string().trim().max(150, { message: "النبذة يجب ألا تتجاوز 150 حرفاً" }).optional().transform(v => v === '' ? null : v),
     description: requiredString.min(20, { message: "الوصف يجب أن يكون 20 حرفاً على الأقل" }),
-    category: requiredString,
+    category: z.string().optional(),
+    profession: z.string().trim().min(1, { message: "التخصص مطلوب" }),
     image: optionalString,
     phone: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الواتساب غير صحيح (يجب أن يكون رقم تركي)" }),
     active: z.boolean().optional().default(true),
