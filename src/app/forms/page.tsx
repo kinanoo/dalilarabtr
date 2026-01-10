@@ -3,6 +3,8 @@
 import PageHero from '@/components/PageHero';
 import { useAdminForms } from '@/lib/useAdminData';
 import { FileText, Download, Shield, Loader2, ExternalLink } from 'lucide-react';
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
 export default function FormsPage() {
   const { forms, loading } = useAdminForms();
@@ -69,7 +71,14 @@ export default function FormsPage() {
             <p>لا توجد نماذج متاحة حالياً</p>
           </div>
         )}
+
+        <div className="mt-16">
+          <ContentHelpfulWidget entityType="article" entityId="forms-library" />
+          <div className="mt-8">
+            <UniversalComments entityType="article" entityId="forms-library" title="أسئلة عن النماذج" />
+          </div>
+        </div>
       </div>
-</main>
+    </main>
   );
 }
