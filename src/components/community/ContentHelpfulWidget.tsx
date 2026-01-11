@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { voteContent } from '@/lib/api/comments';
 import { toast } from 'sonner';
@@ -17,6 +17,24 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
     const [feedback, setFeedback] = useState('');
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Check for previous vote
+    useEffect(() => {
+        const key = `vote_${entityType}_${entityId}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            try {
+                const { type, expiry } = JSON.parse(saved);
+                if (expiry > Date.now()) {
+                    setVoted(type);
+                } else {
+                    localStorage.removeItem(key);
+                }
+            } catch (e) {
+                localStorage.removeItem(key);
+            }
+        }
+    }, [entityType, entityId]);
 
     const handleVote = async (type: 'up' | 'down') => {
         if (voted) return;
@@ -37,6 +55,14 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
             toast.error('حدث خطأ في استلام تقييمك');
         } else {
             setVoted(type);
+            // Save to LocalStorage (7 Days)
+            try {
+                localStorage.setItem(`vote_${entityType}_${entityId}`, JSON.stringify({
+                    type,
+                    expiry: Date.now() + 604800000 // 7 days
+                }));
+            } catch (e) { /* ignore storage errors */ }
+
             toast.success(type === 'up' ? 'شكراً لك! يسعدنا أنك استفدت.' : 'شكراً لملاحظتك، سنعمل على التحسين.');
         }
     };

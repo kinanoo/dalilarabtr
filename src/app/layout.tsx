@@ -19,6 +19,7 @@ import AmbientBackground from "@/components/ui/AmbientBackground";
 import SelectionShareMenu from '@/components/ui/SelectionShareMenu';
 import CopyProtection from '@/components/ui/CopyProtection';
 import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // New Import
+import NotificationManager from "@/components/NotificationManager";
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -126,6 +127,8 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <AnalyticsTracker />
             </Suspense>
+
+            <NotificationManager />
 
             {/* Viral Growth Tools */}
             <SelectionShareMenu />

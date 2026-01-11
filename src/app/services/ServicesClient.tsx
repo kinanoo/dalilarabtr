@@ -6,6 +6,7 @@ import { Search, MapPin, Phone, Briefcase, Star, X, Loader2 } from 'lucide-react
 import Image from 'next/image';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
+import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 
 export default function ServicesClient() {
   // --- State ---
@@ -269,6 +270,9 @@ export default function ServicesClient() {
           </a>
         </div>
       </section>
+
+      {/* Popup Notification */}
+      <ServiceProviderPopup />
 
       {/* Image Modal */}
       {previewImage && (

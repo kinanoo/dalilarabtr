@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { BarChart3, Users, Clock, MessageCircle, Eye, TrendingUp, Map, FileText, Briefcase, BrainCircuit, MapPin, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
+import SimpleChart from '@/components/admin/SimpleChart';
 
 export function AnalyticsDashboard() {
     const [stats, setStats] = useState<any>(null);
     const [dailyVisits, setDailyVisits] = useState<any[]>([]);
     const [topPages, setTopPages] = useState<any[]>([]);
+    const [topServices, setTopServices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,9 +25,18 @@ export function AnalyticsDashboard() {
             // Fetch Top Pages
             const { data: pages } = await supabase.rpc('get_top_pages');
 
+            // Fetch Top Services (Most Reviewed)
+            const { data: services } = await supabase
+                .from('service_providers')
+                .select('title, rating_avg, review_count')
+                .gt('review_count', 0)
+                .order('review_count', { ascending: false })
+                .limit(5);
+
             setStats(general);
             setDailyVisits(visits || []);
             setTopPages(pages || []);
+            setTopServices(services || []);
             setLoading(false);
         };
 
@@ -159,6 +170,19 @@ export function AnalyticsDashboard() {
                                             style={{ width: `${(page.views / (topPages[0]?.views || 1)) * 100}%` }}
                                             className="h-full bg-emerald-500 rounded-full"
                                         ></div>
+                                        {/* 4. Top Services Chart */}
+                                        {topServices.length > 0 && (
+                                            <div className="mt-6">
+                                                <SimpleChart
+                                                    title="أكثر الخدمات طلباً وتقييماً"
+                                                    data={topServices.map((s: any) => ({
+                                                        label: s.title,
+                                                        value: s.review_count,
+                                                        color: 'bg-indigo-500'
+                                                    }))}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <span className="text-xs font-bold text-slate-500 whitespace-nowrap">{page.views}</span>

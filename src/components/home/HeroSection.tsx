@@ -97,8 +97,8 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 // --- SUB COMPONENTS ---
 
 const SideColumn = ({ items, direction = 'up', className }: any) => {
-    // Duplicate enough times to ensure smooth loop without gaps
-    const loopItems = [...items, ...items, ...items, ...items, ...items, ...items];
+    // Optimized: Duplicate 3 times (enough for 1080p screens) instead of 6x to save memory
+    const loopItems = [...items, ...items, ...items];
 
     // Calculate exact height of ONE set to scroll by
     // Item (80px) + Gap (24px) = 104px (Desktop)
@@ -109,7 +109,7 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
         <div className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`}>
             {/* Pointer events auto on children only */}
             <motion.div
-                className="flex flex-col gap-6 py-6 pointer-events-auto"
+                className="flex flex-col gap-6 py-6 pointer-events-auto will-change-transform"
                 animate={{
                     y: direction === 'up' ? [0, -scrollDistance] : [-scrollDistance, 0]
                 }}
@@ -128,12 +128,13 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
 };
 
 const MobileBackground = ({ items }: any) => {
+    // Optimized: Show only 3 floating blobs instead of 6
     return (
         <div className="absolute inset-0 lg:hidden overflow-hidden pointer-events-none z-10">
-            {items.slice(0, 6).map((item: any, i: number) => (
+            {items.slice(0, 3).map((item: any, i: number) => (
                 <motion.div
                     key={`mob-${i}`}
-                    className="absolute"
+                    className="absolute will-change-transform"
                     initial={{ x: i % 2 === 0 ? -20 : '100%', y: i * 80 }}
                     animate={{
                         x: i % 2 === 0 ? '120%' : '-20%',
@@ -144,7 +145,7 @@ const MobileBackground = ({ items }: any) => {
                         y: { duration: 5, repeat: Infinity, repeatType: "reverse" }
                     }}
                 >
-                    <div className={`w-16 h-16 rotate-45 bg-${item.color}-500/50 blur-xl rounded-2xl`}></div>
+                    <div className={`w-16 h-16 rotate-45 bg-${item.color}-500/30 blur-xl rounded-2xl`}></div>
                 </motion.div>
             ))}
         </div>
@@ -177,8 +178,8 @@ function DiamondItem({ data }: any) {
                 >
                     <div className={`
                         w-12 h-12 md:w-20 md:h-20 rotate-45 rounded-xl md:rounded-2xl
-                        bg-slate-800/40 backdrop-blur-md border border-white/5
-                        shadow-xl flex items-center justify-center
+                        bg-slate-800/40 md:backdrop-blur-md border border-white/5
+                        md:shadow-xl flex items-center justify-center
                         group-hover:border-${data.color}-500/50 group-hover:bg-slate-800/80
                         transition-all duration-300 ring-1 ring-white/5 group-hover:ring-${data.color}-500/30
                     `}>
