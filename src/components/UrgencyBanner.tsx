@@ -49,15 +49,7 @@ export default function UrgencyBanner() {
         }
     };
 
-    // Auto-hide after 10 seconds (Visual only, persists on refresh unless manually dismissed)
-    useEffect(() => {
-        if (isVisible && bannerData) {
-            const timer = setTimeout(() => {
-                setIsVisible(false);
-            }, 10000);
-            return () => clearTimeout(timer);
-        }
-    }, [isVisible, bannerData]);
+
 
     if (!isVisible || !bannerData) return null;
 
