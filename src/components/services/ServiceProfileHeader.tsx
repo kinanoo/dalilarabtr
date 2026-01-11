@@ -76,7 +76,7 @@ export default function ServiceProfileHeader({ service }: HeaderProps) {
                             </div>
                             <div className="flex items-center gap-1 text-amber-500 font-bold">
                                 <Star size={16} fill="currentColor" />
-                                <span>{service.rating_avg ? Number(service.rating_avg).toFixed(1) : '5.0'}</span>
+                                <span>{service.rating_avg ? Number(service.rating_avg).toFixed(1) : '0.0'}</span>
                                 <span className="text-slate-400 font-normal underline decoration-dashed ml-1">
                                     ({service.review_count || 0} تقييم)
                                 </span>

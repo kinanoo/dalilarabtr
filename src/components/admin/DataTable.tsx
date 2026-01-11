@@ -22,6 +22,7 @@ interface DataTableProps {
     type?: string; // For specific styling (e.g. 'service', 'article')
     idField?: string; // Default: 'id'
     searchFields?: string[]; // Columns to search in
+    customFilter?: (query: any) => any; // New: Allow external filtering
 }
 
 export function DataTable({
@@ -34,7 +35,8 @@ export function DataTable({
     orderBy = 'created_at',
     type,
     idField = 'id',
-    searchFields
+    searchFields,
+    customFilter // Destructure new prop
 }: DataTableProps) {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ export function DataTable({
 
     useEffect(() => {
         fetchData();
-    }, [page, tableName]); // Refetch when page or table changes
+    }, [page, tableName, customFilter]); // Add customFilter to dependency
 
     // Debounced search effect
     useEffect(() => {
@@ -65,6 +67,11 @@ export function DataTable({
             let query = supabase
                 .from(tableName)
                 .select('*', { count: 'exact' });
+
+            // Apply Custom Filter first (if any)
+            if (customFilter) {
+                query = customFilter(query);
+            }
 
             if (search) {
                 if (searchFields && searchFields.length > 0) {
@@ -179,21 +186,24 @@ export function DataTable({
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-4 mt-1 text-xs text-slate-400 font-medium">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2 text-xs text-slate-400 font-medium w-full overflow-hidden">
                                     {columns.map(col => {
                                         // Skip columns that are already shown as title
                                         if (col.key === 'title' || col.key === 'name' || col.key === 'question') return null;
                                         return (
-                                            <div key={col.key} className="flex items-center gap-1">
-                                                <span className="opacity-50">{col.label}:</span>
-                                                <span className="text-slate-600 dark:text-slate-300">
+                                            <div key={col.key} className="flex items-center gap-1 min-w-0 max-w-[45%]">
+                                                <span className="opacity-50 shrink-0">{col.label}:</span>
+                                                <span className="text-slate-600 dark:text-slate-300 truncate">
                                                     {col.render ? col.render(row[col.key], row) : String(row[col.key] || '-')}
                                                 </span>
                                             </div>
                                         )
                                     })}
-                                    <span className="hidden md:inline-block w-1 h-1 bg-slate-300 rounded-full mx-1"></span>
-                                    <span>{row.created_at ? new Date(row.created_at).toLocaleDateString('en-GB') : ''}</span>
+                                    <div className="flex items-center gap-1 min-w-0 shrink-0">
+                                        <span className="md:hidden opacity-50 shrink-0">التاريخ:</span>
+                                        <span className="hidden md:inline-block w-1 h-1 bg-slate-300 rounded-full mx-1 shrink-0"></span>
+                                        <span className="truncate dir-ltr">{row.created_at ? new Date(row.created_at).toLocaleDateString('en-GB') : ''}</span>
+                                    </div>
                                 </div>
                             </div>
 

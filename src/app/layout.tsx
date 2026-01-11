@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from 'react';
 import "./globals.css";
 import "../styles/animations.css";
 import "../styles/dark-mode.css";
@@ -17,6 +18,7 @@ import UrgencyBanner from '@/components/UrgencyBanner';
 import AmbientBackground from "@/components/ui/AmbientBackground";
 import SelectionShareMenu from '@/components/ui/SelectionShareMenu';
 import CopyProtection from '@/components/ui/CopyProtection';
+import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // New Import
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -119,6 +121,11 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen relative">
             {/* New Animated & Interactive Background */}
             <AmbientBackground />
+
+            {/* Suspense is required because AnalyticsTracker uses useSearchParams */}
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
 
             {/* Viral Growth Tools */}
             <SelectionShareMenu />

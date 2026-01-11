@@ -16,25 +16,17 @@ export default function UrgencyBanner() {
         async function fetchBanner() {
             if (!supabase) return;
 
-            // Calculate date 3 days ago
-            const threeDaysAgo = new Date();
-            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-            const dateStr = threeDaysAgo.toISOString().split('T')[0];
-
-            // Fetch active Alerts or Features
+            // Fetch active Banner from dedicated table
             const { data } = await supabase
-                .from('updates')
+                .from('site_banners')
                 .select('*')
-                .eq('active', true)
-                .in('type', ['alert', 'feature'])
-                .gte('date', dateStr) // Only recent
-                .order('date', { ascending: false })
+                .eq('is_active', true)
                 .limit(1)
                 .maybeSingle();
 
             if (data) {
-                // Check dismissal
-                const dismissedId = isLocalStorageAvailable() ? localStorage.getItem('dismissed_alert_id') : null;
+                // Check dismissal (using ID persistence)
+                const dismissedId = isLocalStorageAvailable() ? localStorage.getItem('dismissed_banner_id') : null;
                 if (dismissedId === data.id.toString()) return;
 
                 setBannerData(data);
@@ -53,13 +45,14 @@ export default function UrgencyBanner() {
     const handleDismiss = () => {
         setIsVisible(false);
         if (bannerData?.id && isLocalStorageAvailable()) {
-            localStorage.setItem('dismissed_alert_id', bannerData.id.toString());
+            localStorage.setItem('dismissed_banner_id', bannerData.id.toString());
         }
     };
 
     if (!isVisible || !bannerData) return null;
 
-    const isFeature = bannerData.type === 'feature';
+    const isAlert = bannerData.type === 'alert';
+    const isWarning = bannerData.type === 'warning';
 
     return (
         <AnimatePresence>
@@ -67,24 +60,29 @@ export default function UrgencyBanner() {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className={`${isFeature ? 'bg-indigo-600' : 'bg-red-600'} text-white relative z-50 overflow-hidden shadow-lg font-cairo`}
+                className={`${isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-500' : 'bg-blue-600'} text-white relative z-50 overflow-hidden shadow-lg font-cairo`}
             >
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
 
                     <div className="flex items-center gap-3 flex-1">
                         <span className="bg-white/20 p-1.5 rounded-full animate-pulse shrink-0">
-                            {isFeature ? <Sparkles size={16} /> : <Bell size={16} />}
+                            {isAlert ? <Bell size={16} /> : <Sparkles size={16} />}
                         </span>
-                        <div className="text-sm font-medium">
-                            <span className="font-bold ml-1">{isFeature ? 'ميزة جديدة:' : 'تنبيه:'}</span>
-                            {bannerData.title}
-                            <span className="hidden md:inline mx-1">- {bannerData.content.substring(0, 50)}...</span>
-
-                            <Link href={bannerData.link || '/updates'} className="underline decoration-white/50 hover:decoration-white ml-2 inline-flex items-center gap-1 group">
-                                التفاصيل
-                                <ArrowRight size={14} className="group-hover:-translate-x-1 transition-transform" />
-                            </Link>
+                        <div className="text-sm font-medium flex-1">
+                            <span className="font-bold ml-1">
+                                {isAlert ? 'تنبيه هام:' : isWarning ? 'تحذير:' : 'معلومة:'}
+                            </span>
+                            {bannerData.content}
                         </div>
+
+                        {bannerData.link_url && (
+                            <Link
+                                href={bannerData.link_url}
+                                className="hidden sm:flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap"
+                            >
+                                {bannerData.link_text || 'عرض'} <ArrowRight size={12} className="rotate-180" />
+                            </Link>
+                        )}
                     </div>
 
                     <button

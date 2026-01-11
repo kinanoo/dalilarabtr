@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { DataTable } from '@/components/admin/DataTable';
-import { Briefcase, ArrowRight, Loader2, Save, Trash2, X } from 'lucide-react';
+import { Briefcase, ArrowRight, Loader2, Save, Trash2, X, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { ServiceEditor } from '@/components/admin/editors/ServiceEditor';
 import { toast } from 'sonner';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 // Copied SaveBar for independence
 const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () => void, onDelete: () => void, onCancel: () => void, loading: boolean, isNew: boolean }) => (
@@ -41,9 +42,35 @@ const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () =>
 );
 
 export default function AdminServicesPage() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const issueType = searchParams.get('issue');
+    const editId = searchParams.get('id');
+
     const [selectedItem, setSelectedItem] = useState<{ id: string; data?: any } | null>(null);
     const [form, setForm] = useState<any>({});
     const [saving, setSaving] = useState(false);
+
+    // Auto-open editor if id is passed in URL
+    useEffect(() => {
+        async function loadService() {
+            if (editId && supabase) {
+                const { data } = await supabase.from('service_providers').select('*').eq('id', editId).single();
+                if (data) setSelectedItem({ id: data.id, data });
+            }
+        }
+        loadService();
+    }, [editId]);
+
+    const getCustomFilter = () => {
+        if (issueType === 'missing_phone') {
+            return (q: any) => q.or('phone.is.null,phone.eq.""');
+        }
+        if (issueType === 'missing_city') {
+            return (q: any) => q.or('city.is.null,city.eq.""');
+        }
+        return undefined;
+    };
 
     // Load Data into Form when selected
     useEffect(() => {
@@ -148,11 +175,29 @@ export default function AdminServicesPage() {
                 </div>
             </div>
 
+            {issueType && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
+                        <ArrowRight className="rotate-180" size={20} />
+                        <span className="font-bold">
+                            {issueType === 'missing_phone' ? 'وضع الإصلاح: عرض خدمات بدون هاتف' : 'وضع الإصلاح: عرض خدمات بدون مدينة'}
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => router.push('/admin/services')}
+                        className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 rounded-lg text-sm font-bold shadow-sm"
+                    >
+                        إلغاء الفلتر
+                    </button>
+                </div>
+            )}
+
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
                 <DataTable
                     tableName="service_providers"
                     title="قائمة الخدمات"
                     type="service"
+                    customFilter={getCustomFilter()} // Inject Filter
                     columns={[
                         { key: 'name', label: 'الاسم' },
                         { key: 'profession', label: 'التخصص' },
@@ -161,7 +206,7 @@ export default function AdminServicesPage() {
                     ]}
                     searchFields={['name', 'profession', 'description', 'city']}
                     onEdit={(item) => setSelectedItem({ id: item.id, data: item })}
-                    onCreate={() => setSelectedItem({ id: 'new', data: { profession: '' } })} // Removed rating: 5
+                    onCreate={() => setSelectedItem({ id: 'new', data: { profession: '' } })}
                 />
             </div>
 
