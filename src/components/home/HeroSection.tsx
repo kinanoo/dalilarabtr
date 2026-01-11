@@ -48,26 +48,23 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                     style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}>
                 </div>
 
-                {/* 🟢 AMBIENT BUBBLES RESTORED - STRONGER VISIBILITY */}
-                {/* 🟢 AMBIENT BUBBLES RESTORED - STRONGER VISIBILITY */}
-                {/* Top Right - Stronger Emerald */}
-                <div className="absolute -top-[10%] -right-[20%] md:-right-[5%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-emerald-500/40 rounded-full blur-[60px] md:blur-[80px] pointer-events-none animate-pulse-slow z-0" />
-                {/* Bottom Left - Stronger Cyan */}
-                <div className="absolute -bottom-[10%] -left-[20%] md:-left-[5%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-cyan-500/30 rounded-full blur-[60px] md:blur-[80px] pointer-events-none z-0" />
 
-                {/* --- SIDE PILLARS (Desktop) --- */}
-                <SideColumn items={SIDE_ITEMS_LEFT} direction="up" className="left-4 xl:left-16" />
-                <SideColumn items={SIDE_ITEMS_RIGHT} direction="down" className="right-4 xl:right-16" />
+
+
 
                 {/* --- MOBILE BACKGROUND --- */}
                 <MobileBackground items={[...SIDE_ITEMS_LEFT, ...SIDE_ITEMS_RIGHT]} />
             </div>
 
+            {/* --- SIDE PILLARS (Moved to Top Level for Interaction) --- */}
+            <SideColumn items={SIDE_ITEMS_LEFT} direction="up" className="left-4 xl:left-16 z-[60]" />
+            <SideColumn items={SIDE_ITEMS_RIGHT} direction="down" className="right-4 xl:right-16 z-[60]" />
+
             {/* --- CENTER CONTENT --- */}
-            <div className="max-w-4xl mx-auto text-center relative z-20">
-                <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <div className="max-w-4xl mx-auto text-center relative z-[70] pointer-events-none">
+                <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="pointer-events-none">
                     {/* USP Badge */}
-                    <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-6 hover:bg-white/10 transition-colors shadow-lg">
+                    <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-6 hover:bg-white/10 transition-colors shadow-lg pointer-events-auto">
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -87,7 +84,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         {SITE_CONFIG.slogan}
                     </p>
 
-                    <div className="mt-8 max-w-xl mx-auto relative z-30">
+                    <div className="mt-8 max-w-xl mx-auto relative z-[70] pointer-events-auto">
                         {children}
                     </div>
 
@@ -109,7 +106,7 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
     const scrollDistance = items.length * itemHeight;
 
     return (
-        <div className={`absolute top-0 bottom-0 w-[120px] md:w-[160px] overflow-hidden ${className} mask-gradient-y hidden lg:flex flex-col items-center justify-center pointer-events-none`}>
+        <div className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`}>
             {/* Pointer events auto on children only */}
             <motion.div
                 className="flex flex-col gap-6 py-6 pointer-events-auto"
@@ -132,7 +129,7 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
 
 const MobileBackground = ({ items }: any) => {
     return (
-        <div className="absolute inset-0 lg:hidden overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute inset-0 lg:hidden overflow-hidden pointer-events-none z-10">
             {items.slice(0, 6).map((item: any, i: number) => (
                 <motion.div
                     key={`mob-${i}`}
@@ -147,7 +144,7 @@ const MobileBackground = ({ items }: any) => {
                         y: { duration: 5, repeat: Infinity, repeatType: "reverse" }
                     }}
                 >
-                    <div className={`w-16 h-16 rotate-45 bg-${item.color}-500/20 blur-xl rounded-2xl`}></div>
+                    <div className={`w-16 h-16 rotate-45 bg-${item.color}-500/50 blur-xl rounded-2xl`}></div>
                 </motion.div>
             ))}
         </div>
@@ -179,15 +176,15 @@ function DiamondItem({ data }: any) {
                     className="group relative cursor-pointer"
                 >
                     <div className={`
-                        w-16 h-16 md:w-20 md:h-20 rotate-45 rounded-2xl
+                        w-12 h-12 md:w-20 md:h-20 rotate-45 rounded-xl md:rounded-2xl
                         bg-slate-800/40 backdrop-blur-md border border-white/5
                         shadow-xl flex items-center justify-center
                         group-hover:border-${data.color}-500/50 group-hover:bg-slate-800/80
                         transition-all duration-300 ring-1 ring-white/5 group-hover:ring-${data.color}-500/30
                     `}>
-                        <div className="-rotate-45 flex flex-col items-center justify-center gap-1">
-                            <Icon size={22} className={`text-${data.color}-400 group-hover:text-white transition-colors`} />
-                            <span className="text-[10px] font-bold text-slate-400 group-hover:text-white transition-colors whitespace-nowrap px-1">
+                        <div className="-rotate-45 flex flex-col items-center justify-center gap-0.5">
+                            <Icon size={16} className={`text-${data.color}-400 group-hover:text-white transition-colors md:w-[22px] md:h-[22px]`} />
+                            <span className="text-[8px] md:text-[10px] font-bold text-slate-400 group-hover:text-white transition-colors whitespace-nowrap px-1">
                                 {data.title}
                             </span>
                         </div>

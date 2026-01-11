@@ -25,12 +25,16 @@ export default function TopBar() {
     // Fetch Data when city changes
     useEffect(() => {
         async function loadData() {
-            const data = await getPrayerTimes(cityId, 'Turkey');
-            if (!data) return;
+            try {
+                const data = await getPrayerTimes(cityId, 'Turkey');
+                if (!data) return;
 
-            setHijriDate(`${data.date.weekday.ar}، ${data.date.day} ${data.date.month.ar}`);
-            setAllPrayers(data.timings);
-            setNextPrayer(getNextPrayer(data.timings));
+                setHijriDate(`${data.date.weekday.ar}، ${data.date.day} ${data.date.month.ar}`);
+                setAllPrayers(data.timings);
+                setNextPrayer(getNextPrayer(data.timings));
+            } catch (err) {
+                console.warn('TopBar: Failed to load prayer data', err);
+            }
         }
         loadData();
     }, [cityId]);

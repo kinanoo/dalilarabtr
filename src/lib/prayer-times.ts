@@ -52,7 +52,8 @@ export async function getPrayerTimes(city: string = 'Istanbul', country: string 
             date: data.data.date.hijri
         };
     } catch (error) {
-        console.error('Failed to fetch prayer times:', error);
+        // Silently fail or warn for network issues
+        console.warn('Prayer times unavailable:', error instanceof Error ? error.message : 'Unknown error');
         return null;
     }
 }
