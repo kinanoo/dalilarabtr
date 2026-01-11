@@ -22,7 +22,6 @@ export default function AddReviewModal({
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
     const [comment, setComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -34,17 +33,9 @@ export default function AddReviewModal({
         e.preventDefault();
         setError('');
 
-        // Validation
+        // Validation - Only Rating is STRICTLY required
         if (rating === 0) {
-            setError('الرجاء اختيار تقييم');
-            return;
-        }
-        if (name.trim().length < 2) {
-            setError('الرجاء إدخال اسمك');
-            return;
-        }
-        if (comment.trim().length < 10) {
-            setError('الرجاء كتابة تعليق (10 أحرف على الأقل)');
+            setError('الرجاء اختيار تقييم (النجوم)');
             return;
         }
 
@@ -53,10 +44,9 @@ export default function AddReviewModal({
         const reviewData: AddReviewData = {
             service_id: serviceId,
             service_name: serviceName,
-            reviewer_name: name.trim(),
-            reviewer_email: email.trim() || undefined,
+            reviewer_name: name.trim() || 'فاعل خير', // Default name
             rating,
-            comment: comment.trim(),
+            comment: comment.trim(), // Optional
         };
 
         const { data, error: apiError } = await addReview(reviewData);
@@ -77,10 +67,9 @@ export default function AddReviewModal({
             // Reset form
             setRating(0);
             setName('');
-            setEmail('');
             setComment('');
             setSuccess(false);
-        }, 2000);
+        }, 1500);
     };
 
     const renderStarSelector = () => {
@@ -115,7 +104,7 @@ export default function AddReviewModal({
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
                     <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
-                        أضف تقييمك
+                        قيم تجربتك
                     </h2>
                     <button
                         onClick={onClose}
@@ -129,77 +118,55 @@ export default function AddReviewModal({
                 {success ? (
                     <div className="p-8 text-center">
                         <div className="text-6xl mb-4">✅</div>
-                        <h3 className="text-2xl font-bold text-emerald-600 mb-2">شكراً لك!</h3>
+                        <h3 className="text-2xl font-bold text-emerald-600 mb-2">تم الإرسال!</h3>
                         <p className="text-slate-600 dark:text-slate-400">
-                            تم إرسال تقييمك بنجاح. سيظهر بعد مراجعته من قبل الإدارة.
+                            شكراً لمشاركتك.
                         </p>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    <form onSubmit={handleSubmit} className="p-6 space-y-5">
                         {/* Service Name */}
-                        <div className="text-sm text-slate-600 dark:text-slate-400">
-                            تقييم: <span className="font-bold text-slate-800 dark:text-slate-100">{serviceName}</span>
+                        <div className="text-sm text-center text-slate-500 dark:text-slate-400 mb-4">
+                            ما رأيك في: <span className="font-bold text-emerald-600 block text-lg mt-1">{serviceName}</span>
                         </div>
 
                         {/* Rating */}
-                        <div>
-                            <label className="block font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                التقييم
-                            </label>
+                        <div className="flex flex-col items-center gap-2">
                             {renderStarSelector()}
+                            <span className="text-xs text-slate-400">اضغط لتختار عدد النجوم</span>
                         </div>
 
                         {/* Name */}
                         <div>
-                            <label className="block font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                الاسم <span className="text-red-500">*</span>
+                            <label className="block font-bold text-slate-800 dark:text-slate-100 mb-2 text-sm">
+                                الاسم (اختياري)
                             </label>
                             <input
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500"
-                                placeholder="اسمك أو اسم مستعار"
-                                required
-                            />
-                        </div>
-
-                        {/* Email (Optional) */}
-                        <div>
-                            <label className="block font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                البريد الإلكتروني (اختياري)
-                            </label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500"
-                                placeholder="your@email.com"
+                                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500"
+                                placeholder="فاعل خير"
                             />
                         </div>
 
                         {/* Comment */}
                         <div>
-                            <label className="block font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                التعليق <span className="text-red-500">*</span>
+                            <label className="block font-bold text-slate-800 dark:text-slate-100 mb-2 text-sm">
+                                ملاحظاتك (اختياري)
                             </label>
                             <textarea
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 resize-none"
-                                rows={4}
-                                placeholder="شاركنا تجربتك مع هذه الخدمة..."
-                                required
-                                minLength={10}
+                                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 resize-none"
+                                rows={3}
+                                placeholder="اكتب تعليقاً مختصراً إذا أحببت..."
                             />
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                {comment.length} / 10 أحرف على الأقل
-                            </div>
                         </div>
 
                         {/* Error */}
                         {error && (
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm text-center">
                                 {error}
                             </div>
                         )}
@@ -208,7 +175,7 @@ export default function AddReviewModal({
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold py-3 px-6 rounded-lg transition"
+                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-900/20"
                         >
                             {submitting ? (
                                 <>جاري الإرسال...</>
@@ -219,10 +186,6 @@ export default function AddReviewModal({
                                 </>
                             )}
                         </button>
-
-                        <p className="text-xs text-center text-slate-500 dark:text-slate-400">
-                            سيتم مراجعة تقييمك قبل نشره. شكراً لك!
-                        </p>
                     </form>
                 )}
             </div>

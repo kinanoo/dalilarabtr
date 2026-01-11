@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { createBrowserClient } from '@supabase/ssr';
 import { Star, Trash2, MessageCircle, AlertTriangle, CheckCircle2, FileWarning, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function AdminReviewsPage() {
+    // Authenticated Client for Admin Actions
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     const [activeTab, setActiveTab] = useState<'reviews' | 'feedback'>('reviews');
     const [reviews, setReviews] = useState<any[]>([]);
     const [feedbackitems, setFeedbackItems] = useState<any[]>([]); // Items from content_votes
@@ -19,7 +25,6 @@ export default function AdminReviewsPage() {
     }, []);
 
     const fetchData = async () => {
-        if (!supabase) return;
         setLoading(true);
 
         // 1. Fetch Reviews
@@ -46,7 +51,7 @@ export default function AdminReviewsPage() {
     // --- Reviews Handlers ---
     const handleDeleteReview = async (id: string) => {
         if (!confirm('حذف هذا التقييم؟')) return;
-        const { error } = await supabase!.from('service_reviews').delete().eq('id', id);
+        const { error } = await supabase.from('service_reviews').delete().eq('id', id);
         if (!error) {
             toast.success('تم الحذف');
             fetchData();
@@ -57,7 +62,7 @@ export default function AdminReviewsPage() {
 
     const handleReply = async (reviewId: string) => {
         if (!replyContent.trim()) return;
-        const { error } = await supabase!.from('review_replies').insert([{
+        const { error } = await supabase.from('review_replies').insert([{
             review_id: reviewId, author_name: 'الإدارة', content: replyContent, is_official: true
         }]);
         if (!error) {
@@ -71,7 +76,7 @@ export default function AdminReviewsPage() {
     // --- Feedback Handlers ---
     const handleDeleteFeedback = async (id: string) => {
         if (!confirm('حذف هذه الملاحظة؟')) return;
-        const { error } = await supabase!.from('content_votes').delete().eq('id', id);
+        const { error } = await supabase.from('content_votes').delete().eq('id', id);
         if (!error) {
             toast.success('تم الحذف');
             fetchData();
@@ -188,8 +193,8 @@ export default function AdminReviewsPage() {
                                         </span>
                                         <span className="text-sm font-bold text-slate-500 uppercase">{item.entity_type}</span>
                                     </div>
-                                    <button onClick={() => handleDeleteFeedback(item.id)} className="text-slate-400 hover:text-red-500 p-1">
-                                        <CheckCircle2 size={20} title="تمت المعالجة (حذف)" />
+                                    <button onClick={() => handleDeleteFeedback(item.id)} className="text-slate-400 hover:text-red-500 p-1" title="تمت المعالجة (حذف)">
+                                        <CheckCircle2 size={20} />
                                     </button>
                                 </div>
 

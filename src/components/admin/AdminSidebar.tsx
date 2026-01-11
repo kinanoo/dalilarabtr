@@ -58,7 +58,6 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/services', label: 'الخدمات', icon: Briefcase },
                 { href: '/admin/articles', label: 'المقالات', icon: FileText },
                 { href: '/admin/updates', label: 'التحديثات', icon: Bell },
-                { href: '/admin/banners', label: 'البنرات', icon: Menu },
             ]
         },
         {

@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { createBrowserClient } from '@supabase/ssr';
 import { Trash2, Edit2, Plus, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function BannersManager() {
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     const [banners, setBanners] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [newBanner, setNewBanner] = useState({ content: '', type: 'alert', is_active: false });
+    const [newBanner, setNewBanner] = useState<{
+        content: string;
+        type: string;
+        is_active: boolean;
+        link_url?: string;
+        link_text?: string;
+    }>({ content: '', type: 'alert', is_active: false, link_url: '', link_text: '' });
 
     // Fetch Banners
     useEffect(() => {
@@ -32,7 +42,7 @@ export default function BannersManager() {
 
         const { error } = await supabase.from('site_banners').insert([newBanner]);
         if (!error) {
-            setNewBanner({ content: '', type: 'alert', is_active: false });
+            setNewBanner({ content: '', type: 'alert', is_active: false, link_url: '', link_text: '' });
             fetchBanners();
         }
     }
@@ -75,8 +85,9 @@ export default function BannersManager() {
             </div>
 
             {/* Add New */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl mb-6 grid gap-4 md:grid-cols-4 items-end">
-                <div className="md:col-span-2">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl mb-6 space-y-4">
+                {/* Main Content */}
+                <div>
                     <label className="text-xs font-bold mb-1 block">نص التنبيه</label>
                     <input
                         value={newBanner.content}
@@ -85,24 +96,51 @@ export default function BannersManager() {
                         placeholder="مثال: تحديث عاجل بخصوص الإقامات..."
                     />
                 </div>
-                <div>
-                    <label className="text-xs font-bold mb-1 block">النوع</label>
-                    <select
-                        value={newBanner.type}
-                        onChange={(e) => setNewBanner({ ...newBanner, type: e.target.value })}
-                        className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700"
-                    >
-                        <option value="alert">تنبيه أحمر (Alert)</option>
-                        <option value="info">معلومة زرقاء (Info)</option>
-                        <option value="warning">تحذير أصفر (Warning)</option>
-                    </select>
+
+                {/* Details Row */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                    <div className="md:col-span-3">
+                        <label className="text-xs font-bold mb-1 block">النوع</label>
+                        <select
+                            value={newBanner.type}
+                            onChange={(e) => setNewBanner({ ...newBanner, type: e.target.value })}
+                            className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700"
+                        >
+                            <option value="alert">تنبيه أحمر (Alert)</option>
+                            <option value="info">معلومة زرقاء (Info)</option>
+                            <option value="warning">تحذير أصفر (Warning)</option>
+                        </select>
+                    </div>
+
+                    <div className="md:col-span-4">
+                        <label className="text-xs font-bold mb-1 block">رابط (اختياري)</label>
+                        <input
+                            value={newBanner.link_url || ''}
+                            onChange={(e) => setNewBanner({ ...newBanner, link_url: e.target.value })}
+                            className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 text-sm ltr"
+                            placeholder="https://..."
+                        />
+                    </div>
+
+                    <div className="md:col-span-3">
+                        <label className="text-xs font-bold mb-1 block">نص الزر (اختياري)</label>
+                        <input
+                            value={newBanner.link_text || ''}
+                            onChange={(e) => setNewBanner({ ...newBanner, link_text: e.target.value })}
+                            className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 text-sm"
+                            placeholder="اقرأ المزيد"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <button
+                            onClick={handleAdd}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg font-bold flex items-center justify-center gap-2 h-[42px]"
+                        >
+                            <Plus size={18} /> إضافة
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={handleAdd}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg font-bold flex items-center justify-center gap-2"
-                >
-                    <Plus size={18} /> إضافة
-                </button>
             </div>
 
             {/* List */}

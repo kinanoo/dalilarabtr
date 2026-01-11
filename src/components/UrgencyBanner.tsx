@@ -49,6 +49,16 @@ export default function UrgencyBanner() {
         }
     };
 
+    // Auto-hide after 10 seconds (Visual only, persists on refresh unless manually dismissed)
+    useEffect(() => {
+        if (isVisible && bannerData) {
+            const timer = setTimeout(() => {
+                setIsVisible(false);
+            }, 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [isVisible, bannerData]);
+
     if (!isVisible || !bannerData) return null;
 
     const isAlert = bannerData.type === 'alert';
@@ -72,15 +82,15 @@ export default function UrgencyBanner() {
                             <span className="font-bold ml-1">
                                 {isAlert ? 'تنبيه هام:' : isWarning ? 'تحذير:' : 'معلومة:'}
                             </span>
-                            {bannerData.content}
+                            {bannerData.content.length > 90 ? bannerData.content.slice(0, 90) + '...' : bannerData.content}
                         </div>
 
                         {bannerData.link_url && (
                             <Link
                                 href={bannerData.link_url}
-                                className="hidden sm:flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap"
+                                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap shrink-0"
                             >
-                                {bannerData.link_text || 'عرض'} <ArrowRight size={12} className="rotate-180" />
+                                {bannerData.link_text || 'اقرأ المزيد'} <ArrowRight size={12} className="rotate-180" />
                             </Link>
                         )}
                     </div>
