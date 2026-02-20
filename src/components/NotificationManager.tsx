@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabaseClient';
+import { urlBase64ToUint8Array } from '@/lib/utils/vapid';
 
 export default function NotificationManager() {
     const [isSupported, setIsSupported] = useState(false);
@@ -30,17 +32,47 @@ export default function NotificationManager() {
             setPermission(result);
 
             if (result === 'granted') {
-                toast.success('تم تفعيل الإشعارات بنجاح!', {
-                    description: 'ستصلك آخر التحديثات والأخبار المهمة فوراً.'
+                const registration = await navigator.serviceWorker.ready;
+
+                // Get VAPID Key
+                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+                if (!vapidPublicKey) {
+                    console.error('VAPID Public Key not found');
+                    return;
+                }
+
+                const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+                // Subscribe
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: convertedVapidKey
                 });
 
-                // Here we would typically get the push subscription token
-                // const registration = await navigator.serviceWorker.ready;
-                // const subscription = await registration.pushManager.subscribe({
-                //     userVisibleOnly: true,
-                //     applicationServerKey: 'YOUR_PUBLIC_VAPID_KEY' 
-                // });
-                // And send it to the backend...
+                if (!supabase) return;
+
+                // Save to Supabase
+                const { error } = await supabase
+                    .from('push_subscriptions')
+                    .insert({
+                        endpoint: subscription.endpoint,
+                        p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('p256dh')!)))),
+                        auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('auth')!)))),
+                        user_id: (await supabase.auth.getUser()).data.user?.id
+                    });
+
+                if (error) {
+                    if (error.code === '23505') { // Unique violation
+                        toast.success('تم تفعيل الإشعارات بنجاح!');
+                    } else {
+                        console.error('Error saving subscription:', error);
+                        toast.error('حدث خطأ أثناء حفظ الاشتراك');
+                    }
+                } else {
+                    toast.success('تم تفعيل الإشعارات بنجاح!', {
+                        description: 'ستصلك آخر التحديثات والأخبار المهمة فوراً.'
+                    });
+                }
             }
         } catch (error) {
             console.error('Error requesting permission:', error);

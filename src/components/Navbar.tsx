@@ -27,6 +27,53 @@ export const IconMap: any = {
   UserCheck, HeartPulse, Link: LinkIcon, ScrollText
 };
 
+
+function AuthButton() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    // Check initial user
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setLoading(false);
+    });
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
+
+  if (user) {
+    return (
+      <Link
+        href="/dashboard"
+        className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors border border-emerald-100 dark:border-emerald-800"
+      >
+        <UserCheck size={14} />
+        <span>حسابي</span>
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href="/join"
+      className="hidden sm:flex items-center gap-2 px-4 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold hover:scale-105 transition-transform shadow-lg shadow-slate-900/20"
+    >
+      <span>انضم إلينا</span>
+    </Link>
+  );
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -421,6 +468,9 @@ export default function Navbar() {
             >
               <Menu size={20} />
             </button>
+
+            {/* Auth Button */}
+            <AuthButton />
           </div>
 
         </div>

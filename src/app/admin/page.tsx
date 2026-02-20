@@ -16,11 +16,12 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
+import AdminPushPanel from '@/components/admin/AdminPushPanel';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { motion } from 'framer-motion';
 
-const containerVariants = {
+const containerVariants: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -31,7 +32,7 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: any = {
   hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
@@ -103,8 +104,10 @@ export default function AdminDashboard() {
         </div>
       </motion.section>
 
-      {/* 5. Stats Summary - Moved to AnalyticsDashboard for Unified View */}
-      {/* <motion.section variants={itemVariants}> ... Removed ... </motion.section> */}
+      {/* 5. Push Notifications Panel */}
+      <motion.section variants={itemVariants}>
+        <AdminPushPanel />
+      </motion.section>
 
     </motion.div>
   );

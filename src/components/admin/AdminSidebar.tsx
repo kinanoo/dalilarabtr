@@ -55,9 +55,10 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
         {
             title: 'المحتوى',
             items: [
+                { href: '/admin/requests', label: 'طلبات الانضمام', icon: Bell },
                 { href: '/admin/services', label: 'الخدمات', icon: Briefcase },
                 { href: '/admin/articles', label: 'المقالات', icon: FileText },
-                { href: '/admin/updates', label: 'التحديثات', icon: Bell },
+                { href: '/admin/updates', label: 'التحديثات', icon: Megaphone }, // Changed Bell to Megaphone to avoid dup
             ]
         },
         {

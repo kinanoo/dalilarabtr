@@ -20,6 +20,8 @@ import SelectionShareMenu from '@/components/ui/SelectionShareMenu';
 import CopyProtection from '@/components/ui/CopyProtection';
 import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // New Import
 import NotificationManager from "@/components/NotificationManager";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -81,7 +83,7 @@ export const metadata: Metadata = {
   },
 
   // ✅ PWA Settings
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -133,6 +135,10 @@ export default function RootLayout({
             {/* Viral Growth Tools */}
             <SelectionShareMenu />
             <CopyProtection />
+
+            {/* PWA Components */}
+            <ServiceWorkerRegister />
+            <InstallPrompt />
 
             <div className="relative z-10">
               <UrgencyBanner />

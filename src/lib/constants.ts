@@ -33,6 +33,7 @@ export const NAVIGATION = [
 
 export const PRIMARY_NAV = [
     { name: "الرئيسية", href: "/", icon: Home },
+    { name: "الخريطة", href: "/map", icon: MapPin },
     { name: "خدمات", href: "/services", icon: Briefcase, isNew: true },
 ];
 
