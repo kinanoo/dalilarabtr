@@ -79,12 +79,12 @@ export default function Footer() {
                 )) : (
                   // Default Fallback
                   <>
-                    <li><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🤖 المستشار الذكي</Link></li>
-                    <li><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🧮 حاسبة منع الدخول</Link></li>
-                    <li><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🛡️ فحص الأكواد الأمنية</Link></li>
-                    <li><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🆔 فحص قيد الكملك</Link></li>
-                    <li><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 حاسبة تكاليف الإقامة</Link></li>
-                    <li><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗺️ خريطة المناطق المحظورة</Link></li>
+                    <li key="f1"><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🤖 المستشار الذكي</Link></li>
+                    <li key="f2"><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🧮 حاسبة منع الدخول</Link></li>
+                    <li key="f3"><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🛡️ فحص الأكواد الأمنية</Link></li>
+                    <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🆔 فحص قيد الكملك</Link></li>
+                    <li key="f5"><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 حاسبة تكاليف الإقامة</Link></li>
+                    <li key="f6"><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗺️ خريطة المناطق المحظورة</Link></li>
                   </>
                 )}
               </ul>

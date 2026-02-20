@@ -77,10 +77,10 @@ export default function MapPage() {
                 </Link>
             </header>
 
-            <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)] relative">
+            <div className="flex flex-col-reverse lg:flex-row h-[calc(100vh-64px)] relative">
 
                 {/* Sidebar Filters */}
-                <div className="w-full lg:w-80 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-4 overflow-y-auto z-10 shrink-0 shadow-lg">
+                <div className="w-full h-[40vh] lg:h-full lg:w-80 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 p-4 overflow-y-auto shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.08)] lg:shadow-xl relative">
                     <h2 className="font-bold text-slate-800 dark:text-white mb-4">اختر المدينة</h2>
                     <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 mb-6">
                         <button
@@ -110,11 +110,11 @@ export default function MapPage() {
                 </div>
 
                 {/* Map Area */}
-                <div className="flex-1 relative bg-slate-200 dark:bg-slate-800 min-h-[400px]">
+                <div className="flex-1 w-full h-[60vh] lg:h-full relative bg-slate-200 dark:bg-slate-800">
                     <InteractiveMap services={services} center={center} zoom={zoom} />
 
                     {/* Floating Search Bar (Visual Only for now) */}
-                    <div className="absolute top-4 right-4 left-4 lg:left-auto lg:w-96 bg-white dark:bg-slate-900 rounded-xl shadow-xl z-[400] p-2 flex items-center gap-2 border border-slate-200 dark:border-slate-800">
+                    <div className="absolute top-4 right-4 left-4 lg:left-auto lg:w-96 bg-white dark:bg-slate-900 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] z-[1000] p-2 flex items-center gap-2 border border-slate-200 dark:border-slate-800">
                         <Search className="text-slate-400 ml-2" size={20} />
                         <input
                             type="text"
