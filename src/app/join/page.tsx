@@ -42,46 +42,37 @@ export default function JoinPage() {
         }
 
         if (authData.user) {
-            // 2. Create Profile (Trigger usually handles this, but we can do it manually to be safe or if no trigger exists)
-            // We'll rely on our 'member_profiles' table. 
-            // If we didn't set up a Trigger in SQL, we must insert here.
-            // Let's try to insert. If RLS allows insert own profile.
-            const { error: profileError } = await supabase
-                .from('member_profiles')
-                .insert([
-                    {
-                        id: authData.user.id,
-                        full_name: fullName,
-                        role: 'member'
-                    }
-                ]);
-
-            if (profileError) {
-                // If error is duplicate key, it means trigger already did it. Ignore.
-                if (profileError.code !== '23505') {
-                    const errDetails = profileError?.message || JSON.stringify(profileError) || 'Unknown error';
-                    console.error('Profile creation failed:', errDetails, profileError);
-                    toast.error('فشل في إنشاء الملف الشخصي: ' + errDetails);
-                }
-            }
-
             setSuccess(true);
-            setTimeout(() => {
-                router.push('/dashboard');
-            }, 1000);
+            setLoading(false);
+
+            // If they are immediately logged in (Confirm Email is OFF in Supabase)
+            if (authData.session) {
+                setTimeout(() => {
+                    router.push('/dashboard');
+                }, 1500);
+            }
+            // If session is null (Confirm Email is ON), they stay on this success screen.
+            return;
         }
         setLoading(false);
     };
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-cairo">
-                <div className="text-center p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl animate-in fade-in zoom-in">
-                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle size={40} />
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-cairo p-4" dir="rtl">
+                <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-xl animate-in fade-in zoom-in max-w-md w-full border border-slate-200 dark:border-slate-800">
+                    <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Mail size={40} />
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">تم إنشاء الحساب بنجاح!</h1>
-                    <p className="text-slate-500">جاري تحويلك إلى لوحة التحكم...</p>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">يرجى تأكيد بريدك الإلكتروني!</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed text-sm">
+                        قمنا للتو بإرسال رابط التفعيل إلى بريدك الإلكتروني لمعاينة الحساب: <br />
+                        <strong className="text-emerald-600 dark:text-emerald-400 block mt-2 text-base">{email}</strong><br />
+                        يرجى تفقد صندوق الوارد (أو مجلد الرسائل المزعجة Spam) والنقر على الرابط لتفعيل حسابك، ثم تسجيل الدخول.
+                    </p>
+                    <Link href="/login" className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold px-8 py-3.5 rounded-xl transition-all hover:scale-105 shadow-xl shadow-slate-900/10 w-full sm:w-auto">
+                        الذهاب لصفحة الدخول
+                    </Link>
                 </div>
             </div>
         );

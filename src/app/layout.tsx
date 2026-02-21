@@ -26,7 +26,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
 // ============================================
-const SITE_URL = "https://dalilarab.netlify.app/"; // 👈 غيّر هذا لرابط موقعك
+const SITE_URL = "https://dalilalarab.vercel.app"; // 👈 غيّر هذا لرابط موقعك الدائم لاحقاً
 const SITE_NAME = "دليل العرب والسوريين في تركيا";
 const SITE_DESCRIPTION = "الدليل الشامل للعرب والسوريين في تركيا حول الكملك والإقامة، الفيزا، والعمل وكل ما يلزمهم للعيش في تركيا.";
 
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: SITE_NAME,
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
 
   // ✅ Favicon و Icons

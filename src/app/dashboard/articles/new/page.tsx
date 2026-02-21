@@ -75,7 +75,7 @@ export default function AddArticlePage() {
                         details: formData.details, // This is the full content
                         image: formData.image,
                         status: 'pending',
-                        lastUpdate: new Date().toISOString(),
+                        last_update: new Date().toISOString(),
                     }
                 ]);
 
