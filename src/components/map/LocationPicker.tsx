@@ -45,9 +45,12 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
         onChange(pos.lat, pos.lng);
     };
 
+    const [mapId] = useState(() => Math.random().toString(36).substring(2, 9));
+
     return (
         <div className="w-full h-[300px] rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 relative z-0">
             <MapContainer
+                key={mapId}
                 center={value ? [value.lat, value.lng] : [39.9334, 32.8597]}
                 zoom={value ? 13 : 5}
                 className="w-full h-full"

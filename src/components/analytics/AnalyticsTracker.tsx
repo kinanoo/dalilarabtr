@@ -12,7 +12,9 @@ export function AnalyticsTracker() {
         // 1. Get or Create Visitor ID
         let visitorId = localStorage.getItem('visitor_id');
         if (!visitorId) {
-            visitorId = crypto.randomUUID();
+            visitorId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : Math.random().toString(36).substring(2) + Date.now().toString(36);
             localStorage.setItem('visitor_id', visitorId);
         }
 

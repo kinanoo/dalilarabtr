@@ -21,8 +21,9 @@ import { useAdminScenarios } from '@/lib/useAdminData';
 import { fetchRemoteArticleDataById } from '@/lib/remoteData';
 import { getOfficialSourceUrls, isAllowedOfficialUrl } from '@/lib/externalLinks';
 import { SITE_CONFIG } from '@/lib/config';
-import type { Article, PlanResult } from '@/lib/types'; // Use types from types.ts
+import type { Article, PlanResult } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
+import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios';
 
 type Props = {
   initialComments?: any[]; // Keep any for comments flexible
@@ -66,7 +67,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
 
   // Create a map for quick lookup by ID
   const SCENARIOS = useMemo(() => {
-    const map: Record<string, PlanResult> = {};
+    const map: Record<string, PlanResult> = { ...CONSULTANT_SCENARIOS };
     scenarios.forEach(s => map[s.id] = s);
     return map;
   }, [scenarios]);

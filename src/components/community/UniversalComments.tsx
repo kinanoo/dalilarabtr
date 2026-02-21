@@ -59,7 +59,9 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
 
             // Optimistic Update
             const newComment: Comment = {
-                id: crypto.randomUUID(),
+                id: (typeof crypto !== 'undefined' && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : Math.random().toString(36).substring(2) + Date.now().toString(36),
                 entity_type: entityType,
                 entity_id: entityId,
                 author_name: name.trim() || 'زائر',

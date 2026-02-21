@@ -45,9 +45,12 @@ function MapController({ center, zoom }: { center: [number, number], zoom: numbe
 export default function InteractiveMap({ services, center = [39.9334, 32.8597], zoom = 6 }: MapProps) {
     // Default Center: Turkey (Ankara)
 
+    const [mapId] = useState(() => Math.random().toString(36).substring(2, 9));
+
     return (
         <div className="w-full h-full rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 relative z-0">
             <MapContainer
+                key={mapId}
                 center={center}
                 zoom={zoom}
                 scrollWheelZoom={true}

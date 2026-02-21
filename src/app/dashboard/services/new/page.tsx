@@ -1,11 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 
-const LocationPicker = dynamic(() => import('@/components/map/LocationPicker'), {
-    ssr: false,
-    loading: () => <div className="w-full h-[300px] bg-slate-100 rounded-xl animate-pulse"></div>
-});
 
 import { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
@@ -61,6 +56,19 @@ export default function AddServicePage() {
 
         const { data: { user } } = await supabase.auth.getUser();
 
+        // Dev Member Bypass Check
+        if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
+            setTimeout(() => {
+                toast.success('تم إرسال الخدمة بنجاح (محاكاة وضع المطور)', {
+                    description: 'تم تجاوز قاعدة البيانات لعدم وجود مستخدم حقيقي.',
+                    duration: 5000,
+                });
+                router.push('/dashboard');
+                setLoading(false);
+            }, 1000);
+            return;
+        }
+
         if (!user) {
             toast.error('يرجى تسجيل الدخول أولاً');
             router.push('/login');
@@ -78,8 +86,7 @@ export default function AddServicePage() {
                         category: formData.category,
                         city: formData.city,
                         district: formData.district,
-                        phone: formData.phone, // We assume phone is WhatsApp for simplicity as per current schema usage
-                        whatsapp: formData.phone,
+                        phone: formData.phone,
                         description: formData.description,
                         image: formData.image,
                         lat: formData.lat || null,
@@ -100,8 +107,9 @@ export default function AddServicePage() {
             router.push('/dashboard');
 
         } catch (error: any) {
-            console.error('Error submitting service:', error);
-            toast.error('حدث خطأ أثناء الإرسال: ' + error.message);
+            const errDetails = error?.message || JSON.stringify(error) || 'خطأ غير معروف';
+            console.error('Error submitting service:', errDetails);
+            toast.error('حدث خطأ أثناء الإرسال: ' + errDetails);
         } finally {
             setLoading(false);
         }
@@ -217,20 +225,7 @@ export default function AddServicePage() {
                         </div>
                     </div>
 
-                    {/* Location Picker */}
-                    <div>
-                        <label className="block font-bold text-sm mb-2 text-slate-700 dark:text-slate-300">موقعك على الخريطة (اختياري)</label>
-                        <div className="mb-2">
-                            <LocationPicker
-                                value={formData.lat ? { lat: formData.lat, lng: formData.lng } : undefined}
-                                onChange={(lat, lng) => setFormData(prev => ({ ...prev, lat, lng }))}
-                            />
-                        </div>
-                        <p className="text-xs text-slate-400 flex items-center gap-1">
-                            <Info size={12} />
-                            تحديد الموقع يساعد العملاء في الوصول إليك عبر الخريطة التفاعلية.
-                        </p>
-                    </div>
+
 
                     {/* Image */}
                     <div>

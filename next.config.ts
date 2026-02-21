@@ -25,8 +25,8 @@ const nextConfig: NextConfig = {
   // ⚡ تحسين الأداء
   compress: true,
 
-  // 🔄 تفعيل React Strict Mode للكشف عن الأخطاء المحتملة
-  reactStrictMode: true,
+  // 🔄 تفعيل React Strict Mode للكشف عن الأخطاء المحتملة (تم التعطيل لتفادي تعارض Leaflet)
+  reactStrictMode: false,
 
   // 🔕 إخفاء مؤشر التطوير (زر N) في وضع التطوير
   // 🔕 إخفاء مؤشر التطوير (زر N) في وضع التطوير
@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
   // 🛡️ تجاوز أخطاء البناء (للنشر السريع)
 
   typescript: { ignoreBuildErrors: true },
+
+  // @ts-ignore - Explicitly requested by next.js warning for local cross-origin
+  allowedDevOrigins: ['http://192.168.18.3:3000', '192.168.18.3:3000'],
 };
 
 export default nextConfig;

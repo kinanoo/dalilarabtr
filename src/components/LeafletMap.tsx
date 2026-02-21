@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -13,18 +14,19 @@ const icon = L.icon({
 });
 
 export default function LeafletMap() {
+  const [mapId] = useState(() => Math.random().toString(36).substring(2, 9));
   // القنصلية السورية (Nişantaşı)
   const consulatePos: [number, number] = [41.0491, 28.9934];
   // إدارة الهجرة (Fatih)
   const migrationPos: [number, number] = [41.0122, 28.9760];
 
   return (
-    <MapContainer center={consulatePos} zoom={12} style={{ height: '100%', width: '100%' }}>
+    <MapContainer key={mapId} center={consulatePos} zoom={12} style={{ height: '100%', width: '100%' }}>
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      
+
       <Marker position={consulatePos} icon={icon}>
         <Popup>
           <strong>القنصلية السورية</strong><br />

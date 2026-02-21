@@ -44,6 +44,19 @@ export default function AddArticlePage() {
 
         const { data: { user } } = await supabase.auth.getUser();
 
+        // Dev Member Bypass Check
+        if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
+            setTimeout(() => {
+                toast.success('تم إرسال المقال بنجاح! (محاكاة وضع المطور)', {
+                    description: 'تم تجاوز قاعدة البيانات لعدم وجود مستخدم حقيقي.',
+                    duration: 5000,
+                });
+                router.push('/dashboard');
+                setLoading(false);
+            }, 1000);
+            return;
+        }
+
         if (!user) {
             toast.error('يرجى تسجيل الدخول أولاً');
             router.push('/login');
@@ -76,8 +89,9 @@ export default function AddArticlePage() {
             router.push('/dashboard');
 
         } catch (error: any) {
-            console.error('Error submitting article:', error);
-            toast.error('حدث خطأ أثناء الإرسال: ' + error.message);
+            const errDetails = error?.message || JSON.stringify(error) || 'خطأ غير معروف';
+            console.error('Error submitting article:', errDetails);
+            toast.error('حدث خطأ أثناء الإرسال: ' + errDetails);
         } finally {
             setLoading(false);
         }

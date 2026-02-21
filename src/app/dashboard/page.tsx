@@ -27,6 +27,13 @@ export default function DashboardPage() {
     }, []);
 
     const checkUser = async () => {
+        // Development Member Bypass Check
+        if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
+            setProfile({ full_name: 'عضو تجريبي', role: 'member' });
+            setLoading(false);
+            return;
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             router.push('/login');

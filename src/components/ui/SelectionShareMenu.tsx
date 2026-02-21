@@ -88,8 +88,24 @@ export default function SelectionShareMenu() {
         } else if (platform === 'facebook') {
             window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank');
         } else if (platform === 'copy') {
-            navigator.clipboard.writeText(`${selectedText}\n\nاقرأ المزيد: ${currentUrl}`)
-                .then(() => toast.success('تم نسخ النص مع الرابط! 🔗'));
+            const textToCopy = `${selectedText}\n\nاقرأ المزيد: ${currentUrl}`;
+            if (navigator?.clipboard?.writeText) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => toast.success('تم نسخ النص مع الرابط! 🔗'))
+                    .catch(() => toast.error('فشل النسخ'));
+            } else {
+                try {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    toast.success('تم نسخ النص مع الرابط! 🔗');
+                } catch (err) {
+                    toast.error('هذا المتصفح لا يدعم النسخ التلقائي');
+                }
+            }
         }
 
         // Hide after action

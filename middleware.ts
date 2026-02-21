@@ -13,6 +13,11 @@ export async function middleware(request: NextRequest) {
         return response
     }
 
+    // Allow access to admin login page
+    if (request.nextUrl.pathname.startsWith('/admin/login')) {
+        return response
+    }
+
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -61,18 +66,15 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Development Bypass Check
+    if (process.env.NODE_ENV === 'development' && request.cookies.get('dev_bypass')) {
+        return response;
+    }
+
     // Protect Admin Routes
     if (!user) {
         const url = request.nextUrl.clone()
-        url.pathname = '/login' // Revert to a dedicated login page logic if you have one, or just home
-        // Since /login is likely handled client side or inside admin, let's assume we want to kick them out
-        // If you don't have a /login page yet, standard is to redirect home or show a 404
-        // But audit said we allow users to access? No, admins only. 
-        // Assuming there is a login mechanism. 
-        // Actually, src/components/admin/LoginPage.tsx implies admin login is a component?
-        // We should probably redirect to a public login route if it exists, or just '/' if auth fails.
-        // Let's redirect to '/' for now to be safe, or to a query param.
-        url.pathname = '/login'
+        url.pathname = '/admin/login' // Redirect to dedicated admin login
         return NextResponse.redirect(url)
     }
 

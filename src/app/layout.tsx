@@ -21,7 +21,7 @@ import CopyProtection from '@/components/ui/CopyProtection';
 import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // New Import
 import NotificationManager from "@/components/NotificationManager";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
-import InstallPrompt from "@/components/pwa/InstallPrompt";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -138,7 +138,7 @@ export default function RootLayout({
 
             {/* PWA Components */}
             <ServiceWorkerRegister />
-            <InstallPrompt />
+            <PWAInstallPrompt />
 
             <div className="relative z-10">
               <UrgencyBanner />

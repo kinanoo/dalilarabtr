@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Loader2, Lock, ShieldCheck, AlertCircle, LogIn } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { supabase as supabaseAdmin } from '@/lib/supabaseClient'; // Optional fallback import
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 const SITE_CONFIG = {
@@ -33,7 +35,8 @@ export default function LoginPage() {
         });
 
         if (authError) {
-            setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+            console.error('Login Error:', authError);
+            setError(`البريد الإلكتروني أو كلمة المرور غير صحيحة (${authError.message})`);
             setLoading(false);
             return;
         }
@@ -49,10 +52,14 @@ export default function LoginPage() {
             const role = profile?.role || 'member';
 
             if (role === 'admin') {
-                router.push('/admin');
-            } else {
-                router.push('/dashboard');
+                await supabase.auth.signOut();
+                setError('هذا الحساب إداري. الرجاء تسجيل الدخول من بوابة الإدارة المخصصة.');
+                setLoading(false);
+                return;
             }
+
+            toast.success('تم تسجيل الدخول بنجاح');
+            router.push('/dashboard');
             router.refresh();
         }
     };
@@ -112,8 +119,8 @@ export default function LoginPage() {
                             disabled={loading}
                             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-2 mt-4"
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : <LogIn size={20} />}
-                            تسجيل الدخول
+                            {loading ? <Loader2 className="animate-spin" /> : <LogIn />}
+                            {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
                         </button>
                     </form>
 

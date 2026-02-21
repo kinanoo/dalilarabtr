@@ -9,6 +9,15 @@ import { urlBase64ToUint8Array } from '@/lib/utils/vapid';
 export default function NotificationManager() {
     const [isSupported, setIsSupported] = useState(false);
     const [permission, setPermission] = useState<NotificationPermission>('default');
+    const [isVisible, setIsVisible] = useState(true);
+
+    useEffect(() => {
+        // Auto-hide after 5 seconds
+        const timer = setTimeout(() => {
+            setIsVisible(false);
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -82,7 +91,8 @@ export default function NotificationManager() {
 
     // Don't render anything if not supported or already granted/denied (unless we want a settings button)
     // For now, let's show a floating button ONLY if permission is 'default' (not asked yet)
-    if (!isSupported || permission !== 'default') return null;
+    // and if it hasn't timed out (isVisible)
+    if (!isSupported || permission !== 'default' || !isVisible) return null;
 
     return (
         <div className="fixed bottom-4 right-4 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-700 delay-1000">

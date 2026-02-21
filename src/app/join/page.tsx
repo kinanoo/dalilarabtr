@@ -59,8 +59,9 @@ export default function JoinPage() {
             if (profileError) {
                 // If error is duplicate key, it means trigger already did it. Ignore.
                 if (profileError.code !== '23505') {
-                    console.error('Profile creation failed:', profileError);
-                    // Don't block flow, just warn
+                    const errDetails = profileError?.message || JSON.stringify(profileError) || 'Unknown error';
+                    console.error('Profile creation failed:', errDetails, profileError);
+                    toast.error('فشل في إنشاء الملف الشخصي: ' + errDetails);
                 }
             }
 

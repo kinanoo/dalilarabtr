@@ -28,7 +28,7 @@ export const IconMap: any = {
 };
 
 
-function AuthButton() {
+function AuthButton({ mobile = false }: { mobile?: boolean }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,11 +52,13 @@ function AuthButton() {
 
   if (loading) return <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
 
+  const displayClass = mobile ? 'flex' : 'hidden sm:flex';
+
   if (user) {
     return (
       <Link
         href="/dashboard"
-        className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors border border-emerald-100 dark:border-emerald-800"
+        className={`${displayClass} items-center justify-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors border border-emerald-100 dark:border-emerald-800 w-full sm:w-auto`}
       >
         <UserCheck size={14} />
         <span>حسابي</span>
@@ -66,10 +68,10 @@ function AuthButton() {
 
   return (
     <Link
-      href="/join"
-      className="hidden sm:flex items-center gap-2 px-4 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold hover:scale-105 transition-transform shadow-lg shadow-slate-900/20"
+      href="/login"
+      className={`${displayClass} items-center justify-center gap-2 px-4 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold hover:scale-105 transition-transform shadow-lg shadow-slate-900/20 w-full sm:w-auto`}
     >
-      <span>انضم إلينا</span>
+      <span>تسجيل الدخول</span>
     </Link>
   );
 }
@@ -237,6 +239,11 @@ export default function Navbar() {
 
               {/* Items - with Stagger & Neon Effects */}
               <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+
+                {/* 0. Mobile Auth Button */}
+                <div className="mb-4" onClick={() => setIsOpen(false)}>
+                  <AuthButton mobile={true} />
+                </div>
 
                 {/* 1. Main Navigation */}
                 <nav className="space-y-2">
