@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 import TopBar from './TopBar';
 import NavDropdown from './NavDropdown';
+import { createBrowserClient } from '@supabase/ssr';
 import { supabase } from '@/lib/supabaseClient';
 import NotificationBell from './notifications/NotificationBell';
 
@@ -33,9 +34,12 @@ function AuthButton({ mobile = false }: { mobile?: boolean }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!supabase) return;
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
-    // Check initial user
+    // Check initial user from cookies (same storage as login/dashboard)
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       setLoading(false);
