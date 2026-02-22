@@ -71,10 +71,25 @@ export async function middleware(request: NextRequest) {
         return response;
     }
 
-    // Protect Admin Routes
+    // No session → redirect to admin login
     if (!user) {
         const url = request.nextUrl.clone()
-        url.pathname = '/admin/login' // Redirect to dedicated admin login
+        url.pathname = '/admin/login'
+        return NextResponse.redirect(url)
+    }
+
+    // Check role — only admins can access /admin routes
+    const { data: profile } = await supabase
+        .from('member_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') {
+        // Member logged in but not admin → kick them out
+        await supabase.auth.signOut()
+        const url = request.nextUrl.clone()
+        url.pathname = '/admin/login'
         return NextResponse.redirect(url)
     }
 
