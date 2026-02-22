@@ -2,9 +2,16 @@
 
 import { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, ShieldCheck, AlertCircle, LogIn, Lock } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+
+// Singleton outside component — not re-created on every render
+const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const GENERIC_ERROR = 'بيانات الدخول غير صحيحة';
 
 export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
@@ -12,11 +19,6 @@ export default function AdminLoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
-
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,35 +30,29 @@ export default function AdminLoginPage() {
             password,
         });
 
-        if (authError) {
-            console.error('Admin Login Error:', authError);
-            setError(`بيانات الدخول غير صحيحة`);
+        if (authError || !authData.user) {
+            setError(GENERIC_ERROR);
             setLoading(false);
             return;
         }
 
-        if (authData.user) {
-            // Check Role strictly for Admin
-            const { data: profile } = await supabase
-                .from('member_profiles')
-                .select('role')
-                .eq('id', authData.user.id)
-                .single();
+        // Check Role strictly for Admin
+        const { data: profile } = await supabase
+            .from('member_profiles')
+            .select('role')
+            .eq('id', authData.user.id)
+            .single();
 
-            const role = profile?.role || 'member';
-
-            if (role !== 'admin') {
-                // Kick them out if not admin
-                await supabase.auth.signOut();
-                setError('عذراً، هذا الحساب لا يملك صلاحيات للوصول إلى لوحة الإدارة.');
-                setLoading(false);
-                return;
-            }
-
-            toast.success('تم تسجيل الدخول بنجاح للوحة الإدارة');
-            router.push('/admin');
-            router.refresh();
+        if (profile?.role !== 'admin') {
+            // Sign out silently — show same generic error to avoid info disclosure
+            await supabase.auth.signOut();
+            setError(GENERIC_ERROR);
+            setLoading(false);
+            return;
         }
+
+        router.push('/admin');
+        router.refresh();
     };
 
     return (
@@ -83,24 +79,32 @@ export default function AdminLoginPage() {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-1.5">
-                            <label className="block text-sm font-bold text-slate-300">البريد الإلكتروني للإدارة</label>
-                            <div className="relative">
-                                <input
-                                    type="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600"
-                                    placeholder="admin@example.com"
-                                />
-                            </div>
+                            <label htmlFor="admin-email" className="block text-sm font-bold text-slate-300">
+                                البريد الإلكتروني للإدارة
+                            </label>
+                            <input
+                                id="admin-email"
+                                name="email"
+                                type="email"
+                                required
+                                autoComplete="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600"
+                                placeholder="admin@example.com"
+                            />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="block text-sm font-bold text-slate-300">كلمة المرور الإدارية</label>
+                            <label htmlFor="admin-password" className="block text-sm font-bold text-slate-300">
+                                كلمة المرور الإدارية
+                            </label>
                             <input
+                                id="admin-password"
+                                name="password"
                                 type="password"
                                 required
+                                autoComplete="current-password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600"
@@ -111,7 +115,7 @@ export default function AdminLoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50"
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="animate-spin" size={20} /> : <ShieldCheck size={20} />}
                             <span className="text-base">{loading ? 'جاري التحقق من الصلاحيات...' : 'تأكيد الدخول'}</span>
