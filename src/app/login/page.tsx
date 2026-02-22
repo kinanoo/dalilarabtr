@@ -2,16 +2,10 @@
 
 import { useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, Lock, ShieldCheck, AlertCircle, LogIn } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, LogIn } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { supabase as supabaseAdmin } from '@/lib/supabaseClient'; // Optional fallback import
 import { toast } from 'sonner';
 import Link from 'next/link';
-import type { Metadata } from 'next';
-
-const SITE_CONFIG = {
-    name: 'Daleel Arab Turkiye'
-};
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -24,6 +18,15 @@ export default function LoginPage() {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
+
+    const handleGoogleLogin = async () => {
+        await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
+        });
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,9 +106,10 @@ export default function LoginPage() {
                         <p className="text-slate-500 dark:text-slate-400 text-sm">أهلاً بك مجدداً في عائلة دليل العرب</p>
                     </div>
 
-                    {/* Google Login (UI Only) */}
+                    {/* Google Login */}
                     <button
                         type="button"
+                        onClick={handleGoogleLogin}
                         className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all mb-6 shadow-sm"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">

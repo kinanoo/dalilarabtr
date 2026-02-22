@@ -98,16 +98,14 @@ export default function DashboardPage() {
                         icon={FileText}
                         color="blue"
                         href="/dashboard/articles/new"
-                        pending
                     />
 
                     <ActionCard
                         title="شارك فكرة أو سيناريو"
-                        desc="لديك سيناريو ذكي للمساعد الشخصي؟ شاركه معنا لنطوره."
+                        desc="لديك اقتراح أو سيناريو أو نصيحة؟ شاركه معنا لنطوره."
                         icon={BrainCircuit}
                         color="violet"
                         href="/dashboard/scenarios/new"
-                        pending
                     />
                 </div>
 

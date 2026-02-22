@@ -20,6 +20,15 @@ export default function JoinPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    const handleGoogleLogin = async () => {
+        await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
+        });
+    };
+
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -116,9 +125,10 @@ export default function JoinPage() {
                         <p className="text-slate-500 dark:text-slate-400 text-sm">انضم الآن لعائلة دليل العرب بضغطة زر</p>
                     </div>
 
-                    {/* Google Login (UI Only) */}
+                    {/* Google Login */}
                     <button
                         type="button"
+                        onClick={handleGoogleLogin}
                         className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all mb-6 shadow-sm"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
