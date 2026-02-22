@@ -3,7 +3,7 @@ export const SITE_CONFIG = {
     slogan: "مستشارك القانوني الذكي - متاح 24/7 بالعربية",
     lang: "ar",
     country: "تركيا",
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "",
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487",
     siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab.vercel.app').replace(/\/$/, '')
 };
 
