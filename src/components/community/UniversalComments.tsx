@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, AlertTriangle, Send, CheckCircle2, User } from 'lucide-react';
+import { MessageSquare, AlertTriangle, Send, CheckCircle2, User, Lock } from 'lucide-react';
 import { fetchComments, postComment, type Comment } from '@/lib/api/comments';
 import { toast } from 'sonner';
+import { createBrowserClient } from '@supabase/ssr';
 
 interface UniversalCommentsProps {
     entityType: 'article' | 'service' | 'update' | 'scenario' | 'zone';
@@ -12,19 +13,55 @@ interface UniversalCommentsProps {
     className?: string;
 }
 
+function getOrCreateAnonId(): string {
+    const key = 'anon_comment_id';
+    let id = localStorage.getItem(key);
+    if (!id) {
+        id = String(Math.floor(1000 + Math.random() * 9000));
+        localStorage.setItem(key, id);
+    }
+    return id;
+}
+
 export default function UniversalComments({ entityType, entityId, title = "التعليقات", className }: UniversalCommentsProps) {
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Form State
     const [name, setName] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [content, setContent] = useState('');
     const [isCorrection, setIsCorrection] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         loadComments();
+        resolveUserName();
     }, [entityId]);
+
+    const resolveUserName = async () => {
+        const supabase = createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+            const { data: profile } = await supabase
+                .from('member_profiles')
+                .select('full_name')
+                .eq('id', user.id)
+                .single();
+
+            const displayName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'عضو';
+            setName(displayName);
+            setIsLoggedIn(true);
+        } else {
+            const anonId = getOrCreateAnonId();
+            setName(`مجهول #${anonId}`);
+            setIsLoggedIn(false);
+        }
+    };
 
     const loadComments = async () => {
         setLoading(true);
@@ -41,7 +78,7 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
         const { error } = await postComment({
             entity_type: entityType,
             entity_id: entityId,
-            author_name: name.trim() || 'زائر',
+            author_name: name.trim() || `مجهول`,
             content: content,
             is_correction: isCorrection
         });
@@ -57,26 +94,23 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
         } else {
             toast.success('تم نشر تعليقك بنجاح!');
 
-            // Optimistic Update
             const newComment: Comment = {
                 id: (typeof crypto !== 'undefined' && crypto.randomUUID)
                     ? crypto.randomUUID()
                     : Math.random().toString(36).substring(2) + Date.now().toString(36),
                 entity_type: entityType,
                 entity_id: entityId,
-                author_name: name.trim() || 'زائر',
+                author_name: name.trim() || 'مجهول',
                 content: content,
                 is_correction: isCorrection,
                 is_official: false,
-                status: 'approved', // Auto-approved
+                status: 'approved',
                 created_at: new Date().toISOString(),
                 replies: []
             };
 
             setComments(prev => [newComment, ...prev]);
-
             setContent('');
-            setName('');
             setIsCorrection(false);
         }
     };
@@ -136,14 +170,21 @@ export default function UniversalComments({ entityType, entityId, title = "ال�
                 />
 
                 <div className="bg-white dark:bg-slate-900 p-3 rounded-b-xl border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                            className="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg text-sm outline-none border border-transparent focus:border-emerald-500 w-full"
-                            placeholder="الاسم (اختياري)"
-                        />
+                    <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                        {isLoggedIn ? (
+                            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2 rounded-lg text-sm text-emerald-700 dark:text-emerald-300 font-bold flex-1">
+                                <Lock size={13} />
+                                {name}
+                            </div>
+                        ) : (
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                className="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg text-sm outline-none border border-transparent focus:border-emerald-500 w-full"
+                                placeholder="الاسم (اختياري)"
+                            />
+                        )}
                     </div>
 
                     <div className="flex items-center gap-4">
