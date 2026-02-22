@@ -8,16 +8,7 @@ export async function middleware(request: NextRequest) {
         },
     })
 
-    // Only protect /admin routes
-    if (!request.nextUrl.pathname.startsWith('/admin')) {
-        return response
-    }
-
-    // Allow access to admin login page
-    if (request.nextUrl.pathname.startsWith('/admin/login')) {
-        return response
-    }
-
+    // Create Supabase client on EVERY request to refresh the session token
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,70 +18,55 @@ export async function middleware(request: NextRequest) {
                     return request.cookies.get(name)?.value
                 },
                 set(name: string, value: string, options: CookieOptions) {
-                    request.cookies.set({
-                        name,
-                        value,
-                        ...options,
-                    })
-                    response = NextResponse.next({
-                        request: {
-                            headers: request.headers,
-                        },
-                    })
-                    response.cookies.set({
-                        name,
-                        value,
-                        ...options,
-                    })
+                    request.cookies.set({ name, value, ...options })
+                    response = NextResponse.next({ request: { headers: request.headers } })
+                    response.cookies.set({ name, value, ...options })
                 },
                 remove(name: string, options: CookieOptions) {
-                    request.cookies.set({
-                        name,
-                        value: '',
-                        ...options,
-                    })
-                    response = NextResponse.next({
-                        request: {
-                            headers: request.headers,
-                        },
-                    })
-                    response.cookies.set({
-                        name,
-                        value: '',
-                        ...options,
-                    })
+                    request.cookies.set({ name, value: '', ...options })
+                    response = NextResponse.next({ request: { headers: request.headers } })
+                    response.cookies.set({ name, value: '', ...options })
                 },
             },
         }
     )
 
+    // Refresh session on every request (keeps cookies up to date)
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Development Bypass Check
-    if (process.env.NODE_ENV === 'development' && request.cookies.get('dev_bypass')) {
-        return response;
-    }
+    // --- Admin route protection ---
+    if (request.nextUrl.pathname.startsWith('/admin')) {
 
-    // No session → redirect to admin login
-    if (!user) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/admin/login'
-        return NextResponse.redirect(url)
-    }
+        // Allow admin login page always
+        if (request.nextUrl.pathname.startsWith('/admin/login')) {
+            return response
+        }
 
-    // Check role — only admins can access /admin routes
-    const { data: profile } = await supabase
-        .from('member_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+        // Development bypass
+        if (process.env.NODE_ENV === 'development' && request.cookies.get('dev_bypass')) {
+            return response
+        }
 
-    if (profile?.role !== 'admin') {
-        // Member logged in but not admin → kick them out
-        await supabase.auth.signOut()
-        const url = request.nextUrl.clone()
-        url.pathname = '/admin/login'
-        return NextResponse.redirect(url)
+        // No session → redirect to admin login
+        if (!user) {
+            const url = request.nextUrl.clone()
+            url.pathname = '/admin/login'
+            return NextResponse.redirect(url)
+        }
+
+        // Check role — only admins allowed
+        const { data: profile } = await supabase
+            .from('member_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role !== 'admin') {
+            await supabase.auth.signOut()
+            const url = request.nextUrl.clone()
+            url.pathname = '/admin/login'
+            return NextResponse.redirect(url)
+        }
     }
 
     return response
@@ -99,8 +75,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         /*
-         * Match all request paths starting with /admin
+         * Run on all routes except:
+         * - _next/static (static files)
+         * - _next/image (image optimization)
+         * - favicon.ico
+         * - public files (images, fonts, etc.)
          */
-        '/admin/:path*',
+        '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)',
     ],
 }
