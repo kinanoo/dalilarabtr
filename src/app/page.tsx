@@ -118,9 +118,15 @@ const webSiteSchema = {
   },
 };
 
+const HOME_DESCRIPTION = "الدليل الشامل للعرب في تركيا. خدمات قانونية، إقامات، أكواد أمنية، ودليل شامل لكل ما تحتاجه.";
+
 export const metadata = {
   title: `${SITE_CONFIG.name} | ${SITE_CONFIG.slogan}`,
-  description: "الدليل الشامل للعرب في تركيا. خدمات قانونية، إقامات، أكواد أمنية، ودليل شامل لكل ما تحتاجه.",
+  description: HOME_DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: {
+    description: HOME_DESCRIPTION,
+  },
 };
 
 // ============================================

@@ -37,7 +37,7 @@ export default function UpdatesPage() {
           ) : allUpdates.length ? (
             <div className="space-y-3">
               {allUpdates.map((u: any) => (
-                <div
+                <article
                   key={u.id}
                   id={`upd-${u.id}`}
                   className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow"
@@ -57,43 +57,45 @@ export default function UpdatesPage() {
                     )}
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {/* نوع الخبر */}
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${u.type === 'هام' || u.type === 'عاجل'
-                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
-                          }`}>
-                          {u.type}
-                        </span>
-
-                        {/* 🆕 علامة "جديد" للأخبار الحديثة */}
-                        {isNewContent(u.date) && (
-                          <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
-                            <Sparkles size={10} /> جديد
+                      <header>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {/* نوع الخبر */}
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${u.type === 'هام' || u.type === 'عاجل'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
+                            }`}>
+                            {u.type}
                           </span>
-                        )}
 
-                        {/* التاريخ */}
-                        <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                          <Calendar size={12} />
-                          {u.date}
-                        </span>
+                          {/* 🆕 علامة "جديد" للأخبار الحديثة */}
+                          {isNewContent(u.date) && (
+                            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
+                              <Sparkles size={10} /> جديد
+                            </span>
+                          )}
 
-                        {/* زر المشاركة */}
-                        <div className="mr-auto">
-                          <ShareMenu
-                            mini
-                            variant="subtle"
-                            title={u.title}
-                            text={u.content?.slice(0, 200)}
-                            url={`${SITE_CONFIG.siteUrl}/updates#upd-${u.id}`}
-                          />
+                          {/* التاريخ */}
+                          <time dateTime={u.date} className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                            <Calendar size={12} />
+                            {u.date}
+                          </time>
+
+                          {/* زر المشاركة */}
+                          <div className="mr-auto">
+                            <ShareMenu
+                              mini
+                              variant="subtle"
+                              title={u.title}
+                              text={u.content?.slice(0, 200)}
+                              url={`${SITE_CONFIG.siteUrl}/updates#upd-${u.id}`}
+                            />
+                          </div>
                         </div>
-                      </div>
 
-                      <h2 className="mt-2 text-lg md:text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                        {u.title}
-                      </h2>
+                        <h2 className="mt-2 text-lg md:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                          {u.title}
+                        </h2>
+                      </header>
 
                       {u.content && (
                         <p className="mt-3 text-sm md:text-base text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
@@ -119,7 +121,7 @@ export default function UpdatesPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           ) : (

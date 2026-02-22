@@ -88,10 +88,12 @@ export default function BanCalculator() {
 
             {/* Input 1 */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
+              <label htmlFor="ban-duration" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
                 <Info size={16} className="text-blue-500" /> مدة المخالفة (الكسر):
               </label>
               <select
+                id="ban-duration"
+                aria-label="مدة المخالفة"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none text-slate-800 dark:text-slate-100 font-medium cursor-pointer transition-all hover:border-primary-400"
@@ -107,10 +109,12 @@ export default function BanCalculator() {
 
             {/* Input 2 */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
+              <label htmlFor="exit-type" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
                 <Plane size={16} className="text-blue-500" /> طريقة الخروج:
               </label>
               <select
+                id="exit-type"
+                aria-label="طريقة الخروج"
                 value={exitType}
                 onChange={(e) => setExitType(e.target.value)}
                 className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none text-slate-800 dark:text-slate-100 font-medium cursor-pointer transition-all hover:border-primary-400"
@@ -122,10 +126,12 @@ export default function BanCalculator() {
 
             {/* Input 3 */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
+              <label htmlFor="fine-paid" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
                 <CheckCircle size={16} className="text-blue-500" /> دفع الغرامة؟
               </label>
               <select
+                id="fine-paid"
+                aria-label="هل دُفعت الغرامة"
                 value={finePaid}
                 onChange={(e) => setFinePaid(e.target.value)}
                 className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none text-slate-800 dark:text-slate-100 font-medium cursor-pointer transition-all hover:border-primary-400"
@@ -140,6 +146,7 @@ export default function BanCalculator() {
           {/* Calculate Button - Pushed to Bottom */}
           <div className="mt-auto pt-8 flex justify-center pb-4">
             <button
+              type="button"
               onClick={calculateBan}
               className="w-full md:w-1/3 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"
             >

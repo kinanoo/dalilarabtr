@@ -204,11 +204,15 @@ export default function Navbar() {
                 transition: { duration: 0.25 }
               }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 z-[1150] lg:hidden bg-black/20 dark:bg-black/60 backdrop-blur-md"
+              className="fixed inset-0 z-[110] lg:hidden bg-black/20 dark:bg-black/60 backdrop-blur-md"
             />
 
             {/* Drawer - Smooth Slide from Right */}
             <motion.div
+              id="mobile-menu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="القائمة الرئيسية"
               initial={{ x: '100%' }}
               animate={{
                 x: 0,
@@ -227,7 +231,7 @@ export default function Navbar() {
                   damping: 30
                 }
               }}
-              className="fixed top-0 right-0 z-[1200] h-full w-[85vw] max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col"
+              className="fixed top-0 right-0 z-[120] h-full w-[85vw] max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 dark:from-emerald-950/30 dark:via-cyan-950/30 dark:to-blue-950/30">
@@ -394,7 +398,7 @@ export default function Navbar() {
       <TopBar />
       <header
         ref={navRef}
-        className="sticky top-0 z-[1000] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-all duration-300"
+        className="sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-all duration-300"
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-600 to-transparent opacity-80" />
@@ -476,6 +480,8 @@ export default function Navbar() {
               className="lg:hidden p-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setIsOpen(true)}
               aria-label="القائمة الرئيسية"
+              aria-expanded={isOpen}
+              aria-controls="mobile-menu"
             >
               <Menu size={20} />
             </button>

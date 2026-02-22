@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'فاحص الكملك التركي 2025 | التأكد من صلاحية القيد (TC)',
+    title: 'فاحص الكملك التركي 2026 | التأكد من صلاحية القيد (TC)',
     description: 'أداة مجانية للتحقق من صحة رقم الكملك (TC) وخوارزميته، مع رابط مباشر لبوابة النفوس التركية للتأكد من صلاحية القيد وتفعيله.',
     keywords: 'فحص الكملك, رابط الكملك, التي جي, TC Kimlik, نفوس, دائرة الهجرة, صلاحية الكملك',
 };
@@ -91,12 +91,19 @@ export default function KimlikCheckPage() {
                     <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 overflow-hidden">
 
                         <div className="mb-8">
-                            <label className="block text-slate-700 dark:text-slate-300 font-bold mb-3 text-lg">
+                            <label htmlFor="kimlik-number" className="block text-slate-700 dark:text-slate-300 font-bold mb-3 text-lg">
                                 أدخل رقم التي جي (99...) للتحقق:
                             </label>
                             <div className="relative">
                                 <input
+                                    id="kimlik-number"
+                                    name="kimlikNumber"
                                     type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]{11}"
+                                    autoComplete="off"
+                                    aria-label="أدخل رقم الكملك المكون من 11 رقم"
+                                    aria-describedby="kimlik-hint"
                                     value={tcNumber}
                                     onChange={handleChange}
                                     placeholder="99XXXXXXXXX"
@@ -113,6 +120,9 @@ export default function KimlikCheckPage() {
                                     </button>
                                 )}
                             </div>
+                            <p id="kimlik-hint" className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
+                                الرقم مكون من 11 خانة ويبدأ بـ 99
+                            </p>
                         </div>
 
                         {/* Validation Result */}

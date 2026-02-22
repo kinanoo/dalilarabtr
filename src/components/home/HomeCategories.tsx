@@ -24,7 +24,8 @@ export default function HomeCategories({ categories }: { categories: any[] }) {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <section className="relative z-20 mt-[50px] px-4">
+        <section className="relative z-20 mt-[50px] px-4" aria-labelledby="home-categories-heading">
+            <h2 id="home-categories-heading" className="sr-only">أقسام الدليل الرئيسية</h2>
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-5">
                     {categories.map((tile, idx) => {

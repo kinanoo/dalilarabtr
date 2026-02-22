@@ -122,7 +122,7 @@ function RequestForm() {
         <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">عند الإرسال سيفتح واتساب مباشرة وسيتم أيضاً نسخ نص الطلب.</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
         {/* Name Field */}
         <div className="group">

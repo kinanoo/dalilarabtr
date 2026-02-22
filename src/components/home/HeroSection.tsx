@@ -36,7 +36,7 @@ const fadeInUp = {
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
-        <section className="relative z-50 bg-slate-900 text-white pt-8 pb-10 px-4 shadow-2xl overflow-visible">
+        <section className="relative z-[15] bg-slate-900 text-white pt-8 pb-10 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
 
             {/* Inner Wrapper for Background/Overflow Clipping */}
             <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
@@ -57,11 +57,11 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
             </div>
 
             {/* --- SIDE PILLARS (Moved to Top Level for Interaction) --- */}
-            <SideColumn items={SIDE_ITEMS_LEFT} direction="up" className="left-4 xl:left-16 z-[60]" />
-            <SideColumn items={SIDE_ITEMS_RIGHT} direction="down" className="right-4 xl:right-16 z-[60]" />
+            <SideColumn items={SIDE_ITEMS_LEFT} direction="up" className="left-4 xl:left-16 z-[20]" />
+            <SideColumn items={SIDE_ITEMS_RIGHT} direction="down" className="right-4 xl:right-16 z-[20]" />
 
             {/* --- CENTER CONTENT --- */}
-            <div className="max-w-4xl mx-auto text-center relative z-[70] pointer-events-none">
+            <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
                 <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="pointer-events-none">
                     {/* USP Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-6 hover:bg-white/10 transition-colors shadow-lg pointer-events-auto">
@@ -84,7 +84,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         {SITE_CONFIG.slogan}
                     </p>
 
-                    <div className="mt-8 max-w-xl mx-auto relative z-[70] pointer-events-auto">
+                    <div className="mt-8 max-w-xl mx-auto relative z-[25] pointer-events-auto">
                         {children}
                     </div>
 

@@ -400,7 +400,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               )}
 
               {/* Step 3 */}
-              {step === 3 && (
+              {step === 3 && !loading && (
                 <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
                   <div className="text-center space-y-2">
                     <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة الأخيرة</span>
@@ -885,11 +885,11 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                 </motion.div>
               )}
 
-              {step === 3 && loading && (
-                <div className="text-center py-16 sm:py-20 animate-pulse">
+              {loading && (
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-16 sm:py-20">
                   <RefreshCw className="animate-spin mx-auto text-emerald-500 mb-4 sm:mb-6" size={40} />
                   <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">جاري تحليل البيانات...</h3>
-                </div>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>

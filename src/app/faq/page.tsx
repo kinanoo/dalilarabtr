@@ -3,6 +3,13 @@ import { getFAQData } from '@/lib/faq';
 import { createClient } from '@supabase/supabase-js';
 import { FAQCategory, FAQQuestion } from '@/lib/faq-types';
 import { Suspense } from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'الأسئلة الشائعة | دليل العرب في تركيا',
+  description: 'إجابات شاملة على أكثر من 600 سؤال حول الإقامة، الكملك، العمل، الصحة، والحياة في تركيا.',
+  alternates: { canonical: '/faq' },
+};
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -98,13 +105,13 @@ export default async function FAQPage() {
   // Recalculate total
   const totalCount = mergedData.reduce((sum, cat) => sum + cat.questions.length, 0);
 
-  // Schema.org
+  // Schema.org — 10 questions only (rich results limit)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: mergedData
       .flatMap(cat => cat.questions)
-      .slice(0, 200) // First 200 for SEO
+      .slice(0, 10)
       .map(q => ({
         '@type': 'Question',
         name: q.q,

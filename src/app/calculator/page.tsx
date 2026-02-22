@@ -35,10 +35,12 @@ export default function CalculatorPage() {
             <div className="space-y-6">
               {/* نوع المعاملة */}
               <div>
-                <label className="block font-bold mb-3 text-slate-900 dark:text-slate-100">
+                <label htmlFor="transaction-type" className="block font-bold mb-3 text-slate-900 dark:text-slate-100">
                   نوع المعاملة
                 </label>
                 <select
+                  id="transaction-type"
+                  aria-label="نوع معاملة الإقامة"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                   className="w-full p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
@@ -50,14 +52,20 @@ export default function CalculatorPage() {
 
               {/* العمر */}
               <div>
-                <label className="block font-bold mb-3 text-slate-900 dark:text-slate-100">
+                <label htmlFor="age-slider" className="block font-bold mb-3 text-slate-900 dark:text-slate-100">
                   العمر: <span className="text-emerald-600">{age} سنة</span>
                 </label>
                 <input
                   type="range"
+                  id="age-slider"
+                  name="age"
                   min="18"
                   max="65"
                   value={age}
+                  aria-label="العمر"
+                  aria-valuenow={age}
+                  aria-valuemin={18}
+                  aria-valuemax={65}
                   onChange={(e) => setAge(Number(e.target.value))}
                   className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                   style={{

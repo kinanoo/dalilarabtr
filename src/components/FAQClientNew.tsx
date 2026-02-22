@@ -118,7 +118,7 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
         2. Gradient is more Slate/Emerald focused, less Gold/Cyan.
         3. Background shapes are different (Nebula glow instead of curves).
       */}
-      <section className="relative z-50 bg-slate-900 border-b border-emerald-500/10 pb-12 pt-10 rounded-b-[2.5rem] overflow-hidden shadow-2xl">
+      <section className="relative z-[15] bg-slate-900 border-b border-emerald-500/10 pb-12 pt-10 rounded-b-[2.5rem] overflow-hidden shadow-2xl">
         {/* Animated Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900" />
@@ -141,7 +141,9 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
             <div className="relative">
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors" size={22} />
               <input
-                type="text"
+                type="search"
+                id="faq-search"
+                aria-label="ابحث في الأسئلة الشائعة"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ابحث عن سؤال... (إقامة، تأمين، جواز...)"
@@ -166,8 +168,11 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                     <Filter size={18} className="text-emerald-600" /> التصنيفات
                   </h3>
                 </div>
-                <div className="space-y-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <div role="tablist" aria-label="تصفية الأسئلة" className="space-y-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedCategory === null}
                     onClick={() => setSelectedCategory(null)}
                     className={`w-full text-right px-4 py-3 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${selectedCategory === null
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
@@ -179,6 +184,9 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                   </button>
                   {staticData.map((cat) => (
                     <button
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedCategory === cat.category}
                       key={cat.category}
                       onClick={() => setSelectedCategory(cat.category)}
                       className={`w-full text-right px-4 py-3 rounded-xl text-sm font-medium transition-all flex justify-between items-center ${selectedCategory === cat.category
@@ -195,8 +203,11 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
 
               {/* Categories (Mobile via Horizontal Scroll) */}
               <div className="lg:hidden">
-                <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
+                <div role="tablist" aria-label="تصفية الأسئلة" className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedCategory === null}
                     onClick={() => setSelectedCategory(null)}
                     className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold border transition-all ${selectedCategory === null
                       ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/20 shadow-lg'
@@ -207,6 +218,9 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                   </button>
                   {staticData.map((cat) => (
                     <button
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedCategory === cat.category}
                       key={cat.category}
                       onClick={() => setSelectedCategory(cat.category)}
                       className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-all ${selectedCategory === cat.category
@@ -258,8 +272,10 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                 {totalPages > 1 && (
                   <div className="flex justify-center items-center gap-3 mt-10">
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      aria-label="الصفحة السابقة"
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold text-slate-600 disabled:hover:scale-100 bg-white dark:bg-slate-900 shadow-sm"
                     >
                       <ChevronRight size={18} className="rtl:rotate-180" />
@@ -271,8 +287,10 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                     </div>
 
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      aria-label="الصفحة التالية"
                       className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold text-slate-600 disabled:hover:scale-100 bg-white dark:bg-slate-900 shadow-sm"
                     >
                       التالي
