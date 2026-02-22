@@ -1,82 +1,22 @@
 const CACHE_NAME = 'daleel-arab-cache-v1';
-const OFFLINE_URL = '/offline';
 
-const URLS_TO_CACHE = [
-    '/',
-    '/manifest.json',
-    '/favicon.ico',
-    '/logo.png',
-    '/android-chrome-192x192.png',
-    '/globals.css', // This might be hashed in build, but good to try
-];
-
-// Install Event
+// Install Event - minimal, just activate immediately
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(URLS_TO_CACHE).catch(err => {
-                console.warn('Cache addAll error', err);
-            });
-        })
-    );
     self.skipWaiting();
 });
 
-// Activate Event
+// Activate Event - clear any old caches and take control
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
+            return Promise.all(cacheNames.map((name) => caches.delete(name)));
         })
     );
     self.clients.claim();
 });
 
-// Fetch Event (Network First, then Cache)
-self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET') return;
-    if (!event.request.url.startsWith('http')) return;
-
-    event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Check if we received a valid response
-                if (!response || response.status !== 200 || response.type !== 'basic') {
-                    return response;
-                }
-
-                // Clone the response
-                const responseToCache = response.clone();
-
-                caches.open(CACHE_NAME).then((cache) => {
-                    // Don't cache API calls or large files unnecessarily
-                    if (!event.request.url.includes('/api/') && !event.request.url.includes('supabase')) {
-                        cache.put(event.request, responseToCache);
-                    }
-                });
-
-                return response;
-            })
-            .catch(() => {
-                // If network fails, try cache
-                return caches.match(event.request).then((response) => {
-                    if (response) {
-                        return response;
-                    }
-                    // Fallback for navigation requests
-                    if (event.request.mode === 'navigate') {
-                        return caches.match('/');
-                    }
-                });
-            })
-    );
-});
+// No fetch handler - browser handles everything normally
+// No offline caching, no stored pages, no data stored on device
 
 // Keep existing Push Logic
 self.addEventListener('push', function (event) {
