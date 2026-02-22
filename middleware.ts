@@ -74,13 +74,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        /*
-         * Run on all routes except:
-         * - _next/static (static files)
-         * - _next/image (image optimization)
-         * - favicon.ico
-         * - public files (images, fonts, etc.)
-         */
-        '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)',
+        // Only run on protected routes — avoids Supabase overhead on every public page
+        '/admin/:path*',
+        '/dashboard/:path*',
     ],
 }

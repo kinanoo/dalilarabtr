@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, ShieldCheck, AlertCircle, Lock } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, Lock, Timer } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 // Singleton outside component — not re-created on every render
@@ -12,16 +12,45 @@ const supabase = createBrowserClient(
 );
 
 const GENERIC_ERROR = 'بيانات الدخول غير صحيحة';
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_SECONDS = 60;
 
 export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    // Brute force protection
+    const [attempts, setAttempts] = useState(0);
+    const [lockoutRemaining, setLockoutRemaining] = useState(0);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
     const router = useRouter();
+
+    // Countdown timer during lockout
+    useEffect(() => {
+        if (lockoutRemaining <= 0) return;
+        timerRef.current = setInterval(() => {
+            setLockoutRemaining((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current!);
+                    setAttempts(0);
+                    setError('');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timerRef.current!);
+    }, [lockoutRemaining]);
+
+    const isLocked = lockoutRemaining > 0;
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isLocked || loading) return;
+
         setLoading(true);
         setError('');
 
@@ -31,7 +60,15 @@ export default function AdminLoginPage() {
         });
 
         if (authError || !authData.user) {
-            setError(GENERIC_ERROR);
+            const newAttempts = attempts + 1;
+            setAttempts(newAttempts);
+
+            if (newAttempts >= MAX_ATTEMPTS) {
+                setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
+                setLockoutRemaining(LOCKOUT_SECONDS);
+            } else {
+                setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);
+            }
             setLoading(false);
             return;
         }
@@ -44,9 +81,15 @@ export default function AdminLoginPage() {
             .single();
 
         if (profile?.role !== 'admin') {
-            // Sign out silently — show same generic error to avoid info disclosure
             await supabase.auth.signOut();
-            setError(GENERIC_ERROR);
+            const newAttempts = attempts + 1;
+            setAttempts(newAttempts);
+            if (newAttempts >= MAX_ATTEMPTS) {
+                setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
+                setLockoutRemaining(LOCKOUT_SECONDS);
+            } else {
+                setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);
+            }
             setLoading(false);
             return;
         }
@@ -70,7 +113,20 @@ export default function AdminLoginPage() {
                 </div>
 
                 <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-slate-800 p-8">
-                    {error && (
+
+                    {/* Lockout Banner */}
+                    {isLocked && (
+                        <div className="mb-6 bg-amber-950/50 border border-amber-900/50 text-amber-400 p-4 rounded-xl text-sm flex items-center gap-3">
+                            <Timer size={20} className="shrink-0 animate-pulse" />
+                            <span>
+                                تم إيقاف الدخول مؤقتاً. إعادة المحاولة بعد{' '}
+                                <strong className="text-amber-300 font-mono">{lockoutRemaining}</strong> ثانية
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Error */}
+                    {error && !isLocked && (
                         <div className="mb-6 bg-red-950/50 border border-red-900/50 text-red-400 p-4 rounded-xl text-sm flex items-center gap-3">
                             <AlertCircle size={20} className="shrink-0" />
                             {error}
@@ -88,9 +144,10 @@ export default function AdminLoginPage() {
                                 type="email"
                                 required
                                 autoComplete="email"
+                                disabled={isLocked}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600"
+                                className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
                                 placeholder="admin@example.com"
                             />
                         </div>
@@ -105,20 +162,25 @@ export default function AdminLoginPage() {
                                 type="password"
                                 required
                                 autoComplete="current-password"
+                                disabled={isLocked}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600"
+                                className="w-full px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-950/50 outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-white transition-all text-left ltr placeholder:text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
                                 placeholder="••••••••••••"
                             />
                         </div>
 
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                            disabled={loading || isLocked}
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 disabled:active:scale-100"
                         >
-                            {loading ? <Loader2 className="animate-spin" size={20} /> : <ShieldCheck size={20} />}
-                            <span className="text-base">{loading ? 'جاري التحقق من الصلاحيات...' : 'تأكيد الدخول'}</span>
+                            {isLocked
+                                ? <><Timer size={20} /><span className="text-base font-mono">{lockoutRemaining}s</span></>
+                                : loading
+                                    ? <><Loader2 className="animate-spin" size={20} /><span className="text-base">جاري التحقق من الصلاحيات...</span></>
+                                    : <><ShieldCheck size={20} /><span className="text-base">تأكيد الدخول</span></>
+                            }
                         </button>
                     </form>
                 </div>
