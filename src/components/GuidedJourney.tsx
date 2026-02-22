@@ -31,13 +31,13 @@ const FALLBACK_JOURNEYS = [
         href: '/category/residence'
     },
     {
-        id: 'legal-issue',
-        title: 'عندي مشكلة قانونية',
-        desc: 'ترحيل، نفوس، أكواد، أو خطر قانوني',
-        icon: ShieldAlert,
-        icon_name: 'ShieldAlert',
-        color_class: 'from-red-500 to-rose-500',
-        href: '/consultant'
+        id: 'kimlik-syrians',
+        title: 'سوري وعندي كملك',
+        desc: 'الحماية المؤقتة، تجديد الكملك، حقوقك، الترحيل، والخدمات المخصصة لك',
+        icon: UserCheck,
+        icon_name: 'UserCheck',
+        color_class: 'from-violet-500 to-purple-600',
+        href: '/category/kimlik'
     },
     {
         id: 'edevlet',
