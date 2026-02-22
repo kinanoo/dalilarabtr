@@ -6,6 +6,8 @@ import { Bell, Sparkles, Loader2, Calendar, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 export default function UpdatesPage() {
   // 🆕 استخدام الـ hook الجديد بدلاً من fetchRemoteUpdates
@@ -76,6 +78,17 @@ export default function UpdatesPage() {
                           <Calendar size={12} />
                           {u.date}
                         </span>
+
+                        {/* زر المشاركة */}
+                        <div className="mr-auto">
+                          <ShareMenu
+                            mini
+                            variant="subtle"
+                            title={u.title}
+                            text={u.content?.slice(0, 200)}
+                            url={`${SITE_CONFIG.siteUrl}/updates#upd-${u.id}`}
+                          />
+                        </div>
                       </div>
 
                       <h2 className="mt-2 text-lg md:text-xl font-extrabold text-slate-900 dark:text-slate-100">
