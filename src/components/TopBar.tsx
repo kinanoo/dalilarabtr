@@ -63,7 +63,7 @@ export default function TopBar() {
     }, []);
 
     return (
-        <div className="bg-slate-900 text-white text-[10px] sm:text-xs font-bold py-1.5 px-4 relative z-[1001]">
+        <div className="bg-slate-900 text-white text-[9px] sm:text-xs font-bold py-1 sm:py-1.5 px-4 relative z-[1001] min-h-[24px] sm:min-h-[32px] flex items-center">
             <div className="max-w-screen-2xl mx-auto flex items-center justify-between relative">
 
                 {/* Right: Hijri Date */}
@@ -132,6 +132,7 @@ export default function TopBar() {
                     <div className="relative" ref={cityDropdownRef}>
                         <button
                             onClick={() => setShowCities(!showCities)}
+                            aria-label="تغيير المدينة لمواقيت الصلاة"
                             className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors bg-slate-800/50 px-2 py-0.5 rounded hover:bg-slate-800"
                         >
                             <MapPin size={10} />

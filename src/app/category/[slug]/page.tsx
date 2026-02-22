@@ -4,8 +4,21 @@ import { CATEGORY_SLUGS } from '@/lib/config';
 import CategoryArticlesList from './CategoryArticlesList';
 import { supabase } from '@/lib/supabaseClient';
 
+import { Metadata } from 'next';
+
 // 1. السماح بالباراميترات الديناميكية (Dynamic Params)
 export const dynamicParams = true;
+
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
+  const url = `https://dalilarab.vercel.app/category/${params.slug}`;
+
+  return {
+    alternates: {
+      canonical: url,
+    },
+  };
+}
 
 // 2. مكون الصفحة
 export default async function CategoryPage(props: { params: Promise<{ slug: string }> }) {
@@ -51,7 +64,36 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
   return (
     <main className="flex flex-col min-h-screen">
-
+      {/* JSON-LD Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "الرئيسية",
+                "item": "https://dalilarab.vercel.app"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "الأقسام",
+                "item": "https://dalilarab.vercel.app/category"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": categoryName,
+                "item": `https://dalilarab.vercel.app/category/${params.slug}`
+              }
+            ]
+          })
+        }}
+      />
 
       {/* 🆕 مكون Client لعرض المقالات مع الهيرو والبحث */}
       <CategoryArticlesList

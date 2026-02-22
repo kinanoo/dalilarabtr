@@ -2,12 +2,8 @@
 
 import { Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 
-const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook', color: 'hover:text-blue-600' },
-    { icon: Twitter, href: '#', label: 'Twitter', color: 'hover:text-sky-500' },
-    { icon: Instagram, href: '#', label: 'Instagram', color: 'hover:text-pink-600' },
-    { icon: Youtube, href: '#', label: 'Youtube', color: 'hover:text-red-600' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn', color: 'hover:text-blue-700' },
+const socialLinks: any[] = [
+    // Empty array to hide social icons for now. Re-add when there are valid URLs.
 ];
 
 export default function SocialLinks() {

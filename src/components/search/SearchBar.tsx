@@ -77,6 +77,7 @@ export default function SearchBar({
                     {value && (
                         <button
                             type="button"
+                            aria-label="مسح البحث"
                             onClick={handleClear}
                             className="absolute left-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors animate-scaleIn"
                         >

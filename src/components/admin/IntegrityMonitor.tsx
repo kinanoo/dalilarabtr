@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, AlertOctagon, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function IntegrityMonitor() {
     const [loading, setLoading] = useState(false);

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import InstallPrompt from './InstallPrompt';
 import SocialLinks from './SocialLinks';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
@@ -143,8 +142,6 @@ export default function Footer() {
           </div>
         </div>
       </footer>
-
-      <InstallPrompt />
     </>
   );
 }

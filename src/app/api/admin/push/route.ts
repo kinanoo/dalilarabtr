@@ -77,7 +77,7 @@ export async function POST(request: Request) {
                 .then(() => {
                     successCount++;
                 })
-                .catch((err) => {
+                .catch((err: Error) => {
                     console.error('Push error for one user:', err);
                     failCount++;
                     // Check for 410 Gone (expired) and remove from DB?

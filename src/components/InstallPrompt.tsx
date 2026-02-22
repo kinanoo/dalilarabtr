@@ -16,21 +16,51 @@ export default function InstallPrompt() {
             return;
         }
 
+        try {
+            const dismissedAt = localStorage.getItem('pwa_dismissed_at');
+            const dismissCount = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
+
+            if (dismissedAt) {
+                const timeSinceLastPrompt = Date.now() - parseInt(dismissedAt, 10);
+                const waitDays = dismissCount >= 2 ? 5 : 3;
+                if (timeSinceLastPrompt < waitDays * 24 * 60 * 60 * 1000) {
+                    return; // Haven't passed the wait period
+                }
+            }
+        } catch (e) {
+            // ignore localStorage errors (e.g., incognito mode)
+        }
+
+        let showTimer: NodeJS.Timeout;
         const handler = (e: any) => {
             // Prevent Chrome 67 and earlier from automatically showing the prompt
             e.preventDefault();
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e);
-            // Update UI to notify the user they can add to home screen
-            setShow(true);
+
+            if (showTimer) clearTimeout(showTimer);
+            // Update UI to notify the user they can add to home screen after 60 seconds
+            showTimer = setTimeout(() => {
+                setShow(true);
+            }, 60000);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handler);
+            if (showTimer) clearTimeout(showTimer);
         };
     }, []);
+
+    const handleDismiss = () => {
+        setShow(false);
+        try {
+            const currentCount = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
+            localStorage.setItem('pwa_dismissed_at', Date.now().toString());
+            localStorage.setItem('pwa_dismiss_count', (currentCount + 1).toString());
+        } catch (e) { }
+    };
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;
@@ -64,7 +94,8 @@ export default function InstallPrompt() {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={() => setShow(false)}
+                        onClick={handleDismiss}
+                        aria-label="إغلاق"
                         className="p-2 hover:bg-white/10 rounded-full transition"
                     >
                         <X size={18} />

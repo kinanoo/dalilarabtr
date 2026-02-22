@@ -19,13 +19,16 @@ export default function PWAInstallPrompt() {
 
         if (checkStandalone) return;
 
-        // 2. Enforce 3-day wait period
+        // 2. Enforce dismissal policy
         try {
-            const lastPromptTime = localStorage.getItem('daleel_pwa_last_prompt');
-            if (lastPromptTime) {
-                const timeSinceLastPrompt = Date.now() - parseInt(lastPromptTime, 10);
-                if (timeSinceLastPrompt < 3 * 24 * 60 * 60 * 1000) {
-                    return; // 3 days haven't passed yet
+            const dismissedAt = localStorage.getItem('pwa_dismissed_at');
+            const dismissCount = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
+
+            if (dismissedAt) {
+                const timeSinceLastPrompt = Date.now() - parseInt(dismissedAt, 10);
+                const waitDays = dismissCount === 1 ? 3 : 5;
+                if (timeSinceLastPrompt < waitDays * 24 * 60 * 60 * 1000) {
+                    return; // Haven't passed the wait period
                 }
             }
         } catch (e) {
@@ -33,18 +36,26 @@ export default function PWAInstallPrompt() {
         }
 
         // 3. Android / Desktop Support (listen for 'beforeinstallprompt')
+        let showTimer: NodeJS.Timeout;
         const handleBeforeInstallPrompt = (e: Event) => {
             // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e);
-            // Update UI notify the user they can install the PWA
-            setShowInstallBanner(true);
 
-            // Record that we showed the prompt today
-            try {
-                localStorage.setItem('daleel_pwa_last_prompt', Date.now().toString());
-            } catch (e) { }
+            // Clear any previously set timer to avoid multiple triggers
+            if (showTimer) clearTimeout(showTimer);
+
+            // Wait 60 seconds before showing
+            showTimer = setTimeout(() => {
+                setShowInstallBanner(true);
+
+                // Keep for 10 seconds then hide
+                setTimeout(() => {
+                    setShowInstallBanner(false);
+                }, 10000);
+
+            }, 60000);
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -59,6 +70,15 @@ export default function PWAInstallPrompt() {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
     }, []);
+
+    const handleDismiss = () => {
+        setShowInstallBanner(false);
+        try {
+            const currentCount = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
+            localStorage.setItem('pwa_dismissed_at', Date.now().toString());
+            localStorage.setItem('pwa_dismiss_count', (currentCount + 1).toString());
+        } catch (e) { }
+    };
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;
@@ -86,7 +106,8 @@ export default function PWAInstallPrompt() {
                     className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[9999] bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl p-4 flex flex-col gap-3"
                 >
                     <button
-                        onClick={() => setShowInstallBanner(false)}
+                        onClick={handleDismiss}
+                        aria-label="إغلاق"
                         className="absolute top-2 left-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
                     >
                         <X size={18} />

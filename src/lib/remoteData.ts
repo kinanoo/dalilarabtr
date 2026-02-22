@@ -174,16 +174,31 @@ export function computeUpdatesVersion(updates: Array<{ id: string; date: string 
   return versions.at(-1) || '0000-00-00-0';
 }
 
-export async function fetchRemoteUpdates(): Promise<RuntimeUpdate[] | null> {
-  if (!supabase) return isDemoMode() ? readDemoUpdates().filter((u) => u.active !== false) : null;
-  const { data, error } = await supabase
-    .from('site_updates')
-    .select('id,type,title,date,content,active')
-    .order('date', { ascending: false });
+let cachedUpdates: RuntimeUpdate[] | null = null;
+let updatesPromise: Promise<RuntimeUpdate[] | null> | null = null;
 
-  if (error) return null;
-  const rows = ((data as RemoteUpdateRow[]) ?? []).filter((u) => u.active !== false);
-  return rows.map((u) => ({ id: u.id, type: u.type, title: u.title, date: u.date, content: u.content }));
+export async function fetchRemoteUpdates(): Promise<RuntimeUpdate[] | null> {
+  if (cachedUpdates) return cachedUpdates;
+  if (updatesPromise) return updatesPromise;
+
+  updatesPromise = (async () => {
+    if (!supabase) return isDemoMode() ? readDemoUpdates().filter((u) => u.active !== false) : null;
+    const { data, error } = await supabase
+      .from('site_updates')
+      .select('id,type,title,date,content,active')
+      .order('date', { ascending: false });
+
+    if (error) return null;
+    const rows = ((data as RemoteUpdateRow[]) ?? []).filter((u) => u.active !== false);
+    cachedUpdates = rows.map((u) => ({ id: u.id, type: u.type, title: u.title, date: u.date, content: u.content }));
+    return cachedUpdates;
+  })();
+
+  try {
+    return await updatesPromise;
+  } finally {
+    updatesPromise = null;
+  }
 }
 
 export async function fetchRemoteUpdatesVersion(): Promise<string | null> {

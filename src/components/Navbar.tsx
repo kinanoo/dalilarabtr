@@ -405,9 +405,9 @@ export default function Navbar() {
                 <img src="/logo.png" alt="Logo" className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                <div className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {SITE_CONFIG.name}
-                </h1>
+                </div>
                 <p className="text-[9px] text-slate-500 font-bold">دليلك الأول في تركيا</p>
               </div>
             </Link>
@@ -457,7 +457,7 @@ export default function Navbar() {
 
             {/* Search Removed */}
 
-            <Link href="/updates" className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-700 dark:text-slate-300 hover:text-emerald-700">
+            <Link href="/updates" aria-label="الإشعارات والتحديثات" className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-700 dark:text-slate-300 hover:text-emerald-700">
               <Bell size={18} />
               {hasNewUpdates && <span className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full animate-pulse ring-2 ring-white dark:ring-slate-950" />}
             </Link>
@@ -471,7 +471,7 @@ export default function Navbar() {
               type="button"
               className="lg:hidden p-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setIsOpen(true)}
-              aria-label="القائمة"
+              aria-label="القائمة الرئيسية"
             >
               <Menu size={20} />
             </button>

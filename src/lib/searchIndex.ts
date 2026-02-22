@@ -383,32 +383,49 @@ export function getStaticSearchIndex(): SearchIndexItem[] {
  * Hook للبحث الموحد (يجمع بين الثابت والديناميكي)
  * هذا هو الهوك الذي يجب استخدامه في مكونات البحث
  */
+let _cachedDynamicArticles: SearchIndexItem[] | null = null;
+let _cachedDynamicScenarios: SearchIndexItem[] | null = null;
+let _isFetchingDynamicIndex = false;
+
 export function useSearchIndex() {
   const [index, setIndex] = useState<SearchIndexItem[]>(getStaticSearchIndex());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDynamicIndex() {
-      // Load Articles & Scenarios in Parallel
-      const [articles, scenarios] = await Promise.all([
-        fetchArticlesIndex(),
-        fetchScenariosIndex()
-      ]);
+      // Check cache first
+      if (_cachedDynamicArticles && _cachedDynamicScenarios) {
+        mergeDynamicData(_cachedDynamicArticles, _cachedDynamicScenarios);
+        setLoading(false);
+        return;
+      }
 
-      // Merge with static (removing duplicates by ID)
+      if (_isFetchingDynamicIndex) return; // Prevent concurrent duplicate fetches
+      _isFetchingDynamicIndex = true;
+
+      try {
+        const [articles, scenarios] = await Promise.all([
+          fetchArticlesIndex(),
+          fetchScenariosIndex()
+        ]);
+
+        _cachedDynamicArticles = articles;
+        _cachedDynamicScenarios = scenarios;
+        mergeDynamicData(articles, scenarios);
+      } finally {
+        _isFetchingDynamicIndex = false;
+        setLoading(false);
+      }
+    }
+
+    function mergeDynamicData(articles: SearchIndexItem[], scenarios: SearchIndexItem[]) {
       setIndex(prev => {
         const currentIds = new Set(prev.map(i => i.id));
-
         const newArticles = articles.filter(a => !currentIds.has(a.id));
-        // Add articles to set to prevent cross-duplication (unlikely but safe)
         newArticles.forEach(a => currentIds.add(a.id));
-
         const newScenarios = scenarios.filter(s => !currentIds.has(s.id));
-
         return [...prev, ...newArticles, ...newScenarios];
       });
-
-      setLoading(false);
     }
 
     loadDynamicIndex();

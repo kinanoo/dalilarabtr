@@ -393,6 +393,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         {isHero && (
           <button
             onClick={() => setIsOpen(true)}
+            aria-label="بحث"
             className="absolute inset-y-1.5 end-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-6 rounded-full font-bold shadow-lg transform active:scale-95 transition-all z-20 flex items-center justify-center"
           >
             بحث

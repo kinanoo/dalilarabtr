@@ -34,6 +34,10 @@ export default function RequestsPage() {
 
     const fetchRequests = async () => {
         setLoading(true);
+        if (!supabase) {
+            setLoading(false);
+            return;
+        }
         try {
             // 1. Fetch pending services
             const { data: services, error: servicesError } = await supabase
@@ -110,6 +114,8 @@ export default function RequestsPage() {
                 if (item.type === 'service' && action === 'approve') {
                     updateData.is_verified = true; // Auto verify services on approval
                 }
+
+                if (!supabase) throw new Error('Supabase client not initialized');
 
                 const { error } = await supabase
                     .from(table)

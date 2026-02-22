@@ -13,6 +13,8 @@ export default function ServicesClient() {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCity, setActiveCity] = useState('all');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -68,10 +70,40 @@ export default function ServicesClient() {
     }
 
     if (data) {
-      setServices(data);
+      // Normalize city names to prevent duplicates like "Istanbul", "إسطنبول", "اسطنبول"
+      const normalizedData = data.map((d: any) => {
+        let normalizedCity = d.city;
+        if (typeof normalizedCity === 'string') {
+          const lowerCity = normalizedCity.toLowerCase().trim();
+          if (lowerCity === 'istanbul' || lowerCity === 'إسطنبول' || lowerCity === 'اسطنبول') {
+            normalizedCity = 'اسطنبول';
+          }
+          if (lowerCity === 'gaziantep' || lowerCity === 'غازي عنتاب') {
+            normalizedCity = 'غازي عنتاب';
+          }
+        }
+        return { ...d, city: normalizedCity };
+      });
+
+      // Extract unique cities when we load all data (or just once)
+      if (activeCategory === 'all' && searchQuery === '' && activeCity === 'all') {
+        const cities = Array.from(new Set(normalizedData.map((d: any) => d.city).filter(Boolean))) as string[];
+        setAvailableCities(cities.sort());
+      }
+
+      // Filter by city client-side - but order the selected city FIRST rather than simply filtering out matching cities!
+      let finalData = normalizedData;
+      if (activeCity !== 'all') {
+        const cityMatches = normalizedData.filter((d: any) => d.city === activeCity);
+        const others = normalizedData.filter((d: any) => d.city !== activeCity);
+        finalData = [...cityMatches, ...others];
+      }
+
+      // Sort exact city matches or bring them to front if we wanted soft matching, but hard filter is better here
+      setServices(finalData);
     }
     setLoading(false);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, activeCity]);
 
   useEffect(() => {
     fetchServices();
@@ -152,6 +184,21 @@ export default function ServicesClient() {
                 {cat.label}
               </button>
             ))}
+
+            {/* City Dropdown Filter */}
+            <div className="relative inline-block mt-2 lg:mt-0 lg:ms-2">
+              <select
+                value={activeCity}
+                onChange={(e) => setActiveCity(e.target.value)}
+                className="appearance-none px-4 py-2 pr-8 rounded-lg text-xs font-bold border bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              >
+                <option value="all">كل المدن</option>
+                {availableCities.map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+              <MapPin size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
           </div>
         </div>
       </section>
@@ -193,7 +240,21 @@ export default function ServicesClient() {
                 <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-slate-700 relative">
-                      {provider.image ? <Image src={provider.image} alt={provider.name} fill className="object-cover" sizes="56px" /> : <Briefcase size={24} className="text-slate-400" />}
+                      {provider.image ? (
+                        <Image
+                          src={provider.image}
+                          alt={provider.name}
+                          fill
+                          className="object-cover"
+                          sizes="56px"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement?.classList.add('fallback-shown');
+                          }}
+                        />
+                      ) : null}
+                      {/* Fallback icon always present underneath or toggled on error */}
+                      <Briefcase size={24} className="text-slate-400 absolute z-[-1] [.fallback-shown_&]:z-10" />
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight group-hover:text-emerald-600 transition-colors">
@@ -203,9 +264,15 @@ export default function ServicesClient() {
                       </h3>
                       <p className="text-xs font-bold text-emerald-600 mt-1">{provider.profession}</p>
                       <div className="flex items-center gap-1 mt-1">
-                        <Star size={10} className="fill-amber-400 text-amber-400" />
-                        <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
-                        <span className="text-[10px] text-slate-400">({provider.review_count || 0})</span>
+                        {provider.review_count && provider.review_count > 0 ? (
+                          <>
+                            <Star size={10} className="fill-amber-400 text-amber-400" />
+                            <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
+                            <span className="text-[10px] text-slate-400">({provider.review_count})</span>
+                          </>
+                        ) : (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50/50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">جديد</span>
+                        )}
                       </div>
                     </div>
                   </div>

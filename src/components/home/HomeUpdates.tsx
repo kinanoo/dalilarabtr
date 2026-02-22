@@ -14,107 +14,14 @@ function isNewContent(dateStr: string): boolean {
 }
 
 export default function HomeUpdates({ updates }: { updates: any[] }) {
-    const [isHovered, setIsHovered] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [offset, setOffset] = useState(0);
-    const [startX, setStartX] = useState(0);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
-    const animationRef = useRef<number>();
-    const hasDraggedRef = useRef(false);
-
-    // Animation Loop
-    useEffect(() => {
-        const animate = () => {
-            if (!isHovered && !isDragging && contentRef.current) {
-                setOffset(prev => {
-                    const newOffset = prev - 0.5; // Speed
-                    const halfWidth = contentRef.current!.scrollWidth / 2;
-                    // Reset seamlessly when first set moves out of view
-                    return newOffset <= -halfWidth ? 0 : newOffset;
-                });
-            }
-            animationRef.current = requestAnimationFrame(animate);
-        };
-        animationRef.current = requestAnimationFrame(animate);
-
-        return () => {
-            if (animationRef.current) cancelAnimationFrame(animationRef.current);
-        };
-    }, [isHovered, isDragging]);
-
     // Construct base list safely
     if (!updates || updates.length === 0) return null;
 
-    const minBaseCount = 10;
+    const minBaseCount = 5; // Reduced from 10 to save DOM nodes
     let baseList = [...updates];
     while (baseList.length < minBaseCount) {
         baseList = [...baseList, ...updates];
     }
-
-    // Drag Handlers
-    const handleMouseDown = (e: React.MouseEvent) => {
-        setIsDragging(true);
-        setStartX(e.pageX - offset);
-        hasDraggedRef.current = false;
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDragging) return;
-        e.preventDefault();
-        hasDraggedRef.current = true;
-        const x = e.pageX - offset;
-        // Limit dragging speed/bounds essentially handled by the loop logic visual reset roughly
-        // But for simple "feel", just updating offset is enough. 
-        // We might want to clamp or wrap logic here too?
-        // Simple wrap for dragging:
-        let newOffset = e.pageX - startX;
-        if (contentRef.current) {
-            const halfWidth = contentRef.current.scrollWidth / 2;
-            if (newOffset > 0) newOffset = -halfWidth;
-            if (newOffset < -halfWidth) newOffset = 0;
-        }
-        setOffset(newOffset);
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-        setTimeout(() => { hasDraggedRef.current = false; }, 50);
-    };
-    const handleMouseLeave = () => {
-        setIsDragging(false);
-        setIsHovered(false);
-    };
-
-    // Touch Support
-    const handleTouchStart = (e: React.TouchEvent) => {
-        setIsDragging(true);
-        setStartX(e.touches[0].pageX - offset);
-        hasDraggedRef.current = false;
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!isDragging) return;
-        hasDraggedRef.current = true;
-        const currentX = e.touches[0].pageX;
-        let newOffset = currentX - startX;
-
-        if (contentRef.current) {
-            const halfWidth = contentRef.current.scrollWidth / 2;
-            // Wrap logic specifically for infinite illusion during drag
-            if (newOffset > 0) newOffset -= halfWidth;
-            if (newOffset < -halfWidth) newOffset += halfWidth;
-        }
-        setOffset(newOffset);
-    };
-
-    // Prevent click if dragged
-    const handleCardClick = (e: React.MouseEvent) => {
-        if (hasDraggedRef.current) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    };
 
     return (
         <section className="py-12 border-b border-slate-100 dark:border-slate-800/50 overflow-hidden select-none">
@@ -144,41 +51,41 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
 
             {/* Marquee Wrapper */}
             <div className="max-w-7xl mx-auto px-4">
-                <div
-                    ref={containerRef}
-                    className="relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 cursor-grab active:cursor-grabbing"
-                    dir="ltr"
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={handleMouseLeave}
-                    onMouseDown={handleMouseDown}
-                    onMouseUp={handleMouseUp}
-                    onMouseMove={handleMouseMove}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={() => setIsDragging(false)}
-                >
+                <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 group" dir="ltr">
                     {/* Gradient Masks */}
                     <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
                     <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
 
-                    {/* Track */}
-                    <div
-                        ref={contentRef}
-                        className="flex w-max py-4 transition-transform duration-0 ease-linear"
-                        style={{ transform: `translate3d(${offset}px, 0, 0)` }}
-                    >
-                        {/* List 1 */}
-                        <div className="flex items-center gap-4 pr-4 shrink-0">
-                            {baseList.map((update, index) => (
-                                <UpdateCard key={`l1-${update.id}-${index}`} update={update} onClick={handleCardClick} />
-                            ))}
-                        </div>
+                    {/* Track Container with custom CSS animation class */}
+                    <div className="flex w-max relative group-hover:paused">
+                        {/* Define inline keyframes to mimic the loop */}
+                        <style dangerouslySetInnerHTML={{
+                            __html: `
+                            @keyframes ticker-scroll {
+                                0% { transform: translateX(0); }
+                                100% { transform: translateX(-50%); }
+                            }
+                            .animate-ticker-scroll {
+                                animation: ticker-scroll 40s linear infinite;
+                            }
+                            .group:hover .animate-ticker-scroll {
+                                animation-play-state: paused;
+                            }
+                        `}} />
+                        <div className="flex w-max animate-ticker-scroll py-4">
+                            {/* List 1 */}
+                            <div className="flex items-center gap-4 pr-4 shrink-0">
+                                {baseList.map((update, index) => (
+                                    <UpdateCard key={`l1-${update.id}-${index}`} update={update} onClick={(e) => { }} />
+                                ))}
+                            </div>
 
-                        {/* List 2 (Replica) */}
-                        <div className="flex items-center gap-4 pr-4 shrink-0">
-                            {baseList.map((update, index) => (
-                                <UpdateCard key={`l2-${update.id}-${index}`} update={update} onClick={handleCardClick} />
-                            ))}
+                            {/* List 2 (Replica) */}
+                            <div className="flex items-center gap-4 pr-4 shrink-0">
+                                {baseList.map((update, index) => (
+                                    <UpdateCard key={`l2-${update.id}-${index}`} update={update} onClick={(e) => { }} />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

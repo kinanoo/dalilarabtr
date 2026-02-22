@@ -9,7 +9,7 @@ import { MapPin, Phone, Briefcase, Star, CheckCircle, ArrowRight, ShieldCheck } 
 export const revalidate = 60; // 1 minute cache
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 export default async function ServiceDetailsPage({ params }: { params: { id: string } }) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -88,7 +88,7 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
                                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
                                         {provider.name}
                                         {provider.is_verified && (
-                                            <CheckCircle className="text-blue-500 shrink-0" size={24} title="حساب موثق" />
+                                            <CheckCircle className="text-blue-500 shrink-0" size={24} />
                                         )}
                                     </h1>
                                     <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg mt-1">{provider.profession}</p>

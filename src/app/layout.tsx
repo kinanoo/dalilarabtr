@@ -26,8 +26,9 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
 // ============================================
-const SITE_URL = "https://dalilalarab.vercel.app"; // 👈 غيّر هذا لرابط موقعك الدائم لاحقاً
-const SITE_NAME = "دليل العرب والسوريين في تركيا";
+import { SITE_CONFIG } from "@/lib/config";
+const SITE_URL = SITE_CONFIG.siteUrl; // 👈 غيّر هذا لرابط موقعك الدائم لاحقاً
+const SITE_NAME = SITE_CONFIG.name;
 const SITE_DESCRIPTION = "الدليل الشامل للعرب والسوريين في تركيا حول الكملك والإقامة، الفيزا، والعمل وكل ما يلزمهم للعيش في تركيا.";
 
 // ============================================
@@ -44,6 +45,11 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
+
+  // ✅ Canonical & Alternates
+  alternates: {
+    canonical: SITE_URL,
+  },
 
   // ✅ Open Graph (للمشاركة على فيسبوك وغيره)
   openGraph: {
@@ -108,7 +114,6 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* Anti-scraping hints */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
