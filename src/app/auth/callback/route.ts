@@ -4,13 +4,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function GET(request: NextRequest) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    const next = searchParams.get('next') ?? '/'
 
     if (!code) {
         return NextResponse.redirect(`${origin}/login?error=missing_code`)
     }
 
-    const response = NextResponse.redirect(`${origin}${next}`)
+    // Start with /dashboard as default redirect
+    const response = NextResponse.redirect(`${origin}/dashboard`)
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
                     return request.cookies.get(name)?.value
                 },
                 set(name: string, value: string, options: CookieOptions) {
+                    // Set cookies on SAME response to preserve session
                     response.cookies.set({ name, value, ...options })
                 },
                 remove(name: string, options: CookieOptions) {
@@ -46,20 +47,20 @@ export async function GET(request: NextRequest) {
         .single()
 
     if (!profile) {
-        // Create profile for new Google user
         await supabase.from('member_profiles').insert({
             id: user.id,
             full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'عضو',
             avatar_url: user.user_metadata?.avatar_url || null,
             role: 'member',
         })
-        return NextResponse.redirect(`${origin}/dashboard`)
+        // response already points to /dashboard with cookies intact
+        return response
     }
 
-    // Redirect based on role
     if (profile.role === 'admin') {
-        return NextResponse.redirect(`${origin}/admin`)
+        // Redirect to admin but keep the same response (with cookies)
+        response.headers.set('location', `${origin}/admin`)
     }
 
-    return NextResponse.redirect(`${origin}/dashboard`)
+    return response
 }
