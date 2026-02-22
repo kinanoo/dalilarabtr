@@ -39,7 +39,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
         <section className="relative z-50 bg-slate-900 text-white pt-8 pb-10 px-4 shadow-2xl overflow-visible">
 
             {/* Inner Wrapper for Background/Overflow Clipping */}
-            <div className="absolute inset-0 overflow-hidden rounded-b-[3rem] -z-10 border-b border-white/5">
+            <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
                 {/* Background Gradient - Richer Emerald/Slate */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-emerald-950 to-slate-950 z-0" />
 
@@ -97,32 +97,33 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 // --- SUB COMPONENTS ---
 
 const SideColumn = ({ items, direction = 'up', className }: any) => {
-    // Optimized: Duplicate 3 times (enough for 1080p screens) instead of 6x to save memory
     const loopItems = [...items, ...items, ...items];
 
-    // Calculate exact height of ONE set to scroll by
     // Item (80px) + Gap (24px) = 104px (Desktop)
-    const itemHeight = 104;
-    const scrollDistance = items.length * itemHeight;
+    const scrollDistance = items.length * 104;
+    const duration = items.length * 5;
+
+    // Unique keyframe name per column to avoid CSS conflicts
+    const animName = `col-scroll-${direction}-${scrollDistance}`;
+    const fromY = direction === 'up' ? '0px' : `-${scrollDistance}px`;
+    const toY = direction === 'up' ? `-${scrollDistance}px` : '0px';
 
     return (
         <div className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`}>
-            {/* Pointer events auto on children only */}
-            <motion.div
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes ${animName} {
+                    from { transform: translateY(${fromY}); }
+                    to   { transform: translateY(${toY}); }
+                }
+            `}} />
+            <div
                 className="flex flex-col gap-6 py-6 pointer-events-auto will-change-transform"
-                animate={{
-                    y: direction === 'up' ? [0, -scrollDistance] : [-scrollDistance, 0]
-                }}
-                transition={{
-                    duration: items.length * 5, // constant speed
-                    repeat: Infinity,
-                    ease: "linear"
-                }}
+                style={{ animation: `${animName} ${duration}s linear infinite` }}
             >
                 {loopItems.map((item: any, i: number) => (
                     <DiamondItem key={`${item.id}-${i}`} data={item} />
                 ))}
-            </motion.div>
+            </div>
         </div>
     );
 };
