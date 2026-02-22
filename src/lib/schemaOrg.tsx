@@ -64,12 +64,14 @@ export function generateOrganizationSchema() {
     description: SITE_CONFIG.slogan,
     url: SITE_CONFIG.siteUrl,
     logo: `${SITE_CONFIG.siteUrl}/logo.png`,
-    contactPoint: {
-      '@type': 'ContactPoint',
-      telephone: `+${SITE_CONFIG.whatsapp}`,
-      contactType: 'customer service',
-      availableLanguage: ['Arabic', 'Turkish'],
-    },
+    ...(SITE_CONFIG.whatsapp ? {
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: `+${SITE_CONFIG.whatsapp}`,
+        contactType: 'customer service',
+        availableLanguage: ['Arabic', 'Turkish'],
+      },
+    } : {}),
     sameAs: [
       // أضف روابط السوشيال ميديا هنا إن وجدت
     ],

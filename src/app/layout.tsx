@@ -119,12 +119,23 @@ export default function RootLayout({
         <meta name="googlebot" content="index, follow" />
         <meta name="description-scrape" content="unauthorized" />
 
+        {/* PWA theme color */}
+        <meta name="theme-color" content="#10b981" />
+
+        {/* Preconnect to external services for faster loading */}
+        <link rel="preconnect" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
+        <link rel="dns-prefetch" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
+        <link rel="preconnect" href="https://api.aladhan.com" />
+        <link rel="dns-prefetch" href="https://api.aladhan.com" />
+
         {/* Google Analytics */}
         {GA_ID && <GoogleAnalytics />}
-
-        <GoogleAnalytics />
       </head>
       <body className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
+        {/* Skip to main content for keyboard/screen reader users */}
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-600 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
+          تخطي إلى المحتوى الرئيسي
+        </a>
         <ThemeProviderWrapper>
           <div className="flex flex-col min-h-screen relative">
             {/* New Animated & Interactive Background */}
@@ -148,7 +159,9 @@ export default function RootLayout({
             <div className="relative z-10">
               <UrgencyBanner />
               <Navbar />
-              {children}
+              <main id="main-content">
+                {children}
+              </main>
               <Footer />
             </div>
             <ClientComponents />

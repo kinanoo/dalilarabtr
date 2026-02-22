@@ -80,8 +80,8 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                                 ))}
                             </div>
 
-                            {/* List 2 (Replica) */}
-                            <div className="flex items-center gap-4 pr-4 shrink-0">
+                            {/* List 2 (Replica for seamless loop — hidden from screen readers) */}
+                            <div className="flex items-center gap-4 pr-4 shrink-0" aria-hidden="true">
                                 {baseList.map((update, index) => (
                                     <UpdateCard key={`l2-${update.id}-${index}`} update={update} onClick={(e) => { }} />
                                 ))}

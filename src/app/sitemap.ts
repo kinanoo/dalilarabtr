@@ -8,9 +8,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab1.netlify.app').replace(/\/$/, '');
 
   // الصفحات الثابتة الرئيسية
+  const SITE_LAST_UPDATED = new Date('2026-01-01');
   const staticPages: MetadataRoute.Sitemap = NAVIGATION.map((item) => ({
     url: `${baseUrl}${item.href}`,
-    lastModified: new Date(),
+    lastModified: SITE_LAST_UPDATED,
     changeFrequency: 'weekly' as const,
     priority: item.href === '/directory' ? 1.0 : 0.8, // Boost Directory Priority
   }));
