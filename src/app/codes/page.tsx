@@ -1,13 +1,13 @@
 'use client';
-import { Metadata } from 'next';
 import ToolSchema from '@/components/ToolSchema';
 
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { useAdminCodes } from '@/lib/useAdminData';
 import { useState } from 'react';
-import { ShieldAlert, AlertTriangle, Info, CheckCircle, Loader2 } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Info, CheckCircle, Loader2, ChevronLeft } from 'lucide-react';
 import ShareMenu from '@/components/ShareMenu';
+import Link from 'next/link';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
@@ -103,9 +103,10 @@ export default function CodesPage() {
         ) : filteredCodes.length > 0 ? (
           <div className="space-y-3">
             {filteredCodes.map((item) => (
-              <div
+              <Link
                 key={item.id}
-                className={`rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition ${getSeverityStyles(item.severity)}`}
+                href={`/codes/${encodeURIComponent(item.code)}`}
+                className={`block rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all ${getSeverityStyles(item.severity)}`}
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">
@@ -121,15 +122,18 @@ export default function CodesPage() {
                           </div>
                           <h3 className="font-bold text-sm sm:text-base mt-1 truncate">{item.title}</h3>
                         </div>
-                        <span className="text-xs font-bold px-2 py-1 rounded-full bg-white/60 dark:bg-white/10 shrink-0">
-                          {getSeverityLabel(item.severity)}
-                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs font-bold px-2 py-1 rounded-full bg-white/60 dark:bg-white/10">
+                            {getSeverityLabel(item.severity)}
+                          </span>
+                          <ChevronLeft size={16} className="opacity-40" />
+                        </div>
                       </div>
                       <p className="text-xs sm:text-sm mt-2 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (
