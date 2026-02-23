@@ -3,7 +3,7 @@
 -- تشغيل هذا الكود مرة واحدة في Supabase SQL Editor
 -- ==============================================
 
--- 1. إنشاء جدول أحداث التحليلات
+-- 1. إنشاء جدول أحداث التحليلات (أو إضافة الأعمدة الناقصة إن كان موجوداً)
 CREATE TABLE IF NOT EXISTS public.analytics_events (
     id               UUID         DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at       TIMESTAMPTZ  DEFAULT NOW() NOT NULL,
@@ -14,6 +14,13 @@ CREATE TABLE IF NOT EXISTS public.analytics_events (
     duration_seconds INTEGER,                        -- لأحداث session_end فقط
     meta             JSONB        DEFAULT '{}'::jsonb
 );
+
+-- إضافة الأعمدة الناقصة إن كان الجدول موجوداً من قبل (آمن تماماً)
+ALTER TABLE public.analytics_events
+  ADD COLUMN IF NOT EXISTS duration_seconds INTEGER,
+  ADD COLUMN IF NOT EXISTS session_id       TEXT,
+  ADD COLUMN IF NOT EXISTS visitor_id       TEXT,
+  ADD COLUMN IF NOT EXISTS meta             JSONB DEFAULT '{}'::jsonb;
 
 -- فهارس للأداء
 CREATE INDEX IF NOT EXISTS idx_analytics_events_created_at ON public.analytics_events (created_at DESC);
