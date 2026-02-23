@@ -129,12 +129,10 @@ export async function addReview(reviewData: AddReviewData): Promise<{ data: Serv
             .insert([
                 {
                     service_id: reviewData.service_id,
-                    service_name: reviewData.service_name,
-                    client_name: reviewData.reviewer_name, // Map to DB column
-                    // reviewer_email: reviewData.reviewer_email, // Column missing in DB schema
+                    client_name: reviewData.reviewer_name,
                     rating: reviewData.rating,
                     comment: reviewData.comment,
-                    is_approved: true, // Auto-approve
+                    is_approved: true,
                 },
             ])
             .select()
