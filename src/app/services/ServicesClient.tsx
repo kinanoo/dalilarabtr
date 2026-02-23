@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
+import AddServiceBanner from '@/components/services/AddServiceBanner';
 
 export default function ServicesClient() {
   // --- State ---
@@ -202,6 +203,9 @@ export default function ServicesClient() {
           </div>
         </div>
       </section>
+
+      {/* CTA banner: visible only to logged-in users */}
+      <AddServiceBanner />
 
       {/* Debug Error Message */}
       {errorMsg && (
