@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import Link from 'next/link';
-import { PlusCircle, Briefcase, ArrowLeft, Sparkles } from 'lucide-react';
+import { UserPlus, Briefcase, MessageSquare, Star, ArrowLeft } from 'lucide-react';
 
 export default function AddServiceBanner() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isGuest, setIsGuest] = useState(false);
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
@@ -15,51 +15,77 @@ export default function AddServiceBanner() {
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         );
         supabase.auth.getUser().then(({ data }) => {
-            setIsLoggedIn(!!data.user);
+            setIsGuest(!data.user);
             setReady(true);
         });
     }, []);
 
-    // Only render for logged-in users — invisible to guests
-    if (!ready || !isLoggedIn) return null;
+    // Only show to guests — hidden for logged-in members
+    if (!ready || !isGuest) return null;
 
     return (
         <div className="container mx-auto px-4 max-w-6xl mt-6 animate-in fade-in slide-in-from-top-2 duration-500">
-            <div className="relative overflow-hidden bg-gradient-to-l from-emerald-600 to-teal-700 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-emerald-900/20">
-                {/* Background decoration */}
+            <div className="relative overflow-hidden bg-gradient-to-l from-slate-900 to-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
+                {/* Background glow */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
-                    <div className="absolute -bottom-10 right-20 w-32 h-32 bg-teal-400/10 rounded-full blur-xl" />
+                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
+                    <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
                 </div>
 
-                {/* Text */}
-                <div className="flex items-center gap-4 text-white relative z-10">
-                    <div className="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center shrink-0 border border-white/20">
-                        <Briefcase size={22} />
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2 mb-0.5">
-                            <Sparkles size={14} className="text-emerald-200" />
-                            <span className="text-emerald-200 text-xs font-bold uppercase tracking-wide">مجاناً للأعضاء</span>
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10">
+                    {/* Left: Text */}
+                    <div className="flex-1 text-center md:text-right">
+                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">
+                            للأعضاء فقط
+                        </p>
+                        <h3 className="text-white text-xl sm:text-2xl font-black leading-snug mb-3">
+                            سجّل كعضو وافتح مزايا حصرية
+                        </h3>
+                        <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
+                            انضم لمجتمع دليل العرب وتمتع بمزايا لا تتوفر للزوار العاديين.
+                        </p>
+
+                        {/* Benefits */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                            <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5">
+                                <div className="w-7 h-7 bg-emerald-900/50 rounded-lg flex items-center justify-center shrink-0">
+                                    <Briefcase size={14} className="text-emerald-400" />
+                                </div>
+                                <span className="text-slate-300 text-xs font-bold">أضف خدمتك مجاناً</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5">
+                                <div className="w-7 h-7 bg-blue-900/50 rounded-lg flex items-center justify-center shrink-0">
+                                    <MessageSquare size={14} className="text-blue-400" />
+                                </div>
+                                <span className="text-slate-300 text-xs font-bold">شارك وعلّق بهويتك</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5">
+                                <div className="w-7 h-7 bg-amber-900/50 rounded-lg flex items-center justify-center shrink-0">
+                                    <Star size={14} className="text-amber-400" />
+                                </div>
+                                <span className="text-slate-300 text-xs font-bold">قيّم الخدمات والمحتوى</span>
+                            </div>
                         </div>
-                        <p className="font-black text-lg sm:text-xl leading-tight">
-                            هل تقدم خدمة للعرب في تركيا؟
-                        </p>
-                        <p className="text-emerald-100/80 text-sm mt-0.5">
-                            أضف خدمتك وتواصل مع آلاف الباحثين عبر الدليل
-                        </p>
+                    </div>
+
+                    {/* Right: CTA buttons */}
+                    <div className="flex flex-col gap-3 shrink-0 w-full md:w-auto">
+                        <Link
+                            href="/join"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-900/30 text-sm"
+                        >
+                            <UserPlus size={18} />
+                            إنشاء حساب مجاناً
+                            <ArrowLeft size={15} />
+                        </Link>
+                        <Link
+                            href="/login"
+                            className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-8 py-3 rounded-xl flex items-center justify-center gap-2 transition-all text-sm border border-slate-600"
+                        >
+                            لديّ حساب — تسجيل الدخول
+                        </Link>
                     </div>
                 </div>
-
-                {/* CTA Button */}
-                <Link
-                    href="/dashboard/services/new"
-                    className="relative z-10 bg-white text-emerald-700 font-black px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-emerald-50 active:scale-95 transition-all shrink-0 shadow-lg text-sm"
-                >
-                    <PlusCircle size={18} />
-                    أضف خدمتك الآن
-                    <ArrowLeft size={15} />
-                </Link>
             </div>
         </div>
     );
