@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { voteContent } from '@/lib/api/comments';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 
 interface ContentHelpfulWidgetProps {
@@ -17,23 +18,35 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
     const [feedback, setFeedback] = useState('');
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [userKey, setUserKey] = useState<string>('anon');
 
-    // Check for previous vote
+    // Load user identity then check localStorage
+    // Key includes user ID so different users on the same device don't share vote state
     useEffect(() => {
-        const key = `vote_${entityType}_${entityId}`;
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            try {
-                const { type, expiry } = JSON.parse(saved);
-                if (expiry > Date.now()) {
-                    setVoted(type);
-                } else {
+        const init = async () => {
+            let uid = 'anon';
+            if (supabase) {
+                const { data } = await supabase.auth.getUser();
+                if (data.user?.id) uid = data.user.id;
+            }
+            setUserKey(uid);
+
+            const key = `vote_${uid}_${entityType}_${entityId}`;
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                try {
+                    const { type, expiry } = JSON.parse(saved);
+                    if (expiry > Date.now()) {
+                        setVoted(type);
+                    } else {
+                        localStorage.removeItem(key);
+                    }
+                } catch {
                     localStorage.removeItem(key);
                 }
-            } catch (e) {
-                localStorage.removeItem(key);
             }
-        }
+        };
+        init();
     }, [entityType, entityId]);
 
     const handleVote = async (type: 'up' | 'down') => {
@@ -55,13 +68,13 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
             toast.error('حدث خطأ في استلام تقييمك');
         } else {
             setVoted(type);
-            // Save to LocalStorage (7 Days)
+            // Save to LocalStorage (7 Days) — key includes user ID to isolate per user
             try {
-                localStorage.setItem(`vote_${entityType}_${entityId}`, JSON.stringify({
+                localStorage.setItem(`vote_${userKey}_${entityType}_${entityId}`, JSON.stringify({
                     type,
                     expiry: Date.now() + 604800000 // 7 days
                 }));
-            } catch (e) { /* ignore storage errors */ }
+            } catch { /* ignore storage errors */ }
 
             toast.success(type === 'up' ? 'شكراً لك! يسعدنا أنك استفدت.' : 'شكراً لملاحظتك، سنعمل على التحسين.');
         }
