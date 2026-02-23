@@ -20,6 +20,7 @@ import {
     Megaphone
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
@@ -231,7 +232,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                     {!collapsed && (
                         <Link href="/admin" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
                             <div className="w-10 h-10 rounded-xl bg-white/5 p-1.5 flex items-center justify-center border border-white/10 shadow-lg group-hover:border-emerald-500/30 transition-colors">
-                                <img src="/logo.png" alt="Dalil" className="w-full h-full object-contain" />
+                                <Image src="/logo.png" alt="Dalil" width={40} height={40} className="w-full h-full object-contain" />
                             </div>
                             <div className="overflow-hidden whitespace-nowrap">
                                 <h1 className="font-bold text-white text-lg tracking-tight group-hover:text-emerald-400 transition-colors">لوحة التحكم</h1>
@@ -242,7 +243,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
 
                     {collapsed && (
                         <Link href="/admin" className="w-10 h-10 rounded-xl bg-white/5 p-1.5 flex items-center justify-center border border-white/10 hover:border-emerald-500/30 transition-colors" title="الرئيسية">
-                            <img src="/logo.png" alt="Dalil" className="w-full h-full object-contain" />
+                            <Image src="/logo.png" alt="Dalil" width={40} height={40} className="w-full h-full object-contain" />
                         </Link>
                     )}
 

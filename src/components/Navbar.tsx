@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { SITE_CONFIG } from '@/lib/config';
 import { GUIDES_MENU, LATEST_UPDATES_VERSION, UPDATES_STORAGE_KEY, PRIMARY_NAV, TOOLS_MENU } from '@/lib/constants';
@@ -410,7 +411,7 @@ export default function Navbar() {
           <div className="flex items-center shrink-0">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="relative w-9 h-9 shrink-0">
-                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
+                <Image src="/logo.png" alt="Logo" width={36} height={36} className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
               </div>
               <div className="hidden sm:block">
                 <div className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
