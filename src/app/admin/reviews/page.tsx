@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, ExternalLink, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, ExternalLink, CheckCircle2, ArrowRight, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function AdminReviewsPage() {
 
-    // Default to feedback tab (more actionable)
     const [activeTab, setActiveTab] = useState<'reviews' | 'feedback'>('feedback');
     const [reviews, setReviews] = useState<any[]>([]);
     const [feedbackItems, setFeedbackItems] = useState<any[]>([]);
@@ -24,14 +23,12 @@ export default function AdminReviewsPage() {
         if (!supabase) return;
         setLoading(true);
 
-        // 1. Fetch service reviews with replies
         const { data: reviewsData } = await supabase
             .from('service_reviews')
             .select(`*, review_replies (*)`)
             .order('created_at', { ascending: false });
         if (reviewsData) setReviews(reviewsData);
 
-        // 2. Fetch negative feedback votes
         const { data: feedbackData } = await supabase
             .from('content_votes')
             .select('*')
@@ -39,7 +36,6 @@ export default function AdminReviewsPage() {
             .order('created_at', { ascending: false });
 
         if (feedbackData && feedbackData.length > 0) {
-            // Enrich each item with the actual entity title
             const articleIds = feedbackData.filter(f => f.entity_type === 'article').map(f => f.entity_id).filter(Boolean);
             const serviceIds = feedbackData.filter(f => f.entity_type === 'service').map(f => f.entity_id).filter(Boolean);
             const updateIds  = feedbackData.filter(f => f.entity_type === 'update').map(f => f.entity_id).filter(Boolean);
@@ -63,12 +59,18 @@ export default function AdminReviewsPage() {
         setLoading(false);
     };
 
-    // --- Reviews ---
+    // ── Reviews ──────────────────────────────────────────────
     const handleDeleteReview = async (id: string) => {
-        if (!supabase || !confirm('حذف هذا التقييم؟')) return;
+        if (!supabase) return;
+        // Optimistic: remove immediately
+        setReviews(prev => prev.filter(r => r.id !== id));
         const { error } = await supabase.from('service_reviews').delete().eq('id', id);
-        if (!error) { toast.success('تم الحذف'); fetchData(); }
-        else toast.error(error.message);
+        if (!error) {
+            toast.success('تم حذف التقييم');
+        } else {
+            toast.error('فشل الحذف: ' + error.message);
+            fetchData(); // revert
+        }
     };
 
     const handleReply = async (reviewId: string) => {
@@ -76,18 +78,37 @@ export default function AdminReviewsPage() {
         const { error } = await supabase.from('review_replies').insert([{
             review_id: reviewId, author_name: 'الإدارة', content: replyContent, is_official: true
         }]);
-        if (!error) { toast.success('تم الرد'); setReplyContent(''); setReplyingTo(null); fetchData(); }
+        if (!error) { toast.success('تم إرسال الرد'); setReplyContent(''); setReplyingTo(null); fetchData(); }
+        else toast.error('فشل الإرسال: ' + error.message);
     };
 
-    // --- Feedback ---
+    // ── Feedback ─────────────────────────────────────────────
     const handleResolveFeedback = async (id: string) => {
-        if (!supabase || !confirm('هل تمت معالجة هذه الملاحظة؟ سيتم حذفها من القائمة.')) return;
+        if (!supabase) return;
+        // Optimistic: hide immediately — no confirm() needed
+        setFeedbackItems(prev => prev.filter(i => i.id !== id));
         const { error } = await supabase.from('content_votes').delete().eq('id', id);
-        if (!error) { toast.success('تم وضع علامة "تمت المعالجة"'); fetchData(); }
+        if (!error) {
+            toast.success('تمت المعالجة وحُذفت من القائمة');
+        } else {
+            toast.error('فشل الحذف: ' + error.message);
+            fetchData(); // revert on failure
+        }
     };
 
-    // Generate correct public URL for the complained content
-    function getEntityUrl(type: string, id: string): string {
+    // رابط صفحة التعديل في لوحة الإدارة (للمراجعة والإصلاح)
+    function getAdminEditUrl(type: string, id: string): string {
+        switch (type) {
+            case 'article': return `/admin/articles/${id}`;
+            case 'service': return `/admin/services`;
+            case 'update':  return `/admin/updates`;
+            case 'faq':     return `/admin/faqs`;
+            default:        return '/admin';
+        }
+    }
+
+    // رابط المعاينة العامة (نافذة جديدة)
+    function getPublicUrl(type: string, id: string): string {
         switch (type) {
             case 'article': return `/article/${id}`;
             case 'service': return `/services/${id}`;
@@ -149,12 +170,12 @@ export default function AdminReviewsPage() {
                     {feedbackItems.length === 0 ? (
                         <div className="text-center py-20 text-slate-400">
                             <FileWarning size={48} className="mx-auto mb-4 opacity-30" />
-                            <p className="font-bold">لا توجد ملاحظات سلبية</p>
+                            <p className="font-bold">لا توجد ملاحظات سلبية — ممتاز!</p>
                         </div>
                     ) : (
                         feedbackItems.map((item) => (
                             <div key={item.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border-r-4 border-r-amber-500 border border-slate-200 dark:border-slate-800 overflow-hidden">
-                                {/* Header: entity info */}
+                                {/* Header */}
                                 <div className="px-5 py-4 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/30 flex items-center justify-between gap-3 flex-wrap">
                                     <div className="flex items-center gap-3 flex-wrap">
                                         <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5">
@@ -164,18 +185,16 @@ export default function AdminReviewsPage() {
                                         <span className="text-xs text-slate-400 font-mono">
                                             {entityTypeLabel(item.entity_type)}
                                         </span>
-                                        {/* Content title + link */}
+                                        {/* عنوان المحتوى — معاينة عامة في نافذة جديدة */}
                                         {item.entity_id && (
                                             <Link
-                                                href={getEntityUrl(item.entity_type, item.entity_id)}
+                                                href={getPublicUrl(item.entity_type, item.entity_id)}
                                                 target="_blank"
                                                 className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors max-w-xs truncate"
-                                                title="فتح المحتوى في نافذة جديدة"
+                                                title="معاينة المحتوى كما يراه الزائر"
                                             >
-                                                {item.entity_title
-                                                    ? <><ExternalLink size={13} className="shrink-0" />{item.entity_title}</>
-                                                    : <><ExternalLink size={13} className="shrink-0" /><span className="opacity-50 font-normal">فتح المحتوى</span></>
-                                                }
+                                                <Eye size={13} className="shrink-0" />
+                                                {item.entity_title || 'معاينة المحتوى'}
                                             </Link>
                                         )}
                                     </div>
@@ -184,7 +203,7 @@ export default function AdminReviewsPage() {
                                     </span>
                                 </div>
 
-                                {/* Body: feedback text */}
+                                {/* Body */}
                                 <div className="px-5 py-4">
                                     {(item.feedback || item.reason) ? (
                                         <p className="text-slate-800 dark:text-slate-100 leading-relaxed">
@@ -196,19 +215,21 @@ export default function AdminReviewsPage() {
                                 </div>
 
                                 {/* Footer: actions */}
-                                <div className="px-5 pb-4 flex items-center justify-between gap-3">
+                                <div className="px-5 pb-4 flex items-center justify-between gap-3 flex-wrap">
+                                    {/* زر التعديل في لوحة الإدارة */}
                                     <Link
-                                        href={getEntityUrl(item.entity_type, item.entity_id)}
-                                        target="_blank"
-                                        className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-amber-600 transition-colors"
+                                        href={getAdminEditUrl(item.entity_type, item.entity_id)}
+                                        className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors"
+                                        title="فتح المحتوى في محرر الإدارة"
                                     >
                                         <ArrowRight size={16} className="rotate-180" />
-                                        الانتقال للمحتوى لمراجعته
+                                        تعديل في لوحة الإدارة
                                     </Link>
+
+                                    {/* زر إنهاء المعالجة — يحذف فوراً بدون confirm */}
                                     <button
                                         onClick={() => handleResolveFeedback(item.id)}
-                                        className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-4 py-2 rounded-xl transition-colors"
-                                        title="تمت المعالجة — احذف من القائمة"
+                                        className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-4 py-2 rounded-xl transition-colors border border-emerald-200 dark:border-emerald-800"
                                     >
                                         <CheckCircle2 size={18} />
                                         تمت المعالجة
@@ -244,7 +265,11 @@ export default function AdminReviewsPage() {
                                             <span>{new Date(review.created_at).toLocaleDateString('ar-EG')}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => handleDeleteReview(review.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg" title="حذف التقييم">
+                                    <button
+                                        onClick={() => handleDeleteReview(review.id)}
+                                        className="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"
+                                        title="حذف التقييم"
+                                    >
                                         <Trash2 size={20} />
                                     </button>
                                 </div>
@@ -271,7 +296,7 @@ export default function AdminReviewsPage() {
                                                 autoFocus
                                             />
                                             <button onClick={() => handleReply(review.id)} className="bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-700">إرسال</button>
-                                            <button onClick={() => setReplyingTo(null)} className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-xl">إلغاء</button>
+                                            <button onClick={() => setReplyingTo(null)} className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">إلغاء</button>
                                         </div>
                                     ) : (
                                         <button onClick={() => setReplyingTo(review.id)} className="text-emerald-600 font-bold text-sm flex items-center gap-2 hover:underline">
