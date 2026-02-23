@@ -84,14 +84,18 @@ export default function AdminReviewsPage() {
 
     // ── Feedback ─────────────────────────────────────────────
     const handleResolveFeedback = async (id: string) => {
-        if (!supabase) return;
-        // Optimistic: hide immediately — no confirm() needed
+        // Optimistic: hide immediately
         setFeedbackItems(prev => prev.filter(i => i.id !== id));
-        const { error } = await supabase.from('content_votes').delete().eq('id', id);
-        if (!error) {
+        // Use server-side API route — the browser supabase client (anon key) loses
+        // the session because it reads from localStorage, but the session is stored
+        // in HTTP-only cookies. The API route uses createServerClient which reads
+        // cookies correctly, so is_admin() returns true and RLS allows the delete.
+        const res = await fetch(`/api/admin/feedback?id=${id}`, { method: 'DELETE' });
+        if (res.ok) {
             toast.success('تمت المعالجة وحُذفت من القائمة');
         } else {
-            toast.error('فشل الحذف: ' + error.message);
+            const data = await res.json().catch(() => ({}));
+            toast.error('فشل الحذف: ' + (data.error || 'خطأ غير معروف'));
             fetchData(); // revert on failure
         }
     };
