@@ -1,7 +1,18 @@
 'use client';
 
 import { Plus, Trash2, HelpCircle, GripVertical } from 'lucide-react';
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
+
+// Converts text to a URL-safe slug (for auto-ID generation)
+function toSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .replace(/[\u0600-\u06FF\s]+/g, '-') // Arabic chars + spaces → dash
+        .replace(/[^a-z0-9-]+/g, '')          // remove anything else
+        .replace(/-+/g, '-')                   // collapse multiple dashes
+        .replace(/^-+|-+$/g, '')               // trim edge dashes
+        .slice(0, 60);
+}
 
 const SUBCATEGORIES: Record<string, { value: string; label: string }[]> = {
     syrian: [
@@ -68,6 +79,15 @@ export function ScenarioEditor({ form, setForm }: ScenarioEditorProps) {
     const handleChange = (field: string, value: any) => {
         setForm({ ...form, [field]: value });
     };
+
+    // Auto-generate slug ID from title when creating a new scenario (id is still empty)
+    useEffect(() => {
+        if (!form.id && form.title) {
+            const slug = toSlug(form.title);
+            if (slug) setForm({ ...form, id: slug });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form.title]);
 
     // Auto-reset subcategory when category changes
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

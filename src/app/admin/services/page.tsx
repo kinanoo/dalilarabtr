@@ -50,6 +50,7 @@ export default function AdminServicesPage() {
     const [selectedItem, setSelectedItem] = useState<{ id: string; data?: any } | null>(null);
     const [form, setForm] = useState<any>({});
     const [saving, setSaving] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     // Auto-open editor if id is passed in URL
     useEffect(() => {
@@ -122,9 +123,7 @@ export default function AdminServicesPage() {
 
             toast.success('✅ تم حفظ الخدمة بنجاح');
             setSelectedItem(null);
-            // We need to trigger refresh on DataTable. Simple way: reload page or use a refresh key if DataTable accepted it.
-            // For now, reloading is safest to ensure consistency.
-            window.location.reload();
+            setRefreshKey(k => k + 1);
 
         } catch (err: any) {
             console.error("Supabase Error:", JSON.stringify(err, null, 2));
@@ -147,7 +146,7 @@ export default function AdminServicesPage() {
             if (error) throw error;
             toast.success('🗑️ تم الحذف');
             setSelectedItem(null);
-            window.location.reload();
+            setRefreshKey(k => k + 1);
         } catch (err: any) {
             toast.error('❌ خطأ: ' + err.message);
         } finally {
@@ -197,7 +196,8 @@ export default function AdminServicesPage() {
                     tableName="service_providers"
                     title="قائمة الخدمات"
                     type="service"
-                    customFilter={getCustomFilter()} // Inject Filter
+                    customFilter={getCustomFilter()}
+                    refreshKey={refreshKey}
                     columns={[
                         { key: 'name', label: 'الاسم' },
                         { key: 'profession', label: 'التخصص' },

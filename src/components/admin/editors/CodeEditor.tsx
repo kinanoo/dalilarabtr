@@ -50,8 +50,8 @@ export const CodeEditor = ({ form, setForm }: any) => (
         <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الحل المقترح</label>
             <textarea
-                value={form.solution || ''}
-                onChange={(e: any) => setForm({ ...form, solution: e.target.value })}
+                value={form.effect || ''}
+                onChange={(e: any) => setForm({ ...form, effect: e.target.value })}
                 className="w-full p-4 h-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"
                 placeholder="كيفية الحل..."
             />

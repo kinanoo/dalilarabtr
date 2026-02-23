@@ -23,6 +23,7 @@ interface DataTableProps {
     idField?: string; // Default: 'id'
     searchFields?: string[]; // Columns to search in
     customFilter?: (query: any) => any; // New: Allow external filtering
+    refreshKey?: number; // Increment to trigger a data refresh
 }
 
 export function DataTable({
@@ -36,7 +37,8 @@ export function DataTable({
     type,
     idField = 'id',
     searchFields,
-    customFilter // Destructure new prop
+    customFilter,
+    refreshKey
 }: DataTableProps) {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ export function DataTable({
 
     useEffect(() => {
         fetchData();
-    }, [page, tableName, customFilter]); // Add customFilter to dependency
+    }, [page, tableName, customFilter, refreshKey]); // refreshKey triggers manual refresh
 
     // Debounced search effect
     useEffect(() => {
