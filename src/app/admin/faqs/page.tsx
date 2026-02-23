@@ -30,10 +30,11 @@ export default function AdminFaqsPage() {
                 <DataTable
                     tableName="faqs"
                     title="قائمة الأسئلة"
+                    toggleField="active"
                     columns={[
                         { key: 'question', label: 'السؤال' },
                         { key: 'category', label: 'التصنيف' },
-                        { key: 'active', label: 'الحالة', render: (v) => v ? '✅ نشط' : '❌ غير نشط' }
+                        { key: 'active', label: 'الحالة', render: (v) => v ? '✅ نشط' : '❌ معطّل' }
                     ]}
                     searchFields={['question', 'answer']}
                     onEdit={(item) => router.push(`/admin/faqs/${item.id}`)}

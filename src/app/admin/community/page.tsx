@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight } from 'lucide-react';
+import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export default function AdminCommunityPage() {
     const [comments, setComments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
+    const [converting, setConverting] = useState<string | null>(null);
 
     useEffect(() => {
         fetchComments();
@@ -46,16 +45,27 @@ export default function AdminCommunityPage() {
         }
     };
 
-    const convertToUpdate = (comment: any) => {
-        // Redirect to updates page with pre-filled data (concept)
-        // Since we don't have a "Create Update" page with query params yet, we'll just copy to clipboard or Mock it.
-        // Ideally: router.push(`/admin/updates?new=true&title=تصحيح من ${comment.author_name}&content=${comment.content}`);
-        // For now, let's copy to clipboard and notify.
-        navigator.clipboard.writeText(`تصحيح من ${comment.author_name}:\n${comment.content}`);
-        toast.message('تم نسخ المحتوى!', {
-            description: 'اذهب لصفحة "التحديثات" وأضف خبراً جديداً بالمعلومات المنسوخة.'
-        });
-        router.push('/admin/updates');
+    const convertToUpdate = async (comment: any) => {
+        if (!supabase) return;
+        setConverting(comment.id);
+        try {
+            const { error } = await supabase.from('updates').insert({
+                title: `تصحيح: ${comment.author_name}`,
+                content: comment.content,
+                type: 'news',
+                date: new Date().toISOString().split('T')[0],
+                active: true,
+            });
+            if (error) throw error;
+            // Auto-approve the source comment
+            await supabase.from('comments').update({ status: 'approved' }).eq('id', comment.id);
+            toast.success('✅ تم إنشاء التحديث ونشره مباشرة');
+            fetchComments();
+        } catch (err: any) {
+            toast.error('خطأ: ' + err.message);
+        } finally {
+            setConverting(null);
+        }
     };
 
     if (loading) return <div className="p-8">Loading...</div>;
@@ -112,10 +122,13 @@ export default function AdminCommunityPage() {
                             {c.is_correction && (
                                 <button
                                     onClick={() => convertToUpdate(c)}
-                                    className="flex items-center justify-center gap-2 text-xs font-bold bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-sm active:scale-95"
+                                    disabled={converting === c.id}
+                                    className="flex items-center justify-center gap-2 text-xs font-bold bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-sm active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    <ArrowRight size={14} />
-                                    تحويل لخبر عاجل
+                                    {converting === c.id
+                                        ? <><Loader2 size={14} className="animate-spin" /> جاري النشر...</>
+                                        : <><ArrowRight size={14} /> تحويل لخبر عاجل</>
+                                    }
                                 </button>
                             )}
                             <Link

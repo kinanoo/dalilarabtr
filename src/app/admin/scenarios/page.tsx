@@ -31,10 +31,11 @@ export default function AdminScenariosPage() {
                 <DataTable
                     tableName="consultant_scenarios"
                     title="كافة السيناريوهات"
+                    toggleField="is_active"
                     columns={[
                         { key: 'title', label: 'عنوان السيناريو' },
                         { key: 'category', label: 'التصنيف' },
-                        { key: 'is_active', label: 'مفعل', render: (v) => v ? '✅' : '❌' }
+                        { key: 'is_active', label: 'الحالة', render: (v) => v ? '✅ مفعّل' : '❌ معطّل' }
                     ]}
                     searchFields={['title', 'description']}
                     onEdit={(item) => router.push(`/admin/scenarios/${item.id}`)}

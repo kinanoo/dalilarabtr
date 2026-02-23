@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus } from 'lucide-react';
+import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Column {
@@ -24,6 +24,7 @@ interface DataTableProps {
     searchFields?: string[]; // Columns to search in
     customFilter?: (query: any) => any; // New: Allow external filtering
     refreshKey?: number; // Increment to trigger a data refresh
+    toggleField?: string; // Boolean field to toggle inline (e.g. 'is_active', 'active')
 }
 
 export function DataTable({
@@ -38,7 +39,8 @@ export function DataTable({
     idField = 'id',
     searchFields,
     customFilter,
-    refreshKey
+    refreshKey,
+    toggleField
 }: DataTableProps) {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -113,9 +115,24 @@ export function DataTable({
             const { error } = await supabase.from(tableName).delete().eq(idField, id);
             if (error) throw error;
             toast.success('تم الحذف بنجاح');
-            fetchData(); // Refresh
+            fetchData();
         } catch (err: any) {
             toast.error('من المحتمل أن الجدول يستخدم عمود معرف مختلف عن المتوقع.\n' + err.message);
+        }
+    }
+
+    async function handleToggle(id: string, currentValue: boolean) {
+        if (!supabase || !toggleField) return;
+        try {
+            const { error } = await supabase
+                .from(tableName)
+                .update({ [toggleField]: !currentValue })
+                .eq(idField, id);
+            if (error) throw error;
+            toast.success(currentValue ? 'تم التعطيل' : 'تم التفعيل');
+            fetchData();
+        } catch (err: any) {
+            toast.error('خطأ: ' + err.message);
         }
     }
 
@@ -211,6 +228,19 @@ export function DataTable({
 
                             {/* Actions */}
                             <div className="flex items-center gap-2 pl-2">
+                                {toggleField && (
+                                    <button
+                                        onClick={() => handleToggle(row[idField], !!row[toggleField])}
+                                        className={`p-2 rounded-xl transition-all ${
+                                            row[toggleField]
+                                                ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                        }`}
+                                        title={row[toggleField] ? 'تعطيل' : 'تفعيل'}
+                                    >
+                                        {row[toggleField] ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => onEdit(row)}
                                     className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"

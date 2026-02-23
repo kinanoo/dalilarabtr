@@ -22,6 +22,8 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface SidebarProps {
     collapsed?: boolean;
@@ -35,6 +37,28 @@ interface SidebarProps {
 
 export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentView, setView, isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
+    const [badges, setBadges] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        const fetchBadges = async () => {
+            if (!supabase) return;
+            const [services, articles, comments] = await Promise.all([
+                supabase.from('service_providers').select('id', { count: 'exact' }).eq('status', 'pending'),
+                supabase.from('articles').select('id', { count: 'exact' }).eq('status', 'pending'),
+                supabase.from('comments').select('id', { count: 'exact' }).eq('status', 'pending'),
+            ]);
+            const requestsCount = (services.count || 0) + (articles.count || 0);
+            const commentsCount = comments.count || 0;
+            setBadges({
+                '/admin/requests': requestsCount,
+                '/admin/community': commentsCount,
+            });
+        };
+        fetchBadges();
+        // Refresh every 2 minutes
+        const interval = setInterval(fetchBadges, 120_000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Define Menu Groups
     interface MenuItem {
@@ -157,13 +181,18 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                                                         `}
                                                     >
                                                         <div className={`
-                                                            w-10 h-10 rounded-xl flex items-center justify-center transition-colors
+                                                            w-10 h-10 rounded-xl flex items-center justify-center transition-colors relative shrink-0
                                                             ${isActive
                                                                 ? 'bg-white/20 text-white'
                                                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400'
                                                             }
                                                         `}>
                                                             <Icon size={22} />
+                                                            {badges[item.href] > 0 && (
+                                                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                                                                    {badges[item.href] > 99 ? '99+' : badges[item.href]}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <div className="flex-1 font-bold text-lg">{item.label}</div>
                                                         {!isActive && <ChevronRight size={18} className="text-slate-300" />}
@@ -272,13 +301,26 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                                                 ${collapsed ? 'justify-center w-full px-0' : 'w-full'}
                                             `}
                                         >
-                                            <Icon size={collapsed ? 24 : 18} className={`${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white transition-colors'}`} />
+                                            <span className="relative">
+                                                <Icon size={collapsed ? 24 : 18} className={`${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white transition-colors'}`} />
+                                                {badges[item.href] > 0 && (
+                                                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                                                        {badges[item.href] > 99 ? '99+' : badges[item.href]}
+                                                    </span>
+                                                )}
+                                            </span>
 
                                             {!collapsed && (
-                                                <span className="truncate">{item.label}</span>
+                                                <span className="truncate flex-1">{item.label}</span>
                                             )}
 
-                                            {isActive && !collapsed && (
+                                            {!collapsed && badges[item.href] > 0 && !isActive && (
+                                                <span className="mr-auto min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                    {badges[item.href] > 99 ? '99+' : badges[item.href]}
+                                                </span>
+                                            )}
+
+                                            {isActive && !collapsed && badges[item.href] === 0 && (
                                                 <div className="mr-auto w-1.5 h-1.5 rounded-full bg-white/50" />
                                             )}
                                         </Link>
