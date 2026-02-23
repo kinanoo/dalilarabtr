@@ -51,7 +51,8 @@ export default function DashboardPage() {
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        // Use server-side signout to properly clear HTTP-only session cookies
+        await fetch('/api/auth/signout', { method: 'POST' });
         router.push('/login');
     };
 
