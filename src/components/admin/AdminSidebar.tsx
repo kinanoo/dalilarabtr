@@ -55,8 +55,8 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
             });
         };
         fetchBadges();
-        // Refresh every 2 minutes
-        const interval = setInterval(fetchBadges, 120_000);
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchBadges, 30_000);
         return () => clearInterval(interval);
     }, []);
 

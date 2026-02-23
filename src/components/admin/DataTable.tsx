@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -50,20 +50,31 @@ export function DataTable({
 
     const PAGE_SIZE = 10;
 
+    // Reset to page 0 when customFilter changes (e.g., switching filter modes in services page)
+    const prevCustomFilter = useRef(customFilter);
     useEffect(() => {
-        fetchData();
+        if (customFilter !== prevCustomFilter.current) {
+            prevCustomFilter.current = customFilter;
+            setPage(0);
+        }
+    }, [customFilter]);
+
+    useEffect(() => {
+        fetchData(search);
     }, [page, tableName, customFilter, refreshKey]); // refreshKey triggers manual refresh
 
-    // Debounced search effect
+    // Debounced search — capture current search value to avoid stale closure
     useEffect(() => {
+        const currentSearch = search;
         const timer = setTimeout(() => {
-            setPage(0); // Reset to page 0 on new search
-            fetchData();
+            setPage(0);
+            fetchData(currentSearch);
         }, 500);
         return () => clearTimeout(timer);
     }, [search]);
 
-    async function fetchData() {
+    async function fetchData(searchTerm?: string) {
+        const term = searchTerm !== undefined ? searchTerm : search;
         if (!supabase) return;
         setLoading(true);
 
@@ -77,15 +88,15 @@ export function DataTable({
                 query = customFilter(query);
             }
 
-            if (search) {
+            if (term) {
                 if (searchFields && searchFields.length > 0) {
                     // Use OR syntax for multiple fields
-                    const orQuery = searchFields.map(field => `${field}.ilike.%${search}%`).join(',');
+                    const orQuery = searchFields.map(field => `${field}.ilike.%${term}%`).join(',');
                     query = query.or(orQuery);
                 } else {
                     // Fallback legacy logic
                     const searchCol = tableName === 'faqs' ? 'question' : (tableName === 'service_providers' ? 'name' : 'title');
-                    query = query.ilike(searchCol, `%${search}%`);
+                    query = query.ilike(searchCol, `%${term}%`);
                 }
             }
 

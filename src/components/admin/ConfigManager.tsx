@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Settings, Menu, Layers, Save, Loader2, RefreshCw, Trash2, Edit, Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import DataMigration from './DataMigration';
 
 // === Types ===
@@ -284,7 +285,8 @@ function GeneralSettingsForm() {
         setLoading(true);
         // Ensure ID 1 exists
         const { error } = await supabase.from('site_settings').upsert({ id: 1, ...settings });
-        if (!error) alert('تم الحفظ بنجاح');
+        if (!error) toast.success('تم الحفظ بنجاح');
+        else toast.error('فشل الحفظ: ' + error.message);
         setLoading(false);
     }
 

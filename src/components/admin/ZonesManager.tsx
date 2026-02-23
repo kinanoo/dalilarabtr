@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { MapPin, Plus, Save, Loader2, Trash2, Search, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Types
 type DBZone = {
@@ -62,11 +63,11 @@ export default function ZonesManager() {
             ]);
 
         if (!error) {
-            alert('تم إضافة المنطقة بنجاح! 🚫');
+            toast.success('تم إضافة المنطقة بنجاح');
             fetchZones();
             setFormData(prev => ({ ...prev, district: '', neighborhood: '' })); // Keep city
         } else {
-            alert('حدث خطأ: ' + error.message);
+            toast.error('حدث خطأ: ' + error.message);
         }
     };
 

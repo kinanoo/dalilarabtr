@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Globe, FileText, Loader2, Trash2, Edit, Save, Plus, ExternalLink } from 'lucide-react';
+import { toast } from 'sonner';
 
 // === Types ===
 type DBSource = {
@@ -42,7 +43,7 @@ export function SourcesManager() {
         if (!supabase) return;
         const { error } = await supabase.from('official_sources').insert([formData]);
         if (!error) {
-            alert('تمت الإضافة!');
+            toast.success('تمت الإضافة بنجاح');
             setFormData({ name: '', url: '', description: '', is_official: true, active: true });
             fetchSources();
         }

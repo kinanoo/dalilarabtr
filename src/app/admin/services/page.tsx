@@ -54,13 +54,15 @@ export default function AdminServicesPage() {
 
     // Auto-open editor if id is passed in URL
     useEffect(() => {
+        let mounted = true;
         async function loadService() {
             if (editId && supabase) {
                 const { data } = await supabase.from('service_providers').select('*').eq('id', editId).single();
-                if (data) setSelectedItem({ id: data.id, data });
+                if (data && mounted) setSelectedItem({ id: data.id, data });
             }
         }
         loadService();
+        return () => { mounted = false; };
     }, [editId]);
 
     const getCustomFilter = () => {
@@ -102,9 +104,9 @@ export default function AdminServicesPage() {
             });
 
             // Validation
-            if (!clean.name) { alert("يرجى إدخال اسم الخدمة"); throw new Error("اسم الخدمة مطلوب"); }
-            if (!clean.city) { alert("يرجى إدخال المدينة"); throw new Error("المدينة مطلوبة"); }
-            if (!clean.description) { alert("يرجى إدخال الوصف"); throw new Error("الوصف مطلوب"); }
+            if (!clean.name) { toast.error("يرجى إدخال اسم الخدمة"); throw new Error("اسم الخدمة مطلوب"); }
+            if (!clean.city) { toast.error("يرجى إدخال المدينة"); throw new Error("المدينة مطلوبة"); }
+            if (!clean.description) { toast.error("يرجى إدخال الوصف"); throw new Error("الوصف مطلوب"); }
 
             // Auto-fill category if missing (DB constraint)
             if (!clean.category) {
@@ -127,7 +129,6 @@ export default function AdminServicesPage() {
 
         } catch (err: any) {
             console.error("Supabase Error:", JSON.stringify(err, null, 2));
-            alert('❌ حدث خطأ: ' + (err.message || 'خطأ غير معروف'));
             toast.error('❌ حدث خطأ: ' + (err.message || 'خطأ غير معروف'));
         } finally {
             setSaving(false);

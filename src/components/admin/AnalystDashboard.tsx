@@ -13,7 +13,7 @@ export function AnalystDashboard() {
     const [insights, setInsights] = useState<Insight[]>([]);
     const [loading, setLoading] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
-    const [logs, setLogs] = useState<string[]>([]);
+    const [logs, setLogs] = useState<{ message: string; time: string }[]>([]);
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
     // Auto-scroll to bottom of logs
@@ -30,12 +30,13 @@ export function AnalystDashboard() {
         if (!supabase) return;
         if (!silent) setLoading(true);
         // Only fetch unresolved insights
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('analyst_insights')
             .select('*')
             .eq('is_resolved', false)
             .order('created_at', { ascending: false });
 
+        if (error) console.error('fetchInsights error:', error.message);
         if (data) setInsights(data as Insight[]);
         if (!silent) setLoading(false);
     }
@@ -46,18 +47,20 @@ export function AnalystDashboard() {
         // Optimistic update
         setInsights(prev => prev.filter(i => i.id !== id));
 
-        // Update DB
-        await supabase.from('analyst_insights').update({ is_resolved: true }).eq('id', id);
+        // Update DB — log error but don't revert (optimistic is fine for UX)
+        const { error } = await supabase.from('analyst_insights').update({ is_resolved: true }).eq('id', id);
+        if (error) console.error('handleIgnore error:', error.message);
     }
 
     async function runAnalysis() {
         setAnalyzing(true);
-        setLogs([]); // Clear previous logs
+        setLogs([]); // Clear previous logs (each entry is { message, time })
         setInsights([]); // Clear old results to start fresh stream
 
-        // Callback to update logs live
+        // Callback to update logs live — capture timestamp at creation time
         const onLog = (msg: string) => {
-            setLogs(prev => [...prev, msg]);
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            setLogs(prev => [...prev, { message: msg, time }]);
         };
 
         // Callback for streaming insights live
@@ -65,12 +68,17 @@ export function AnalystDashboard() {
             setInsights(prev => [item, ...prev]);
         };
 
-        // Run analysis with streaming
-        await AnalystEngine.runFullAnalysis(onLog, onInsight);
-
-        // Final sync (silent) to get IDs or updates
-        await fetchInsights(true);
-        setAnalyzing(false);
+        try {
+            // Run analysis with streaming
+            await AnalystEngine.runFullAnalysis(onLog, onInsight);
+            // Final sync (silent) to get IDs or updates
+            await fetchInsights(true);
+        } catch (err: any) {
+            console.error('runAnalysis error:', err?.message || err);
+            onLog('❌ خطأ في التحليل: ' + (err?.message || 'خطأ غير معروف'));
+        } finally {
+            setAnalyzing(false);
+        }
     }
 
     function handleAction(insight: Insight) {
@@ -162,20 +170,21 @@ export function AnalystDashboard() {
                 <div className="bg-slate-950 font-mono text-sm p-4 rounded-xl border border-slate-800 shadow-inner h-96 overflow-y-auto custom-scrollbar flex flex-col-reverse" dir="ltr">
                     <div ref={messagesEndRef} />
                     {logs.slice().reverse().map((log, i) => {
+                        const msg = log.message;
                         let className = "text-slate-300";
-                        if (log.includes('⚠️')) className = "text-amber-400 border-l-2 border-amber-500/30 pl-2 bg-amber-500/5";
-                        else if (log.includes('❌')) className = "text-red-400 font-bold bg-red-500/10 p-1 rounded";
-                        else if (log.includes('✅')) className = "text-emerald-400 font-bold text-lg py-2 border-y border-emerald-500/20";
-                        else if (log.includes('💾')) className = "text-blue-400";
-                        else if (log.includes('♻️')) className = "text-slate-500 italic";
-                        else if (log.includes('1/7') || log.includes('2/7') || log.includes('7/7')) className = "text-white font-bold mt-2 pt-2 border-t border-slate-800";
+                        if (msg.includes('⚠️')) className = "text-amber-400 border-l-2 border-amber-500/30 pl-2 bg-amber-500/5";
+                        else if (msg.includes('❌')) className = "text-red-400 font-bold bg-red-500/10 p-1 rounded";
+                        else if (msg.includes('✅')) className = "text-emerald-400 font-bold text-lg py-2 border-y border-emerald-500/20";
+                        else if (msg.includes('💾')) className = "text-blue-400";
+                        else if (msg.includes('♻️')) className = "text-slate-500 italic";
+                        else if (msg.includes('1/7') || msg.includes('2/7') || msg.includes('7/7')) className = "text-white font-bold mt-2 pt-2 border-t border-slate-800";
 
                         return (
                             <div key={i} className={`mb-1 py-0.5 ${className}`}>
                                 <span className="opacity-30 text-xs mr-2 select-none font-sans">
-                                    {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                    {log.time}
                                 </span>
-                                {log}
+                                {msg}
                             </div>
                         );
                     })}

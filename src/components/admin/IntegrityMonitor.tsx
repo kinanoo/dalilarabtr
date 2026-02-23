@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, AlertOctagon, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -22,7 +23,7 @@ export default function IntegrityMonitor() {
             ] = await Promise.all([
                 supabase.from('service_providers').select('*', { count: 'exact', head: true }).or('phone.is.null,phone.eq.""'),
                 supabase.from('service_providers').select('*', { count: 'exact', head: true }).or('city.is.null,city.eq.""'),
-                supabase.from('restricted_zones').select('*', { count: 'exact', head: true }).or('notes.is.null,notes.eq.""')
+                supabase.from('zones').select('*', { count: 'exact', head: true }).or('notes.is.null,notes.eq.""')
             ]);
 
             const fallbackReport = {
@@ -30,14 +31,14 @@ export default function IntegrityMonitor() {
                 issues: [
                     { type: 'service_contact', severity: 'critical', label: 'خدمات بدون رقم هاتف', count: servicesNoPhone || 0, table: 'service_providers' },
                     { type: 'service_location', severity: 'high', label: 'خدمات بدون مدينة', count: servicesNoCity || 0, table: 'service_providers' },
-                    { type: 'zone_info', severity: 'medium', label: 'مناطق بدون ملاحظات', count: zonesCount || 0, table: 'restricted_zones' }
+                    { type: 'zone_info', severity: 'medium', label: 'مناطق بدون ملاحظات', count: zonesCount || 0, table: 'zones' }
                 ]
             };
             setReport(fallbackReport);
             setLastScan(new Date().toLocaleTimeString('ar-SA'));
         } catch (e) {
             console.error('Fallback scan failed', e);
-            alert('فشل الفحص تماماً. يرجى التحقق من اتصال الإنترنت.');
+            toast.error('فشل الفحص تماماً. يرجى التحقق من اتصال الإنترنت.');
         }
     };
 

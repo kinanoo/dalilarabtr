@@ -57,8 +57,9 @@ export default function AdminCommunityPage() {
                 active: true,
             });
             if (error) throw error;
-            // Auto-approve the source comment
-            await supabase.from('comments').update({ status: 'approved' }).eq('id', comment.id);
+            // Auto-approve the source comment (best-effort — non-critical if fails)
+            const { error: approveError } = await supabase.from('comments').update({ status: 'approved' }).eq('id', comment.id);
+            if (approveError) console.warn('Auto-approve comment failed:', approveError.message);
             toast.success('✅ تم إنشاء التحديث ونشره مباشرة');
             fetchComments();
         } catch (err: any) {
@@ -132,7 +133,13 @@ export default function AdminCommunityPage() {
                                 </button>
                             )}
                             <Link
-                                href={`/${c.entity_type === 'article' ? 'article/' : c.entity_type === 'update' ? 'updates#upd-' : ''}${c.entity_id}`}
+                                href={
+                                    c.entity_type === 'article' ? `/article/${c.entity_id}` :
+                                    c.entity_type === 'update'  ? `/updates#upd-${c.entity_id}` :
+                                    c.entity_type === 'service' ? `/services/${c.entity_id}` :
+                                    c.entity_type === 'faq'     ? '/faq' :
+                                    `/${c.entity_id}`
+                                }
                                 className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 rounded-xl transition hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                             >
                                 عرض المحتوى الأصلي

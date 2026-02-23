@@ -21,12 +21,25 @@ export default function AdminLoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    // Brute force protection
-    const [attempts, setAttempts] = useState(0);
-    const [lockoutRemaining, setLockoutRemaining] = useState(0);
+    // Brute force protection — persisted to localStorage to survive page reload
+    const [attempts, setAttempts] = useState(() => {
+        try { return parseInt(localStorage.getItem('admin_login_attempts') || '0'); } catch { return 0; }
+    });
+    const [lockoutRemaining, setLockoutRemaining] = useState(() => {
+        try {
+            const until = parseInt(localStorage.getItem('admin_lockout_until') || '0');
+            const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+            return remaining;
+        } catch { return 0; }
+    });
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const router = useRouter();
+
+    // Persist attempts to localStorage
+    useEffect(() => {
+        try { localStorage.setItem('admin_login_attempts', String(attempts)); } catch {}
+    }, [attempts]);
 
     // Countdown timer during lockout
     useEffect(() => {
@@ -36,6 +49,7 @@ export default function AdminLoginPage() {
                 if (prev <= 1) {
                     clearInterval(timerRef.current!);
                     setAttempts(0);
+                    try { localStorage.removeItem('admin_login_attempts'); localStorage.removeItem('admin_lockout_until'); } catch {}
                     setError('');
                     return 0;
                 }
@@ -65,6 +79,7 @@ export default function AdminLoginPage() {
 
             if (newAttempts >= MAX_ATTEMPTS) {
                 setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
+                try { localStorage.setItem('admin_lockout_until', String(Date.now() + LOCKOUT_SECONDS * 1000)); } catch {}
                 setLockoutRemaining(LOCKOUT_SECONDS);
             } else {
                 setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);
@@ -86,6 +101,7 @@ export default function AdminLoginPage() {
             setAttempts(newAttempts);
             if (newAttempts >= MAX_ATTEMPTS) {
                 setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
+                try { localStorage.setItem('admin_lockout_until', String(Date.now() + LOCKOUT_SECONDS * 1000)); } catch {}
                 setLockoutRemaining(LOCKOUT_SECONDS);
             } else {
                 setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);

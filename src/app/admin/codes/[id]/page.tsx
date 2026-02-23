@@ -62,6 +62,15 @@ export default function CodeEditPage({ params }: { params: Promise<{ id: string 
             // Ensure no legacy fields
             if (payload.solution) delete payload.solution;
 
+            // When editing, preserve original code as PK to prevent duplicate creation
+            if (!isNew) payload.code = id;
+
+            if (!payload.code) {
+                toast.error('الكود (Code) مطلوب');
+                setSaving(false);
+                return;
+            }
+
             const { error } = await supabase
                 .from('security_codes')
                 .upsert(payload);

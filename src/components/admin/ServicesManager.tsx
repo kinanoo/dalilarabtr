@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Plus, Search, Trash2, Edit, Save, X, Loader2, MapPin, Phone, Briefcase, Filter } from 'lucide-react';
+import { toast } from 'sonner';
 import Image from 'next/image';
 
 // Types
@@ -91,7 +92,7 @@ export default function ServicesManager() {
             if (error) throw error;
             setServices(prev => prev.filter(s => s.id !== id));
         } catch (err) {
-            alert('حدث خطأ أثناء الحذف');
+            toast.error('حدث خطأ أثناء الحذف');
             console.error(err);
         }
     }

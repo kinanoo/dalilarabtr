@@ -66,6 +66,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
 
             // Generate ID if new
             if (isNew && !payload.id) {
+                if (!payload.title?.trim()) throw new Error('عنوان المقال مطلوب قبل الحفظ');
                 payload.id = normalizeId(payload.title);
             }
 

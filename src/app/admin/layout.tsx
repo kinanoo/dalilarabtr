@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabaseClient';
+import { usePathname } from 'next/navigation';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
@@ -12,18 +12,17 @@ export default function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    // Middleware now handles security (Redirects to /login if no session)
-    // We keep this hook just to sync Sidebar state or User details if needed
+    const pathname = usePathname();
+    // All hooks must be declared before any conditional return (Rules of Hooks)
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [isMobileOpen, setIsMobileOpen] = useState(false); // Mobile Menu State
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     useEffect(() => {
-        // Restore sidebar state
+        // Skip on login page (no sidebar to restore)
+        if (pathname === '/admin/login') return;
         const savedState = localStorage.getItem('admin_sidebar_collapsed');
-        if (savedState) {
-            setSidebarCollapsed(savedState === 'true');
-        }
-    }, []);
+        if (savedState) setSidebarCollapsed(savedState === 'true');
+    }, [pathname]);
 
     const handleSidebarToggle = () => {
         const newState = !sidebarCollapsed;
@@ -32,9 +31,20 @@ export default function AdminLayout({
     };
 
     const handleLogout = async () => {
-        if (supabase) await supabase.auth.signOut();
+        try {
+            // Server-side signout ensures HTTP-only cookies are properly cleared
+            await fetch('/api/auth/signout', { method: 'POST' });
+        } catch (e) {
+            console.error('Logout error:', e);
+        }
         window.location.href = '/admin/login';
     };
+
+    // ─── Login page: bare render — NO sidebar, NO header, NO nav links ───────
+    // This prevents unauthenticated users from seeing or using any admin UI
+    if (pathname === '/admin/login') {
+        return <ToastProvider>{children}</ToastProvider>;
+    }
 
     return (
         <ToastProvider>
@@ -57,8 +67,6 @@ export default function AdminLayout({
                             <h1 className="font-bold text-slate-800 dark:text-white text-sm">لوحة التحكم</h1>
                         </Link>
                         <div className="flex items-center gap-2">
-                            {/* Hidden Search */}
-                            {/* <GlobalSearch mode="modal" /> */}
                             <button
                                 type="button"
                                 aria-label="فتح القائمة"
@@ -70,7 +78,7 @@ export default function AdminLayout({
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 md:p-0 pt-14 md:pt-0">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-0">
                         {children}
                     </div>
                 </main>

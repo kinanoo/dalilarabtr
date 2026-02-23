@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { FileText, Plus, Save, Loader2, Trash2, Edit, X, List, AlertTriangle, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
 
 // Types mimicking the SQL table
@@ -91,7 +92,7 @@ export default function ArticleManager() {
             .upsert(payload);
 
         if (!error) {
-            alert('تم الحفظ بنجاح! ✅');
+            toast.success('تم الحفظ بنجاح');
             setEditingId(null);
             fetchArticles();
             // Reset
@@ -100,7 +101,7 @@ export default function ArticleManager() {
                 documents: [], steps: [], tips: [], fees: '', warning: '', source: '', image: '', active: true
             });
         } else {
-            alert('حدث خطأ: ' + error.message);
+            toast.error('حدث خطأ: ' + error.message);
         }
     };
 

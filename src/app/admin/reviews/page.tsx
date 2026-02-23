@@ -1,16 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, ExternalLink, CheckCircle2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function AdminReviewsPage() {
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
 
     // Default to feedback tab (more actionable)
     const [activeTab, setActiveTab] = useState<'reviews' | 'feedback'>('feedback');
@@ -25,6 +21,7 @@ export default function AdminReviewsPage() {
     }, []);
 
     const fetchData = async () => {
+        if (!supabase) return;
         setLoading(true);
 
         // 1. Fetch service reviews with replies
@@ -68,14 +65,14 @@ export default function AdminReviewsPage() {
 
     // --- Reviews ---
     const handleDeleteReview = async (id: string) => {
-        if (!confirm('حذف هذا التقييم؟')) return;
+        if (!supabase || !confirm('حذف هذا التقييم؟')) return;
         const { error } = await supabase.from('service_reviews').delete().eq('id', id);
         if (!error) { toast.success('تم الحذف'); fetchData(); }
         else toast.error(error.message);
     };
 
     const handleReply = async (reviewId: string) => {
-        if (!replyContent.trim()) return;
+        if (!supabase || !replyContent.trim()) return;
         const { error } = await supabase.from('review_replies').insert([{
             review_id: reviewId, author_name: 'الإدارة', content: replyContent, is_official: true
         }]);
@@ -84,7 +81,7 @@ export default function AdminReviewsPage() {
 
     // --- Feedback ---
     const handleResolveFeedback = async (id: string) => {
-        if (!confirm('هل تمت معالجة هذه الملاحظة؟ سيتم حذفها من القائمة.')) return;
+        if (!supabase || !confirm('هل تمت معالجة هذه الملاحظة؟ سيتم حذفها من القائمة.')) return;
         const { error } = await supabase.from('content_votes').delete().eq('id', id);
         if (!error) { toast.success('تم وضع علامة "تمت المعالجة"'); fetchData(); }
     };
@@ -255,7 +252,7 @@ export default function AdminReviewsPage() {
 
                                 {/* Replies */}
                                 <div className="space-y-4">
-                                    {review.review_replies?.map((reply: any) => (
+                                    {review.review_replies?.slice().sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((reply: any) => (
                                         <div key={reply.id} className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl flex gap-3 border border-emerald-100 dark:border-emerald-800">
                                             <MessageCircle size={18} className="text-emerald-600 shrink-0 mt-1" />
                                             <div>

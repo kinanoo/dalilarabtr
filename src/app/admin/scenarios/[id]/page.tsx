@@ -7,6 +7,7 @@ import { ScenarioEditor } from '@/components/admin/editors/ScenarioEditor';
 import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { normalizeId } from '@/lib/useAdminData';
 
 export default function ScenarioEditPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params); // Next.js 15+ correctly unwraps params
@@ -44,11 +45,10 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
                 .single();
 
             if (error) {
-                // Return gracefully if not found instead of crashing
                 console.error("Fetch error:", error);
-                // toast.error('فشل تحميل السيناريو: ' + error.message);
-                // Don't redirect immediately to allow debugging if needed, or redirect:
-                // router.push('/admin/scenarios');
+                toast.error('لم يتم العثور على السيناريو');
+                router.push('/admin/scenarios');
+                return;
             } else if (data) {
                 setForm(data);
             }
@@ -63,7 +63,16 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
         setSaving(true);
         try {
             const payload = { ...form };
-            // if (isNew) delete payload.id; // REMOVED: We now manually set ID
+
+            // Auto-generate ID from title for new scenarios if not manually set
+            if (isNew && !payload.id) {
+                if (!payload.title?.trim()) {
+                    toast.error('العنوان مطلوب لإنشاء المعرف تلقائياً');
+                    setSaving(false);
+                    return;
+                }
+                payload.id = normalizeId(payload.title);
+            }
 
             if (!payload.id) {
                 toast.error('يجب كتابة المعرف الفريد (ID/Slug)');

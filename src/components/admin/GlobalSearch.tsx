@@ -63,9 +63,12 @@ interface ResultsListProps {
     query: string;
     mode: 'inline' | 'modal';
     onClose: () => void;
+    recentSearches?: string[];
+    onSelectRecent?: (term: string) => void;
+    onRemoveRecent?: (term: string) => void;
 }
 
-const ResultsList = ({ results, loading, query, mode, onClose }: ResultsListProps) => {
+const ResultsList = ({ results, loading, query, mode, onClose, recentSearches = [], onSelectRecent, onRemoveRecent }: ResultsListProps) => {
     const hasResults = Object.values(results).some((arr: any) => arr.length > 0);
 
     const renderSection = (title: string, items: any[], icon: any, renderItem: (item: any) => React.ReactNode) => {
@@ -83,6 +86,35 @@ const ResultsList = ({ results, loading, query, mode, onClose }: ResultsListProp
             </div>
         );
     };
+
+    // Show recent searches when input is focused but empty
+    if (!query && recentSearches.length > 0) {
+        return (
+            <div className={`w-full bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 ${mode === 'inline' ? 'absolute top-full mt-2' : 'mt-4 relative shadow-none border-0 bg-transparent dark:bg-transparent'}`}>
+                <div className="p-2">
+                    <div className="text-xs font-bold text-slate-400 px-3 py-2 uppercase tracking-wider">عمليات البحث الأخيرة</div>
+                    {recentSearches.map((term, idx) => (
+                        <div key={idx} className="flex items-center group/recent">
+                            <button
+                                onClick={() => onSelectRecent?.(term)}
+                                className="flex-1 flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-right"
+                            >
+                                <Search size={14} className="text-slate-400 shrink-0" />
+                                <span className="text-slate-700 dark:text-slate-300 font-bold text-sm">{term}</span>
+                            </button>
+                            <button
+                                onClick={() => onRemoveRecent?.(term)}
+                                className="p-2 text-slate-300 hover:text-red-400 opacity-0 group-hover/recent:opacity-100 transition-all ml-1 rounded-lg"
+                                title="حذف من السجل"
+                            >
+                                <X size={13} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`w-full bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[70vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 ${mode === 'inline' ? 'absolute top-full mt-2' : 'mt-4 relative shadow-none border-0 bg-transparent dark:bg-transparent'}`}>
@@ -105,7 +137,7 @@ const ResultsList = ({ results, loading, query, mode, onClose }: ResultsListProp
             ))}
 
             {renderSection('الخدمات', results.services, <Briefcase size={14} />, (item) => (
-                <Link href={`/admin/services/${item.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                <Link href={`/admin/services`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
                     <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><Briefcase size={18} /></div>
                     <div className="flex-1">
                         <div className="font-bold text-slate-800 dark:text-white group-hover:text-emerald-600 transition-colors">{item.name}</div>
@@ -127,7 +159,7 @@ const ResultsList = ({ results, loading, query, mode, onClose }: ResultsListProp
             ))}
 
             {renderSection('المناطق المحظورة', results.zones, <MapPin size={14} />, (item) => (
-                <Link href={`/admin/zones`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                <Link href={`/admin/zones/${item.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
                     <div className="p-2 bg-red-100 text-red-600 rounded-lg"><MapPin size={18} /></div>
                     <div className="flex-1">
                         <div className="font-bold text-slate-800 dark:text-white group-hover:text-red-600 transition-colors">{item.neighborhood}</div>
@@ -138,7 +170,7 @@ const ResultsList = ({ results, loading, query, mode, onClose }: ResultsListProp
             ))}
 
             {renderSection('أكواد أمنية', results.codes, <ShieldAlert size={14} />, (item) => (
-                <Link href={`/admin/codes`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                <Link href={`/admin/codes/${item.code || item.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
                     <div className="p-2 bg-amber-100 text-amber-600 rounded-lg"><ShieldAlert size={18} /></div>
                     <div className="flex-1">
                         <div className="font-bold text-slate-800 dark:text-white group-hover:text-amber-600 transition-colors font-mono">{item.code}</div>
@@ -183,6 +215,27 @@ const ResultsList = ({ results, loading, query, mode, onClose }: ResultsListProp
 
 // --- Main Component ---
 
+const RECENT_SEARCHES_KEY = 'admin_recent_searches';
+const MAX_RECENT = 8;
+
+function loadRecentSearches(): string[] {
+    try { return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]'); } catch { return []; }
+}
+
+function saveRecentSearch(term: string) {
+    try {
+        const existing = loadRecentSearches().filter(s => s !== term);
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify([term, ...existing].slice(0, MAX_RECENT)));
+    } catch {}
+}
+
+function removeRecentSearch(term: string) {
+    try {
+        const existing = loadRecentSearches().filter(s => s !== term);
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(existing));
+    } catch {}
+}
+
 export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<any>({
@@ -191,6 +244,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
     const [loading, setLoading] = useState(false);
     const [isResultsOpen, setIsResultsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
     const debouncedQuery = useDebounceValue(query, 500);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -214,12 +268,11 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Focus input when modal opens
+    // Focus input and load recents when modal opens
     useEffect(() => {
-        if (isModalOpen && modalInputRef.current) {
-            setTimeout(() => {
-                modalInputRef.current?.focus();
-            }, 100);
+        if (isModalOpen) {
+            setRecentSearches(loadRecentSearches());
+            setTimeout(() => { modalInputRef.current?.focus(); }, 100);
         }
     }, [isModalOpen]);
 
@@ -227,6 +280,9 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
         if (!supabase) return;
         setLoading(true);
         setIsResultsOpen(true);
+
+        // Safety timeout — ensure loading spinner never gets stuck
+        const safetyTimeout = setTimeout(() => setLoading(false), 6000);
 
         const term = `%${debouncedQuery}%`;
 
@@ -257,7 +313,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
             searchTable('comments', 'id, content, author_name', 'content'),
             searchTable('content_votes', 'id, feedback, reason', 'feedback,reason', (q) => q.eq('vote_type', 'down')),
             searchTable('consultant_scenarios', 'id, title, description', 'title,description'),
-            searchTable('restricted_zones', 'id, neighborhood, district, city', 'neighborhood,district,city'),
+            searchTable('zones', 'id, neighborhood, district, city', 'neighborhood,district,city'),
             searchTable('security_codes', 'code, title, description', 'title,description,code'),
             searchTable('faqs', 'id, question', 'question,answer'),
             searchTable('service_reviews', 'id, client_name, comment', 'comment,client_name')
@@ -271,6 +327,14 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
             faqs, reviews
         });
 
+        // Save to recent searches if there were results
+        const hasAny = [articles, services, comments, feedback, scenarios, zones, codes, faqs, reviews].some(arr => arr.length > 0);
+        if (hasAny && debouncedQuery.trim().length >= 2) {
+            saveRecentSearch(debouncedQuery.trim());
+            setRecentSearches(loadRecentSearches());
+        }
+
+        clearTimeout(safetyTimeout);
         setLoading(false);
     };
 
@@ -312,7 +376,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
                             </div>
 
                             <div className="flex-1 overflow-y-auto">
-                                {(query || Object.values(results).some((arr: any) => arr.length > 0)) && (
+                                {(query || Object.values(results).some((arr: any) => arr.length > 0) || recentSearches.length > 0) && (
                                     <div className="pb-20">
                                         <ResultsList
                                             results={results}
@@ -320,6 +384,9 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
                                             query={query}
                                             mode="modal"
                                             onClose={() => { setIsResultsOpen(false); setIsModalOpen(false); }}
+                                            recentSearches={recentSearches}
+                                            onSelectRecent={(term) => { setQuery(term); setIsResultsOpen(true); }}
+                                            onRemoveRecent={(term) => { removeRecentSearch(term); setRecentSearches(loadRecentSearches()); }}
                                         />
                                     </div>
                                 )}
@@ -336,12 +403,12 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
             <SearchInput
                 query={query}
                 setQuery={setQuery}
-                setIsResultsOpen={setIsResultsOpen}
+                setIsResultsOpen={(open) => { setIsResultsOpen(open); if (open) setRecentSearches(loadRecentSearches()); }}
                 loading={loading}
             />
 
-            {/* Results Dropdown */}
-            {isResultsOpen && (query.length > 0) && (
+            {/* Results Dropdown — also shows recents on focus */}
+            {isResultsOpen && (query.length > 0 || recentSearches.length > 0) && (
                 <div className="absolute top-full mt-2 w-full z-[60]">
                     <ResultsList
                         results={results}
@@ -349,6 +416,9 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
                         query={query}
                         mode="inline"
                         onClose={() => setIsResultsOpen(false)}
+                        recentSearches={recentSearches}
+                        onSelectRecent={(term) => { setQuery(term); setIsResultsOpen(true); }}
+                        onRemoveRecent={(term) => { removeRecentSearch(term); setRecentSearches(loadRecentSearches()); }}
                     />
                 </div>
             )}

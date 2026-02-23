@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Toaster, toast } from 'sonner';
 import {
@@ -67,6 +68,7 @@ const QuickBtn = ({ icon: Icon, label, color, onClick }: any) => (
 );
 
 export default function AdminDashboard() {
+    const router = useRouter();
     // Layout State
     const [view, setView] = useState('dashboard'); // dashboard, articles, services, faqs, codes, settings
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -272,7 +274,7 @@ export default function AdminDashboard() {
             setSelectedItem(null);
             setQuery('');
             setResults([]);
-            window.location.reload(); // Cache busting
+            router.refresh();
 
         } catch (err: any) {
             console.error("💥 [AdminSave] Error:", err);
@@ -456,20 +458,6 @@ export default function AdminDashboard() {
                     searchFields={['content']}
                     onEdit={(row) => setSelectedItem({ id: row.id, type: 'banner', title: row.content, data: row })}
                     onCreate={() => setSelectedItem({ id: 'new', type: 'banner', title: 'إضافة تنبيه جديد', data: { type: 'alert', is_active: true } as any })}
-                />;
-
-            case 'faqs':
-                return <DataTable
-                    title="الأسئلة الشائعة"
-                    tableName="faqs"
-                    columns={[
-                        { key: 'question', label: 'السؤال' },
-                        { key: 'category', label: 'التصنيف' },
-                        { key: 'active', label: 'مفعل', render: (v: any) => v ? '✅' : '❌' }
-                    ]}
-                    searchFields={['question', 'answer', 'category']}
-                    onEdit={(row) => setSelectedItem({ id: row.id, type: 'faq', title: row.question, data: row })}
-                    onCreate={() => setSelectedItem({ id: 'new', type: 'faq', title: 'سؤال جديد', data: { active: true, category: 'general' } as any })}
                 />;
 
             case 'suggestions':

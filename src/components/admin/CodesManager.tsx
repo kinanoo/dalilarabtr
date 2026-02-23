@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { ShieldAlert, Save, Loader2, Trash2, Edit, Search } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Types
 type DBCode = {
@@ -67,7 +68,7 @@ export default function CodesManager() {
             .upsert(formData);
 
         if (!error) {
-            alert('تم الحفظ بنجاح! ✅');
+            toast.success('تم الحفظ بنجاح');
             setEditingCode(null);
             fetchCodes();
             // Reset only if not editing (keep category for speed)
@@ -80,7 +81,7 @@ export default function CodesManager() {
                 active: true
             });
         } else {
-            alert('حدث خطأ: ' + error.message);
+            toast.error('حدث خطأ: ' + error.message);
         }
     };
 

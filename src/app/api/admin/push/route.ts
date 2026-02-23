@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
         }
 
         const { data: profile } = await supabase
@@ -42,15 +42,24 @@ export async function POST(request: Request) {
             .single();
 
         if (profile?.role !== 'admin') {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            return NextResponse.json({ error: 'محظور' }, { status: 403 });
         }
         // ── End Auth check ─────────────────────────────────────────
 
         const body = await request.json();
-        const { title, message, url, subscriptions } = body;
+        const { title, message, url } = body;
 
-        if (!subscriptions || !Array.isArray(subscriptions) || subscriptions.length === 0) {
-            return NextResponse.json({ error: 'No subscriptions provided' }, { status: 400 });
+        // Fetch subscriptions server-side — never expose them to the browser
+        const { data: subscriptions, error: subError } = await supabase
+            .from('push_subscriptions')
+            .select('endpoint, p256dh, auth');
+
+        if (subError) {
+            return NextResponse.json({ error: 'فشل تحميل الاشتراكات' }, { status: 500 });
+        }
+
+        if (!subscriptions || subscriptions.length === 0) {
+            return NextResponse.json({ error: 'لا يوجد مشتركون', successCount: 0, failCount: 0 }, { status: 200 });
         }
 
         const payload = JSON.stringify({ title, message, url });
@@ -78,6 +87,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, successCount, failCount });
 
     } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('Push notification error:', error);
+        return NextResponse.json({ error: 'خطأ داخلي في الخادم' }, { status: 500 });
     }
 }
