@@ -17,7 +17,6 @@ import BackToTop from "@/components/BackToTop";
 import UrgencyBanner from '@/components/UrgencyBanner';
 import AmbientBackground from "@/components/ui/AmbientBackground";
 import SelectionShareMenu from '@/components/ui/SelectionShareMenu';
-import CopyProtection from '@/components/ui/CopyProtection';
 import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // New Import
 import NotificationManager from "@/components/NotificationManager";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
@@ -144,7 +143,6 @@ export default function RootLayout({
 
             {/* Viral Growth Tools */}
             <SelectionShareMenu />
-            <CopyProtection />
 
             {/* PWA Components */}
             <ServiceWorkerRegister />
