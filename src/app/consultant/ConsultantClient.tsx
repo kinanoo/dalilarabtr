@@ -92,7 +92,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
       if (!rawLink.startsWith('/article/')) return '';
       const after = rawLink.slice('/article/'.length);
       const clean = after.split(/[?#]/)[0] || '';
-      return decodeURIComponent(clean).trim();
+      try { return decodeURIComponent(clean).trim(); } catch { return clean.trim(); }
     })();
 
     if (!articleId) return result;
@@ -120,7 +120,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
         if (!rawLink.startsWith('/article/')) return '';
         const after = rawLink.slice('/article/'.length);
         const clean = after.split(/[?#]/)[0] || '';
-        return decodeURIComponent(clean).trim();
+        try { return decodeURIComponent(clean).trim(); } catch { return clean.trim(); }
       })();
 
       // 1) Articles: show only if remote exists
