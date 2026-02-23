@@ -142,3 +142,10 @@ BEGIN
     LIMIT 10;
 END;
 $$;
+
+-- ==============================================
+-- 5. منح صلاحيات الاستدعاء (مطلوب في Supabase)
+-- ==============================================
+GRANT EXECUTE ON FUNCTION public.get_dashboard_stats() TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_daily_visits()    TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_top_pages()       TO anon, authenticated;
