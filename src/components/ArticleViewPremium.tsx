@@ -87,8 +87,7 @@ export default function ArticleView({ article, slug, initialComments, children }
   return (
     <>
       <article
-        className="w-full max-w-full lg:max-w-6xl mx-auto px-3 sm:px-4 py-8 overflow-hidden select-none"
-        onContextMenu={(e) => e.preventDefault()}
+        className="w-full max-w-full lg:max-w-6xl mx-auto px-3 sm:px-4 py-8 overflow-hidden"
       >
         {/* Breadcrumbs محسّن */}
         <Breadcrumbs

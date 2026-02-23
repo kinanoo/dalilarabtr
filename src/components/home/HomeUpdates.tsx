@@ -24,7 +24,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     }
 
     return (
-        <section className="py-12 border-b border-slate-100 dark:border-slate-800/50 overflow-hidden select-none">
+        <section className="py-12 border-b border-slate-100 dark:border-slate-800/50 overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg text-amber-600 animate-pulse-slow">
