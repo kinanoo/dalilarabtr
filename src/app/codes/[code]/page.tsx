@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
 import UniversalComments from '@/components/community/UniversalComments';
+import { SITE_CONFIG } from '@/lib/config';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
         title: `معنى الكود ${item.code} - ${item.title} | دليل الأكواد الأمنية`,
         description: item.description?.slice(0, 160) || `تفاصيل ومعنى الكود الأمني ${item.code} وأسباب وضعه وكيفية إزالته.`,
+        alternates: { canonical: `/codes/${encodeURIComponent(item.code)}` },
         openGraph: {
             title: `ما هو الكود ${item.code}؟ (${item.title})`,
             description: item.description?.slice(0, 200),
@@ -115,7 +117,11 @@ export default async function CodeDetailPage({ params }: Props) {
                 </div>
 
                 <div className="mt-8 flex justify-center mb-12">
-                    <ShareMenu title={`شرح الكود ${item.code} - ${item.title}`} text={`تعرف على معنى الكود ${item.code} وتفاصيله القانونية.`} />
+                    <ShareMenu
+                        title={`شرح الكود ${item.code} - ${item.title}`}
+                        text={`تعرف على معنى الكود ${item.code} وتفاصيله القانونية.`}
+                        url={`${SITE_CONFIG.siteUrl}/codes/${encodeURIComponent(item.code)}`}
+                    />
                 </div>
 
                 <ContentHelpfulWidget entityType="scenario" entityId={`code-${item.code}`} />

@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     description: 'نظام تشخيص قانوني ذكي يساعدك في تحديد الإجراءات المطلوبة.',
     url: `${SITE_CONFIG.siteUrl}/consultant`,
   },
+  alternates: { canonical: '/consultant' },
 };
 
 

@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     return {
         title: `${data.name} - ${data.profession} في ${data.city} | دليل العرب`,
         description: data.description?.substring(0, 160) || `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`,
+        alternates: { canonical: `/services/${params.id}` },
     };
 }
 

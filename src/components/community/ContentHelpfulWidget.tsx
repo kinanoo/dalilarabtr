@@ -102,6 +102,7 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
                 <div className="flex flex-wrap gap-2">
                     {['معلومات غير دقيقة', 'قديم', 'غير واضح', 'أخرى'].map(r => (
                         <button
+                            type="button"
                             key={r}
                             onClick={() => setReason(r)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${reason === r
@@ -122,12 +123,14 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
 
                 <div className="flex justify-end gap-2">
                     <button
+                        type="button"
                         onClick={() => setShowFeedback(false)}
                         className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
                     >
                         إلغاء
                     </button>
                     <button
+                        type="button"
                         onClick={handleSubmitFeedback}
                         disabled={isSubmitting}
                         className="px-4 py-2 text-xs font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:opacity-90 transition disabled:opacity-50"
@@ -146,6 +149,7 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
             </span>
             <div className="flex items-center gap-2">
                 <button
+                    type="button"
                     onClick={() => handleVote('up')}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:text-emerald-600 transition-colors text-sm font-bold text-slate-600 dark:text-slate-400"
                 >
@@ -153,6 +157,7 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
                     نعم
                 </button>
                 <button
+                    type="button"
                     onClick={() => handleVote('down')}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:text-red-600 transition-colors text-sm font-bold text-slate-600 dark:text-slate-400"
                 >

@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     description: 'حاسبات وأدوات ذكية لمساعدتك في فهم وضعك القانوني في تركيا',
     type: 'website',
   },
+  alternates: { canonical: '/tools' },
 };
 
 // =====================================================

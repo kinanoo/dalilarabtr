@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     description: 'اعرف معنى الكود الأمني وسبب رفض طلبك في تركيا - V-87, G-87, N-82 والمزيد',
     type: 'website',
   },
+  alternates: { canonical: '/codes' },
 };
 
 export default function CodesLayout({

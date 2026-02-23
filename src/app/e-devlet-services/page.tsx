@@ -1,6 +1,13 @@
 import { supabase } from '@/lib/supabaseClient';
 import EDevletServicesHub from '@/components/EDevletServicesHub';
 import type { Article } from '@/lib/types';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'خدمات e-Devlet للأجانب | دليل العرب في تركيا',
+  description: 'روابط مباشرة لأهم خدمات بوابة الحكومة التركية الإلكترونية e-Devlet: نفوس، طابو، محكمة، ضريبة، وأكثر.',
+  alternates: { canonical: '/e-devlet-services' },
+};
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour

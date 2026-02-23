@@ -5,9 +5,10 @@ import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { useAdminCodes } from '@/lib/useAdminData';
 import { useState } from 'react';
-import { ShieldAlert, AlertTriangle, Info, CheckCircle, Loader2, ChevronLeft } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Info, CheckCircle, Loader2 } from 'lucide-react';
 import ShareMenu from '@/components/ShareMenu';
 import Link from 'next/link';
+import { SITE_CONFIG } from '@/lib/config';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
@@ -122,11 +123,17 @@ export default function CodesPage() {
                           </div>
                           <h3 className="font-bold text-sm sm:text-base mt-1 truncate">{item.title}</h3>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                           <span className="text-xs font-bold px-2 py-1 rounded-full bg-white/60 dark:bg-white/10">
                             {getSeverityLabel(item.severity)}
                           </span>
-                          <ChevronLeft size={16} className="opacity-40" />
+                          <ShareMenu
+                            mini
+                            variant="subtle"
+                            title={`شرح الكود ${item.code} - ${item.title}`}
+                            text={item.desc}
+                            url={`${SITE_CONFIG.siteUrl}/codes/${encodeURIComponent(item.code)}`}
+                          />
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm mt-2 leading-relaxed">{item.desc}</p>

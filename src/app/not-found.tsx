@@ -1,5 +1,12 @@
 import Link from 'next/link';
 import { FileQuestion, Home } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: '404 - الصفحة غير موجودة | دليل العرب في تركيا',
+    description: 'الصفحة التي تبحث عنها غير موجودة أو تم حذفها.',
+    robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
     return (

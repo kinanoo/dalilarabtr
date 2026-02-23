@@ -48,7 +48,7 @@ export function UpdatesManager() {
         const payload = { ...formData, date: new Date().toISOString().split('T')[0] };
         const { error } = await supabase.from('updates').upsert(editingId ? { ...payload, id: editingId } : payload);
         if (!error) {
-            alert('تم الحفظ!');
+            toast.success('تم الحفظ!');
             setEditingId(null);
             setFormData({ type: 'news', title: '', content: '', active: true, link: '' });
             fetchUpdates();
@@ -149,7 +149,7 @@ export function FAQManager() {
         if (!supabase) return;
         const { error } = await supabase.from('faqs').insert([formData]);
         if (!error) {
-            alert('تم إضافة السؤال!');
+            toast.success('تم إضافة السؤال!');
             setFormData({ category: 'general', question: '', answer: '', active: true });
             fetchFaqs();
         }
@@ -160,7 +160,7 @@ export function FAQManager() {
         const { error } = await supabase!.from('faqs').delete().eq('id', id);
         if (error) {
             console.error('Delete FAQ Error:', error);
-            alert('❌ فشل الحذف: ' + error.message);
+            toast.error('فشل الحذف: ' + error.message);
         } else {
             fetchFaqs();
         }

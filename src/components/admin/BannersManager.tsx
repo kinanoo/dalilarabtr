@@ -1,15 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 import { Trash2, Edit2, Plus, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function BannersManager() {
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
     const [banners, setBanners] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newBanner, setNewBanner] = useState<{
@@ -42,8 +38,11 @@ export default function BannersManager() {
 
         const { error } = await supabase.from('site_banners').insert([newBanner]);
         if (!error) {
+            toast.success('تم إضافة البنر بنجاح');
             setNewBanner({ content: '', type: 'alert', is_active: false, link_url: '', link_text: '' });
             fetchBanners();
+        } else {
+            toast.error('فشل الإضافة: ' + error.message);
         }
     }
 

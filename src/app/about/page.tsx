@@ -2,6 +2,13 @@
 
 import PageHero from '@/components/PageHero';
 import { Users, Scale, BadgeCheck, ShieldCheck } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'عن الموقع | دليل العرب في تركيا',
+  description: 'تعرّف على دليل العرب والسوريين في تركيا، رسالتنا، وفريقنا المتخصص في تقديم المعلومات القانونية والإجرائية.',
+  alternates: { canonical: '/about' },
+};
 
 export default function AboutPage() {
     return (

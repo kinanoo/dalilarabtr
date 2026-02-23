@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return {
             title: `هل منطقة ${exactZone.name_ar} محظورة؟ - دليل المناطق`,
             description: `تحقق من حالة حي ${exactZone.name_ar} (${exactZone.name_tr}) وهل هو محظور لتثبيت النفوس.`,
+            alternates: { canonical: `/zones/${decodedSlug}` },
         };
     }
 
@@ -44,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return {
             title: `الأحياء المحظورة في ${decodedSlug} - دليل المناطق`,
             description: `قائمة بجميع الأحياء المغلقة أمام الأجانب في منطقة ${decodedSlug}، تركيا.`,
+            alternates: { canonical: `/zones/${decodedSlug}` },
         };
     }
 

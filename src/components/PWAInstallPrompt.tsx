@@ -106,6 +106,7 @@ export default function PWAInstallPrompt() {
                     className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[9999] bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl p-4 flex flex-col gap-3"
                 >
                     <button
+                        type="button"
                         onClick={handleDismiss}
                         aria-label="إغلاق"
                         className="absolute top-2 left-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
@@ -126,6 +127,7 @@ export default function PWAInstallPrompt() {
                     </div>
 
                     <button
+                        type="button"
                         onClick={handleInstallClick}
                         className="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
                     >

@@ -16,46 +16,24 @@ export default function AdminPushPanel() {
         setIsSending(true);
 
         try {
-            if (!supabase) throw new Error('Supabase client not initialized');
-
-            // 1. Get all subscriptions
-            const { data: subscriptions, error: fetchError } = await supabase
-                .from('push_subscriptions')
-                .select('*');
-
-            if (fetchError) throw fetchError;
-
-            if (!subscriptions || subscriptions.length === 0) {
-                toast.error('لا يوجد مشتركين في الإشعارات');
-                setIsSending(false);
-                return;
-            }
-
-            // 2. Send via Edge Function (or API route)
-            // Since we don't have an Edge Function set up yet, we'll simulate the call
-            // In a real app, you'd POST to /api/send-push
-
-            const payload = {
-                title,
-                message,
-                url,
-                subscriptions // In production, don't send all to client, send ID
-            };
-
-            // Call the API route we are about to create
+            // Send only the notification content — subscriptions are fetched server-side
             const response = await fetch('/api/admin/push', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ title, message, url })
             });
 
-            if (!response.ok) throw new Error('Failed to send notifications');
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'فشل إرسال الإشعارات');
+            }
 
             const result = await response.json();
 
             toast.success(`تم إرسال الإشعار إلى ${result.successCount} مشترك!`);
             setTitle('');
             setMessage('');
+            setUrl('/');
         } catch (error) {
             console.error('Send error:', error);
             toast.error('حدث خطأ أثناء الإرسال');
