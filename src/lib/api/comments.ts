@@ -10,26 +10,69 @@ export type Comment = {
     is_official: boolean;
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
-    parent_id?: string;
-    replies?: Comment[]; // For nesting
+    parent_id?: string | null;
+    likes_count: number;
+    replies?: Comment[];
 };
+
+function buildCommentTree(flat: Comment[]): Comment[] {
+    const map = new Map<string, Comment>();
+    const roots: Comment[] = [];
+
+    for (const c of flat) {
+        map.set(c.id, { ...c, replies: [] });
+    }
+
+    for (const c of flat) {
+        const node = map.get(c.id)!;
+        if (c.parent_id && map.has(c.parent_id)) {
+            map.get(c.parent_id)!.replies!.push(node);
+        } else {
+            roots.push(node);
+        }
+    }
+
+    return roots;
+}
 
 export async function fetchComments(entityType: string, entityId: string) {
     if (!supabase) return { data: [], error: 'Supabase not initialized' };
 
-    const { data, error } = await supabase
+    const { data: flatComments, error } = await supabase
         .from('comments')
         .select('*')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .or('status.eq.approved,is_official.eq.true') // Show approved OR official replies
-        .order('created_at', { ascending: false });
+        .or('status.eq.approved,is_official.eq.true')
+        .order('created_at', { ascending: true }); // ascending so tree order is correct
 
     if (error) return { data: [], error };
+    if (!flatComments || flatComments.length === 0) return { data: [], error: null };
 
-    // Arrange into threads (simple 1-level nesting for now if parent_id exists)
-    // For now, we return flat list, UI can nest if needed.
-    return { data: data as Comment[], error: null };
+    // Batch-fetch like counts for all comments
+    const commentIds = flatComments.map((c) => c.id);
+    const { data: votes } = await supabase
+        .from('content_votes')
+        .select('entity_id')
+        .eq('entity_type', 'comment')
+        .in('entity_id', commentIds)
+        .eq('vote_type', 'up');
+
+    const likesMap = new Map<string, number>();
+    for (const v of votes || []) {
+        likesMap.set(v.entity_id, (likesMap.get(v.entity_id) || 0) + 1);
+    }
+
+    const commentsWithLikes: Comment[] = flatComments.map((c) => ({
+        ...c,
+        likes_count: likesMap.get(c.id) || 0,
+        replies: [],
+    }));
+
+    const tree = buildCommentTree(commentsWithLikes);
+    tree.reverse(); // newest root comments first
+
+    return { data: tree, error: null };
 }
 
 export async function postComment(payload: {
@@ -41,14 +84,14 @@ export async function postComment(payload: {
     is_correction?: boolean;
     parent_id?: string;
 }) {
-    if (!supabase) return { error: 'Supabase not initialized' };
+    if (!supabase) return { data: null, error: 'Supabase not initialized' };
 
     const { data, error } = await supabase
         .from('comments')
         .insert([{
             ...payload,
-            page_slug: payload.entity_id, // Backward compatibility for legacy schema
-            status: 'approved' // Auto-approve by default as requested
+            page_slug: payload.entity_id, // backward compat
+            status: 'approved',
         }])
         .select()
         .single();
@@ -56,11 +99,24 @@ export async function postComment(payload: {
     return { data, error };
 }
 
+export async function toggleCommentLike(commentId: string): Promise<{ liked: boolean; error?: any }> {
+    if (!supabase) return { liked: false, error: 'Supabase not initialized' };
+
+    const { error } = await supabase
+        .from('content_votes')
+        .insert([{
+            entity_type: 'comment',
+            entity_id: commentId,
+            vote_type: 'up',
+        }]);
+
+    if (error) return { liked: false, error };
+    return { liked: true };
+}
+
 export async function voteContent(entityType: string, entityId: string, voteType: 'up' | 'down', feedback?: string, reason?: string) {
     if (!supabase) return { error: 'Supabase not initialized' };
 
-    // Simple ip check handled by DB unique constraint usually, or client side fingerprint.
-    // Here we just insert. RLS/Unique constraint will fail if duplicate.
     const { error } = await supabase
         .from('content_votes')
         .insert([{
@@ -68,7 +124,7 @@ export async function voteContent(entityType: string, entityId: string, voteType
             entity_id: entityId,
             vote_type: voteType,
             feedback,
-            reason
+            reason,
         }]);
 
     return { error };

@@ -5,48 +5,57 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Phone, Briefcase, Star, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import ServiceReviews from '@/components/services/ServiceReviews';
+import UniversalComments from '@/components/community/UniversalComments';
+import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 
-export const revalidate = 60; // 1 minute cache
+export const revalidate = 60;
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+// ─── Shared helper ────────────────────────────────────────────────────────────
+async function getSupabase() {
     const cookieStore = await cookies();
-    const supabase = createServerClient(
+    return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) { return cookieStore.get(name)?.value; },
-            },
-        }
+        { cookies: { get: (name) => cookieStore.get(name)?.value } }
     );
+}
 
-    const { data } = await supabase.from('service_providers').select('*').eq('id', params.id).single();
+// ─── Metadata ─────────────────────────────────────────────────────────────────
+export async function generateMetadata(
+    props: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+    const { id } = await props.params;
+    const supabase = await getSupabase();
+
+    const { data } = await supabase
+        .from('service_providers')
+        .select('name, profession, city, category, description')
+        .eq('id', id)
+        .single();
 
     if (!data) return { title: 'الخدمة غير موجودة' };
 
     return {
         title: `${data.name} - ${data.profession} في ${data.city} | دليل العرب`,
-        description: data.description?.substring(0, 160) || `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`,
-        alternates: { canonical: `/services/${params.id}` },
+        description:
+            data.description?.substring(0, 160) ||
+            `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`,
+        alternates: { canonical: `/services/${id}` },
     };
 }
 
-export default async function ServiceDetailsPage({ params }: { params: { id: string } }) {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                get(name: string) { return cookieStore.get(name)?.value; },
-            },
-        }
-    );
+// ─── Page ─────────────────────────────────────────────────────────────────────
+export default async function ServiceDetailsPage(
+    props: { params: Promise<{ id: string }> }
+) {
+    const { id } = await props.params;
+    const supabase = await getSupabase();
 
     const { data: provider, error } = await supabase
         .from('service_providers')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single();
 
     if (error || !provider) {
@@ -54,7 +63,9 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
     }
 
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`مرحباً أستاذ ${provider.name}، رأيت خدمتك "${provider.profession}" على منصة دليل العرب في تركيا وأود الاستفسار.`)}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+        `مرحباً أستاذ ${provider.name}، رأيت خدمتك "${provider.profession}" على منصة دليل العرب في تركيا وأود الاستفسار.`
+    )}`;
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
@@ -62,18 +73,21 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
             <div className="bg-slate-900 text-white pt-8 pb-32 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-900 to-emerald-900/20" />
                 <div className="container mx-auto px-4 relative z-10">
-                    <Link href="/services" className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors mb-8 bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm">
+                    <Link
+                        href="/services"
+                        className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors mb-8 bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm"
+                    >
                         <ArrowRight size={18} />
                         <span className="text-sm font-bold">العودة للخدمات</span>
                     </Link>
                 </div>
             </div>
 
-            {/* Profile Content */}
+            {/* Profile Card */}
             <div className="container mx-auto px-4 relative z-20 -mt-24 max-w-4xl">
                 <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-10 mb-8">
                     <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
-                        {/* Profile Image */}
+                        {/* Avatar */}
                         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl shrink-0 overflow-hidden relative flex items-center justify-center -mt-16 sm:-mt-20 z-30">
                             {provider.image ? (
                                 <Image src={provider.image} alt={provider.name} fill className="object-cover" />
@@ -92,19 +106,25 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
                                             <CheckCircle className="text-blue-500 shrink-0" size={24} />
                                         )}
                                     </h1>
-                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg mt-1">{provider.profession}</p>
+                                    <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg mt-1">
+                                        {provider.profession}
+                                    </p>
                                 </div>
                                 <div className="flex items-center justify-center sm:justify-end gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-900/50">
                                     <Star size={16} className="fill-amber-500 text-amber-500" />
-                                    <span className="font-bold">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
-                                    <span className="text-xs opacity-70">({provider.review_count || 0} تقييم)</span>
+                                    <span className="font-bold">
+                                        {provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}
+                                    </span>
+                                    <span className="text-xs opacity-70">
+                                        ({provider.review_count || 0} تقييم)
+                                    </span>
                                 </div>
                             </div>
 
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-6 text-sm text-slate-600 dark:text-slate-300 font-medium">
                                 <div className="flex items-center gap-1.5">
                                     <MapPin size={18} className="text-slate-400" />
-                                    <span>{provider.city} {provider.district && `، ${provider.district}`}</span>
+                                    <span>{provider.city}{provider.district && `، ${provider.district}`}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Briefcase size={18} className="text-slate-400" />
@@ -114,6 +134,7 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
                         </div>
                     </div>
 
+                    {/* Description */}
                     <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">نبذة عن الخدمة</h2>
                         <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
@@ -121,7 +142,7 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
                         </div>
                     </div>
 
-                    {/* Contact Actions */}
+                    {/* Contact */}
                     <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <a
                             href={whatsappUrl}
@@ -141,6 +162,17 @@ export default async function ServiceDetailsPage({ params }: { params: { id: str
                         )}
                     </div>
                 </div>
+            </div>
+
+            {/* Reviews + Comments */}
+            <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
+                <ServiceReviews serviceId={id} serviceName={provider.name} />
+                <ContentHelpfulWidget entityType="service" entityId={id} />
+                <UniversalComments
+                    entityType="service"
+                    entityId={id}
+                    title="تعليقات وتجارب العملاء"
+                />
             </div>
         </div>
     );
