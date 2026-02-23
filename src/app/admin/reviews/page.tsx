@@ -2,20 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Star, Trash2, MessageCircle, AlertTriangle, CheckCircle2, FileWarning, ExternalLink } from 'lucide-react';
+import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, ExternalLink, CheckCircle2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function AdminReviewsPage() {
-    // Authenticated Client for Admin Actions
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const [activeTab, setActiveTab] = useState<'reviews' | 'feedback'>('reviews');
+    // Default to feedback tab (more actionable)
+    const [activeTab, setActiveTab] = useState<'reviews' | 'feedback'>('feedback');
     const [reviews, setReviews] = useState<any[]>([]);
-    const [feedbackitems, setFeedbackItems] = useState<any[]>([]); // Items from content_votes
+    const [feedbackItems, setFeedbackItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [replyContent, setReplyContent] = useState('');
@@ -27,37 +27,51 @@ export default function AdminReviewsPage() {
     const fetchData = async () => {
         setLoading(true);
 
-        // 1. Fetch Reviews
+        // 1. Fetch service reviews with replies
         const { data: reviewsData } = await supabase
             .from('service_reviews')
             .select(`*, review_replies (*)`)
             .order('created_at', { ascending: false });
-
         if (reviewsData) setReviews(reviewsData);
 
-        // 2. Fetch Feedback (Negative Votes with content)
+        // 2. Fetch negative feedback votes
         const { data: feedbackData } = await supabase
             .from('content_votes')
             .select('*')
             .eq('vote_type', 'down')
-            .or('feedback.neq.null,reason.neq.null') // Only those with feedback
             .order('created_at', { ascending: false });
 
-        if (feedbackData) setFeedbackItems(feedbackData);
+        if (feedbackData && feedbackData.length > 0) {
+            // Enrich each item with the actual entity title
+            const articleIds = feedbackData.filter(f => f.entity_type === 'article').map(f => f.entity_id).filter(Boolean);
+            const serviceIds = feedbackData.filter(f => f.entity_type === 'service').map(f => f.entity_id).filter(Boolean);
+            const updateIds  = feedbackData.filter(f => f.entity_type === 'update').map(f => f.entity_id).filter(Boolean);
+
+            const [articlesRes, servicesRes, updatesRes] = await Promise.all([
+                articleIds.length  ? supabase.from('articles').select('id, title').in('id', articleIds)          : Promise.resolve({ data: [] }),
+                serviceIds.length  ? supabase.from('service_providers').select('id, name').in('id', serviceIds)  : Promise.resolve({ data: [] }),
+                updateIds.length   ? supabase.from('updates').select('id, title').in('id', updateIds)            : Promise.resolve({ data: [] }),
+            ]);
+
+            const entityMap: Record<string, string> = {};
+            (articlesRes.data  || []).forEach((a: any) => entityMap[a.id] = a.title);
+            (servicesRes.data  || []).forEach((s: any) => entityMap[s.id] = s.name);
+            (updatesRes.data   || []).forEach((u: any) => entityMap[u.id] = u.title);
+
+            setFeedbackItems(feedbackData.map(f => ({ ...f, entity_title: entityMap[f.entity_id] || null })));
+        } else {
+            setFeedbackItems(feedbackData || []);
+        }
 
         setLoading(false);
     };
 
-    // --- Reviews Handlers ---
+    // --- Reviews ---
     const handleDeleteReview = async (id: string) => {
         if (!confirm('حذف هذا التقييم؟')) return;
         const { error } = await supabase.from('service_reviews').delete().eq('id', id);
-        if (!error) {
-            toast.success('تم الحذف');
-            fetchData();
-        } else {
-            toast.error(error.message);
-        }
+        if (!error) { toast.success('تم الحذف'); fetchData(); }
+        else toast.error(error.message);
     };
 
     const handleReply = async (reviewId: string) => {
@@ -65,23 +79,36 @@ export default function AdminReviewsPage() {
         const { error } = await supabase.from('review_replies').insert([{
             review_id: reviewId, author_name: 'الإدارة', content: replyContent, is_official: true
         }]);
-        if (!error) {
-            toast.success('تم الرد');
-            setReplyContent('');
-            setReplyingTo(null);
-            fetchData();
-        }
+        if (!error) { toast.success('تم الرد'); setReplyContent(''); setReplyingTo(null); fetchData(); }
     };
 
-    // --- Feedback Handlers ---
-    const handleDeleteFeedback = async (id: string) => {
-        if (!confirm('حذف هذه الملاحظة؟')) return;
+    // --- Feedback ---
+    const handleResolveFeedback = async (id: string) => {
+        if (!confirm('هل تمت معالجة هذه الملاحظة؟ سيتم حذفها من القائمة.')) return;
         const { error } = await supabase.from('content_votes').delete().eq('id', id);
-        if (!error) {
-            toast.success('تم الحذف');
-            fetchData();
-        }
+        if (!error) { toast.success('تم وضع علامة "تمت المعالجة"'); fetchData(); }
     };
+
+    // Generate correct public URL for the complained content
+    function getEntityUrl(type: string, id: string): string {
+        switch (type) {
+            case 'article': return `/article/${id}`;
+            case 'service': return `/services/${id}`;
+            case 'update':  return `/updates#upd-${id}`;
+            case 'faq':     return `/faq`;
+            default:        return '#';
+        }
+    }
+
+    function entityTypeLabel(type: string): string {
+        const map: Record<string, string> = {
+            article: 'مقال',
+            service: 'خدمة',
+            update:  'تحديث',
+            faq:     'سؤال شائع',
+        };
+        return map[type] || type;
+    }
 
     if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>;
 
@@ -100,32 +127,110 @@ export default function AdminReviewsPage() {
             {/* Tabs */}
             <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 mb-6">
                 <button
+                    onClick={() => setActiveTab('feedback')}
+                    className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'feedback'
+                        ? 'border-amber-500 text-amber-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    <FileWarning size={16} />
+                    الملاحظات ({feedbackItems.length})
+                </button>
+                <button
                     onClick={() => setActiveTab('reviews')}
                     className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'reviews'
                         ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                        }`}
+                        : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
                     <Star size={16} />
                     التقييمات ({reviews.length})
                 </button>
-                <button
-                    onClick={() => setActiveTab('feedback')}
-                    className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'feedback'
-                        ? 'border-amber-500 text-amber-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                        }`}
-                >
-                    <FileWarning size={16} />
-                    الملاحظات ({feedbackitems.length})
-                </button>
             </div>
+
+            {/* FEEDBACK TAB */}
+            {activeTab === 'feedback' && (
+                <div className="grid gap-4">
+                    {feedbackItems.length === 0 ? (
+                        <div className="text-center py-20 text-slate-400">
+                            <FileWarning size={48} className="mx-auto mb-4 opacity-30" />
+                            <p className="font-bold">لا توجد ملاحظات سلبية</p>
+                        </div>
+                    ) : (
+                        feedbackItems.map((item) => (
+                            <div key={item.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border-r-4 border-r-amber-500 border border-slate-200 dark:border-slate-800 overflow-hidden">
+                                {/* Header: entity info */}
+                                <div className="px-5 py-4 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/30 flex items-center justify-between gap-3 flex-wrap">
+                                    <div className="flex items-center gap-3 flex-wrap">
+                                        <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                                            <AlertTriangle size={12} />
+                                            {item.reason || 'ملاحظة سلبية'}
+                                        </span>
+                                        <span className="text-xs text-slate-400 font-mono">
+                                            {entityTypeLabel(item.entity_type)}
+                                        </span>
+                                        {/* Content title + link */}
+                                        {item.entity_id && (
+                                            <Link
+                                                href={getEntityUrl(item.entity_type, item.entity_id)}
+                                                target="_blank"
+                                                className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors max-w-xs truncate"
+                                                title="فتح المحتوى في نافذة جديدة"
+                                            >
+                                                {item.entity_title
+                                                    ? <><ExternalLink size={13} className="shrink-0" />{item.entity_title}</>
+                                                    : <><ExternalLink size={13} className="shrink-0" /><span className="opacity-50 font-normal">فتح المحتوى</span></>
+                                                }
+                                            </Link>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-slate-400 whitespace-nowrap">
+                                        {new Date(item.created_at).toLocaleDateString('ar-EG')}
+                                    </span>
+                                </div>
+
+                                {/* Body: feedback text */}
+                                <div className="px-5 py-4">
+                                    {(item.feedback || item.reason) ? (
+                                        <p className="text-slate-800 dark:text-slate-100 leading-relaxed">
+                                            {item.feedback || item.reason}
+                                        </p>
+                                    ) : (
+                                        <p className="text-slate-400 italic text-sm">لم يترك الزائر تعليقاً نصياً</p>
+                                    )}
+                                </div>
+
+                                {/* Footer: actions */}
+                                <div className="px-5 pb-4 flex items-center justify-between gap-3">
+                                    <Link
+                                        href={getEntityUrl(item.entity_type, item.entity_id)}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-amber-600 transition-colors"
+                                    >
+                                        <ArrowRight size={16} className="rotate-180" />
+                                        الانتقال للمحتوى لمراجعته
+                                    </Link>
+                                    <button
+                                        onClick={() => handleResolveFeedback(item.id)}
+                                        className="flex items-center gap-2 text-sm font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 px-4 py-2 rounded-xl transition-colors"
+                                        title="تمت المعالجة — احذف من القائمة"
+                                    >
+                                        <CheckCircle2 size={18} />
+                                        تمت المعالجة
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
 
             {/* REVIEWS TAB */}
             {activeTab === 'reviews' && (
                 <div className="grid gap-6">
                     {reviews.length === 0 ? (
-                        <div className="text-center py-20 text-slate-500">لا توجد تقييمات</div>
+                        <div className="text-center py-20 text-slate-400">
+                            <Star size={48} className="mx-auto mb-4 opacity-20" />
+                            <p className="font-bold">لا توجد تقييمات</p>
+                        </div>
                     ) : (
                         reviews.map((review) => (
                             <div key={review.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
@@ -135,14 +240,14 @@ export default function AdminReviewsPage() {
                                         <div className="flex items-center gap-2 text-sm text-slate-500">
                                             <div className="flex text-amber-400">
                                                 {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} className={i < review.rating ? "text-amber-400" : "text-slate-200"} />
+                                                    <Star key={i} size={14} fill={i < review.rating ? 'currentColor' : 'none'} className={i < review.rating ? 'text-amber-400' : 'text-slate-200'} />
                                                 ))}
                                             </div>
                                             <span>• {review.service_name || 'خدمة'} •</span>
                                             <span>{new Date(review.created_at).toLocaleDateString('ar-EG')}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => handleDeleteReview(review.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg">
+                                    <button onClick={() => handleDeleteReview(review.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg" title="حذف التقييم">
                                         <Trash2 size={20} />
                                     </button>
                                 </div>
@@ -161,60 +266,21 @@ export default function AdminReviewsPage() {
                                     ))}
                                     {replyingTo === review.id ? (
                                         <div className="flex gap-2">
-                                            <input className="flex-1 border p-2 rounded-lg dark:bg-slate-800" value={replyContent} onChange={e => setReplyContent(e.target.value)} placeholder="اكتب الرد..." autoFocus />
-                                            <button onClick={() => handleReply(review.id)} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold">إرسال</button>
-                                            <button onClick={() => setReplyingTo(null)} className="px-4 py-2 font-bold text-slate-500">إلغاء</button>
+                                            <input
+                                                className="flex-1 border rounded-xl p-3 dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                value={replyContent}
+                                                onChange={e => setReplyContent(e.target.value)}
+                                                placeholder="اكتب رد الإدارة..."
+                                                autoFocus
+                                            />
+                                            <button onClick={() => handleReply(review.id)} className="bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-700">إرسال</button>
+                                            <button onClick={() => setReplyingTo(null)} className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-xl">إلغاء</button>
                                         </div>
                                     ) : (
                                         <button onClick={() => setReplyingTo(review.id)} className="text-emerald-600 font-bold text-sm flex items-center gap-2 hover:underline">
                                             <MessageCircle size={16} /> رد على التقييم
                                         </button>
                                     )}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            )}
-
-            {/* FEEDBACK TAB */}
-            {activeTab === 'feedback' && (
-                <div className="grid gap-4">
-                    {feedbackitems.length === 0 ? (
-                        <div className="text-center py-20 text-slate-500">لا توجد ملاحظات سلبية</div>
-                    ) : (
-                        feedbackitems.map((item) => (
-                            <div key={item.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-l-4 border-l-amber-500 border-slate-200 dark:border-slate-800">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                                            <AlertTriangle size={14} />
-                                            {item.reason || 'بدون سبب محدد'}
-                                        </span>
-                                        <span className="text-sm font-bold text-slate-500 uppercase">{item.entity_type}</span>
-                                    </div>
-                                    <button onClick={() => handleDeleteFeedback(item.id)} className="text-slate-400 hover:text-red-500 p-1" title="تمت المعالجة (حذف)">
-                                        <CheckCircle2 size={20} />
-                                    </button>
-                                </div>
-
-                                <p className="text-slate-800 dark:text-slate-200 font-medium text-lg mb-4 leading-relaxed">
-                                    {item.feedback ? `"${item.feedback}"` : <span className="text-slate-400 italic">بدون تعليق نصي</span>}
-                                </p>
-
-                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
-                                    <div className="flex items-center gap-4">
-                                        <span>{new Date(item.created_at).toLocaleDateString('ar-EG')}</span>
-                                        {/* Link to Entity */}
-                                        <Link
-                                            href={`/${item.entity_type === 'article' ? 'article' : item.entity_type === 'service' ? 'services' : ''}/${item.entity_id}`}
-                                            target="_blank"
-                                            className="flex items-center gap-1 hover:text-emerald-600 text-slate-500 transition-colors"
-                                        >
-                                            <ExternalLink size={12} /> عرض المحتوى
-                                        </Link>
-                                    </div>
-                                    <span className="font-mono opacity-50">{item.id.slice(0, 8)}</span>
                                 </div>
                             </div>
                         ))
