@@ -52,7 +52,22 @@ export function AnalyticsDashboard() {
 
                 if (e1 || e2 || e3) throw (e1 || e2 || e3);
 
-                setStats(general);
+                // Override content counts with direct queries (more accurate)
+                const [articles, updates, services, scenarios, zones] = await Promise.all([
+                    supabase.from('articles').select('id', { count: 'exact', head: true }),
+                    supabase.from('updates').select('id', { count: 'exact', head: true }),
+                    supabase.from('service_providers').select('id', { count: 'exact', head: true }),
+                    supabase.from('consultant_scenarios').select('id', { count: 'exact', head: true }),
+                    supabase.from('zones').select('id', { count: 'exact', head: true }),
+                ]);
+
+                setStats({
+                    ...general,
+                    total_articles: (articles.count || 0) + (updates.count || 0),
+                    total_services: services.count || general?.total_services || 0,
+                    total_scenarios: scenarios.count || general?.total_scenarios || 0,
+                    total_zones: zones.count || general?.total_zones || 0,
+                });
                 setDailyVisits(visits || []);
                 setTopPages(pages || []);
             } catch {
@@ -140,7 +155,7 @@ export function AnalyticsDashboard() {
                     نظرة عامة على المحتوى
                 </h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <ContentStatCard title="المقالات"          count={stats.total_articles}  icon={FileText}    color="emerald" label="مقال منشور"     />
+                    <ContentStatCard title="المحتوى المنشور"    count={stats.total_articles}  icon={FileText}    color="emerald" label="مقال وتحديث"    />
                     <ContentStatCard title="الخدمات"           count={stats.total_services}  icon={Briefcase}   color="blue"    label="مزود خدمة"     />
                     <ContentStatCard title="السيناريوهات"      count={stats.total_scenarios} icon={BrainCircuit} color="violet" label="سيناريو ذكي"    />
                     <ContentStatCard title="المناطق المحظورة"  count={stats.total_zones}     icon={MapPin}      color="red"     label="منطقة مسجلة"   />
