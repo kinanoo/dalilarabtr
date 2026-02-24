@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import AdminPushPanel from '@/components/admin/AdminPushPanel';
 import { ActionCenter } from '@/components/admin/ActionCenter';
+import { AdminActivityFeed } from '@/components/admin/AdminActivityFeed';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { motion } from 'framer-motion';
 
@@ -84,7 +85,12 @@ export default function AdminDashboard() {
         <ActionCenter />
       </motion.section>
 
-      {/* 3. Analytics Dashboard */}
+      {/* 3. Live Activity Feed */}
+      <motion.section variants={itemVariants}>
+        <AdminActivityFeed />
+      </motion.section>
+
+      {/* 4. Analytics Dashboard */}
       <motion.section variants={itemVariants}>
         <AnalyticsDashboard />
       </motion.section>
