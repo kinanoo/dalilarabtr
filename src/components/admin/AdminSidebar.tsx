@@ -17,7 +17,8 @@ import {
     ChevronRight,
     BrainCircuit,
     ShieldCheck,
-    Megaphone
+    Megaphone,
+    Users
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -89,6 +90,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
         {
             title: 'التفاعل',
             items: [
+                { href: '/admin/members', label: 'الأعضاء', icon: Users },
                 { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
                 { href: '/admin/reviews', label: 'التقييمات', icon: Star },
                 { href: '/admin/community', label: 'المجتمع', icon: MessageSquare },
