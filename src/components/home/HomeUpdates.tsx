@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper } from 'lucide-react';
+import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink } from 'lucide-react';
 
 function isNewContent(dateStr: string): boolean {
     if (!dateStr) return false;
@@ -14,12 +14,15 @@ function isNewContent(dateStr: string): boolean {
 }
 
 const AUTO_ICON_MAP: Record<string, { icon: typeof FileText; bg: string; text: string }> = {
-    new_article:  { icon: FileText,    bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600' },
-    new_scenario: { icon: AlertCircle, bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600' },
-    new_faq:      { icon: HelpCircle,  bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600' },
-    new_code:     { icon: Shield,      bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600' },
-    new_zone:     { icon: MapPin,      bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600' },
-    new_update:   { icon: Newspaper,   bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600' },
+    new_article:  { icon: FileText,     bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600' },
+    new_scenario: { icon: AlertCircle,  bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600' },
+    new_faq:      { icon: HelpCircle,   bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600' },
+    new_code:     { icon: Shield,       bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600' },
+    new_zone:     { icon: MapPin,       bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600' },
+    new_update:   { icon: Newspaper,    bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600' },
+    new_service:  { icon: Briefcase,    bg: 'bg-cyan-100 dark:bg-cyan-900/30',       text: 'text-cyan-600' },
+    new_tool:     { icon: Wrench,       bg: 'bg-pink-100 dark:bg-pink-900/30',       text: 'text-pink-600' },
+    new_source:   { icon: ExternalLink, bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600' },
 };
 
 export default function HomeUpdates({ updates }: { updates: any[] }) {

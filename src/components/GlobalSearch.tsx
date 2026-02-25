@@ -380,7 +380,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
           onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
           onFocus={() => { if (query) setIsOpen(true); }}
           placeholder={isHero ? "ماذا تريد أن تعرف اليوم؟ (إقامة، قانون...)" : "ابحث بأي صيغة... (ضيعت كملك، فقدت جواز، بسبور ضاع...)"}
-          autoFocus={isHero}
+          autoFocus={false}
           className={`
             w-full transition-all outline-none border-0
             ${isHero

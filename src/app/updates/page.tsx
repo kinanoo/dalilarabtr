@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import PageHero from '@/components/PageHero';
 import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
 import { supabase } from '@/lib/supabaseClient';
-import { Bell, Sparkles, Loader2, Calendar, MessageSquare, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, ArrowLeft } from 'lucide-react';
+import { Bell, Sparkles, Loader2, Calendar, MessageSquare, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, ArrowLeft, Briefcase, Wrench, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import UniversalComments from '@/components/community/UniversalComments';
@@ -12,15 +12,18 @@ import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 
-const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update'];
+const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update', 'new_service', 'new_tool', 'new_source'];
 
 const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: typeof FileText; bg: string; text: string; href: (id: string) => string }> = {
-  new_article:  { type: 'مقال',    icon: FileText,    bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600', href: (id) => `/article/${id}` },
-  new_scenario: { type: 'سيناريو', icon: AlertCircle, bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600',    href: () => `/consultant` },
-  new_faq:      { type: 'سؤال',    icon: HelpCircle,  bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600',  href: () => `/faq` },
-  new_code:     { type: 'كود أمني', icon: Shield,      bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600',     href: () => `/security-codes` },
-  new_zone:     { type: 'منطقة',   icon: MapPin,      bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600',  href: () => `/zones` },
-  new_update:   { type: 'خبر',     icon: Newspaper,   bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600',   href: (id) => `/updates#upd-${id}` },
+  new_article:  { type: 'مقال',      icon: FileText,     bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600', href: (id) => `/article/${id}` },
+  new_scenario: { type: 'سيناريو',   icon: AlertCircle,  bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600',    href: () => `/consultant` },
+  new_faq:      { type: 'سؤال',      icon: HelpCircle,   bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600',  href: () => `/faq` },
+  new_code:     { type: 'كود أمني',   icon: Shield,       bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600',     href: () => `/security-codes` },
+  new_zone:     { type: 'منطقة',     icon: MapPin,       bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600',  href: () => `/zones` },
+  new_update:   { type: 'خبر',       icon: Newspaper,    bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600',   href: (id) => `/updates#upd-${id}` },
+  new_service:  { type: 'خدمة',      icon: Briefcase,    bg: 'bg-cyan-100 dark:bg-cyan-900/30',       text: 'text-cyan-600',    href: (id) => `/services/${id}` },
+  new_tool:     { type: 'أداة',      icon: Wrench,       bg: 'bg-pink-100 dark:bg-pink-900/30',       text: 'text-pink-600',    href: () => `/tools` },
+  new_source:   { type: 'مصدر رسمي', icon: ExternalLink, bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600',    href: () => `/sources` },
 };
 
 export default function UpdatesPage() {

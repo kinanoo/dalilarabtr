@@ -100,6 +100,24 @@ export default function Navbar() {
   const navRef = useRef<HTMLElement>(null);
   const portalTarget = typeof document !== 'undefined' ? document.body : null;
 
+  // Hide navbar on scroll down, show on scroll up
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current && currentY > 200) {
+        setNavHidden(true);
+      } else if (currentY < lastScrollY.current) {
+        setNavHidden(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Fetch Dynamic Menus & Tools
   useEffect(() => {
     async function fetchData() {
@@ -399,7 +417,7 @@ export default function Navbar() {
       <TopBar />
       <header
         ref={navRef}
-        className="sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-all duration-300"
+        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-600 to-transparent opacity-80" />

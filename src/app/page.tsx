@@ -60,15 +60,18 @@ async function getCategories() {
 }
 
 // 2. Updates (manual + auto events from activity log)
-const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update'];
+const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update', 'new_service', 'new_tool', 'new_source'];
 
 const AUTO_EVENT_CONFIG: Record<string, { type: string; href: (entityId: string) => string }> = {
-  new_article:  { type: 'مقال',    href: (id) => `/article/${id}` },
-  new_scenario: { type: 'سيناريو', href: () => `/consultant` },
-  new_faq:      { type: 'سؤال',    href: () => `/faq` },
-  new_code:     { type: 'كود أمني', href: () => `/security-codes` },
-  new_zone:     { type: 'منطقة',   href: () => `/zones` },
-  new_update:   { type: 'خبر',     href: (id) => `/updates#upd-${id}` },
+  new_article:  { type: 'مقال',      href: (id) => `/article/${id}` },
+  new_scenario: { type: 'سيناريو',   href: () => `/consultant` },
+  new_faq:      { type: 'سؤال',      href: () => `/faq` },
+  new_code:     { type: 'كود أمني',   href: () => `/security-codes` },
+  new_zone:     { type: 'منطقة',     href: () => `/zones` },
+  new_update:   { type: 'خبر',       href: (id) => `/updates#upd-${id}` },
+  new_service:  { type: 'خدمة',      href: (id) => `/services/${id}` },
+  new_tool:     { type: 'أداة',      href: () => `/tools` },
+  new_source:   { type: 'مصدر رسمي', href: () => `/sources` },
 };
 
 async function getUpdates() {

@@ -141,3 +141,49 @@ DROP TRIGGER IF EXISTS on_new_update_log ON updates;
 CREATE TRIGGER on_new_update_log
     AFTER INSERT ON updates
     FOR EACH ROW EXECUTE FUNCTION log_new_update();
+
+-- G. New tool registered
+CREATE OR REPLACE FUNCTION log_new_tool()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO admin_activity_log (event_type, title, detail, entity_id, entity_table)
+    VALUES (
+        'new_tool',
+        'أداة جديدة: ' || COALESCE(NEW.name, 'بدون اسم'),
+        COALESCE(NEW.route, ''),
+        COALESCE(NEW.key, NEW.name, '')::TEXT,
+        'tools_registry'
+    );
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_new_tool_log ON tools_registry;
+CREATE TRIGGER on_new_tool_log
+    AFTER INSERT ON tools_registry
+    FOR EACH ROW EXECUTE FUNCTION log_new_tool();
+
+-- H. New official source added
+CREATE OR REPLACE FUNCTION log_new_source()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO admin_activity_log (event_type, title, detail, entity_id, entity_table)
+    VALUES (
+        'new_source',
+        'مصدر رسمي: ' || COALESCE(NEW.name, 'بدون اسم'),
+        COALESCE(NEW.description, ''),
+        NEW.id::TEXT,
+        'official_sources'
+    );
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_new_source_log ON official_sources;
+CREATE TRIGGER on_new_source_log
+    AFTER INSERT ON official_sources
+    FOR EACH ROW EXECUTE FUNCTION log_new_source();
