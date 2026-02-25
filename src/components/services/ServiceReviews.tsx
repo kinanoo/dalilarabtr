@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Star, ThumbsUp, MessageCircle, CheckCircle2, Flag, AlertTriangle } from 'lucide-react';
+import { Star, ThumbsUp, MessageCircle, CheckCircle2, Flag, AlertTriangle, LogIn, X } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { createBrowserClient } from '@supabase/ssr';
 import { hasUserReviewed, reportReview } from '@/lib/api/reviews';
@@ -48,6 +49,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
     const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
     const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
     const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     // Auth check + has-reviewed check
     useEffect(() => {
@@ -132,7 +134,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
 
     const handleAddReviewClick = () => {
         if (isGuest) {
-            window.location.href = '/login?message=' + encodeURIComponent('التقييم متاح حصرياً للأعضاء المسجلين. سجّل دخولك لمشاركة تجربتك.');
+            setShowLoginModal(true);
             return;
         }
         if (alreadyReviewed) return;
@@ -253,7 +255,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                                                 <button
                                                     onClick={() => {
                                                         if (isGuest) {
-                                                            window.location.href = '/login?message=' + encodeURIComponent('الإبلاغ عن التقييمات متاح للأعضاء المسجلين فقط.');
+                                                            setShowLoginModal(true);
                                                             return;
                                                         }
                                                         setReportingReviewId(isReporting ? null : review.id);
@@ -323,7 +325,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                 )}
             </div>
 
-            {/* Modal */}
+            {/* Add Review Modal */}
             <AddReviewModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -335,6 +337,53 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                     setAlreadyReviewed(true);
                 }}
             />
+
+            {/* Login Prompt Modal */}
+            {showLoginModal && (
+                <div
+                    className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowLoginModal(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full text-center animate-in zoom-in-95 slide-in-from-bottom-2 duration-300 relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setShowLoginModal(false)}
+                            className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-400"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        <div className="w-14 h-14 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Star size={28} className="text-amber-500" />
+                        </div>
+
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                            التقييم للأعضاء فقط
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
+                            سجّل دخولك لتتمكن من تقييم الخدمات والإبلاغ عن التقييمات. مشاركتك تساعد الآخرين في اتخاذ قراراتهم.
+                        </p>
+
+                        <div className="flex flex-col gap-2">
+                            <Link
+                                href="/login"
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                            >
+                                <LogIn size={18} />
+                                تسجيل الدخول
+                            </Link>
+                            <button
+                                onClick={() => setShowLoginModal(false)}
+                                className="w-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold py-2 px-4 rounded-xl transition-colors text-sm"
+                            >
+                                ليس الآن
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
