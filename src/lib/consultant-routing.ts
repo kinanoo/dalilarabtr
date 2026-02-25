@@ -177,5 +177,14 @@ export const SCENARIO_ROUTING: Record<string, { link?: string; articleId?: strin
   "daily-bank-open": {},
   "daily-citizenship-status": {
     "link": "/article/citizenship-status-check"
+  },
+  "protection-status-2026": {
+    "kbQuery": "الحماية المؤقتة 2026 إنهاء كملك إقامة تأمين صحي تحويل"
+  },
+  "syria-visit-official": {
+    "kbQuery": "زيارة سوريا كملك معبر رسمي باب الهوى جرابلس إذن"
+  },
+  "syria-mass-return-2025": {
+    "kbQuery": "العودة الجماعية سوريا 2024 2025 طوعية ترحيل UNHCR حقوق"
   }
 };
