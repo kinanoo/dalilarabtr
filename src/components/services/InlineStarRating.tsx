@@ -37,6 +37,7 @@ export default function InlineStarRating({
     const [successMsg, setSuccessMsg] = useState('');
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
     const [displayRating, setDisplayRating] = useState(currentRating);
     const [displayCount, setDisplayCount] = useState(reviewCount);
 
@@ -150,14 +151,18 @@ export default function InlineStarRating({
     // Update existing review
     const handleUpdate = async () => {
         if (selectedRating === 0 || submitting || !userId) return;
+        setErrorMsg('');
         setSubmitting(true);
 
-        const { success: ok } = await updateReview(serviceId, userId, {
+        const { success: ok, error } = await updateReview(serviceId, userId, {
             rating: selectedRating,
         });
 
         setSubmitting(false);
-        if (!ok) return;
+        if (!ok) {
+            setErrorMsg(error?.message || 'فشل تحديث التقييم');
+            return;
+        }
 
         // Optimistic: recalculate average (remove old, add new)
         if (displayCount > 0) {
@@ -173,12 +178,17 @@ export default function InlineStarRating({
     // Delete review
     const handleDelete = async () => {
         if (submitting || !userId) return;
+        setErrorMsg('');
         setSubmitting(true);
 
-        const { success: ok } = await deleteReview(serviceId, userId);
+        const { success: ok, error } = await deleteReview(serviceId, userId);
 
         setSubmitting(false);
-        if (!ok) return;
+        if (!ok) {
+            setShowConfirmDelete(false);
+            setErrorMsg(error?.message || 'فشل حذف التقييم');
+            return;
+        }
 
         // Optimistic: remove from average
         if (displayCount > 1) {
@@ -325,6 +335,13 @@ export default function InlineStarRating({
                                 إلغاء
                             </button>
                         </div>
+
+                        {/* Error message */}
+                        {errorMsg && (
+                            <div className="mt-3 p-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg text-xs text-red-600 dark:text-red-400 font-bold text-center">
+                                {errorMsg}
+                            </div>
+                        )}
 
                         {/* Delete option (edit mode only) */}
                         {popupMode === 'edit' && (

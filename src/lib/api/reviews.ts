@@ -237,13 +237,17 @@ export async function updateReview(
     if (!supabase || !userId) return { success: false, error: 'Missing params' };
 
     try {
-        const { error } = await supabase
+        const { data: rows, error } = await supabase
             .from('service_reviews')
             .update(data)
             .eq('service_id', serviceId)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .select();
 
         if (error) throw error;
+        if (!rows || rows.length === 0) {
+            return { success: false, error: { message: 'لم يتم العثور على التقييم — شغّل ملف SQL في Supabase' } };
+        }
         return { success: true, error: null };
     } catch (error) {
         console.error('Error updating review:', error);
@@ -262,13 +266,17 @@ export async function deleteReview(
     if (!supabase || !userId) return { success: false, error: 'Missing params' };
 
     try {
-        const { error } = await supabase
+        const { data: rows, error } = await supabase
             .from('service_reviews')
             .delete()
             .eq('service_id', serviceId)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .select();
 
         if (error) throw error;
+        if (!rows || rows.length === 0) {
+            return { success: false, error: { message: 'لم يتم الحذف — شغّل ملف add_user_id_to_comments.sql في Supabase' } };
+        }
         return { success: true, error: null };
     } catch (error) {
         console.error('Error deleting review:', error);

@@ -88,14 +88,16 @@ export async function postComment(payload: {
 }) {
     if (!supabase) return { data: null, error: 'Supabase not initialized' };
 
+    // Destructure user_id out so it's not spread into insert when absent
+    const { user_id, ...rest } = payload;
     const insertObj: any = {
-        ...payload,
+        ...rest,
         page_slug: payload.entity_id, // backward compat
         status: 'approved',
     };
-    // Only include user_id if provided (avoid null overwrite)
-    if (payload.user_id) {
-        insertObj.user_id = payload.user_id;
+    // Only include user_id if provided (column may not exist yet)
+    if (user_id) {
+        insertObj.user_id = user_id;
     }
 
     const { data, error } = await supabase
@@ -103,6 +105,18 @@ export async function postComment(payload: {
         .insert([insertObj])
         .select()
         .single();
+
+    // If insert failed and we included user_id, retry without it
+    // (user_id column may not exist yet if migration hasn't been run)
+    if (error && user_id) {
+        delete insertObj.user_id;
+        const { data: retryData, error: retryError } = await supabase
+            .from('comments')
+            .insert([insertObj])
+            .select()
+            .single();
+        return { data: retryData, error: retryError };
+    }
 
     return { data, error };
 }
