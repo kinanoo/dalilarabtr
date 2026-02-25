@@ -59,24 +59,63 @@ async function getCategories() {
   }
 }
 
-// 2. Updates
+// 2. Updates (manual + auto events from activity log)
+const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update'];
+
+const AUTO_EVENT_CONFIG: Record<string, { type: string; href: (entityId: string) => string }> = {
+  new_article:  { type: 'مقال',    href: (id) => `/article/${id}` },
+  new_scenario: { type: 'سيناريو', href: () => `/consultant` },
+  new_faq:      { type: 'سؤال',    href: () => `/faq` },
+  new_code:     { type: 'كود أمني', href: () => `/security-codes` },
+  new_zone:     { type: 'منطقة',   href: () => `/zones` },
+  new_update:   { type: 'خبر',     href: (id) => `/updates#upd-${id}` },
+};
+
 async function getUpdates() {
-  // const supabase = createClient(); // Removed
   try {
     if (!supabase) return [];
-    const { data: updates } = await supabase
-      .from('updates')
-      .select('id, title, date, type')
-      .eq('active', true)
-      .eq('type', 'news') // Only show news updates in the log
-      .order('date', { ascending: false })
-      .limit(5);
 
-    // Filter out updates with future dates
+    // Fetch manual news + auto events in parallel
+    const [manualRes, autoRes] = await Promise.all([
+      supabase
+        .from('updates')
+        .select('id, title, date, type')
+        .eq('active', true)
+        .eq('type', 'news')
+        .order('date', { ascending: false })
+        .limit(5),
+      supabase
+        .from('admin_activity_log')
+        .select('id, event_type, title, entity_id, created_at')
+        .in('event_type', PUBLIC_EVENT_TYPES)
+        .order('created_at', { ascending: false })
+        .limit(10),
+    ]);
+
     const today = new Date().toISOString().split('T')[0];
-    const validUpdates = (updates || []).filter(u => u.date <= today);
+    const manualUpdates = (manualRes.data || [])
+      .filter(u => u.date <= today)
+      .map(u => ({ ...u, source: 'manual' as const, href: `/updates#upd-${u.id}` }));
 
-    return validUpdates;
+    const autoEvents = (autoRes.data || []).map(e => {
+      const cfg = AUTO_EVENT_CONFIG[e.event_type];
+      return {
+        id: e.id,
+        title: e.title,
+        date: e.created_at.split('T')[0],
+        type: cfg?.type || 'تحديث',
+        source: 'auto' as const,
+        event_type: e.event_type,
+        href: cfg?.href(e.entity_id || '') || '/updates',
+      };
+    });
+
+    // Merge and sort by date descending, limit to 10
+    const merged = [...manualUpdates, ...autoEvents]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 10);
+
+    return merged;
   } catch (error) {
     console.error('Error fetching updates:', error);
     return [];

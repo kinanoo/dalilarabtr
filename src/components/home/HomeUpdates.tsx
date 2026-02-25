@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bell, ArrowLeft, Calendar, Sparkles } from 'lucide-react';
+import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper } from 'lucide-react';
 
 function isNewContent(dateStr: string): boolean {
     if (!dateStr) return false;
@@ -13,11 +13,19 @@ function isNewContent(dateStr: string): boolean {
     return diffDays <= 7;
 }
 
+const AUTO_ICON_MAP: Record<string, { icon: typeof FileText; bg: string; text: string }> = {
+    new_article:  { icon: FileText,    bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600' },
+    new_scenario: { icon: AlertCircle, bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600' },
+    new_faq:      { icon: HelpCircle,  bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600' },
+    new_code:     { icon: Shield,      bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600' },
+    new_zone:     { icon: MapPin,      bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600' },
+    new_update:   { icon: Newspaper,   bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600' },
+};
+
 export default function HomeUpdates({ updates }: { updates: any[] }) {
-    // Construct base list safely
     if (!updates || updates.length === 0) return null;
 
-    const minBaseCount = 5; // Reduced from 10 to save DOM nodes
+    const minBaseCount = 5;
     let baseList = [...updates];
     while (baseList.length < minBaseCount) {
         baseList = [...baseList, ...updates];
@@ -35,7 +43,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                             شريط التحديثات
                         </h2>
                         <p className="text-xs text-slate-500 font-medium mt-1">
-                            أحدث الأخبار والقوانين الصادرة في تركيا
+                            أحدث الأخبار والمحتوى المُضاف تلقائياً
                         </p>
                     </div>
                 </div>
@@ -56,9 +64,8 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
                     <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
 
-                    {/* Track Container with custom CSS animation class */}
+                    {/* Track Container */}
                     <div className="flex w-max relative group-hover:paused">
-                        {/* Define inline keyframes to mimic the loop */}
                         <style dangerouslySetInnerHTML={{
                             __html: `
                             @keyframes ticker-scroll {
@@ -76,14 +83,14 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                             {/* List 1 */}
                             <div className="flex items-center gap-4 pr-4 shrink-0">
                                 {baseList.map((update, index) => (
-                                    <UpdateCard key={`l1-${update.id}-${index}`} update={update} onClick={(e) => { }} />
+                                    <UpdateCard key={`l1-${update.id}-${index}`} update={update} />
                                 ))}
                             </div>
 
-                            {/* List 2 (Replica for seamless loop — hidden from screen readers) */}
+                            {/* List 2 (seamless loop) */}
                             <div className="flex items-center gap-4 pr-4 shrink-0" aria-hidden="true">
                                 {baseList.map((update, index) => (
-                                    <UpdateCard key={`l2-${update.id}-${index}`} update={update} onClick={(e) => { }} />
+                                    <UpdateCard key={`l2-${update.id}-${index}`} update={update} />
                                 ))}
                             </div>
                         </div>
@@ -94,36 +101,46 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     );
 }
 
-// Subcomponent for cleaner code
-function UpdateCard({ update, onClick }: { update: any, onClick: (e: React.MouseEvent) => void }) {
+function UpdateCard({ update }: { update: any }) {
+    const isAuto = update.source === 'auto';
+    const iconConfig = isAuto ? AUTO_ICON_MAP[update.event_type] : null;
+    const href = update.href || `/updates#upd-${update.id}`;
+
     return (
         <Link
-            href={`/updates#upd-${update.id}`}
-            draggable="false" // Prevent native drag link behavior
-            onClick={onClick}
-            className="block w-[280px] md:w-[350px] h-[120px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group relative overflow-hidden"
+            href={href}
+            draggable="false"
+            className="block w-[280px] md:w-[350px] h-[120px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group/card relative overflow-hidden"
             dir="rtl"
         >
             <div className="flex items-start gap-4 h-full">
-                {update.image && (
+                {/* Auto event: colored icon | Manual: image */}
+                {isAuto && iconConfig ? (
+                    <div className={`w-24 h-full flex-shrink-0 rounded-xl ${iconConfig.bg} flex items-center justify-center`}>
+                        <iconConfig.icon size={32} className={iconConfig.text} />
+                    </div>
+                ) : update.image ? (
                     <div className="relative w-24 h-full flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <Image
                             src={update.image}
                             alt={update.title || "صورة الخبر"}
                             fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-500 select-none pointer-events-none"
+                            className="object-cover group-hover/card:scale-110 transition-transform duration-500 select-none pointer-events-none"
                             sizes="80px"
                         />
                     </div>
-                )}
+                ) : null}
 
                 <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${update.type === 'هام' || update.type === 'عاجل'
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                                }`}>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                update.type === 'هام' || update.type === 'عاجل'
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                    : isAuto
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                            }`}>
                                 {update.type}
                             </span>
                             {isNewContent(update.date) && (
@@ -133,7 +150,7 @@ function UpdateCard({ update, onClick }: { update: any, onClick: (e: React.Mouse
                             )}
                         </div>
 
-                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug line-clamp-2 group-hover/card:text-emerald-600 transition-colors">
                             {update.title}
                         </h3>
                     </div>
@@ -142,7 +159,7 @@ function UpdateCard({ update, onClick }: { update: any, onClick: (e: React.Mouse
                         <span className="text-[10px] text-slate-400 flex items-center gap-1">
                             <Calendar size={12} /> {update.date}
                         </span>
-                        <span className="text-[10px] font-bold text-emerald-600 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300 flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-emerald-600 opacity-0 group-hover/card:opacity-100 -translate-x-2 group-hover/card:translate-x-0 transition-all duration-300 flex items-center gap-1">
                             اقرأ المزيد <ArrowLeft size={10} />
                         </span>
                     </div>
