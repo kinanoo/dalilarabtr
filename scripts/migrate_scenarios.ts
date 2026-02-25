@@ -34,8 +34,7 @@ async function migrateScenarios() {
             sources: scenario.sources || [],
             article_id: scenario.articleId || null,
             kb_query: scenario.kbQuery || null,
-            link: scenario.link || null,
-            updated_at: new Date().toISOString()
+            link: scenario.link || null
         };
 
         const { error } = await supabase
