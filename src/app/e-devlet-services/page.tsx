@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabaseClient';
 import EDevletServicesHub from '@/components/EDevletServicesHub';
 import type { Article } from '@/lib/types';
 import { Metadata } from 'next';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'خدمات e-Devlet للأجانب | دليل العرب في تركيا',
@@ -39,6 +41,14 @@ export default async function EDevletServicesPage() {
           source: article.source ?? undefined,
         }))}
       />
+      <div className="flex justify-center py-6">
+        <ShareMenu
+          title="خدمات e-Devlet للأجانب"
+          text="روابط مباشرة لأهم خدمات بوابة الحكومة التركية الإلكترونية e-Devlet."
+          url={`${SITE_CONFIG.siteUrl}/e-devlet-services`}
+          variant="subtle"
+        />
+      </div>
     </main>
   );
 }

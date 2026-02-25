@@ -8,6 +8,8 @@ import { MapPin, Phone, Briefcase, Star, CheckCircle, ArrowRight, ShieldCheck } 
 import ServiceReviews from '@/components/services/ServiceReviews';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 60;
 
@@ -142,7 +144,7 @@ export default async function ServiceDetailsPage(
                         </div>
                     </div>
 
-                    {/* Contact */}
+                    {/* Contact + Share */}
                     <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <a
                             href={whatsappUrl}
@@ -160,6 +162,14 @@ export default async function ServiceDetailsPage(
                                 عضو موثق ومرخص
                             </div>
                         )}
+                    </div>
+
+                    <div className="mt-4 flex justify-center">
+                        <ShareMenu
+                            title={`${provider.name} — ${provider.profession}`}
+                            text={`${provider.name} — ${provider.profession} في ${provider.city}. تواصل عبر دليل العرب.`}
+                            url={`${SITE_CONFIG.siteUrl}/services/${id}`}
+                        />
                     </div>
                 </div>
             </div>

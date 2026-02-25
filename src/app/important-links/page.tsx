@@ -17,6 +17,8 @@ import PageHero from '@/components/PageHero';
 import { OFFICIAL_SOURCES } from '@/lib/constants';
 import { ExternalLink, Link2, ShieldCheck, Users, Globe, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 type ImportantLink = {
   name: string;
@@ -223,6 +225,15 @@ export default function ImportantLinksPage() {
           placeholder="ابحث عن رابط، جهة حكومية، أو منظمة..."
         />
       </PageHero>
+
+      <div className="flex justify-center -mt-4 mb-4">
+        <ShareMenu
+          title="روابط هامة — دليل العرب في تركيا"
+          text="دليلك الشامل للمواقع الحكومية والمنظمات الإنسانية الموثوقة في تركيا."
+          url={`${SITE_CONFIG.siteUrl}/important-links`}
+          variant="subtle"
+        />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-16">
 

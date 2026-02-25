@@ -72,8 +72,8 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                         <style dangerouslySetInnerHTML={{
                             __html: `
                             @keyframes ticker-scroll {
-                                0% { transform: translateX(0); }
-                                100% { transform: translateX(-50%); }
+                                0% { transform: translateX(-50%); }
+                                100% { transform: translateX(0); }
                             }
                             .animate-ticker-scroll {
                                 animation: ticker-scroll 40s linear infinite;

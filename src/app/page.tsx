@@ -204,13 +204,13 @@ export default async function Home() {
         <HomeConsultantBtn />
       </HeroSection>
 
-      {/* 🧭 Guided Journey (Client) */}
-      <GuidedJourney />
-
-      {/* 2. LATEST UPDATES (Server) - Moved Here */}
+      {/* 2. LATEST UPDATES — right after Hero, before Journey */}
       <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>
         <HomeUpdates updates={updates} />
       </Suspense>
+
+      {/* 🧭 Guided Journey (Client) */}
+      <GuidedJourney />
 
       {/* 3. CATEGORIES (Server) */}
       <Suspense fallback={<div className="flex justify-center py-10"><Loader2 className="animate-spin text-emerald-600" /></div>}>

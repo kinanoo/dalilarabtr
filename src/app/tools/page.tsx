@@ -9,6 +9,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import PageHero from '@/components/PageHero';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 import {
   Calculator,
   ShieldAlert,
@@ -229,6 +231,15 @@ export default function ToolsPage() {
         description="حاسبات وأدوات ذكية لمساعدتك في فهم وضعك القانوني في تركيا"
         icon={<Wrench className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
       />
+
+      <div className="flex justify-center -mt-4 mb-4">
+        <ShareMenu
+          title="أدوات مجانية للأجانب في تركيا"
+          text="مجموعة أدوات مجانية لمساعدة الأجانب في تركيا: حاسبة الحظر، فاحص الكملك، المستشار القانوني والمزيد."
+          url={`${SITE_CONFIG.siteUrl}/tools`}
+          variant="subtle"
+        />
+      </div>
 
       <section className="px-4 py-10 flex-grow">
         <div className="max-w-6xl mx-auto">

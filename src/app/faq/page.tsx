@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import { FAQCategory, FAQQuestion } from '@/lib/faq-types';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'الأسئلة الشائعة | دليل العرب في تركيا',
@@ -131,6 +133,14 @@ export default async function FAQPage() {
       <Suspense fallback={<div>جاري تحميل الأسئلة...</div>}>
         <FAQClientNew staticData={mergedData} totalCount={totalCount} />
       </Suspense>
+      <div className="flex justify-center py-6">
+        <ShareMenu
+          title="الأسئلة الشائعة — دليل العرب في تركيا"
+          text="إجابات شاملة على أكثر من 600 سؤال حول الإقامة، الكملك، العمل، والحياة في تركيا."
+          url={`${SITE_CONFIG.siteUrl}/faq`}
+          variant="subtle"
+        />
+      </div>
     </>
   );
 }

@@ -6,6 +6,8 @@ import {
     ExternalLink, Info, Copy, ArrowRight, UserCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 import { Metadata } from 'next';
 
@@ -201,7 +203,16 @@ export default function KimlikCheckPage() {
 
                     </div>
 
-                    <div className="mt-8 text-center">
+                    <div className="mt-6 flex justify-center">
+                        <ShareMenu
+                            title="فاحص الكملك التركي"
+                            text="تحقق من صحة رقم الكملك (TC) وصلاحية القيد — أداة مجانية من دليل العرب."
+                            url={`${SITE_CONFIG.siteUrl}/tools/kimlik-check`}
+                            variant="subtle"
+                        />
+                    </div>
+
+                    <div className="mt-4 text-center">
                         <Link
                             href="/"
                             className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"

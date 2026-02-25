@@ -2,6 +2,8 @@
 
 import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 import { Metadata } from 'next';
 
@@ -67,7 +69,16 @@ export default function PharmacyPage() {
                         </div>
                     </div>
 
-                    <div className="mt-8 text-center">
+                    <div className="mt-6 flex justify-center">
+                        <ShareMenu
+                            title="الصيدليات المناوبة في تركيا"
+                            text="رابط مباشر لمعرفة الصيدلية المناوبة في منطقتك عبر بوابة e-Devlet الرسمية."
+                            url={`${SITE_CONFIG.siteUrl}/tools/pharmacy`}
+                            variant="subtle"
+                        />
+                    </div>
+
+                    <div className="mt-4 text-center">
                         <Link
                             href="/"
                             className="inline-flex items-center gap-2 text-slate-500 hover:text-red-500 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"

@@ -4,6 +4,8 @@ import PageHero from '@/components/PageHero';
 import { useAdminSources } from '@/lib/useAdminData';
 import { Building2, ExternalLink, ShieldCheck, Globe, Copy, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 function SourceCard({ source }: { source: { id: string; name: string; url: string; desc: string } }) {
   const [copied, setCopied] = useState(false);
@@ -91,6 +93,15 @@ export default function SourcesPage() {
         description="روابط مباشرة وآمنة من المواقع الحكومية التركية."
         icon={<Building2 className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
       />
+
+      <div className="flex justify-center -mt-4 mb-4">
+        <ShareMenu
+          title="المصادر الحكومية الرسمية"
+          text="روابط مباشرة وآمنة من المواقع الحكومية التركية — دليل العرب."
+          url={`${SITE_CONFIG.siteUrl}/sources`}
+          variant="subtle"
+        />
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full">
         {loading ? (

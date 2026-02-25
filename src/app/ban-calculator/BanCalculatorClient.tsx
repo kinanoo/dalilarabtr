@@ -2,6 +2,8 @@
 'use client';
 
 import PageHero from '@/components/PageHero';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 import { useState } from 'react';
 import { Calculator, AlertTriangle, CheckCircle, Info, Plane, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,6 +78,9 @@ export default function BanCalculator() {
         description="اعرف المدة القانونية لمنع الدخول إلى تركيا بناءً على مخالفتك."
         icon={<Calculator className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
       />
+      <div className="flex justify-center -mt-4 mb-4">
+        <ShareMenu title="حاسبة مدة المنع" text="اعرف المدة القانونية لمنع الدخول إلى تركيا بناءً على مخالفتك." url={`${SITE_CONFIG.siteUrl}/ban-calculator`} variant="subtle" />
+      </div>
 
       {/* Main Container - Widened for horizontal layout */}
       <div className="max-w-5xl mx-auto px-4 py-8 mt-10 relative z-10">
