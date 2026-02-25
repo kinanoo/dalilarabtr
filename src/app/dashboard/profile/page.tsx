@@ -124,6 +124,8 @@ export default function ProfilePage() {
                                 bucket="public"
                                 path="avatars"
                                 label="تغيير الصورة"
+                                maxWidth={300}
+                                quality={0.6}
                             />
                         </div>
                     </div>

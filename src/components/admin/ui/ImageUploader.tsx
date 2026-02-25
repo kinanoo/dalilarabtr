@@ -2,8 +2,47 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
+
+// Compress image client-side before upload (target: small KB sizes)
+async function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<File> {
+    // Skip non-image or SVG files
+    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
+
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let { width, height } = img;
+
+            // Scale down if larger than maxWidth
+            if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d')!;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
+                    } else {
+                        resolve(file);
+                    }
+                },
+                'image/webp',
+                quality
+            );
+        };
+        img.onerror = () => resolve(file);
+        img.src = URL.createObjectURL(file);
+    });
+}
 
 interface ImageUploaderProps {
     value?: string;
@@ -11,7 +50,9 @@ interface ImageUploaderProps {
     bucket?: string;
     path?: string;
     label?: string;
-    className?: string; // Allow external styling override
+    className?: string;
+    maxWidth?: number;
+    quality?: number;
 }
 
 export const ImageUploader = ({
@@ -20,14 +61,17 @@ export const ImageUploader = ({
     bucket = 'public',
     path = 'uploads',
     label = 'صورة العرض',
-    className
+    className,
+    maxWidth = 800,
+    quality = 0.7,
 }: ImageUploaderProps) => {
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(value || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!supabase) {
+        const sb = getAuthClient();
+        if (!sb) {
             toast.error('خطأ: لا يوجد اتصال بقاعدة البيانات');
             return;
         }
@@ -36,13 +80,10 @@ export const ImageUploader = ({
             return;
         }
 
-        const file = e.target.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${path}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = fileName;
+        const rawFile = e.target.files[0];
 
         setUploading(true);
-        const loadingToast = toast.loading('جاري رفع الصورة...');
+        const loadingToast = toast.loading('جاري ضغط ورفع الصورة...');
 
         // Dev Member Bypass Check for Storage
         if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
@@ -58,15 +99,20 @@ export const ImageUploader = ({
         }
 
         try {
-            // 1. Upload
-            const { error: uploadError } = await supabase.storage
+            // 1. Compress image
+            const file = await compressImage(rawFile, maxWidth, quality);
+            const fileExt = file.name.split('.').pop();
+            const filePath = `${path}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+            // 2. Upload
+            const { error: uploadError } = await sb.storage
                 .from(bucket)
-                .upload(filePath, file);
+                .upload(filePath, file, { contentType: file.type });
 
             if (uploadError) throw uploadError;
 
-            // 2. Get Public URL
-            const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            // 3. Get Public URL
+            const { data } = sb.storage.from(bucket).getPublicUrl(filePath);
 
             setPreview(data.publicUrl);
             onChange(data.publicUrl);
