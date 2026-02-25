@@ -107,7 +107,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
 function UpdateCard({ update }: { update: any }) {
     const isAuto = update.source === 'auto';
     const iconConfig = isAuto ? AUTO_ICON_MAP[update.event_type] : null;
-    const href = update.href || `/updates#upd-${update.id}`;
+    const href = update.href || `/updates/${update.id}`;
 
     return (
         <Link

@@ -68,7 +68,7 @@ const AUTO_EVENT_CONFIG: Record<string, { type: string; href: (entityId: string)
   new_faq:      { type: 'سؤال',      href: () => `/faq` },
   new_code:     { type: 'كود أمني',   href: () => `/security-codes` },
   new_zone:     { type: 'منطقة',     href: () => `/zones` },
-  new_update:   { type: 'خبر',       href: (id) => `/updates#upd-${id}` },
+  new_update:   { type: 'خبر',       href: (id) => `/updates/${id}` },
   new_service:  { type: 'خدمة',      href: (id) => `/services/${id}` },
   new_tool:     { type: 'أداة',      href: () => `/tools` },
   new_source:   { type: 'مصدر رسمي', href: () => `/sources` },
@@ -98,7 +98,7 @@ async function getUpdates() {
     const today = new Date().toISOString().split('T')[0];
     const manualUpdates = (manualRes.data || [])
       .filter(u => u.date <= today)
-      .map(u => ({ ...u, source: 'manual' as const, href: `/updates#upd-${u.id}` }));
+      .map(u => ({ ...u, source: 'manual' as const, href: `/updates/${u.id}` }));
 
     const autoEvents = (autoRes.data || []).map(e => {
       const cfg = AUTO_EVENT_CONFIG[e.event_type];

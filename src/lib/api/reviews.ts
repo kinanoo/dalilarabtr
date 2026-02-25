@@ -37,6 +37,7 @@ export type AddReviewData = {
     reviewer_email?: string;
     rating: number;
     comment?: string; // Optional
+    user_id?: string; // Auth user ID — prevents duplicate reviews
 };
 
 // ============================================
@@ -124,21 +125,30 @@ export async function addReview(reviewData: AddReviewData): Promise<{ data: Serv
     }
 
     try {
+        const insertObj: any = {
+            service_id: reviewData.service_id,
+            client_name: reviewData.reviewer_name,
+            rating: reviewData.rating,
+            comment: reviewData.comment,
+            is_approved: true,
+        };
+        if (reviewData.user_id) {
+            insertObj.user_id = reviewData.user_id;
+        }
+
         const { data, error } = await supabase
             .from('service_reviews')
-            .insert([
-                {
-                    service_id: reviewData.service_id,
-                    client_name: reviewData.reviewer_name,
-                    rating: reviewData.rating,
-                    comment: reviewData.comment,
-                    is_approved: true,
-                },
-            ])
+            .insert([insertObj])
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            // Duplicate review — same user already reviewed this service
+            if (error.code === '23505') {
+                return { data: null, error: { message: 'لقد قمت بتقييم هذه الخدمة مسبقاً', code: '23505' } };
+            }
+            throw error;
+        }
         return { data, error: null };
     } catch (error) {
         console.error('Error adding review:', error);
@@ -190,16 +200,55 @@ export async function markReviewHelpful(
 }
 
 // ============================================
-// 🔢 دالة مساعدة لزيادة helpful_count
+// 🔍 فحص: هل قيّم المستخدم هذه الخدمة سابقاً؟
 // ============================================
-// يجب إضافة هذه Function في Supabase:
-/*
-CREATE OR REPLACE FUNCTION increment_helpful_count(review_id UUID)
-RETURNS VOID AS $$
-BEGIN
-  UPDATE service_reviews 
-  SET helpful_count = helpful_count + 1 
-  WHERE id = review_id;
-END;
-$$ LANGUAGE plpgsql;
-*/
+
+export async function hasUserReviewed(serviceId: string, userId: string): Promise<boolean> {
+    if (!supabase || !userId) return false;
+
+    try {
+        const { data, error } = await supabase
+            .from('service_reviews')
+            .select('id')
+            .eq('service_id', serviceId)
+            .eq('user_id', userId)
+            .limit(1);
+
+        if (error) return false;
+        return (data?.length || 0) > 0;
+    } catch {
+        return false;
+    }
+}
+
+// ============================================
+// 🚩 الإبلاغ عن تقييم
+// ============================================
+
+export async function reportReview(
+    reviewId: string,
+    userId: string,
+    reason: string
+): Promise<{ success: boolean; error: any }> {
+    if (!supabase) {
+        return { success: false, error: new Error('Supabase not initialized') };
+    }
+
+    try {
+        const { error } = await supabase
+            .from('review_reports')
+            .insert([{ review_id: reviewId, user_id: userId, reason }]);
+
+        if (error) {
+            // Already reported by this user
+            if (error.code === '23505') {
+                return { success: true, error: null };
+            }
+            throw error;
+        }
+        return { success: true, error: null };
+    } catch (error) {
+        console.error('Error reporting review:', error);
+        return { success: false, error };
+    }
+}

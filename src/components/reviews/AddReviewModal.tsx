@@ -10,6 +10,7 @@ interface AddReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
+    userId?: string;
 }
 
 export default function AddReviewModal({
@@ -18,6 +19,7 @@ export default function AddReviewModal({
     isOpen,
     onClose,
     onSuccess,
+    userId,
 }: AddReviewModalProps) {
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
@@ -47,6 +49,7 @@ export default function AddReviewModal({
             reviewer_name: name.trim() || 'فاعل خير', // Default name
             rating,
             comment: comment.trim(), // Optional
+            user_id: userId,
         };
 
         const { data, error: apiError } = await addReview(reviewData);

@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Phone, Briefcase, Star, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import ServiceReviews from '@/components/services/ServiceReviews';
-import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
@@ -178,11 +177,6 @@ export default async function ServiceDetailsPage(
             <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
                 <ServiceReviews serviceId={id} serviceName={provider.name} />
                 <ContentHelpfulWidget entityType="service" entityId={id} />
-                <UniversalComments
-                    entityType="service"
-                    entityId={id}
-                    title="تعليقات وتجارب العملاء"
-                />
             </div>
         </div>
     );
