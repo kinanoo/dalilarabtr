@@ -34,6 +34,7 @@ export async function generateMetadata(
         .from('service_providers')
         .select('name, profession, city, category, description')
         .eq('id', id)
+        .eq('status', 'approved')
         .single();
 
     if (!data) return { title: 'الخدمة غير موجودة' };
@@ -58,6 +59,7 @@ export default async function ServiceDetailsPage(
         .from('service_providers')
         .select('*')
         .eq('id', id)
+        .eq('status', 'approved')
         .single();
 
     if (error || !provider) {

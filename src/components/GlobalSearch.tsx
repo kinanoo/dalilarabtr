@@ -85,7 +85,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
 
         // Parallel Search
         const responses = await Promise.allSettled([
-          supabase.from('service_providers').select('id, name, profession').or(`${nameOrQuery},${professionOrQuery}`).limit(5),
+          supabase.from('service_providers').select('id, name, profession').eq('status', 'approved').or(`${nameOrQuery},${professionOrQuery}`).limit(5),
           supabase.from('faqs').select('id, question, answer').or(questionOrQuery).limit(5),
           supabase.from('updates').select('id, title, date, content').eq('active', true).or(updateQuery).limit(5),
           supabase.from('official_sources').select('id, name, description, url').or(`${nameOrQuery},description.ilike.%${trimmed}%`).limit(5)

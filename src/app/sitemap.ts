@@ -58,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }));
 
       // 5. Service Providers (Doctors, Lawyers, etc.)
-      const { data: providers } = await supabase.from('service_providers').select('id, updated_at, created_at');
+      const { data: providers } = await supabase.from('service_providers').select('id, updated_at, created_at').eq('status', 'approved');
       const providerUrls = (providers || []).map((p) => ({
         url: `${baseUrl}/services/${p.id}`,
         lastModified: new Date(p.updated_at || p.created_at || new Date()),
