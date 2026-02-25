@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, PlusCircle, Briefcase, FileText, BrainCircuit, LogOut, User } from 'lucide-react';
+import { Loader2, Briefcase, FileText, BrainCircuit, UserCircle, Activity, Star, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { getMyActivityStats } from '@/lib/api/profile';
 
 interface UserProfile {
     full_name: string;
@@ -15,6 +15,7 @@ interface UserProfile {
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [stats, setStats] = useState({ reviews_count: 0, comments_count: 0, services_count: 0, articles_count: 0 });
     const router = useRouter();
 
     // useMemo ensures a single client instance across re-renders (prevents Multiple GoTrueClient warning)
@@ -48,6 +49,11 @@ export default function DashboardPage() {
             .single();
 
         setProfile(data || { full_name: user?.user_metadata?.full_name || 'عضو', role: 'member' });
+
+        // Fetch activity stats
+        const { data: statsData } = await getMyActivityStats();
+        setStats(statsData);
+
         setLoading(false);
     };
 
@@ -109,21 +115,49 @@ export default function DashboardPage() {
                         color="violet"
                         href="/dashboard/scenarios/new"
                     />
+
+                    <ActionCard
+                        title="الملف الشخصي"
+                        desc="عدّل اسمك وصورتك ومعلوماتك الشخصية."
+                        icon={UserCircle}
+                        color="amber"
+                        href="/dashboard/profile"
+                    />
+
+                    <ActionCard
+                        title="نشاطي"
+                        desc="تصفح تقييماتك وتعليقاتك وخدماتك ومقالاتك."
+                        icon={Activity}
+                        color="rose"
+                        href="/dashboard/activity"
+                    />
                 </div>
 
-                {/* Status Section */}
+                {/* Activity Stats */}
                 <div className="mt-12">
                     <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                         <div className="w-2 h-8 bg-emerald-500 rounded-full"></div>
-                        مساهماتك السابقة
+                        إحصائيات نشاطك
                     </h2>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                            <PlusCircle size={32} />
-                        </div>
-                        <h3 className="font-bold text-slate-700 dark:text-slate-300 mb-1">لا توجد مساهمات بعد</h3>
-                        <p className="text-sm text-slate-500">ابدأ بإضافة خدمتك أو أول مقال لك!</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                            { label: 'تقييمات', count: stats.reviews_count, icon: Star, color: 'amber' },
+                            { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, color: 'blue' },
+                            { label: 'خدمات', count: stats.services_count, icon: Briefcase, color: 'emerald' },
+                            { label: 'مقالات', count: stats.articles_count, icon: FileText, color: 'violet' },
+                        ].map((s) => {
+                            const Icon = s.icon;
+                            return (
+                                <Link key={s.label} href="/dashboard/activity" className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-5 text-center hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                                    <div className={`w-12 h-12 mx-auto mb-3 rounded-xl bg-${s.color}-50 dark:bg-${s.color}-900/20 text-${s.color}-600 flex items-center justify-center`}>
+                                        <Icon size={22} />
+                                    </div>
+                                    <div className="text-3xl font-black text-slate-800 dark:text-white">{s.count}</div>
+                                    <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </main>

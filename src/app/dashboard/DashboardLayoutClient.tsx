@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, LogOut, User } from 'lucide-react';
+import { Loader2, LogOut, User, Home, UserCircle, Activity } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -21,10 +21,10 @@ export default function DashboardLayoutClient({
     const router = useRouter();
     const pathname = usePathname();
 
-    const supabase = createBrowserClient(
+    const supabase = useMemo(() => createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    ), []);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -73,7 +73,33 @@ export default function DashboardLayoutClient({
                         <span className="font-bold text-lg hidden sm:inline">لوحة الأعضاء</span>
                     </Link>
 
-                    <nav className="flex items-center gap-4">
+                    {/* Desktop Nav */}
+                    <nav className="hidden md:flex items-center gap-1">
+                        {[
+                            { href: '/dashboard', label: 'الرئيسية', icon: Home },
+                            { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
+                            { href: '/dashboard/activity', label: 'نشاطي', icon: Activity },
+                        ].map((link) => {
+                            const Icon = link.icon;
+                            const isActive = pathname === link.href;
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                                        isActive
+                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <Icon size={16} />
+                                    {link.label}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
+                    <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-slate-800 py-1.5 px-3 rounded-full">
                             <User size={16} className="text-slate-400" />
                             <span className="font-bold">{profile?.full_name}</span>
@@ -89,7 +115,35 @@ export default function DashboardLayoutClient({
                         >
                             <LogOut size={18} />
                         </button>
-                    </nav>
+                    </div>
+                </div>
+
+                {/* Mobile Nav */}
+                <div className="md:hidden border-t border-slate-100 dark:border-slate-800 overflow-x-auto">
+                    <div className="flex items-center gap-1 px-4 py-2 min-w-max">
+                        {[
+                            { href: '/dashboard', label: 'الرئيسية', icon: Home },
+                            { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
+                            { href: '/dashboard/activity', label: 'نشاطي', icon: Activity },
+                        ].map((link) => {
+                            const Icon = link.icon;
+                            const isActive = pathname === link.href;
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
+                                        isActive
+                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    <Icon size={14} />
+                                    {link.label}
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
             </header>
 
