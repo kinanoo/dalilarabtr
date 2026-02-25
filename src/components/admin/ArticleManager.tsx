@@ -9,6 +9,7 @@ import { normalizeId } from '@/lib/useAdminData';
 // Types mimicking the SQL table
 type DBArticle = {
     id: string;
+    slug: string;
     title: string;
     category: string;
     intro: string;
@@ -31,6 +32,7 @@ export default function ArticleManager() {
     // Form State
     const [formData, setFormData] = useState<DBArticle>({
         id: '',
+        slug: '',
         title: '',
         category: 'e-Devlet',
         intro: '',
@@ -85,6 +87,7 @@ export default function ArticleManager() {
         const payload = {
             ...formData,
             id: formData.id || normalizeId(formData.title), // Auto-generate ID if empty
+            slug: formData.slug?.trim() || null, // null if empty so DB unique constraint works
         };
 
         const { error } = await supabase
@@ -97,7 +100,7 @@ export default function ArticleManager() {
             fetchArticles();
             // Reset
             setFormData({
-                id: '', title: '', category: 'e-Devlet', intro: '', details: '',
+                id: '', slug: '', title: '', category: 'e-Devlet', intro: '', details: '',
                 documents: [], steps: [], tips: [], fees: '', warning: '', source: '', image: '', active: true
             });
         } else {
@@ -132,7 +135,7 @@ export default function ArticleManager() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* ID (Auto or Custom) */}
                         <div>
-                            <label className="block text-sm font-bold mb-1">المعرف (Slug)</label>
+                            <label className="block text-sm font-bold mb-1">المعرف (ID)</label>
                             <input
                                 type="text"
                                 value={formData.id}
@@ -142,6 +145,26 @@ export default function ArticleManager() {
                                 disabled={!!editingId} // Don't change ID while editing
                             />
                         </div>
+                        {/* Short Slug (English) */}
+                        <div>
+                            <label className="block text-sm font-bold mb-1">رابط مختصر (Slug) <span className="text-xs text-slate-400 font-normal">— إنجليزي قصير للمشاركة</span></label>
+                            <input
+                                type="text"
+                                value={formData.slug}
+                                onChange={e => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9\-]/g, '') })}
+                                placeholder="مثال: gaziantep-citizenship"
+                                className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 font-mono text-sm"
+                                dir="ltr"
+                            />
+                            {formData.slug && (
+                                <p className="text-xs text-emerald-600 mt-1 font-mono" dir="ltr">
+                                    /article/{formData.slug}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Category */}
                         <div>
                             <label className="block text-sm font-bold mb-1">القسم</label>
@@ -339,10 +362,12 @@ export default function ArticleManager() {
                         ) : (
                             articles.map(article => (
                                 <div key={article.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                    <div>
+                                    <div className="min-w-0">
                                         <h4 className="font-bold text-slate-800 dark:text-slate-200">{article.title}</h4>
-                                        <div className="flex gap-2 mt-1">
+                                        <div className="flex flex-wrap gap-2 mt-1">
                                             <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500">{article.category}</span>
+                                            {article.slug && <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded font-mono" dir="ltr">/article/{article.slug}</span>}
+                                            {!article.slug && <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-600 px-2 py-0.5 rounded">بدون slug</span>}
                                             {article.warning && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">تحذير</span>}
                                         </div>
                                     </div>

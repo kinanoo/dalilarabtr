@@ -74,7 +74,7 @@ export default function EDevletServicesList({
 
               <div className="flex items-center justify-between gap-3">
                 <Link
-                  href={`/article/${service.id}`}
+                  href={`/article/${service.slug || service.id}`}
                   className="text-primary-700 dark:text-primary-300 font-bold text-sm hover:underline"
                 >
                   اقرأ الشرح

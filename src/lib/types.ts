@@ -21,6 +21,7 @@ export type ArticleData = Article;
 
 export interface AdminArticle extends Article {
     id: string;
+    slug?: string;
     active?: boolean;
     created_at?: string;
 }

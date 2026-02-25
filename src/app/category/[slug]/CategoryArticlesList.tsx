@@ -36,7 +36,7 @@ export default function CategoryArticlesList({
       list = articles
         .filter((a) => a.category === categoryName)
         .map((a) => ({
-          slug: a.id,
+          slug: a.slug || a.id,
           title: a.title,
           intro: a.intro,
           lastUpdate: a.lastUpdate,

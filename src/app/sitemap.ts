@@ -21,9 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (supabase) {
     try {
       // 1. Articles
-      const { data: articles } = await supabase.from('articles').select('id, last_update');
-      const articleUrls = (articles || []).map((a) => ({
-        url: `${baseUrl}/article/${a.id}`,
+      const { data: articles } = await supabase.from('articles').select('id, slug, last_update');
+      const articleUrls = (articles || []).map((a: any) => ({
+        url: `${baseUrl}/article/${a.slug || a.id}`,
         lastModified: new Date(a.last_update || new Date()),
         changeFrequency: 'monthly' as const,
         priority: 0.7,

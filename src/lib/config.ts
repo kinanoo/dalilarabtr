@@ -7,6 +7,11 @@ export const SITE_CONFIG = {
     siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab.vercel.app').replace(/\/$/, '')
 };
 
+/** Build article URL — prefers short slug over Arabic id */
+export function getArticleHref(article: { slug?: string | null; id: string }): string {
+    return `/article/${article.slug || article.id}`;
+}
+
 export const CATEGORY_SLUGS: Record<string, string> = {
     'residence': 'أنواع الإقامات',
     'kimlik': 'الكملك والحماية المؤقتة',

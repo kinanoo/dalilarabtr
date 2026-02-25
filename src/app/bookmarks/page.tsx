@@ -21,7 +21,7 @@ export default function BookmarksPage() {
                 setFetching(true);
                 const { data } = await supabase
                     .from('articles')
-                    .select('id, title, intro, category, last_update')
+                    .select('id, slug, title, intro, category, last_update')
                     .in('id', bookmarks);
 
                 if (data) {
@@ -68,7 +68,7 @@ export default function BookmarksPage() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start">
-                                        <Link href={`/article/${article.id}`}>
+                                        <Link href={`/article/${article.slug || article.id}`}>
                                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition mb-1">
                                                 {article.title}
                                             </h3>
@@ -81,7 +81,7 @@ export default function BookmarksPage() {
                                         <span>{article.lastUpdate}</span>
                                     </div>
                                 </div>
-                                <Link href={`/article/${article.id}`} className="absolute inset-0 z-0" aria-label={article.title}></Link>
+                                <Link href={`/article/${article.slug || article.id}`} className="absolute inset-0 z-0" aria-label={article.title}></Link>
                             </div>
                         ))}
                     </div>

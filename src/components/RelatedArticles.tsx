@@ -17,7 +17,7 @@ export default function RelatedArticles({ currentArticleId, category }: { curren
             // Fetch items in same category, exclude current, limit 3
             const { data } = await supabase
                 .from('articles')
-                .select('id, title, intro, created_at, category')
+                .select('id, slug, title, intro, created_at, category')
                 .eq('category', category)
                 .neq('id', currentArticleId)
                 .limit(3);
@@ -48,7 +48,7 @@ export default function RelatedArticles({ currentArticleId, category }: { curren
                     {related.map((article) => (
                         <Link
                             key={article.id}
-                            href={`/article/${article.id}`}
+                            href={`/article/${article.slug || article.id}`}
                             className="group block bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-700/50 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all hover:shadow-lg flex flex-col h-full"
                         >
                             <h3 className="font-bold text-lg mb-3 text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 transition-colors line-clamp-2">

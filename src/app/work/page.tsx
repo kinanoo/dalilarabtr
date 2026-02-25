@@ -37,7 +37,7 @@ export default function WorkPage() {
               articles.map((article) => (
                 <Link
                   key={article.id}
-                  href={`/article/${article.id}`}
+                  href={`/article/${article.slug || article.id}`}
                   className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
                 >
                   {article.image && (

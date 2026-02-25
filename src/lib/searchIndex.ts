@@ -311,7 +311,7 @@ async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
   try {
     const { data, error } = await supabase
       .from('articles')
-      .select('id, title, category, intro, published_at')
+      .select('id, slug, title, category, intro, published_at')
       .order('published_at', { ascending: false });
 
     if (error) throw error;
@@ -323,7 +323,7 @@ async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
       type: 'مقال',
       typeKey: 'article',
       desc: a.category,
-      url: `/article/${a.id}`, // or slug if available
+      url: `/article/${a.slug || a.id}`,
       icon: FileText,
       haystack: normalizeArabic(`${a.title} ${a.intro || ''} ${a.category}`)
     }));

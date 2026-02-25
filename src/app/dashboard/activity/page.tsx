@@ -194,7 +194,7 @@ export default function ActivityPage() {
             ) : (
                 <div className="space-y-3">
                     {articles.map((a) => (
-                        <Link key={a.id} href={`/article/${a.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+                        <Link key={a.id} href={`/article/${a.slug || a.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-bold text-slate-800 dark:text-white">{a.title}</h4>
                                 <StatusBadge status={a.status || 'pending'} />
@@ -217,7 +217,7 @@ export default function ActivityPage() {
             ) : (
                 <div className="space-y-3">
                     {bookmarkedArticles.map((a) => (
-                        <Link key={a.id} href={`/article/${a.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+                        <Link key={a.id} href={`/article/${a.slug || a.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
                             <h4 className="font-bold text-slate-800 dark:text-white mb-1">{a.title}</h4>
                             <div className="flex items-center gap-3 text-xs text-slate-400">
                                 {a.category && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{a.category}</span>}

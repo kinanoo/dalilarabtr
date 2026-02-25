@@ -18,13 +18,25 @@ export const dynamicParams = true;
 
 // Helper to fetch article (DB -> Static Fallback)
 async function fetchArticleData(slug: string) {
-  // 1. Try Supabase
+  // 1. Try Supabase — check slug first, then id
   if (supabase) {
-    const { data } = await supabase
+    const decoded = decodeURIComponent(slug);
+
+    // Try by slug (short English URL) first
+    let { data } = await supabase
       .from('articles')
       .select('*')
-      .eq('id', decodeURIComponent(slug))
+      .eq('slug', decoded)
       .maybeSingle();
+
+    // Fallback to id (original Arabic-based ID)
+    if (!data) {
+      ({ data } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', decoded)
+        .maybeSingle());
+    }
 
     if (data) {
       return {
@@ -45,10 +57,6 @@ async function fetchArticleData(slug: string) {
       };
     }
   }
-
-  // 2. Fallback to Static - REMOVED
-  // const staticArticle = STATIC_ARTICLES.find((a) => a.id === slug);
-  // if (staticArticle) { ... }
 
   return null;
 }
