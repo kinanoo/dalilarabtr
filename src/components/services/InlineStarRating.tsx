@@ -5,6 +5,7 @@ import { Star, Send, LogIn, X, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { addReview, hasUserReviewed } from '@/lib/api/reviews';
+import { postComment } from '@/lib/api/comments';
 
 interface InlineStarRatingProps {
     serviceId: string;
@@ -109,6 +110,17 @@ export default function InlineStarRating({
                 setTimeout(() => setShowAlreadyMsg(false), 2500);
             }
             return;
+        }
+
+        // If there's a comment, also post it to the comments section
+        if (comment.trim()) {
+            const stars = '★'.repeat(selectedRating) + '☆'.repeat(5 - selectedRating);
+            await postComment({
+                entity_type: 'service',
+                entity_id: serviceId,
+                author_name: 'عضو مسجّل',
+                content: `${stars} — ${comment.trim()}`,
+            });
         }
 
         // Success — update display optimistically
