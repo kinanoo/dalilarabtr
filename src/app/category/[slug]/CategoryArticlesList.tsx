@@ -104,7 +104,17 @@ export default function CategoryArticlesList({
                 href={`/article/${article.slug}`}
                 className="group bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden"
               >
-                {/* Image rendering removed to match the compact text-only style of existing articles as requested */}
+                {article.image && (
+                  <div className="relative w-full h-40 overflow-hidden">
+                    <Image
+                      src={article.image}
+                      alt={article.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                )}
 
                 <div className="p-6 flex flex-col flex-grow">
                   <div className="flex items-start justify-between mb-4">

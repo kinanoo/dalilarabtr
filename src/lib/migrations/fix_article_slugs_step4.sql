@@ -1,32 +1,12 @@
--- Add slug column to articles table for short, SEO-friendly URLs
--- Run this ONCE in Supabase SQL Editor
+-- =============================================
+-- إصلاح الخطوة 4: توليد slug للمقالات العربية
+-- شغّل هذا فقط (الخطوات 1-3 تمت بنجاح)
+-- =============================================
+-- المشكلة السابقة: ROW_NUMBER() كان يبدأ من 1 لكل قسم
+-- فيتعارض مع slugs موجودة مثل "article-1"
+-- الحل: نبحث عن أعلى رقم موجود لكل بادئة ونبدأ من بعده
+-- =============================================
 
--- =============================================
--- الخطوة 1: إضافة عمود slug
--- =============================================
-ALTER TABLE public.articles
-  ADD COLUMN IF NOT EXISTS slug TEXT;
-
--- =============================================
--- الخطوة 2: إنشاء فهرس فريد (unique index)
--- =============================================
-CREATE UNIQUE INDEX IF NOT EXISTS idx_articles_slug_unique
-  ON public.articles (slug)
-  WHERE slug IS NOT NULL;
-
--- =============================================
--- الخطوة 3: المقالات ذات ID إنجليزي → نسخ ID كـ slug
--- =============================================
-UPDATE public.articles
-SET slug = id
-WHERE id ~ '^[a-zA-Z0-9\-_]+$'
-  AND slug IS NULL;
-
--- =============================================
--- الخطوة 4: المقالات ذات ID عربي → توليد slug تلقائي
--- يبحث عن أعلى رقم موجود لكل بادئة ويبدأ من بعده
--- مثال: edevlet-5, residence-12, health-3
--- =============================================
 WITH to_update AS (
   SELECT
     id,
@@ -53,6 +33,8 @@ WITH to_update AS (
   FROM public.articles
   WHERE slug IS NULL
 ),
+
+-- نجيب أعلى رقم موجود لكل بادئة من الـ slugs الحالية
 existing_max AS (
   SELECT
     p.prefix,
@@ -65,6 +47,8 @@ existing_max AS (
     AND a.slug ~ ('^' || p.prefix || '-[0-9]+$')
   GROUP BY p.prefix
 ),
+
+-- نرقّم المقالات الجديدة بدءاً من max_num + 1
 numbered AS (
   SELECT
     t.id,
@@ -75,6 +59,7 @@ numbered AS (
   FROM to_update t
   LEFT JOIN existing_max e ON e.prefix = t.prefix
 )
+
 UPDATE public.articles
 SET slug = numbered.new_slug
 FROM numbered

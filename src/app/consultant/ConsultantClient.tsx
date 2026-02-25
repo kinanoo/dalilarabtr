@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   CheckCircle, AlertTriangle, FileText, RefreshCw, ShieldAlert, Lightbulb,
   ArrowLeft, Gavel, HeartPulse, Plane, Building2, GraduationCap, Scale,
-  Landmark, FileCheck, Wallet, Home, ChevronRight, Briefcase, Printer
+  Landmark, FileCheck, Wallet, Home, ChevronRight, Briefcase, Printer, Users, Baby, Search, X
 } from 'lucide-react';
 
 import ToolSchema from '@/components/ToolSchema';
@@ -80,6 +80,20 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
   const [activeTab, setActiveTab] = useState<'steps' | 'docs' | 'info'>('steps');
 
   const [detailLink, setDetailLink] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) return [];
+    const lower = q.toLowerCase();
+    return Object.values(SCENARIOS)
+      .filter(s => {
+        const title = (s.title || '').toLowerCase();
+        const desc = (s.desc || '').toLowerCase();
+        return title.includes(lower) || desc.includes(lower);
+      })
+      .slice(0, 8);
+  }, [searchQuery, SCENARIOS]);
 
   const shownResult = useMemo<PlanResult | null>(() => {
     if (!result) return null;
@@ -306,6 +320,52 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">من أنت؟ (الصفة القانونية)</h2>
                   </div>
 
+                  {/* Search Bar */}
+                  <div className="relative max-w-md mx-auto w-full">
+                    <div className="relative">
+                      <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="ابحث مباشرة... (مثال: ترحيل، إقامة، بنك)"
+                        className="w-full pr-10 pl-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                        dir="rtl"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+
+                    {searchResults.length > 0 && (
+                      <div className="absolute top-full mt-2 w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl z-30 max-h-[320px] overflow-y-auto">
+                        {searchResults.map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => {
+                              setSearchQuery('');
+                              processLogic(s.id);
+                            }}
+                            className="w-full text-right px-4 py-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors"
+                          >
+                            <span className="block font-bold text-sm text-slate-800 dark:text-slate-100">{s.title}</span>
+                            <span className="block text-[11px] text-slate-400 mt-0.5 line-clamp-1">{s.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {searchQuery.length >= 2 && searchResults.length === 0 && (
+                      <div className="absolute top-full mt-2 w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl z-30 px-4 py-3 text-center text-sm text-slate-400">
+                        لا توجد نتائج — جرّب كلمة أخرى أو اختر من القائمة أدناه
+                      </div>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 md:gap-5">
                     {[
                       { id: 'syrian', icon: '🪪', t: 'سوري (كملك)', d: 'حماية مؤقتة' },
@@ -314,6 +374,8 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       { id: 'student', icon: '🎓', t: 'طالب', d: 'جامعة / تومر' },
                       { id: 'worker', icon: '💼', t: 'عامل / شركة', d: 'إذن عمل' },
                       { id: 'daily', icon: '⚡', t: 'خدمات يومية', d: 'نوتير / بنك' },
+                      { id: 'emergency', icon: '🚨', t: 'مشكلة طارئة', d: 'ترحيل / احتجاز' },
+                      { id: 'family', icon: '👨‍👩‍👧', t: 'عائلة مقيمة', d: 'زواج / أطفال / سكن' },
                     ].map((b) => (
                       <button
                         key={b.id}
@@ -402,6 +464,22 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <Btn text="مشاكل قانونية وسكن" icon={<Gavel />} onClick={() => { setAnswers({ ...answers, q2: 'prob' }); setStep(3); }} />
                         <Btn text="صحة (MHRS/طبيب عائلة)" icon={<HeartPulse />} onClick={() => { setAnswers({ ...answers, q2: 'health' }); setStep(3); }} />
                         <Btn text="ديون/قضايا (فحص سريع)" icon={<ShieldAlert />} onClick={() => { setAnswers({ ...answers, q2: 'debt' }); setStep(3); }} />
+                      </>
+                    )}
+                    {answers.q1 === 'emergency' && (
+                      <>
+                        <Btn text="تجاوز مدة الفيزا / رفض إقامة" icon={<AlertTriangle />} onClick={() => { setAnswers({ ...answers, q2: 'overstay' }); setStep(3); }} />
+                        <Btn text="ترحيل أو احتجاز" icon={<ShieldAlert />} onClick={() => { setAnswers({ ...answers, q2: 'deport' }); setStep(3); }} />
+                        <Btn text="عنف أو تهديد" icon={<HeartPulse />} onClick={() => { setAnswers({ ...answers, q2: 'violence' }); setStep(3); }} />
+                        <Btn text="بدون أوراق / وضع غير نظامي" icon={<FileText />} onClick={() => { setAnswers({ ...answers, q2: 'docs' }); setStep(3); }} />
+                      </>
+                    )}
+                    {answers.q1 === 'family' && (
+                      <>
+                        <Btn text="أحوال مدنية (زواج/ولادة/طلاق)" icon={<HeartPulse />} onClick={() => { setAnswers({ ...answers, q2: 'civil' }); setStep(3); }} />
+                        <Btn text="تعليم الأطفال والمدارس" icon={<GraduationCap />} onClick={() => { setAnswers({ ...answers, q2: 'children' }); setStep(3); }} />
+                        <Btn text="صحة الأسرة" icon={<HeartPulse />} onClick={() => { setAnswers({ ...answers, q2: 'health' }); setStep(3); }} />
+                        <Btn text="سكن وإيجارات" icon={<Home />} onClick={() => { setAnswers({ ...answers, q2: 'housing' }); setStep(3); }} />
                       </>
                     )}
                   </div>
@@ -498,7 +576,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       <>
                         <BtnSmall text="إذن عمل (موظف)" onClick={() => processLogic('work-permit-employee')} />
                         <BtnSmall text="إذن عمل عبر شركة (صاحب شركة)" onClick={() => processLogic('work-permit-company')} />
-                        <BtnSmall text="تكلفة إذن العمل 2025" onClick={() => processLogic('work-permit-cost')} />
+                        <BtnSmall text="جدول رسوم إذن العمل 2026" onClick={() => processLogic('work-permit-cost')} />
                       </>
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'property' && (
@@ -594,7 +672,13 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     )}
 
                     {/* Student Submenus */}
-                    {answers.q1 === 'student' && answers.q2 === 'res' && <BtnSmall text="إقامة الطالب" onClick={() => processLogic('student-residence')} />}
+                    {answers.q1 === 'student' && answers.q2 === 'res' && (
+                      <>
+                        <BtnSmall text="إقامة الطالب" onClick={() => processLogic('student-residence')} />
+                        <BtnSmall text="حق العمل للطالب" onClick={() => processLogic('student-work-rights')} />
+                        <BtnSmall text="منح Türkiye Bursları" onClick={() => processLogic('student-turkiye-burslari')} />
+                      </>
+                    )}
                     {answers.q1 === 'student' && answers.q2 === 'study' && (
                       <>
                         <BtnSmall text="تعديل شهادة (Denklik)" onClick={() => processLogic('student-denklik')} />
@@ -602,6 +686,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="استخراج كشف درجات (Transcript)" onClick={() => processLogic('student-transcript')} />
                         <BtnSmall text="امتحان اليوس" onClick={() => processLogic('student-yos')} />
                         <BtnSmall text="تومر (TÖMER)" onClick={() => processLogic('student-tomer')} />
+                        <BtnSmall text="معادلة شهادة للسوريين" onClick={() => processLogic('syrian-denklik')} />
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'address' && (
@@ -635,7 +720,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       <>
                         <BtnSmall text="إذن عمل (موظف)" onClick={() => processLogic('work-permit-employee')} />
                         <BtnSmall text="إذن عمل (صاحب شركة)" onClick={() => processLogic('work-permit-company')} />
-                        <BtnSmall text="تكلفة إذن العمل 2025" onClick={() => processLogic('work-permit-cost')} />
+                        <BtnSmall text="جدول رسوم إذن العمل 2026" onClick={() => processLogic('work-permit-cost')} />
                         <BtnSmall text="تسجيل SGK" onClick={() => processLogic('work-sgk')} />
                       </>
                     )}
@@ -674,6 +759,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="حجز موعد مشفى (MHRS)" onClick={() => processLogic('daily-mhrs-booking')} />
                         <BtnSmall text="التحقق من الخطوط المسجلة باسمي" onClick={() => processLogic('daily-mobile-lines-check')} />
                         <BtnSmall text="متابعة ملف الجنسية" onClick={() => processLogic('daily-citizenship-status')} />
+                        <BtnSmall text="خدمات بريد PTT" onClick={() => processLogic('daily-ptt-services')} />
                       </>
                     )}
                     {answers.q1 === 'daily' && answers.q2 === 'fin' && (
@@ -686,6 +772,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="العملات الرقمية (قواعد عامة)" onClick={() => processLogic('daily-crypto')} />
                         <BtnSmall text="تقييم/نقطة الائتمان" onClick={() => processLogic('daily-credit-score')} />
                         <BtnSmall text="حظر الحجز/Booking (إشكالات)" onClick={() => processLogic('daily-booking-block')} />
+                        <BtnSmall text="الترجمة المحلفة (Yeminli Tercüman)" onClick={() => processLogic('daily-sworn-translator')} />
                       </>
                     )}
                     {answers.q1 === 'daily' && answers.q2 === 'prob' && (
@@ -694,6 +781,10 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="خلاف مع المالك" onClick={() => processLogic('housing-rent-increase')} />
                         <BtnSmall text="استرداد التأمين" onClick={() => processLogic('housing-deposit')} />
                         <BtnSmall text="بدل فاقد رخصة قيادة" onClick={() => processLogic('daily-lost-driving-license')} />
+                        <BtnSmall text="استبدال رخصة قيادة أجنبية" onClick={() => processLogic('daily-driving-license-exchange')} />
+                        <BtnSmall text="فحص المركبات والتأمين" onClick={() => processLogic('daily-vehicle-inspection')} />
+                        <BtnSmall text="اعتراض على فاتورة (كهرباء/ماء/غاز)" onClick={() => processLogic('daily-utility-dispute')} />
+                        <BtnSmall text="وثيقة UNHCR (المفوضية)" onClick={() => processLogic('daily-unhcr-document')} />
                         <BtnSmall text="دعوى طلاق" onClick={() => processLogic('legal-divorce')} />
                         <BtnSmall text="دعوى إخلاء" onClick={() => processLogic('housing-eviction')} />
                       </>
@@ -710,6 +801,72 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="فحص الديون (GSS/İcra)" onClick={() => processLogic('debt-check')} />
                         <BtnSmall text="UYAP (قضايا/تنفيذ)" onClick={() => processLogic('daily-uyap')} />
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank-block')} />
+                      </>
+                    )}
+
+                    {/* Emergency Submenus */}
+                    {answers.q1 === 'emergency' && answers.q2 === 'overstay' && (
+                      <>
+                        <BtnSmall text="كسرت الفيزا (Overstay) — الغرامات وحظر الدخول" onClick={() => processLogic('tourist-overstay')} />
+                        <BtnSmall text="رفض إقامة — كيف أطعن؟" onClick={() => processLogic('tourist-reject')} />
+                        <BtnSmall text="إزالة كود العودة V-87 (سوريين)" onClick={() => processLogic('syrian-return-code')} />
+                      </>
+                    )}
+                    {answers.q1 === 'emergency' && answers.q2 === 'deport' && (
+                      <>
+                        <BtnSmall text="صدر بحقي قرار ترحيل" onClick={() => processLogic('legal-deport')} />
+                        <BtnSmall text="محتجز في مركز ترحيل (GGM)" onClick={() => processLogic('emergency-detention')} />
+                        <BtnSmall text="تم استدعائي/احتجازي في الشرطة" onClick={() => processLogic('emergency-police-station')} />
+                      </>
+                    )}
+                    {answers.q1 === 'emergency' && answers.q2 === 'violence' && (
+                      <>
+                        <BtnSmall text="بلاغ عنف عائلي (KADES)" onClick={() => processLogic('daily-kades')} />
+                        <BtnSmall text="دعوى طلاق (عنف/إكراه)" onClick={() => processLogic('legal-divorce')} />
+                        <BtnSmall text="إخلاء قسري من المالك" onClick={() => processLogic('housing-eviction')} />
+                      </>
+                    )}
+                    {answers.q1 === 'emergency' && answers.q2 === 'docs' && (
+                      <>
+                        <BtnSmall text="أنا بدون أوراق — ماذا أفعل؟" onClick={() => processLogic('emergency-undocumented')} />
+                        <BtnSmall text="وثيقة المفوضية (UNHCR)" onClick={() => processLogic('daily-unhcr-document')} />
+                        <BtnSmall text="فقدت الكملك (بدل ضائع)" onClick={() => processLogic('syrian-lost-id')} />
+                        <BtnSmall text="بدل فاقد رخصة قيادة" onClick={() => processLogic('daily-lost-driving-license')} />
+                      </>
+                    )}
+
+                    {/* Family Submenus */}
+                    {answers.q1 === 'family' && answers.q2 === 'civil' && (
+                      <>
+                        <BtnSmall text="تثبيت زواج" onClick={() => processLogic('syrian-marriage')} />
+                        <BtnSmall text="زواج غير مسجل / مشاكل تسجيل" onClick={() => processLogic('syrian-marriage-not-registered')} />
+                        <BtnSmall text="تسجيل مولود جديد" onClick={() => processLogic('syrian-newborn')} />
+                        <BtnSmall text="دعوى طلاق" onClick={() => processLogic('legal-divorce')} />
+                      </>
+                    )}
+                    {answers.q1 === 'family' && answers.q2 === 'children' && (
+                      <>
+                        <BtnSmall text="تسجيل طفل في المدرسة (بدون كملك)" onClick={() => processLogic('syrian-child-school-no-kimlik')} />
+                        <BtnSmall text="معادلة شهادة الثانوية" onClick={() => processLogic('student-highschool-denklik')} />
+                        <BtnSmall text="معادلة شهادة للسوريين" onClick={() => processLogic('syrian-denklik')} />
+                        <BtnSmall text="معادلة شهادة جامعية (YÖK)" onClick={() => processLogic('student-denklik')} />
+                      </>
+                    )}
+                    {answers.q1 === 'family' && answers.q2 === 'health' && (
+                      <>
+                        <BtnSmall text="حجز موعد مشفى (MHRS)" onClick={() => processLogic('daily-mhrs-booking')} />
+                        <BtnSmall text="اختيار طبيب العائلة" onClick={() => processLogic('daily-family-doctor')} />
+                        <BtnSmall text="تغيير طبيب العائلة" onClick={() => processLogic('daily-family-doctor-change')} />
+                        <BtnSmall text="e-Nabız (الملف الصحي)" onClick={() => processLogic('daily-enabiz')} />
+                      </>
+                    )}
+                    {answers.q1 === 'family' && answers.q2 === 'housing' && (
+                      <>
+                        <BtnSmall text="تثبيت/تحديث عنوان نفوس" onClick={() => processLogic('daily-address')} />
+                        <BtnSmall text="خلاف مع المالك / زيادة إيجار" onClick={() => processLogic('housing-rent-increase')} />
+                        <BtnSmall text="استرداد التأمين (الوديعة)" onClick={() => processLogic('housing-deposit')} />
+                        <BtnSmall text="إخلاء / تعهد إخلاء" onClick={() => processLogic('housing-eviction')} />
+                        <BtnSmall text="اعتراض على فاتورة (كهرباء/ماء/غاز)" onClick={() => processLogic('daily-utility-dispute')} />
                       </>
                     )}
                   </div>
@@ -883,6 +1040,15 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                   <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-8 space-y-6">
                     <ContentHelpfulWidget entityType="scenario" entityId={shownResult.id} />
                     <UniversalComments entityType="scenario" entityId={shownResult.id} title="مجتمع المستشار" />
+                  </div>
+
+                  {/* إخلاء مسؤولية */}
+                  <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                      <strong>تنبيه:</strong> المعلومات الواردة هنا لأغراض توجيهية فقط ولا تُشكّل استشارة قانونية رسمية.
+                      القوانين والرسوم تتغير دورياً — تحقق دائماً من الجهة الرسمية المختصة قبل اتخاذ أي إجراء.{' '}
+                      <a href="/disclaimer" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">إخلاء المسؤولية الكامل</a>
+                    </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row justify-center pt-8 mt-auto border-t border-slate-100 dark:border-slate-800 gap-3 sm:gap-4">

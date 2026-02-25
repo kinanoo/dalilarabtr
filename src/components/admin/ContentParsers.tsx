@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { LATEST_UPDATES } from '@/lib/constants';
+import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 // === Types ===
 type DBUpdate = {
     id: string;
@@ -14,6 +15,7 @@ type DBUpdate = {
     date: string;
     active: boolean;
     link?: string;
+    image?: string;
 };
 
 type DBFAQ = {
@@ -29,7 +31,7 @@ export function UpdatesManager() {
     // ... (State)
     const [updates, setUpdates] = useState<DBUpdate[]>([]);
     const [loading, setLoading] = useState(true);
-    const [formData, setFormData] = useState<Partial<DBUpdate>>({ type: 'news', title: '', content: '', active: true, link: '' });
+    const [formData, setFormData] = useState<Partial<DBUpdate>>({ type: 'news', title: '', content: '', active: true, link: '', image: '' });
     const [editingId, setEditingId] = useState<string | null>(null);
 
     const fetchUpdates = async () => {
@@ -50,7 +52,7 @@ export function UpdatesManager() {
         if (!error) {
             toast.success('تم الحفظ!');
             setEditingId(null);
-            setFormData({ type: 'news', title: '', content: '', active: true, link: '' });
+            setFormData({ type: 'news', title: '', content: '', active: true, link: '', image: '' });
             fetchUpdates();
         }
     };
@@ -93,6 +95,13 @@ export function UpdatesManager() {
                         <label className="text-sm font-bold block mb-1">رابط التوجيه (اختياري)</label>
                         <input type="url" placeholder="مثلاً: /article/123 أو https://example.com" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" dir="ltr" />
                     </div>
+                    <ImageUploader
+                        label="صورة التحديث (اختياري)"
+                        value={formData.image || undefined}
+                        onChange={(url) => setFormData({ ...formData, image: url })}
+                        bucket="public"
+                        path="updates"
+                    />
                     <div>
                         <label className="text-sm font-bold block mb-1">المحتوى</label>
                         <textarea rows={3} value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
@@ -109,12 +118,15 @@ export function UpdatesManager() {
                 <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[500px] overflow-y-auto">
                     {updates.map((u) => (
                         <div key={u.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex justify-between group">
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${u.type === 'alert' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{u.type}</span>
-                                    <span className="text-xs text-slate-400">{u.date}</span>
+                            <div className="flex items-start gap-3">
+                                {u.image && <img src={u.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${u.type === 'alert' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{u.type}</span>
+                                        <span className="text-xs text-slate-400">{u.date}</span>
+                                    </div>
+                                    <h4 className="font-bold text-sm">{u.title}</h4>
                                 </div>
-                                <h4 className="font-bold text-sm">{u.title}</h4>
                             </div>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => { setEditingId(u.id); setFormData(u); }} className="text-blue-500"><Edit size={16} /></button>

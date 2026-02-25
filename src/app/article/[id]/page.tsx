@@ -53,6 +53,7 @@ async function fetchArticleData(slug: string) {
         warning: data.warning || '',
         fees: data.fees || '',
         source: data.source || '',
+        image: data.image || '',
         lastUpdate: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
       };
     }
@@ -234,7 +235,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description,
       type: 'article',
       url,
-      images: [{ url: `${SITE_CONFIG.siteUrl}/og-image.png`, width: 1200, height: 630, alt: article.title }],
+      images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/og-image.png`, width: 1200, height: 630, alt: article.title }],
       publishedTime: dateModified,
       modifiedTime: dateModified,
       section: article.category,
@@ -244,7 +245,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: [`${SITE_CONFIG.siteUrl}/og-image.png`],
+      images: [article.image || `${SITE_CONFIG.siteUrl}/og-image.png`],
     },
   };
 }
@@ -290,7 +291,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     siteUrl: SITE_CONFIG.siteUrl,
     articleBody,
     keywords,
-    image: `${SITE_CONFIG.siteUrl}/og-image.png`,
+    image: article.image || `${SITE_CONFIG.siteUrl}/og-image.png`,
   });
 
   // Comments (Server Side)

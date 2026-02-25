@@ -5,6 +5,7 @@ import type { Article } from '@/lib/types'; // Only Type
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
 import { FileText, CheckCircle, AlertTriangle, MessageCircle, ListOrdered, Printer, ArrowLeft, Share2, Sparkles, Lightbulb, Coins, Info, ExternalLink, Check, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
@@ -155,6 +156,20 @@ export default function ArticleView({ article, slug, initialComments, children }
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20"></div>
             </div>
 
+
+            {/* Featured Image */}
+            {article.image && (
+              <div className="relative w-full h-48 sm:h-64 lg:h-80">
+                <Image
+                  src={article.image}
+                  alt={article.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
+                  priority
+                />
+              </div>
+            )}
 
             {/* Content */}
             <div className="p-4 sm:p-6 lg:p-12 space-y-6 lg:space-y-8 break-words overflow-x-hidden w-full max-w-full">
