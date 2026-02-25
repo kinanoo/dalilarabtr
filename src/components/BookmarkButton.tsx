@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, LogIn } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { createBrowserClient } from '@supabase/ssr';
-import Link from 'next/link';
 
 interface BookmarkButtonProps {
     id: string;
@@ -18,7 +17,6 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
     const [active, setActive] = useState(false);
     const [animating, setAnimating] = useState(false);
     const [isGuest, setIsGuest] = useState(true);
-    const [showLoginHint, setShowLoginHint] = useState(false);
 
     useEffect(() => {
         const supabase = createBrowserClient(
@@ -41,8 +39,7 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
         e.stopPropagation();
 
         if (isGuest) {
-            setShowLoginHint(true);
-            setTimeout(() => setShowLoginHint(false), 3000);
+            window.location.href = '/login?message=' + encodeURIComponent('قم بتسجيل الدخول للسماح لك بحفظ المقالات والروابط للعودة لها لاحقاً من خلال صفحة المحفوظات');
             return;
         }
 
@@ -54,18 +51,6 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
     };
 
     if (!isLoaded) return null;
-
-    // Login hint tooltip
-    const loginHint = showLoginHint && (
-        <Link
-            href="/login"
-            onClick={(e) => e.stopPropagation()}
-            className="absolute z-50 top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold px-3 py-2 rounded-lg shadow-xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2 duration-200"
-        >
-            <LogIn size={12} />
-            سجّل دخول للحفظ
-        </Link>
-    );
 
     // Glass Variant
     if (variant === 'glass') {
@@ -80,7 +65,6 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
                     <Star size={14} fill={active ? "currentColor" : "none"} className={`transition-all ${animating ? 'rotate-12' : ''}`} />
                     <span>{active ? "تم الحفظ" : "حفظ"}</span>
                 </button>
-                {loginHint}
             </div>
         );
     }
@@ -98,7 +82,6 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
                     <Star size={14} fill={active ? "currentColor" : "none"} className={`transition-all ${animating ? 'rotate-12' : ''}`} />
                     <span>{active ? "تم الحفظ" : "حفظ"}</span>
                 </button>
-                {loginHint}
             </div>
         );
     }
@@ -123,7 +106,6 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
                 <Star size={mini ? 20 : 20} fill={active ? "currentColor" : "none"} className={`transition-all ${animating ? 'rotate-12' : ''}`} />
                 {!mini && <span>{active ? "تم الحفظ" : "حفظ"}</span>}
             </button>
-            {loginHint}
         </div>
     );
 }

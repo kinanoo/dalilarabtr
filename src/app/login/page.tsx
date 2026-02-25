@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Loader2, ShieldCheck, AlertCircle, LogIn } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, LogIn, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -12,7 +12,16 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [infoMessage, setInfoMessage] = useState('');
     const router = useRouter();
+
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const msg = params.get('message');
+            if (msg) setInfoMessage(msg);
+        } catch {}
+    }, []);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -138,6 +147,13 @@ export default function LoginPage() {
                         <span className="text-xs text-slate-400 font-bold">أو بالطريقة التقليدية</span>
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
                     </div>
+
+                    {infoMessage && (
+                        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 p-3 rounded-lg text-sm flex items-center gap-2">
+                            <Info size={16} className="shrink-0" />
+                            {infoMessage}
+                        </div>
+                    )}
 
                     {error && (
                         <div className="mb-6 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 p-3 rounded-lg text-sm flex items-center gap-2">

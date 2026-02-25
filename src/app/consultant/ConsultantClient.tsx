@@ -202,6 +202,12 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
 
     setLoading(false);
     setStep(4);
+
+    // Update browser URL for deep linking and sharing
+    if (typeof window !== 'undefined') {
+      const newUrl = `/consultant?scenario=${key}`;
+      window.history.replaceState({}, '', newUrl);
+    }
   };
 
   useEffect(() => {
@@ -247,6 +253,10 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
     setAnswers({ q1: '', q2: '', q3: '' });
     setResult(null);
     setActiveTab('steps');
+    // Reset URL back to /consultant
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', '/consultant');
+    }
   };
 
   return (
@@ -763,7 +773,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       <ShareMenu
                         title={shownResult.title}
                         text={`تشخيص المستشار القانوني: ${shownResult.title}`}
-                        url={`${SITE_CONFIG.siteUrl}/consultant?scenario=${answers.q3 || shownResult.articleId || ''}`}
+                        url={`${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id || ''}`}
                         variant="subtle"
                       />
                       <button

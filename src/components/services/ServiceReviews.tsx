@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, User, ThumbsUp, MessageCircle, CheckCircle2, LogIn } from 'lucide-react';
+import { Star, User, ThumbsUp, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { createBrowserClient } from '@supabase/ssr';
 import AddReviewModal from '@/components/reviews/AddReviewModal';
-import Link from 'next/link';
 
 interface ReviewsProps {
     serviceId: string;
@@ -87,23 +86,20 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                     </p>
                 </div>
 
-                {isGuest ? (
-                    <Link
-                        href="/login"
-                        className="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-slate-600/20 flex items-center justify-center gap-2 active:scale-95"
-                    >
-                        <LogIn size={20} />
-                        سجّل دخول لإضافة تقييم
-                    </Link>
-                ) : (
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-95"
-                    >
-                        <MessageCircle size={20} />
-                        أضف تقييمك
-                    </button>
-                )}
+                <button
+                    onClick={() => {
+                        if (isGuest) {
+                            // Redirect to login with message
+                            window.location.href = '/login?message=' + encodeURIComponent('التقييم متاح حصرياً للأعضاء المسجلين. سجّل دخولك لمشاركة تجربتك.');
+                        } else {
+                            setIsModalOpen(true);
+                        }
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-95"
+                >
+                    <MessageCircle size={20} />
+                    أضف تقييمك
+                </button>
             </div>
 
             {/* List */}
