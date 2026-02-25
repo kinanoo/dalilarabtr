@@ -121,20 +121,30 @@ export default function InlineStarRating({
         if (error) {
             if (error.code === '23505') {
                 setAlreadyReviewed(true);
+                setErrorMsg('لقد قمت بتقييم هذه الخدمة مسبقاً');
+            } else {
+                setErrorMsg(error.message || 'فشل إرسال التقييم');
             }
+            setShowPopup(true);
             return;
         }
 
         // If there's a comment, also post it to the comments section
         if (comment.trim()) {
             const stars = '★'.repeat(selectedRating) + '☆'.repeat(5 - selectedRating);
-            await postComment({
+            const { error: commentError } = await postComment({
                 entity_type: 'service',
                 entity_id: serviceId,
                 author_name: 'عضو مسجّل',
                 content: `${stars} — ${comment.trim()}`,
                 user_id: userId || undefined,
             });
+            if (commentError) {
+                console.error('Failed to post review comment:', commentError);
+            } else {
+                // Notify UniversalComments to refresh
+                window.dispatchEvent(new CustomEvent('comments-updated'));
+            }
         }
 
         // Optimistic UI update

@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase, getAuthClient } from '../supabaseClient';
 
 // ============================================
 // 📊 Types
@@ -234,20 +234,18 @@ export async function updateReview(
     userId: string,
     data: { rating?: number; comment?: string }
 ): Promise<{ success: boolean; error: any }> {
-    if (!supabase || !userId) return { success: false, error: 'Missing params' };
+    const sb = getAuthClient();
+    if (!sb || !userId) return { success: false, error: 'Missing params' };
 
     try {
-        const { data: rows, error } = await supabase
+        // Update without .select() to avoid RLS RETURNING issue
+        const { error } = await sb
             .from('service_reviews')
             .update(data)
             .eq('service_id', serviceId)
-            .eq('user_id', userId)
-            .select();
+            .eq('user_id', userId);
 
         if (error) throw error;
-        if (!rows || rows.length === 0) {
-            return { success: false, error: { message: 'لم يتم العثور على التقييم — شغّل ملف SQL في Supabase' } };
-        }
         return { success: true, error: null };
     } catch (error) {
         console.error('Error updating review:', error);
@@ -263,19 +261,29 @@ export async function deleteReview(
     serviceId: string,
     userId: string
 ): Promise<{ success: boolean; error: any }> {
-    if (!supabase || !userId) return { success: false, error: 'Missing params' };
+    const sb = getAuthClient();
+    if (!sb || !userId) return { success: false, error: 'Missing params' };
 
     try {
-        const { data: rows, error } = await supabase
+        // Delete without .select() to avoid RLS RETURNING issue
+        const { error } = await sb
             .from('service_reviews')
             .delete()
             .eq('service_id', serviceId)
-            .eq('user_id', userId)
-            .select();
+            .eq('user_id', userId);
 
         if (error) throw error;
-        if (!rows || rows.length === 0) {
-            return { success: false, error: { message: 'لم يتم الحذف — شغّل ملف add_user_id_to_comments.sql في Supabase' } };
+
+        // Verify the row is actually gone
+        const { data: check } = await sb
+            .from('service_reviews')
+            .select('id')
+            .eq('service_id', serviceId)
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (check) {
+            return { success: false, error: { message: 'فشل حذف التقييم — تأكد من تسجيل دخولك' } };
         }
         return { success: true, error: null };
     } catch (error) {
@@ -292,10 +300,11 @@ export async function getUserReview(
     serviceId: string,
     userId: string
 ): Promise<{ data: ServiceReview | null; error: any }> {
-    if (!supabase || !userId) return { data: null, error: null };
+    const sb = getAuthClient();
+    if (!sb || !userId) return { data: null, error: null };
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('service_reviews')
             .select('*')
             .eq('service_id', serviceId)

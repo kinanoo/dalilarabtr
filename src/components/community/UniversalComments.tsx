@@ -352,6 +352,14 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entityId]);
 
+    // Listen for external comment additions (e.g. from InlineStarRating)
+    useEffect(() => {
+        const handler = () => loadComments();
+        window.addEventListener('comments-updated', handler);
+        return () => window.removeEventListener('comments-updated', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [entityId]);
+
     const resolveUserName = async () => {
         const supabase = createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,

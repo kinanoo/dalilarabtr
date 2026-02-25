@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase, getAuthClient } from '../supabaseClient';
 
 export type Comment = {
     id: string;
@@ -125,10 +125,11 @@ export async function updateComment(
     commentId: string,
     content: string
 ): Promise<{ success: boolean; error: any }> {
-    if (!supabase) return { success: false, error: 'Supabase not initialized' };
+    const sb = getAuthClient();
+    if (!sb) return { success: false, error: 'Supabase not initialized' };
 
     try {
-        const { error } = await supabase
+        const { error } = await sb
             .from('comments')
             .update({ content })
             .eq('id', commentId);
@@ -144,10 +145,11 @@ export async function updateComment(
 export async function deleteComment(
     commentId: string
 ): Promise<{ success: boolean; error: any }> {
-    if (!supabase) return { success: false, error: 'Supabase not initialized' };
+    const sb = getAuthClient();
+    if (!sb) return { success: false, error: 'Supabase not initialized' };
 
     try {
-        const { error } = await supabase
+        const { error } = await sb
             .from('comments')
             .delete()
             .eq('id', commentId);
