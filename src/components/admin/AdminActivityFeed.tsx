@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Users, Briefcase, MessageCircle, Star, Activity, Clock } from 'lucide-react';
+import { Users, Briefcase, MessageCircle, Star, Activity, Clock, ChevronDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 
 const LAST_VISIT_KEY = 'admin_last_visit_ts';
+const COLLAPSED_KEY = 'admin_activity_collapsed';
 
 const EVENT_CONFIG: Record<string, { icon: typeof Users; bg: string; text: string; label: string }> = {
     new_member:  { icon: Users,         bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'عضو جديد' },
@@ -14,6 +16,17 @@ const EVENT_CONFIG: Record<string, { icon: typeof Users; bg: string; text: strin
     new_comment: { icon: MessageCircle, bg: 'bg-indigo-100 dark:bg-indigo-900/30',   text: 'text-indigo-600 dark:text-indigo-400',   label: 'تعليق جديد' },
     new_review:  { icon: Star,          bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600 dark:text-amber-400',     label: 'تقييم جديد' },
 };
+
+// Map entity_table to admin route
+function getActivityLink(event: ActivityEvent): string | null {
+    switch (event.entity_table) {
+        case 'member_profiles': return '/admin/members';
+        case 'service_providers': return '/admin/requests';
+        case 'comments': return '/admin/community';
+        case 'service_reviews': return '/admin/reviews';
+        default: return null;
+    }
+}
 
 type ActivityEvent = {
     id: string;
@@ -29,9 +42,15 @@ export function AdminActivityFeed() {
     const [events, setEvents] = useState<ActivityEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [newCount, setNewCount] = useState(0);
+    const [collapsed, setCollapsed] = useState(false);
     const lastVisitRef = useRef<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
+        // Restore collapsed state
+        const saved = localStorage.getItem(COLLAPSED_KEY);
+        if (saved === 'true') setCollapsed(true);
+
         const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
         lastVisitRef.current = lastVisit;
 
@@ -85,95 +104,115 @@ export function AdminActivityFeed() {
         }
     }
 
+    function toggleCollapsed() {
+        const next = !collapsed;
+        setCollapsed(next);
+        localStorage.setItem(COLLAPSED_KEY, String(next));
+    }
+
+    function handleClick(event: ActivityEvent) {
+        const link = getActivityLink(event);
+        if (link) router.push(link);
+    }
+
     const lastVisit = lastVisitRef.current;
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-violet-100 dark:bg-violet-900/30 rounded-xl">
-                        <Activity size={20} className="text-violet-600 dark:text-violet-400" />
+            {/* Header — clickable to toggle */}
+            <button
+                onClick={toggleCollapsed}
+                className="w-full flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+            >
+                <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
+                        <Activity size={16} className="text-violet-600 dark:text-violet-400" />
                     </div>
-                    <div>
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">سجل النشاط المباشر</h3>
-                        <p className="text-xs text-slate-400">كل ما يحدث في الموقع لحظة بلحظة</p>
+                    <div className="text-right">
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white">سجل النشاط</h3>
                     </div>
                 </div>
-                {newCount > 0 && (
-                    <span className="bg-emerald-500 text-white text-xs font-black px-3 py-1.5 rounded-full animate-pulse">
-                        {newCount} جديد
-                    </span>
-                )}
-            </div>
+                <div className="flex items-center gap-2">
+                    {newCount > 0 && (
+                        <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                            {newCount} جديد
+                        </span>
+                    )}
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${collapsed ? '-rotate-90' : ''}`} />
+                </div>
+            </button>
 
-            {/* Timeline */}
-            <div className="max-h-[500px] overflow-y-auto">
-                {loading ? (
-                    <div className="text-center py-12 text-slate-400">
-                        <Clock size={24} className="mx-auto mb-2 animate-spin" />
-                        جاري التحميل...
-                    </div>
-                ) : events.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400">
-                        <Activity size={32} className="mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">لا يوجد نشاط مسجّل بعد</p>
-                        <p className="text-xs mt-1">الأحداث ستظهر تلقائياً عند تسجيل أعضاء أو إضافة خدمات</p>
-                    </div>
-                ) : (
-                    <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                        {events.map((event, i) => {
-                            const config = EVENT_CONFIG[event.event_type] || EVENT_CONFIG.new_comment;
-                            const Icon = config.icon;
-                            const isNew = lastVisit && event.created_at > lastVisit;
+            {/* Timeline — collapsible */}
+            {!collapsed && (
+                <div className="max-h-[400px] overflow-y-auto">
+                    {loading ? (
+                        <div className="text-center py-8 text-slate-400">
+                            <Clock size={18} className="mx-auto mb-1 animate-spin" />
+                            <span className="text-xs">جاري التحميل...</span>
+                        </div>
+                    ) : events.length === 0 ? (
+                        <div className="text-center py-8 text-slate-400">
+                            <Activity size={24} className="mx-auto mb-1 opacity-30" />
+                            <p className="text-xs">لا يوجد نشاط مسجّل بعد</p>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                            {events.map((event, i) => {
+                                const config = EVENT_CONFIG[event.event_type] || EVENT_CONFIG.new_comment;
+                                const Icon = config.icon;
+                                const isNew = lastVisit && event.created_at > lastVisit;
+                                const link = getActivityLink(event);
 
-                            // Show "new since last visit" divider
-                            const showDivider = lastVisit
-                                && i > 0
-                                && events[i - 1].created_at > lastVisit
-                                && event.created_at <= lastVisit;
+                                // Show "new since last visit" divider
+                                const showDivider = lastVisit
+                                    && i > 0
+                                    && events[i - 1].created_at > lastVisit
+                                    && event.created_at <= lastVisit;
 
-                            return (
-                                <div key={event.id}>
-                                    {showDivider && (
-                                        <div className="flex items-center gap-3 px-5 py-2 bg-slate-50 dark:bg-slate-800/50">
-                                            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">آخر زيارة ↑</span>
-                                            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                                        </div>
-                                    )}
-                                    <div className={`flex items-start gap-3 px-5 py-3.5 transition-colors ${isNew ? 'bg-emerald-50/50 dark:bg-emerald-950/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'}`}>
-                                        <div className={`w-9 h-9 rounded-xl ${config.bg} flex items-center justify-center shrink-0 mt-0.5`}>
-                                            <Icon size={16} className={config.text} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <span className={`text-[10px] font-bold ${config.text} ${config.bg} px-2 py-0.5 rounded`}>
-                                                    {config.label}
-                                                </span>
-                                                {isNew && (
-                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                return (
+                                    <div key={event.id}>
+                                        {showDivider && (
+                                            <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-slate-800/50">
+                                                <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">آخر زيارة</span>
+                                                <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                                            </div>
+                                        )}
+                                        <div
+                                            onClick={() => handleClick(event)}
+                                            className={`flex items-center gap-2.5 px-4 py-2.5 transition-colors ${link ? 'cursor-pointer' : ''} ${
+                                                isNew
+                                                    ? 'bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20'
+                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                            }`}
+                                        >
+                                            <div className={`w-7 h-7 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
+                                                <Icon size={14} className={config.text} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5">
+                                                    <p className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">
+                                                        {event.title}
+                                                    </p>
+                                                    {isNew && (
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                                    )}
+                                                </div>
+                                                {event.detail && (
+                                                    <p className="text-[11px] text-slate-400 truncate">{event.detail}</p>
                                                 )}
                                             </div>
-                                            <p className="font-bold text-sm text-slate-800 dark:text-slate-100 leading-snug">
-                                                {event.title}
-                                            </p>
-                                            {event.detail && (
-                                                <p className="text-xs text-slate-400 mt-0.5 truncate max-w-md">
-                                                    {event.detail}
-                                                </p>
-                                            )}
-                                            <p className="text-[11px] text-slate-300 dark:text-slate-600 mt-1">
+                                            <span className="text-[10px] text-slate-300 dark:text-slate-600 whitespace-nowrap shrink-0">
                                                 {relativeTime(event.created_at)}
-                                            </p>
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
