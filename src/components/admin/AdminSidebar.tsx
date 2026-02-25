@@ -113,7 +113,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
 
     return (
         <>
-            {/* Mobile Drawer (New Genius Design) */}
+            {/* Mobile Drawer */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -128,28 +128,31 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="absolute inset-y-0 right-0 w-[85%] max-w-sm bg-white dark:bg-slate-950 shadow-2xl overflow-y-auto"
+                            className="absolute inset-y-0 right-0 w-72 bg-white dark:bg-slate-950 shadow-2xl overflow-y-auto"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Drawer Header */}
-                            <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50">
-                                <span className="font-black text-xl text-slate-800 dark:text-white tracking-tight">القائمة</span>
+                            <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50">
+                                <div className="flex items-center gap-2">
+                                    <Image src="/logo.png" alt="Dalil" width={28} height={28} className="rounded-lg" />
+                                    <span className="font-bold text-sm text-slate-800 dark:text-white">لوحة التحكم</span>
+                                </div>
                                 <button
                                     onClick={onClose}
-                                    className="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 transition-colors"
+                                    className="w-8 h-8 text-slate-400 hover:text-red-500 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                 >
-                                    <LogOut size={20} className="rotate-180" /> {/* Using LogOut icon as Close/Back visual or just X */}
+                                    <ChevronRight size={18} />
                                 </button>
                             </div>
 
                             {/* Drawer Navigation */}
-                            <div className="p-4 space-y-6">
+                            <div className="px-3 py-3 space-y-4">
                                 {menuGroups.map((group, idx) => (
                                     <div key={idx}>
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-2">
+                                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 px-2">
                                             {group.title}
                                         </h3>
-                                        <div className="space-y-2">
+                                        <div className="space-y-0.5">
                                             {group.items.map((item) => {
                                                 let isActive = false;
                                                 if (setView && currentView) {
@@ -176,29 +179,27 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                                                             onClose?.();
                                                         }}
                                                         className={`
-                                                            flex items-center gap-4 p-4 rounded-2xl transition-all group
+                                                            flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-sm
                                                             ${isActive
-                                                                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                                                                ? 'bg-emerald-600 text-white font-bold'
                                                                 : 'hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300'
                                                             }
                                                         `}
                                                     >
-                                                        <div className={`
-                                                            w-10 h-10 rounded-xl flex items-center justify-center transition-colors relative shrink-0
-                                                            ${isActive
-                                                                ? 'bg-white/20 text-white'
-                                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400'
-                                                            }
-                                                        `}>
-                                                            <Icon size={22} />
+                                                        <span className="relative shrink-0">
+                                                            <Icon size={16} className={isActive ? 'text-white' : 'text-slate-400'} />
                                                             {badges[item.href] > 0 && (
-                                                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                                                                <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
                                                                     {badges[item.href] > 99 ? '99+' : badges[item.href]}
                                                                 </span>
                                                             )}
-                                                        </div>
-                                                        <div className="flex-1 font-bold text-lg">{item.label}</div>
-                                                        {!isActive && <ChevronRight size={18} className="text-slate-300" />}
+                                                        </span>
+                                                        <span className="flex-1">{item.label}</span>
+                                                        {badges[item.href] > 0 && !isActive && (
+                                                            <span className="min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                                                                {badges[item.href]}
+                                                            </span>
+                                                        )}
                                                     </Link>
                                                 );
                                             })}
@@ -208,13 +209,13 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                             </div>
 
                             {/* Drawer Footer */}
-                            <div className="p-6 mt-4 border-t border-slate-100 dark:border-slate-800/50 pb-safe">
+                            <div className="px-3 py-3 mt-2 border-t border-slate-100 dark:border-slate-800/50 pb-safe">
                                 {onLogout && (
                                     <button
                                         onClick={onLogout}
-                                        className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 font-bold hover:bg-red-100 transition-colors"
+                                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 font-bold hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                                     >
-                                        <LogOut size={20} />
+                                        <LogOut size={16} />
                                         تسجيل خروج
                                     </button>
                                 )}
