@@ -230,13 +230,16 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
     loadScenario(key);
   };
 
-  // Filter dynamic scenarios
+  // Filter dynamic scenarios — also include 'general' category in all paths
   const getDynamicScenarios = (cat: string, sub: string) => {
-    return scenarios.filter(s =>
-      (s as any).category === cat &&
-      (s as any).subcategory === sub &&
-      (s as any).is_active !== false
-    );
+    return scenarios.filter(s => {
+      if ((s as any).is_active === false) return false;
+      // Exact category+subcategory match
+      if ((s as any).category === cat && (s as any).subcategory === sub) return true;
+      // General scenarios appear everywhere
+      if ((s as any).category === 'general') return true;
+      return false;
+    });
   };
 
   const reset = () => {
@@ -760,7 +763,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       <ShareMenu
                         title={shownResult.title}
                         text={`تشخيص المستشار القانوني: ${shownResult.title}`}
-                        url={shownResult.articleId ? `${SITE_CONFIG.siteUrl}/article/${shownResult.articleId}` : `${SITE_CONFIG.siteUrl}/consultant`}
+                        url={`${SITE_CONFIG.siteUrl}/consultant?scenario=${answers.q3 || shownResult.articleId || ''}`}
                         variant="subtle"
                       />
                       <button

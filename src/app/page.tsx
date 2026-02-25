@@ -64,7 +64,7 @@ const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code'
 
 const AUTO_EVENT_CONFIG: Record<string, { type: string; href: (entityId: string) => string }> = {
   new_article:  { type: 'مقال',      href: (id) => `/article/${id}` },
-  new_scenario: { type: 'سيناريو',   href: () => `/consultant` },
+  new_scenario: { type: 'سيناريو',   href: (id) => `/consultant?scenario=${id}` },
   new_faq:      { type: 'سؤال',      href: () => `/faq` },
   new_code:     { type: 'كود أمني',   href: () => `/security-codes` },
   new_zone:     { type: 'منطقة',     href: () => `/zones` },

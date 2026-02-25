@@ -417,7 +417,7 @@ export default function Navbar() {
       <TopBar />
       <header
         ref={navRef}
-        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-transform duration-300 ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${navHidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-600 to-transparent opacity-80" />
