@@ -11,6 +11,7 @@ export type Comment = {
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
     parent_id?: string | null;
+    user_id?: string | null;
     likes_count: number;
     replies?: Comment[];
 };
@@ -83,20 +84,66 @@ export async function postComment(payload: {
     email?: string;
     is_correction?: boolean;
     parent_id?: string;
+    user_id?: string;
 }) {
     if (!supabase) return { data: null, error: 'Supabase not initialized' };
 
+    const insertObj: any = {
+        ...payload,
+        page_slug: payload.entity_id, // backward compat
+        status: 'approved',
+    };
+    // Only include user_id if provided (avoid null overwrite)
+    if (payload.user_id) {
+        insertObj.user_id = payload.user_id;
+    }
+
     const { data, error } = await supabase
         .from('comments')
-        .insert([{
-            ...payload,
-            page_slug: payload.entity_id, // backward compat
-            status: 'approved',
-        }])
+        .insert([insertObj])
         .select()
         .single();
 
     return { data, error };
+}
+
+export async function updateComment(
+    commentId: string,
+    content: string
+): Promise<{ success: boolean; error: any }> {
+    if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
+    try {
+        const { error } = await supabase
+            .from('comments')
+            .update({ content })
+            .eq('id', commentId);
+
+        if (error) throw error;
+        return { success: true, error: null };
+    } catch (error) {
+        console.error('Error updating comment:', error);
+        return { success: false, error };
+    }
+}
+
+export async function deleteComment(
+    commentId: string
+): Promise<{ success: boolean; error: any }> {
+    if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
+    try {
+        const { error } = await supabase
+            .from('comments')
+            .delete()
+            .eq('id', commentId);
+
+        if (error) throw error;
+        return { success: true, error: null };
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        return { success: false, error };
+    }
 }
 
 export async function toggleCommentLike(commentId: string): Promise<{ liked: boolean; error?: any }> {

@@ -225,6 +225,86 @@ export async function hasUserReviewed(serviceId: string, userId: string): Promis
 // 🚩 الإبلاغ عن تقييم
 // ============================================
 
+// ============================================
+// ✏️ تعديل تقييم (تغيير النجوم أو التعليق)
+// ============================================
+
+export async function updateReview(
+    serviceId: string,
+    userId: string,
+    data: { rating?: number; comment?: string }
+): Promise<{ success: boolean; error: any }> {
+    if (!supabase || !userId) return { success: false, error: 'Missing params' };
+
+    try {
+        const { error } = await supabase
+            .from('service_reviews')
+            .update(data)
+            .eq('service_id', serviceId)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return { success: true, error: null };
+    } catch (error) {
+        console.error('Error updating review:', error);
+        return { success: false, error };
+    }
+}
+
+// ============================================
+// 🗑️ حذف تقييم
+// ============================================
+
+export async function deleteReview(
+    serviceId: string,
+    userId: string
+): Promise<{ success: boolean; error: any }> {
+    if (!supabase || !userId) return { success: false, error: 'Missing params' };
+
+    try {
+        const { error } = await supabase
+            .from('service_reviews')
+            .delete()
+            .eq('service_id', serviceId)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return { success: true, error: null };
+    } catch (error) {
+        console.error('Error deleting review:', error);
+        return { success: false, error };
+    }
+}
+
+// ============================================
+// 📋 جلب تقييم المستخدم الحالي لخدمة معينة
+// ============================================
+
+export async function getUserReview(
+    serviceId: string,
+    userId: string
+): Promise<{ data: ServiceReview | null; error: any }> {
+    if (!supabase || !userId) return { data: null, error: null };
+
+    try {
+        const { data, error } = await supabase
+            .from('service_reviews')
+            .select('*')
+            .eq('service_id', serviceId)
+            .eq('user_id', userId)
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+        return { data: data || null, error: null };
+    } catch (error) {
+        return { data: null, error };
+    }
+}
+
+// ============================================
+// 🚩 الإبلاغ عن تقييم
+// ============================================
+
 export async function reportReview(
     reviewId: string,
     userId: string,

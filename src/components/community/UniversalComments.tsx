@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply, ChevronDown, ChevronUp } from 'lucide-react';
-import { fetchComments, postComment, toggleCommentLike, type Comment } from '@/lib/api/comments';
+import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
+import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, type Comment } from '@/lib/api/comments';
 import { toast } from 'sonner';
 import { createBrowserClient } from '@supabase/ssr';
 
@@ -41,20 +41,26 @@ function CommentItem({
     comment,
     userKey,
     userName,
+    currentUserId,
     activeReplyId,
     onReply,
     onCancelReply,
     onSubmitReply,
+    onEdit,
+    onDelete,
     submittingReply,
     depth = 0,
 }: {
     comment: Comment;
     userKey: string;
     userName: string;
+    currentUserId: string | null;
     activeReplyId: string | null;
     onReply: (id: string) => void;
     onCancelReply: () => void;
     onSubmitReply: (parentId: string, content: string) => Promise<void>;
+    onEdit: (commentId: string, newContent: string) => Promise<void>;
+    onDelete: (commentId: string) => Promise<void>;
     submittingReply: boolean;
     depth?: number;
 }) {
@@ -62,6 +68,13 @@ function CommentItem({
     const [liked, setLiked] = useState(false);
     const [showReplies, setShowReplies] = useState(true);
     const [replyText, setReplyText] = useState('');
+    const [editing, setEditing] = useState(false);
+    const [editText, setEditText] = useState(comment.content);
+    const [editSubmitting, setEditSubmitting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+
+    const isOwner = currentUserId && comment.user_id === currentUserId;
 
     const isReplyActive = activeReplyId === comment.id;
     const replyCount = comment.replies?.length || 0;
@@ -93,6 +106,21 @@ function CommentItem({
         if (!replyText.trim()) return;
         await onSubmitReply(comment.id, replyText);
         setReplyText('');
+    };
+
+    const handleEditSubmit = async () => {
+        if (!editText.trim() || editSubmitting) return;
+        setEditSubmitting(true);
+        await onEdit(comment.id, editText.trim());
+        setEditSubmitting(false);
+        setEditing(false);
+    };
+
+    const handleDeleteConfirm = async () => {
+        setDeleteSubmitting(true);
+        await onDelete(comment.id);
+        setDeleteSubmitting(false);
+        setShowDeleteConfirm(false);
     };
 
     return (
@@ -132,12 +160,81 @@ function CommentItem({
                             </span>
                         </div>
                     </div>
+
+                    {/* Edit/Delete for owner */}
+                    {isOwner && !editing && (
+                        <div className="flex items-center gap-1 shrink-0">
+                            <button
+                                onClick={() => { setEditing(true); setEditText(comment.content); }}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
+                                title="تعديل"
+                            >
+                                <Pencil size={13} />
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+                                title="حذف"
+                            >
+                                <Trash2 size={13} />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
-                {/* Content */}
-                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-3 pr-10">
-                    {comment.content}
-                </p>
+                {/* Content — normal or editing */}
+                {editing ? (
+                    <div className="pr-10 mb-3">
+                        <textarea
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            className="w-full bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                            rows={3}
+                            autoFocus
+                        />
+                        <div className="flex items-center gap-2 mt-2">
+                            <button
+                                onClick={handleEditSubmit}
+                                disabled={editSubmitting || !editText.trim()}
+                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1"
+                            >
+                                {editSubmitting ? '...' : <><Pencil size={12} /> حفظ</>}
+                            </button>
+                            <button
+                                onClick={() => setEditing(false)}
+                                className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors"
+                            >
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-3 pr-10">
+                        {comment.content}
+                    </p>
+                )}
+
+                {/* Delete Confirmation */}
+                {showDeleteConfirm && (
+                    <div className="pr-10 mb-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl animate-in fade-in duration-200">
+                        <p className="text-xs font-bold text-red-700 dark:text-red-300 mb-2">هل تريد حذف هذا التعليق نهائياً؟</p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleDeleteConfirm}
+                                disabled={deleteSubmitting}
+                                className="bg-red-600 hover:bg-red-700 disabled:bg-slate-300 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-all"
+                            >
+                                {deleteSubmitting ? '...' : 'نعم، احذف'}
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="text-slate-500 hover:text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-colors"
+                            >
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2 pr-10">
@@ -216,10 +313,13 @@ function CommentItem({
                             comment={reply}
                             userKey={userKey}
                             userName={userName}
+                            currentUserId={currentUserId}
                             activeReplyId={activeReplyId}
                             onReply={onReply}
                             onCancelReply={onCancelReply}
                             onSubmitReply={onSubmitReply}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
                             submittingReply={submittingReply}
                             depth={1}
                         />
@@ -236,6 +336,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     const [loading, setLoading] = useState(true);
     const [userKey, setUserKey] = useState('anon');
 
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [name, setName] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [content, setContent] = useState('');
@@ -268,6 +369,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             setName(displayName);
             setIsLoggedIn(true);
             setUserKey(user.id);
+            setCurrentUserId(user.id);
         } else {
             const anonId = getOrCreateAnonId();
             setName(`مجهول #${anonId}`);
@@ -291,6 +393,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             author_name: name.trim() || 'مجهول',
             content: replyContent,
             parent_id: parentId,
+            user_id: currentUserId || undefined,
         });
         setSubmittingReply(false);
 
@@ -313,6 +416,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             status: 'approved',
             created_at: new Date().toISOString(),
             parent_id: parentId,
+            user_id: currentUserId,
             likes_count: 0,
             replies: [],
         };
@@ -333,6 +437,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             author_name: name.trim() || 'مجهول',
             content: content,
             is_correction: isCorrection,
+            user_id: currentUserId || undefined,
         });
         setSubmitting(false);
 
@@ -352,12 +457,50 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             is_official: false,
             status: 'approved',
             created_at: new Date().toISOString(),
+            user_id: currentUserId,
             likes_count: 0,
             replies: [],
         };
         setComments((prev) => [newComment, ...prev]);
         setContent('');
         setIsCorrection(false);
+    };
+
+    const handleEditComment = async (commentId: string, newContent: string) => {
+        const { success: ok } = await updateComment(commentId, newContent);
+        if (!ok) {
+            toast.error('فشل تعديل التعليق');
+            return;
+        }
+        toast.success('تم تعديل التعليق');
+        // Update in state (root or reply)
+        setComments(prev => prev.map(c => {
+            if (c.id === commentId) return { ...c, content: newContent };
+            if (c.replies?.length) {
+                return { ...c, replies: c.replies.map(r => r.id === commentId ? { ...r, content: newContent } : r) };
+            }
+            return c;
+        }));
+    };
+
+    const handleDeleteComment = async (commentId: string) => {
+        const { success: ok } = await deleteComment(commentId);
+        if (!ok) {
+            toast.error('فشل حذف التعليق');
+            return;
+        }
+        toast.success('تم حذف التعليق');
+        // Remove from state (root or reply)
+        setComments(prev => {
+            // Try removing as root
+            const filtered = prev.filter(c => c.id !== commentId);
+            if (filtered.length < prev.length) return filtered;
+            // Try removing as reply
+            return prev.map(c => ({
+                ...c,
+                replies: c.replies?.filter(r => r.id !== commentId) || [],
+            }));
+        });
     };
 
     const totalCount = comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
@@ -392,10 +535,13 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                             comment={c}
                             userKey={userKey}
                             userName={name}
+                            currentUserId={currentUserId}
                             activeReplyId={activeReplyId}
                             onReply={setActiveReplyId}
                             onCancelReply={() => setActiveReplyId(null)}
                             onSubmitReply={handleSubmitReply}
+                            onEdit={handleEditComment}
+                            onDelete={handleDeleteComment}
                             submittingReply={submittingReply}
                         />
                     ))

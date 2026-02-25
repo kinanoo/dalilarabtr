@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Star, Send, LogIn, X, CheckCircle2 } from 'lucide-react';
+import { Star, Send, LogIn, X, CheckCircle2, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
-import { addReview, hasUserReviewed } from '@/lib/api/reviews';
+import { addReview, hasUserReviewed, getUserReview, updateReview, deleteReview } from '@/lib/api/reviews';
 import { postComment } from '@/lib/api/comments';
 
 interface InlineStarRatingProps {
@@ -24,23 +24,26 @@ export default function InlineStarRating({
     const [isGuest, setIsGuest] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
     const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+    const [myRating, setMyRating] = useState(0); // User's existing rating
 
     // Interaction state
     const [hoverRating, setHoverRating] = useState(0);
     const [showPopup, setShowPopup] = useState(false);
+    const [popupMode, setPopupMode] = useState<'new' | 'edit'>('new');
     const [selectedRating, setSelectedRating] = useState(0);
     const [comment, setComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
     const [showLoginModal, setShowLoginModal] = useState(false);
-    const [showAlreadyMsg, setShowAlreadyMsg] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [displayRating, setDisplayRating] = useState(currentRating);
     const [displayCount, setDisplayCount] = useState(reviewCount);
 
     const popupRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Auth check
+    // Auth check + fetch existing review
     useEffect(() => {
         const sb = createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,27 +54,35 @@ export default function InlineStarRating({
             setIsGuest(!user);
             if (user) {
                 setUserId(user.id);
-                const reviewed = await hasUserReviewed(serviceId, user.id);
-                setAlreadyReviewed(reviewed);
+                const { data: existingReview } = await getUserReview(serviceId, user.id);
+                if (existingReview) {
+                    setAlreadyReviewed(true);
+                    setMyRating(existingReview.rating);
+                }
             }
         });
     }, [serviceId]);
 
     // Click outside to close popup
     useEffect(() => {
-        if (!showPopup) return;
+        if (!showPopup && !showConfirmDelete) return;
 
         function handleClickOutside(e: MouseEvent) {
             if (popupRef.current && !popupRef.current.contains(e.target as Node) &&
                 containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setShowPopup(false);
-                setSelectedRating(0);
-                setComment('');
+                closePopup();
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showPopup]);
+    }, [showPopup, showConfirmDelete]);
+
+    const closePopup = () => {
+        setShowPopup(false);
+        setShowConfirmDelete(false);
+        setSelectedRating(0);
+        setComment('');
+    };
 
     const handleStarClick = useCallback((star: number) => {
         if (isGuest) {
@@ -79,14 +90,18 @@ export default function InlineStarRating({
             return;
         }
         if (alreadyReviewed) {
-            setShowAlreadyMsg(true);
-            setTimeout(() => setShowAlreadyMsg(false), 2500);
+            // Open edit mode with current rating
+            setPopupMode('edit');
+            setSelectedRating(star);
+            setShowPopup(true);
             return;
         }
+        setPopupMode('new');
         setSelectedRating(star);
         setShowPopup(true);
     }, [isGuest, alreadyReviewed]);
 
+    // Submit new review
     const handleSubmit = async () => {
         if (selectedRating === 0 || submitting) return;
         setSubmitting(true);
@@ -105,9 +120,6 @@ export default function InlineStarRating({
         if (error) {
             if (error.code === '23505') {
                 setAlreadyReviewed(true);
-                setShowPopup(false);
-                setShowAlreadyMsg(true);
-                setTimeout(() => setShowAlreadyMsg(false), 2500);
             }
             return;
         }
@@ -120,22 +132,77 @@ export default function InlineStarRating({
                 entity_id: serviceId,
                 author_name: 'عضو مسجّل',
                 content: `${stars} — ${comment.trim()}`,
+                user_id: userId || undefined,
             });
         }
 
-        // Success — update display optimistically
+        // Optimistic UI update
         const newCount = displayCount + 1;
         const newRating = ((displayRating * displayCount) + selectedRating) / newCount;
         setDisplayRating(newRating);
         setDisplayCount(newCount);
         setAlreadyReviewed(true);
+        setMyRating(selectedRating);
 
+        showSuccess('شكراً لتقييمك!');
+    };
+
+    // Update existing review
+    const handleUpdate = async () => {
+        if (selectedRating === 0 || submitting || !userId) return;
+        setSubmitting(true);
+
+        const { success: ok } = await updateReview(serviceId, userId, {
+            rating: selectedRating,
+        });
+
+        setSubmitting(false);
+        if (!ok) return;
+
+        // Optimistic: recalculate average (remove old, add new)
+        if (displayCount > 0) {
+            const totalWithoutMine = (displayRating * displayCount) - myRating;
+            const newRating = (totalWithoutMine + selectedRating) / displayCount;
+            setDisplayRating(newRating);
+        }
+        setMyRating(selectedRating);
+
+        showSuccess('تم تحديث تقييمك');
+    };
+
+    // Delete review
+    const handleDelete = async () => {
+        if (submitting || !userId) return;
+        setSubmitting(true);
+
+        const { success: ok } = await deleteReview(serviceId, userId);
+
+        setSubmitting(false);
+        if (!ok) return;
+
+        // Optimistic: remove from average
+        if (displayCount > 1) {
+            const totalWithoutMine = (displayRating * displayCount) - myRating;
+            const newCount = displayCount - 1;
+            setDisplayRating(totalWithoutMine / newCount);
+            setDisplayCount(newCount);
+        } else {
+            setDisplayRating(0);
+            setDisplayCount(0);
+        }
+        setAlreadyReviewed(false);
+        setMyRating(0);
+
+        showSuccess('تم حذف تقييمك');
+    };
+
+    const showSuccess = (msg: string) => {
+        setSuccessMsg(msg);
         setSuccess(true);
         setTimeout(() => {
             setSuccess(false);
-            setShowPopup(false);
-            setSelectedRating(0);
-            setComment('');
+            setSuccessMsg('');
+            closePopup();
         }, 1500);
     };
 
@@ -187,23 +254,17 @@ export default function InlineStarRating({
                     </div>
                 </div>
 
-                {/* "Already reviewed" toast */}
-                {showAlreadyMsg && (
-                    <div className="absolute top-full mt-2 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg z-50 whitespace-nowrap animate-in fade-in slide-in-from-top-2 duration-200 flex items-center gap-1.5">
-                        <CheckCircle2 size={14} className="text-emerald-400" />
-                        لقد قيّمت هذه الخدمة مسبقاً
-                    </div>
-                )}
-
-                {/* Rating Popup */}
-                {showPopup && !success && (
+                {/* Rating Popup — New or Edit */}
+                {showPopup && !success && !showConfirmDelete && (
                     <div
                         ref={popupRef}
                         className="absolute top-full mt-3 left-0 sm:left-auto sm:right-0 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-5 z-50 w-[300px] animate-in fade-in slide-in-from-top-2 duration-200"
                     >
                         {/* Popup Stars */}
                         <div className="text-center mb-4">
-                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">تقييمك</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                                {popupMode === 'edit' ? 'تعديل تقييمك' : 'تقييمك'}
+                            </p>
                             <div className="flex items-center justify-center gap-1" dir="ltr">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
@@ -225,24 +286,31 @@ export default function InlineStarRating({
                             </div>
                         </div>
 
-                        {/* Optional Comment */}
-                        <textarea
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            rows={2}
-                            placeholder="أضف تعليقاً (اختياري)..."
-                        />
+                        {/* Optional Comment (new only) */}
+                        {popupMode === 'new' && (
+                            <textarea
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                rows={2}
+                                placeholder="أضف تعليقاً (اختياري)..."
+                            />
+                        )}
 
                         {/* Actions */}
                         <div className="flex items-center gap-2 mt-3">
                             <button
-                                onClick={handleSubmit}
+                                onClick={popupMode === 'edit' ? handleUpdate : handleSubmit}
                                 disabled={submitting || selectedRating === 0}
                                 className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm active:scale-95 shadow-md"
                             >
                                 {submitting ? (
                                     <span>جاري الإرسال...</span>
+                                ) : popupMode === 'edit' ? (
+                                    <>
+                                        <Pencil size={14} />
+                                        تحديث التقييم
+                                    </>
                                 ) : (
                                     <>
                                         <Send size={14} />
@@ -251,12 +319,46 @@ export default function InlineStarRating({
                                 )}
                             </button>
                             <button
-                                onClick={() => {
-                                    setShowPopup(false);
-                                    setSelectedRating(0);
-                                    setComment('');
-                                }}
+                                onClick={closePopup}
                                 className="px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-bold"
+                            >
+                                إلغاء
+                            </button>
+                        </div>
+
+                        {/* Delete option (edit mode only) */}
+                        {popupMode === 'edit' && (
+                            <button
+                                onClick={() => setShowConfirmDelete(true)}
+                                className="w-full mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
+                            >
+                                <Trash2 size={13} />
+                                حذف تقييمي
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {/* Delete Confirmation */}
+                {showConfirmDelete && !success && (
+                    <div
+                        ref={popupRef}
+                        className="absolute top-full mt-3 left-0 sm:left-auto sm:right-0 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-red-200 dark:border-red-900/50 p-5 z-50 w-[280px] animate-in fade-in zoom-in-95 duration-200 text-center"
+                    >
+                        <Trash2 size={24} className="text-red-500 mx-auto mb-3" />
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">حذف التقييم؟</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">سيتم حذف تقييمك نهائياً</p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleDelete}
+                                disabled={submitting}
+                                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-slate-300 text-white font-bold py-2 px-3 rounded-xl text-sm transition-all active:scale-95"
+                            >
+                                {submitting ? 'جاري الحذف...' : 'نعم، احذف'}
+                            </button>
+                            <button
+                                onClick={() => setShowConfirmDelete(false)}
+                                className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2 px-3 rounded-xl text-sm transition-colors"
                             >
                                 إلغاء
                             </button>
@@ -264,15 +366,14 @@ export default function InlineStarRating({
                     </div>
                 )}
 
-                {/* Success Message in Popup */}
+                {/* Success Message */}
                 {showPopup && success && (
                     <div
                         ref={popupRef}
                         className="absolute top-full mt-3 left-0 sm:left-auto sm:right-0 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-emerald-200 dark:border-emerald-800 p-5 z-50 w-[280px] animate-in fade-in zoom-in-95 duration-200 text-center"
                     >
-                        <div className="text-3xl mb-2">&#10003;</div>
-                        <h4 className="font-bold text-emerald-600 dark:text-emerald-400 text-base">شكراً لتقييمك!</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">تقييمك يساعد الآخرين</p>
+                        <CheckCircle2 size={32} className="text-emerald-500 mx-auto mb-2" />
+                        <h4 className="font-bold text-emerald-600 dark:text-emerald-400 text-base">{successMsg}</h4>
                     </div>
                 )}
             </div>
