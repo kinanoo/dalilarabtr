@@ -4,8 +4,8 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Phone, Briefcase, Star, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
-import ServiceReviews from '@/components/services/ServiceReviews';
+import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 import ShareMenu from '@/components/ShareMenu';
@@ -112,15 +112,12 @@ export default async function ServiceDetailsPage(
                                         {provider.profession}
                                     </p>
                                 </div>
-                                <div className="flex items-center justify-center sm:justify-end gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-900/50">
-                                    <Star size={16} className="fill-amber-500 text-amber-500" />
-                                    <span className="font-bold">
-                                        {provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}
-                                    </span>
-                                    <span className="text-xs opacity-70">
-                                        ({provider.review_count || 0} تقييم)
-                                    </span>
-                                </div>
+                                <InlineStarRating
+                                    serviceId={id}
+                                    serviceName={provider.name}
+                                    currentRating={provider.rating ? Number(provider.rating) : 5.0}
+                                    reviewCount={provider.review_count || 0}
+                                />
                             </div>
 
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-6 text-sm text-slate-600 dark:text-slate-300 font-medium">
@@ -176,7 +173,6 @@ export default async function ServiceDetailsPage(
 
             {/* Reviews + Comments */}
             <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
-                <ServiceReviews serviceId={id} serviceName={provider.name} />
                 <UniversalComments
                     entityType="service"
                     entityId={id}
