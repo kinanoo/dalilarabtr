@@ -4,8 +4,6 @@ import "./globals.css";
 import "../styles/animations.css";
 import "../styles/dark-mode.css";
 import '@fontsource/cairo/400.css';
-import '@fontsource/cairo/600.css';
-import '@fontsource/cairo/700.css';
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import ClientComponents from "@/components/ClientComponents";
@@ -21,6 +19,7 @@ import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // N
 import NotificationManager from "@/components/NotificationManager";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import FontLoader from "@/components/FontLoader";
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -147,6 +146,7 @@ export default function RootLayout({
             {/* PWA Components */}
             <ServiceWorkerRegister />
             <PWAInstallPrompt />
+            <FontLoader />
 
             <div className="relative z-10">
               <UrgencyBanner />

@@ -6,8 +6,7 @@
  * تم تحويلها بالكامل لتعمل على السيرفر لتحسين الأداء والـ SEO.
  */
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 300; // Cache for 5 minutes (ISR)
 
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabaseClient';
