@@ -23,6 +23,7 @@ export default function InlineStarRating({
     // Auth state
     const [isGuest, setIsGuest] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
+    const [userName, setUserName] = useState('عضو');
     const [alreadyReviewed, setAlreadyReviewed] = useState(false);
     const [myRating, setMyRating] = useState(0); // User's existing rating
 
@@ -55,6 +56,15 @@ export default function InlineStarRating({
             setIsGuest(!user);
             if (user) {
                 setUserId(user.id);
+                // Fetch display name
+                const { data: profile } = await sb
+                    .from('member_profiles')
+                    .select('full_name')
+                    .eq('id', user.id)
+                    .single();
+                const displayName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'عضو';
+                setUserName(displayName);
+
                 const { data: existingReview } = await getUserReview(serviceId, user.id);
                 if (existingReview) {
                     setAlreadyReviewed(true);
@@ -110,7 +120,7 @@ export default function InlineStarRating({
         const { error } = await addReview({
             service_id: serviceId,
             service_name: serviceName,
-            reviewer_name: 'عضو مسجّل',
+            reviewer_name: userName,
             rating: selectedRating,
             comment: comment.trim() || undefined,
             user_id: userId || undefined,
@@ -131,12 +141,11 @@ export default function InlineStarRating({
 
         // If there's a comment, also post it to the comments section
         if (comment.trim()) {
-            const stars = '★'.repeat(selectedRating) + '☆'.repeat(5 - selectedRating);
             const { error: commentError } = await postComment({
                 entity_type: 'service',
                 entity_id: serviceId,
-                author_name: 'عضو مسجّل',
-                content: `${stars} — ${comment.trim()}`,
+                author_name: userName,
+                content: comment.trim(),
                 user_id: userId || undefined,
             });
             if (commentError) {
