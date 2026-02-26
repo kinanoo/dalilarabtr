@@ -56,9 +56,17 @@ export const staticPageSchema = z.object({
     content: requiredString.min(10, { message: "المحتوى قصير جداً" }),
 });
 
+// --- Contact Schema ---
+export const contactSchema = z.object({
+    name: z.string().trim().optional(),
+    messageType: requiredString,
+    message: requiredString.min(10, { message: "الرسالة يجب أن تكون 10 أحرف على الأقل" }),
+});
+
 // --- General/Shared Types ---
 export type ArticleForm = z.infer<typeof articleSchema>;
 export type ServiceForm = z.infer<typeof serviceSchema>;
 export type RequestServiceInputs = z.infer<typeof requestServiceSchema>;
 export type StaticPageForm = z.infer<typeof staticPageSchema>;
 export type NewsletterInputs = z.infer<typeof newsletterSchema>;
+export type ContactInputs = z.infer<typeof contactSchema>;
