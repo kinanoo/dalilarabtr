@@ -2,13 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { getNextPrayer, getPrayerTimes, PrayerTimes, TURKEY_CITIES } from '@/lib/prayer-times';
-import { Moon, Calendar, ChevronDown, MapPin } from 'lucide-react';
+import { Moon, Calendar, ChevronDown, MapPin, Clock } from 'lucide-react';
 
 export default function TopBar() {
     const [nextPrayer, setNextPrayer] = useState<{ name: string; time: string; remainingMinutes: number } | null>(null);
     const [allPrayers, setAllPrayers] = useState<PrayerTimes | null>(null);
     const [hijriDate, setHijriDate] = useState<string>('');
-    const [failed, setFailed] = useState(false);
 
     // City State
     const [cityId, setCityId] = useState('Istanbul');
@@ -23,28 +22,21 @@ export default function TopBar() {
         if (saved) setCityId(saved);
     }, []);
 
-    // Fetch Data when city changes — مع حماية من double-fetch
+    // Fetch Data when city changes
     useEffect(() => {
-        let cancelled = false;
         async function loadData() {
             try {
                 const data = await getPrayerTimes(cityId, 'Turkey');
-                if (cancelled) return;
-                if (!data) {
-                    setFailed(true);
-                    return;
-                }
-                setFailed(false);
+                if (!data) return;
+
                 setHijriDate(`${data.date.weekday.ar}، ${data.date.day} ${data.date.month.ar}`);
                 setAllPrayers(data.timings);
                 setNextPrayer(getNextPrayer(data.timings));
             } catch (err) {
-                if (!cancelled) setFailed(true);
                 console.warn('TopBar: Failed to load prayer data', err);
             }
         }
         loadData();
-        return () => { cancelled = true; };
     }, [cityId]);
 
     // Handle City Change
@@ -71,8 +63,8 @@ export default function TopBar() {
     }, []);
 
     return (
-        <div className="bg-slate-900 text-white text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 px-3 sm:px-4 relative z-[101] min-h-[28px] sm:min-h-[36px] flex items-center">
-            <div className="max-w-screen-2xl mx-auto w-full flex items-center justify-between relative">
+        <div className="bg-slate-900 text-white text-[9px] sm:text-xs font-bold py-1 sm:py-1.5 px-4 relative z-[101] min-h-[24px] sm:min-h-[32px] flex items-center">
+            <div className="max-w-screen-2xl mx-auto flex items-center justify-between relative">
 
                 {/* Right: Hijri Date */}
                 <div className="flex items-center gap-2 sm:gap-4">
@@ -101,12 +93,12 @@ export default function TopBar() {
                                     <span className="bg-slate-800 px-1.5 py-0.5 rounded text-white font-mono dir-ltr">
                                         {nextPrayer.time}
                                     </span>
-                                    <span className="text-slate-400 text-[9px] sm:text-[10px]">
+                                    <span className="text-slate-500 text-[9px] sm:text-[10px]">
                                         (-{Math.floor(nextPrayer.remainingMinutes / 60)}س {nextPrayer.remainingMinutes % 60}د)
                                     </span>
                                 </div>
                             ) : (
-                                <span className="text-slate-400">{failed ? 'غير متاح' : '...'}</span>
+                                <span className="text-slate-600">...</span>
                             )}
                             <Moon size={12} className="text-emerald-500" />
                         </div>
