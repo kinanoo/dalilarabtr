@@ -285,7 +285,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
             </>
           }
-          description="النظام الخبير: تشخيص دقيق لأكثر من 200 حالة قانونية وخدمية."
+          description="النظام الخبير: تشخيص دقيق لأكثر من 75 حالة قانونية وخدمية."
           icon={<Briefcase className="w-9 h-9 md:w-14 md:h-14 text-emerald-400" />}
           titleClassName="text-4xl sm:text-5xl md:text-7xl tracking-tight leading-snug pb-1"
           descriptionClassName="text-primary-100/80 leading-relaxed"
