@@ -107,8 +107,8 @@ export default function Footer() {
           {/* 🌟 Trust Badges (شارات الثقة) */}
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 py-8 border-t border-slate-800/50 mb-0">
             <div className="flex items-center gap-2 text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="font-medium text-sm">تحديث يومي للبيانات</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="font-medium text-sm">آخر مراجعة: فبراير 2026</span>
             </div>
             <div className="flex items-center gap-2 text-slate-400">
               <span className="text-emerald-500">🛡️</span>

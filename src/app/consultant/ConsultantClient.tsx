@@ -285,7 +285,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
             </>
           }
-          description="النظام الخبير: تشخيص دقيق لأكثر من 75 حالة قانونية وخدمية."
+          description="النظام الخبير: تشخيص دقيق لأكثر من 80 حالة قانونية وخدمية."
           icon={<Briefcase className="w-9 h-9 md:w-14 md:h-14 text-emerald-400" />}
           titleClassName="text-4xl sm:text-5xl md:text-7xl tracking-tight leading-snug pb-1"
           descriptionClassName="text-primary-100/80 leading-relaxed"
@@ -476,6 +476,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     )}
                     {answers.q1 === 'family' && (
                       <>
+                        <Btn text="إقامة الأسرة (Aile İkamet)" icon={<Users />} onClick={() => { setAnswers({ ...answers, q2: 'residence' }); setStep(3); }} />
                         <Btn text="أحوال مدنية (زواج/ولادة/طلاق)" icon={<HeartPulse />} onClick={() => { setAnswers({ ...answers, q2: 'civil' }); setStep(3); }} />
                         <Btn text="تعليم الأطفال والمدارس" icon={<GraduationCap />} onClick={() => { setAnswers({ ...answers, q2: 'children' }); setStep(3); }} />
                         <Btn text="صحة الأسرة" icon={<HeartPulse />} onClick={() => { setAnswers({ ...answers, q2: 'health' }); setStep(3); }} />
@@ -530,6 +531,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="إذن سفر (زيارة)" onClick={() => processLogic('syrian-travel-visit')} />
                         <BtnSmall text="الخروج من تركيا والعودة (كملك)" onClick={() => processLogic('syrian-leaving-turkey')} />
                         <BtnSmall text="السفر إلى سوريا والعودة (مخاطر)" onClick={() => processLogic('syrian-syria-visit-risk')} />
+                        <BtnSmall text="زيارة سوريا بالكملك (الإجراء الرسمي)" onClick={() => processLogic('syria-visit-official')} />
                         {getDynamicScenarios('syrian', 'travel').map(s => (
                           <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
                         ))}
@@ -539,6 +541,8 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       <>
                         <BtnSmall text="الجنسية الاستثنائية" onClick={() => processLogic('syrian-citizenship')} />
                         <BtnSmall text="إزالة كود العودة (V-87)" onClick={() => processLogic('syrian-return-code')} />
+                        <BtnSmall text="مستقبل الحماية المؤقتة بعد 2026" onClick={() => processLogic('protection-status-2026')} />
+                        <BtnSmall text="العودة الجماعية لسوريا (بعد 2024)" onClick={() => processLogic('syria-mass-return-2025')} />
                         {getDynamicScenarios('syrian', 'status').map(s => (
                           <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
                         ))}
@@ -836,6 +840,13 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     )}
 
                     {/* Family Submenus */}
+                    {answers.q1 === 'family' && answers.q2 === 'residence' && (
+                      <>
+                        <BtnSmall text="إقامة الأسرة (Aile İkamet İzni)" onClick={() => processLogic('family-aile-ikamet')} />
+                        <BtnSmall text="تقديم إقامة سياحية (أول مرة)" onClick={() => processLogic('tourist-new')} />
+                        <BtnSmall text="تجديد إقامة سياحية" onClick={() => processLogic('tourist-extension')} />
+                      </>
+                    )}
                     {answers.q1 === 'family' && answers.q2 === 'civil' && (
                       <>
                         <BtnSmall text="تثبيت زواج" onClick={() => processLogic('syrian-marriage')} />
