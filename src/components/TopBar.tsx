@@ -64,7 +64,7 @@ export default function TopBar() {
 
     return (
         <div className="bg-slate-900 text-white text-[9px] sm:text-xs font-bold py-1 sm:py-1.5 px-4 relative z-[101] min-h-[24px] sm:min-h-[32px] flex items-center">
-            <div className="max-w-screen-2xl mx-auto flex items-center justify-between relative">
+            <div className="max-w-screen-2xl mx-auto w-full flex items-center justify-between relative">
 
                 {/* Right: Hijri Date */}
                 <div className="flex items-center gap-2 sm:gap-4">
