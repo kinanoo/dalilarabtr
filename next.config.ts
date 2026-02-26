@@ -72,9 +72,8 @@ const nextConfig: NextConfig = {
   // 🔕 إخفاء مؤشر التطوير (زر N) في وضع التطوير
   devIndicators: ({ buildActivity: false } as unknown) as NextConfig['devIndicators'],
 
-  // 🛡️ تجاوز أخطاء البناء (للنشر السريع)
-
-  typescript: { ignoreBuildErrors: true },
+  // 🛡️ TypeScript — أخطاء البناء يجب إصلاحها قبل النشر
+  // typescript: { ignoreBuildErrors: true }, // ❌ تم الإزالة لضمان سلامة الكود
 
   // @ts-ignore - Explicitly requested by next.js warning for local cross-origin
   allowedDevOrigins: ['http://192.168.18.3:3000', '192.168.18.3:3000'],

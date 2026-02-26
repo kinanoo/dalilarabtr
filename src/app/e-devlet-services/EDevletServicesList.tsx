@@ -11,6 +11,7 @@ type EDevletService = {
   intro: string;
   lastUpdate: string;
   source?: string;
+  slug?: string;
 };
 
 export default function EDevletServicesList({

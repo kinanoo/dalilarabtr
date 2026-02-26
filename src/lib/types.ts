@@ -47,6 +47,7 @@ export interface AdminUpdate {
     content?: string | null;
     active: boolean;
     image?: string;
+    created_at?: string;
 }
 
 export interface AdminCode {

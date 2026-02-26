@@ -14,6 +14,7 @@ import { SITE_CONFIG, CATEGORY_SLUGS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
 
 import { deobfuscate, isObfuscated } from '@/lib/security';
+import DOMPurify from 'isomorphic-dompurify';
 import NativeConsultCard from '@/components/article/NativeConsultCard';
 import CommentsClient from '@/components/comments/CommentsClient';
 
@@ -30,7 +31,10 @@ export default function ArticleView({ article, slug, initialComments, children }
   }, [article.title, slug]);
 
   // 🛡️ فك تشفير المحتوى المحمي
-  const safeDetails = useMemo(() => isObfuscated(article.details) ? deobfuscate(article.details) : article.details, [article.details]);
+  const safeDetails = useMemo(() => {
+    const raw = isObfuscated(article.details) ? deobfuscate(article.details) : article.details;
+    return DOMPurify.sanitize(raw);
+  }, [article.details]);
   const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
   const safeSteps = useMemo(() => (article.steps || []).map((s: string) => isObfuscated(s) ? deobfuscate(s) : s), [article.steps]);
   const safeTips = useMemo(() => (article.tips || []).map((t: string) => isObfuscated(t) ? deobfuscate(t) : t), [article.tips]);
