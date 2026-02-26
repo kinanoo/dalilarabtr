@@ -41,19 +41,37 @@ export const TURKEY_CITIES = [
     { id: 'Malatya', nameAr: 'ملاطية', nameTr: 'Malatya' },
 ];
 
+const CACHE_KEY = 'daleel_prayer_cache';
+const CACHE_TTL = 86400000; // 24 ساعة
+
 export async function getPrayerTimes(city: string = 'Istanbul', country: string = 'Turkey'): Promise<{ timings: PrayerTimes; date: HijriDate } | null> {
+    // ---- جرب API أولاً ----
     try {
-        // استخدام API Aladhan المجاني والموثوق
-        const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=13`, { next: { revalidate: 3600 } });
-        if (!res.ok) return null;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(
+            `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=13`,
+            { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        return {
-            timings: data.data.timings,
-            date: data.data.date.hijri
-        };
-    } catch (error) {
-        // Silently fail or warn for network issues
-        console.warn('Prayer times unavailable:', error instanceof Error ? error.message : 'Unknown error');
+        const result = { timings: data.data.timings, date: data.data.date.hijri };
+        // خزّن في localStorage كـ cache
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ ...result, city, ts: Date.now() }));
+        } catch {}
+        return result;
+    } catch (e) {
+        console.warn('Prayer times API failed:', e instanceof Error ? e.message : e);
+        // ---- Fallback: جرب من localStorage ----
+        try {
+            const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+            if (cached.timings && (Date.now() - cached.ts) < CACHE_TTL) {
+                console.info('Using cached prayer times');
+                return { timings: cached.timings, date: cached.date };
+            }
+        } catch {}
         return null;
     }
 }
