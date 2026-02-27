@@ -6,13 +6,14 @@ import { supabase } from '../supabaseClient';
 
 export type Notification = {
     id: string;
-    type: 'article' | 'law' | 'service' | 'update' | 'alert' | 'announcement';
+    type: 'article' | 'law' | 'service' | 'update' | 'alert' | 'announcement' | 'reply' | 'review' | 'comment';
     title: string;
     message: string;
     link?: string;
     icon?: string;
     priority: 'low' | 'medium' | 'high' | 'urgent';
     target_audience?: string;
+    target_user_id?: string | null;
     created_at: string;
     is_read?: boolean;
 };
@@ -186,14 +187,47 @@ export async function markAllAsRead(
 // ============================================
 
 export function getUserIdentifier(): string {
-    // يمكن استخدام IP أو session ID أو localStorage
-    // هنا نستخدم localStorage لبساطة التطبيق
     if (typeof window === 'undefined') return 'server';
 
+    // أولاً: محاولة استخدام auth user ID (يُحفظ بواسطة NotificationBell عند التحميل)
+    const authId = sessionStorage.getItem('notification_auth_id');
+    if (authId) return authId;
+
+    // ثانياً: localStorage ID للزوار المجهولين
     let userId = localStorage.getItem('user_notification_id');
     if (!userId) {
         userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         localStorage.setItem('user_notification_id', userId);
     }
     return userId;
+}
+
+// ============================================
+// ➕ إنشاء إشعار جديد (عبر API route)
+// ============================================
+
+export async function createNotification(payload: {
+    type: Notification['type'];
+    title: string;
+    message: string;
+    link?: string;
+    icon?: string;
+    priority?: Notification['priority'];
+    target_user_id?: string | null;
+}): Promise<{ success: boolean; error: any }> {
+    try {
+        const res = await fetch('/api/notifications/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            return { success: false, error: err };
+        }
+        return { success: true, error: null };
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        return { success: false, error };
+    }
 }

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { addReview, hasUserReviewed, getUserReview, updateReview, deleteReview } from '@/lib/api/reviews';
 import { postComment } from '@/lib/api/comments';
+import { createNotification } from '@/lib/api/notifications';
 
 interface InlineStarRatingProps {
     serviceId: string;
@@ -155,6 +156,16 @@ export default function InlineStarRating({
                 window.dispatchEvent(new CustomEvent('comments-updated'));
             }
         }
+
+        // إشعار تقييم جديد
+        createNotification({
+            type: 'review',
+            title: `تقييم جديد: ${serviceName}`,
+            message: `${userName} أعطى ${selectedRating} نجوم${comment.trim() ? ': ' + comment.trim().substring(0, 60) : ''}`,
+            link: `/services/${serviceId}#reviews-section`,
+            icon: '⭐',
+            priority: 'low',
+        });
 
         // Optimistic UI update
         const newCount = displayCount + 1;

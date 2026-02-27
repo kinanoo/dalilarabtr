@@ -484,10 +484,7 @@ export default function Navbar() {
 
             {/* Search Removed */}
 
-            <Link href="/updates" aria-label="الإشعارات والتحديثات" className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-700 dark:text-slate-300 hover:text-emerald-700">
-              <Bell size={18} />
-              {hasNewUpdates && <span className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full animate-pulse ring-2 ring-white dark:ring-slate-950" />}
-            </Link>
+            <NotificationBell />
 
             <div className="hidden md:block scale-90">
               <ThemeToggle />

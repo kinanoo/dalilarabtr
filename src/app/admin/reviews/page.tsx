@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, ExternalLink, CheckCircle2, ArrowRight, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
 
 export default function AdminReviewsPage() {
@@ -78,7 +79,23 @@ export default function AdminReviewsPage() {
         const { error } = await supabase.from('review_replies').insert([{
             review_id: reviewId, author_name: 'الإدارة', content: replyContent, is_official: true
         }]);
-        if (!error) { toast.success('تم إرسال الرد'); setReplyContent(''); setReplyingTo(null); fetchData(); }
+        if (!error) {
+            toast.success('تم إرسال الرد');
+            // إشعار للمقيّم عند رد الإدارة
+            const review = reviews.find((r: any) => r.id === reviewId);
+            if (review?.user_id) {
+                createNotification({
+                    type: 'reply',
+                    title: 'ردّ من الإدارة على تقييمك',
+                    message: `ردّت إدارة الموقع على تقييمك: "${replyContent.substring(0, 80)}${replyContent.length > 80 ? '...' : ''}"`,
+                    link: `/services/${review.service_id}#reviews-section`,
+                    icon: '💬',
+                    priority: 'high',
+                    target_user_id: review.user_id,
+                });
+            }
+            setReplyContent(''); setReplyingTo(null); fetchData();
+        }
         else toast.error('فشل الإرسال: ' + error.message);
     };
 
