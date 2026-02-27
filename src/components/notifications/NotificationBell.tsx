@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
 import {
     getUnreadCount,
-    getUnreadNotifications,
+    getAllNotifications,
     markAsRead,
     markAllAsRead,
     getUserIdentifier,
@@ -33,7 +33,6 @@ export default function NotificationBell() {
             } else {
                 sessionStorage.removeItem('notification_auth_id');
             }
-            // Load count with the correct identifier
             loadUnreadCount();
         });
     }, []);
@@ -44,7 +43,7 @@ export default function NotificationBell() {
         return () => clearInterval(interval);
     }, []);
 
-    // Load notifications when dropdown opens
+    // Load all notifications when dropdown opens
     useEffect(() => {
         if (isOpen) loadNotifications();
     }, [isOpen]);
@@ -80,24 +79,36 @@ export default function NotificationBell() {
     const loadNotifications = async () => {
         setLoading(true);
         const userId = getUserIdentifier();
-        const { data } = await getUnreadNotifications(userId);
+        const { data } = await getAllNotifications(userId, 30);
         setNotifications(data);
         setLoading(false);
     };
 
+    // Mark a single notification as read (keep it in the list, just update its state)
     const handleMarkAsRead = async (notificationId: string) => {
+        const notification = notifications.find(n => n.id === notificationId);
+        if (!notification || notification.is_read) return; // Already read, skip
+
         const userId = getUserIdentifier();
         await markAsRead(notificationId, userId);
-        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-        setUnreadCount((prev) => Math.max(0, prev - 1));
+
+        // Update local state: mark as read, don't remove
+        setNotifications(prev =>
+            prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
     };
 
+    // Mark all as read — keep items, just clear unread state
     const handleMarkAllAsRead = async () => {
         const userId = getUserIdentifier();
         await markAllAsRead(userId);
-        setNotifications([]);
+
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         setUnreadCount(0);
     };
+
+    const unreadInList = notifications.filter(n => !n.is_read).length;
 
     return (
         <div className="relative" ref={bellRef}>
@@ -166,9 +177,9 @@ export default function NotificationBell() {
                                 <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                     <Bell size={18} className="text-emerald-600" />
                                     الإشعارات
-                                    {unreadCount > 0 && (
+                                    {unreadInList > 0 && (
                                         <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                            {unreadCount}
+                                            {unreadInList}
                                         </span>
                                     )}
                                 </h3>
@@ -191,7 +202,7 @@ export default function NotificationBell() {
                                     <div className="p-8 text-center">
                                         <div className="text-4xl mb-3">🔕</div>
                                         <div className="text-slate-500 dark:text-slate-400 font-medium">
-                                            لا توجد إشعارات جديدة
+                                            لا توجد إشعارات
                                         </div>
                                         <div className="text-xs text-slate-400 mt-1">
                                             سنخبرك عندما يكون هناك جديد
@@ -219,8 +230,8 @@ export default function NotificationBell() {
                                 )}
                             </div>
 
-                            {/* Footer */}
-                            {notifications.length > 0 && (
+                            {/* Footer — show "mark all" only when there are unread items */}
+                            {unreadInList > 0 && (
                                 <div className="relative z-10 p-3 border-t border-slate-200 dark:border-slate-800">
                                     <button
                                         onClick={handleMarkAllAsRead}

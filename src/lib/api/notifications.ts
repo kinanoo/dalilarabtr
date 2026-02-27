@@ -79,11 +79,12 @@ export async function getAllNotifications(
     }
 
     try {
-        // جلب الإشعارات
+        // جلب الإشعارات — عامة (target_user_id = null) + شخصية للمستخدم الحالي
         const { data: notifications, error: notifError } = await supabase
             .from('notifications')
             .select('*')
             .eq('is_active', true)
+            .or(`target_user_id.is.null,target_user_id.eq.${userIdentifier}`)
             .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
             .order('created_at', { ascending: false })
             .limit(limit);

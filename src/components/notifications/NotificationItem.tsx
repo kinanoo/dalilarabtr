@@ -40,10 +40,9 @@ export default function NotificationItem({ notification, onMarkAsRead }: Notific
         return date.toLocaleDateString('ar-SA');
     };
 
-    const content = (
+    const inner = (
         <div
             className={`group relative p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer overflow-hidden ${!notification.is_read ? 'border-r-4 border-r-emerald-500' : ''}`}
-            onClick={onMarkAsRead}
         >
             {/* Neon glow line on hover */}
             <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
@@ -85,13 +84,19 @@ export default function NotificationItem({ notification, onMarkAsRead }: Notific
         </div>
     );
 
+    // If notification has a link, wrap in Link — onClick only fires ONCE on the Link
     if (notification.link) {
         return (
             <Link href={notification.link} onClick={onMarkAsRead}>
-                {content}
+                {inner}
             </Link>
         );
     }
 
-    return content;
+    // No link — onClick on the div itself
+    return (
+        <div onClick={onMarkAsRead}>
+            {inner}
+        </div>
+    );
 }
