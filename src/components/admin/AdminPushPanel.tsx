@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 export default function AdminPushPanel() {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
-    const [url, setUrl] = useState('/');
+    const [url, setUrl] = useState('');
     const [isSending, setIsSending] = useState(false);
 
     const handleSend = async (e: React.FormEvent) => {
@@ -30,10 +30,13 @@ export default function AdminPushPanel() {
 
             const result = await response.json();
 
-            toast.success(`تم إرسال الإشعار إلى ${result.successCount} مشترك!`);
+            let msg = `تم الإرسال بنجاح إلى ${result.successCount} من أصل ${result.totalSubscribers} مشترك`;
+            if (result.cleaned > 0) msg += ` (تم حذف ${result.cleaned} اشتراك منتهي)`;
+            if (result.failCount > 0) msg += ` — ${result.failCount} فشل`;
+            toast.success(msg);
             setTitle('');
             setMessage('');
-            setUrl('/');
+            setUrl('');
         } catch (error) {
             console.error('Send error:', error);
             toast.error('حدث خطأ أثناء الإرسال');
@@ -84,15 +87,19 @@ export default function AdminPushPanel() {
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        رابط التوجيه (اختياري)
+                        رابط التوجيه عند النقر
                     </label>
                     <input
                         type="text"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        placeholder="/"
+                        placeholder="/article/residence-1 أو /updates أو /faq"
                         className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                        dir="ltr"
                     />
+                    <p className="text-xs text-slate-400 mt-1">
+                        اتركه فارغاً ليتم التوجيه لصفحة التحديثات تلقائياً
+                    </p>
                 </div>
 
                 <button

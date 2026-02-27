@@ -62,10 +62,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'لا يوجد مشتركون', successCount: 0, failCount: 0 }, { status: 200 });
         }
 
-        const payload = JSON.stringify({ title, message, url });
+        // Default to /updates if no meaningful URL
+        const targetUrl = (url && url !== '/') ? url : '/updates';
+        const payload = JSON.stringify({ title, message, url: targetUrl });
 
         let successCount = 0;
         let failCount = 0;
+        const expiredEndpoints: string[] = [];
 
         const promises = subscriptions.map((sub) =>
             webpush.sendNotification(
@@ -79,12 +82,32 @@ export async function POST(request: Request) {
                 payload
             )
                 .then(() => { successCount++; })
-                .catch(() => { failCount++; })
+                .catch((err: any) => {
+                    failCount++;
+                    // 410 Gone or 404 = subscription expired, mark for cleanup
+                    if (err?.statusCode === 410 || err?.statusCode === 404) {
+                        expiredEndpoints.push(sub.endpoint);
+                    }
+                })
         );
 
         await Promise.all(promises);
 
-        return NextResponse.json({ success: true, successCount, failCount });
+        // Clean up expired subscriptions
+        if (expiredEndpoints.length > 0) {
+            await supabase
+                .from('push_subscriptions')
+                .delete()
+                .in('endpoint', expiredEndpoints);
+        }
+
+        return NextResponse.json({
+            success: true,
+            successCount,
+            failCount,
+            cleaned: expiredEndpoints.length,
+            totalSubscribers: subscriptions.length,
+        });
 
     } catch (error) {
         console.error('Push notification error:', error);

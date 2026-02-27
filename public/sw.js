@@ -85,13 +85,15 @@ self.addEventListener('push', function (event) {
     const data = event.data?.json() ?? {};
     const title = data.title || 'دليل العرب في تركيا';
     const message = data.message || 'تحديث جديد متوفر';
+    // Default to /updates if no specific URL — never just "/"
+    const url = (data.url && data.url !== '/') ? data.url : '/updates';
 
     event.waitUntil(
         self.registration.showNotification(title, {
             body: message,
             icon: '/android-chrome-192x192.png',
             badge: '/android-chrome-192x192.png',
-            data: { url: data.url || '/' },
+            data: { url: url },
             actions: [{ action: 'open', title: 'عرض التفاصيل' }],
             dir: 'rtl',
             lang: 'ar',
@@ -102,5 +104,20 @@ self.addEventListener('push', function (event) {
 
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
-    event.waitUntil(clients.openWindow(event.notification.data.url));
+    var targetUrl = event.notification.data.url || '/updates';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
+            // If the site is already open, focus it and navigate
+            for (var i = 0; i < windowClients.length; i++) {
+                var client = windowClients[i];
+                if (client.url.indexOf(self.registration.scope) !== -1 && 'focus' in client) {
+                    return client.focus().then(function (c) {
+                        if ('navigate' in c) return c.navigate(targetUrl);
+                    });
+                }
+            }
+            // Otherwise open a new window
+            return clients.openWindow(targetUrl);
+        })
+    );
 });
