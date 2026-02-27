@@ -417,7 +417,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full mt-4 z-40 w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
+            className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden max-h-[60vh] overflow-y-auto"
           >
             {results.length > 0 ? (
               <div className="py-2">
