@@ -43,16 +43,15 @@ export const TURKEY_CITIES = [
 
 export async function getPrayerTimes(city: string = 'Istanbul', country: string = 'Turkey'): Promise<{ timings: PrayerTimes; date: HijriDate } | null> {
     try {
-        // استخدام API Aladhan المجاني والموثوق
-        const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=13`, { next: { revalidate: 3600 } });
+        // استخدام API Route محلي (proxy) لتجاوز CSP وإضافة caching
+        const res = await fetch(`/api/prayer-times?city=${city}&country=${country}`);
         if (!res.ok) return null;
         const data = await res.json();
         return {
-            timings: data.data.timings,
-            date: data.data.date.hijri
+            timings: data.timings,
+            date: data.date
         };
     } catch (error) {
-        // Silently fail or warn for network issues
         console.warn('Prayer times unavailable:', error instanceof Error ? error.message : 'Unknown error');
         return null;
     }
