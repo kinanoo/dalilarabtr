@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock } from 'lucide-react';
+import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { LATEST_UPDATES } from '@/lib/constants';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
@@ -28,11 +28,12 @@ type DBFAQ = {
 
 // === Updates Manager Component ===
 export function UpdatesManager() {
-    // ... (State)
     const [updates, setUpdates] = useState<DBUpdate[]>([]);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState<Partial<DBUpdate>>({ type: 'news', title: '', content: '', active: true, link: '', image: '' });
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [sendPush, setSendPush] = useState(false);
 
     const fetchUpdates = async () => {
         setLoading(true);
@@ -47,13 +48,52 @@ export function UpdatesManager() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!supabase) return;
-        const payload = { ...formData, date: new Date().toISOString().split('T')[0] };
-        const { error } = await supabase.from('updates').upsert(editingId ? { ...payload, id: editingId } : payload);
-        if (!error) {
-            toast.success('تم الحفظ!');
+        setSubmitting(true);
+
+        try {
+            // Preserve original date on edit, use today for new
+            const date = editingId ? formData.date! : new Date().toISOString().split('T')[0];
+            const payload = { ...formData, date };
+            const { error } = await supabase.from('updates').upsert(editingId ? { ...payload, id: editingId } : payload);
+
+            if (error) {
+                toast.error('فشل الحفظ: ' + error.message);
+                return;
+            }
+
+            // Send push notification for new updates (not edits)
+            if (!editingId && sendPush && formData.title) {
+                try {
+                    const pushRes = await fetch('/api/admin/push', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: formData.title,
+                            message: formData.content || formData.title,
+                            url: formData.link || '/updates',
+                        }),
+                    });
+                    const pushResult = await pushRes.json();
+                    if (pushRes.ok) {
+                        toast.success(`تم النشر + إرسال إشعار لـ ${pushResult.successCount} مشترك`);
+                    } else {
+                        toast.success('تم النشر');
+                        toast.error('فشل إرسال الإشعار: ' + (pushResult.error || ''));
+                    }
+                } catch {
+                    toast.success('تم النشر');
+                    toast.error('فشل إرسال الإشعار');
+                }
+            } else {
+                toast.success(editingId ? 'تم حفظ التعديل' : 'تم النشر');
+            }
+
             setEditingId(null);
+            setSendPush(false);
             setFormData({ type: 'news', title: '', content: '', active: true, link: '', image: '' });
             fetchUpdates();
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -106,8 +146,23 @@ export function UpdatesManager() {
                         <label className="text-sm font-bold block mb-1">المحتوى</label>
                         <textarea rows={3} value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
                     </div>
-                    <button type="submit" disabled={loading} className="w-full py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold">
-                        {loading ? <Loader2 className="animate-spin mx-auto" /> : 'نشر التحديث'}
+
+                    {/* Push notification toggle — only for new updates */}
+                    {!editingId && (
+                        <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={sendPush}
+                                onChange={e => setSendPush(e.target.checked)}
+                                className="w-4 h-4 rounded accent-emerald-600"
+                            />
+                            <Send size={16} className="text-emerald-600" />
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">إرسال إشعار push للمشتركين</span>
+                        </label>
+                    )}
+
+                    <button type="submit" disabled={submitting} className={`w-full py-2 rounded-lg font-bold text-white flex items-center justify-center gap-2 ${editingId ? 'bg-blue-500 hover:bg-blue-600' : sendPush ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-yellow-500 hover:bg-yellow-600'}`}>
+                        {submitting ? <Loader2 size={18} className="animate-spin" /> : editingId ? 'حفظ التعديل' : sendPush ? <><Send size={16} /> نشر وإرسال إشعار</> : 'نشر التحديث'}
                     </button>
                 </form>
             </div>
@@ -129,7 +184,7 @@ export function UpdatesManager() {
                                 </div>
                             </div>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => { setEditingId(u.id); setFormData(u); }} className="text-blue-500"><Edit size={16} /></button>
+                                <button onClick={() => { setEditingId(u.id); setFormData(u); setSendPush(false); }} className="text-blue-500"><Edit size={16} /></button>
                                 <button onClick={() => handleDelete(u.id, u.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors" title="حذف"><Trash2 size={16} /></button>
                             </div>
                         </div>

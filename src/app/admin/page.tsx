@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
-import AdminPushPanel from '@/components/admin/AdminPushPanel';
+
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import { AdminActivityFeed } from '@/components/admin/AdminActivityFeed';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
@@ -108,11 +108,6 @@ export default function AdminDashboard() {
           <QuickActionBtn href="/admin/scenarios/new" title="سيناريو جديد" icon={BrainCircuit} color="violet" />
           <QuickActionBtn href="/admin/zones/new" title="إضافة منطقة" icon={MapPin} color="red" />
         </div>
-      </motion.section>
-
-      {/* 5. Push Notifications Panel */}
-      <motion.section variants={itemVariants}>
-        <AdminPushPanel />
       </motion.section>
 
     </motion.div>
