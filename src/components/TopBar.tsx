@@ -24,10 +24,11 @@ export default function TopBar() {
 
     // Fetch Data when city changes
     useEffect(() => {
+        let cancelled = false;
         async function loadData() {
             try {
                 const data = await getPrayerTimes(cityId, 'Turkey');
-                if (!data) return;
+                if (cancelled || !data) return;
 
                 setHijriDate(`${data.date.weekday.ar}، ${data.date.day} ${data.date.month.ar}`);
                 setAllPrayers(data.timings);
@@ -37,6 +38,7 @@ export default function TopBar() {
             }
         }
         loadData();
+        return () => { cancelled = true; };
     }, [cityId]);
 
     // Handle City Change
@@ -64,7 +66,7 @@ export default function TopBar() {
 
     return (
         <div className="bg-slate-900 text-white text-[9px] sm:text-xs font-bold py-1 sm:py-1.5 px-4 relative z-[1001] min-h-[24px] sm:min-h-[32px] flex items-center">
-            <div className="max-w-screen-2xl mx-auto flex items-center justify-between relative">
+            <div className="max-w-screen-2xl mx-auto w-full flex items-center justify-between relative">
 
                 {/* Right: Hijri Date */}
                 <div className="flex items-center gap-2 sm:gap-4">
