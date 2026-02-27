@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Users, Briefcase, MessageCircle, Star, Activity, Clock, ChevronDown } from 'lucide-react';
+import { Users, Briefcase, MessageCircle, Star, Activity, Clock, ChevronDown, FileText, HelpCircle, Shield, Wrench, Megaphone, MapPin, BrainCircuit } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
@@ -11,10 +11,17 @@ const LAST_VISIT_KEY = 'admin_last_visit_ts';
 const COLLAPSED_KEY = 'admin_activity_collapsed';
 
 const EVENT_CONFIG: Record<string, { icon: typeof Users; bg: string; text: string; label: string }> = {
-    new_member:  { icon: Users,         bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'عضو جديد' },
-    new_service: { icon: Briefcase,     bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600 dark:text-blue-400',       label: 'خدمة جديدة' },
-    new_comment: { icon: MessageCircle, bg: 'bg-indigo-100 dark:bg-indigo-900/30',   text: 'text-indigo-600 dark:text-indigo-400',   label: 'تعليق جديد' },
-    new_review:  { icon: Star,          bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600 dark:text-amber-400',     label: 'تقييم جديد' },
+    new_member:   { icon: Users,         bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'عضو جديد' },
+    new_service:  { icon: Briefcase,     bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600 dark:text-blue-400',       label: 'خدمة جديدة' },
+    new_comment:  { icon: MessageCircle, bg: 'bg-indigo-100 dark:bg-indigo-900/30',   text: 'text-indigo-600 dark:text-indigo-400',   label: 'تعليق جديد' },
+    new_review:   { icon: Star,          bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600 dark:text-amber-400',     label: 'تقييم جديد' },
+    new_scenario: { icon: BrainCircuit,  bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600 dark:text-violet-400',   label: 'سيناريو' },
+    new_article:  { icon: FileText,      bg: 'bg-sky-100 dark:bg-sky-900/30',         text: 'text-sky-600 dark:text-sky-400',         label: 'مقال' },
+    new_faq:      { icon: HelpCircle,    bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600 dark:text-orange-400',   label: 'سؤال شائع' },
+    new_code:     { icon: Shield,        bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600 dark:text-red-400',         label: 'كود أمان' },
+    new_tool:     { icon: Wrench,        bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600 dark:text-teal-400',       label: 'أداة' },
+    new_update:   { icon: Megaphone,     bg: 'bg-pink-100 dark:bg-pink-900/30',       text: 'text-pink-600 dark:text-pink-400',       label: 'تحديث' },
+    new_zone:     { icon: MapPin,        bg: 'bg-cyan-100 dark:bg-cyan-900/30',       text: 'text-cyan-600 dark:text-cyan-400',       label: 'منطقة' },
 };
 
 // Map entity_table to admin route
@@ -24,6 +31,14 @@ function getActivityLink(event: ActivityEvent): string | null {
         case 'service_providers': return '/admin/requests';
         case 'comments': return '/admin/community';
         case 'service_reviews': return '/admin/reviews';
+        case 'consultant_scenarios': return '/admin/scenarios';
+        case 'articles': return '/admin/articles';
+        case 'faqs': return '/admin/faqs';
+        case 'security_codes': return '/admin/codes';
+        case 'tools_registry': return '/admin/settings';
+        case 'admin_updates': return '/admin/updates';
+        case 'zones': return '/admin/zones';
+        case 'banners': return '/admin/banners';
         default: return null;
     }
 }
