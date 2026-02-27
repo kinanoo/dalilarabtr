@@ -49,7 +49,24 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { title, message, url } = body;
 
-        // Fetch subscriptions server-side — never expose them to the browser
+        // Default to /updates if no meaningful URL
+        const targetUrl = (url && url !== '/') ? url : '/updates';
+
+        // ── 1. Save to in-site notifications (visible in bell icon) ──
+        await supabase
+            .from('notifications')
+            .insert({
+                type: 'announcement',
+                title,
+                message,
+                link: targetUrl,
+                icon: '📢',
+                priority: 'high',
+                target_audience: 'all',
+                is_active: true,
+            });
+
+        // ── 2. Send push notifications to subscribed devices ─────────
         const { data: subscriptions, error: subError } = await supabase
             .from('push_subscriptions')
             .select('endpoint, p256dh, auth');
@@ -58,47 +75,42 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'فشل تحميل الاشتراكات' }, { status: 500 });
         }
 
-        if (!subscriptions || subscriptions.length === 0) {
-            return NextResponse.json({ error: 'لا يوجد مشتركون', successCount: 0, failCount: 0 }, { status: 200 });
-        }
-
-        // Default to /updates if no meaningful URL
-        const targetUrl = (url && url !== '/') ? url : '/updates';
-        const payload = JSON.stringify({ title, message, url: targetUrl });
-
         let successCount = 0;
         let failCount = 0;
         const expiredEndpoints: string[] = [];
 
-        const promises = subscriptions.map((sub) =>
-            webpush.sendNotification(
-                {
-                    endpoint: sub.endpoint,
-                    keys: {
-                        p256dh: sub.p256dh,
-                        auth: sub.auth,
+        if (subscriptions && subscriptions.length > 0) {
+            const payload = JSON.stringify({ title, message, url: targetUrl });
+
+            const promises = subscriptions.map((sub) =>
+                webpush.sendNotification(
+                    {
+                        endpoint: sub.endpoint,
+                        keys: {
+                            p256dh: sub.p256dh,
+                            auth: sub.auth,
+                        },
                     },
-                },
-                payload
-            )
-                .then(() => { successCount++; })
-                .catch((err: any) => {
-                    failCount++;
-                    // 410 Gone or 404 = subscription expired, mark for cleanup
-                    if (err?.statusCode === 410 || err?.statusCode === 404) {
-                        expiredEndpoints.push(sub.endpoint);
-                    }
-                })
-        );
+                    payload
+                )
+                    .then(() => { successCount++; })
+                    .catch((err: any) => {
+                        failCount++;
+                        if (err?.statusCode === 410 || err?.statusCode === 404) {
+                            expiredEndpoints.push(sub.endpoint);
+                        }
+                    })
+            );
 
-        await Promise.all(promises);
+            await Promise.all(promises);
 
-        // Clean up expired subscriptions
-        if (expiredEndpoints.length > 0) {
-            await supabase
-                .from('push_subscriptions')
-                .delete()
-                .in('endpoint', expiredEndpoints);
+            // Clean up expired subscriptions
+            if (expiredEndpoints.length > 0) {
+                await supabase
+                    .from('push_subscriptions')
+                    .delete()
+                    .in('endpoint', expiredEndpoints);
+            }
         }
 
         return NextResponse.json({
@@ -106,7 +118,7 @@ export async function POST(request: Request) {
             successCount,
             failCount,
             cleaned: expiredEndpoints.length,
-            totalSubscribers: subscriptions.length,
+            totalSubscribers: subscriptions?.length || 0,
         });
 
     } catch (error) {
