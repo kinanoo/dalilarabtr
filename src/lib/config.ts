@@ -22,5 +22,6 @@ export const CATEGORY_SLUGS: Record<string, string> = {
     'education': 'الدراسة والتعليم',
     'health': 'الصحة والتأمين',
     'official': 'معاملات رسمية',
-    'edevlet': 'خدمات e-Devlet'
+    'edevlet': 'خدمات e-Devlet',
+    'traffic': 'المرور والسيارات'
 };
