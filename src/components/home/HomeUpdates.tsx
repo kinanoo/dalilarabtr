@@ -146,7 +146,7 @@ function UpdateCard({ update }: { update: any }) {
                             }`}>
                                 {update.type}
                             </span>
-                            {isNewContent(update.date) && (
+                            {isNewContent(update.sortDate || update.date) && (
                                 <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
                                     <Sparkles size={10} /> جديد
                                 </span>
