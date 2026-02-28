@@ -48,13 +48,35 @@ export const CodeEditor = ({ form, setForm }: any) => (
         </div>
 
         <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الحل المقترح</label>
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">كيف ترفع هذا الكود؟</label>
             <textarea
-                value={form.effect || ''}
-                onChange={(e: any) => setForm({ ...form, effect: e.target.value })}
+                value={form.how_to_remove || ''}
+                onChange={(e: any) => setForm({ ...form, how_to_remove: e.target.value })}
                 className="w-full p-4 h-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"
-                placeholder="كيفية الحل..."
+                placeholder="خطوات رفع الكود أو إزالة القيد..."
             />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">مدة الحظر</label>
+                <input
+                    value={form.duration || ''}
+                    onChange={(e: any) => setForm({ ...form, duration: e.target.value })}
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
+                    placeholder="مثال: 5 سنوات، حتى دفع الغرامة..."
+                />
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">أكواد مرتبطة (مفصولة بفاصلة)</label>
+                <input
+                    value={form.related_codes_text || ''}
+                    onChange={(e: any) => setForm({ ...form, related_codes_text: e.target.value })}
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-mono font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
+                    placeholder="V-137, N-96, Ç-101"
+                    dir="ltr"
+                />
+            </div>
         </div>
 
         <div className="space-y-2">

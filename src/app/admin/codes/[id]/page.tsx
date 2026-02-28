@@ -38,12 +38,14 @@ export default function CodeEditPage({ params }: { params: Promise<{ id: string 
                     toast.error('فشل تحميل الكود: ' + error.message);
                     router.push('/admin/codes');
                 } else if (data) {
-                    // Map legacy 'solution' to 'effect' if needed
                     const mapped = { ...data };
-                    if (mapped.solution && !mapped.effect) {
-                        mapped.effect = mapped.solution;
-                        delete mapped.solution;
+                    // Convert related_codes array to comma-separated text for editing
+                    if (Array.isArray(mapped.related_codes)) {
+                        mapped.related_codes_text = mapped.related_codes.join(', ');
                     }
+                    // Clean up legacy fields
+                    delete mapped.solution;
+                    delete mapped.effect;
                     setForm(mapped);
                 }
                 setLoading(false);
@@ -60,7 +62,17 @@ export default function CodeEditPage({ params }: { params: Promise<{ id: string 
             const payload = { ...form };
 
             // Ensure no legacy fields
-            if (payload.solution) delete payload.solution;
+            delete payload.solution;
+            delete payload.effect;
+
+            // Convert related_codes_text back to array for DB
+            if (payload.related_codes_text) {
+                payload.related_codes = payload.related_codes_text
+                    .split(',')
+                    .map((c: string) => c.trim())
+                    .filter((c: string) => c.length > 0);
+            }
+            delete payload.related_codes_text;
 
             // When editing, preserve original code as PK to prevent duplicate creation
             if (!isNew) payload.code = id;

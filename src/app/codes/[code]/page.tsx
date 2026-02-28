@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import PageHero from '@/components/PageHero';
-import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight, Clock, Link2 } from 'lucide-react';
 import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
@@ -57,7 +57,21 @@ export default async function CodeDetailPage({ params }: Props) {
 
     if (!item) return notFound();
 
-    // Helpers (Duplicated from CodesPage for simplicity, ideally shared util)
+    // Fetch related codes titles if available
+    const relatedCodes: Array<{ code: string; title: string }> = [];
+    if (item.related_codes && item.related_codes.length > 0) {
+        // Normalize: remove dashes for DB lookup (DB stores "Ç101" not "Ç-101")
+        const normalizedCodes = item.related_codes.map((c: string) => c.replace('-', ''));
+        const { data: relatedData } = await supabase
+            .from('security_codes')
+            .select('code, title')
+            .in('code', normalizedCodes);
+        if (relatedData) {
+            relatedCodes.push(...relatedData);
+        }
+    }
+
+    // Helpers
     const getSeverityStyles = (severity: string) => {
         switch (severity) {
             case 'critical': return 'border-red-500 bg-red-50 text-red-900 dark:bg-red-950/30 dark:text-red-100';
@@ -79,7 +93,7 @@ export default async function CodeDetailPage({ params }: Props) {
 
     return (
         <main className="min-h-screen bg-white dark:bg-slate-950">
-            <ToolSchema tool="security-codes" /> {/* Maybe optimize schema for specific item */}
+            <ToolSchema tool="security-codes" />
 
             <PageHero
                 title={`الكود ${item.code}`}
@@ -93,6 +107,7 @@ export default async function CodeDetailPage({ params }: Props) {
                     عودة لكافة الأكواد
                 </Link>
 
+                {/* Main Code Card */}
                 <div className={`rounded-3xl border-2 overflow-hidden shadow-xl ${getSeverityStyles(item.severity)}`}>
                     <div className="p-6 sm:p-10">
                         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
@@ -100,9 +115,17 @@ export default async function CodeDetailPage({ params }: Props) {
                                 {getIcon(item.severity)}
                             </div>
                             <div className="flex-1">
-                                <span className="inline-block px-3 py-1 rounded-full bg-slate-900/5 dark:bg-white/10 text-xs sm:text-sm font-bold mb-2">
-                                    {item.category}
-                                </span>
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                    <span className="inline-block px-3 py-1 rounded-full bg-slate-900/5 dark:bg-white/10 text-xs sm:text-sm font-bold">
+                                        {item.category}
+                                    </span>
+                                    {item.duration && (
+                                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs sm:text-sm font-bold">
+                                            <Clock size={14} />
+                                            {item.duration}
+                                        </span>
+                                    )}
+                                </div>
                                 <h1 className="text-2xl sm:text-4xl font-black mb-4 leading-tight">
                                     {item.title}
                                 </h1>
@@ -115,6 +138,53 @@ export default async function CodeDetailPage({ params }: Props) {
                         </div>
                     </div>
                 </div>
+
+                {/* How to Remove Section */}
+                {item.how_to_remove && (
+                    <div className="mt-6 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 overflow-hidden">
+                        <div className="px-6 py-4 bg-emerald-100/50 dark:bg-emerald-900/30 border-b border-emerald-200 dark:border-emerald-800">
+                            <h2 className="text-lg font-black text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
+                                <CheckCircle size={22} className="text-emerald-600" />
+                                كيف ترفع هذا الكود؟
+                            </h2>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-base leading-relaxed text-emerald-900 dark:text-emerald-100 font-medium whitespace-pre-line">
+                                {item.how_to_remove}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Related Codes Section */}
+                {relatedCodes.length > 0 && (
+                    <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 overflow-hidden">
+                        <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                            <h2 className="text-lg font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                <Link2 size={20} className="text-slate-600 dark:text-slate-400" />
+                                أكواد مرتبطة
+                            </h2>
+                        </div>
+                        <div className="p-6">
+                            <div className="flex flex-wrap gap-3">
+                                {relatedCodes.map(rc => (
+                                    <Link
+                                        key={rc.code}
+                                        href={`/codes/${encodeURIComponent(rc.code)}`}
+                                        className="group flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md transition-all"
+                                    >
+                                        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm">
+                                            {rc.code}
+                                        </span>
+                                        <span className="text-slate-600 dark:text-slate-300 text-sm">
+                                            {rc.title}
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="mt-8 flex justify-center mb-12">
                     <ShareMenu

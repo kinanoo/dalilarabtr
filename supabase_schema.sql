@@ -93,6 +93,9 @@ CREATE TABLE IF NOT EXISTS public.security_codes (
   description TEXT NOT NULL,
   category TEXT,
   severity TEXT, -- 'critical', 'high', 'medium', 'low', 'safe'
+  how_to_remove TEXT, -- كيفية رفع الكود أو إزالة القيد
+  duration TEXT, -- مدة الحظر (مثال: 5 سنوات، حتى دفع الغرامة)
+  related_codes TEXT[], -- أكواد مرتبطة (مثال: {"V-137", "N-96"})
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
