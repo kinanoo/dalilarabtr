@@ -18,6 +18,7 @@ import {
     BrainCircuit,
     ShieldCheck,
     Megaphone,
+    Newspaper,
     Users
 } from 'lucide-react';
 import Link from 'next/link';
@@ -103,6 +104,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/analyst', label: 'المحلل الاستراتيجي', icon: BrainCircuit },
                 { href: '/admin/integrity', label: 'فحص النظام', icon: ShieldCheck },
                 { href: '/admin/banners', label: 'البنرات والتنبيهات', icon: Megaphone },
+                { href: '/admin/news-ticker', label: 'شريط الأخبار', icon: Newspaper },
                 { href: '/admin/codes', label: 'أكواد أمنية', icon: ShieldAlert },
                 { href: '/admin/zones', label: 'مناطق محظورة', icon: ShieldAlert },
                 { href: '/admin/sources', label: 'مصادر رسمية', icon: Database },

@@ -36,7 +36,7 @@ const fadeInUp = {
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
-        <section className="relative z-[15] bg-slate-900 text-white pt-8 pb-10 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
+        <section className="relative z-[15] bg-slate-900 text-white pt-4 pb-10 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
 
             {/* Inner Wrapper for Background/Overflow Clipping */}
             <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
