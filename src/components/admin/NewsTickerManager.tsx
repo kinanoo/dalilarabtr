@@ -55,7 +55,8 @@ export default function NewsTickerManager() {
             setNewItem({ text: '', link: '', is_active: true });
             fetchItems();
         } else {
-            toast.error('فشل الإضافة: ' + error.message);
+            console.error('Insert error:', error);
+            toast.error('فشل إضافة الخبر، حاول مجدداً');
         }
     }
 
@@ -81,7 +82,8 @@ export default function NewsTickerManager() {
             toast.success('تم حذف الخبر', { id: toastId });
             fetchItems();
         } else {
-            toast.error('فشل الحذف: ' + error.message, { id: toastId });
+            console.error('Delete error:', error);
+            toast.error('فشل حذف الخبر، حاول مجدداً', { id: toastId });
         }
     }
 
@@ -181,7 +183,7 @@ export default function NewsTickerManager() {
                                     </span>
                                 )}
                                 {item.link && (
-                                    <span className="text-xs bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded" dir="ltr">
+                                    <span className="text-xs bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded truncate max-w-[150px] inline-block align-middle" dir="ltr">
                                         {item.link}
                                     </span>
                                 )}

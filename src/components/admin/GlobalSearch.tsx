@@ -399,7 +399,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
     }
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto z-50" ref={containerRef}>
+        <div className="relative w-full max-w-4xl mx-auto" ref={containerRef}>
             <SearchInput
                 query={query}
                 setQuery={setQuery}

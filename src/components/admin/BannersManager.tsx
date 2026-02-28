@@ -47,7 +47,8 @@ export default function BannersManager() {
             setNewBanner({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
             fetchBanners();
         } else {
-            toast.error('فشل الإضافة: ' + error.message);
+            console.error('Insert error:', error);
+            toast.error('فشل إضافة البنر، حاول مجدداً');
         }
     }
 
@@ -64,7 +65,8 @@ export default function BannersManager() {
             toast.success(!currentState ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
             fetchBanners();
         } else {
-            toast.error('فشل التحديث: ' + error.message);
+            console.error('Update error:', error);
+            toast.error('فشل تحديث البنر، حاول مجدداً');
         }
     }
 
@@ -80,7 +82,7 @@ export default function BannersManager() {
             fetchBanners();
         } else {
             console.error('Delete error:', error);
-            toast.error('فشل الحذف: ' + error.message, { id: toastId });
+            toast.error('فشل حذف البنر، حاول مجدداً', { id: toastId });
         }
     }
 
@@ -156,11 +158,11 @@ export default function BannersManager() {
             <div className="space-y-3">
                 {isLoading ? <p>جاري التحميل...</p> : banners.map((banner) => (
                     <div key={banner.id} className={`flex items-center justify-between p-4 rounded-xl border ${banner.is_active ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
-                        <div className="flex-1">
-                            <p className="font-bold text-slate-800 dark:text-slate-100">{banner.content}</p>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-800 dark:text-slate-100 break-words">{banner.content}</p>
                             <div className="flex gap-2 mt-1">
-                                <span className={`text-xs px-2 py-0.5 rounded ${banner.type === 'alert' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                    {banner.type}
+                                <span className={`text-xs px-2 py-0.5 rounded ${banner.type === 'alert' ? 'bg-red-100 text-red-600' : banner.type === 'warning' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    {banner.type === 'alert' ? 'تنبيه' : banner.type === 'warning' ? 'تحذير' : 'معلومة'}
                                 </span>
                                 {banner.is_active && <span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded flex items-center gap-1"><CheckCircle size={10} /> مفعل حالياً</span>}
                             </div>

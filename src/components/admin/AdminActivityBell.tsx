@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users, Briefcase, MessageCircle, Star, Activity, X,
@@ -60,9 +61,14 @@ export function AdminActivityBell() {
     const [events, setEvents] = useState<ActivityEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [newCount, setNewCount] = useState(0);
+    const [mounted, setMounted] = useState(false);
     const lastVisitRef = useRef<string | null>(null);
-    const bellRef = useRef<HTMLDivElement>(null);
+    const bellBtnRef = useRef<HTMLButtonElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+
+    // SSR safety — only render portal after mount
+    useEffect(() => { setMounted(true); }, []);
 
     // Fetch events + subscribe to realtime
     useEffect(() => {
@@ -70,7 +76,6 @@ export function AdminActivityBell() {
         lastVisitRef.current = lastVisit;
 
         fetchEvents(lastVisit);
-        // Do NOT stamp localStorage here — wait until dropdown opens
 
         if (!supabase) return;
         const channel = supabase
@@ -82,7 +87,6 @@ export function AdminActivityBell() {
             }, (payload) => {
                 const newEvent = payload.new as ActivityEvent;
                 setEvents((prev) => [newEvent, ...prev]);
-                // Only increment badge if dropdown is closed
                 setNewCount((prev) => prev + 1);
             })
             .subscribe();
@@ -99,11 +103,15 @@ export function AdminActivityBell() {
         }
     }, [isOpen]);
 
-    // Click outside to close
+    // Click outside to close — check both bell button and panel
     useEffect(() => {
         if (!isOpen) return;
         function handleClickOutside(e: MouseEvent) {
-            if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+            const target = e.target as Node;
+            if (
+                bellBtnRef.current && !bellBtnRef.current.contains(target) &&
+                (!panelRef.current || !panelRef.current.contains(target))
+            ) {
                 setIsOpen(false);
             }
         }
@@ -155,149 +163,175 @@ export function AdminActivityBell() {
         setIsOpen(false);
     }
 
+    // Calculate dropdown position based on bell button
+    const getPanelStyle = useCallback((): React.CSSProperties => {
+        if (!bellBtnRef.current) return { position: 'fixed', top: 64, left: 16, right: 16 };
+        const rect = bellBtnRef.current.getBoundingClientRect();
+        const isDesktop = window.innerWidth >= 1280;
+        if (isDesktop) {
+            return {
+                position: 'fixed',
+                top: rect.bottom + 8,
+                right: Math.max(window.innerWidth - rect.right, 16),
+                width: 380,
+            };
+        }
+        // Mobile: full width with margins, below header
+        return { position: 'fixed', top: 64, left: 16, right: 16 };
+    }, []);
+
     const lastVisit = lastVisitRef.current;
 
-    return (
-        <div className="relative" ref={bellRef}>
-            {/* Bell Button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
-                aria-label="سجل النشاط"
-                title="سجل النشاط"
-            >
-                <Activity size={18} />
+    // Dropdown content rendered via Portal
+    const dropdown = (
+        <AnimatePresence>
+            {isOpen && (
+                <>
+                    {/* Mobile backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-[9998] xl:hidden bg-black/30 backdrop-blur-sm"
+                        onClick={() => setIsOpen(false)}
+                    />
 
-                <AnimatePresence>
-                    {newCount > 0 && (
-                        <motion.span
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                            className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-[#0f172a]"
-                        >
-                            {newCount > 9 ? '9+' : newCount}
-                        </motion.span>
-                    )}
-                </AnimatePresence>
-            </button>
+                    <motion.div
+                        ref={panelRef}
+                        initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: 0,
+                            transition: { type: 'spring', stiffness: 300, damping: 25 },
+                        }}
+                        exit={{
+                            opacity: 0,
+                            scale: 0.95,
+                            y: -8,
+                            transition: { duration: 0.15 },
+                        }}
+                        className="z-[9999] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[70vh] xl:max-h-[80vh] flex flex-col overflow-hidden"
+                        style={{ ...getPanelStyle(), transformOrigin: 'top right' }}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-violet-50/50 to-white dark:from-violet-950/20 dark:to-slate-900">
+                            <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <Activity size={18} className="text-violet-600" />
+                                سجل النشاط
+                            </h3>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                                <X size={16} className="text-slate-500" />
+                            </button>
+                        </div>
 
-            {/* Dropdown Panel */}
-            <AnimatePresence>
-                {isOpen && (
-                    <>
-                        {/* Mobile backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="fixed inset-0 z-[149] xl:hidden bg-black/30 backdrop-blur-sm"
-                            onClick={() => setIsOpen(false)}
-                        />
+                        {/* Event List */}
+                        <div className="flex-1 overflow-y-auto">
+                            {loading ? (
+                                <div className="p-8 text-center">
+                                    <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                                    <span className="text-sm text-slate-500">جاري التحميل...</span>
+                                </div>
+                            ) : events.length === 0 ? (
+                                <div className="p-8 text-center">
+                                    <Activity size={32} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium">لا يوجد نشاط مسجّل بعد</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {events.map((event, index) => {
+                                        const config = EVENT_CONFIG[event.event_type] || EVENT_CONFIG.new_comment;
+                                        const Icon = config.icon;
+                                        const isNew = lastVisit && event.created_at > lastVisit;
+                                        const link = getActivityLink(event);
 
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                            animate={{
-                                opacity: 1,
-                                scale: 1,
-                                y: 0,
-                                transition: { type: 'spring', stiffness: 300, damping: 25 },
-                            }}
-                            exit={{
-                                opacity: 0,
-                                scale: 0.95,
-                                y: -8,
-                                transition: { duration: 0.15 },
-                            }}
-                            className="fixed left-4 right-4 top-16 xl:absolute xl:left-auto xl:right-auto xl:top-auto xl:mt-2 xl:start-0 w-auto xl:w-[380px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-[150] max-h-[70vh] xl:max-h-[80vh] flex flex-col overflow-hidden"
-                            style={{ transformOrigin: 'top left' }}
-                        >
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-violet-50/50 to-white dark:from-violet-950/20 dark:to-slate-900">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                    <Activity size={18} className="text-violet-600" />
-                                    سجل النشاط
-                                </h3>
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                >
-                                    <X size={16} className="text-slate-500" />
-                                </button>
-                            </div>
-
-                            {/* Event List */}
-                            <div className="flex-1 overflow-y-auto">
-                                {loading ? (
-                                    <div className="p-8 text-center">
-                                        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                                        <span className="text-sm text-slate-500">جاري التحميل...</span>
-                                    </div>
-                                ) : events.length === 0 ? (
-                                    <div className="p-8 text-center">
-                                        <Activity size={32} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                                        <p className="text-slate-500 dark:text-slate-400 font-medium">لا يوجد نشاط مسجّل بعد</p>
-                                    </div>
-                                ) : (
-                                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                        {events.map((event, index) => {
-                                            const config = EVENT_CONFIG[event.event_type] || EVENT_CONFIG.new_comment;
-                                            const Icon = config.icon;
-                                            const isNew = lastVisit && event.created_at > lastVisit;
-                                            const link = getActivityLink(event);
-
-                                            return (
-                                                <motion.div
-                                                    key={event.id}
-                                                    initial={{ opacity: 0, x: 10 }}
-                                                    animate={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                        transition: { delay: Math.min(index * 0.03, 0.5) },
-                                                    }}
+                                        return (
+                                            <motion.div
+                                                key={event.id}
+                                                initial={{ opacity: 0, x: 10 }}
+                                                animate={{
+                                                    opacity: 1,
+                                                    x: 0,
+                                                    transition: { delay: Math.min(index * 0.03, 0.5) },
+                                                }}
+                                            >
+                                                <div
+                                                    onClick={() => handleEventClick(event)}
+                                                    className={`flex items-center gap-2.5 px-4 py-3 transition-colors ${
+                                                        link ? 'cursor-pointer' : ''
+                                                    } ${
+                                                        isNew
+                                                            ? 'bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20'
+                                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                                    }`}
                                                 >
-                                                    <div
-                                                        onClick={() => handleEventClick(event)}
-                                                        className={`flex items-center gap-2.5 px-4 py-3 transition-colors ${
-                                                            link ? 'cursor-pointer' : ''
-                                                        } ${
-                                                            isNew
-                                                                ? 'bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20'
-                                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
-                                                        }`}
-                                                    >
-                                                        <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
-                                                            <Icon size={15} className={config.text} />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <p className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">
-                                                                    {event.title}
-                                                                </p>
-                                                                {isNew && (
-                                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                                                )}
-                                                            </div>
-                                                            {event.detail && (
-                                                                <p className="text-[11px] text-slate-400 truncate">{event.detail}</p>
+                                                    <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
+                                                        <Icon size={15} className={config.text} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <p className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">
+                                                                {event.title}
+                                                            </p>
+                                                            {isNew && (
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                                             )}
                                                         </div>
-                                                        <span className="text-[10px] text-slate-400 dark:text-slate-600 whitespace-nowrap shrink-0">
-                                                            {relativeTime(event.created_at)}
-                                                        </span>
+                                                        {event.detail && (
+                                                            <p className="text-[11px] text-slate-400 truncate">{event.detail}</p>
+                                                        )}
                                                     </div>
-                                                </motion.div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
-        </div>
+                                                    <span className="text-[10px] text-slate-400 dark:text-slate-600 whitespace-nowrap shrink-0">
+                                                        {relativeTime(event.created_at)}
+                                                    </span>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+
+    return (
+        <>
+            <div className="relative">
+                {/* Bell Button */}
+                <button
+                    ref={bellBtnRef}
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="relative p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+                    aria-label="سجل النشاط"
+                    title="سجل النشاط"
+                >
+                    <Activity size={18} />
+
+                    <AnimatePresence>
+                        {newCount > 0 && (
+                            <motion.span
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-[#0f172a]"
+                            >
+                                {newCount > 9 ? '9+' : newCount}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
+                </button>
+            </div>
+
+            {/* Portal: render dropdown at document.body level — escapes ALL stacking contexts */}
+            {mounted && createPortal(dropdown, document.body)}
+        </>
     );
 }

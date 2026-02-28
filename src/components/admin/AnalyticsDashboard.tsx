@@ -93,7 +93,6 @@ const deviceArabic: Record<string, string> = {
 
 export function AnalyticsDashboard() {
     const [stats, setStats] = useState<any>(null);
-    const [dailyVisits, setDailyVisits] = useState<any[]>([]);
     const [topPages, setTopPages] = useState<any[]>([]);
     const [deviceStats, setDeviceStats] = useState<any[]>([]);
     const [countryStats, setCountryStats] = useState<any[]>([]);
@@ -111,15 +110,13 @@ export function AnalyticsDashboard() {
             try {
                 const [
                     { data: general, error: e1 },
-                    { data: visits, error: e2 },
                     { data: pages, error: e3 },
                 ] = await Promise.all([
                     supabase.rpc('get_dashboard_stats'),
-                    supabase.rpc('get_daily_visits'),
                     supabase.rpc('get_top_pages'),
                 ]);
 
-                if (e1 || e2 || e3) throw (e1 || e2 || e3);
+                if (e1 || e3) throw (e1 || e3);
 
                 // Fetch enhanced stats (may fail if SQL not run yet — graceful fallback)
                 const safeRpc = async (name: string) => {
@@ -135,22 +132,32 @@ export function AnalyticsDashboard() {
                 ]);
 
                 // Override content counts with direct queries (more accurate)
-                const [articles, updates, services, scenarios, zones] = await Promise.all([
-                    supabase.from('articles').select('id', { count: 'exact', head: true }),
-                    supabase.from('updates').select('id', { count: 'exact', head: true }),
-                    supabase.from('service_providers').select('id', { count: 'exact', head: true }),
-                    supabase.from('consultant_scenarios').select('id', { count: 'exact', head: true }),
-                    supabase.from('zones').select('id', { count: 'exact', head: true }),
+                // Uses safeCount to handle RLS failures gracefully
+                const safeCount = async (table: string) => {
+                    if (!supabase) return null;
+                    const { count, error } = await supabase.from(table).select('id', { count: 'exact', head: true });
+                    return error ? null : count;
+                };
+                const [artCount, updCount, svcCount, scnCount, zoneCount] = await Promise.all([
+                    safeCount('articles'),
+                    safeCount('updates'),
+                    safeCount('service_providers'),
+                    safeCount('consultant_scenarios'),
+                    safeCount('zones'),
                 ]);
+
+                // Only override RPC value if direct query succeeded (non-null)
+                const directArticles = artCount != null || updCount != null
+                    ? (artCount ?? 0) + (updCount ?? 0)
+                    : null;
 
                 setStats({
                     ...general,
-                    total_articles: (articles.count || 0) + (updates.count || 0),
-                    total_services: services.count || general?.total_services || 0,
-                    total_scenarios: scenarios.count || general?.total_scenarios || 0,
-                    total_zones: zones.count || general?.total_zones || 0,
+                    total_articles: directArticles ?? general?.total_articles ?? 0,
+                    total_services: svcCount ?? general?.total_services ?? 0,
+                    total_scenarios: scnCount ?? general?.total_scenarios ?? 0,
+                    total_zones: zoneCount ?? general?.total_zones ?? 0,
                 });
-                setDailyVisits(visits || []);
                 setTopPages(pages || []);
                 setDeviceStats(devRes);
                 setCountryStats(countRes);
@@ -175,7 +182,6 @@ export function AnalyticsDashboard() {
         </div>
     );
 
-    const maxVisits = Math.max(...dailyVisits.map((v: any) => Number(v.count)), 1);
     const avgDuration: number = stats.avg_session_duration || 0;
     const totalDevices = deviceStats.reduce((sum: number, d: any) => sum + Number(d.count), 0) || 1;
 
@@ -241,37 +247,8 @@ export function AnalyticsDashboard() {
                 <PeriodCard label="الإجمالي" count={stats.total_visitors_all_time ?? 0} icon={Globe} color="emerald" />
             </div>
 
-            {/* ── 3. Chart + Top Pages ─────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                        <BarChart3 className="text-slate-400" size={20} />
-                        زوار فريدون — آخر 30 يوم
-                    </h3>
-                    {dailyVisits.some((d: any) => Number(d.count) > 0) ? (
-                        <div className="flex items-end justify-between h-48 gap-[2px] sm:gap-1">
-                            {dailyVisits.map((day: any, i: number) => (
-                                <div key={day.date} className="flex-1 flex flex-col justify-end items-center group relative">
-                                    <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-20 pointer-events-none">
-                                        {day.count} — {day.date}
-                                    </div>
-                                    <motion.div
-                                        initial={{ height: 0 }}
-                                        animate={{ height: `${(Number(day.count) / maxVisits) * 100}%` }}
-                                        transition={{ duration: 0.4, delay: i * 0.02 }}
-                                        className="w-full bg-gradient-to-t from-blue-500 to-cyan-400 dark:from-blue-600 dark:to-cyan-500 rounded-t-sm min-h-[3px] opacity-80 hover:opacity-100 transition-opacity"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="h-48 flex flex-col items-center justify-center text-slate-400 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 gap-2">
-                            <BarChart3 size={32} className="opacity-20" />
-                            <p className="text-sm">البيانات ستظهر بعد أول زيارات حقيقية</p>
-                        </div>
-                    )}
-                </div>
-
+            {/* ── 3. Top Pages ─────────────────────────────── */}
+            <div>
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
                     <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
                         <ArrowUpRight className="text-emerald-500" size={18} />
@@ -439,12 +416,20 @@ export function AnalyticsDashboard() {
     );
 }
 
+const STAT_COLORS: Record<string, { bg: string; darkBg: string; text: string; darkText: string }> = {
+    blue:    { bg: 'bg-blue-100',    darkBg: 'dark:bg-blue-900/30',    text: 'text-blue-600',    darkText: 'dark:text-blue-400' },
+    violet:  { bg: 'bg-violet-100',  darkBg: 'dark:bg-violet-900/30',  text: 'text-violet-600',  darkText: 'dark:text-violet-400' },
+    emerald: { bg: 'bg-emerald-100', darkBg: 'dark:bg-emerald-900/30', text: 'text-emerald-600', darkText: 'dark:text-emerald-400' },
+    red:     { bg: 'bg-red-100',     darkBg: 'dark:bg-red-900/30',     text: 'text-red-600',     darkText: 'dark:text-red-400' },
+};
+
 function PeriodCard({ label, count, icon: Icon, color }: {
-    label: string; count: number; icon: any; color: string;
+    label: string; count: number; icon: React.ElementType; color: string;
 }) {
+    const c = STAT_COLORS[color] || STAT_COLORS.blue;
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400`}>
+            <div className={`p-2.5 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText}`}>
                 <Icon size={20} />
             </div>
             <div>
@@ -457,11 +442,12 @@ function PeriodCard({ label, count, icon: Icon, color }: {
 }
 
 function ContentStatCard({ title, count, icon: Icon, color, label }: {
-    title: string; count: number; icon: any; color: string; label: string;
+    title: string; count: number; icon: React.ElementType; color: string; label: string;
 }) {
+    const c = STAT_COLORS[color] || STAT_COLORS.blue;
     return (
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:shadow-lg transition-all duration-300 group">
-            <div className={`p-3 rounded-xl bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400 group-hover:scale-110 transition-transform`}>
+            <div className={`p-3 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText} group-hover:scale-110 transition-transform`}>
                 <Icon size={24} />
             </div>
             <div>

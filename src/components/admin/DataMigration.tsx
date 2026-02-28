@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Database, Loader2, Upload } from 'lucide-react';
+import { Database, Loader2, Upload, AlertTriangle } from 'lucide-react';
 import {
     NAVIGATION,
     PRIMARY_NAV,
@@ -12,9 +12,13 @@ import {
 } from '@/lib/constants';
 import { CATEGORY_SLUGS } from '@/lib/config';
 
+const CONFIRM_WORD = 'MIGRATE';
+
 export default function DataMigration() {
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [confirmInput, setConfirmInput] = useState('');
 
     const addLog = (msg: string) => {
         setLogs(prev => [...prev, msg]);
@@ -120,14 +124,55 @@ export default function DataMigration() {
                     - {TOOLS_MENU.length} Tools<br />
                     - <strong>All Articles (Heavy Load)</strong>
                 </p>
-                <button
-                    onClick={runFullMigration}
-                    disabled={loading}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-                >
-                    {loading ? <Loader2 className="animate-spin" /> : <Upload size={18} />}
-                    Start Full Migration (Including Articles)
-                </button>
+
+                {!showConfirm ? (
+                    <button
+                        onClick={() => setShowConfirm(true)}
+                        disabled={loading}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                    >
+                        <Upload size={18} />
+                        Start Full Migration (Including Articles)
+                    </button>
+                ) : (
+                    <div className="bg-red-950/40 border border-red-800 rounded-xl p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-red-400 font-bold">
+                            <AlertTriangle size={18} />
+                            تأكيد عملية الترحيل — هذه العملية لا يمكن التراجع عنها
+                        </div>
+                        <p className="text-slate-400 text-xs">
+                            اكتب <code className="bg-slate-800 px-1.5 py-0.5 rounded text-red-300 font-bold">{CONFIRM_WORD}</code> ثم اضغط تأكيد:
+                        </p>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={confirmInput}
+                                onChange={(e) => setConfirmInput(e.target.value.toUpperCase())}
+                                placeholder={CONFIRM_WORD}
+                                className="bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded-lg font-mono text-sm w-40 focus:outline-none focus:border-red-500"
+                                autoFocus
+                            />
+                            <button
+                                onClick={() => {
+                                    setShowConfirm(false);
+                                    setConfirmInput('');
+                                    runFullMigration();
+                                }}
+                                disabled={confirmInput !== CONFIRM_WORD || loading}
+                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                {loading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+                                تأكيد الترحيل
+                            </button>
+                            <button
+                                onClick={() => { setShowConfirm(false); setConfirmInput(''); }}
+                                className="text-slate-400 hover:text-white px-3 py-2 rounded-lg transition-colors"
+                            >
+                                إلغاء
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="bg-black/50 p-4 rounded-xl h-48 overflow-y-auto border border-slate-800">

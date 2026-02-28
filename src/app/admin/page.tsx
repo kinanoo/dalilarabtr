@@ -35,21 +35,31 @@ const itemVariants: any = {
   }
 };
 
-const QuickActionBtn = ({ title, icon: Icon, color, href }: any) => (
-  <Link href={href} className="block h-full">
-    <motion.div
-      variants={itemVariants}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.95 }}
-      className={`h-full flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-${color}-500 hover:bg-${color}-50 dark:hover:bg-${color}-950/20 transition-all shadow-sm hover:shadow-xl`}
-    >
-      <div className={`p-4 rounded-full bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400 mb-3 group-hover:scale-110 transition-transform`}>
-        <Icon size={32} />
-      </div>
-      <span className="font-bold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">{title}</span>
-    </motion.div>
-  </Link>
-);
+const COLOR_MAP: Record<string, { bg: string; border: string; hoverBg: string; darkHoverBg: string; iconBg: string; darkIconBg: string; iconText: string; darkIconText: string }> = {
+  blue:    { bg: 'hover:bg-blue-50',    border: 'hover:border-blue-500',    hoverBg: 'hover:bg-blue-50',    darkHoverBg: 'dark:hover:bg-blue-950/20',    iconBg: 'bg-blue-100',    darkIconBg: 'dark:bg-blue-900/30',    iconText: 'text-blue-600',    darkIconText: 'dark:text-blue-400' },
+  violet:  { bg: 'hover:bg-violet-50',  border: 'hover:border-violet-500',  hoverBg: 'hover:bg-violet-50',  darkHoverBg: 'dark:hover:bg-violet-950/20',  iconBg: 'bg-violet-100',  darkIconBg: 'dark:bg-violet-900/30',  iconText: 'text-violet-600',  darkIconText: 'dark:text-violet-400' },
+  emerald: { bg: 'hover:bg-emerald-50', border: 'hover:border-emerald-500', hoverBg: 'hover:bg-emerald-50', darkHoverBg: 'dark:hover:bg-emerald-950/20', iconBg: 'bg-emerald-100', darkIconBg: 'dark:bg-emerald-900/30', iconText: 'text-emerald-600', darkIconText: 'dark:text-emerald-400' },
+  red:     { bg: 'hover:bg-red-50',     border: 'hover:border-red-500',     hoverBg: 'hover:bg-red-50',     darkHoverBg: 'dark:hover:bg-red-950/20',     iconBg: 'bg-red-100',     darkIconBg: 'dark:bg-red-900/30',     iconText: 'text-red-600',     darkIconText: 'dark:text-red-400' },
+};
+
+const QuickActionBtn = ({ title, icon: Icon, color, href }: { title: string; icon: React.ElementType; color: string; href: string }) => {
+  const c = COLOR_MAP[color] || COLOR_MAP.blue;
+  return (
+    <Link href={href} className="block h-full">
+      <motion.div
+        variants={itemVariants}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.95 }}
+        className={`h-full flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 ${c.border} ${c.hoverBg} ${c.darkHoverBg} transition-all shadow-sm hover:shadow-xl`}
+      >
+        <div className={`p-4 rounded-full ${c.iconBg} ${c.darkIconBg} ${c.iconText} ${c.darkIconText} mb-3 group-hover:scale-110 transition-transform`}>
+          <Icon size={32} />
+        </div>
+        <span className="font-bold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">{title}</span>
+      </motion.div>
+    </Link>
+  );
+};
 
 export default function AdminDashboard() {
   return (
@@ -68,7 +78,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* The Genius Search Bar */}
-        <div className="relative z-50">
+        <div className="relative">
           <GlobalSearch />
         </div>
       </motion.div>

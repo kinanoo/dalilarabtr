@@ -47,9 +47,9 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
         const fetchBadges = async () => {
             if (!supabase) return;
             const [services, articles, comments] = await Promise.all([
-                supabase.from('service_providers').select('id', { count: 'exact' }).eq('status', 'pending'),
-                supabase.from('articles').select('id', { count: 'exact' }).eq('status', 'pending'),
-                supabase.from('comments').select('id', { count: 'exact' }).eq('status', 'pending'),
+                supabase.from('service_providers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
             ]);
             const requestsCount = (services.count || 0) + (articles.count || 0);
             const commentsCount = comments.count || 0;

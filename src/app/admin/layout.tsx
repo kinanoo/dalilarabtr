@@ -60,7 +60,7 @@ export default function AdminLayout({
 
                 <main className="flex-1 transition-all duration-300 overflow-y-auto flex flex-col min-w-0 pt-14 xl:pt-0">
                     {/* Mobile Header (Slim & Compact) */}
-                    <div className="xl:hidden fixed top-0 left-0 right-0 z-[40] bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center justify-between transition-all shadow-sm h-12">
+                    <div className="xl:hidden fixed top-0 left-0 right-0 z-[60] bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center justify-between transition-all shadow-sm h-12">
                         <Link href="/admin" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
                             <div className="w-7 h-7 bg-white dark:bg-slate-800 rounded-md p-1 shadow-sm border border-slate-200 dark:border-slate-700">
                                 <Image src="/logo.png" alt="دليل العرب" width={28} height={28} className="w-full h-full object-contain" />
