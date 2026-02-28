@@ -14,7 +14,7 @@ export default function BannersManager() {
         is_active: boolean;
         link_url?: string;
         link_text?: string;
-    }>({ content: '', type: 'alert', is_active: false, link_url: '', link_text: '' });
+    }>({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
 
     // Fetch Banners
     useEffect(() => {
@@ -36,10 +36,15 @@ export default function BannersManager() {
         if (!newBanner.content) return;
         if (!supabase) return;
 
+        // Deactivate all existing banners first (only one active at a time)
+        if (newBanner.is_active) {
+            await supabase.from('site_banners').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+        }
+
         const { error } = await supabase.from('site_banners').insert([newBanner]);
         if (!error) {
-            toast.success('تم إضافة البنر بنجاح');
-            setNewBanner({ content: '', type: 'alert', is_active: false, link_url: '', link_text: '' });
+            toast.success('تم إضافة ونشر البنر بنجاح');
+            setNewBanner({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
             fetchBanners();
         } else {
             toast.error('فشل الإضافة: ' + error.message);
@@ -48,14 +53,19 @@ export default function BannersManager() {
 
     async function toggleActive(id: string, currentState: boolean) {
         if (!supabase) return;
-        // إذا أردنا تفعيل واحد، نلغي تفعيل الباقي (اختياري، هنا سأسمح بتعدد البنرات أو واحد فقط)
-        // سنجعلها منطق: بنر واحد نشط فقط لتجنب الفوضى
-        if (!currentState) { // إذا كنا سنفعله
-            await supabase.from('site_banners').update({ is_active: false }).neq('id', '0'); // تعطيل الكل
+        // بنر واحد نشط فقط لتجنب الفوضى
+        if (!currentState) {
+            // تعطيل جميع البنرات الأخرى أولاً
+            await supabase.from('site_banners').update({ is_active: false }).neq('id', id);
         }
 
         const { error } = await supabase.from('site_banners').update({ is_active: !currentState }).eq('id', id);
-        if (!error) fetchBanners();
+        if (!error) {
+            toast.success(!currentState ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
+            fetchBanners();
+        } else {
+            toast.error('فشل التحديث: ' + error.message);
+        }
     }
 
     async function handleDelete(id: string) {

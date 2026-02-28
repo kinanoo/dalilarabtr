@@ -71,12 +71,33 @@ BEGIN
               AND created_at > NOW() - INTERVAL '30 days'
               AND duration_seconds BETWEEN 5 AND 3600
         ),
-        -- زيارات اليوم
+        -- زوار اليوم الفريدين (كل visitor_id مختلف = زائر واحد)
+        'today_unique_visitors', (
+            SELECT COUNT(DISTINCT visitor_id)
+            FROM public.analytics_events
+            WHERE event_name = 'page_view'
+              AND created_at::DATE = CURRENT_DATE
+        ),
+        -- مشاهدات صفحات اليوم (كل page_view = مشاهدة واحدة)
         'today_page_views', (
             SELECT COUNT(*)
             FROM public.analytics_events
             WHERE event_name = 'page_view'
               AND created_at::DATE = CURRENT_DATE
+        ),
+        -- زوار هذا الأسبوع
+        'week_visitors', (
+            SELECT COUNT(DISTINCT visitor_id)
+            FROM public.analytics_events
+            WHERE event_name = 'page_view'
+              AND created_at > DATE_TRUNC('week', NOW())
+        ),
+        -- زوار هذا الشهر
+        'month_visitors', (
+            SELECT COUNT(DISTINCT visitor_id)
+            FROM public.analytics_events
+            WHERE event_name = 'page_view'
+              AND created_at > DATE_TRUNC('month', NOW())
         ),
         -- إحصاءات المجتمع
         'total_comments', (SELECT COUNT(*) FROM public.comments WHERE status = 'approved'),

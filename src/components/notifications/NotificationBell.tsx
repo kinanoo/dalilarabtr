@@ -148,7 +148,7 @@ export default function NotificationBell() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.2 }}
-                            className="fixed inset-0 z-40 sm:hidden bg-black/20 backdrop-blur-sm"
+                            className="fixed inset-0 z-[199] sm:hidden bg-black/20 backdrop-blur-sm"
                             onClick={() => setIsOpen(false)}
                         />
 
@@ -166,7 +166,7 @@ export default function NotificationBell() {
                                 y: -8,
                                 transition: { duration: 0.15 },
                             }}
-                            className="absolute end-0 mt-3 w-[360px] max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 max-h-[80vh] flex flex-col overflow-hidden"
+                            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-auto sm:end-0 top-16 sm:top-auto sm:mt-3 w-auto sm:w-[360px] sm:max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-[200] max-h-[70vh] sm:max-h-[80vh] flex flex-col overflow-hidden"
                             style={{ transformOrigin: 'top right' }}
                         >
                             {/* Decorative arrow */}
