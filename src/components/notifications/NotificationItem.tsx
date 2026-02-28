@@ -4,9 +4,10 @@ import type { Notification } from '@/lib/api/notifications';
 interface NotificationItemProps {
     notification: Notification;
     onMarkAsRead: () => void;
+    onClose?: () => void;
 }
 
-export default function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
+export default function NotificationItem({ notification, onMarkAsRead, onClose }: NotificationItemProps) {
     const getTypeIcon = () => {
         if (notification.icon) return notification.icon;
 
@@ -84,16 +85,16 @@ export default function NotificationItem({ notification, onMarkAsRead }: Notific
         </div>
     );
 
-    // If notification has a link, wrap in Link — onClick only fires ONCE on the Link
+    // If notification has a link, wrap in Link — close dropdown + mark as read
     if (notification.link) {
         return (
-            <Link href={notification.link} onClick={onMarkAsRead}>
+            <Link href={notification.link} onClick={() => { onMarkAsRead(); onClose?.(); }}>
                 {inner}
             </Link>
         );
     }
 
-    // No link — onClick on the div itself
+    // No link — onClick on the div itself (keep dropdown open)
     return (
         <div onClick={onMarkAsRead}>
             {inner}

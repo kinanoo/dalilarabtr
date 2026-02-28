@@ -155,6 +155,23 @@ CREATE POLICY "Allow public read access" ON public.security_codes
 -- ملاحظة: الكتابة محمية - تحتاج service_role key
 
 -- ============================================
+-- 6. جدول شريط الأخبار المتحرك (News Ticker)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.news_ticker (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  text TEXT NOT NULL,
+  link TEXT,
+  is_active BOOLEAN DEFAULT true,
+  priority INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.news_ticker ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read news_ticker" ON public.news_ticker
+    FOR SELECT USING (is_active = true);
+
+-- ============================================
 -- تم الانتهاء من Schema!
 -- ============================================
 -- 

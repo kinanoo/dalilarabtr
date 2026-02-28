@@ -223,6 +223,7 @@ export default function NotificationBell() {
                                                 <NotificationItem
                                                     notification={notification}
                                                     onMarkAsRead={() => handleMarkAsRead(notification.id)}
+                                                    onClose={() => setIsOpen(false)}
                                                 />
                                             </motion.div>
                                         ))}

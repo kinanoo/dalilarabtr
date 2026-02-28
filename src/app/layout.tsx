@@ -20,6 +20,7 @@ import NotificationManager from "@/components/NotificationManager";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import FontLoader from "@/components/FontLoader";
+import NewsTicker from "@/components/NewsTicker";
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -151,6 +152,7 @@ export default function RootLayout({
             <div className="relative z-10">
               <UrgencyBanner />
               <Navbar />
+              <NewsTicker />
               <main id="main-content">
                 {children}
               </main>
