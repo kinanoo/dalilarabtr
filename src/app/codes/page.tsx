@@ -15,9 +15,26 @@ import { normalizeArabic } from '@/lib/arabicSearch';
 export default function CodesPage() {
   const { codes, loading } = useAdminCodes();
   const [query, setQuery] = useState('');
+  const [letterFilter, setLetterFilter] = useState('all');
 
-  // 🧠 فلترة الأكواد بالبحث الذكي
+  // Detect available letter groups from data
+  const letterGroups = codes.reduce((acc, item) => {
+    const letter = item.code.replace(/[0-9\-]/g, '').toUpperCase();
+    if (letter) acc.add(letter);
+    return acc;
+  }, new Set<string>());
+  const sortedLetters = ['Ç', 'V', 'G', 'N', 'O'].filter(l => letterGroups.has(l));
+  // Add any other letters not in the predefined order
+  letterGroups.forEach(l => { if (!sortedLetters.includes(l)) sortedLetters.push(l); });
+
+  // Filter by letter + search
   const filteredCodes = codes.filter(item => {
+    // Letter filter
+    if (letterFilter !== 'all') {
+      const itemLetter = item.code.replace(/[0-9\-]/g, '').toUpperCase();
+      if (itemLetter !== letterFilter) return false;
+    }
+
     if (!query.trim()) return true;
 
     const { originalTokens, expandedTokens } = intelligentTokenize(query);
@@ -97,6 +114,38 @@ export default function CodesPage() {
       </PageHero>
 
       <div className="max-w-4xl mx-auto px-4 py-12 w-full">
+        {/* Letter Filter Tabs */}
+        {!loading && codes.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+            <button
+              onClick={() => setLetterFilter('all')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                letterFilter === 'all'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
+            >
+              الكل ({codes.length})
+            </button>
+            {sortedLetters.map(letter => {
+              const count = codes.filter(c => c.code.replace(/[0-9\-]/g, '').toUpperCase() === letter).length;
+              return (
+                <button
+                  key={letter}
+                  onClick={() => setLetterFilter(letter)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold font-mono transition-all ${
+                    letterFilter === letter
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {letter} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={40} className="animate-spin text-emerald-600" />
