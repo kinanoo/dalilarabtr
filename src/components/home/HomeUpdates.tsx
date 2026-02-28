@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink } from 'lucide-react';
@@ -35,33 +35,36 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     }
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [scrollLeft, setScrollLeft] = useState(0);
+    const isDraggingRef = useRef(false);
+    const hasDraggedRef = useRef(false);
+    const startXRef = useRef(0);
+    const scrollLeftRef = useRef(0);
     const [isPaused, setIsPaused] = useState(false);
 
-    // Touch/mouse drag handlers
+    // Touch/mouse drag handlers (no setPointerCapture — it blocks clicks on child Links)
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
         const el = scrollRef.current;
         if (!el) return;
-        setIsDragging(true);
+        isDraggingRef.current = true;
+        hasDraggedRef.current = false;
+        startXRef.current = e.clientX;
+        scrollLeftRef.current = el.scrollLeft;
         setIsPaused(true);
-        setStartX(e.clientX);
-        setScrollLeft(el.scrollLeft);
-        el.setPointerCapture(e.pointerId);
     }, []);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDragging || !scrollRef.current) return;
-        const dx = e.clientX - startX;
-        scrollRef.current.scrollLeft = scrollLeft - dx;
-    }, [isDragging, startX, scrollLeft]);
+        if (!isDraggingRef.current || !scrollRef.current) return;
+        const dx = e.clientX - startXRef.current;
+        if (Math.abs(dx) > 5) {
+            hasDraggedRef.current = true;
+        }
+        scrollRef.current.scrollLeft = scrollLeftRef.current - dx;
+    }, []);
 
-    const handlePointerUp = useCallback((e: React.PointerEvent) => {
-        setIsDragging(false);
+    const handlePointerUp = useCallback(() => {
+        isDraggingRef.current = false;
         // Resume auto-scroll after 3 seconds
         setTimeout(() => setIsPaused(false), 3000);
-        scrollRef.current?.releasePointerCapture(e.pointerId);
     }, []);
 
     // Auto-scroll with requestAnimationFrame
@@ -73,7 +76,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
         if (!el) return;
 
         const tick = () => {
-            if (!isPaused && !isDragging && el) {
+            if (!isPaused && !isDraggingRef.current && el) {
                 el.scrollLeft += speedRef.current;
                 // Loop: when scrolled past half (duplicate content), reset
                 if (el.scrollLeft >= el.scrollWidth / 2) {
@@ -87,7 +90,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
         return () => {
             if (animRef.current) cancelAnimationFrame(animRef.current);
         };
-    }, [isPaused, isDragging]);
+    }, [isPaused]);
 
     return (
         <section className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50 overflow-hidden">
@@ -126,15 +129,15 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                         onPointerUp={handlePointerUp}
                         onPointerLeave={handlePointerUp}
                         onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => { if (!isDragging) setIsPaused(false); }}
+                        onMouseLeave={() => { if (!isDraggingRef.current) setIsPaused(false); }}
                     >
                         {/* List 1 */}
                         {baseList.map((update, index) => (
-                            <UpdateCard key={`l1-${update.id}-${index}`} update={update} />
+                            <UpdateCard key={`l1-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
                         ))}
                         {/* List 2 (seamless loop) */}
                         {baseList.map((update, index) => (
-                            <UpdateCard key={`l2-${update.id}-${index}`} update={update} />
+                            <UpdateCard key={`l2-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
                         ))}
                     </div>
                 </div>
@@ -143,7 +146,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     );
 }
 
-function UpdateCard({ update }: { update: any }) {
+function UpdateCard({ update, hasDraggedRef }: { update: any; hasDraggedRef: React.RefObject<boolean> }) {
     const isAuto = update.source === 'auto';
     const iconConfig = isAuto ? AUTO_ICON_MAP[update.event_type] : null;
     const href = update.href || `/updates/${update.id}`;
@@ -155,9 +158,8 @@ function UpdateCard({ update }: { update: any }) {
             className="block w-[220px] sm:w-[280px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group/card relative overflow-hidden"
             dir="rtl"
             onClick={(e) => {
-                // Prevent navigation if user was dragging
-                const target = e.currentTarget;
-                if (target.closest('.cursor-grabbing')) {
+                // Prevent navigation if user was dragging (moved > 5px)
+                if (hasDraggedRef.current) {
                     e.preventDefault();
                 }
             }}
