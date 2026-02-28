@@ -12,7 +12,9 @@ import {
   Database,
   Zap,
   MapPin,
-  Star
+  Star,
+  Newspaper,
+  Megaphone
 } from 'lucide-react';
 import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
@@ -20,6 +22,7 @@ import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import { AdminActivityFeed } from '@/components/admin/AdminActivityFeed';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
+import NewsTickerManager from '@/components/admin/NewsTickerManager';
 import { motion } from 'framer-motion';
 
 const containerVariants: any = {
@@ -95,18 +98,22 @@ export default function AdminDashboard() {
         <AnalyticsDashboard />
       </motion.section>
 
-      {/* 4. Quick Actions Grid */}
+      {/* 4. News Ticker Manager */}
+      <motion.section variants={itemVariants}>
+        <NewsTickerManager />
+      </motion.section>
+
+      {/* 5. Quick Actions Grid */}
       <motion.section variants={itemVariants}>
         <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
           <Zap className="text-yellow-500" />
           وصول سريع
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          <QuickActionBtn href="/admin/articles/new" title="مقال جديد" icon={PlusCircle} color="emerald" />
-          <QuickActionBtn href="/admin/services" title="الخدمات" icon={Briefcase} color="blue" />
-          <QuickActionBtn href="/admin/reviews" title="التقييمات" icon={Star} color="amber" />
-          <QuickActionBtn href="/admin/scenarios/new" title="سيناريو جديد" icon={BrainCircuit} color="violet" />
-          <QuickActionBtn href="/admin/zones/new" title="إضافة منطقة" icon={MapPin} color="red" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <QuickActionBtn href="/admin/news-ticker" title="شريط الأخبار" icon={Newspaper} color="blue" />
+          <QuickActionBtn href="/admin/updates" title="التحديثات" icon={Megaphone} color="violet" />
+          <QuickActionBtn href="/admin/articles" title="المقالات" icon={FileText} color="emerald" />
+          <QuickActionBtn href="/admin/banners" title="البنرات" icon={ShieldAlert} color="red" />
         </div>
       </motion.section>
 
