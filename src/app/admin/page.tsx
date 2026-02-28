@@ -1,18 +1,9 @@
 'use client';
 
 import {
-  LayoutDashboard,
   FileText,
-  Briefcase,
   ShieldAlert,
-  Users,
-  Activity,
-  PlusCircle,
-  BrainCircuit,
-  Database,
   Zap,
-  MapPin,
-  Star,
   Newspaper,
   Megaphone
 } from 'lucide-react';
@@ -20,7 +11,6 @@ import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
 
 import { ActionCenter } from '@/components/admin/ActionCenter';
-import { AdminActivityFeed } from '@/components/admin/AdminActivityFeed';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import NewsTickerManager from '@/components/admin/NewsTickerManager';
 import { motion } from 'framer-motion';
@@ -88,12 +78,7 @@ export default function AdminDashboard() {
         <ActionCenter />
       </motion.section>
 
-      {/* 3. Live Activity Feed */}
-      <motion.section variants={itemVariants}>
-        <AdminActivityFeed />
-      </motion.section>
-
-      {/* 4. Analytics Dashboard */}
+      {/* 3. Analytics Dashboard */}
       <motion.section variants={itemVariants}>
         <AnalyticsDashboard />
       </motion.section>

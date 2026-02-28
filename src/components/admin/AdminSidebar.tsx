@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { supabase } from '@/lib/supabaseClient';
 
 interface SidebarProps {
@@ -252,14 +253,17 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                         </Link>
                     )}
 
-                    {/* Toggle Button */}
-                    <button
-                        onClick={onToggle}
-                        className="flex w-8 h-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
-                        title={collapsed ? "توسيع القائمة" : "تصغير القائمة"}
-                    >
-                        {collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-                    </button>
+                    {/* Activity Bell + Toggle Button */}
+                    <div className="flex items-center gap-1.5">
+                        <AdminActivityBell />
+                        <button
+                            onClick={onToggle}
+                            className="flex w-8 h-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+                            title={collapsed ? "توسيع القائمة" : "تصغير القائمة"}
+                        >
+                            {collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Desktop Navigation */}
