@@ -54,12 +54,27 @@ export async function getUnreadCount(
     }
 
     try {
-        const { data, error } = await supabase.rpc('get_unread_count', {
-            p_user_identifier: userIdentifier,
-        });
+        // Direct query instead of RPC for reliability
+        const { data: notifications, error: notifError } = await supabase
+            .from('notifications')
+            .select('id')
+            .eq('is_active', true)
+            .or(`target_user_id.is.null,target_user_id.eq.${userIdentifier}`)
+            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
-        if (error) throw error;
-        return { count: data || 0, error: null };
+        if (notifError) throw notifError;
+
+        const { data: reads, error: readsError } = await supabase
+            .from('notification_reads')
+            .select('notification_id')
+            .eq('user_identifier', userIdentifier);
+
+        if (readsError) throw readsError;
+
+        const readIds = new Set(reads?.map(r => r.notification_id) || []);
+        const unreadCount = (notifications || []).filter(n => !readIds.has(n.id)).length;
+
+        return { count: unreadCount, error: null };
     } catch (error) {
         console.error('Error fetching unread count:', error);
         return { count: 0, error };
@@ -153,27 +168,47 @@ export async function markAsRead(
 // ============================================
 
 export async function markAllAsRead(
-    userIdentifier: string
+    userIdentifier: string,
+    notificationIds?: string[]
 ): Promise<{ success: boolean; error: any }> {
     if (!supabase) {
         return { success: false, error: new Error('Supabase not initialized') };
     }
 
     try {
-        // جلب كل الإشعارات غير المقروءة
-        const { data: unread } = await getUnreadNotifications(userIdentifier);
+        // Use provided IDs directly (no RPC dependency)
+        let ids = notificationIds;
 
-        if (!unread || unread.length === 0) {
+        if (!ids || ids.length === 0) {
+            // Fallback: fetch unread IDs via direct query
+            const { data: notifications } = await supabase
+                .from('notifications')
+                .select('id')
+                .eq('is_active', true)
+                .or(`target_user_id.is.null,target_user_id.eq.${userIdentifier}`)
+                .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+            const { data: reads } = await supabase
+                .from('notification_reads')
+                .select('notification_id')
+                .eq('user_identifier', userIdentifier);
+
+            const readSet = new Set(reads?.map(r => r.notification_id) || []);
+            ids = (notifications || []).filter(n => !readSet.has(n.id)).map(n => n.id);
+        }
+
+        if (ids.length === 0) {
             return { success: true, error: null };
         }
 
-        // تحديدها كلها كمقروءة
-        const reads = unread.map((n) => ({
-            notification_id: n.id,
+        const rows = ids.map(id => ({
+            notification_id: id,
             user_identifier: userIdentifier,
         }));
 
-        const { error } = await supabase.from('notification_reads').upsert(reads);
+        const { error } = await supabase
+            .from('notification_reads')
+            .upsert(rows, { onConflict: 'notification_id,user_identifier' });
 
         if (error) throw error;
         return { success: true, error: null };
