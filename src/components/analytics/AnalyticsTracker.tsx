@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 
 function getOrCreate(key: string, storage: Storage): string {
     let val = storage.getItem(key);
@@ -45,86 +44,18 @@ function getOS(): string {
     return 'Other';
 }
 
-/** Map timezone to country name (Arabic-audience-focused) */
-function getCountryFromTimezone(): string {
+// ─── Send event to server API (enriches with IP + geo) ──────────────────────
+
+async function trackEvent(payload: Record<string, any>) {
     try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const map: Record<string, string> = {
-            // Turkey
-            'Europe/Istanbul': 'Turkey',
-            // Syria
-            'Asia/Damascus': 'Syria',
-            // Lebanon
-            'Asia/Beirut': 'Lebanon',
-            // Iraq
-            'Asia/Baghdad': 'Iraq',
-            // Jordan
-            'Asia/Amman': 'Jordan',
-            // Palestine
-            'Asia/Hebron': 'Palestine', 'Asia/Gaza': 'Palestine',
-            // Egypt
-            'Africa/Cairo': 'Egypt',
-            // Saudi Arabia
-            'Asia/Riyadh': 'Saudi Arabia',
-            // UAE
-            'Asia/Dubai': 'UAE',
-            // Kuwait
-            'Asia/Kuwait': 'Kuwait',
-            // Qatar
-            'Asia/Qatar': 'Qatar',
-            // Bahrain
-            'Asia/Bahrain': 'Bahrain',
-            // Oman
-            'Asia/Muscat': 'Oman',
-            // Yemen
-            'Asia/Aden': 'Yemen',
-            // Libya
-            'Africa/Tripoli': 'Libya',
-            // Tunisia
-            'Africa/Tunis': 'Tunisia',
-            // Algeria
-            'Africa/Algiers': 'Algeria',
-            // Morocco
-            'Africa/Casablanca': 'Morocco',
-            // Sudan
-            'Africa/Khartoum': 'Sudan',
-            // Germany
-            'Europe/Berlin': 'Germany',
-            // Netherlands
-            'Europe/Amsterdam': 'Netherlands',
-            // Sweden
-            'Europe/Stockholm': 'Sweden',
-            // France
-            'Europe/Paris': 'France',
-            // UK
-            'Europe/London': 'UK',
-            // US
-            'America/New_York': 'USA', 'America/Chicago': 'USA',
-            'America/Denver': 'USA', 'America/Los_Angeles': 'USA',
-            // Canada
-            'America/Toronto': 'Canada', 'America/Vancouver': 'Canada',
-            // Austria
-            'Europe/Vienna': 'Austria',
-            // Belgium
-            'Europe/Brussels': 'Belgium',
-            // Denmark
-            'Europe/Copenhagen': 'Denmark',
-            // Norway
-            'Europe/Oslo': 'Norway',
-            // Finland
-            'Europe/Helsinki': 'Finland',
-            // Greece
-            'Europe/Athens': 'Greece',
-            // Italy
-            'Europe/Rome': 'Italy',
-            // Spain
-            'Europe/Madrid': 'Spain',
-            // Russia
-            'Europe/Moscow': 'Russia',
-        };
-        return map[tz] || tz.split('/')[0] || 'Unknown';
+        await fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true, // Ensures request completes even if page unloads
+        });
     } catch {
-        return 'Unknown';
+        // Silent fail — analytics should never block user experience
     }
 }
 
@@ -137,7 +68,7 @@ export function AnalyticsTracker() {
 
     // ─── Initialize IDs + Session Duration Tracking ──────────────────────────
     useEffect(() => {
-        if (!supabase || typeof window === 'undefined') return;
+        if (typeof window === 'undefined') return;
 
         // Stable visitor ID (persists across sessions in localStorage)
         visitorIdRef.current = getOrCreate('visitor_id', localStorage);
@@ -154,13 +85,15 @@ export function AnalyticsTracker() {
             sessionStartRef.current = parseInt(storedStart);
         }
 
-        const sendSessionEnd = async () => {
-            if (!supabase) return;
+        const sendSessionEnd = () => {
+            // Skip admin pages — don't track admin activity
+            if (window.location.pathname.startsWith('/admin')) return;
+
             const duration = Math.round((Date.now() - sessionStartRef.current) / 1000);
             // Ignore very short bounces (< 5s) and impossibly long sessions (> 2h)
             if (duration < 5 || duration > 7200) return;
 
-            await supabase.from('analytics_events').insert({
+            trackEvent({
                 event_name: 'session_end',
                 visitor_id: visitorIdRef.current,
                 session_id: sessionIdRef.current,
@@ -189,14 +122,17 @@ export function AnalyticsTracker() {
 
     // ─── Track Page Views on Route Change ───────────────────────────────────
     useEffect(() => {
-        if (!supabase || typeof window === 'undefined') return;
+        if (typeof window === 'undefined') return;
 
         const visitorId = visitorIdRef.current || localStorage.getItem('visitor_id') || '';
         const sessionId = sessionIdRef.current || sessionStorage.getItem('session_id') || '';
 
-        const logView = async () => {
-            if (!supabase) return;
-            await supabase.from('analytics_events').insert({
+        // Skip admin pages — don't track admin activity
+        if (pathname.startsWith('/admin')) return;
+
+        // Small delay to avoid double-logging in React StrictMode during development
+        const timeout = setTimeout(() => {
+            trackEvent({
                 event_name: 'page_view',
                 page_path: pathname,
                 visitor_id: visitorId,
@@ -209,13 +145,10 @@ export function AnalyticsTracker() {
                     browser: getBrowser(),
                     os: getOS(),
                     language: navigator.language?.split('-')[0] || undefined,
-                    country: getCountryFromTimezone(),
                 },
             });
-        };
+        }, 800);
 
-        // Small delay to avoid double-logging in React StrictMode during development
-        const timeout = setTimeout(logView, 800);
         return () => clearTimeout(timeout);
     }, [pathname, searchParams]);
 

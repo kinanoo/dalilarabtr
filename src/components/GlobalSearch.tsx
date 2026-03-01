@@ -15,6 +15,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Search, ArrowLeft, FileText, Briefcase, Link2, Globe } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { normalizeArabic, tokenizeArabicQuery } from '@/lib/arabicSearch';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
@@ -360,10 +361,19 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
   }, []);
 
   const isHero = variant === 'hero';
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (results.length > 0) {
+      router.push(results[0].url);
+      setIsOpen(false);
+    }
+  };
 
   return (
     <div ref={wrapperRef} className={`relative mx-auto ${isHero ? 'max-w-xl' : 'max-w-3xl md:max-w-3xl lg:max-w-2xl xl:max-w-2xl'}`}>
-      <div className={`relative transform transition-all duration-300 ${isOpen ? 'scale-100' : 'scale-100'} ${isHero ? 'group' : ''}`}>
+      <form role="search" onSubmit={handleSubmit} className={`relative transform transition-all duration-300 ${isOpen ? 'scale-100' : 'scale-100'} ${isHero ? 'group' : ''}`}>
 
         {/* Glow Effect for Hero */}
         {isHero && (
@@ -393,7 +403,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         {/* Hero Search Button */}
         {isHero && (
           <button
-            onClick={() => setIsOpen(true)}
+            type="submit"
             aria-label="بحث"
             className="absolute inset-y-1.5 end-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-6 rounded-full font-bold shadow-lg transform active:scale-95 transition-all z-20 flex items-center justify-center"
           >
@@ -403,13 +413,14 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
 
         {!isHero && query && (
           <button
+            type="button"
             onClick={() => { setQuery(''); setIsOpen(false); }}
             className="absolute inset-y-0 end-4 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             مسح
           </button>
         )}
-      </div>
+      </form>
 
       <AnimatePresence>
         {isOpen && (results.length > 0 || query.length > 0) && (

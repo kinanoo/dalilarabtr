@@ -74,7 +74,7 @@ export default function BanCalculator() {
     <main className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
 
       <PageHero
-        title="حاسبة مدة المنع (Tahdit Kodlari)"
+        title="حاسبة مدة المنع من تركيا"
         description="اعرف المدة القانونية لمنع الدخول إلى تركيا بناءً على مخالفتك."
         icon={<Calculator className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
       />

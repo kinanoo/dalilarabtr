@@ -45,7 +45,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
 
     useEffect(() => {
         const fetchBadges = async () => {
-            if (!supabase) return;
+            if (document.hidden || !supabase) return;
             try {
                 const [services, articles, comments] = await Promise.allSettled([
                     supabase.from('service_providers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
@@ -64,8 +64,13 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
             }
         };
         fetchBadges();
-        const interval = setInterval(fetchBadges, 30_000);
-        return () => clearInterval(interval);
+        const interval = setInterval(fetchBadges, 120_000);
+        const handleVisibility = () => { if (!document.hidden) fetchBadges(); };
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, []);
 
     // Define Menu Groups

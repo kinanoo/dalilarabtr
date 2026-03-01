@@ -20,8 +20,8 @@ export default function NotificationManager() {
 
             // Register Service Worker
             navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('Service Worker registered:', registration);
+                .then(() => {
+                    // SW registered successfully
                 })
                 .catch(error => {
                     console.error('Service Worker registration failed:', error);

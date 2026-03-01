@@ -323,9 +323,13 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
               setIsOpen(true);
             }
           }}
-          className={`bg-slate-900/5 hover:bg-slate-900/10 dark:bg-white/10 dark:hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-slate-900/5 dark:border-white/10 text-slate-600 dark:text-slate-200 ${customClass}`}
+          className={mini
+            ? `p-1.5 rounded-full bg-slate-900/5 hover:bg-slate-900/10 dark:bg-white/10 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 hover:text-blue-600 transition ${customClass}`
+            : `bg-slate-900/5 hover:bg-slate-900/10 dark:bg-white/10 dark:hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-slate-900/5 dark:border-white/10 text-slate-600 dark:text-slate-200 ${customClass}`}
+          title="مشاركة"
         >
-          <Share2 size={14} /> <span>مشاركة</span>
+          <Share2 size={mini ? 14 : 14} />
+          {!mini && <span>مشاركة</span>}
         </button>
         {isOpen && portalTarget
           ? createPortal(

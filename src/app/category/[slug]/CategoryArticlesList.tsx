@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search } from 'lucide-react';
 import { useAdminArticles, isNewContent } from '@/lib/useAdminData';
 import PageHero from '@/components/PageHero';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 type ArticlePreview = {
   slug: string;
@@ -71,6 +72,12 @@ export default function CategoryArticlesList({
 
   return (
     <div className="flex flex-col min-h-screen">
+      <div className="max-w-7xl mx-auto w-full px-4">
+        <Breadcrumb items={[
+          { label: 'الدليل الشامل', href: '/directory' },
+          { label: categoryName },
+        ]} />
+      </div>
       <PageHero
         title={categoryName}
         description={`دليل شامل لكل ما يتعلق بـ ${categoryName} في تركيا لعام 2026.`}

@@ -104,7 +104,7 @@ export const OFFICIAL_SOURCES = [
     { name: "العقارات المسجلة باسمك", url: "https://www.turkiye.gov.tr/tapu-bilgileri-sorgulama", desc: "الاستعلام عن الطابو عبر e-Devlet." },
     { name: "الخطوط المسجلة باسمك", url: "https://www.turkiye.gov.tr/mobil-hat-sorgulama", desc: "الاستعلام عن الخطوط المسجلة باسمك." },
     { name: "القنصلية السورية: تطبيق حجز المواعيد", url: "https://mofaex.gov.sy/eservices-app", desc: "الرابط الرسمي لتطبيق/خدمة المواعيد القنصلية." },
-    { name: "الصيدليات المناوبة (إسطنبول)", url: "https://istanbulism.saglik.gov.tr/TR,53947/nobetci-eczane.html", desc: "صفحة رسمية للصيدليات المناوبة." },
+    { name: "الصيدليات المناوبة (كل الولايات)", url: "https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama", desc: "بحث رسمي عن الصيدليات المناوبة في أي ولاية تركية عبر e-Devlet." },
     { name: "متابعة إرساليات PTT (عبر e-Devlet)", url: "https://www.turkiye.gov.tr/ptt-gonderi-takip", desc: "تتبع شحنات/إرساليات PTT عبر e-Devlet." },
     { name: "إدارة الهجرة (النسخة العربية)", url: "https://ar.goc.gov.tr/", desc: "الواجهة العربية الرسمية لإدارة الهجرة." }
 ];

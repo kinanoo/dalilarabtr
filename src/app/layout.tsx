@@ -153,9 +153,9 @@ export default function RootLayout({
               <UrgencyBanner />
               <Navbar />
               <NewsTicker />
-              <main id="main-content">
+              <div id="main-content">
                 {children}
-              </main>
+              </div>
               <Footer />
             </div>
             <ClientComponents />

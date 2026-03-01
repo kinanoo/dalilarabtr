@@ -75,9 +75,9 @@ export default function GuidedJourney() {
     }, []);
 
     return (
-        <section className="py-10 px-4">
+        <section className="pt-2 pb-5 px-4">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-8">
+                <div className="text-center mb-4">
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center justify-center gap-2">
                         <Sparkles className="text-amber-500" size={24} />
                         كيف يمكننا مساعدتك اليوم؟

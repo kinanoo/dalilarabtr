@@ -19,6 +19,7 @@ export default function ServicesClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [extraCategories, setExtraCategories] = useState<string[]>([]);
 
   // --- Category Mapping for Legacy Support ---
   const CATEGORY_MAPPING: Record<string, string[]> = {
@@ -50,7 +51,7 @@ export default function ServicesClient() {
       .order('rating', { ascending: false });
 
     if (activeCategory !== 'all') {
-      // Use efficient IN query for multiple variations
+      // Use mapped variations for known categories, or exact match for dynamic ones
       const validCategories = CATEGORY_MAPPING[activeCategory] || [activeCategory];
       query = query.in('category', validCategories);
     }
@@ -87,10 +88,16 @@ export default function ServicesClient() {
         return { ...d, city: normalizedCity };
       });
 
-      // Extract unique cities when we load all data (or just once)
+      // Extract unique cities and extra categories when loading all data
       if (activeCategory === 'all' && searchQuery === '' && activeCity === 'all') {
         const cities = Array.from(new Set(normalizedData.map((d: any) => d.city).filter(Boolean))) as string[];
         setAvailableCities(cities.sort());
+
+        // Find categories in DB that aren't in the hardcoded list
+        const knownValues = new Set(Object.values(CATEGORY_MAPPING).flat().map(v => v.toLowerCase()));
+        const dbCategories = Array.from(new Set(normalizedData.map((d: any) => d.category).filter(Boolean))) as string[];
+        const newCats = dbCategories.filter(c => !knownValues.has(c.toLowerCase()));
+        setExtraCategories(newCats.sort());
       }
 
       // Filter by city client-side - but order the selected city FIRST rather than simply filtering out matching cities!
@@ -174,6 +181,7 @@ export default function ServicesClient() {
               { id: 'شحن', label: 'شحن' },
               { id: 'سياحة', label: 'سياحة' },
               { id: 'خدمات عامة', label: 'عامة' },
+              ...extraCategories.map(c => ({ id: c, label: c })),
             ].map(cat => (
               <button
                 key={cat.id}

@@ -96,6 +96,7 @@ export function AnalyticsDashboard() {
     const [topPages, setTopPages] = useState<any[]>([]);
     const [deviceStats, setDeviceStats] = useState<any[]>([]);
     const [countryStats, setCountryStats] = useState<any[]>([]);
+    const [cityStats, setCityStats] = useState<any[]>([]);
     const [referrerStats, setReferrerStats] = useState<any[]>([]);
     const [browserStats, setBrowserStats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -124,9 +125,10 @@ export function AnalyticsDashboard() {
                     const { data, error } = await supabase.rpc(name);
                     return error ? [] : (data || []);
                 };
-                const [devRes, countRes, refRes, browRes] = await Promise.all([
+                const [devRes, countRes, cityRes, refRes, browRes] = await Promise.all([
                     safeRpc('get_device_stats'),
                     safeRpc('get_country_stats'),
+                    safeRpc('get_city_stats'),
                     safeRpc('get_referrer_stats'),
                     safeRpc('get_browser_stats'),
                 ]);
@@ -161,6 +163,7 @@ export function AnalyticsDashboard() {
                 setTopPages(pages || []);
                 setDeviceStats(devRes);
                 setCountryStats(countRes);
+                setCityStats(cityRes);
                 setReferrerStats(refRes);
                 setBrowserStats(browRes);
             } catch {
@@ -363,7 +366,27 @@ export function AnalyticsDashboard() {
                             ))}
                         </div>
                     ) : (
-                        <EmptyState text="ستظهر بعد تشغيل analytics_enhanced.sql" />
+                        <EmptyState text="ستظهر بعد تشغيل analytics_ip_tracking.sql" />
+                    )}
+                    {cityStats.length > 0 && (
+                        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <p className="text-xs font-bold text-slate-400 mb-3 uppercase flex items-center gap-1.5">
+                                <MapPin size={12} /> المدن
+                            </p>
+                            <div className="space-y-2">
+                                {cityStats.map((c: any) => (
+                                    <div key={`${c.city}-${c.country}`} className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">
+                                            {c.city}
+                                            <span className="text-slate-400 font-normal mr-1">
+                                                ({countryArabic[c.country] || c.country})
+                                            </span>
+                                        </span>
+                                        <span className="text-xs text-slate-400 shrink-0 mr-2">{c.count}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
 

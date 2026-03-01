@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
-import { MapPin, ShieldAlert } from 'lucide-react';
+import { MapPin, ShieldAlert, Building2, ChevronLeft } from 'lucide-react';
 
 type ClosedAreaItem = {
   c: string; // City
@@ -185,6 +185,21 @@ export default function ZonesPage() {
     return count;
   }, [items, normalizedQuery]);
 
+  // City statistics for browsing grid
+  const cityStats = useMemo(() => {
+    if (!items.length) return [];
+    const map = new Map<string, { count: number; districts: Set<string> }>();
+    for (const zone of items) {
+      const existing = map.get(zone.c) || { count: 0, districts: new Set<string>() };
+      existing.count += 1;
+      existing.districts.add(zone.d);
+      map.set(zone.c, existing);
+    }
+    return Array.from(map.entries())
+      .map(([city, stats]) => ({ city, count: stats.count, districtCount: stats.districts.size }))
+      .sort((a, b) => b.count - a.count);
+  }, [items]);
+
   const showResults = normalizedQuery.length > 0;
   const hasData = items.length > 0;
 
@@ -213,7 +228,9 @@ export default function ZonesPage() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-5 md:p-8">
             <div className="flex flex-col gap-2 text-center">
-              <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">النتائج</h2>
+              <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
+                {showResults ? 'نتائج البحث' : 'المناطق المحظورة حسب الولاية'}
+              </h2>
             </div>
 
             <div className="mt-5">
@@ -230,7 +247,51 @@ export default function ZonesPage() {
                 </span>
               </div>
 
-              {!showResults && !loading && (
+              {/* City browsing grid when no search */}
+              {!showResults && !loading && hasData && cityStats.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-base font-bold text-slate-700 dark:text-slate-200 mb-4 text-center">
+                    تصفح حسب الولاية
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {cityStats.map(({ city, count, districtCount }) => (
+                      <Link
+                        key={city}
+                        href={`/zones/${encodeURIComponent(city)}`}
+                        className="group relative rounded-xl border border-rose-100 dark:border-rose-900/30 bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-slate-900 p-4 hover:border-rose-300 dark:hover:border-rose-700 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/30 group-hover:bg-rose-200 dark:group-hover:bg-rose-800/40 transition-colors">
+                              <Building2 size={16} className="text-rose-600 dark:text-rose-400" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors">
+                                {city}
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                {districtCount} منطقة
+                              </div>
+                            </div>
+                          </div>
+                          <span className="shrink-0 bg-rose-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            {count}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-end mt-2 text-[11px] font-bold text-rose-500 dark:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                          عرض التفاصيل
+                          <ChevronLeft size={12} className="mr-0.5" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
+                    اضغط على أي ولاية لعرض قائمة الأحياء المحظورة فيها
+                  </p>
+                </div>
+              )}
+
+              {!showResults && !loading && !hasData && !loadError && (
                 <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">
                   اكتب اسم المنطقة لبدء البحث، أو اضغط Enter للذهاب للصفحة المخصصة.
                 </p>

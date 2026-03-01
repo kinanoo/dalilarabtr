@@ -1,6 +1,6 @@
 'use client';
 
-import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
+import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight, Phone, Info } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
@@ -66,6 +66,44 @@ export default function PharmacyPage() {
                                 <MapPin className="w-4 h-4 text-blue-500" />
                                 يغطي كل الولايات
                             </span>
+                        </div>
+                    </div>
+
+                    {/* How to use */}
+                    <div className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <Info size={18} className="text-blue-500" />
+                            كيف تستخدم الخدمة؟
+                        </h3>
+                        <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside">
+                            <li>اضغط الزر أعلاه للانتقال لبوابة e-Devlet</li>
+                            <li>اختر الولاية (İl) ثم المنطقة (İlçe)</li>
+                            <li>ستظهر قائمة الصيدليات المناوبة مع العناوين وأرقام الهاتف</li>
+                        </ol>
+                    </div>
+
+                    {/* Emergency Numbers */}
+                    <div className="mt-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <Phone size={18} className="text-red-500" />
+                            أرقام الطوارئ في تركيا
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { number: '112', label: 'الطوارئ العامة (Acil)' },
+                                { number: '155', label: 'الشرطة (Polis)' },
+                                { number: '110', label: 'الإطفاء (İtfaiye)' },
+                                { number: '182', label: 'خط الأدوية والتسمم' },
+                            ].map(item => (
+                                <a
+                                    key={item.number}
+                                    href={`tel:${item.number}`}
+                                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-red-50 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                                >
+                                    <span className="text-lg font-black text-red-600 dark:text-red-400 font-mono">{item.number}</span>
+                                    <span className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-tight">{item.label}</span>
+                                </a>
+                            ))}
                         </div>
                     </div>
 

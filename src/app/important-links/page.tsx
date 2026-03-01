@@ -113,8 +113,15 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
       {/* الجزء العلوي - الأيقونة والعنوان */}
       <div className="p-4 sm:p-5 flex-grow">
         <div className="flex items-start gap-3 mb-3">
-          <div className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
-            <ShieldCheck size={20} />
+          <div className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl group-hover:bg-blue-600 transition-colors flex-shrink-0">
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${shortUrl}&sz=32`}
+              alt=""
+              width={20}
+              height={20}
+              className="rounded-sm"
+              loading="lazy"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
@@ -162,6 +169,10 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
 // ============================================
 
 function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
+  const domain = (() => {
+    try { return new URL(resource.url).hostname.replace('www.', ''); } catch { return ''; }
+  })();
+
   return (
     <a
       href={resource.url}
@@ -170,8 +181,15 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
       className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 p-4 sm:p-5 hover:shadow-lg transition-all flex flex-col h-full"
     >
       <div className="flex items-start gap-3 mb-2">
-        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-lg flex-shrink-0">
-          <Users size={18} />
+        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex-shrink-0">
+          <img
+            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+            alt=""
+            width={18}
+            height={18}
+            className="rounded-sm"
+            loading="lazy"
+          />
         </div>
         <h3 className="font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base leading-tight">
           {resource.name}
@@ -300,10 +318,13 @@ export default function ImportantLinksPage() {
         )}
 
         {/* ملاحظة أسفل الصفحة */}
-        <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800">
+        <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800 space-y-1">
           <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2">
             <ShieldCheck size={12} className="text-green-500" />
             يتم تحديث هذه الروابط بشكل دوري لضمان الدقة والموثوقية
+          </p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-600">
+            آخر تحقق من صلاحية الروابط: مارس 2026
           </p>
         </div>
       </div>

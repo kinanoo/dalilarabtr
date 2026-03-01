@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
     ShieldAlert, ShieldCheck, CheckCircle2, AlertTriangle,
-    ExternalLink, Info, Copy, ArrowRight, UserCheck
+    ExternalLink, Info, Copy, ArrowRight, UserCheck, AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 export default function KimlikCheckPage() {
     const [tcNumber, setTcNumber] = useState('');
     const [result, setResult] = useState<'valid' | 'invalid' | null>(null);
+    const [iframeError, setIframeError] = useState(false);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     // خوارزمية التحقق من صحة رقم الكملك (TC Algorithm)
     const validateTC = (value: string) => {
@@ -201,6 +203,54 @@ export default function KimlikCheckPage() {
                             </div>
                         </div>
 
+                    </div>
+
+                    {/* Official NVI Iframe Section */}
+                    <div className="mt-6 bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                        <div className="px-6 py-4 bg-emerald-50 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900/30">
+                            <h2 className="text-lg font-bold text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
+                                <ShieldCheck size={20} className="text-emerald-600" />
+                                التحقق الرسمي عبر بوابة النفوس (NVI)
+                            </h2>
+                            <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
+                                هذه الصفحة مضمّنة مباشرة من موقع النفوس الرسمي — أدخل البيانات للتحقق من صلاحية القيد
+                            </p>
+                        </div>
+
+                        {!iframeError ? (
+                            <div className="relative">
+                                <iframe
+                                    ref={iframeRef}
+                                    src="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
+                                    className="w-full border-0 rounded-b-3xl"
+                                    style={{ height: '700px', minHeight: '500px' }}
+                                    title="التحقق من رقم الكملك — بوابة النفوس التركية"
+                                    sandbox="allow-forms allow-scripts allow-same-origin"
+                                    loading="lazy"
+                                    onError={() => setIframeError(true)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center">
+                                <AlertCircle size={48} className="mx-auto text-amber-500 mb-4" />
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">
+                                    الموقع الحكومي يمنع التضمين المباشر
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                                    لأسباب أمنية، بوابة النفوس التركية قد تمنع عرضها داخل مواقع أخرى.
+                                    استخدم الرابط المباشر أدناه.
+                                </p>
+                                <a
+                                    href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg"
+                                >
+                                    <span>فتح بوابة النفوس في تبويب جديد</span>
+                                    <ExternalLink size={18} />
+                                </a>
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-6 flex justify-center">

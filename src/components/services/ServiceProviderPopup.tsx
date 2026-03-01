@@ -9,12 +9,10 @@ export default function ServiceProviderPopup() {
     const [isDismissed, setIsDismissed] = useState(false);
 
     useEffect(() => {
-        // Show popup after 15 seconds
+        // Show popup after 10 seconds of browsing
         const timer = setTimeout(() => {
-            // Check if previously dismissed in this session? 
-            // User requested "Timed popup". Let's show it every visit for now, but respect 'dismissed' state in local component.
             setIsVisible(true);
-        }, 15000);
+        }, 10000);
 
         return () => clearTimeout(timer);
     }, []);

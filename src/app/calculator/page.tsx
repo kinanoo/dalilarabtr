@@ -17,7 +17,7 @@ export default function CalculatorPage() {
 
   return (
     <>
-      <ToolSchema tool="ban-calculator" />
+      <ToolSchema tool="cost-calculator" />
 
       <PageHero
         title="حاسبة التكاليف"

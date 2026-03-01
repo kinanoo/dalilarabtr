@@ -135,10 +135,12 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                         {baseList.map((update, index) => (
                             <UpdateCard key={`l1-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
                         ))}
-                        {/* List 2 (seamless loop) */}
-                        {baseList.map((update, index) => (
-                            <UpdateCard key={`l2-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
-                        ))}
+                        {/* List 2 (seamless loop) — hidden from SEO & screen readers */}
+                        <div aria-hidden="true" className="contents">
+                            {baseList.map((update, index) => (
+                                <UpdateCard key={`l2-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
