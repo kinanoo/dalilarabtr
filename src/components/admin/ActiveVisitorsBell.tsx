@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users, X, Smartphone, Monitor, Tablet, Globe, Radio, RefreshCw, Eye,
+    ChevronDown,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -87,6 +88,11 @@ function timeAgo(dateStr: string): string {
     return `منذ ${h} ساعة`;
 }
 
+function timeShort(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+}
+
 function referrerSource(ref: string | null): string {
     if (!ref) return 'direct';
     const r = ref.toLowerCase();
@@ -100,6 +106,13 @@ function referrerSource(ref: string | null): string {
     if (r.includes('tiktok')) return 'tiktok';
     if (r.includes('bing')) return 'bing';
     return 'other';
+}
+
+function pagesArabic(count: number): string {
+    if (count === 1) return 'صفحة';
+    if (count === 2) return 'صفحتان';
+    if (count <= 10) return `${count} صفحات`;
+    return `${count} صفحة`;
 }
 
 /* ── Types ────────────────────────────────────────────── */
@@ -117,6 +130,11 @@ interface Visitor {
     page_views: number;
 }
 
+interface JourneyPage {
+    page_path: string;
+    visited_at: string;
+}
+
 type Tab = 'active' | 'recent';
 
 /* ── Component ───────────────────────────────────────── */
@@ -131,6 +149,11 @@ export function ActiveVisitorsBell() {
     const bellBtnRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Expandable journey state
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [journeyPages, setJourneyPages] = useState<JourneyPage[]>([]);
+    const [journeyLoading, setJourneyLoading] = useState(false);
 
     useEffect(() => { setMounted(true); }, []);
 
@@ -149,12 +172,36 @@ export function ActiveVisitorsBell() {
         setLoading(false);
     }, []);
 
+    const fetchJourney = useCallback(async (visitorId: string) => {
+        if (!supabase) return;
+        setJourneyLoading(true);
+        const { data } = await supabase.rpc('get_visitor_journey', { p_visitor_id: visitorId });
+        setJourneyPages(data || []);
+        setJourneyLoading(false);
+    }, []);
+
+    const toggleExpand = useCallback((visitorId: string) => {
+        if (expandedId === visitorId) {
+            setExpandedId(null);
+            setJourneyPages([]);
+        } else {
+            setExpandedId(visitorId);
+            fetchJourney(visitorId);
+        }
+    }, [expandedId, fetchJourney]);
+
     // Auto-refresh every 30 seconds
     useEffect(() => {
         fetchVisitors();
         intervalRef.current = setInterval(fetchVisitors, 30000);
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [fetchVisitors]);
+
+    // Close expanded when tab changes
+    useEffect(() => {
+        setExpandedId(null);
+        setJourneyPages([]);
+    }, [tab]);
 
     // Click outside to close
     useEffect(() => {
@@ -306,6 +353,8 @@ export function ActiveVisitorsBell() {
                                         const DevIcon = deviceIconMap[v.device || ''] || Globe;
                                         const src = referrerSource(v.referrer);
                                         const isActive = tab === 'active';
+                                        const isExpanded = expandedId === v.visitor_id;
+                                        const hasMultiplePages = Number(v.page_views) > 1;
                                         return (
                                             <motion.div
                                                 key={`${v.visitor_id}-${index}`}
@@ -314,66 +363,125 @@ export function ActiveVisitorsBell() {
                                                     opacity: 1, x: 0,
                                                     transition: { delay: Math.min(index * 0.02, 0.4) },
                                                 }}
-                                                className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                                             >
-                                                <div className="flex items-start gap-2.5">
-                                                    {/* Device Icon */}
-                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                                                        isActive
-                                                            ? 'bg-emerald-100 dark:bg-emerald-900/30'
-                                                            : 'bg-slate-100 dark:bg-slate-800'
-                                                    }`}>
-                                                        <DevIcon size={14} className={isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'} />
-                                                    </div>
-
-                                                    {/* Info */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate" title={v.page_path}>
-                                                                {pageLabel(v.page_path)}
-                                                            </p>
-                                                            {isActive && (
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-[11px] text-slate-400">
-                                                            {(v.ip_city || v.ip_country) && (
-                                                                <span className="flex items-center gap-0.5">
-                                                                    <span className="text-[10px]">{countryFlag[v.ip_country || ''] || '🌍'}</span>
-                                                                    {v.ip_city && <span>{v.ip_city}</span>}
-                                                                    {v.ip_city && v.ip_country && <span className="text-slate-300 dark:text-slate-600">·</span>}
-                                                                    {v.ip_country && <span>{countryArabic[v.ip_country] || v.ip_country}</span>}
-                                                                </span>
-                                                            )}
-                                                            {v.device && (
-                                                                <span>{deviceArabic[v.device] || v.device}</span>
-                                                            )}
-                                                            {v.browser && (
-                                                                <span className="text-slate-300 dark:text-slate-600">·</span>
-                                                            )}
-                                                            {v.browser && <span>{v.browser}</span>}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Right side */}
-                                                    <div className="flex flex-col items-end gap-1 shrink-0">
-                                                        <span className={`text-[10px] font-bold ${
-                                                            isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                                                {/* Visitor Row */}
+                                                <div
+                                                    onClick={() => hasMultiplePages && toggleExpand(v.visitor_id)}
+                                                    className={`px-4 py-3 transition-colors ${
+                                                        hasMultiplePages ? 'cursor-pointer' : ''
+                                                    } ${
+                                                        isExpanded
+                                                            ? 'bg-slate-50 dark:bg-slate-800/50'
+                                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start gap-2.5">
+                                                        {/* Device Icon */}
+                                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                                                            isActive
+                                                                ? 'bg-emerald-100 dark:bg-emerald-900/30'
+                                                                : 'bg-slate-100 dark:bg-slate-800'
                                                         }`}>
-                                                            {timeAgo(v.last_seen)}
-                                                        </span>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-bold">
-                                                                {sourceIcon[src] || '🔗'} {sourceLabel[src] || src}
+                                                            <DevIcon size={14} className={isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'} />
+                                                        </div>
+
+                                                        {/* Info */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate" title={v.page_path}>
+                                                                    {pageLabel(v.page_path)}
+                                                                </p>
+                                                                {isActive && (
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-[11px] text-slate-400">
+                                                                {(v.ip_city || v.ip_country) && (
+                                                                    <span className="flex items-center gap-0.5">
+                                                                        <span className="text-[10px]">{countryFlag[v.ip_country || ''] || '🌍'}</span>
+                                                                        {v.ip_city && <span>{v.ip_city}</span>}
+                                                                        {v.ip_city && v.ip_country && <span className="text-slate-300 dark:text-slate-600">·</span>}
+                                                                        {v.ip_country && <span>{countryArabic[v.ip_country] || v.ip_country}</span>}
+                                                                    </span>
+                                                                )}
+                                                                {v.device && (
+                                                                    <span>{deviceArabic[v.device] || v.device}</span>
+                                                                )}
+                                                                {v.browser && (
+                                                                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                                                                )}
+                                                                {v.browser && <span>{v.browser}</span>}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Right side */}
+                                                        <div className="flex flex-col items-end gap-1 shrink-0">
+                                                            <span className={`text-[10px] font-bold ${
+                                                                isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                                                            }`}>
+                                                                {timeAgo(v.last_seen)}
                                                             </span>
-                                                            {Number(v.page_views) > 1 && (
+                                                            <div className="flex items-center gap-1.5">
                                                                 <span className="text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-bold">
-                                                                    {v.page_views}p
+                                                                    {sourceIcon[src] || '🔗'} {sourceLabel[src] || src}
                                                                 </span>
-                                                            )}
+                                                                {hasMultiplePages && (
+                                                                    <span className="text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                                                        {pagesArabic(Number(v.page_views))}
+                                                                        <ChevronDown size={10} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {/* Journey Expansion */}
+                                                <AnimatePresence>
+                                                    {isExpanded && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: 'auto', opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            transition={{ duration: 0.2 }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="px-4 pb-3 pr-[3.25rem]">
+                                                                {journeyLoading ? (
+                                                                    <div className="flex items-center gap-2 py-2">
+                                                                        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                                                                        <span className="text-[11px] text-slate-400">جاري التحميل...</span>
+                                                                    </div>
+                                                                ) : journeyPages.length === 0 ? (
+                                                                    <p className="text-[11px] text-slate-400 py-1">لا توجد بيانات</p>
+                                                                ) : (
+                                                                    <div className="relative border-r-2 border-slate-200 dark:border-slate-700 pr-3 space-y-1.5">
+                                                                        {journeyPages.map((page, i) => (
+                                                                            <div key={i} className="flex items-center gap-2 relative">
+                                                                                {/* Timeline dot */}
+                                                                                <div className={`absolute -right-[0.4375rem] w-2.5 h-2.5 rounded-full border-2 ${
+                                                                                    i === 0
+                                                                                        ? 'bg-emerald-500 border-emerald-300 dark:border-emerald-700'
+                                                                                        : 'bg-slate-300 dark:bg-slate-600 border-slate-200 dark:border-slate-700'
+                                                                                }`} />
+                                                                                <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                                                                                    <span className={`text-[11px] truncate ${
+                                                                                        i === 0 ? 'font-bold text-slate-700 dark:text-slate-200' : 'text-slate-500'
+                                                                                    }`}>
+                                                                                        {pageLabel(page.page_path)}
+                                                                                    </span>
+                                                                                    <span className="text-[9px] text-slate-400 shrink-0 font-mono">
+                                                                                        {timeShort(page.visited_at)}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </motion.div>
                                         );
                                     })}

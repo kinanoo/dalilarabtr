@@ -102,6 +102,25 @@ AS $$
     ORDER BY l.last_seen DESC
     LIMIT 50;
 $$;
+
+-- Visitor journey: all pages a specific visitor browsed (last 24h)
+CREATE OR REPLACE FUNCTION get_visitor_journey(p_visitor_id TEXT)
+RETURNS TABLE(
+    page_path TEXT,
+    visited_at TIMESTAMPTZ
+)
+LANGUAGE sql STABLE
+SECURITY DEFINER
+AS $$
+    SELECT
+        e.page_path,
+        e.created_at as visited_at
+    FROM analytics_events e
+    WHERE e.visitor_id = p_visitor_id
+      AND e.event_name = 'page_view'
+      AND e.created_at > NOW() - INTERVAL '24 hours'
+    ORDER BY e.created_at DESC;
+$$;
 `;
 
 async function run() {
