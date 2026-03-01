@@ -41,9 +41,9 @@ async function fetchArticleData(slug: string) {
     if (data) {
       return {
         title: data.title,
-        seoTitle: data.title,
-        seoDescription: data.intro,
-        seoKeywords: [],
+        seoTitle: data.seo_title || data.title,
+        seoDescription: data.seo_description || data.intro,
+        seoKeywords: data.seo_keywords || [],
         category: data.category,
         intro: data.intro || '',
         details: data.details || '',
