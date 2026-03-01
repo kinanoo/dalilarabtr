@@ -41,9 +41,15 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
         return date.toLocaleDateString('ar-SA');
     };
 
+    const isUnread = !notification.is_read;
+
     const inner = (
         <div
-            className={`group relative p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer overflow-hidden ${!notification.is_read ? 'border-r-4 border-r-emerald-500' : ''}`}
+            className={`group relative p-4 transition-colors cursor-pointer overflow-hidden border-r-[3px] ${
+                isUnread
+                    ? 'bg-emerald-50/70 dark:bg-emerald-950/15 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/25 border-r-emerald-500'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-r-transparent opacity-60'
+            }`}
         >
             {/* Neon glow line on hover */}
             <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
@@ -56,11 +62,22 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-slate-800 dark:text-slate-100 mb-1">
+                    <div className={`text-sm mb-1 flex items-center gap-1.5 ${
+                        isUnread
+                            ? 'font-bold text-slate-900 dark:text-white'
+                            : 'font-medium text-slate-500 dark:text-slate-400'
+                    }`}>
                         {notification.title}
+                        {isUnread && (
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                        )}
                     </div>
 
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mb-2 line-clamp-2 leading-relaxed">
+                    <div className={`text-xs mb-2 line-clamp-2 leading-relaxed ${
+                        isUnread
+                            ? 'text-slate-600 dark:text-slate-300'
+                            : 'text-slate-400 dark:text-slate-500'
+                    }`}>
                         {notification.message}
                     </div>
 

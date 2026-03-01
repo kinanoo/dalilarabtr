@@ -149,22 +149,27 @@ export default function NotificationBell() {
     const unreadCount = notifications.filter(n => !n.is_read).length;
     const unreadInList = unreadCount;
 
-    // Calculate dropdown position based on bell button
+    // Calculate dropdown position based on bell button (RTL-aware)
     const getPanelStyle = useCallback((): React.CSSProperties => {
         if (!bellBtnRef.current) return { position: 'fixed', top: 64, left: 16, right: 16 };
         const rect = bellBtnRef.current.getBoundingClientRect();
-        const isDesktop = window.innerWidth >= 640;
+        const vw = window.innerWidth;
+        const isDesktop = vw >= 640;
         if (isDesktop) {
+            const panelWidth = Math.min(380, vw - 32);
+            // Center the panel on the bell, then clamp to viewport
+            let left = rect.left + rect.width / 2 - panelWidth / 2;
+            if (left + panelWidth > vw - 16) left = vw - 16 - panelWidth;
+            if (left < 16) left = 16;
             return {
                 position: 'fixed',
                 top: rect.bottom + 8,
-                right: Math.max(window.innerWidth - rect.right, 16),
-                width: 380,
-                maxWidth: 'calc(100vw - 2rem)',
+                left,
+                width: panelWidth,
             };
         }
         // Mobile: full width with margins
-        return { position: 'fixed', top: rect.bottom + 8, left: 16, right: 16 };
+        return { position: 'fixed', top: rect.bottom + 8, left: 8, right: 8 };
     }, []);
 
     // Dropdown content rendered via Portal
