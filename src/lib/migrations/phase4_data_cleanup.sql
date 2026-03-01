@@ -101,7 +101,7 @@ END $$;
 
 -- Check remaining reviews for dummy services
 SELECT id, service_id, rating FROM service_reviews
-WHERE service_id LIKE '00000000%';
+WHERE service_id::text LIKE '00000000%';
 
 -- Check comments consistency
 SELECT status, is_published, count(*)
