@@ -67,7 +67,7 @@ AS $$
     LEFT JOIN article_views av ON av.art_slug = a.slug OR av.art_slug = a.id::TEXT
     LEFT JOIN article_durations ad ON ad.art_slug = a.slug OR ad.art_slug = a.id::TEXT
     LEFT JOIN article_comments ac ON ac.art_id_text = a.id::TEXT
-    WHERE a.status = 'published' OR a.is_active = true
+    WHERE a.status = 'published' OR a.active = true
     ORDER BY COALESCE(av.views, 0) DESC
     LIMIT 15;
 $$;
