@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daleel-arab-v2';
+const CACHE_NAME = 'daleel-arab-v3';
 const OFFLINE_URL = '/offline.html';
 
 // ─── Install: pre-cache offline page & app icon only ──────────────────────

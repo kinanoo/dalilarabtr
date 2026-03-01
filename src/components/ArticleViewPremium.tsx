@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { Article } from '@/lib/types'; // Only Type
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, MessageCircle, ListOrdered, Printer, ArrowLeft, Share2, Sparkles, Lightbulb, Coins, Info, ExternalLink, Check, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, BrainCircuit, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
 import { buildWhatsAppHref } from '@/lib/whatsapp';
@@ -15,8 +14,6 @@ import Breadcrumbs from './Breadcrumbs';
 
 import { deobfuscate, isObfuscated } from '@/lib/security';
 import DOMPurify from 'isomorphic-dompurify';
-import NativeConsultCard from '@/components/article/NativeConsultCard';
-import CommentsClient from '@/components/comments/CommentsClient';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);

@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 import RelatedArticles from '@/components/RelatedArticles';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
-import Breadcrumb from '@/components/ui/Breadcrumb';
+
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 export const dynamicParams = true;
@@ -317,13 +317,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     <main className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }} />
-      <div className="max-w-4xl mx-auto w-full px-4 mt-2">
-        <Breadcrumb items={[
-          { label: 'الدليل الشامل', href: '/directory' },
-          ...(article.category && categorySlug ? [{ label: article.category, href: `/category/${categorySlug}` }] : []),
-          { label: article.title },
-        ]} />
-      </div>
       <ArticleHydratedView articleData={article} slug={params.id}>
         <ContentHelpfulWidget entityType="article" entityId={params.id} />
         <UniversalComments entityType="article" entityId={params.id} title="نقاش دليل المقال" />
