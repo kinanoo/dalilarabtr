@@ -39,7 +39,7 @@ export default function HousingPage() {
                   href={`/article/${article.slug || article.id}`}
                   className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
                 >
-                  {article.image && (
+                  {article.image && article.image.startsWith('http') && (
                     <div className="h-40 overflow-hidden relative">
                       <Image
                         src={article.image}
@@ -47,6 +47,9 @@ export default function HousingPage() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        onError={(e) => {
+                          (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                        }}
                       />
                     </div>
                   )}

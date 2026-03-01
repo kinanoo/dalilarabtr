@@ -425,7 +425,7 @@ export default function DirectoryPage() {
                                     }`}
                                 >
                                   {/* صورة المقال (فقط للمقالات) */}
-                                  {article.type !== 'scenario' && article.image && (
+                                  {article.type !== 'scenario' && article.image && article.image.startsWith('http') && (
                                     <div className="h-28 sm:h-32 md:h-36 lg:h-40 xl:h-44 overflow-hidden relative">
                                       <Image
                                         src={article.image}
@@ -433,6 +433,9 @@ export default function DirectoryPage() {
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        onError={(e) => {
+                                          (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                                        }}
                                       />
                                     </div>
                                   )}
