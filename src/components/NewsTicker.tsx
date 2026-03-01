@@ -80,9 +80,6 @@ export default function NewsTicker() {
                 .ticker-content {
                     animation: ticker 35s linear infinite;
                 }
-                .ticker-content:hover {
-                    animation-play-state: paused;
-                }
                 @keyframes ticker {
                     0% {
                         transform: translateX(0);
