@@ -1,8 +1,9 @@
-
-
 import PageHero from '@/components/PageHero';
 import { Users, Scale, BadgeCheck, ShieldCheck } from 'lucide-react';
 import { Metadata } from 'next';
+import { supabase } from '@/lib/supabaseClient';
+
+export const revalidate = 3600; // Cache for 1 hour
 
 export const metadata: Metadata = {
   title: 'عن الموقع | دليل العرب في تركيا',
@@ -10,7 +11,22 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about' },
 };
 
-export default function AboutPage() {
+async function getStats() {
+  if (!supabase) return { articles: 0, codes: 0 };
+
+  const [articlesRes, codesRes] = await Promise.all([
+    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('is_active', true),
+    supabase.from('security_codes').select('code', { count: 'exact', head: true }),
+  ]);
+
+  return {
+    articles: articlesRes.count || 0,
+    codes: codesRes.count || 0,
+  };
+}
+
+export default async function AboutPage() {
+  const stats = await getStats();
     return (
         <main className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo">
 
@@ -72,12 +88,12 @@ export default function AboutPage() {
             <section className="py-16 px-4">
                 <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-200 dark:divide-slate-800 divide-x-reverse">
                     <div>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">+15K</div>
-                        <div className="text-sm text-slate-500">زائر شهرياً</div>
+                        <div className="text-4xl font-bold text-emerald-600 mb-2">+{stats.articles}</div>
+                        <div className="text-sm text-slate-500">مقال ودليل</div>
                     </div>
                     <div>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">+500</div>
-                        <div className="text-sm text-slate-500">مقال قانوني</div>
+                        <div className="text-4xl font-bold text-emerald-600 mb-2">+{stats.codes}</div>
+                        <div className="text-sm text-slate-500">كود أمني</div>
                     </div>
                     <div>
                         <div className="text-4xl font-bold text-emerald-600 mb-2">24/7</div>
@@ -85,7 +101,7 @@ export default function AboutPage() {
                     </div>
                     <div>
                         <div className="text-4xl font-bold text-emerald-600 mb-2">100%</div>
-                        <div className="text-sm text-slate-500">موثوقية</div>
+                        <div className="text-sm text-slate-500">مجاني</div>
                     </div>
                 </div>
             </section>
