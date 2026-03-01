@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { SITE_CONFIG } from '@/lib/config';
 import { Calculator, Wallet, Map, Stethoscope, GraduationCap, Building2, Scale, FileText, Plane, Shield, Activity, Home, HeartHandshake, Flag, Search, ArrowLeft } from 'lucide-react';
 
 // --- DATA PAYLOAD (VERIFIED LINKS) ---
@@ -78,10 +77,6 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
                     <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto mb-3 leading-relaxed">
                         كل ما تحتاجه في تركيا: إقامات، قانون، أكواد أمنية، وخدمات ذكية.
-                    </p>
-
-                    <p className="text-sm md:text-base text-emerald-500/80 max-w-2xl mx-auto mb-8 font-mono">
-                        {SITE_CONFIG.slogan}
                     </p>
 
                     <div className="mt-8 max-w-xl mx-auto relative z-[25] pointer-events-auto">
