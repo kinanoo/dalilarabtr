@@ -5,8 +5,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Server client — plain anon key, no auth session (for server components / API routes)
+// Guarded: only create on the server to avoid a second GoTrueClient in the browser
 const serverClient: SupabaseClient | null =
-  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+  typeof window === 'undefined' && supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 // Window-level global key — survives Next.js code splitting across chunks
 const GLOBAL_KEY = '__daleel_supabase_browser' as const;
