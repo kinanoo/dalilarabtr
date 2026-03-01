@@ -15,7 +15,7 @@ const SQL = `
 -- ═══════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION get_content_performance()
 RETURNS TABLE(
-    article_id UUID,
+    article_id TEXT,
     title TEXT,
     slug TEXT,
     page_views BIGINT,
@@ -56,7 +56,7 @@ AS $$
         GROUP BY c.entity_id
     )
     SELECT
-        a.id as article_id,
+        a.id::TEXT as article_id,
         a.title,
         a.slug,
         COALESCE(av.views, 0) as page_views,
