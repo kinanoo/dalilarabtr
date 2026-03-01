@@ -71,14 +71,16 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =====================================================
--- 4. Fix rating_avg trigger to also fire on UPDATE
---    (reviews might get approved later)
+-- 4. Fix rating_avg trigger to also fire on DELETE
+--    (function name was changed to update_service_provider_rating
+--     in fix_service_reviews_trigger_v2.sql migration)
 -- =====================================================
 
-DROP TRIGGER IF EXISTS update_rating_on_review ON service_reviews;
-CREATE TRIGGER update_rating_on_review
+DROP TRIGGER IF EXISTS trigger_update_service_rating ON service_reviews;
+DROP TRIGGER IF EXISTS on_review_change ON service_reviews;
+CREATE TRIGGER trigger_update_service_rating
     AFTER INSERT OR UPDATE OR DELETE ON service_reviews
-    FOR EACH ROW EXECUTE FUNCTION update_service_rating();
+    FOR EACH ROW EXECUTE FUNCTION update_service_provider_rating();
 
 
 -- =====================================================
