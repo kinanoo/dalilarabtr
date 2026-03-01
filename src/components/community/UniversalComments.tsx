@@ -17,8 +17,8 @@ interface UniversalCommentsProps {
 function getOrCreateAnonId(): string {
     const key = 'anon_comment_id';
     let id = localStorage.getItem(key);
-    if (!id) {
-        id = String(Math.floor(1000 + Math.random() * 9000));
+    if (!id || id.length < 8) {
+        id = crypto.randomUUID().slice(0, 8);
         localStorage.setItem(key, id);
     }
     return id;
@@ -387,11 +387,11 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             setName(`مجهول #${anonId}`);
             setIsLoggedIn(false);
             setUserKey(`anon_${anonId}`);
-            // Persistent visitor ID for server-side vote deduplication
-            let vid = localStorage.getItem('daleel_visitor_id') || '';
+            // Persistent visitor ID — shared with AnalyticsTracker ('visitor_id' key)
+            let vid = localStorage.getItem('visitor_id') || '';
             if (!vid) {
                 vid = crypto.randomUUID();
-                localStorage.setItem('daleel_visitor_id', vid);
+                localStorage.setItem('visitor_id', vid);
             }
             setVisitorId(vid);
         }

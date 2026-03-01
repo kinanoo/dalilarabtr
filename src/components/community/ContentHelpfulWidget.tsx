@@ -32,14 +32,13 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
             }
             setUserKey(uid);
 
-            // Generate persistent visitor ID for server-side deduplication
+            // Persistent visitor ID — shared with AnalyticsTracker ('visitor_id' key)
             let vid = uid;
             if (uid === 'anon') {
-                const storageKey = 'daleel_visitor_id';
-                vid = localStorage.getItem(storageKey) || '';
+                vid = localStorage.getItem('visitor_id') || '';
                 if (!vid) {
                     vid = crypto.randomUUID();
-                    localStorage.setItem(storageKey, vid);
+                    localStorage.setItem('visitor_id', vid);
                 }
             }
             setVisitorId(vid);
