@@ -96,7 +96,7 @@ export default function WhatsAppAssistant() {
           // supabase.from('articles').select('id, title, category, intro').or(articleQuery).limit(10), // Removed
           supabase.from('service_providers').select('id, name, profession').eq('status', 'approved').or(`${nameOrQuery},${professionOrQuery}`).limit(5),
           supabase.from('faqs').select('id, question, answer').or(questionOrQuery).limit(5),
-          supabase.from('site_updates').select('id, title, date, content').eq('active', true).or(updateQuery).limit(5),
+          supabase.from('updates').select('id, title, date, content').eq('active', true).or(updateQuery).limit(5),
           supabase.from('official_sources').select('id, name, description, url').or(`${nameOrQuery},description.ilike.%${trimmed}%`).limit(5)
         ]);
 

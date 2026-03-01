@@ -184,7 +184,7 @@ export async function fetchRemoteUpdates(): Promise<RuntimeUpdate[] | null> {
   updatesPromise = (async () => {
     if (!supabase) return isDemoMode() ? readDemoUpdates().filter((u) => u.active !== false) : null;
     const { data, error } = await supabase
-      .from('site_updates')
+      .from('updates')
       .select('id,type,title,date,content,active')
       .order('date', { ascending: false });
 

@@ -46,20 +46,24 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
     useEffect(() => {
         const fetchBadges = async () => {
             if (!supabase) return;
-            const [services, articles, comments] = await Promise.all([
-                supabase.from('service_providers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-                supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-                supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-            ]);
-            const requestsCount = (services.count || 0) + (articles.count || 0);
-            const commentsCount = comments.count || 0;
-            setBadges({
-                '/admin/requests': requestsCount,
-                '/admin/community': commentsCount,
-            });
+            try {
+                const [services, articles, comments] = await Promise.allSettled([
+                    supabase.from('service_providers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                    supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+                ]);
+                const sCount = services.status === 'fulfilled' && !services.value.error ? (services.value.count || 0) : 0;
+                const aCount = articles.status === 'fulfilled' && !articles.value.error ? (articles.value.count || 0) : 0;
+                const cCount = comments.status === 'fulfilled' && !comments.value.error ? (comments.value.count || 0) : 0;
+                setBadges({
+                    '/admin/requests': sCount + aCount,
+                    '/admin/community': cCount,
+                });
+            } catch {
+                // Silently fail — badges are non-critical
+            }
         };
         fetchBadges();
-        // Refresh every 30 seconds
         const interval = setInterval(fetchBadges, 30_000);
         return () => clearInterval(interval);
     }, []);
