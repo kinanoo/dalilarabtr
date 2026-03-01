@@ -128,6 +128,7 @@ export function ScenarioEditor({ form, setForm }: ScenarioEditorProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Field label="المعرف الفريد (ID/Slug)" help="هام: يجب أن يكون بالإنجليزية فقط (أحرف، أرقام، شرطة). لا تستخدم العربية. مثال: work-permit-cost">
                         <input
+                            required
                             type="text"
                             value={form.id || ''}
                             onChange={e => handleChange('id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -166,6 +167,7 @@ export function ScenarioEditor({ form, setForm }: ScenarioEditorProps) {
                     </Field>
                     <Field label="عنوان السيناريو (Title)" help="مثال: استخراج إذن سفر">
                         <input
+                            required
                             type="text"
                             value={form.title || ''}
                             onChange={e => handleChange('title', e.target.value)}
@@ -188,6 +190,7 @@ export function ScenarioEditor({ form, setForm }: ScenarioEditorProps) {
                     <div className="col-span-1 md:col-span-2">
                         <Field label="الوصف المختصر (Description)">
                             <textarea
+                                required
                                 value={form.description || form.desc || ''}
                                 onChange={e => handleChange('description', e.target.value)}
                                 className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 font-medium min-h-[80px]"

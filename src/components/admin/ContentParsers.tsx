@@ -53,7 +53,13 @@ export function UpdatesManager() {
         try {
             // Preserve original date on edit, use today for new
             const date = editingId ? formData.date! : new Date().toISOString().split('T')[0];
-            const payload = { ...formData, date };
+            const payload = {
+                ...formData,
+                date,
+                // Convert empty strings to null for optional fields
+                link: formData.link?.trim() || null,
+                image: formData.image?.trim() || null,
+            };
             const { error } = await supabase.from('updates').upsert(editingId ? { ...payload, id: editingId } : payload);
 
             if (error) {
@@ -144,7 +150,7 @@ export function UpdatesManager() {
                     />
                     <div>
                         <label className="text-sm font-bold block mb-1">المحتوى</label>
-                        <textarea rows={3} value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
+                        <textarea rows={3} required value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
                     </div>
 
                     {/* Push notification toggle — only for new updates */}

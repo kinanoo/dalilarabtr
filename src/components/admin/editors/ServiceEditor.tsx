@@ -17,6 +17,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Field label="اسم الخدمة" icon={Briefcase}>
                     <input
+                        required
                         className={`${inputStyles} text-xl font-bold`}
                         value={form.name || ''}
                         onChange={e => setForm({ ...form, name: e.target.value })}
@@ -28,6 +29,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
                         <Field label="التخصص / المهنة (يمكنك الكتابة أو الاختيار)" icon={Briefcase}>
                             <div className="space-y-3">
                                 <input
+                                    required
                                     className={inputStyles}
                                     value={form.profession || ''}
                                     onChange={e => setForm({ ...form, profession: e.target.value })}
@@ -63,6 +65,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
 
                 <Field label="المدينة" icon={MapPin}>
                     <input
+                        required
                         className={inputStyles}
                         value={form.city || ''}
                         onChange={e => setForm({ ...form, city: e.target.value })}
@@ -72,6 +75,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
 
                 <Field label="رقم الهاتف" icon={Phone}>
                     <input
+                        required
                         className={`${ltrInputStyles} font-mono text-lg tracking-wider text-emerald-700`}
                         value={form.phone || ''}
                         onChange={e => setForm({ ...form, phone: e.target.value })}

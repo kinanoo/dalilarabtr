@@ -30,6 +30,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Field label="عنوان المقال" icon={FileText}>
                     <input
+                        required
                         className={`${inputStyles} text-lg font-bold`}
                         value={form.title || ''}
                         onChange={e => setForm({ ...form, title: e.target.value })}
@@ -48,6 +49,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
 
                 <Field label="القسم" icon={Tags}>
                     <select
+                        required
                         className={inputStyles}
                         value={form.category || ''}
                         onChange={e => setForm({ ...form, category: e.target.value })}
@@ -82,6 +84,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
             <div className="grid grid-cols-1 gap-6">
                 <Field label="مقدمة قصيرة (Summary)" icon={AlertCircle} note="تظهر في بطاقات العرض">
                     <textarea
+                        required
                         className={`${textareaStyles} h-24`}
                         value={form.intro || ''}
                         onChange={e => setForm({ ...form, intro: e.target.value })}

@@ -5,6 +5,7 @@ export const FaqEditor = ({ form, setForm }: any) => (
         <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">السؤال (Question)</label>
             <input
+                required
                 value={form.question || ''}
                 onChange={(e: any) => setForm({ ...form, question: e.target.value })}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -43,6 +44,7 @@ export const FaqEditor = ({ form, setForm }: any) => (
         <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الإجابة (Answer)</label>
             <textarea
+                required
                 value={form.answer || ''}
                 onChange={(e: any) => setForm({ ...form, answer: e.target.value })}
                 className="w-full p-4 h-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"

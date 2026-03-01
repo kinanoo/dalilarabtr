@@ -5,6 +5,7 @@ export const BannerEditor = ({ form, setForm }: any) => (
         <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">نص التنبيه</label>
             <input
+                required
                 value={form.content || ''}
                 onChange={(e: any) => setForm({ ...form, content: e.target.value })}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"

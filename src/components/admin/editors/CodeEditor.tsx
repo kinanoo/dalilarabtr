@@ -6,6 +6,7 @@ export const CodeEditor = ({ form, setForm }: any) => (
             <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">العنوان (الاسم المختصر)</label>
                 <input
+                    required
                     value={form.title || ''}
                     onChange={(e: any) => setForm({ ...form, title: e.target.value })}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -15,6 +16,7 @@ export const CodeEditor = ({ form, setForm }: any) => (
             <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الكود (Code)</label>
                 <input
+                    required
                     value={form.code || ''}
                     onChange={(e: any) => setForm({ ...form, code: e.target.value })}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-mono font-bold focus:ring-2 focus:ring-emerald-500 transition-all uppercase"
@@ -40,6 +42,7 @@ export const CodeEditor = ({ form, setForm }: any) => (
         <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الوصف</label>
             <textarea
+                required
                 value={form.description || ''}
                 onChange={(e: any) => setForm({ ...form, description: e.target.value })}
                 className="w-full p-4 h-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"
