@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
+import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
 
 export default function AdminLayout({
     children,
@@ -68,7 +69,8 @@ export default function AdminLayout({
                             <h1 className="font-bold text-slate-800 dark:text-white text-sm">لوحة التحكم</h1>
                         </Link>
                         <div className="flex items-center gap-2">
-                            <div className="[&_button]:bg-slate-100 [&_button]:dark:bg-slate-800 [&_button]:text-slate-600 [&_button]:dark:text-slate-300">
+                            <div className="flex items-center gap-1.5 [&_button]:bg-slate-100 [&_button]:dark:bg-slate-800 [&_button]:text-slate-600 [&_button]:dark:text-slate-300">
+                                <ActiveVisitorsBell />
                                 <AdminActivityBell />
                             </div>
                             <button

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     BarChart3, Users, Clock, MessageCircle, Eye, FileText,
     Briefcase, BrainCircuit, MapPin, Activity, CalendarDays,
     Smartphone, Monitor, Tablet, Globe, ArrowUpRight, TrendingUp,
-    Share2, Radio, RefreshCw
+    Share2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -95,46 +95,6 @@ const deviceIcon: Record<string, React.ElementType> = {
     'mobile': Smartphone, 'tablet': Tablet, 'desktop': Monitor,
 };
 
-/** Format time ago in Arabic */
-function timeAgo(dateStr: string): string {
-    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (diff < 60) return 'الآن';
-    const m = Math.floor(diff / 60);
-    if (m === 1) return 'منذ دقيقة';
-    if (m === 2) return 'منذ دقيقتين';
-    if (m <= 10) return `منذ ${m} دقائق`;
-    return `منذ ${m} دقيقة`;
-}
-
-/** Extract referrer source name */
-function referrerSource(ref: string | null): string {
-    if (!ref) return 'direct';
-    const r = ref.toLowerCase();
-    if (r.includes('google')) return 'google';
-    if (r.includes('facebook') || r.includes('fb.')) return 'facebook';
-    if (r.includes('instagram')) return 'instagram';
-    if (r.includes('twitter') || r.includes('t.co')) return 'twitter';
-    if (r.includes('whatsapp')) return 'whatsapp';
-    if (r.includes('telegram') || r.includes('t.me')) return 'telegram';
-    if (r.includes('youtube')) return 'youtube';
-    if (r.includes('tiktok')) return 'tiktok';
-    if (r.includes('bing')) return 'bing';
-    return 'other';
-}
-
-interface ActiveVisitor {
-    visitor_id: string;
-    page_path: string;
-    ip_country: string | null;
-    ip_city: string | null;
-    device: string | null;
-    browser: string | null;
-    os: string | null;
-    referrer: string | null;
-    last_seen: string;
-    page_views: number;
-}
-
 export function AnalyticsDashboard() {
     const [stats, setStats] = useState<any>(null);
     const [topPages, setTopPages] = useState<any[]>([]);
@@ -143,26 +103,8 @@ export function AnalyticsDashboard() {
     const [cityStats, setCityStats] = useState<any[]>([]);
     const [referrerStats, setReferrerStats] = useState<any[]>([]);
     const [browserStats, setBrowserStats] = useState<any[]>([]);
-    const [activeVisitors, setActiveVisitors] = useState<ActiveVisitor[]>([]);
-    const [visitorsLoading, setVisitorsLoading] = useState(false);
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const [loading, setLoading] = useState(true);
     const [rpcError, setRpcError] = useState(false);
-
-    const fetchActiveVisitors = useCallback(async () => {
-        if (!supabase) return;
-        setVisitorsLoading(true);
-        const { data } = await supabase.rpc('get_active_visitors');
-        if (data) setActiveVisitors(data);
-        setVisitorsLoading(false);
-    }, []);
-
-    // Auto-refresh active visitors every 30 seconds
-    useEffect(() => {
-        fetchActiveVisitors();
-        intervalRef.current = setInterval(fetchActiveVisitors, 30000);
-        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }, [fetchActiveVisitors]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -303,103 +245,6 @@ export function AnalyticsDashboard() {
                         }
                     </div>
                 </div>
-            </div>
-
-            {/* ── 1.5 Active Visitors Detail ─────────────────────── */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
-                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <Radio className="text-emerald-500" size={18} />
-                        الزوار النشطون الآن
-                        <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-black px-2 py-0.5 rounded-full">
-                            {activeVisitors.length}
-                        </span>
-                    </h3>
-                    <button
-                        onClick={fetchActiveVisitors}
-                        disabled={visitorsLoading}
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-                        title="تحديث"
-                    >
-                        <RefreshCw size={14} className={visitorsLoading ? 'animate-spin' : ''} />
-                    </button>
-                </div>
-
-                {activeVisitors.length > 0 ? (
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {activeVisitors.map((v) => {
-                            const DevIcon = deviceIcon[v.device || ''] || Globe;
-                            const src = referrerSource(v.referrer);
-                            return (
-                                <div key={v.visitor_id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-start gap-3">
-                                        {/* Device Icon */}
-                                        <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
-                                            <DevIcon size={16} className="text-slate-500" />
-                                        </div>
-
-                                        {/* Main Info */}
-                                        <div className="flex-1 min-w-0">
-                                            {/* Current Page */}
-                                            <div className="text-sm font-bold text-slate-800 dark:text-white truncate" title={v.page_path}>
-                                                {pageLabel(v.page_path)}
-                                            </div>
-
-                                            {/* Location + Device + Browser */}
-                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-slate-500">
-                                                {(v.ip_city || v.ip_country) && (
-                                                    <span className="flex items-center gap-1">
-                                                        <span>{countryFlag[v.ip_country || ''] || '🌍'}</span>
-                                                        {v.ip_city && <span>{v.ip_city}</span>}
-                                                        {v.ip_city && v.ip_country && <span className="text-slate-300 dark:text-slate-600">·</span>}
-                                                        {v.ip_country && <span>{countryArabic[v.ip_country] || v.ip_country}</span>}
-                                                    </span>
-                                                )}
-                                                {v.browser && (
-                                                    <span className="text-slate-400">{v.browser}</span>
-                                                )}
-                                                {v.os && (
-                                                    <span className="text-slate-400">{v.os}</span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Right: Time + Source + Pages */}
-                                        <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                {timeAgo(v.last_seen)}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-bold">
-                                                    {sourceIcon[src] || '🔗'} {sourceLabel[src] || src}
-                                                </span>
-                                                {Number(v.page_views) > 1 && (
-                                                    <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-bold">
-                                                        {v.page_views} صفحات
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="p-8 text-center text-slate-400">
-                        <Users size={32} className="mx-auto mb-3 opacity-20" />
-                        <p className="text-sm font-bold">لا يوجد زوار نشطون حالياً</p>
-                        <p className="text-xs mt-1">يتحدث تلقائياً كل 30 ثانية</p>
-                    </div>
-                )}
-
-                {activeVisitors.length > 0 && (
-                    <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/30 text-[10px] text-slate-400 flex items-center justify-between">
-                        <span>يتحدث تلقائياً كل 30 ثانية</span>
-                        <span>{deviceArabic[activeVisitors.filter(v => v.device === 'mobile').length > activeVisitors.length / 2 ? 'mobile' : 'desktop']} هو الأكثر</span>
-                    </div>
-                )}
             </div>
 
             {/* ── 2. Period Overview ─────────────────────────────── */}
