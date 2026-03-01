@@ -70,7 +70,7 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                     user_name,
                     rating: rate,
                     content,
-                    is_published: false
+                    is_published: true
                 }
             ]);
 
@@ -79,10 +79,10 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
             setError('حدث خطأ أثناء الإرسال. تأكد من اتصالك بالإنترنت.');
             // Ideally revert optimistic update, but keeping it simple
         } else {
-            // Success — comment is pending moderation
+            // Success — comment published immediately (profanity filter already applied)
             formRef.current?.reset();
             setRating(0);
-            setSuccessMsg('تم إرسال تعليقك بنجاح! سيظهر بعد مراجعة الإدارة.');
+            setSuccessMsg('تم إرسال تعليقك بنجاح!');
         }
 
         setIsSubmitting(false);
