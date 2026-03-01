@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useOptimistic, useRef } from 'react';
-import { useFormStatus } from 'react-dom'; // keeping for legacy structure or just remove
+import { useState, useRef } from 'react';
 import { Star, User, Send, Loader2, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -24,17 +23,13 @@ type Props = {
 export default function CommentsClient({ pageSlug, initialComments }: Props) {
     const [rating, setRating] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
 
-    // Optimistic UI State
-    const [optimisticComments, addOptimisticComment] = useOptimistic(
-        initialComments,
-        (state, newComment: Comment) => [newComment, ...state]
-    );
-
     async function handleAction(formData: FormData) {
         setError(null);
+        setSuccessMsg(null);
         setIsSubmitting(true);
 
         const content = formData.get('content') as string;
@@ -60,16 +55,6 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
             return;
         }
 
-        // 3. Optimistic Add
-        const newCommentFn = {
-            id: Math.random().toString(), // Temp ID
-            user_name,
-            rating: rate,
-            content,
-            created_at: new Date().toISOString(),
-        };
-        addOptimisticComment(newCommentFn);
-
         if (!supabase) {
             setError('خطأ في الاتصال بقاعدة البيانات.');
             setIsSubmitting(false);
@@ -85,7 +70,7 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                     user_name,
                     rating: rate,
                     content,
-                    is_published: true
+                    is_published: false
                 }
             ]);
 
@@ -94,17 +79,18 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
             setError('حدث خطأ أثناء الإرسال. تأكد من اتصالك بالإنترنت.');
             // Ideally revert optimistic update, but keeping it simple
         } else {
-            // Success
+            // Success — comment is pending moderation
             formRef.current?.reset();
             setRating(0);
+            setSuccessMsg('تم إرسال تعليقك بنجاح! سيظهر بعد مراجعة الإدارة.');
         }
 
         setIsSubmitting(false);
     }
 
     // Calculate Average
-    const totalRating = optimisticComments.reduce((acc, curr) => acc + (curr.rating || 0), 0);
-    const avgRating = optimisticComments.length ? (totalRating / optimisticComments.length).toFixed(1) : '0.0';
+    const totalRating = initialComments.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+    const avgRating = initialComments.length ? (totalRating / initialComments.length).toFixed(1) : '0.0';
 
     return (
         <div className="space-y-10">
@@ -122,7 +108,7 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                     <span className="text-3xl font-black text-amber-500">{avgRating}</span>
                     <span className="text-slate-400 font-bold text-sm">/ 5</span>
                     <span className="w-px h-4 bg-slate-200 mx-2"></span>
-                    <span className="text-xs text-slate-500 font-bold">{optimisticComments.length} تقييم</span>
+                    <span className="text-xs text-slate-500 font-bold">{initialComments.length} تقييم</span>
                 </div>
             </div>
 
@@ -191,16 +177,21 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                         <AlertCircle size={14} /> {error}
                     </div>
                 )}
+                {successMsg && (
+                    <div className="mt-3 text-emerald-600 text-xs font-bold flex items-center gap-1">
+                        ✓ {successMsg}
+                    </div>
+                )}
             </form>
 
             {/* 📜 List - Clean Social Style */}
             <div className="space-y-6">
-                {optimisticComments.length === 0 ? (
+                {initialComments.length === 0 ? (
                     <div className="text-center py-12 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50">
                         <p className="text-slate-400 font-medium">كن أول من يشارك تجربته هنا</p>
                     </div>
                 ) : (
-                    optimisticComments.map((comment) => (
+                    initialComments.map((comment) => (
                         <div key={comment.id} className="group flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {/* Avatar */}
                             <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-200 font-bold shrink-0 text-sm shadow-sm mt-1">

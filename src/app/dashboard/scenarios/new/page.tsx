@@ -57,6 +57,7 @@ export default function AddScenarioPage() {
                     details: formData.details,
                     image: '',
                     status: 'pending',
+                    is_active: false,
                     last_update: new Date().toISOString(),
                 }]);
 

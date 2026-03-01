@@ -72,9 +72,10 @@ export default function AddArticlePage() {
                         title: formData.title,
                         category: formData.category,
                         intro: formData.intro,
-                        details: formData.details, // This is the full content
+                        details: formData.details,
                         image: formData.image,
                         status: 'pending',
+                        is_active: false,
                         last_update: new Date().toISOString(),
                     }
                 ]);

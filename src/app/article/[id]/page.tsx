@@ -38,6 +38,11 @@ async function fetchArticleData(slug: string) {
         .maybeSingle());
     }
 
+    // Block pending/inactive articles from public view
+    if (data && (data.status === 'pending' || data.is_active === false)) {
+      return null;
+    }
+
     if (data) {
       return {
         title: data.title,

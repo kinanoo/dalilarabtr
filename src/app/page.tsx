@@ -84,6 +84,7 @@ async function getUpdates() {
         .from('articles')
         .select('id, title, category, slug, created_at, image')
         .eq('is_active', true)
+        .neq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(10),
       supabase

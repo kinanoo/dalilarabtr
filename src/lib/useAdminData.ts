@@ -56,12 +56,18 @@ export function useAdminCodes() {
 // import { STATIC_ARTICLES } from '@/lib/staticArticles'; // REMOVED
 
 export function useAdminArticles() {
-  // Static Fallback + DB
+  // Static Fallback + DB — only show approved/active articles on public pages
   const { data: articles, loading } = useResource<AdminArticle>(
     'articles',
     'articles',
     [], // No static fallback
-    standardMerger
+    (statics, remotes) => {
+      // Filter out pending/inactive articles for public display
+      const approved = remotes.filter((a: any) =>
+        a.status !== 'pending' && a.is_active !== false
+      );
+      return standardMerger(statics, approved);
+    }
   );
 
   const articlesMap = useMemo(() => {
