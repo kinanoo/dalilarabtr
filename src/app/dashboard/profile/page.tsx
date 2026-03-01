@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { useState, useEffect } from 'react';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { ArrowRight, Save, Loader2, Mail, Calendar, Shield, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -27,10 +27,7 @@ export default function ProfilePage() {
     const [role, setRole] = useState('member');
     const router = useRouter();
 
-    const supabase = useMemo(() => createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    ), []);
+    const supabase = getAuthClient();
 
     useEffect(() => {
         loadProfile();
@@ -45,6 +42,7 @@ export default function ProfilePage() {
             return;
         }
 
+        if (!supabase) { router.push('/login'); return; }
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { router.push('/login'); return; }
 

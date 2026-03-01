@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { Loader2, ShieldCheck, AlertCircle, LogIn, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -23,10 +23,7 @@ export default function LoginPage() {
         } catch {}
     }, []);
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = getAuthClient();
 
     const handleGoogleLogin = () => {
         window.location.href = '/api/auth/google?next=/dashboard';
@@ -34,6 +31,7 @@ export default function LoginPage() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!supabase) { setError('خطأ في الاتصال'); return; }
         setLoading(true);
         setError('');
 

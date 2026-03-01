@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { useState, useEffect } from 'react';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -52,10 +52,7 @@ export default function ActivityPage() {
     const { bookmarks, isLoaded: bookmarksLoaded } = useBookmarks();
     const router = useRouter();
 
-    const supabase = useMemo(() => createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    ), []);
+    const supabase = getAuthClient();
 
     useEffect(() => {
         loadData();
@@ -71,6 +68,7 @@ export default function ActivityPage() {
     }, [bookmarks, bookmarksLoaded]);
 
     const loadData = async () => {
+        if (!supabase) { router.push('/login'); return; }
         // Dev bypass
         if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
             setLoading(false);
@@ -97,6 +95,7 @@ export default function ActivityPage() {
     };
 
     const loadBookmarkedArticles = async () => {
+        if (!supabase) return;
         const { data } = await supabase
             .from('articles')
             .select('id, title, category, created_at')

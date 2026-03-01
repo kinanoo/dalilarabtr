@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, X, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 import {
     getAllNotifications,
     markAsRead,
@@ -48,11 +48,8 @@ export default function NotificationBell() {
 
     // Resolve auth user ID on mount and cache it for getUserIdentifier()
     useEffect(() => {
-        const sb = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        sb.auth.getUser().then(({ data }) => {
+        if (!supabase) return;
+        supabase.auth.getUser().then(({ data }) => {
             if (data.user) {
                 sessionStorage.setItem('notification_auth_id', data.user.id);
             } else {

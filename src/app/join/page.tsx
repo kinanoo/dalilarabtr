@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { Loader2, UserPlus, Mail, Lock, User, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,10 +15,7 @@ export default function JoinPage() {
     const [success, setSuccess] = useState(false);
     const router = useRouter();
 
-    const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = getAuthClient();
 
     const handleGoogleLogin = () => {
         window.location.href = '/api/auth/google?next=/dashboard';
@@ -26,6 +23,7 @@ export default function JoinPage() {
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!supabase) return;
         setLoading(true);
 
         // 1. Sign Up

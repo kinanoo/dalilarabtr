@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { useState, useEffect } from 'react';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { Loader2, LogOut, User, Home, UserCircle, Activity } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -21,13 +21,11 @@ export default function DashboardLayoutClient({
     const router = useRouter();
     const pathname = usePathname();
 
-    const supabase = useMemo(() => createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    ), []);
+    const supabase = getAuthClient();
 
     useEffect(() => {
         const checkUser = async () => {
+            if (!supabase) { router.push('/login'); return; }
             // Development Member Bypass Check
             if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
                 setProfile({ full_name: 'عضو تجريبي', role: 'member' });
@@ -55,6 +53,7 @@ export default function DashboardLayoutClient({
     }, [router]);
 
     const handleLogout = async () => {
+        if (!supabase) return;
         await supabase.auth.signOut();
         router.push('/login');
     };

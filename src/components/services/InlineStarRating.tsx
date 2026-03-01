@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Star, Send, LogIn, X, CheckCircle2, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 import { addReview, hasUserReviewed, getUserReview, updateReview, deleteReview } from '@/lib/api/reviews';
 import { postComment } from '@/lib/api/comments';
 import { createNotification } from '@/lib/api/notifications';
@@ -48,10 +48,8 @@ export default function InlineStarRating({
 
     // Auth check + fetch existing review
     useEffect(() => {
-        const sb = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        if (!supabase) return;
+        const sb = supabase;
         sb.auth.getUser().then(async ({ data }) => {
             const user = data.user;
             setIsGuest(!user);

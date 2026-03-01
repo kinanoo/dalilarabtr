@@ -5,7 +5,7 @@ import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply
 import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, type Comment } from '@/lib/api/comments';
 import { createNotification } from '@/lib/api/notifications';
 import { toast } from 'sonner';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 
 interface UniversalCommentsProps {
     entityType: 'article' | 'service' | 'update' | 'scenario' | 'zone';
@@ -367,10 +367,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     }, [entityId]);
 
     const resolveUserName = async () => {
-        const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        if (!supabase) return;
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {

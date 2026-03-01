@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import { UserPlus, Briefcase, MessageSquare, Star, ArrowLeft } from 'lucide-react';
 
@@ -10,10 +10,7 @@ export default function AddServiceBanner() {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        if (!supabase) return;
         supabase.auth.getUser().then(({ data }) => {
             setIsGuest(!data.user);
             setReady(true);

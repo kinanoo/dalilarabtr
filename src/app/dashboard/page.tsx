@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { useState, useEffect } from 'react';
+import { getAuthClient } from '@/lib/supabaseClient';
 import { Loader2, Briefcase, FileText, BrainCircuit, UserCircle, Activity, Star, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,17 +18,14 @@ export default function DashboardPage() {
     const [stats, setStats] = useState({ reviews_count: 0, comments_count: 0, services_count: 0, articles_count: 0 });
     const router = useRouter();
 
-    // useMemo ensures a single client instance across re-renders (prevents Multiple GoTrueClient warning)
-    const supabase = useMemo(() => createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    ), []);
+    const supabase = getAuthClient();
 
     useEffect(() => {
         checkUser();
     }, []);
 
     const checkUser = async () => {
+        if (!supabase) { router.push('/login'); return; }
         // Development Member Bypass Check
         if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
             setProfile({ full_name: 'عضو تجريبي', role: 'member' });

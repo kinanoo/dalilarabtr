@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Star, ThumbsUp, MessageCircle, CheckCircle2, Flag, AlertTriangle, LogIn, X } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import { createBrowserClient } from '@supabase/ssr';
 import { hasUserReviewed, reportReview } from '@/lib/api/reviews';
 import AddReviewModal from '@/components/reviews/AddReviewModal';
 
@@ -53,11 +52,8 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
 
     // Auth check + has-reviewed check
     useEffect(() => {
-        const sb = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        sb.auth.getUser().then(async ({ data }) => {
+        if (!supabase) return;
+        supabase.auth.getUser().then(async ({ data }) => {
             const user = data.user;
             setIsGuest(!user);
             if (user) {

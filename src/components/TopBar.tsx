@@ -72,7 +72,7 @@ export default function TopBar() {
                 <div className="flex items-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-1.5 text-slate-300">
                         <Calendar size={12} className="text-emerald-400" />
-                        <span>{hijriDate || '...'}</span>
+                        <span suppressHydrationWarning>{hijriDate || '...'}</span>
                     </div>
                 </div>
 
@@ -87,7 +87,7 @@ export default function TopBar() {
                         onMouseLeave={() => setShowSchedule(false)}
                         onClick={() => setShowSchedule(!showSchedule)}
                     >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" suppressHydrationWarning>
                             <span className="text-slate-400 hidden sm:inline">صلاة:</span>
                             {nextPrayer ? (
                                 <div className="flex items-center gap-1.5 animate-pulse group-hover:animate-none">

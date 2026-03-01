@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Star, LogIn, X, Bookmark } from 'lucide-react';
 import { useBookmarks } from '@/hooks/useBookmarks';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 
 interface BookmarkButtonProps {
@@ -21,10 +21,7 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
     const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
-        const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
+        if (!supabase) return;
         supabase.auth.getUser().then(({ data }) => {
             setIsGuest(!data.user);
         });
