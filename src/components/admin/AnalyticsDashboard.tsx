@@ -6,7 +6,7 @@ import {
     BarChart3, Users, Clock, MessageCircle, Eye, FileText,
     Briefcase, BrainCircuit, MapPin, Activity, CalendarDays,
     Smartphone, Monitor, Tablet, Globe, ArrowUpRight, TrendingUp,
-    Share2,
+    Share2, ArrowUp, ArrowDown, Minus, Zap, Timer,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -103,6 +103,9 @@ export function AnalyticsDashboard() {
     const [cityStats, setCityStats] = useState<any[]>([]);
     const [referrerStats, setReferrerStats] = useState<any[]>([]);
     const [browserStats, setBrowserStats] = useState<any[]>([]);
+    const [comparison, setComparison] = useState<any>(null);
+    const [spikeMetrics, setSpikeMetrics] = useState<any>(null);
+    const [contentPerf, setContentPerf] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [rpcError, setRpcError] = useState(false);
 
@@ -129,12 +132,20 @@ export function AnalyticsDashboard() {
                     const { data, error } = await supabase.rpc(name);
                     return error ? [] : (data || []);
                 };
-                const [devRes, countRes, cityRes, refRes, browRes] = await Promise.all([
+                const safeRpcJson = async (name: string) => {
+                    if (!supabase) return null;
+                    const { data, error } = await supabase.rpc(name);
+                    return error ? null : data;
+                };
+                const [devRes, countRes, cityRes, refRes, browRes, compRes, spikeRes, perfRes] = await Promise.all([
                     safeRpc('get_device_stats'),
                     safeRpc('get_country_stats'),
                     safeRpc('get_city_stats'),
                     safeRpc('get_referrer_stats'),
                     safeRpc('get_browser_stats'),
+                    safeRpcJson('get_period_comparison'),
+                    safeRpcJson('get_spike_metrics'),
+                    safeRpc('get_content_performance'),
                 ]);
 
                 // Override content counts with direct queries (more accurate)
@@ -170,6 +181,9 @@ export function AnalyticsDashboard() {
                 setCityStats(cityRes);
                 setReferrerStats(refRes);
                 setBrowserStats(browRes);
+                setComparison(compRes);
+                setSpikeMetrics(spikeRes);
+                setContentPerf(perfRes);
             } catch {
                 setRpcError(true);
             } finally {
@@ -194,6 +208,27 @@ export function AnalyticsDashboard() {
 
     return (
         <div className="space-y-8">
+            {/* ── 0. Spike Alert Banner ────────────────────────────── */}
+            {spikeMetrics?.is_spiking && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-l from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-400/30 dark:border-amber-600/30 rounded-2xl p-4 flex items-center gap-4"
+                >
+                    <div className="p-2.5 bg-amber-100 dark:bg-amber-900/40 rounded-xl shrink-0">
+                        <Zap size={22} className="text-amber-600 dark:text-amber-400 animate-pulse" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-slate-800 dark:text-white text-sm">
+                            ارتفاع مفاجئ في الزيارات!
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            الزوار النشطون الآن ({spikeMetrics.active_now}) أعلى بـ <span className="font-bold text-amber-600 dark:text-amber-400">{spikeMetrics.spike_pct}٪</span> من المعتاد (متوسط الساعة: {spikeMetrics.avg_hourly_30d})
+                        </p>
+                    </div>
+                </motion.div>
+            )}
+
             {/* ── 1. Live Traffic Cards ─────────────────────────────── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-xl col-span-2 sm:col-span-1">
@@ -249,8 +284,23 @@ export function AnalyticsDashboard() {
 
             {/* ── 2. Period Overview ─────────────────────────────── */}
             <div className="grid grid-cols-3 gap-4">
-                <PeriodCard label="هذا الأسبوع" count={stats.week_visitors ?? 0} icon={TrendingUp} color="blue" />
-                <PeriodCard label="هذا الشهر" count={stats.month_visitors ?? 0} icon={CalendarDays} color="violet" />
+                <PeriodCard
+                    label="هذا الأسبوع"
+                    count={stats.week_visitors ?? 0}
+                    icon={TrendingUp}
+                    color="blue"
+                    change={comparison?.visitors_change_pct}
+                    prevLabel={comparison ? `الأسبوع الماضي: ${comparison.last_week_visitors?.toLocaleString('ar')}` : undefined}
+                />
+                <PeriodCard
+                    label="مشاهدات الأسبوع"
+                    count={comparison?.this_week_views ?? stats.month_visitors ?? 0}
+                    icon={Eye}
+                    color="violet"
+                    change={comparison?.views_change_pct}
+                    prevLabel={comparison ? `الأسبوع الماضي: ${comparison.last_week_views?.toLocaleString('ar')}` : undefined}
+                    unit="مشاهدة"
+                />
                 <PeriodCard label="الإجمالي" count={stats.total_visitors_all_time ?? 0} icon={Globe} color="emerald" />
             </div>
 
@@ -288,6 +338,56 @@ export function AnalyticsDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* ── 3.5. Content Performance ────────────────────────── */}
+            {contentPerf.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                        <BarChart3 className="text-violet-500" size={18} />
+                        أداء المحتوى
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">آخر 30 يوم</span>
+                    </h3>
+                    <div className="space-y-3">
+                        {contentPerf.map((art: any, idx: number) => (
+                            <div key={art.article_id || idx} className="flex items-center gap-3 group">
+                                <span className="font-mono text-xs font-bold text-slate-400 w-5 shrink-0">#{idx + 1}</span>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate" title={art.title}>
+                                        {art.title}
+                                    </div>
+                                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
+                                        <div
+                                            style={{ width: `${(Number(art.page_views) / Number(contentPerf[0]?.page_views || 1)) * 100}%` }}
+                                            className="h-full bg-violet-500 rounded-full transition-all duration-700"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1.5 text-[10px] text-slate-400">
+                                        <span className="flex items-center gap-1">
+                                            <Eye size={10} />
+                                            {Number(art.page_views).toLocaleString('ar')} مشاهدة
+                                        </span>
+                                        {Number(art.avg_duration) > 0 && (
+                                            <span className="flex items-center gap-1">
+                                                <Timer size={10} />
+                                                {formatDuration(Number(art.avg_duration))}
+                                            </span>
+                                        )}
+                                        {Number(art.comment_count) > 0 && (
+                                            <span className="flex items-center gap-1">
+                                                <MessageCircle size={10} />
+                                                {art.comment_count} تعليق
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                <span className="text-xs font-bold text-slate-500 whitespace-nowrap shrink-0">
+                                    {Number(art.page_views).toLocaleString('ar')}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* ── 4. Devices + Countries + Sources ────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -450,19 +550,35 @@ const STAT_COLORS: Record<string, { bg: string; darkBg: string; text: string; da
     red:     { bg: 'bg-red-100',     darkBg: 'dark:bg-red-900/30',     text: 'text-red-600',     darkText: 'dark:text-red-400' },
 };
 
-function PeriodCard({ label, count, icon: Icon, color }: {
+function PeriodCard({ label, count, icon: Icon, color, change, prevLabel, unit }: {
     label: string; count: number; icon: React.ElementType; color: string;
+    change?: number | null; prevLabel?: string; unit?: string;
 }) {
     const c = STAT_COLORS[color] || STAT_COLORS.blue;
+    const hasChange = change != null && change !== 0;
+    const isUp = (change ?? 0) > 0;
+    const ChangeIcon = hasChange ? (isUp ? ArrowUp : ArrowDown) : Minus;
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-3">
             <div className={`p-2.5 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText}`}>
                 <Icon size={20} />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">{label}</p>
-                <p className="text-xl font-black text-slate-800 dark:text-white">{count.toLocaleString('ar')}</p>
-                <p className="text-[10px] text-slate-400">زائر فريد</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-xl font-black text-slate-800 dark:text-white">{count.toLocaleString('ar')}</p>
+                    {hasChange && (
+                        <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                            isUp
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                        }`}>
+                            <ChangeIcon size={10} />
+                            {Math.abs(change!)}٪
+                        </span>
+                    )}
+                </div>
+                <p className="text-[10px] text-slate-400 truncate">{prevLabel || unit || 'زائر فريد'}</p>
             </div>
         </div>
     );
