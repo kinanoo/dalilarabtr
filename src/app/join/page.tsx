@@ -20,13 +20,8 @@ export default function JoinPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const handleGoogleLogin = async () => {
-        await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
-            },
-        });
+    const handleGoogleLogin = () => {
+        window.location.href = '/api/auth/google?next=/dashboard';
     };
 
     const handleRegister = async (e: React.FormEvent) => {
