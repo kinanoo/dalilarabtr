@@ -285,12 +285,15 @@ BEGIN
   IF NOT _table_exists('notifications') THEN RETURN; END IF;
   PERFORM _secure_table('notifications');
 
-  CREATE POLICY "user_read_own_notifications" ON notifications
-    FOR SELECT TO authenticated USING (user_id = auth.uid());
+  -- Public reads active notifications (app filters by target_user_id + expires_at)
+  CREATE POLICY "public_read_notifications" ON notifications
+    FOR SELECT USING (is_active = true);
 
+  -- System/admin can insert notifications
   CREATE POLICY "allow_insert_notifications" ON notifications
     FOR INSERT WITH CHECK (true);
 
+  -- Admin can manage all (update is_active, delete, etc.)
   CREATE POLICY "admin_all_notifications" ON notifications
     FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
 END $$;
