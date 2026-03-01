@@ -162,11 +162,11 @@ export default function KimlikCheckPage() {
 
                             {/* Result explanation */}
                             <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                                <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">النتيجة:</h4>
-                                <ul className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
+                                <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-3">النتيجة:</h4>
+                                <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
                                     <li className="flex items-start gap-2">
                                         <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
-                                        <span>إذا ظهرت رسالة <strong className="text-green-700 dark:text-green-400">Doğrulama Başarılı</strong> = القيد فعّال ومسجّل</span>
+                                        <span>إذا ظهرت <strong>بياناتك أسفل حقول الإدخال</strong> = القيد <strong className="text-green-700 dark:text-green-400">فعّال وشغّال</strong></span>
                                     </li>
                                     <li className="flex items-start gap-2">
                                         <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
