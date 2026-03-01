@@ -111,7 +111,7 @@ export default function CategoryArticlesList({
                 href={`/article/${article.slug}`}
                 className="group bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden"
               >
-                {article.image && (
+                {article.image && article.image.startsWith('http') && (
                   <div className="relative w-full h-40 overflow-hidden">
                     <Image
                       src={article.image}
@@ -119,6 +119,9 @@ export default function CategoryArticlesList({
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      onError={(e) => {
+                        (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                      }}
                     />
                   </div>
                 )}

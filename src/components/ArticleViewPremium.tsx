@@ -159,7 +159,7 @@ export default function ArticleView({ article, slug, initialComments, children }
 
 
             {/* Featured Image */}
-            {article.image && (
+            {article.image && article.image.startsWith('http') && (
               <div className="relative w-full h-48 sm:h-64 lg:h-80">
                 <Image
                   src={article.image}
@@ -168,6 +168,9 @@ export default function ArticleView({ article, slug, initialComments, children }
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
                   priority
+                  onError={(e) => {
+                    (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                  }}
                 />
               </div>
             )}
