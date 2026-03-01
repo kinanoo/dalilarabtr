@@ -1,78 +1,48 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
     ShieldAlert, ShieldCheck, CheckCircle2, AlertTriangle,
-    ExternalLink, Info, Copy, ArrowRight, UserCheck, AlertCircle
+    ExternalLink, Copy, ArrowRight, UserCheck, Hash, ArrowDown
 } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-    title: 'فاحص الكملك التركي 2026 | التأكد من صلاحية القيد (TC)',
-    description: 'أداة مجانية للتحقق من صحة رقم الكملك (TC) وخوارزميته، مع رابط مباشر لبوابة النفوس التركية للتأكد من صلاحية القيد وتفعيله.',
-    keywords: 'فحص الكملك, رابط الكملك, التي جي, TC Kimlik, نفوس, دائرة الهجرة, صلاحية الكملك',
-};
-
 export default function KimlikCheckPage() {
     const [tcNumber, setTcNumber] = useState('');
     const [result, setResult] = useState<'valid' | 'invalid' | null>(null);
-    const [iframeError, setIframeError] = useState(false);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
 
-    // خوارزمية التحقق من صحة رقم الكملك (TC Algorithm)
     const validateTC = (value: string) => {
-        if (!value) {
-            setResult(null);
-            return;
-        }
-
-        if (value.length !== 11 || isNaN(Number(value))) {
-            setResult('invalid');
-            return;
-        }
-
-        if (value[0] === '0') {
-            setResult('invalid');
-            return;
-        }
+        if (!value) { setResult(null); return; }
+        if (value.length !== 11 || isNaN(Number(value))) { setResult('invalid'); return; }
+        if (value[0] === '0') { setResult('invalid'); return; }
 
         const digits = value.split('').map(Number);
         const d10 = ((digits[0] + digits[2] + digits[4] + digits[6] + digits[8]) * 7 -
             (digits[1] + digits[3] + digits[5] + digits[7])) % 10;
         const d11 = (digits.slice(0, 10).reduce((a, b) => a + b, 0)) % 10;
 
-        if (digits[9] === d10 && digits[10] === d11) {
-            setResult('valid');
-        } else {
-            setResult('invalid');
-        }
+        setResult(digits[9] === d10 && digits[10] === d11 ? 'valid' : 'invalid');
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
+        const val = e.target.value.replace(/\D/g, '');
         if (val.length <= 11) {
             setTcNumber(val);
-            if (val.length === 11) {
-                validateTC(val);
-            } else {
-                setResult(null);
-            }
+            if (val.length === 11) validateTC(val);
+            else setResult(null);
         }
     };
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(tcNumber);
-        alert('تم نسخ الرقم: ' + tcNumber);
     };
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo flex flex-col">
 
-            {/* Hero Section - Matching Main Site Theme */}
+            {/* Hero */}
             <section className="relative bg-primary-900 dark:bg-primary-950 text-white pt-24 pb-16 px-4 overflow-hidden rounded-b-[60px] shadow-lg">
                 <div className="absolute inset-0 opacity-10" />
                 <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -80,23 +50,189 @@ export default function KimlikCheckPage() {
                         <UserCheck className="w-8 h-8 text-emerald-400" />
                     </div>
                     <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
-                        فاحص الكملك <span className="text-emerald-400">(TURKISH ID)</span>
+                        فاحص الكملك التركي
                     </h1>
                     <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                        تحقق من صحة بنية الرقم (Algorithm) وانتقل للرابط الرسمي لمعرفة حالة القيد.
+                        دليل مصوّر لفحص صلاحية الكملك عبر موقع النفوس الرسمي، مع أداة التحقق من صحة الرقم.
                     </p>
                 </div>
             </section>
 
             <main className="flex-grow pt-10 pb-16 px-4 -mt-10 relative z-20">
-                <div className="container mx-auto max-w-3xl">
+                <div className="container mx-auto max-w-3xl space-y-6">
 
-                    {/* Main Card */}
+                    {/* ========================================= */}
+                    {/* Section 1: Visual Guide — NVI Form Fields */}
+                    {/* ========================================= */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+
+                        {/* Header */}
+                        <div className="px-6 py-5 bg-gradient-to-l from-blue-900 to-blue-950 text-white">
+                            <div className="flex items-center gap-2 text-sm text-blue-200 mb-1">
+                                <ShieldCheck size={16} />
+                                <span>T.C. Nüfus ve Vatandaşlık İşleri Genel Müdürlüğü</span>
+                            </div>
+                            <h2 className="text-lg font-bold">
+                                Yabancı/Mavi Kartlı Kimlik No Doğrulama
+                            </h2>
+                        </div>
+
+                        {/* Visual Form Recreation with Arabic Annotations */}
+                        <div className="p-6 md:p-8">
+                            <p className="text-sm text-emerald-700 dark:text-emerald-400 font-bold mb-6 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl text-center">
+                                هذه صورة توضيحية لنموذج الفحص في موقع النفوس الرسمي — اتبع الخطوات أدناه
+                            </p>
+
+                            <div className="space-y-4">
+                                {/* Field 1 */}
+                                <FormFieldGuide
+                                    label="Yabancı/Mavi Kartlı Kimlik No"
+                                    arabic="رقم الكملك (11 خانة تبدأ بـ 99)"
+                                    placeholder="99xxxxxxxxx"
+                                    step={1}
+                                />
+
+                                {/* Field 2 */}
+                                <FormFieldGuide
+                                    label="Ad"
+                                    arabic="الاسم الأول (كما في الكملك بالتركية)"
+                                    placeholder="AHMAD"
+                                    step={2}
+                                />
+
+                                {/* Field 3 */}
+                                <FormFieldGuide
+                                    label="Soyad"
+                                    arabic="الكنية / اسم العائلة"
+                                    placeholder="MOHAMMAD"
+                                    step={3}
+                                />
+
+                                {/* Field 4 */}
+                                <FormFieldGuide
+                                    label="Doğum Gün"
+                                    arabic="يوم الميلاد (رقم)"
+                                    placeholder="15"
+                                    step={4}
+                                />
+
+                                {/* Field 5 */}
+                                <FormFieldGuide
+                                    label="Doğum Ay"
+                                    arabic="شهر الميلاد (رقم)"
+                                    placeholder="03"
+                                    step={5}
+                                />
+
+                                {/* Field 6 */}
+                                <FormFieldGuide
+                                    label="Doğum Yılı"
+                                    arabic="سنة الميلاد"
+                                    placeholder="1990"
+                                    step={6}
+                                />
+
+                                {/* reCAPTCHA */}
+                                <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3">
+                                        <div className="w-5 h-5 border-2 border-slate-400 rounded" />
+                                        <span className="text-sm text-slate-700 dark:text-slate-300">Ben robot değilim</span>
+                                    </div>
+                                    <div className="flex-1 text-right">
+                                        <span className="inline-flex items-center gap-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full">
+                                            <span className="text-base">7</span>
+                                            علّم على &quot;أنا لست روبوت&quot;
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Doğrula Button */}
+                                <div className="flex items-center gap-4 pt-2">
+                                    <div className="bg-blue-800 text-white px-6 py-2.5 rounded text-sm font-bold">
+                                        Doğrula
+                                    </div>
+                                    <div className="flex-1 text-right">
+                                        <span className="inline-flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-full">
+                                            <span className="text-base">8</span>
+                                            اضغط &quot;Doğrula&quot; للتحقق
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Result explanation */}
+                            <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                                <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">النتيجة:</h4>
+                                <ul className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                                        <span>إذا ظهرت رسالة <strong className="text-green-700 dark:text-green-400">Doğrulama Başarılı</strong> = القيد فعّال ومسجّل</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                                        <span>إذا ظهرت رسالة <strong className="text-red-600 dark:text-red-400">Kayıt Bulunamadı</strong> = القيد غير موجود أو مُبطل</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ========================================= */}
+                    {/* Section 2: CTA — Go to Official NVI Site  */}
+                    {/* ========================================= */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 text-center relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500" />
+
+                        <ArrowDown className="mx-auto w-6 h-6 text-emerald-500 mb-3 animate-bounce" />
+
+                        <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 mb-3">
+                            جاهز للفحص؟ انتقل للموقع الرسمي
+                        </h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                            اضغط الزر أدناه للانتقال مباشرة لصفحة فحص الكملك في موقع النفوس التركي الرسمي (NVI)
+                        </p>
+
+                        <a
+                            href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-3 w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold py-4 px-8 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 hover:scale-[1.02] hover:shadow-xl"
+                        >
+                            <span>فتح موقع النفوس الرسمي (NVI)</span>
+                            <ExternalLink className="w-5 h-5" />
+                        </a>
+
+                        <div className="mt-4 flex justify-center gap-4 text-xs text-slate-400 dark:text-slate-500">
+                            <span className="flex items-center gap-1">
+                                <ShieldCheck size={12} className="text-emerald-500" />
+                                موقع حكومي رسمي
+                            </span>
+                            <span>tckimlik.nvi.gov.tr</span>
+                        </div>
+                    </div>
+
+                    {/* ========================================= */}
+                    {/* Section 3: Algorithm Checker               */}
+                    {/* ========================================= */}
                     <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 overflow-hidden">
 
-                        <div className="mb-8">
-                            <label htmlFor="kimlik-number" className="block text-slate-700 dark:text-slate-300 font-bold mb-3 text-lg">
-                                أدخل رقم التي جي (99...) للتحقق:
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2.5 bg-violet-100 dark:bg-violet-900/30 rounded-xl">
+                                <Hash className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100">
+                                    فحص الخوارزمية (بدون إنترنت)
+                                </h2>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    تحقق سريع من بنية الرقم — لا يحتاج بيانات شخصية
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <label htmlFor="kimlik-number" className="block text-slate-700 dark:text-slate-300 font-bold mb-2 text-sm">
+                                أدخل رقم الكملك (11 خانة):
                             </label>
                             <div className="relative">
                                 <input
@@ -107,153 +243,91 @@ export default function KimlikCheckPage() {
                                     pattern="[0-9]{11}"
                                     autoComplete="off"
                                     aria-label="أدخل رقم الكملك المكون من 11 رقم"
-                                    aria-describedby="kimlik-hint"
                                     value={tcNumber}
                                     onChange={handleChange}
                                     placeholder="99XXXXXXXXX"
-                                    className="w-full px-6 py-5 text-2xl font-mono tracking-widest text-center border-2 border-slate-300 dark:border-slate-700 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none transition-all dark:bg-slate-950 dark:text-white placeholder:text-slate-400"
+                                    className="w-full px-6 py-4 text-2xl font-mono tracking-widest text-center border-2 border-slate-300 dark:border-slate-700 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none transition-all dark:bg-slate-950 dark:text-white placeholder:text-slate-400"
                                     maxLength={11}
                                 />
                                 {tcNumber && (
                                     <button
                                         onClick={copyToClipboard}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
                                         title="نسخ الرقم"
                                     >
                                         <Copy className="w-5 h-5" />
                                     </button>
                                 )}
                             </div>
-                            <p id="kimlik-hint" className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
-                                الرقم مكون من 11 خانة ويبدأ بـ 99
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
+                                يبدأ بـ 99 للأجانب — هذا الفحص لا يخزّن أي بيانات
                             </p>
                         </div>
 
                         {/* Validation Result */}
                         {result === 'valid' && (
-                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6 mb-8 animate-in fade-in slide-in-from-top-4">
-                                <div className="flex items-start gap-4">
+                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-5 mb-4">
+                                <div className="flex items-start gap-3">
                                     <div className="p-2 bg-green-100 dark:bg-green-800/50 rounded-full shrink-0">
-                                        <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                        <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-green-700 dark:text-green-400 mb-2">
+                                        <h3 className="text-lg font-bold text-green-700 dark:text-green-400">
                                             الرقم صحيح خوارزمياً
                                         </h3>
-                                        <p className="text-slate-600 dark:text-slate-300 mb-4">
-                                            هذا الرقم يطابق معادلة أرقام الهوية التركية الصحيحة.
-                                            <strong className="text-slate-900 dark:text-white mx-1">
-                                                الخطوة التالية هي التأكد من أن القيد فعال (Active).
-                                            </strong>
+                                        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                                            بنية الرقم سليمة. لكن لمعرفة إن كان القيد <strong>فعّال</strong> أم لا، يجب الفحص في موقع النفوس أعلاه.
                                         </p>
-
-                                        <a
-                                            href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center justify-center gap-2 w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-green-600/20"
-                                        >
-                                            <span>فحص الصلاحية في موقع النفوس (NVI)</span>
-                                            <ExternalLink className="w-5 h-5" />
-                                        </a>
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {result === 'invalid' && tcNumber.length === 11 && (
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 mb-8 animate-in fade-in slide-in-from-top-4">
-                                <div className="flex items-center gap-4">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-5 mb-4">
+                                <div className="flex items-center gap-3">
                                     <div className="p-2 bg-red-100 dark:bg-red-800/50 rounded-full">
-                                        <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                                        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-red-700 dark:text-red-400">
+                                        <h3 className="text-lg font-bold text-red-700 dark:text-red-400">
                                             الرقم غير صالح
                                         </h3>
-                                        <p className="text-red-600/80 dark:text-red-300/80 mt-1">
+                                        <p className="text-sm text-red-600/80 dark:text-red-300/80 mt-1">
                                             هذا الرقم لا يتبع خوارزمية الأرقام التركية. تأكد من كتابته بشكل صحيح.
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         )}
-
-                        {/* Educational Content */}
-                        <div className="grid md:grid-cols-2 gap-6 mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
-                            <div className="bg-blue-50 dark:bg-blue-900/10 p-5 rounded-xl">
-                                <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
-                                    <ShieldCheck className="w-5 h-5" />
-                                    كيف أعرف أن الكملك توقف؟
-                                </h4>
-                                <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300 list-disc list-inside">
-                                    <li>رسالة <span className="font-bold text-red-600 dark:text-red-400">Kayıt Bulunamadı</span> تعني أن القيد غير موجود أو مبطل.</li>
-                                    <li>الأفضل دائماً التحقق عبر <span className="font-bold">e-Devlet</span> للتفاصيل الكاملة.</li>
-                                </ul>
-                            </div>
-
-                            <div className="bg-amber-50 dark:bg-amber-900/10 p-5 rounded-xl">
-                                <h4 className="font-bold text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-2">
-                                    <ShieldAlert className="w-5 h-5" />
-                                    تحذير هام
-                                </h4>
-                                <p className="text-sm text-slate-700 dark:text-slate-300">
-                                    لا تعطي معلومات الكملك الكاملة (اسم الأب، المواليد) لأي موقع غير رسمي. هذا الموقع يفحص "خوارزمية الرقم" فقط ولا يخزن أي بيانات.
-                                </p>
-                            </div>
-                        </div>
-
                     </div>
 
-                    {/* Official NVI Iframe Section */}
-                    <div className="mt-6 bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                        <div className="px-6 py-4 bg-emerald-50 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900/30">
-                            <h2 className="text-lg font-bold text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
-                                <ShieldCheck size={20} className="text-emerald-600" />
-                                التحقق الرسمي عبر بوابة النفوس (NVI)
-                            </h2>
-                            <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
-                                هذه الصفحة مضمّنة مباشرة من موقع النفوس الرسمي — أدخل البيانات للتحقق من صلاحية القيد
+                    {/* Educational Content */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                            <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2 text-sm">
+                                <ShieldCheck className="w-5 h-5" />
+                                كيف أعرف أن الكملك توقف؟
+                            </h4>
+                            <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300 list-disc list-inside">
+                                <li>رسالة <span className="font-bold text-red-600 dark:text-red-400">Kayıt Bulunamadı</span> تعني أن القيد غير موجود أو مبطل.</li>
+                                <li>الأفضل دائماً التحقق عبر <span className="font-bold">e-Devlet</span> للتفاصيل الكاملة.</li>
+                            </ul>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                            <h4 className="font-bold text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-2 text-sm">
+                                <ShieldAlert className="w-5 h-5" />
+                                تحذير هام
+                            </h4>
+                            <p className="text-sm text-slate-700 dark:text-slate-300">
+                                لا تعطي معلومات الكملك الكاملة (اسم الأب، المواليد) لأي موقع غير رسمي. هذا الموقع يفحص &quot;خوارزمية الرقم&quot; فقط ولا يخزن أي بيانات.
                             </p>
                         </div>
-
-                        {!iframeError ? (
-                            <div className="relative">
-                                <iframe
-                                    ref={iframeRef}
-                                    src="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
-                                    className="w-full border-0 rounded-b-3xl"
-                                    style={{ height: '700px', minHeight: '500px' }}
-                                    title="التحقق من رقم الكملك — بوابة النفوس التركية"
-                                    sandbox="allow-forms allow-scripts allow-same-origin"
-                                    loading="lazy"
-                                    onError={() => setIframeError(true)}
-                                />
-                            </div>
-                        ) : (
-                            <div className="p-8 text-center">
-                                <AlertCircle size={48} className="mx-auto text-amber-500 mb-4" />
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">
-                                    الموقع الحكومي يمنع التضمين المباشر
-                                </h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-                                    لأسباب أمنية، بوابة النفوس التركية قد تمنع عرضها داخل مواقع أخرى.
-                                    استخدم الرابط المباشر أدناه.
-                                </p>
-                                <a
-                                    href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg"
-                                >
-                                    <span>فتح بوابة النفوس في تبويب جديد</span>
-                                    <ExternalLink size={18} />
-                                </a>
-                            </div>
-                        )}
                     </div>
 
-                    <div className="mt-6 flex justify-center">
+                    {/* Share + Back */}
+                    <div className="flex justify-center">
                         <ShareMenu
                             title="فاحص الكملك التركي"
                             text="تحقق من صحة رقم الكملك (TC) وصلاحية القيد — أداة مجانية من دليل العرب."
@@ -262,7 +336,7 @@ export default function KimlikCheckPage() {
                         />
                     </div>
 
-                    <div className="mt-4 text-center">
+                    <div className="text-center">
                         <Link
                             href="/"
                             className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -273,6 +347,34 @@ export default function KimlikCheckPage() {
                     </div>
                 </div>
             </main>
-</div>
+        </div>
+    );
+}
+
+/** Visual guide for a single NVI form field */
+function FormFieldGuide({ label, arabic, placeholder, step }: {
+    label: string;
+    arabic: string;
+    placeholder: string;
+    step: number;
+}) {
+    return (
+        <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+            {/* Turkish field label + placeholder */}
+            <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</div>
+                <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-400 font-mono">
+                    {placeholder}
+                </div>
+            </div>
+
+            {/* Arabic annotation */}
+            <div className="text-right shrink-0">
+                <span className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold px-3 py-1.5 rounded-full">
+                    <span className="text-base">{step}</span>
+                    {arabic}
+                </span>
+            </div>
+        </div>
     );
 }
