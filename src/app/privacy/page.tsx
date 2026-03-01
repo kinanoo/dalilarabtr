@@ -38,6 +38,10 @@ export default function PrivacyPage() {
             قد يحتوي الموقع على روابط لمواقع رسمية أو خارجية. نحن غير مسؤولين عن سياسات الخصوصية الخاصة بتلك المواقع.
           </p>
         </section>
+
+        <p className="text-center text-xs text-slate-400 dark:text-slate-500 pt-4">
+          آخر تحديث لسياسة الخصوصية: مارس 2026
+        </p>
       </div>
     </main>
   );

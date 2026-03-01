@@ -66,7 +66,8 @@ export default function UpdatesPage() {
   });
 
   const allItems = [...manualUpdates, ...autoItems]
-    .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
+    .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''))
+    .slice(0, 20); // Show latest 20 items only
 
   const loading = updatesLoading && autoLoading;
 

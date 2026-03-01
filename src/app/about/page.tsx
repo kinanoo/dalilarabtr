@@ -15,7 +15,7 @@ async function getStats() {
   if (!supabase) return { articles: 0, codes: 0 };
 
   const [articlesRes, codesRes] = await Promise.all([
-    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('is_active', true),
+    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('active', true),
     supabase.from('security_codes').select('code', { count: 'exact', head: true }),
   ]);
 
@@ -44,7 +44,7 @@ export default async function AboutPage() {
                         لماذا أسسنا <span className="text-emerald-600">دليل العرب في تركيا</span>؟
                     </h2>
                     <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8">
-                        في عام 2020، لاحظنا الفجوة الكبيرة في المعلومات القانونية المتاحة للعرب في تركيا. شائعات كثيرة، قوانين متغيرة، ومعلومات غير دقيقة تؤدي لمشاكل قانونية (منع، ترحيل، غرامات).
+                        في عام 2025، لاحظنا الفجوة الكبيرة في المعلومات القانونية المتاحة للعرب في تركيا. شائعات كثيرة، قوانين متغيرة، ومعلومات غير دقيقة تؤدي لمشاكل قانونية (منع، ترحيل، غرامات).
                         <br /><br />
                         لذا قررنا إنشاء منصة تكون <strong>المرجع الموثوق</strong> الذي يجمع بين الخبرة القانونية والتقنية الحديثة.
                     </p>
