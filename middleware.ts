@@ -2,9 +2,9 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-    // Block vercel.app — site moved to custom domain
+    // Block main vercel.app URLs — allow preview deployments for testing
     const host = request.headers.get('host') || '';
-    if (host.includes('.vercel.app')) {
+    if (host === 'dalilarab.vercel.app' || host === 'dalilarabtest.vercel.app') {
         return new NextResponse(
             '<html dir="rtl"><head><meta charset="utf-8"><title>انتقل الموقع</title></head>' +
             '<body style="font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#0f172a;color:#e2e8f0;text-align:center">' +
