@@ -169,22 +169,15 @@ export function AdminActivityBell() {
         const rect = bellBtnRef.current.getBoundingClientRect();
         const isDesktop = window.innerWidth >= 1280;
         if (isDesktop) {
-            const panelWidth = 380;
-            // Position to the left of the bell (sidebar is on the right in RTL)
-            let left = rect.left - panelWidth - 8;
-            // If it overflows left edge, position below the bell aligned to its right edge
-            if (left < 16) {
-                left = 16;
-            }
             return {
                 position: 'fixed',
-                top: Math.min(rect.bottom + 8, window.innerHeight - 500),
-                left,
-                width: panelWidth,
+                top: rect.bottom + 8,
+                right: Math.max(window.innerWidth - rect.right, 16),
+                width: 380,
             };
         }
         // Mobile: full width with margins, below header
-        return { position: 'fixed', top: 56, left: 8, right: 8 };
+        return { position: 'fixed', top: 64, left: 16, right: 16 };
     }, []);
 
     const lastVisit = lastVisitRef.current;
@@ -268,12 +261,12 @@ export function AdminActivityBell() {
                                             >
                                                 <div
                                                     onClick={() => handleEventClick(event)}
-                                                    className={`flex items-center gap-2.5 px-4 py-3 transition-colors border-r-[3px] ${
+                                                    className={`flex items-center gap-2.5 px-4 py-3 transition-colors ${
                                                         link ? 'cursor-pointer' : ''
                                                     } ${
                                                         isNew
-                                                            ? 'bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100/80 dark:hover:bg-blue-950/30 border-r-blue-500'
-                                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30 border-r-transparent opacity-60'
+                                                            ? 'bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20'
+                                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
                                                     }`}
                                                 >
                                                     <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
@@ -281,15 +274,15 @@ export function AdminActivityBell() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1.5">
-                                                            <p className={`text-xs truncate ${isNew ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-500 dark:text-slate-400'}`}>
+                                                            <p className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">
                                                                 {event.title}
                                                             </p>
                                                             {isNew && (
-                                                                <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 animate-pulse" />
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                                             )}
                                                         </div>
                                                         {event.detail && (
-                                                            <p className={`text-[11px] truncate ${isNew ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-600'}`}>{event.detail}</p>
+                                                            <p className="text-[11px] text-slate-400 truncate">{event.detail}</p>
                                                         )}
                                                     </div>
                                                     <span className="text-[10px] text-slate-400 dark:text-slate-600 whitespace-nowrap shrink-0">
