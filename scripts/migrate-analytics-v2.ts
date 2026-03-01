@@ -48,7 +48,7 @@ AS $$
     ),
     article_comments AS (
         SELECT
-            c.entity_id::UUID as art_id,
+            c.entity_id as art_id_text,
             COUNT(*) as cnt
         FROM comments c
         WHERE c.entity_type = 'article'
@@ -66,7 +66,7 @@ AS $$
     FROM articles a
     LEFT JOIN article_views av ON av.art_slug = a.slug OR av.art_slug = a.id::TEXT
     LEFT JOIN article_durations ad ON ad.art_slug = a.slug OR ad.art_slug = a.id::TEXT
-    LEFT JOIN article_comments ac ON ac.art_id = a.id
+    LEFT JOIN article_comments ac ON ac.art_id_text = a.id::TEXT
     WHERE a.status = 'published' OR a.is_active = true
     ORDER BY COALESCE(av.views, 0) DESC
     LIMIT 15;
