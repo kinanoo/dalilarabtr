@@ -19,6 +19,7 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [userKey, setUserKey] = useState<string>('anon');
+    const [visitorId, setVisitorId] = useState<string>('');
 
     // Load user identity then check localStorage
     // Key includes user ID so different users on the same device don't share vote state
@@ -30,6 +31,18 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
                 if (data.user?.id) uid = data.user.id;
             }
             setUserKey(uid);
+
+            // Generate persistent visitor ID for server-side deduplication
+            let vid = uid;
+            if (uid === 'anon') {
+                const storageKey = 'daleel_visitor_id';
+                vid = localStorage.getItem(storageKey) || '';
+                if (!vid) {
+                    vid = crypto.randomUUID();
+                    localStorage.setItem(storageKey, vid);
+                }
+            }
+            setVisitorId(vid);
 
             const key = `vote_${uid}_${entityType}_${entityId}`;
             const saved = localStorage.getItem(key);
@@ -61,9 +74,12 @@ export default function ContentHelpfulWidget({ entityType, entityId, className }
     };
 
     const submitVote = async (type: 'up' | 'down', feedbackText?: string, reasonText?: string) => {
-        const { error } = await voteContent(entityType, entityId, type, feedbackText, reasonText);
+        const { error } = await voteContent(entityType, entityId, type, feedbackText, reasonText, visitorId);
 
-        if (error) {
+        if (error === 'already_voted') {
+            setVoted(type);
+            toast.info('لقد قمت بالتصويت مسبقاً على هذا المحتوى.');
+        } else if (error) {
             console.error(error);
             toast.error('حدث خطأ في استلام تقييمك');
         } else {

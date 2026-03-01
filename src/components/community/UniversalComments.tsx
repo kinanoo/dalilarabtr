@@ -41,6 +41,7 @@ function saveLikedSet(userKey: string, liked: Set<string>) {
 function CommentItem({
     comment,
     userKey,
+    visitorId,
     userName,
     currentUserId,
     activeReplyId,
@@ -54,6 +55,7 @@ function CommentItem({
 }: {
     comment: Comment;
     userKey: string;
+    visitorId: string;
     userName: string;
     currentUserId: string | null;
     activeReplyId: string | null;
@@ -92,7 +94,8 @@ function CommentItem({
         likedSet.add(comment.id);
         saveLikedSet(userKey, likedSet);
 
-        const { error } = await toggleCommentLike(comment.id);
+        const { error } = await toggleCommentLike(comment.id, visitorId);
+        if (error === 'already_voted') return; // silently ignore duplicate
         if (error) {
             setLiked(false);
             setLikes((prev) => prev - 1);
@@ -313,6 +316,7 @@ function CommentItem({
                             key={reply.id}
                             comment={reply}
                             userKey={userKey}
+                            visitorId={visitorId}
                             userName={userName}
                             currentUserId={currentUserId}
                             activeReplyId={activeReplyId}
@@ -336,6 +340,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
     const [userKey, setUserKey] = useState('anon');
+    const [visitorId, setVisitorId] = useState('');
 
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [name, setName] = useState('');
@@ -378,12 +383,20 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             setName(displayName);
             setIsLoggedIn(true);
             setUserKey(user.id);
+            setVisitorId(user.id);
             setCurrentUserId(user.id);
         } else {
             const anonId = getOrCreateAnonId();
             setName(`مجهول #${anonId}`);
             setIsLoggedIn(false);
             setUserKey(`anon_${anonId}`);
+            // Persistent visitor ID for server-side vote deduplication
+            let vid = localStorage.getItem('daleel_visitor_id') || '';
+            if (!vid) {
+                vid = crypto.randomUUID();
+                localStorage.setItem('daleel_visitor_id', vid);
+            }
+            setVisitorId(vid);
         }
     };
 
@@ -567,6 +580,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                             key={c.id}
                             comment={c}
                             userKey={userKey}
+                            visitorId={visitorId}
                             userName={name}
                             currentUserId={currentUserId}
                             activeReplyId={activeReplyId}

@@ -1,15 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
 import { Loader2, ShieldCheck, AlertCircle, Lock, Timer } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-// Singleton outside component — not re-created on every render
-const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 const GENERIC_ERROR = 'بيانات الدخول غير صحيحة';
 const MAX_ATTEMPTS = 5;
@@ -21,7 +14,7 @@ export default function AdminLoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    // Brute force protection — persisted to localStorage to survive page reload
+    // Client-side lockout state (UX layer — real enforcement is server-side)
     const [attempts, setAttempts] = useState(() => {
         try { return parseInt(localStorage.getItem('admin_login_attempts') || '0'); } catch { return 0; }
     });
@@ -68,50 +61,53 @@ export default function AdminLoginPage() {
         setLoading(true);
         setError('');
 
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        try {
+            const res = await fetch('/api/auth/admin-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (authError || !authData.user) {
-            const newAttempts = attempts + 1;
-            setAttempts(newAttempts);
+            const data = await res.json();
 
-            if (newAttempts >= MAX_ATTEMPTS) {
-                setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
-                try { localStorage.setItem('admin_lockout_until', String(Date.now() + LOCKOUT_SECONDS * 1000)); } catch {}
-                setLockoutRemaining(LOCKOUT_SECONDS);
-            } else {
-                setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);
+            if (res.ok) {
+                // Success — session cookies set by the server
+                setAttempts(0);
+                try {
+                    localStorage.removeItem('admin_login_attempts');
+                    localStorage.removeItem('admin_lockout_until');
+                } catch {}
+                router.push('/admin');
+                router.refresh();
+                return;
             }
-            setLoading(false);
-            return;
-        }
 
-        // Check Role strictly for Admin
-        const { data: profile } = await supabase
-            .from('member_profiles')
-            .select('role')
-            .eq('id', authData.user.id)
-            .single();
-
-        if (profile?.role !== 'admin') {
-            await supabase.auth.signOut();
-            const newAttempts = attempts + 1;
-            setAttempts(newAttempts);
-            if (newAttempts >= MAX_ATTEMPTS) {
-                setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
-                try { localStorage.setItem('admin_lockout_until', String(Date.now() + LOCKOUT_SECONDS * 1000)); } catch {}
-                setLockoutRemaining(LOCKOUT_SECONDS);
+            if (res.status === 429) {
+                // Server-side rate limited
+                const lockoutSec = (data.lockout_minutes || 15) * 60;
+                setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار.`);
+                try { localStorage.setItem('admin_lockout_until', String(Date.now() + lockoutSec * 1000)); } catch {}
+                setLockoutRemaining(lockoutSec);
+                setAttempts(MAX_ATTEMPTS);
             } else {
-                setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);
-            }
-            setLoading(false);
-            return;
-        }
+                // Invalid credentials — use server's remaining count if available
+                const remaining = typeof data.remaining === 'number' ? data.remaining : (MAX_ATTEMPTS - attempts - 1);
+                const newAttempts = MAX_ATTEMPTS - remaining;
+                setAttempts(newAttempts);
 
-        router.push('/admin');
-        router.refresh();
+                if (remaining <= 0) {
+                    setError(`تم تجاوز الحد الأقصى للمحاولات. يُرجى الانتظار ${LOCKOUT_SECONDS} ثانية.`);
+                    try { localStorage.setItem('admin_lockout_until', String(Date.now() + LOCKOUT_SECONDS * 1000)); } catch {}
+                    setLockoutRemaining(LOCKOUT_SECONDS);
+                } else {
+                    setError(`${GENERIC_ERROR} (${newAttempts}/${MAX_ATTEMPTS})`);
+                }
+            }
+        } catch {
+            setError('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -136,7 +132,12 @@ export default function AdminLoginPage() {
                             <Timer size={20} className="shrink-0 animate-pulse" />
                             <span>
                                 تم إيقاف الدخول مؤقتاً. إعادة المحاولة بعد{' '}
-                                <strong className="text-amber-300 font-mono">{lockoutRemaining}</strong> ثانية
+                                <strong className="text-amber-300 font-mono">
+                                    {lockoutRemaining >= 60
+                                        ? `${Math.ceil(lockoutRemaining / 60)} دقائق`
+                                        : `${lockoutRemaining} ثانية`
+                                    }
+                                </strong>
                             </span>
                         </div>
                     )}
@@ -192,7 +193,12 @@ export default function AdminLoginPage() {
                             className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 disabled:active:scale-100"
                         >
                             {isLocked
-                                ? <><Timer size={20} /><span className="text-base font-mono">{lockoutRemaining}s</span></>
+                                ? <><Timer size={20} /><span className="text-base font-mono">
+                                    {lockoutRemaining >= 60
+                                        ? `${Math.ceil(lockoutRemaining / 60)}m`
+                                        : `${lockoutRemaining}s`
+                                    }
+                                </span></>
                                 : loading
                                     ? <><Loader2 className="animate-spin" size={20} /><span className="text-base">جاري التحقق من الصلاحيات...</span></>
                                     : <><ShieldCheck size={20} /><span className="text-base">تأكيد الدخول</span></>

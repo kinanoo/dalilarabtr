@@ -162,7 +162,7 @@ export async function deleteComment(
     }
 }
 
-export async function toggleCommentLike(commentId: string): Promise<{ liked: boolean; error?: any }> {
+export async function toggleCommentLike(commentId: string, visitorId?: string): Promise<{ liked: boolean; error?: any }> {
     if (!supabase) return { liked: false, error: 'Supabase not initialized' };
 
     const { error } = await supabase
@@ -171,13 +171,16 @@ export async function toggleCommentLike(commentId: string): Promise<{ liked: boo
             entity_type: 'comment',
             entity_id: commentId,
             vote_type: 'up',
+            visitor_id: visitorId || undefined,
         }]);
 
+    // Unique constraint violation = already voted (not an error for the user)
+    if (error?.code === '23505') return { liked: false, error: 'already_voted' };
     if (error) return { liked: false, error };
     return { liked: true };
 }
 
-export async function voteContent(entityType: string, entityId: string, voteType: 'up' | 'down', feedback?: string, reason?: string) {
+export async function voteContent(entityType: string, entityId: string, voteType: 'up' | 'down', feedback?: string, reason?: string, visitorId?: string) {
     if (!supabase) return { error: 'Supabase not initialized' };
 
     const { error } = await supabase
@@ -188,7 +191,10 @@ export async function voteContent(entityType: string, entityId: string, voteType
             vote_type: voteType,
             feedback,
             reason,
+            visitor_id: visitorId || undefined,
         }]);
 
+    // Unique constraint violation = already voted
+    if (error?.code === '23505') return { error: 'already_voted' };
     return { error };
 }
