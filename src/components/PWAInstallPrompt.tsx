@@ -109,7 +109,7 @@ export default function PWAInstallPrompt() {
                         type="button"
                         onClick={handleDismiss}
                         aria-label="إغلاق"
-                        className="absolute top-2 left-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                        className="absolute top-1 left-1 p-2 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
                     >
                         <X size={18} />
                     </button>

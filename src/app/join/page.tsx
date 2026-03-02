@@ -153,10 +153,11 @@ export default function JoinPage() {
 
                     <form onSubmit={handleRegister} method="POST" className="space-y-5">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم الكامل</label>
+                            <label htmlFor="join-name" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم الكامل</label>
                             <div className="relative">
                                 <User className="absolute top-3.5 right-4 text-slate-400" size={18} />
                                 <input
+                                    id="join-name"
                                     type="text"
                                     required
                                     value={fullName}
@@ -168,10 +169,11 @@ export default function JoinPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
+                            <label htmlFor="join-email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
                             <div className="relative">
                                 <Mail className="absolute top-3.5 right-4 text-slate-400" size={18} />
                                 <input
+                                    id="join-email"
                                     type="email"
                                     required
                                     value={email}
@@ -183,10 +185,11 @@ export default function JoinPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">كلمة المرور</label>
+                            <label htmlFor="join-password" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">كلمة المرور</label>
                             <div className="relative">
                                 <Lock className="absolute top-3.5 right-4 text-slate-400" size={18} />
                                 <input
+                                    id="join-password"
                                     type="password"
                                     required
                                     minLength={6}

@@ -218,7 +218,7 @@ export default function NotificationBell() {
                             </h3>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                className="p-2 min-w-11 min-h-11 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             >
                                 <X size={16} className="text-slate-500" />
                             </button>

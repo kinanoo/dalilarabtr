@@ -124,10 +124,11 @@ ${data.message}
 
             {/* Name */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
+              <label htmlFor="contact-name" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
                 <User size={18} className="text-primary-500" /> الاسم (اختياري)
               </label>
               <input
+                id="contact-name"
                 type="text"
                 {...register('name')}
                 className="w-full p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl outline-none transition text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-primary-500"
@@ -137,10 +138,11 @@ ${data.message}
 
             {/* Message Type */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
+              <label htmlFor="contact-type" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
                 <FileText size={18} className="text-primary-500" /> نوع الرسالة
               </label>
               <select
+                id="contact-type"
                 {...register('messageType')}
                 className="w-full p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition cursor-pointer text-slate-900 dark:text-slate-100"
               >
@@ -152,11 +154,12 @@ ${data.message}
 
             {/* Message */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
+              <label htmlFor="contact-message" className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
                 <MessageCircle size={18} className="text-primary-500" /> الرسالة
               </label>
               <div className="relative">
                 <textarea
+                  id="contact-message"
                   {...register('message')}
                   rows={5}
                   className={`w-full p-3.5 bg-slate-50 dark:bg-slate-950 border rounded-xl outline-none transition text-slate-900 dark:text-slate-100 placeholder:text-slate-400

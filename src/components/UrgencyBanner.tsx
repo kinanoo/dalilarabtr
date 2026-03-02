@@ -89,7 +89,7 @@ export default function UrgencyBanner() {
 
                     <button
                         onClick={handleDismiss}
-                        className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
+                        className="text-white/80 hover:text-white transition-colors p-2 min-w-11 min-h-11 flex items-center justify-center hover:bg-white/10 rounded-full"
                         aria-label="إغلاق التنبيه"
                     >
                         <X size={18} />

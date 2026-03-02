@@ -90,7 +90,7 @@ export default function CookieConsent() {
 
                         <button
                             onClick={handleDismiss}
-                            className="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
+                            className="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 min-w-11 min-h-11 flex items-center justify-center"
                             aria-label="إغلاق"
                         >
                             <X className="w-4 h-4" />

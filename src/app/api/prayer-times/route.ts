@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+    // Rate limit: 30 requests per minute per IP
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(`prayer:${clientIp}`, 30)) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const city = searchParams.get('city') || 'Istanbul';
     const country = searchParams.get('country') || 'Turkey';

@@ -254,7 +254,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="p-2 bg-white dark:bg-slate-900 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-white dark:bg-slate-900 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -489,7 +489,7 @@ export default function Navbar() {
             {/* Mobile Menu Toggle */}
             <button
               type="button"
-              className="lg:hidden p-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="lg:hidden p-2.5 min-w-11 min-h-11 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setIsOpen(true)}
               aria-label="القائمة الرئيسية"
               aria-expanded={isOpen}
