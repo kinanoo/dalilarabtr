@@ -120,31 +120,37 @@ export default function AdminReviewsPage() {
     // رابط صفحة التعديل في لوحة الإدارة (للمراجعة والإصلاح)
     function getAdminEditUrl(type: string, id: string): string {
         switch (type) {
-            case 'article': return `/admin/articles/${id}`;
-            case 'service': return `/admin/services`;
-            case 'update':  return `/admin/updates`;
-            case 'faq':     return `/admin/faqs`;
-            default:        return '/admin';
+            case 'article':  return `/admin/articles/${id}`;
+            case 'service':  return `/admin/services?id=${id}`;
+            case 'update':   return `/admin/updates`;
+            case 'scenario': return `/admin/scenarios`;
+            case 'zone':     return `/admin/zones`;
+            case 'faq':      return `/admin/faqs`;
+            default:         return '/admin';
         }
     }
 
     // رابط المعاينة العامة (نافذة جديدة)
     function getPublicUrl(type: string, id: string): string {
         switch (type) {
-            case 'article': return `/article/${id}`;
-            case 'service': return `/services/${id}`;
-            case 'update':  return `/updates#upd-${id}`;
-            case 'faq':     return `/faq`;
-            default:        return '#';
+            case 'article':  return `/article/${id}`;
+            case 'service':  return `/services/${id}`;
+            case 'update':   return `/updates#upd-${id}`;
+            case 'scenario': return `/consultant?scenario=${id}`;
+            case 'zone':     return `/zones/${id}`;
+            case 'faq':      return `/faq`;
+            default:         return '#';
         }
     }
 
     function entityTypeLabel(type: string): string {
         const map: Record<string, string> = {
-            article: 'مقال',
-            service: 'خدمة',
-            update:  'تحديث',
-            faq:     'سؤال شائع',
+            article:  'مقال',
+            service:  'خدمة',
+            update:   'تحديث',
+            scenario: 'سيناريو استشاري',
+            zone:     'منطقة',
+            faq:      'سؤال شائع',
         };
         return map[type] || type;
     }

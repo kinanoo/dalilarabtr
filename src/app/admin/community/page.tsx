@@ -69,7 +69,7 @@ export default function AdminCommunityPage() {
         }
     };
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>;
 
     return (
         <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6 pb-20 sm:pb-6">
@@ -85,6 +85,12 @@ export default function AdminCommunityPage() {
                 </div>
             </div>
 
+            {comments.length === 0 ? (
+                <div className="text-center py-20 text-slate-400">
+                    <MessageSquare size={48} className="mx-auto mb-4 opacity-30" />
+                    <p className="font-bold">لا توجد تعليقات حتى الآن</p>
+                </div>
+            ) : (
             <div className="grid gap-4">
                 {comments.map((c) => (
                     <div key={c.id} className={`p-4 sm:p-6 rounded-2xl border ${c.is_correction ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800'} shadow-sm relative overflow-hidden`}>
@@ -98,7 +104,9 @@ export default function AdminCommunityPage() {
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 w-full">
                                 <div className="flex items-center gap-2">
                                     <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{c.author_name}</span>
-                                    <span className="text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full whitespace-nowrap">{c.entity_type}</span>
+                                    <span className="text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full whitespace-nowrap">{
+                                        ({ article: 'مقال', service: 'خدمة', update: 'تحديث', scenario: 'سيناريو', zone: 'منطقة', faq: 'سؤال شائع' } as Record<string, string>)[c.entity_type] || c.entity_type
+                                    }</span>
                                 </div>
                                 <span className="text-[10px] sm:text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString('ar-EG')}</span>
                             </div>
@@ -134,11 +142,13 @@ export default function AdminCommunityPage() {
                             )}
                             <Link
                                 href={
-                                    c.entity_type === 'article' ? `/article/${c.entity_id}` :
-                                    c.entity_type === 'update'  ? `/updates#upd-${c.entity_id}` :
-                                    c.entity_type === 'service' ? `/services/${c.entity_id}` :
-                                    c.entity_type === 'faq'     ? '/faq' :
-                                    `/${c.entity_id}`
+                                    c.entity_type === 'article'  ? `/article/${c.entity_id}` :
+                                    c.entity_type === 'update'   ? `/updates#upd-${c.entity_id}` :
+                                    c.entity_type === 'service'  ? `/services/${c.entity_id}` :
+                                    c.entity_type === 'scenario' ? `/consultant?scenario=${c.entity_id}` :
+                                    c.entity_type === 'zone'     ? `/zones/${c.entity_id}` :
+                                    c.entity_type === 'faq'      ? '/faq' :
+                                    '#'
                                 }
                                 className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 bg-slate-100 dark:bg-slate-800 px-4 py-2.5 rounded-xl transition hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                             >
@@ -148,6 +158,7 @@ export default function AdminCommunityPage() {
                     </div>
                 ))}
             </div>
+            )}
         </div>
     );
 }
