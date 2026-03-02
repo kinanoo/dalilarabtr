@@ -6,9 +6,10 @@
 User-agent: *
 Allow: /
 
-# منع الملفات التقنية فقط (بدون كشف مسارات حساسة)
+# منع الملفات التقنية والمسارات المحمية
 Disallow: /_next/
 Disallow: /api/
+Disallow: /admin/
 Disallow: /*.json$
 Disallow: /*?*
 Disallow: /404
