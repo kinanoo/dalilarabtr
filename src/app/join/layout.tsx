@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 
-const SITE_CONFIG = {
-    name: 'Daleel Arab Turkiye'
-};
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
     title: `إنشاء حساب جديد | ${SITE_CONFIG.name}`,
     alternates: {
-        canonical: 'https://dalilarab.vercel.app/join'
+        canonical: `${SITE_CONFIG.siteUrl}/join`
     }
 };
 

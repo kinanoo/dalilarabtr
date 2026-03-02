@@ -1,5 +1,5 @@
 // import PageHero from '@/components/PageHero';
-import { CATEGORY_SLUGS } from '@/lib/config';
+import { CATEGORY_SLUGS, SITE_CONFIG } from '@/lib/config';
 // import { FolderOpen } from 'lucide-react';
 import CategoryArticlesList from './CategoryArticlesList';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,7 +11,7 @@ export const dynamicParams = true;
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
-  const url = `https://dalilarab.vercel.app/category/${params.slug}`;
+  const url = `${SITE_CONFIG.siteUrl}/category/${params.slug}`;
 
   return {
     alternates: {
@@ -76,19 +76,19 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                 "@type": "ListItem",
                 "position": 1,
                 "name": "الرئيسية",
-                "item": "https://dalilarab.vercel.app"
+                "item": "https://dalilarabtr.com"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "الأقسام",
-                "item": "https://dalilarab.vercel.app/category"
+                "item": "https://dalilarabtr.com/category"
               },
               {
                 "@type": "ListItem",
                 "position": 3,
                 "name": categoryName,
-                "item": `https://dalilarab.vercel.app/category/${params.slug}`
+                "item": `https://dalilarabtr.com/category/${params.slug}`
               }
             ]
           })

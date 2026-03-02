@@ -76,6 +76,9 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
+  // 🛡️ Hide X-Powered-By header
+  poweredByHeader: false,
+
   // ⚡ Performance
   compress: true,
 

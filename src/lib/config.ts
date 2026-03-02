@@ -4,7 +4,7 @@ export const SITE_CONFIG = {
     lang: "ar",
     country: "تركيا",
     whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487",
-    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab.vercel.app').replace(/\/$/, '')
+    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '')
 };
 
 /** Build article URL — prefers short slug over Arabic id */

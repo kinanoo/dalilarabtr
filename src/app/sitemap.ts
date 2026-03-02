@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 export const dynamic = 'force-dynamic'; // Change to dynamic to allow DB fetch
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarab1.netlify.app').replace(/\/$/, '');
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '');
 
   // الصفحات الثابتة الرئيسية
   const SITE_LAST_UPDATED = new Date('2026-01-01');

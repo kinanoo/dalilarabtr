@@ -48,7 +48,7 @@ function getRequiredEnv(key: string): string {
 
 export const ENV = {
   // الموقع
-  SITE_URL: getEnv('NEXT_PUBLIC_SITE_URL', 'https://dalilarab1.netlify.app'),
+  SITE_URL: getEnv('NEXT_PUBLIC_SITE_URL', 'https://dalilarabtr.com'),
 
   // واتساب
   WHATSAPP_PHONE: getEnv('NEXT_PUBLIC_WHATSAPP_PHONE', '966580757487'),

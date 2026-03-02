@@ -15,6 +15,14 @@ export async function middleware(request: NextRequest) {
         );
     }
 
+    // Redirect www to non-www (canonical domain)
+    if (host === 'www.dalilarabtr.com') {
+        const url = request.nextUrl.clone();
+        url.host = 'dalilarabtr.com';
+        url.protocol = 'https';
+        return NextResponse.redirect(url, 308);
+    }
+
     // --- Admin route protection (only for /admin paths) ---
     if (!request.nextUrl.pathname.startsWith('/admin')) {
         return NextResponse.next()

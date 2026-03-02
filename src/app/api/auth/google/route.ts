@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  * GET /api/auth/google?next=/dashboard
  *
  * Custom Google OAuth initiation — redirects to Google with OUR domain
- * as redirect_uri, so Google shows "المتابعة إلى dalilarab.vercel.app"
+ * as redirect_uri, so Google shows "المتابعة إلى dalilarabtr.com"
  * instead of the Supabase URL.
  *
  * Requires env vars: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET

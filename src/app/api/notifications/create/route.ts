@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 // Use service role for server-side notification inserts (bypasses RLS safely)
 const supabaseAdmin = createClient(
@@ -11,6 +13,29 @@ const ALLOWED_TYPES = ['reply', 'review', 'comment', 'article', 'law', 'service'
 
 export async function POST(request: Request) {
     try {
+        // Auth check: only admin users can create notifications
+        const cookieStore = await cookies();
+        const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            { cookies: { getAll: () => cookieStore.getAll() } }
+        );
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Check admin role
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         const body = await request.json();
         const { type, title, message, link, icon, priority, target_user_id } = body;
 
@@ -24,6 +49,11 @@ export async function POST(request: Request) {
 
         if (!ALLOWED_TYPES.includes(type)) {
             return NextResponse.json({ error: 'Invalid notification type' }, { status: 400 });
+        }
+
+        // Input length validation
+        if (title.length > 200 || message.length > 1000) {
+            return NextResponse.json({ error: 'Title or message too long' }, { status: 400 });
         }
 
         const { error } = await supabaseAdmin
@@ -42,12 +72,11 @@ export async function POST(request: Request) {
 
         if (error) {
             console.error('Failed to create notification:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Notification creation error:', error);
+    } catch {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

@@ -41,7 +41,7 @@ export async function DELETE(request: NextRequest) {
     const { error } = await supabase.from('content_votes').delete().eq('id', id);
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Operation failed' }, { status: 500 });
     }
 
     return response;
