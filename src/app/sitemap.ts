@@ -5,6 +5,16 @@ import { supabase } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function safeQuery(query: any): Promise<any[]> {
+  try {
+    const { data } = await query;
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '');
   const SITE_LAST_UPDATED = new Date('2026-03-03');
@@ -42,7 +52,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/join',
   ];
 
-  // تصفية: لا نكرر الصفحات الموجودة في NAVIGATION
   const navHrefs = new Set(NAVIGATION.map(n => n.href));
   const extraStaticPages: MetadataRoute.Sitemap = extraStaticPaths
     .filter(p => !navHrefs.has(p))
@@ -55,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ─── 3. صفحات التصنيفات (/category/[slug]) ───
   const categoryPages: MetadataRoute.Sitemap = Object.keys(CATEGORY_SLUGS)
-    .filter(slug => !navHrefs.has(`/category/${slug}`)) // لا نكرر الموجود بالـ NAVIGATION
+    .filter(slug => !navHrefs.has(`/category/${slug}`))
     .map((slug) => ({
       url: `${baseUrl}/category/${slug}`,
       lastModified: SITE_LAST_UPDATED,
@@ -67,73 +76,58 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dynamicPages: MetadataRoute.Sitemap = [];
 
   if (supabase) {
-    try {
+    // كل استعلام مستقل — فشل أحدهم لا يؤثر على الباقي
+    const articles = await safeQuery(supabase.from('articles').select('id, slug, last_update'));
+    const codes = await safeQuery(supabase.from('security_codes').select('code, created_at'));
+    const zones = await safeQuery(supabase.from('zones').select('id, updated_at'));
+    const scenarios = await safeQuery(supabase.from('consultant_scenarios').select('id, created_at'));
+    const providers = await safeQuery(supabase.from('service_providers').select('id, created_at').eq('status', 'approved'));
+    const updates = await safeQuery(supabase.from('updates').select('id, created_at'));
+
+    dynamicPages = [
       // Articles
-      const { data: articles } = await supabase.from('articles').select('id, slug, last_update');
-      const articleUrls = (articles || []).map((a: any) => ({
+      ...articles.map((a) => ({
         url: `${baseUrl}/article/${a.slug || a.id}`,
         lastModified: new Date(a.last_update || new Date()),
         changeFrequency: 'monthly' as const,
         priority: 0.7,
-      }));
-
+      })),
       // Security Codes
-      const { data: codes } = await supabase.from('security_codes').select('code, updated_at');
-      const codeUrls = (codes || []).map((c: any) => ({
+      ...codes.map((c) => ({
         url: `${baseUrl}/codes/${c.code}`,
-        lastModified: new Date(c.updated_at || new Date()),
+        lastModified: new Date(c.created_at || new Date()),
         changeFrequency: 'weekly' as const,
         priority: 0.9,
-      }));
-
+      })),
       // Zones
-      const { data: zones } = await supabase.from('zones').select('slug, updated_at, id');
-      const zoneUrls = (zones || []).map((z: any) => ({
-        url: `${baseUrl}/zones/${z.slug || z.id}`,
+      ...zones.map((z) => ({
+        url: `${baseUrl}/zones/${z.id}`,
         lastModified: new Date(z.updated_at || new Date()),
         changeFrequency: 'monthly' as const,
         priority: 0.6,
-      }));
-
+      })),
       // Consultant Scenarios
-      const { data: scenarios } = await supabase.from('consultant_scenarios').select('id, updated_at');
-      const scenarioUrls = (scenarios || []).map((s: any) => ({
+      ...scenarios.map((s) => ({
         url: `${baseUrl}/consultant?scenario=${s.id}`,
-        lastModified: new Date(s.updated_at || new Date()),
+        lastModified: new Date(s.created_at || new Date()),
         changeFrequency: 'weekly' as const,
         priority: 0.8,
-      }));
-
+      })),
       // Service Providers
-      const { data: providers } = await supabase.from('service_providers').select('id, updated_at, created_at').eq('status', 'approved');
-      const providerUrls = (providers || []).map((p: any) => ({
+      ...providers.map((p) => ({
         url: `${baseUrl}/services/${p.id}`,
-        lastModified: new Date(p.updated_at || p.created_at || new Date()),
+        lastModified: new Date(p.created_at || new Date()),
         changeFrequency: 'weekly' as const,
         priority: 0.9,
-      }));
-
-      // Updates (News)
-      const { data: updates } = await supabase.from('updates').select('id, updated_at, created_at');
-      const updateUrls = (updates || []).map((u: any) => ({
+      })),
+      // Updates
+      ...updates.map((u) => ({
         url: `${baseUrl}/updates/${u.id}`,
-        lastModified: new Date(u.updated_at || u.created_at || new Date()),
+        lastModified: new Date(u.created_at || new Date()),
         changeFrequency: 'weekly' as const,
         priority: 0.7,
-      }));
-
-      dynamicPages = [
-        ...articleUrls,
-        ...codeUrls,
-        ...zoneUrls,
-        ...scenarioUrls,
-        ...providerUrls,
-        ...updateUrls,
-      ];
-
-    } catch (error) {
-      console.error('Error generating sitemap:', error);
-    }
+      })),
+    ];
   }
 
   return [...navigationPages, ...extraStaticPages, ...categoryPages, ...dynamicPages];
