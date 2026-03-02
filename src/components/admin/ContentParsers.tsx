@@ -180,7 +180,7 @@ export function UpdatesManager() {
                     {updates.map((u) => (
                         <div key={u.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex justify-between group">
                             <div className="flex items-start gap-3">
-                                {u.image && <img src={u.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
+                                {u.image && <img src={u.image} alt={u.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${u.type === 'alert' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{u.type}</span>

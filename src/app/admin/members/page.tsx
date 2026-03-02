@@ -142,7 +142,7 @@ export default function AdminMembersPage() {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
                                                     {member.avatar_url ? (
-                                                        <img src={member.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                        <img src={member.avatar_url} alt={member.full_name || 'عضو'} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <span className="text-sm font-bold text-slate-400">
                                                             {(member.full_name || '?').charAt(0)}

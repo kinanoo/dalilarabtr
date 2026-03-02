@@ -224,7 +224,7 @@ export default function ServicesManager() {
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                         {service.image ? (
-                                            <Image src={service.image} alt="" width={48} height={48} className="rounded-xl object-cover flex-shrink-0 bg-slate-100" />
+                                            <Image src={service.image} alt={service.name} width={48} height={48} className="rounded-xl object-cover flex-shrink-0 bg-slate-100" />
                                         ) : (
                                             <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 flex-shrink-0">
                                                 <Briefcase size={20} />
@@ -283,7 +283,7 @@ export default function ServicesManager() {
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
                                                     {service.image ? (
-                                                        <Image src={service.image} alt="" width={40} height={40} className="rounded-lg object-cover" />
+                                                        <Image src={service.image} alt={service.name} width={40} height={40} className="rounded-lg object-cover" />
                                                     ) : (
                                                         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                                                             <Briefcase size={20} />

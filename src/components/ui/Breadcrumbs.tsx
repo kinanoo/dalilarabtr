@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Home, ChevronLeft } from 'lucide-react';
+import { SITE_CONFIG } from '@/lib/config';
 
 interface BreadcrumbItem {
     label: string;
@@ -33,7 +34,7 @@ export default function Breadcrumbs({
             '@type': 'ListItem',
             position: index + 1,
             name: item.label,
-            item: `https://daleel-arab-turkiye.com${item.href}`,
+            item: `${SITE_CONFIG.siteUrl}${item.href}`,
         })),
     };
 

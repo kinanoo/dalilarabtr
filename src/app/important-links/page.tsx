@@ -116,7 +116,7 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
           <div className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl group-hover:bg-blue-600 transition-colors flex-shrink-0">
             <img
               src={`https://www.google.com/s2/favicons?domain=${shortUrl}&sz=32`}
-              alt=""
+              alt={`${source.name} favicon`}
               width={20}
               height={20}
               className="rounded-sm"
@@ -184,7 +184,7 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
         <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex-shrink-0">
           <img
             src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
-            alt=""
+            alt={`${resource.name} favicon`}
             width={18}
             height={18}
             className="rounded-sm"
