@@ -21,6 +21,7 @@ import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import FontLoader from "@/components/FontLoader";
 import NewsTicker from "@/components/NewsTicker";
+import CookieConsent from "@/components/CookieConsent";
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -112,6 +113,11 @@ export default function RootLayout({
         <meta name="googlebot" content="index, follow" />
         <meta name="description-scrape" content="unauthorized" />
 
+        {/* Google Search Console verification */}
+        {process.env.NEXT_PUBLIC_GSC_VERIFICATION && (
+          <meta name="google-site-verification" content={process.env.NEXT_PUBLIC_GSC_VERIFICATION} />
+        )}
+
         {/* PWA theme color */}
         <meta name="theme-color" content="#10b981" />
 
@@ -160,6 +166,7 @@ export default function RootLayout({
             </div>
             <ClientComponents />
             <BackToTop />
+            <CookieConsent />
           </div>
         </ThemeProviderWrapper>
       </body>
