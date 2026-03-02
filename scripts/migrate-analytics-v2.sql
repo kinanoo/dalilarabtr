@@ -66,7 +66,7 @@ BEGIN
     LEFT JOIN article_views av ON (av.matched_slug = a.slug OR av.matched_slug = a.id)
     LEFT JOIN article_durations ad ON (ad.matched_slug = a.slug OR ad.matched_slug = a.id)
     LEFT JOIN article_comments ac ON (ac.eid = a.id)
-    WHERE a.is_active = TRUE
+    WHERE a.active = TRUE
       AND COALESCE(av.views, 0) > 0
     ORDER BY COALESCE(av.views, 0) DESC
     LIMIT 15;

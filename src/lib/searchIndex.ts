@@ -302,8 +302,16 @@ function buildUpdatesIndex(): SearchIndexItem[] {
 // ...
 
 /**
+ * تجريد HTML من النص (للفهرسة)
+ */
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
  * جلب مقالات من قاعدة البيانات (Client-Side Indexing)
- * يجلب فقط البيانات الضرورية للبحث (العنوان، الوصف، الرابط)
+ * يجلب البيانات الضرورية للبحث الشامل
  */
 async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
   if (!supabase) return [];
@@ -311,22 +319,32 @@ async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
   try {
     const { data, error } = await supabase
       .from('articles')
-      .select('id, slug, title, category, intro, published_at')
+      .select('id, slug, title, category, intro, details, steps, tips, published_at')
       .order('published_at', { ascending: false });
 
     if (error) throw error;
     if (!data) return [];
 
-    return data.map((a: any) => ({
-      id: `art-${a.id}`,
-      title: a.title,
-      type: 'مقال',
-      typeKey: 'article',
-      desc: a.category,
-      url: `/article/${a.slug || a.id}`,
-      icon: FileText,
-      haystack: normalizeArabic(`${a.title} ${a.intro || ''} ${a.category}`)
-    }));
+    return data.map((a: any) => {
+      const parts = [
+        a.title,
+        a.intro || '',
+        a.category,
+        stripHtml(a.details || ''),
+        ...(Array.isArray(a.steps) ? a.steps : []),
+        ...(Array.isArray(a.tips) ? a.tips : [])
+      ];
+      return {
+        id: `art-${a.id}`,
+        title: a.title,
+        type: 'مقال',
+        typeKey: 'article',
+        desc: a.category,
+        url: `/article/${a.slug || a.id}`,
+        icon: FileText,
+        haystack: normalizeArabic(parts.join(' '))
+      };
+    });
   } catch (err) {
     console.warn('Failed to fetch articles index:', err);
     return [];

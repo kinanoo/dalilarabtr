@@ -308,7 +308,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
         };
 
         const [articles, services, comments, feedback, scenarios, zones, codes, faqs, reviews] = await Promise.all([
-            searchTable('articles', 'id, title, category', 'title,intro'),
+            searchTable('articles', 'id, title, category', 'title,intro,details'),
             searchTable('service_providers', 'id, name, profession', 'name'),
             searchTable('comments', 'id, content, author_name', 'content'),
             searchTable('content_votes', 'id, feedback, reason', 'feedback,reason', (q) => q.eq('vote_type', 'down')),

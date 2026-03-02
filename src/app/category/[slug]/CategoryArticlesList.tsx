@@ -51,9 +51,10 @@ export default function CategoryArticlesList({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
-        (a) =>
-          a.title.toLowerCase().includes(q) ||
-          a.intro.toLowerCase().includes(q)
+        (a: any) =>
+          a.title?.toLowerCase().includes(q) ||
+          a.intro?.toLowerCase().includes(q) ||
+          a.details?.toLowerCase().includes(q)
       );
     }
 
