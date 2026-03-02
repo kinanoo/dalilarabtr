@@ -11,11 +11,25 @@ export const dynamicParams = true;
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
+  const categoryName = CATEGORY_SLUGS[params.slug];
   const url = `${SITE_CONFIG.siteUrl}/category/${params.slug}`;
 
+  if (!categoryName) {
+    return { title: 'قسم غير موجود', robots: { index: false } };
+  }
+
+  const title = `${categoryName} — ${SITE_CONFIG.name}`;
+  const description = `جميع المقالات والمعلومات المتعلقة بـ ${categoryName} في تركيا. أدلة شاملة ومحدّثة باللغة العربية.`;
+
   return {
-    alternates: {
-      canonical: url,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
     },
   };
 }

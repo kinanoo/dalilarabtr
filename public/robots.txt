@@ -11,7 +11,7 @@ Disallow: /_next/
 Disallow: /api/
 Disallow: /admin/
 Disallow: /*.json$
-Disallow: /*?*
+Disallow: /*?utm_*
 Disallow: /404
 Disallow: /500
 
