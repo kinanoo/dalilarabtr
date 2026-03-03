@@ -158,7 +158,32 @@ export function AdminActivityBell() {
         }
     }
 
-    function handleEventClick(event: ActivityEvent) {
+    async function handleEventClick(event: ActivityEvent) {
+        // For comments: fetch the comment to find which page it belongs to
+        if (event.entity_table === 'comments' && event.entity_id && supabase) {
+            const { data: comment } = await supabase
+                .from('comments')
+                .select('entity_type, entity_id')
+                .eq('id', event.entity_id)
+                .maybeSingle();
+            if (comment) {
+                const t = comment.entity_type;
+                const eid = comment.entity_id;
+                const url =
+                    t === 'article'  ? `/article/${eid}` :
+                    t === 'service'  ? `/services/${eid}` :
+                    t === 'update'   ? `/updates#upd-${eid}` :
+                    t === 'scenario' && eid?.startsWith('code-') ? `/codes/${eid.replace('code-', '')}` :
+                    t === 'scenario' ? `/consultant?scenario=${eid}` :
+                    t === 'zone'     ? `/zones/${eid}` :
+                    null;
+                if (url) {
+                    setIsOpen(false);
+                    router.push(url);
+                    return;
+                }
+            }
+        }
         const link = getActivityLink(event);
         if (link) router.push(link);
         setIsOpen(false);
