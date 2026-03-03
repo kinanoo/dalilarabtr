@@ -54,28 +54,26 @@ export default function NewsTicker() {
 
     return (
         <div className="bg-[#1a2744] text-white/90 overflow-hidden relative text-[11px] sm:text-xs" dir="rtl">
-            <div className="flex items-center gap-2 px-3 py-1.5 max-w-7xl mx-auto">
+            <div className="flex items-center justify-center gap-2 px-3 py-2 max-w-7xl mx-auto">
                 {/* Icon */}
                 <Newspaper size={12} className="text-emerald-400 flex-shrink-0" />
 
-                {/* Current news item */}
-                <div className="flex-1 min-w-0 overflow-hidden">
-                    <div
-                        className={`transition-all duration-300 ease-in-out truncate ${
-                            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-                        }`}
-                    >
-                        {current.link ? (
-                            <Link
-                                href={current.link}
-                                className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
-                            >
-                                {current.text}
-                            </Link>
-                        ) : (
-                            <span>{current.text}</span>
-                        )}
-                    </div>
+                {/* Current news item — centered */}
+                <div
+                    className={`text-center leading-relaxed transition-all duration-300 ease-in-out ${
+                        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+                    }`}
+                >
+                    {current.link ? (
+                        <Link
+                            href={current.link}
+                            className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
+                        >
+                            {current.text}
+                        </Link>
+                    ) : (
+                        <span>{current.text}</span>
+                    )}
                 </div>
 
                 {/* Counter */}
