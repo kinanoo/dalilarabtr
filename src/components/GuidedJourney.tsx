@@ -1,6 +1,6 @@
 'use client';
 
-import { type LucideIcon, Sparkles, Plane, GraduationCap, Briefcase, Users, HeartPulse, PlaneTakeoff, FileText, UserCheck, BookOpen, Home, Scale, Smartphone, Stamp, HeartHandshake, Map, MapPin, LifeBuoy } from 'lucide-react';
+import { type LucideIcon, Sparkles, Plane, GraduationCap, Briefcase, Users, HeartPulse, PlaneTakeoff, FileText, UserCheck, BookOpen, Home, Scale, Smartphone, Stamp, HeartHandshake, Map, MapPin, LifeBuoy, Crown, Car, FileSearch } from 'lucide-react';
 import Link from 'next/link';
 
 // ============================================
@@ -126,6 +126,22 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 color: 'from-lime-500 to-green-500',
                 href: '/category/housing',
             },
+            {
+                id: 'citizenship',
+                title: 'أريد الجنسية التركية',
+                desc: 'شروط التجنيس، الأوراق، المدة، والاستثناءات',
+                icon: Crown,
+                color: 'from-yellow-500 to-amber-500',
+                href: '/consultant',
+            },
+            {
+                id: 'traffic-driving',
+                title: 'المرور ورخصة القيادة',
+                desc: 'رخصة قيادة، تسجيل سيارة، ومخالفات مرورية',
+                icon: Car,
+                color: 'from-gray-500 to-slate-600',
+                href: '/category/traffic',
+            },
         ],
     },
     {
@@ -174,6 +190,14 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 icon: Map,
                 color: 'from-cyan-500 to-sky-500',
                 href: '/directory',
+            },
+            {
+                id: 'lost-docs',
+                title: 'فقدان أو سرقة وثائق',
+                desc: 'إجراءات استبدال الهوية، الجواز، أو الإقامة',
+                icon: FileSearch,
+                color: 'from-orange-500 to-red-500',
+                href: '/forms',
             },
         ],
     },
