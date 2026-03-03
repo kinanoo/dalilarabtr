@@ -29,19 +29,20 @@ const EVENT_CONFIG: Record<string, { icon: typeof Users; bg: string; text: strin
 };
 
 function getActivityLink(event: ActivityEvent): string | null {
+    const id = event.entity_id;
     switch (event.entity_table) {
-        case 'member_profiles': return '/admin/members';
-        case 'service_providers': return '/admin/requests';
-        case 'comments': return '/admin/community';
-        case 'service_reviews': return '/admin/reviews';
+        case 'member_profiles':      return '/admin/members';
+        case 'service_providers':    return id ? `/admin/services?id=${id}` : '/admin/requests';
+        case 'comments':             return '/admin/community';
+        case 'service_reviews':      return '/admin/reviews';
         case 'consultant_scenarios': return '/admin/scenarios';
-        case 'articles': return '/admin/articles';
-        case 'faqs': return '/admin/faqs';
-        case 'security_codes': return '/admin/codes';
-        case 'tools_registry': return '/admin/settings';
-        case 'admin_updates': return '/admin/updates';
-        case 'zones': return '/admin/zones';
-        case 'banners': return '/admin/banners';
+        case 'articles':             return id ? `/admin/articles/${id}` : '/admin/articles';
+        case 'faqs':                 return '/admin/faqs';
+        case 'security_codes':       return '/admin/codes';
+        case 'tools_registry':       return '/admin/settings';
+        case 'admin_updates':        return '/admin/updates';
+        case 'zones':                return '/admin/zones';
+        case 'banners':              return '/admin/banners';
         default: return null;
     }
 }
