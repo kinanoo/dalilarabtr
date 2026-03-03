@@ -31,7 +31,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'table_not_allowed' }, { status: 403 });
         }
 
-        // Auth check: verify user is admin
+        // Service-role client (bypasses RLS for both admin check and delete)
+        const serviceClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        // Auth client to read session from cookies
         const cookieStore = await cookies();
         const authClient = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -44,12 +50,14 @@ export async function POST(request: NextRequest) {
             }
         );
 
+        // Verify user identity from session cookies
         const { data: { user } } = await authClient.auth.getUser();
         if (!user) {
             return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
         }
 
-        const { data: profile } = await authClient
+        // Check admin role using service client (bypasses RLS on member_profiles)
+        const { data: profile } = await serviceClient
             .from('member_profiles')
             .select('role')
             .eq('id', user.id)
@@ -59,12 +67,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'forbidden' }, { status: 403 });
         }
 
-        // Use service role key to bypass RLS
-        const serviceClient = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
+        // Perform delete with service client
         const { error } = await serviceClient
             .from(table)
             .delete()
