@@ -145,6 +145,7 @@ export default function AdminCommunityPage() {
                                     c.entity_type === 'article'  ? `/article/${c.entity_id}` :
                                     c.entity_type === 'update'   ? `/updates#upd-${c.entity_id}` :
                                     c.entity_type === 'service'  ? `/services/${c.entity_id}` :
+                                    c.entity_type === 'scenario' && c.entity_id?.startsWith('code-') ? `/codes/${c.entity_id.replace('code-', '')}` :
                                     c.entity_type === 'scenario' ? `/consultant?scenario=${c.entity_id}` :
                                     c.entity_type === 'zone'     ? `/zones/${c.entity_id}` :
                                     c.entity_type === 'faq'      ? '/faq' :

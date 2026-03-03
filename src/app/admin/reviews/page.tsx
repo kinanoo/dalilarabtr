@@ -136,7 +136,7 @@ export default function AdminReviewsPage() {
             case 'article':  return `/article/${id}`;
             case 'service':  return `/services/${id}`;
             case 'update':   return `/updates#upd-${id}`;
-            case 'scenario': return `/consultant?scenario=${id}`;
+            case 'scenario': return id?.startsWith('code-') ? `/codes/${id.replace('code-', '')}` : `/consultant?scenario=${id}`;
             case 'zone':     return `/zones/${id}`;
             case 'faq':      return `/faq`;
             default:         return '#';
