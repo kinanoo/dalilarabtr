@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
+import { Loader2, ShieldAlert } from 'lucide-react';
 
 export default function AdminLayout({
     children,
@@ -15,9 +16,47 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+
     // All hooks must be declared before any conditional return (Rules of Hooks)
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+    // ─── Auth Guard State ───────────────────────────────────────────────
+    const [authState, setAuthState] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
+
+    // ─── Auth Guard: verify admin role on mount ─────────────────────────
+    useEffect(() => {
+        // Login page doesn't need auth check
+        if (pathname === '/admin/login') {
+            setAuthState('authorized');
+            return;
+        }
+
+        let cancelled = false;
+
+        async function verifyAdmin() {
+            try {
+                const res = await fetch('/api/admin/verify');
+                if (cancelled) return;
+
+                if (res.ok) {
+                    setAuthState('authorized');
+                } else {
+                    // Not admin or not authenticated → redirect to login
+                    setAuthState('unauthorized');
+                    router.replace('/admin/login');
+                }
+            } catch {
+                if (cancelled) return;
+                setAuthState('unauthorized');
+                router.replace('/admin/login');
+            }
+        }
+
+        verifyAdmin();
+        return () => { cancelled = true; };
+    }, [pathname, router]);
 
     useEffect(() => {
         // Skip on login page (no sidebar to restore)
@@ -43,9 +82,37 @@ export default function AdminLayout({
     };
 
     // ─── Login page: bare render — NO sidebar, NO header, NO nav links ───────
-    // This prevents unauthenticated users from seeing or using any admin UI
     if (pathname === '/admin/login') {
         return <ToastProvider>{children}</ToastProvider>;
+    }
+
+    // ─── Auth Guard: show loading screen while verifying ─────────────────
+    if (authState === 'loading') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-950" dir="rtl">
+                <div className="text-center space-y-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800">
+                        <Loader2 size={32} className="text-emerald-500 animate-spin" />
+                    </div>
+                    <p className="text-slate-400 font-medium">جاري التحقق من الصلاحيات...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // ─── Auth Guard: blocked — show nothing (redirect is in progress) ────
+    if (authState === 'unauthorized') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-950" dir="rtl">
+                <div className="text-center space-y-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-950/50 border border-red-900/50">
+                        <ShieldAlert size={32} className="text-red-500" />
+                    </div>
+                    <p className="text-red-400 font-medium">غير مصرح بالدخول</p>
+                    <p className="text-slate-500 text-sm">جاري إعادة التوجيه...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
