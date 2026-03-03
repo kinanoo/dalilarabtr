@@ -110,18 +110,38 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     </h2>
                 </div>
 
-                <Link
-                    href="/updates"
-                    className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-                >
-                    الكل
-                    <ArrowLeft size={14} />
-                </Link>
+                <div className="flex items-center gap-2">
+                    {totalPages > 1 && (
+                        <div className="hidden sm:flex items-center gap-1">
+                            <button
+                                onClick={goNext}
+                                className="p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                aria-label="التالي"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                            <button
+                                onClick={goPrev}
+                                className="p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                aria-label="السابق"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                        </div>
+                    )}
+                    <Link
+                        href="/updates"
+                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                    >
+                        الكل
+                        <ArrowLeft size={14} />
+                    </Link>
+                </div>
             </div>
 
             {/* Carousel */}
             <div
-                className="max-w-7xl mx-auto px-4 relative group"
+                className="max-w-7xl mx-auto px-4 relative"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onTouchStart={handleTouchStart}
@@ -160,25 +180,6 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     </div>
                 </div>
 
-                {/* Navigation Arrows (desktop only) */}
-                {totalPages > 1 && (
-                    <>
-                        <button
-                            onClick={goNext}
-                            className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-slate-800 z-10 hidden sm:block"
-                            aria-label="التالي"
-                        >
-                            <ChevronLeft size={20} className="text-slate-800 dark:text-slate-100" />
-                        </button>
-                        <button
-                            onClick={goPrev}
-                            className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-slate-800 z-10 hidden sm:block"
-                            aria-label="السابق"
-                        >
-                            <ChevronRight size={20} className="text-slate-800 dark:text-slate-100" />
-                        </button>
-                    </>
-                )}
             </div>
 
             {/* Dots */}
