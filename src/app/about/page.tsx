@@ -15,7 +15,7 @@ async function getStats() {
   if (!supabase) return { articles: 0, codes: 0 };
 
   const [articlesRes, codesRes] = await Promise.all([
-    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('active', true),
+    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
     supabase.from('security_codes').select('code', { count: 'exact', head: true }),
   ]);
 

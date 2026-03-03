@@ -24,14 +24,13 @@ async function fetchArticleData(slug: string) {
     const decoded = decodeURIComponent(slug);
 
     // Try by slug (short English URL) first — filter status at DB level
-    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, is_active';
+    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status';
 
     let { data } = await supabase
       .from('articles')
       .select(articleFields)
       .eq('slug', decoded)
       .eq('status', 'approved')
-      .neq('is_active', false)
       .maybeSingle();
 
     // Fallback to id (original Arabic-based ID)
@@ -41,7 +40,6 @@ async function fetchArticleData(slug: string) {
         .select(articleFields)
         .eq('id', decoded)
         .eq('status', 'approved')
-        .neq('is_active', false)
         .maybeSingle());
     }
 

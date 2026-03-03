@@ -6,9 +6,9 @@ export const SCENARIO_ROUTING: Record<string, { link?: string; articleId?: strin
     "kbQuery": "بدل ضائع كملك ضياع بطاقة الحماية المؤقتة kayip kimlik"
   },
   "syrian-prohibited-check": {
-    "link": "/article/syrians-prohibited-areas",
-    "articleId": "syrians-prohibited-areas",
-    "kbQuery": "مناطق محظورة كملك سكن ايجار ممنوع نفوس"
+    "link": "/article/istanbul-closed-areas",
+    "articleId": "istanbul-closed-areas",
+    "kbQuery": "مناطق محظورة كملك سكن ايجار ممنوع نفوس مغلقة"
   },
   "syrian-travel-medical": {
     "link": "/article/travel-permit",
