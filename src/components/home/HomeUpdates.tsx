@@ -133,24 +133,30 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
             >
                 <div className="overflow-hidden rounded-xl">
                     <div
-                        className="flex transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                        className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
                         dir="ltr"
                         style={{
                             gap: `${gapPx}px`,
                             transform: `translateX(calc(-${currentPage * 100}% - ${currentPage * gapPx}px))`,
                         }}
                     >
-                        {updates.map((update, index) => (
-                            <div
-                                key={`${update.id}-${index}`}
-                                className="flex-shrink-0"
-                                style={{
-                                    width: `calc(${cardWidthPercent}% - ${((cardsPerPage - 1) * gapPx) / cardsPerPage}px)`,
-                                }}
-                            >
-                                <UpdateCard update={update} />
-                            </div>
-                        ))}
+                        {updates.map((update, index) => {
+                            const pageOfCard = Math.floor(index / cardsPerPage);
+                            const isActive = pageOfCard === currentPage;
+                            return (
+                                <div
+                                    key={`${update.id}-${index}`}
+                                    className="flex-shrink-0 transition-all duration-700"
+                                    style={{
+                                        width: `calc(${cardWidthPercent}% - ${((cardsPerPage - 1) * gapPx) / cardsPerPage}px)`,
+                                        opacity: isActive ? 1 : 0.4,
+                                        transform: isActive ? 'scale(1)' : 'scale(0.95)',
+                                    }}
+                                >
+                                    <UpdateCard update={update} />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
