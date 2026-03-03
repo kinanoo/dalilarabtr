@@ -1,14 +1,14 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 
 /**
  * DELETE /api/admin/feedback?id=<uuid>
  *
- * Uses the SSR client so HTTP-only session cookies are read properly.
- * The browser supabase client (anon key) loses the session because it
- * reads from localStorage — but the session is stored in HTTP-only cookies.
- * This route fixes that by running the delete server-side with the correct
- * authenticated identity, so is_admin() returns true and RLS allows the delete.
+ * Admin-only endpoint to delete feedback/votes.
+ * Uses service-role client for the actual delete (bypasses RLS).
+ * Auth check: session from HTTP-only cookies + admin role verification.
  */
 export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -18,31 +18,48 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
-    const response = NextResponse.json({ ok: true });
-
-    const supabase = createServerClient(
+    // Auth client to read session from cookies
+    const cookieStore = await cookies();
+    const authClient = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) {
-                    return request.cookies.get(name)?.value;
-                },
-                set(name: string, value: string, options: CookieOptions) {
-                    response.cookies.set({ name, value, ...options });
-                },
-                remove(name: string, options: CookieOptions) {
-                    response.cookies.set({ name, value: '', ...options, maxAge: 0 });
-                },
+                getAll() { return cookieStore.getAll(); },
+                setAll() {},
             },
         }
     );
 
-    const { error } = await supabase.from('content_votes').delete().eq('id', id);
+    // Verify user identity from session cookies
+    const { data: { user } } = await authClient.auth.getUser();
+    if (!user) {
+        return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    }
+
+    // Service-role client (bypasses RLS for admin check and delete)
+    const serviceClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    // Check admin role
+    const { data: profile } = await serviceClient
+        .from('member_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    }
+
+    // Perform delete with service client
+    const { error } = await serviceClient.from('content_votes').delete().eq('id', id);
 
     if (error) {
         return NextResponse.json({ error: 'Operation failed' }, { status: 500 });
     }
 
-    return response;
+    return NextResponse.json({ ok: true });
 }

@@ -85,19 +85,6 @@ export const ImageUploader = ({
         setUploading(true);
         const loadingToast = toast.loading('جاري ضغط ورفع الصورة...');
 
-        // Dev Member Bypass Check for Storage
-        if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
-            setTimeout(() => {
-                const dummyUrl = 'https://placehold.co/600x400/png?text=Bypass+Image';
-                setPreview(dummyUrl);
-                onChange(dummyUrl);
-                setUploading(false);
-                toast.dismiss(loadingToast);
-                toast.success('تم الرفع الوهمي بنجاح (وضع المطور)');
-            }, 1000);
-            return;
-        }
-
         try {
             // 1. Compress image
             const file = await compressImage(rawFile, maxWidth, quality);

@@ -54,19 +54,6 @@ export default function AddServicePage() {
 
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Dev Member Bypass Check
-        if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
-            setTimeout(() => {
-                toast.success('تم إرسال الخدمة بنجاح (محاكاة وضع المطور)', {
-                    description: 'تم تجاوز قاعدة البيانات لعدم وجود مستخدم حقيقي.',
-                    duration: 5000,
-                });
-                router.push('/dashboard');
-                setLoading(false);
-            }, 1000);
-            return;
-        }
-
         if (!user) {
             toast.error('يرجى تسجيل الدخول أولاً');
             router.push('/login');

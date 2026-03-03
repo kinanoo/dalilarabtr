@@ -25,9 +25,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check admin role
-        const { data: profile } = await supabase
-            .from('profiles')
+        // Check admin role (use service-role client to bypass RLS on member_profiles)
+        const { data: profile } = await supabaseAdmin
+            .from('member_profiles')
             .select('role')
             .eq('id', user.id)
             .single();

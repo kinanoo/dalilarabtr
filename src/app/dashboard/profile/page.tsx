@@ -34,14 +34,6 @@ export default function ProfilePage() {
     }, []);
 
     const loadProfile = async () => {
-        // Dev bypass
-        if (process.env.NODE_ENV === 'development' && document.cookie.includes('dev_member_bypass=true')) {
-            setFullName('عضو تجريبي');
-            setRole('member');
-            setLoading(false);
-            return;
-        }
-
         if (!supabase) { router.push('/login'); return; }
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { router.push('/login'); return; }
