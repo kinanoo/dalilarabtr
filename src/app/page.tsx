@@ -145,7 +145,13 @@ const organizationSchema = {
   name: SITE_CONFIG.name,
   description: SITE_CONFIG.slogan,
   url: SITE_CONFIG.siteUrl,
-  logo: `${SITE_CONFIG.siteUrl}/logo.png`,
+  logo: {
+    '@type': 'ImageObject',
+    url: `${SITE_CONFIG.siteUrl}/logo.png`,
+    width: 256,
+    height: 256,
+  },
+  image: `${SITE_CONFIG.siteUrl}/og-image.jpg`,
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: `+${SITE_CONFIG.whatsapp}`,

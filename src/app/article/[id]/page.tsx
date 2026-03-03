@@ -178,14 +178,16 @@ function buildJsonLd(args: {
       url: args.siteUrl,
       logo: {
         '@type': 'ImageObject',
-        url: `${args.siteUrl}/og-image.png`,
+        url: `${args.siteUrl}/logo.png`,
+        width: 256,
+        height: 256,
       },
     },
     articleSection: args.categoryName,
     ...(args.articleBody && { articleBody: args.articleBody }),
     ...(wordCount > 0 && { wordCount }),
     ...(args.keywords && args.keywords.length > 0 && { keywords: args.keywords.join(', ') }),
-    image: args.image || `${args.siteUrl}/og-image.png`,
+    image: args.image || `${args.siteUrl}/og-image.jpg`,
   };
 
   const breadcrumbItems = [
@@ -242,7 +244,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description,
       type: 'article',
       url,
-      images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/og-image.png`, width: 1200, height: 630, alt: article.title }],
+      images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630, alt: article.title }],
       publishedTime: dateModified,
       modifiedTime: dateModified,
       section: article.category,
@@ -252,7 +254,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: [article.image || `${SITE_CONFIG.siteUrl}/og-image.png`],
+      images: [article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`],
     },
   };
 }
@@ -298,7 +300,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     siteUrl: SITE_CONFIG.siteUrl,
     articleBody,
     keywords,
-    image: article.image || `${SITE_CONFIG.siteUrl}/og-image.png`,
+    image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
   });
 
   // Comments (Server Side)

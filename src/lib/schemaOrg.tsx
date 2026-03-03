@@ -63,7 +63,13 @@ export function generateOrganizationSchema() {
     name: SITE_CONFIG.name,
     description: SITE_CONFIG.slogan,
     url: SITE_CONFIG.siteUrl,
-    logo: `${SITE_CONFIG.siteUrl}/logo.png`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_CONFIG.siteUrl}/logo.png`,
+      width: 256,
+      height: 256,
+    },
+    image: `${SITE_CONFIG.siteUrl}/og-image.jpg`,
     ...(SITE_CONFIG.whatsapp ? {
       contactPoint: {
         '@type': 'ContactPoint',
@@ -141,7 +147,7 @@ export function generateArticleSchema(data: ArticleSchemaData) {
       '@type': 'WebPage',
       '@id': data.url || SITE_CONFIG.siteUrl,
     },
-    image: data.image || `${SITE_CONFIG.siteUrl}/og-image.png`,
+    image: data.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
     inLanguage: 'ar',
   };
 }
