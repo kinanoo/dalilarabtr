@@ -75,6 +75,7 @@ export async function fetchAllNotifications(limit = 30): Promise<Notification[]>
             .from('notifications')
             .select('id, type, title, message, link, icon, priority, created_at')
             .eq('is_active', true)
+            .is('target_user_id', null)
             .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
             .order('created_at', { ascending: false })
             .limit(limit),
