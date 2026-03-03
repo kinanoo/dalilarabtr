@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { Newspaper } from 'lucide-react';
 
 interface TickerItem {
     id: string;
@@ -88,9 +87,7 @@ export default function NewsTicker() {
 
     return (
         <div className="bg-[#1a2744] text-white/90 overflow-hidden text-[11px] sm:text-xs" dir="rtl">
-            <div className="flex items-center gap-2 px-3 py-1.5 max-w-7xl mx-auto">
-                <Newspaper size={11} className="text-emerald-400 flex-shrink-0" />
-
+            <div className="flex items-center px-3 py-1.5 max-w-7xl mx-auto">
                 <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
                     <div
                         className="whitespace-nowrap text-center"
