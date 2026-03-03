@@ -41,7 +41,7 @@ export async function fetchComments(entityType: string, entityId: string) {
 
     const { data: flatComments, error } = await supabase
         .from('comments')
-        .select('*')
+        .select('id, entity_type, entity_id, author_name, content, is_correction, is_official, status, created_at, parent_id, user_id, likes_count')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
         .or('status.eq.approved,is_official.eq.true')
@@ -93,7 +93,8 @@ export async function postComment(payload: {
     const insertObj: any = {
         ...rest,
         page_slug: payload.entity_id, // backward compat
-        status: 'approved',
+        // Authenticated users get auto-approved; anonymous comments require moderation
+        status: user_id ? 'approved' : 'pending',
     };
     // Only include user_id if provided (column may not exist yet)
     if (user_id) {

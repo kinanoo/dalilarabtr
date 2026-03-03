@@ -45,7 +45,7 @@ export default function ServicesClient() {
 
     let query = supabase
       .from('service_providers')
-      .select('*')
+      .select('id, name, profession, category, description, city, phone, image, is_verified, rating, review_count, status, slug, created_at')
       .eq('status', 'approved')
       .order('is_verified', { ascending: false })
       .order('rating', { ascending: false });

@@ -87,8 +87,12 @@ self.addEventListener('push', function (event) {
     const data = event.data?.json() ?? {};
     const title = data.title || 'دليل العرب في تركيا';
     const message = data.message || 'تحديث جديد متوفر';
-    // Default to /updates if no specific URL — never just "/"
-    const url = (data.url && data.url !== '/') ? data.url : '/updates';
+    // Validate URL is same-origin relative path (prevent phishing via push notifications)
+    var rawUrl = data.url || '/updates';
+    var url = '/updates';
+    if (typeof rawUrl === 'string' && rawUrl.startsWith('/') && !rawUrl.startsWith('//')) {
+        url = rawUrl;
+    }
 
     event.waitUntil(
         self.registration.showNotification(title, {

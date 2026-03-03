@@ -23,25 +23,26 @@ async function fetchArticleData(slug: string) {
   if (supabase) {
     const decoded = decodeURIComponent(slug);
 
-    // Try by slug (short English URL) first
+    // Try by slug (short English URL) first — filter status at DB level
+    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, is_active';
+
     let { data } = await supabase
       .from('articles')
-      .select('*')
+      .select(articleFields)
       .eq('slug', decoded)
+      .eq('status', 'approved')
+      .neq('is_active', false)
       .maybeSingle();
 
     // Fallback to id (original Arabic-based ID)
     if (!data) {
       ({ data } = await supabase
         .from('articles')
-        .select('*')
+        .select(articleFields)
         .eq('id', decoded)
+        .eq('status', 'approved')
+        .neq('is_active', false)
         .maybeSingle());
-    }
-
-    // Block pending/inactive articles from public view
-    if (data && (data.status === 'pending' || data.is_active === false)) {
-      return null;
     }
 
     if (data) {

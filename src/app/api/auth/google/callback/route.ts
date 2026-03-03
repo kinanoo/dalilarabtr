@@ -37,7 +37,11 @@ export async function GET(request: NextRequest) {
         if (!storedCsrf || storedCsrf !== stateData.csrf) {
             return NextResponse.redirect(`${origin}/login?error=state_mismatch`);
         }
-        next = stateData.next || '/dashboard';
+        // Validate redirect target is same-origin relative path (prevent open redirect)
+        const rawNext = stateData.next || '/dashboard';
+        if (typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//')) {
+            next = rawNext;
+        }
     } catch {
         return NextResponse.redirect(`${origin}/login?error=invalid_state`);
     }
