@@ -18,6 +18,7 @@ export default function NewsTicker() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
     const [overflow, setOverflow] = useState(0);
+    const [panOffset, setPanOffset] = useState(0);
     const textRef = useRef<HTMLSpanElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -40,19 +41,30 @@ export default function NewsTicker() {
         if (textRef.current && containerRef.current) {
             const diff = textRef.current.scrollWidth - containerRef.current.clientWidth;
             setOverflow(diff > 0 ? diff : 0);
+            setPanOffset(0);
         }
     }, []);
 
     useEffect(() => {
-        measure();
+        // Delay measure to ensure text is rendered
+        const t = setTimeout(measure, 50);
         window.addEventListener('resize', measure);
-        return () => window.removeEventListener('resize', measure);
+        return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
     }, [currentIndex, items, measure]);
 
-    // Rotate news every 5s (or 8s for long overflowing text)
+    // Pan back and forth for overflowing text
+    useEffect(() => {
+        if (overflow <= 0) return;
+        const timer = setInterval(() => {
+            setPanOffset(prev => prev === 0 ? overflow : 0);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, [overflow]);
+
+    // Rotate news
     useEffect(() => {
         if (items.length <= 1) return;
-        const delay = overflow > 0 ? 8000 : 5000;
+        const delay = overflow > 0 ? 9000 : 5000;
 
         const timer = setInterval(() => {
             setIsVisible(false);
@@ -76,12 +88,12 @@ export default function NewsTicker() {
 
                 <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
                     <div
-                        className={`whitespace-nowrap transition-opacity duration-300 ${
-                            isVisible ? 'opacity-100' : 'opacity-0'
-                        } ${overflow > 0 ? '' : 'text-center'}`}
-                        style={overflow > 0 ? {
-                            animation: `ticker-pan 6s ease-in-out infinite alternate`,
-                        } as React.CSSProperties : undefined}
+                        className={`whitespace-nowrap ${overflow > 0 ? '' : 'text-center'}`}
+                        style={{
+                            transform: `translateX(${panOffset}px)`,
+                            transition: panOffset > 0 ? 'transform 2.5s ease-in-out' : 'transform 2.5s ease-in-out',
+                            opacity: isVisible ? 1 : 0,
+                        }}
                     >
                         <span ref={textRef}>
                             {current.link ? (
@@ -104,18 +116,6 @@ export default function NewsTicker() {
                     </span>
                 )}
             </div>
-
-            {overflow > 0 && (
-                <style jsx>{`
-                    @keyframes ticker-pan {
-                        0%, 15%  { transform: translateX(0); }
-                        85%, 100% { transform: translateX(${overflow}px); }
-                    }
-                    @media (prefers-reduced-motion: reduce) {
-                        div { animation: none !important; }
-                    }
-                `}</style>
-            )}
         </div>
     );
 }
