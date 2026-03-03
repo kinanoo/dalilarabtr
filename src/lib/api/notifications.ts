@@ -1,254 +1,144 @@
 import { supabase } from '../supabaseClient';
 
 // ============================================
-// 📊 Types
+// Types
 // ============================================
 
 export type Notification = {
     id: string;
-    type: 'article' | 'law' | 'service' | 'update' | 'alert' | 'announcement' | 'reply' | 'review' | 'comment';
+    type: string;
     title: string;
     message: string;
     link?: string;
     icon?: string;
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-    target_audience?: string;
-    target_user_id?: string | null;
+    priority?: string;
     created_at: string;
-    is_read?: boolean;
+    is_read: boolean;
 };
 
 // ============================================
-// 🔔 جلب الإشعارات غير المقروءة
+// Auto-event config (admin_activity_log → notification)
 // ============================================
 
-export async function getUnreadNotifications(
-    userIdentifier: string
-): Promise<{ data: Notification[]; error: any }> {
-    if (!supabase) {
-        return { data: [], error: new Error('Supabase not initialized') };
-    }
+const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: string; href: (id: string) => string }> = {
+    new_article:  { type: 'مقال جديد',    icon: '📄', href: (id) => `/article/${id}` },
+    new_scenario: { type: 'سيناريو جديد', icon: '🧠', href: (id) => `/consultant?scenario=${id}` },
+    new_faq:      { type: 'سؤال شائع',    icon: '❓', href: () => `/faq` },
+    new_code:     { type: 'كود أمني',     icon: '🛡️', href: () => `/security-codes` },
+    new_zone:     { type: 'منطقة جديدة',  icon: '📍', href: () => `/zones` },
+    new_update:   { type: 'خبر',         icon: '📰', href: (id) => `/updates/${id}` },
+    new_service:  { type: 'خدمة جديدة',   icon: '💼', href: (id) => `/services/${id}` },
+    new_tool:     { type: 'أداة جديدة',   icon: '🔧', href: () => `/tools` },
+    new_source:   { type: 'مصدر رسمي',   icon: '🔗', href: () => `/sources` },
+};
 
-    try {
-        const { data, error } = await supabase.rpc('get_unread_notifications', {
-            p_user_identifier: userIdentifier,
-        });
-
-        if (error) throw error;
-        return { data: data || [], error: null };
-    } catch (error) {
-        console.error('Error fetching unread notifications:', error);
-        return { data: [], error };
-    }
-}
+const PUBLIC_EVENT_TYPES = Object.keys(AUTO_EVENT_CONFIG);
 
 // ============================================
-// 🔢 حساب عدد الإشعارات غير المقروءة
+// localStorage-based read tracking
 // ============================================
 
-export async function getUnreadCount(
-    userIdentifier: string
-): Promise<{ count: number; error: any }> {
-    if (!supabase) {
-        return { count: 0, error: new Error('Supabase not initialized') };
-    }
+const LAST_SEEN_KEY = 'daleel_notifications_last_seen';
 
-    try {
-        // Direct query instead of RPC for reliability
-        const { data: notifications, error: notifError } = await supabase
-            .from('notifications')
-            .select('id')
-            .eq('is_active', true)
-            .or(`target_user_id.is.null,target_user_id.eq.${userIdentifier}`)
-            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
-
-        if (notifError) throw notifError;
-
-        const { data: reads, error: readsError } = await supabase
-            .from('notification_reads')
-            .select('notification_id')
-            .eq('user_identifier', userIdentifier);
-
-        if (readsError) throw readsError;
-
-        const readIds = new Set(reads?.map(r => r.notification_id) || []);
-        const unreadCount = (notifications || []).filter(n => !readIds.has(n.id)).length;
-
-        return { count: unreadCount, error: null };
-    } catch (error) {
-        console.error('Error fetching unread count:', error);
-        return { count: 0, error };
+/** Initialize on first visit — sets "last seen" to now so new visitors see 0 unread */
+export function initLastSeen(): void {
+    if (typeof window === 'undefined') return;
+    if (!localStorage.getItem(LAST_SEEN_KEY)) {
+        localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
     }
 }
 
+/** Get the timestamp of when the user last opened the notification panel */
+export function getLastSeen(): string {
+    if (typeof window === 'undefined') return new Date().toISOString();
+    return localStorage.getItem(LAST_SEEN_KEY) || new Date().toISOString();
+}
+
+/** Mark all current notifications as seen (update timestamp to now) */
+export function markAllAsSeen(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
+}
+
 // ============================================
-// 📖 جلب كل الإشعارات (مقروءة وغير مقروءة)
+// Fetch combined notifications
 // ============================================
 
-export async function getAllNotifications(
-    userIdentifier: string,
-    limit: number = 20
-): Promise<{ data: Notification[]; error: any }> {
-    if (!supabase) {
-        return { data: [], error: new Error('Supabase not initialized') };
-    }
+export async function fetchAllNotifications(limit = 30): Promise<Notification[]> {
+    if (!supabase) return [];
 
-    try {
-        // جلب الإشعارات — عامة (target_user_id = null) + شخصية للمستخدم الحالي
-        const { data: notifications, error: notifError } = await supabase
+    const lastSeen = getLastSeen();
+
+    // Fetch both sources in parallel
+    const [manualResult, autoResult] = await Promise.all([
+        supabase
             .from('notifications')
-            .select('*')
+            .select('id, type, title, message, link, icon, priority, created_at')
             .eq('is_active', true)
-            .or(`target_user_id.is.null,target_user_id.eq.${userIdentifier}`)
             .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
             .order('created_at', { ascending: false })
-            .limit(limit);
+            .limit(limit),
+        supabase
+            .from('admin_activity_log')
+            .select('id, event_type, title, detail, entity_id, created_at')
+            .in('event_type', PUBLIC_EVENT_TYPES)
+            .order('created_at', { ascending: false })
+            .limit(limit),
+    ]);
 
-        if (notifError) throw notifError;
+    const items: Notification[] = [];
 
-        // جلب سجلات القراءة
-        const { data: reads, error: readsError } = await supabase
-            .from('notification_reads')
-            .select('notification_id')
-            .eq('user_identifier', userIdentifier);
-
-        if (readsError) throw readsError;
-
-        // دمج البيانات
-        const readIds = new Set(reads?.map((r) => r.notification_id) || []);
-        const result = (notifications || []).map((n) => ({
-            ...n,
-            is_read: readIds.has(n.id),
-        }));
-
-        return { data: result, error: null };
-    } catch (error) {
-        console.error('Error fetching all notifications:', error);
-        return { data: [], error };
-    }
-}
-
-// ============================================
-// ✅ تحديد إشعار كمقروء
-// ============================================
-
-export async function markAsRead(
-    notificationId: string,
-    userIdentifier: string
-): Promise<{ success: boolean; error: any }> {
-    if (!supabase) {
-        return { success: false, error: new Error('Supabase not initialized') };
-    }
-
-    try {
-        const { error } = await supabase.from('notification_reads').insert([
-            {
-                notification_id: notificationId,
-                user_identifier: userIdentifier,
-            },
-        ]);
-
-        if (error) {
-            // إذا كان مقروءاً مسبقاً (unique constraint)
-            if (error.code === '23505') {
-                return { success: true, error: null };
-            }
-            throw error;
+    // Manual notifications
+    if (manualResult.data) {
+        for (const n of manualResult.data) {
+            items.push({
+                id: n.id,
+                title: n.title,
+                message: n.message,
+                link: n.link || undefined,
+                icon: n.icon || '🔔',
+                type: n.type,
+                priority: n.priority,
+                created_at: n.created_at,
+                is_read: n.created_at <= lastSeen,
+            });
         }
-
-        return { success: true, error: null };
-    } catch (error) {
-        console.error('Error marking notification as read:', error);
-        return { success: false, error };
-    }
-}
-
-// ============================================
-// ✅ تحديد كل الإشعارات كمقروءة
-// ============================================
-
-export async function markAllAsRead(
-    userIdentifier: string,
-    notificationIds?: string[]
-): Promise<{ success: boolean; error: any }> {
-    if (!supabase) {
-        return { success: false, error: new Error('Supabase not initialized') };
     }
 
-    try {
-        // Use provided IDs directly (no RPC dependency)
-        let ids = notificationIds;
-
-        if (!ids || ids.length === 0) {
-            // Fallback: fetch unread IDs via direct query
-            const { data: notifications } = await supabase
-                .from('notifications')
-                .select('id')
-                .eq('is_active', true)
-                .or(`target_user_id.is.null,target_user_id.eq.${userIdentifier}`)
-                .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
-
-            const { data: reads } = await supabase
-                .from('notification_reads')
-                .select('notification_id')
-                .eq('user_identifier', userIdentifier);
-
-            const readSet = new Set(reads?.map(r => r.notification_id) || []);
-            ids = (notifications || []).filter(n => !readSet.has(n.id)).map(n => n.id);
+    // Auto events from admin_activity_log
+    if (autoResult.data) {
+        for (const e of autoResult.data) {
+            const cfg = AUTO_EVENT_CONFIG[e.event_type];
+            if (!cfg) continue;
+            items.push({
+                id: `auto_${e.id}`,
+                title: e.title || cfg.type,
+                message: e.detail || '',
+                link: cfg.href(e.entity_id || ''),
+                icon: cfg.icon,
+                type: cfg.type,
+                created_at: e.created_at,
+                is_read: e.created_at <= lastSeen,
+            });
         }
-
-        if (ids.length === 0) {
-            return { success: true, error: null };
-        }
-
-        const rows = ids.map(id => ({
-            notification_id: id,
-            user_identifier: userIdentifier,
-        }));
-
-        const { error } = await supabase
-            .from('notification_reads')
-            .upsert(rows, { onConflict: 'notification_id,user_identifier' });
-
-        if (error) throw error;
-        return { success: true, error: null };
-    } catch (error) {
-        console.error('Error marking all as read:', error);
-        return { success: false, error };
     }
+
+    // Sort by date desc and limit
+    items.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return items.slice(0, limit);
 }
 
 // ============================================
-// 🆔 الحصول على User Identifier
-// ============================================
-
-export function getUserIdentifier(): string {
-    if (typeof window === 'undefined') return 'server';
-
-    // أولاً: محاولة استخدام auth user ID (يُحفظ بواسطة NotificationBell عند التحميل)
-    const authId = sessionStorage.getItem('notification_auth_id');
-    if (authId) return authId;
-
-    // ثانياً: localStorage ID للزوار المجهولين
-    let userId = localStorage.getItem('user_notification_id');
-    if (!userId) {
-        userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('user_notification_id', userId);
-    }
-    return userId;
-}
-
-// ============================================
-// ➕ إنشاء إشعار جديد (عبر API route)
+// Create notification (used by admin panels)
 // ============================================
 
 export async function createNotification(payload: {
-    type: Notification['type'];
+    type: string;
     title: string;
     message: string;
     link?: string;
     icon?: string;
-    priority?: Notification['priority'];
+    priority?: string;
     target_user_id?: string | null;
 }): Promise<{ success: boolean; error: any }> {
     try {
