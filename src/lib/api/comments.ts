@@ -165,6 +165,27 @@ export async function deleteComment(
 export async function toggleCommentLike(commentId: string, visitorId?: string): Promise<{ liked: boolean; error?: any }> {
     if (!supabase) return { liked: false, error: 'Supabase not initialized' };
 
+    // Check if already liked
+    const { data: existing } = await supabase
+        .from('content_votes')
+        .select('id')
+        .eq('entity_type', 'comment')
+        .eq('entity_id', commentId)
+        .eq('vote_type', 'up')
+        .eq('visitor_id', visitorId || '')
+        .maybeSingle();
+
+    if (existing) {
+        // Unlike — remove the vote
+        const { error } = await supabase
+            .from('content_votes')
+            .delete()
+            .eq('id', existing.id);
+        if (error) return { liked: true, error };
+        return { liked: false };
+    }
+
+    // Like — insert new vote
     const { error } = await supabase
         .from('content_votes')
         .insert([{
@@ -174,8 +195,7 @@ export async function toggleCommentLike(commentId: string, visitorId?: string): 
             visitor_id: visitorId || undefined,
         }]);
 
-    // Unique constraint violation = already voted (not an error for the user)
-    if (error?.code === '23505') return { liked: false, error: 'already_voted' };
+    if (error?.code === '23505') return { liked: true }; // already liked (race condition)
     if (error) return { liked: false, error };
     return { liked: true };
 }

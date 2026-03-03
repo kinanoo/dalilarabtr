@@ -87,20 +87,29 @@ function CommentItem({
     }, [userKey, comment.id]);
 
     const handleLike = async () => {
-        if (liked) return;
-        setLiked(true);
-        setLikes((prev) => prev + 1);
+        const wasLiked = liked;
+        // Optimistic update
+        setLiked(!wasLiked);
+        setLikes((prev) => prev + (wasLiked ? -1 : 1));
         const likedSet = getLikedSet(userKey);
-        likedSet.add(comment.id);
+        if (wasLiked) {
+            likedSet.delete(comment.id);
+        } else {
+            likedSet.add(comment.id);
+        }
         saveLikedSet(userKey, likedSet);
 
-        const { error } = await toggleCommentLike(comment.id, visitorId);
-        if (error === 'already_voted') return; // silently ignore duplicate
+        const { liked: serverLiked, error } = await toggleCommentLike(comment.id, visitorId);
         if (error) {
-            setLiked(false);
-            setLikes((prev) => prev - 1);
+            // Revert on error
+            setLiked(wasLiked);
+            setLikes((prev) => prev + (wasLiked ? 1 : -1));
             const ls2 = getLikedSet(userKey);
-            ls2.delete(comment.id);
+            if (wasLiked) {
+                ls2.add(comment.id);
+            } else {
+                ls2.delete(comment.id);
+            }
             saveLikedSet(userKey, ls2);
         }
     };
@@ -244,10 +253,9 @@ function CommentItem({
                 <div className="flex items-center gap-2 pr-10">
                     <button
                         onClick={handleLike}
-                        disabled={liked}
                         className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
                             liked
-                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-default'
+                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400'
                                 : 'bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400'
                         }`}
                     >
