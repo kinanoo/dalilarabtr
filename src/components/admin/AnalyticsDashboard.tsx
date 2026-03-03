@@ -230,60 +230,60 @@ export function AnalyticsDashboard() {
             )}
 
             {/* ── 1. Live Traffic Cards ─────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-xl col-span-2 sm:col-span-1">
-                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                        <Users size={16} />
-                        <span className="text-xs font-bold uppercase">الزوار الآن</span>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="bg-slate-900 text-white p-3.5 sm:p-5 rounded-2xl shadow-xl col-span-2 sm:col-span-1">
+                    <div className="flex items-center gap-1.5 text-slate-400 mb-1.5">
+                        <Users size={14} />
+                        <span className="text-[10px] sm:text-xs font-bold uppercase">الزوار الآن</span>
                     </div>
-                    <div className="text-4xl font-black">{stats.active_users_now ?? 0}</div>
-                    <div className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5 font-bold">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="text-3xl sm:text-4xl font-black">{stats.active_users_now ?? 0}</div>
+                    <div className="text-[10px] sm:text-xs text-emerald-400 mt-1.5 flex items-center gap-1.5 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         نشط (آخر 5 دقائق)
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                    <div className="flex items-center gap-2 text-slate-500 mb-1">
-                        <Eye size={16} />
-                        <span className="text-xs font-bold uppercase">زوار اليوم</span>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 rounded-2xl flex flex-col justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <Eye size={14} />
+                        <span className="text-[10px] sm:text-xs font-bold uppercase">زوار اليوم</span>
                     </div>
-                    <div className="text-3xl font-black text-slate-800 dark:text-white">
+                    <div className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white">
                         {(stats.today_unique_visitors ?? stats.today_page_views ?? 0).toLocaleString('ar')}
                     </div>
-                    <div className="text-xs text-slate-400 mt-2">زائر فريد اليوم</div>
+                    <div className="text-[10px] sm:text-xs text-slate-400 mt-1.5">زائر فريد</div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                    <div className="flex items-center gap-2 text-slate-500 mb-1">
-                        <CalendarDays size={16} />
-                        <span className="text-xs font-bold uppercase">مشاهدات اليوم</span>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 rounded-2xl flex flex-col justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <CalendarDays size={14} />
+                        <span className="text-[10px] sm:text-xs font-bold uppercase">مشاهدات اليوم</span>
                     </div>
-                    <div className="text-3xl font-black text-slate-800 dark:text-white">
+                    <div className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white">
                         {(stats.today_page_views ?? 0).toLocaleString('ar')}
                     </div>
-                    <div className="text-xs text-slate-400 mt-2">صفحة شوهدت اليوم</div>
+                    <div className="text-[10px] sm:text-xs text-slate-400 mt-1.5">صفحة</div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                    <div className="flex items-center gap-2 text-slate-500 mb-1">
-                        <Clock size={16} />
-                        <span className="text-xs font-bold uppercase">متوسط البقاء</span>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 sm:p-5 rounded-2xl flex flex-col justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                        <Clock size={14} />
+                        <span className="text-[10px] sm:text-xs font-bold uppercase">متوسط البقاء</span>
                     </div>
-                    <div className="text-3xl font-black text-slate-800 dark:text-white">
+                    <div className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white">
                         {avgDuration > 0 ? formatDuration(avgDuration) : '—'}
                     </div>
-                    <div className="text-xs mt-2">
+                    <div className="text-[10px] sm:text-xs mt-1.5">
                         {avgDuration > 0
-                            ? <span className="text-emerald-600 font-bold">متوسط آخر 30 يوم</span>
-                            : <span className="text-slate-400">يبدأ التتبع تلقائياً</span>
+                            ? <span className="text-emerald-600 font-bold">آخر 30 يوم</span>
+                            : <span className="text-slate-400">يبدأ تلقائياً</span>
                         }
                     </div>
                 </div>
             </div>
 
             {/* ── 2. Period Overview ─────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <PeriodCard
                     label="هذا الأسبوع"
                     count={stats.week_visitors ?? 0}
@@ -306,8 +306,8 @@ export function AnalyticsDashboard() {
 
             {/* ── 3. Top Pages ─────────────────────────────── */}
             <div>
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <ArrowUpRight className="text-emerald-500" size={18} />
                         الأكثر زيارة
                     </h3>
@@ -341,8 +341,8 @@ export function AnalyticsDashboard() {
 
             {/* ── 3.5. Content Performance ────────────────────────── */}
             {contentPerf.length > 0 && (
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <BarChart3 className="text-violet-500" size={18} />
                         أداء المحتوى
                         <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">آخر 30 يوم</span>
@@ -390,10 +390,10 @@ export function AnalyticsDashboard() {
             )}
 
             {/* ── 4. Devices + Countries + Sources ────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Device Breakdown */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <Smartphone className="text-blue-500" size={18} />
                         الأجهزة
                     </h3>
@@ -444,8 +444,8 @@ export function AnalyticsDashboard() {
                 </div>
 
                 {/* Country Breakdown */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <Globe className="text-violet-500" size={18} />
                         الدول
                     </h3>
@@ -495,8 +495,8 @@ export function AnalyticsDashboard() {
                 </div>
 
                 {/* Traffic Sources */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <Share2 className="text-amber-500" size={18} />
                         مصادر الزيارات
                     </h3>
@@ -532,7 +532,7 @@ export function AnalyticsDashboard() {
                     <Activity className="text-emerald-500" size={20} />
                     نظرة عامة على المحتوى
                 </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
                     <ContentStatCard title="المحتوى المنشور" count={stats.total_articles} icon={FileText} color="emerald" label="مقال وتحديث" />
                     <ContentStatCard title="الخدمات" count={stats.total_services} icon={Briefcase} color="blue" label="مزود خدمة" />
                     <ContentStatCard title="السيناريوهات" count={stats.total_scenarios} icon={BrainCircuit} color="violet" label="سيناريو ذكي" />
@@ -559,26 +559,28 @@ function PeriodCard({ label, count, icon: Icon, color, change, prevLabel, unit }
     const isUp = (change ?? 0) > 0;
     const ChangeIcon = hasChange ? (isUp ? ArrowUp : ArrowDown) : Minus;
     return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText}`}>
-                <Icon size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-slate-400 uppercase">{label}</p>
-                <div className="flex items-center gap-2">
-                    <p className="text-xl font-black text-slate-800 dark:text-white">{count.toLocaleString('ar')}</p>
-                    {hasChange && (
-                        <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                            isUp
-                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                                : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                        }`}>
-                            <ChangeIcon size={10} />
-                            {Math.abs(change!)}٪
-                        </span>
-                    )}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-2xl text-center sm:text-start">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3">
+                <div className={`p-2 sm:p-2.5 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText} shrink-0`}>
+                    <Icon size={18} className="sm:w-5 sm:h-5" />
                 </div>
-                <p className="text-[10px] text-slate-400 truncate">{prevLabel || unit || 'زائر فريد'}</p>
+                <div className="flex-1 min-w-0">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase leading-tight">{label}</p>
+                    <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                        <p className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">{count.toLocaleString('ar')}</p>
+                        {hasChange && (
+                            <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded-full ${
+                                isUp
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                    : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                            }`}>
+                                <ChangeIcon size={8} />
+                                {Math.abs(change!)}٪
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] text-slate-400 truncate hidden sm:block">{prevLabel || unit || 'زائر فريد'}</p>
+                </div>
             </div>
         </div>
     );
@@ -589,14 +591,14 @@ function ContentStatCard({ title, count, icon: Icon, color, label }: {
 }) {
     const c = STAT_COLORS[color] || STAT_COLORS.blue;
     return (
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:shadow-lg transition-all duration-300 group">
-            <div className={`p-3 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText} group-hover:scale-110 transition-transform`}>
-                <Icon size={24} />
+        <div className="bg-white dark:bg-slate-900 p-3 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2.5 sm:gap-4 hover:shadow-lg transition-all duration-300 group">
+            <div className={`p-2 sm:p-3 rounded-xl ${c.bg} ${c.darkBg} ${c.text} ${c.darkText} shrink-0`}>
+                <Icon size={18} className="sm:w-6 sm:h-6" />
             </div>
-            <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{title}</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-0.5">{count ?? 0}</h3>
-                <p className="text-[10px] text-slate-400">{label}</p>
+            <div className="min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{title}</p>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white">{count ?? 0}</h3>
+                <p className="text-[9px] sm:text-[10px] text-slate-400 truncate">{label}</p>
             </div>
         </div>
     );
