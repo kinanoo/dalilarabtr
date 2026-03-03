@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
@@ -17,6 +17,9 @@ export default function NewsTicker() {
     const [items, setItems] = useState<TickerItem[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
+    const [overflow, setOverflow] = useState(0);
+    const textRef = useRef<HTMLSpanElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         async function fetchTicker() {
@@ -32,9 +35,24 @@ export default function NewsTicker() {
         fetchTicker();
     }, []);
 
-    // Rotate news every 5 seconds with fade transition
+    // Measure overflow after each index change
+    const measure = useCallback(() => {
+        if (textRef.current && containerRef.current) {
+            const diff = textRef.current.scrollWidth - containerRef.current.clientWidth;
+            setOverflow(diff > 0 ? diff : 0);
+        }
+    }, []);
+
+    useEffect(() => {
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+    }, [currentIndex, items, measure]);
+
+    // Rotate news every 5s (or 8s for long overflowing text)
     useEffect(() => {
         if (items.length <= 1) return;
+        const delay = overflow > 0 ? 8000 : 5000;
 
         const timer = setInterval(() => {
             setIsVisible(false);
@@ -42,47 +60,62 @@ export default function NewsTicker() {
                 setCurrentIndex(prev => (prev + 1) % items.length);
                 setIsVisible(true);
             }, 300);
-        }, 5000);
+        }, delay);
 
         return () => clearInterval(timer);
-    }, [items.length]);
+    }, [items.length, overflow]);
 
-    // Only show on homepage
     if (pathname !== '/' || items.length === 0) return null;
 
     const current = items[currentIndex];
 
     return (
-        <div className="bg-[#1a2744] text-white/90 overflow-hidden relative text-[11px] sm:text-xs" dir="rtl">
-            <div className="flex items-center justify-center gap-2 px-3 py-2 max-w-7xl mx-auto">
-                {/* Icon */}
-                <Newspaper size={12} className="text-emerald-400 flex-shrink-0" />
+        <div className="bg-[#1a2744] text-white/90 overflow-hidden text-[11px] sm:text-xs" dir="rtl">
+            <div className="flex items-center gap-2 px-3 py-1.5 max-w-7xl mx-auto">
+                <Newspaper size={11} className="text-emerald-400 flex-shrink-0" />
 
-                {/* Current news item — centered */}
-                <div
-                    className={`text-center leading-relaxed transition-all duration-300 ease-in-out ${
-                        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
-                    }`}
-                >
-                    {current.link ? (
-                        <Link
-                            href={current.link}
-                            className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
-                        >
-                            {current.text}
-                        </Link>
-                    ) : (
-                        <span>{current.text}</span>
-                    )}
+                <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
+                    <div
+                        className={`whitespace-nowrap transition-opacity duration-300 ${
+                            isVisible ? 'opacity-100' : 'opacity-0'
+                        } ${overflow > 0 ? '' : 'text-center'}`}
+                        style={overflow > 0 ? {
+                            animation: `ticker-pan 6s ease-in-out infinite alternate`,
+                        } as React.CSSProperties : undefined}
+                    >
+                        <span ref={textRef}>
+                            {current.link ? (
+                                <Link
+                                    href={current.link}
+                                    className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
+                                >
+                                    {current.text}
+                                </Link>
+                            ) : (
+                                current.text
+                            )}
+                        </span>
+                    </div>
                 </div>
 
-                {/* Counter */}
                 {items.length > 1 && (
                     <span className="text-[9px] text-white/40 flex-shrink-0 tabular-nums">
                         {currentIndex + 1}/{items.length}
                     </span>
                 )}
             </div>
+
+            {overflow > 0 && (
+                <style jsx>{`
+                    @keyframes ticker-pan {
+                        0%, 15%  { transform: translateX(0); }
+                        85%, 100% { transform: translateX(${overflow}px); }
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                        div { animation: none !important; }
+                    }
+                `}</style>
+            )}
         </div>
     );
 }
