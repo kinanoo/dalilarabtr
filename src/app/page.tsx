@@ -10,53 +10,21 @@ export const revalidate = 300; // Cache for 5 minutes (ISR)
 
 import { Suspense } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { SITE_CONFIG, CATEGORY_SLUGS } from '@/lib/config';
+import { SITE_CONFIG } from '@/lib/config';
 
 // Components
 import HeroSection from '@/components/home/HeroSection';
 import QuickActionsGrid from '@/components/home/QuickActionsGrid';
-import HomeCategories from '@/components/home/HomeCategories';
 import HomeUpdates from '@/components/home/HomeUpdates';
 import GlobalSearch from '@/components/GlobalSearch';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import GuidedJourney from '@/components/GuidedJourney';
-import ShareMenu from '@/components/ShareMenu';
-import { Loader2 } from 'lucide-react';
 
 // ============================================
 // 📦 Data Fetching (Server-Side)
 // ============================================
 
-// 1. Categories
-async function getCategories() {
-  // Static Fallback
-  const staticCats = Object.entries(CATEGORY_SLUGS).map(([slug, title], idx) => ({
-    id: `cat-${idx}`,
-    slug,
-    title,
-    description: '',
-    icon: 'FileText', // Default icon mapping key, refined in HomeCategories
-    active: true,
-    sort_order: idx
-  }));
-
-  try {
-    if (!supabase) return staticCats;
-
-    const { data } = await supabase
-      .from('service_categories')
-      .select('slug, title, description, icon, sort_order')
-      .eq('is_featured', true)
-      .order('sort_order');
-
-    if (data && data.length > 0) return data;
-    return staticCats;
-  } catch (error) {
-    return staticCats;
-  }
-}
-
-// 2. Updates — query content tables directly for accurate dates (not admin_activity_log)
+// Updates — query content tables directly for accurate dates (not admin_activity_log)
 const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
 function formatArabicDate(isoDate: string): string {
@@ -191,11 +159,7 @@ export const metadata = {
 // ============================================
 
 export default async function Home() {
-  // Parallel fetching
-  const [categories, updates] = await Promise.all([
-    getCategories(),
-    getUpdates()
-  ]);
+  const updates = await getUpdates();
 
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-transparent selection:bg-emerald-200 dark:selection:bg-emerald-700">
@@ -227,12 +191,7 @@ export default async function Home() {
       {/* 🧭 Guided Journey (Client) */}
       <GuidedJourney />
 
-      {/* 3. CATEGORIES (Server) */}
-      <Suspense fallback={<div className="flex justify-center py-10"><Loader2 className="animate-spin text-emerald-600" /></div>}>
-        <HomeCategories categories={categories} />
-      </Suspense>
-
-      {/* 4. QUICK ACTIONS (Client) */}
+      {/* 3. QUICK ACTIONS (Client) */}
       <QuickActionsGrid />
 
 
