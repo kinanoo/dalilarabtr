@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PageHero from '@/components/PageHero';
 import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
 import { supabase } from '@/lib/supabaseClient';
@@ -22,10 +22,46 @@ const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: typeof FileText; b
   new_source:   { type: 'مصدر رسمي', icon: ExternalLink, bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600',    href: () => `/sources` },
 };
 
+const FILTER_TABS = [
+  { key: 'all', label: 'الكل' },
+  { key: 'news', label: 'أخبار' },
+  { key: 'new_article', label: 'مقالات' },
+  { key: 'new_scenario', label: 'سيناريوهات' },
+  { key: 'new_code', label: 'أكواد أمنية' },
+  { key: 'new_faq', label: 'أسئلة' },
+];
+
+function groupByDate(items: any[]): { label: string; items: any[] }[] {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  const groups: Record<string, any[]> = {
+    'اليوم': [],
+    'هذا الأسبوع': [],
+    'هذا الشهر': [],
+    'أقدم': [],
+  };
+
+  items.forEach(item => {
+    const date = item.sortDate || '';
+    if (date === today) groups['اليوم'].push(item);
+    else if (date >= weekAgo) groups['هذا الأسبوع'].push(item);
+    else if (date >= monthAgo) groups['هذا الشهر'].push(item);
+    else groups['أقدم'].push(item);
+  });
+
+  return Object.entries(groups)
+    .filter(([, items]) => items.length > 0)
+    .map(([label, items]) => ({ label, items }));
+}
+
 export default function UpdatesPage() {
   const { updates: dbUpdates, loading: updatesLoading } = useAdminUpdates();
   const [autoEvents, setAutoEvents] = useState<any[]>([]);
   const [autoLoading, setAutoLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   // Fetch auto events from admin_activity_log
   useEffect(() => {
@@ -67,8 +103,18 @@ export default function UpdatesPage() {
 
   const allItems = [...manualUpdates, ...autoItems]
     .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''))
-    .slice(0, 20); // Show latest 20 items only
+    .slice(0, 30);
 
+  // Apply filter
+  const filteredItems = activeFilter === 'all'
+    ? allItems
+    : allItems.filter(item =>
+        item.source === 'manual'
+          ? activeFilter === 'news'
+          : item.event_type === activeFilter
+      );
+
+  const groups = groupByDate(filteredItems);
   const loading = updatesLoading && autoLoading;
 
   return (
@@ -82,29 +128,110 @@ export default function UpdatesPage() {
 
       <section className="px-4 py-10">
         <div className="max-w-4xl mx-auto">
+          {/* Filter Tabs */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-4 mb-6 -mx-1 px-1">
+            {FILTER_TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveFilter(tab.key)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  activeFilter === tab.key
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-emerald-400'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           {loading && allItems.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 size={40} className="animate-spin text-emerald-600" />
             </div>
-          ) : allItems.length ? (
-            <div className="space-y-3">
-              {allItems.map((item: any) => (
-                item.source === 'auto'
-                  ? <AutoEventCard key={`auto-${item.id}`} item={item} />
-                  : <ManualUpdateCard key={`manual-${item.id}`} u={item} />
+          ) : filteredItems.length ? (
+            <div className="relative">
+              {/* Timeline vertical line */}
+              <div className="absolute right-[19px] top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800" />
+
+              {groups.map(group => (
+                <div key={group.label} className="mb-8 last:mb-0">
+                  {/* Group header */}
+                  <div className="flex items-center gap-3 mb-4 relative">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 border-2 border-emerald-500 flex items-center justify-center z-10 flex-shrink-0">
+                      <Calendar size={16} className="text-emerald-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                      {group.label}
+                    </h3>
+                  </div>
+
+                  {/* Items */}
+                  <div className="space-y-3 pr-5">
+                    {group.items.map((item: any, index: number) => (
+                      <TimelineItem key={`${item.source}-${item.id}`} item={item} index={index} />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-16">
               <Bell size={48} className="mx-auto mb-4 text-slate-300 dark:text-slate-600" />
               <p className="text-slate-500 dark:text-slate-300">
-                لا توجد تحديثات منشورة حالياً.
+                {activeFilter === 'all'
+                  ? 'لا توجد تحديثات منشورة حالياً.'
+                  : 'لا توجد نتائج لهذا الفلتر.'}
               </p>
             </div>
           )}
         </div>
       </section>
     </main>
+  );
+}
+
+// Timeline item with IntersectionObserver fade-in
+function TimelineItem({ item, index }: { item: any; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`relative transition-all duration-500 ease-out ${
+        isVisible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-4'
+      }`}
+      style={{ transitionDelay: `${Math.min(index * 80, 400)}ms` }}
+    >
+      {/* Timeline dot */}
+      <div className="absolute -right-[15px] top-6 w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 border-2 border-white dark:border-slate-950 z-10" />
+
+      {item.source === 'auto'
+        ? <AutoEventCard item={item} />
+        : <ManualUpdateCard u={item} />
+      }
+    </div>
   );
 }
 
@@ -159,7 +286,7 @@ function AutoEventCard({ item }: { item: any }) {
   );
 }
 
-// Manual update card — truncated with link to detail page
+// Manual update card
 function ManualUpdateCard({ u }: { u: any }) {
   return (
     <Link

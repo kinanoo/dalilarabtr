@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink } from 'lucide-react';
+import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 
 function isNewContent(dateStr: string): boolean {
     if (!dateStr) return false;
@@ -25,47 +25,83 @@ const AUTO_ICON_MAP: Record<string, { icon: typeof FileText; bg: string; text: s
     new_source:   { icon: ExternalLink, bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600' },
 };
 
+function useCardsPerPage(): number {
+    const [count, setCount] = useState(1);
+    useEffect(() => {
+        const update = () => {
+            if (window.innerWidth >= 1024) setCount(3);
+            else if (window.innerWidth >= 640) setCount(2);
+            else setCount(1);
+        };
+        update();
+        window.addEventListener('resize', update);
+        return () => window.removeEventListener('resize', update);
+    }, []);
+    return count;
+}
+
 export default function HomeUpdates({ updates }: { updates: any[] }) {
     if (!updates || updates.length === 0) return null;
 
-    const minBaseCount = 5;
-    let baseList = [...updates];
-    while (baseList.length < minBaseCount) {
-        baseList = [...baseList, ...updates];
-    }
+    const cardsPerPage = useCardsPerPage();
+    const totalPages = Math.ceil(updates.length / cardsPerPage);
 
-    const [isPaused, setIsPaused] = useState(false);
-    const isDraggingRef = useRef(false);
-    const hasDraggedRef = useRef(false);
-    const startXRef = useRef(0);
-    const resumeTimer = useRef<ReturnType<typeof setTimeout>>();
+    const [currentPage, setCurrentPage] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
+    const touchStartRef = useRef(0);
+    const autoplayRef = useRef<ReturnType<typeof setInterval>>();
 
-    // ~4 seconds per card for comfortable reading speed
-    const durationSeconds = baseList.length * 4;
+    // Clamp currentPage when totalPages changes (e.g. resize)
+    useEffect(() => {
+        if (currentPage >= totalPages) setCurrentPage(Math.max(0, totalPages - 1));
+    }, [totalPages, currentPage]);
 
-    const handlePointerDown = useCallback((e: React.PointerEvent) => {
-        isDraggingRef.current = true;
-        hasDraggedRef.current = false;
-        startXRef.current = e.clientX;
-        setIsPaused(true);
-        if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    // Auto-advance every 3 seconds
+    useEffect(() => {
+        if (isHovered || totalPages <= 1) return;
+        autoplayRef.current = setInterval(() => {
+            setCurrentPage(prev => (prev + 1) % totalPages);
+        }, 3000);
+        return () => clearInterval(autoplayRef.current);
+    }, [isHovered, totalPages]);
+
+    const goTo = useCallback((page: number) => {
+        setCurrentPage(page);
     }, []);
 
-    const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDraggingRef.current) return;
-        if (Math.abs(e.clientX - startXRef.current) > 5) {
-            hasDraggedRef.current = true;
+    const goNext = useCallback(() => {
+        setCurrentPage(prev => (prev + 1) % totalPages);
+    }, [totalPages]);
+
+    const goPrev = useCallback(() => {
+        setCurrentPage(prev => (prev - 1 + totalPages) % totalPages);
+    }, [totalPages]);
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        touchStartRef.current = e.changedTouches[0].clientX;
+    }, []);
+
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        const diff = e.changedTouches[0].clientX - touchStartRef.current;
+        if (Math.abs(diff) > 50) {
+            if (diff < 0) goNext();
+            else goPrev();
         }
-    }, []);
+    }, [goNext, goPrev]);
 
-    const handlePointerUp = useCallback(() => {
-        isDraggingRef.current = false;
-        resumeTimer.current = setTimeout(() => setIsPaused(false), 3000);
-    }, []);
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowLeft') goPrev();
+        else if (e.key === 'ArrowRight') goNext();
+    }, [goNext, goPrev]);
+
+    // Card width: percentage of the viewport container
+    const cardWidthPercent = 100 / cardsPerPage;
+    // Gap in px
+    const gapPx = 12;
 
     return (
-        <section className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50 overflow-hidden">
-            {/* Compact Header */}
+        <section className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50">
+            {/* Header */}
             <div className="max-w-7xl mx-auto px-4 mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Bell size={18} className="text-amber-500" />
@@ -83,60 +119,99 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                 </Link>
             </div>
 
-            {/* Scrollable Track — GPU-accelerated CSS animation (no JavaScript per frame) */}
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="relative w-full overflow-hidden rounded-xl">
-                    {/* Gradient Masks */}
-                    <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-slate-100 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
-                    <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-slate-100 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
-
+            {/* Carousel */}
+            <div
+                className="max-w-7xl mx-auto px-4 relative group"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onKeyDown={handleKeyDown}
+                tabIndex={0}
+                role="region"
+                aria-label="آخر التحديثات"
+            >
+                <div className="overflow-hidden rounded-xl">
                     <div
-                        className="updates-track flex gap-3 py-2 cursor-grab active:cursor-grabbing select-none"
+                        className="flex transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
                         dir="ltr"
                         style={{
-                            animationDuration: `${durationSeconds}s`,
-                            animationPlayState: isPaused ? 'paused' : 'running',
+                            gap: `${gapPx}px`,
+                            transform: `translateX(calc(-${currentPage * 100}% - ${currentPage * gapPx}px))`,
                         }}
-                        onPointerDown={handlePointerDown}
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={handlePointerUp}
-                        onPointerLeave={handlePointerUp}
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => { if (!isDraggingRef.current) setIsPaused(false); }}
                     >
-                        {/* List 1 */}
-                        {baseList.map((update, index) => (
-                            <UpdateCard key={`l1-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
+                        {updates.map((update, index) => (
+                            <div
+                                key={`${update.id}-${index}`}
+                                className="flex-shrink-0"
+                                style={{
+                                    width: `calc(${cardWidthPercent}% - ${((cardsPerPage - 1) * gapPx) / cardsPerPage}px)`,
+                                }}
+                            >
+                                <UpdateCard update={update} />
+                            </div>
                         ))}
-                        {/* List 2 (seamless loop) */}
-                        <div aria-hidden="true" className="contents">
-                            {baseList.map((update, index) => (
-                                <UpdateCard key={`l2-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
-                            ))}
-                        </div>
                     </div>
                 </div>
+
+                {/* Navigation Arrows (desktop only) */}
+                {totalPages > 1 && (
+                    <>
+                        <button
+                            onClick={goNext}
+                            className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-slate-800 z-10 hidden sm:block"
+                            aria-label="التالي"
+                        >
+                            <ChevronLeft size={20} className="text-slate-800 dark:text-slate-100" />
+                        </button>
+                        <button
+                            onClick={goPrev}
+                            className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-slate-800 z-10 hidden sm:block"
+                            aria-label="السابق"
+                        >
+                            <ChevronRight size={20} className="text-slate-800 dark:text-slate-100" />
+                        </button>
+                    </>
+                )}
             </div>
 
-            {/* Pure CSS animation — runs entirely on GPU compositor thread */}
-            <style jsx>{`
-                .updates-track {
-                    animation: scroll-updates linear infinite;
-                    will-change: transform;
-                }
-                @keyframes scroll-updates {
-                    from { transform: translateX(0); }
-                    to   { transform: translateX(-50%); }
-                }
-                @media (prefers-reduced-motion: reduce) {
-                    .updates-track { animation: none; }
-                }
-            `}</style>
+            {/* Progress Bar + Dots */}
+            {totalPages > 1 && (
+                <div className="max-w-7xl mx-auto px-4 mt-3">
+                    {/* Progress bar */}
+                    <div className="h-0.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-3">
+                        <div
+                            key={currentPage}
+                            className="h-full bg-emerald-500 rounded-full"
+                            style={{
+                                animation: isHovered ? 'none' : 'progress 3s linear forwards',
+                            }}
+                        />
+                    </div>
+
+                    {/* Dots */}
+                    <div className="flex justify-center gap-1.5" dir="ltr">
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goTo(i)}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${
+                                    i === currentPage
+                                        ? 'w-6 bg-emerald-500'
+                                        : 'w-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
+                                }`}
+                                aria-label={`الصفحة ${i + 1}`}
+                                aria-current={i === currentPage ? 'true' : undefined}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
 
-function UpdateCard({ update, hasDraggedRef }: { update: any; hasDraggedRef: React.RefObject<boolean> }) {
+function UpdateCard({ update }: { update: any }) {
     const isAuto = update.source === 'auto';
     const iconConfig = isAuto ? AUTO_ICON_MAP[update.event_type] : null;
     const href = update.href || `/updates/${update.id}`;
@@ -144,14 +219,8 @@ function UpdateCard({ update, hasDraggedRef }: { update: any; hasDraggedRef: Rea
     return (
         <Link
             href={href}
-            draggable="false"
-            className="block w-[220px] sm:w-[280px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group/card relative overflow-hidden"
+            className="block h-full bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group/card relative overflow-hidden"
             dir="rtl"
-            onClick={(e) => {
-                if (hasDraggedRef.current) {
-                    e.preventDefault();
-                }
-            }}
         >
             <div className="flex items-start gap-3 h-full">
                 {/* Icon or Image */}
