@@ -1,28 +1,24 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Sparkles, Calendar, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, ArrowLeft, Briefcase, Wrench, ExternalLink } from 'lucide-react';
+import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
+import { supabase } from '@/lib/supabaseClient';
+import { Bell, Sparkles, Loader2, Calendar, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, ArrowLeft, Briefcase, Wrench, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-function isNewContent(dateStr: string): boolean {
-  if (!dateStr) return false;
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  return diffDays <= 7;
-}
+const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update', 'new_service', 'new_tool', 'new_source'];
 
-const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: typeof FileText; bg: string; text: string }> = {
-  new_article:  { type: 'مقال',      icon: FileText,     bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600' },
-  new_scenario: { type: 'سيناريو',   icon: AlertCircle,  bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600' },
-  new_faq:      { type: 'سؤال',      icon: HelpCircle,   bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600' },
-  new_code:     { type: 'كود أمني',   icon: Shield,       bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600' },
-  new_zone:     { type: 'منطقة',     icon: MapPin,       bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600' },
-  new_update:   { type: 'خبر',       icon: Newspaper,    bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600' },
-  new_service:  { type: 'خدمة',      icon: Briefcase,    bg: 'bg-cyan-100 dark:bg-cyan-900/30',       text: 'text-cyan-600' },
-  new_tool:     { type: 'أداة',      icon: Wrench,       bg: 'bg-pink-100 dark:bg-pink-900/30',       text: 'text-pink-600' },
-  new_source:   { type: 'مصدر رسمي', icon: ExternalLink, bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600' },
+const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: typeof FileText; bg: string; text: string; href: (id: string) => string }> = {
+  new_article:  { type: 'مقال',      icon: FileText,     bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600', href: (id) => `/article/${id}` },
+  new_scenario: { type: 'سيناريو',   icon: AlertCircle,  bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600',    href: (id) => `/consultant?scenario=${id}` },
+  new_faq:      { type: 'سؤال',      icon: HelpCircle,   bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600',  href: () => `/faq` },
+  new_code:     { type: 'كود أمني',   icon: Shield,       bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600',     href: () => `/security-codes` },
+  new_zone:     { type: 'منطقة',     icon: MapPin,       bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600',  href: () => `/zones` },
+  new_update:   { type: 'خبر',       icon: Newspaper,    bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600',   href: (id) => `/updates/${id}` },
+  new_service:  { type: 'خدمة',      icon: Briefcase,    bg: 'bg-cyan-100 dark:bg-cyan-900/30',       text: 'text-cyan-600',    href: (id) => `/services/${id}` },
+  new_tool:     { type: 'أداة',      icon: Wrench,       bg: 'bg-pink-100 dark:bg-pink-900/30',       text: 'text-pink-600',    href: () => `/tools` },
+  new_source:   { type: 'مصدر رسمي', icon: ExternalLink, bg: 'bg-teal-100 dark:bg-teal-900/30',       text: 'text-teal-600',    href: () => `/sources` },
 };
 
 const FILTER_TABS = [
@@ -60,18 +56,65 @@ function groupByDate(items: any[]): { label: string; items: any[] }[] {
     .map(([label, items]) => ({ label, items }));
 }
 
-export default function UpdatesClient({ items }: { items: any[] }) {
+export default function UpdatesClient() {
+  const { updates: dbUpdates, loading: updatesLoading } = useAdminUpdates();
+  const [autoEvents, setAutoEvents] = useState<any[]>([]);
+  const [autoLoading, setAutoLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
 
+  // Fetch auto events from admin_activity_log
+  useEffect(() => {
+    async function fetchAutoEvents() {
+      if (!supabase) { setAutoLoading(false); return; }
+      const { data } = await supabase
+        .from('admin_activity_log')
+        .select('id, event_type, title, detail, entity_id, created_at')
+        .in('event_type', PUBLIC_EVENT_TYPES)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      setAutoEvents(data || []);
+      setAutoLoading(false);
+    }
+    fetchAutoEvents();
+  }, []);
+
+  // Merge manual news + auto events
+  const manualUpdates = dbUpdates
+    .filter(u => u.type === 'news')
+    .map(u => ({ ...u, source: 'manual' as const, sortDate: u.date || u.created_at }));
+
+  const autoItems = autoEvents.map(e => {
+    const cfg = AUTO_EVENT_CONFIG[e.event_type];
+    return {
+      id: e.id,
+      title: e.title,
+      detail: e.detail,
+      date: e.created_at?.split('T')[0],
+      sortDate: e.created_at?.split('T')[0],
+      type: cfg?.type || 'تحديث',
+      source: 'auto' as const,
+      event_type: e.event_type,
+      entity_id: e.entity_id,
+      href: cfg?.href(e.entity_id || '') || '/updates',
+    };
+  });
+
+  const allItems = [...manualUpdates, ...autoItems]
+    .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''))
+    .slice(0, 30);
+
+  // Apply filter
   const filteredItems = activeFilter === 'all'
-    ? items
-    : items.filter(item =>
+    ? allItems
+    : allItems.filter(item =>
         item.source === 'manual'
           ? activeFilter === 'news'
           : item.event_type === activeFilter
       );
 
   const groups = groupByDate(filteredItems);
+  const loading = updatesLoading && autoLoading;
 
   return (
     <section className="px-4 py-10">
@@ -93,7 +136,11 @@ export default function UpdatesClient({ items }: { items: any[] }) {
           ))}
         </div>
 
-        {filteredItems.length ? (
+        {loading && allItems.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={40} className="animate-spin text-emerald-600" />
+          </div>
+        ) : filteredItems.length ? (
           <div className="relative">
             {/* Timeline vertical line */}
             <div className="absolute right-[19px] top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800" />
