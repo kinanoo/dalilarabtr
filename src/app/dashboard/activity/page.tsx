@@ -10,19 +10,19 @@ import EmptyState from '@/components/EmptyState';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { getMyActivityStats, getMyReviews, getMyComments, getMyServices, getMyArticles } from '@/lib/api/profile';
 
-const STATUS_MAP: Record<string, { label: string; color: string; icon: any }> = {
-    approved: { label: 'منشور', color: 'emerald', icon: CheckCircle2 },
-    published: { label: 'منشور', color: 'emerald', icon: CheckCircle2 },
-    pending: { label: 'قيد المراجعة', color: 'amber', icon: Clock },
-    rejected: { label: 'مرفوض', color: 'red', icon: XCircle },
-    draft: { label: 'مسودة', color: 'slate', icon: AlertCircle },
+const STATUS_MAP: Record<string, { label: string; classes: string; icon: any }> = {
+    approved: { label: 'منشور', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
+    published: { label: 'منشور', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
+    pending: { label: 'قيد المراجعة', classes: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400', icon: Clock },
+    rejected: { label: 'مرفوض', classes: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400', icon: XCircle },
+    draft: { label: 'مسودة', classes: 'bg-slate-50 dark:bg-slate-900/20 text-slate-600 dark:text-slate-400', icon: AlertCircle },
 };
 
 function StatusBadge({ status }: { status: string }) {
     const config = STATUS_MAP[status] || STATUS_MAP.pending;
     const Icon = config.icon;
     return (
-        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-${config.color}-50 dark:bg-${config.color}-900/20 text-${config.color}-600 dark:text-${config.color}-400`}>
+        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${config.classes}`}>
             <Icon size={12} />
             {config.label}
         </span>
@@ -106,10 +106,10 @@ export default function ActivityPage() {
     if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>;
 
     const statCards = [
-        { label: 'تقييمات', count: stats.reviews_count, icon: Star, color: 'amber' },
-        { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, color: 'blue' },
-        { label: 'خدمات', count: stats.services_count, icon: Briefcase, color: 'emerald' },
-        { label: 'مقالات', count: stats.articles_count, icon: FileText, color: 'violet' },
+        { label: 'تقييمات', count: stats.reviews_count, icon: Star, iconClasses: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' },
+        { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, iconClasses: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' },
+        { label: 'خدمات', count: stats.services_count, icon: Briefcase, iconClasses: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600' },
+        { label: 'مقالات', count: stats.articles_count, icon: FileText, iconClasses: 'bg-violet-50 dark:bg-violet-900/20 text-violet-600' },
     ];
 
     const tabs = [
@@ -164,11 +164,11 @@ export default function ActivityPage() {
                 <div className="space-y-3">
                     {services.map((s) => (
                         <Link key={s.id} href={`/services/${s.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-bold text-slate-800 dark:text-white">{s.name}</h4>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                                <h4 className="font-bold text-slate-800 dark:text-white truncate">{s.name}</h4>
                                 <StatusBadge status={s.status || 'pending'} />
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-slate-400">
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
                                 {s.profession && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{s.profession}</span>}
                                 {s.city && <span>{s.city}</span>}
                                 <span>{formatDate(s.created_at)}</span>
@@ -194,11 +194,11 @@ export default function ActivityPage() {
                 <div className="space-y-3">
                     {articles.map((a) => (
                         <Link key={a.id} href={`/article/${a.slug || a.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-bold text-slate-800 dark:text-white">{a.title}</h4>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                                <h4 className="font-bold text-slate-800 dark:text-white truncate">{a.title}</h4>
                                 <StatusBadge status={a.status || 'pending'} />
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-slate-400">
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
                                 {a.category && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{a.category}</span>}
                                 <span>{formatDate(a.created_at)}</span>
                             </div>
@@ -230,7 +230,7 @@ export default function ActivityPage() {
     ];
 
     return (
-        <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-3xl mx-auto px-4 sm:px-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="mb-8">
                 <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-emerald-600 transition-colors mb-4">
@@ -247,7 +247,7 @@ export default function ActivityPage() {
                     const Icon = s.icon;
                     return (
                         <div key={s.label} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 text-center">
-                            <div className={`w-10 h-10 mx-auto mb-2 rounded-xl bg-${s.color}-50 dark:bg-${s.color}-900/20 text-${s.color}-600 flex items-center justify-center`}>
+                            <div className={`w-10 h-10 mx-auto mb-2 rounded-xl ${s.iconClasses} flex items-center justify-center`}>
                                 <Icon size={20} />
                             </div>
                             <div className="text-2xl font-black text-slate-800 dark:text-white">{s.count}</div>

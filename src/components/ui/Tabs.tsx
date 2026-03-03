@@ -35,7 +35,7 @@ export default function Tabs({
 
     const getTabClasses = (index: number) => {
         const isActive = activeTab === index;
-        const baseClasses = 'relative flex items-center gap-2 px-6 py-3 font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500';
+        const baseClasses = 'relative flex items-center gap-2 px-3 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 whitespace-nowrap shrink-0';
 
         if (variant === 'pills') {
             return `${baseClasses} rounded-lg ${isActive
@@ -61,7 +61,7 @@ export default function Tabs({
     return (
         <div className={className}>
             {/* Tab Headers */}
-            <div className={`flex gap-2 ${variant === 'underline' ? 'border-b border-slate-200 dark:border-slate-800' : ''}`}>
+            <div className={`flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide ${variant === 'underline' ? 'border-b border-slate-200 dark:border-slate-800' : ''}`}>
                 {tabs.map((tab, index) => (
                     <button
                         key={index}
