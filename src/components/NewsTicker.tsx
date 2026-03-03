@@ -53,7 +53,7 @@ export default function NewsTicker() {
                     { transform: `translateX(${diff}px)` },
                 ],
                 {
-                    duration: Math.max(3000, diff * 15),
+                    duration: Math.max(5000, diff * 40),
                     easing: 'ease-in-out',
                     direction: 'alternate',
                     iterations: Infinity,
