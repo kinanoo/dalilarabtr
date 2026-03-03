@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
@@ -17,10 +17,9 @@ export default function NewsTicker() {
     const [items, setItems] = useState<TickerItem[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
-    const [overflow, setOverflow] = useState(0);
-    const [panOffset, setPanOffset] = useState(0);
     const textRef = useRef<HTMLSpanElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const animRef = useRef<Animation | null>(null);
 
     useEffect(() => {
         async function fetchTicker() {
@@ -36,35 +35,41 @@ export default function NewsTicker() {
         fetchTicker();
     }, []);
 
-    // Measure overflow after each index change
-    const measure = useCallback(() => {
-        if (textRef.current && containerRef.current) {
-            const diff = textRef.current.scrollWidth - containerRef.current.clientWidth;
-            setOverflow(diff > 0 ? diff : 0);
-            setPanOffset(0);
-        }
-    }, []);
-
+    // Animate overflowing text using Web Animations API
     useEffect(() => {
-        // Delay measure to ensure text is rendered
-        const t = setTimeout(measure, 50);
-        window.addEventListener('resize', measure);
-        return () => { clearTimeout(t); window.removeEventListener('resize', measure); };
-    }, [currentIndex, items, measure]);
+        if (animRef.current) { animRef.current.cancel(); animRef.current = null; }
 
-    // Pan back and forth for overflowing text
-    useEffect(() => {
-        if (overflow <= 0) return;
-        const timer = setInterval(() => {
-            setPanOffset(prev => prev === 0 ? overflow : 0);
-        }, 3000);
-        return () => clearInterval(timer);
-    }, [overflow]);
+        const measure = () => {
+            const text = textRef.current;
+            const container = containerRef.current;
+            if (!text || !container) return;
+
+            const diff = text.scrollWidth - container.clientWidth;
+            if (diff <= 0) return;
+
+            animRef.current = text.animate(
+                [
+                    { transform: 'translateX(0)' },
+                    { transform: `translateX(${diff}px)` },
+                ],
+                {
+                    duration: Math.max(3000, diff * 15),
+                    easing: 'ease-in-out',
+                    direction: 'alternate',
+                    iterations: Infinity,
+                    delay: 800,
+                }
+            );
+        };
+
+        // Delay to ensure text is rendered
+        const t = setTimeout(measure, 100);
+        return () => { clearTimeout(t); animRef.current?.cancel(); };
+    }, [currentIndex, items]);
 
     // Rotate news
     useEffect(() => {
         if (items.length <= 1) return;
-        const delay = overflow > 0 ? 9000 : 5000;
 
         const timer = setInterval(() => {
             setIsVisible(false);
@@ -72,10 +77,10 @@ export default function NewsTicker() {
                 setCurrentIndex(prev => (prev + 1) % items.length);
                 setIsVisible(true);
             }, 300);
-        }, delay);
+        }, 7000);
 
         return () => clearInterval(timer);
-    }, [items.length, overflow]);
+    }, [items.length]);
 
     if (pathname !== '/' || items.length === 0) return null;
 
@@ -88,14 +93,13 @@ export default function NewsTicker() {
 
                 <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
                     <div
-                        className={`whitespace-nowrap ${overflow > 0 ? '' : 'text-center'}`}
+                        className="whitespace-nowrap text-center"
                         style={{
-                            transform: `translateX(${panOffset}px)`,
-                            transition: panOffset > 0 ? 'transform 2.5s ease-in-out' : 'transform 2.5s ease-in-out',
                             opacity: isVisible ? 1 : 0,
+                            transition: 'opacity 0.3s',
                         }}
                     >
-                        <span ref={textRef}>
+                        <span ref={textRef} className="inline-block">
                             {current.link ? (
                                 <Link
                                     href={current.link}
