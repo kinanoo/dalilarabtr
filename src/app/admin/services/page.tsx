@@ -136,15 +136,18 @@ export default function AdminServicesPage() {
     };
 
     const handleDelete = async () => {
-        // ... (unchanged)
         if (!selectedItem || selectedItem.id === 'new') return;
         if (!confirm('هل أنت متأكد من الحذف؟')) return;
-        if (!supabase) return toast.error('❌ خطأ: لا يوجد اتصال بقاعدة البيانات');
 
         setSaving(true);
         try {
-            const { error } = await supabase.from('service_providers').delete().eq('id', selectedItem.id);
-            if (error) throw error;
+            const res = await fetch('/api/admin/delete-record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ table: 'service_providers', id: selectedItem.id }),
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'فشل الحذف');
             toast.success('🗑️ تم الحذف');
             setSelectedItem(null);
             setRefreshKey(k => k + 1);
@@ -156,7 +159,7 @@ export default function AdminServicesPage() {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
             {/* Headers ... */}
             <div className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors w-fit">
                 <Link href="/admin" className="flex items-center gap-2">
@@ -165,13 +168,14 @@ export default function AdminServicesPage() {
                 </Link>
             </div>
 
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                    <Briefcase size={32} />
+            <div className="flex items-center gap-3 mb-4 sm:mb-8">
+                <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-xl">
+                    <Briefcase size={24} className="sm:hidden" />
+                    <Briefcase size={32} className="hidden sm:block" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">الخدمات والمهن</h1>
-                    <p className="text-slate-500 mt-1">إدارة مقدمي الخدمات والأطباء والمحامين</p>
+                    <h1 className="text-xl sm:text-3xl font-bold text-slate-800 dark:text-white">الخدمات والمهن</h1>
+                    <p className="text-xs sm:text-base text-slate-500 mt-0.5 sm:mt-1">إدارة مقدمي الخدمات والأطباء والمحامين</p>
                 </div>
             </div>
 
@@ -192,7 +196,7 @@ export default function AdminServicesPage() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-6 shadow-sm">
                 <DataTable
                     tableName="service_providers"
                     title="قائمة الخدمات"

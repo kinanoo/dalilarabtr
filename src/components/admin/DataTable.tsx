@@ -120,15 +120,19 @@ export function DataTable({
 
     async function handleDelete(id: string) {
         if (!confirm('هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.')) return;
-        if (!supabase) return;
 
         try {
-            const { error } = await supabase.from(tableName).delete().eq(idField, id);
-            if (error) throw error;
+            const res = await fetch('/api/admin/delete-record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ table: tableName, id }),
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'فشل الحذف');
             toast.success('تم الحذف بنجاح');
             fetchData();
         } catch (err: any) {
-            toast.error('من المحتمل أن الجدول يستخدم عمود معرف مختلف عن المتوقع.\n' + err.message);
+            toast.error('خطأ في الحذف: ' + err.message);
         }
     }
 
@@ -193,78 +197,103 @@ export function DataTable({
                     </div>
                 ) : (
                     data.map((row, index) => (
-                        <div key={row[idField] || index} className="relative group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 hover:shadow-lg hover:border-emerald-500/30 transition-all duration-300">
-
-                            {/* Icon / Leading */}
-                            <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-lg font-bold shadow-sm transition-transform group-hover:scale-110 
-                                ${type === 'code' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                                    type === 'service' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                                        'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
-                                {type === 'code' ? (row.code || 'C') : type === 'service' ? (row.name?.charAt(0) || 'S') : (row.title?.charAt(0) || 'A')}
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
-                                    <h3 className="font-bold text-slate-800 dark:text-slate-100 truncate text-base">
-                                        {row.title || row.name || row.question || row.code}
-                                    </h3>
-                                    {/* Subtitle / Badge */}
-                                    {(row.category || row.profession || row.severity) && (
-                                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 w-fit">
-                                            {row.category || row.profession || row.severity}
-                                        </span>
-                                    )}
+                        <div key={row[idField] || index} className="relative group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-3 sm:p-4 hover:shadow-lg hover:border-emerald-500/30 transition-all duration-300">
+                            <div className="flex items-start gap-3">
+                                {/* Icon / Leading */}
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center text-base sm:text-lg font-bold shadow-sm
+                                    ${type === 'code' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                                        type === 'service' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
+                                            'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
+                                    {type === 'code' ? (row.code || 'C') : type === 'service' ? (row.name?.charAt(0) || 'S') : (row.title?.charAt(0) || 'A')}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2 text-xs text-slate-400 font-medium w-full overflow-hidden">
-                                    {columns.map(col => {
-                                        // Skip columns that are already shown as title
-                                        if (col.key === 'title' || col.key === 'name' || col.key === 'question') return null;
-                                        return (
-                                            <div key={col.key} className="flex items-center gap-1 min-w-0 max-w-[45%]">
-                                                <span className="opacity-50 shrink-0">{col.label}:</span>
-                                                <span className="text-slate-600 dark:text-slate-300 truncate">
-                                                    {col.render ? col.render(row[col.key], row) : String(row[col.key] || '-')}
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2">
+                                                {row.title || row.name || row.question || row.code}
+                                            </h3>
+                                            {(row.category || row.profession || row.severity) && (
+                                                <span className="inline-flex mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                                    {row.category || row.profession || row.severity}
                                                 </span>
-                                            </div>
-                                        )
-                                    })}
-                                    <div className="flex items-center gap-1 min-w-0 shrink-0">
-                                        <span className="md:hidden opacity-50 shrink-0">التاريخ:</span>
-                                        <span className="hidden md:inline-block w-1 h-1 bg-slate-300 rounded-full mx-1 shrink-0"></span>
-                                        <span className="truncate dir-ltr">{row.created_at ? new Date(row.created_at).toLocaleDateString('en-GB') : ''}</span>
+                                            )}
+                                        </div>
+                                        {/* Actions — desktop inline */}
+                                        <div className="hidden sm:flex items-center gap-1 shrink-0">
+                                            {toggleField && (
+                                                <button
+                                                    onClick={() => handleToggle(row[idField], !!row[toggleField])}
+                                                    className={`p-2 rounded-xl transition-all ${
+                                                        row[toggleField]
+                                                            ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                                                            : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                                    }`}
+                                                    title={row[toggleField] ? 'تعطيل' : 'تفعيل'}
+                                                >
+                                                    {row[toggleField] ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => onEdit(row)}
+                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                                                title="تعديل"
+                                            >
+                                                <Edit size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(row[idField])}
+                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                                title="حذف"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[11px] sm:text-xs text-slate-400 font-medium">
+                                        {columns.map(col => {
+                                            if (col.key === 'title' || col.key === 'name' || col.key === 'question') return null;
+                                            const val = col.render ? col.render(row[col.key], row) : String(row[col.key] || '-');
+                                            return (
+                                                <span key={col.key} className="truncate max-w-[45%]">
+                                                    <span className="opacity-50">{col.label}: </span>
+                                                    <span className="text-slate-600 dark:text-slate-300">{val}</span>
+                                                </span>
+                                            );
+                                        })}
+                                        {row.created_at && (
+                                            <span className="text-slate-400">{new Date(row.created_at).toLocaleDateString('en-GB')}</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-2 pl-2">
+                            {/* Actions — mobile bottom row */}
+                            <div className="flex sm:hidden items-center justify-end gap-1 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                                 {toggleField && (
                                     <button
                                         onClick={() => handleToggle(row[idField], !!row[toggleField])}
-                                        className={`p-2 rounded-xl transition-all ${
+                                        className={`p-1.5 rounded-lg transition-all text-xs font-bold flex items-center gap-1 ${
                                             row[toggleField]
-                                                ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
-                                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                                ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20'
+                                                : 'text-slate-400 bg-slate-50 dark:bg-slate-800'
                                         }`}
-                                        title={row[toggleField] ? 'تعطيل' : 'تفعيل'}
                                     >
-                                        {row[toggleField] ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                                        {row[toggleField] ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                                        {row[toggleField] ? 'مفعّل' : 'معطّل'}
                                     </button>
                                 )}
                                 <button
                                     onClick={() => onEdit(row)}
-                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
-                                    title="تعديل"
+                                    className="p-1.5 rounded-lg text-blue-600 bg-blue-50 dark:bg-blue-900/20 transition-all flex items-center gap-1 text-xs font-bold"
                                 >
-                                    <Edit size={18} />
+                                    <Edit size={14} /> تعديل
                                 </button>
                                 <button
                                     onClick={() => handleDelete(row[idField])}
-                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
-                                    title="حذف"
+                                    className="p-1.5 rounded-lg text-red-600 bg-red-50 dark:bg-red-900/20 transition-all flex items-center gap-1 text-xs font-bold"
                                 >
-                                    <Trash2 size={18} />
+                                    <Trash2 size={14} /> حذف
                                 </button>
                             </div>
                         </div>

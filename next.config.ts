@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 const cspBase = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com",
+  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com",
   "font-src 'self' data:",
   "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
   "frame-src 'self' https://tckimlik.nvi.gov.tr",
