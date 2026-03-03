@@ -56,12 +56,12 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
         if (currentPage >= totalPages) setCurrentPage(Math.max(0, totalPages - 1));
     }, [totalPages, currentPage]);
 
-    // Auto-advance every 3 seconds
+    // Auto-advance every 6 seconds
     useEffect(() => {
         if (isHovered || totalPages <= 1) return;
         autoplayRef.current = setInterval(() => {
             setCurrentPage(prev => (prev + 1) % totalPages);
-        }, 3000);
+        }, 6000);
         return () => clearInterval(autoplayRef.current);
     }, [isHovered, totalPages]);
 
@@ -175,21 +175,9 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                 )}
             </div>
 
-            {/* Progress Bar + Dots */}
+            {/* Dots */}
             {totalPages > 1 && (
                 <div className="max-w-7xl mx-auto px-4 mt-3">
-                    {/* Progress bar */}
-                    <div className="h-0.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-3">
-                        <div
-                            key={currentPage}
-                            className="h-full bg-emerald-500 rounded-full"
-                            style={{
-                                animation: isHovered ? 'none' : 'progress 3s linear forwards',
-                            }}
-                        />
-                    </div>
-
-                    {/* Dots */}
                     <div className="flex justify-center gap-1.5" dir="ltr">
                         {Array.from({ length: totalPages }).map((_, i) => (
                             <button
