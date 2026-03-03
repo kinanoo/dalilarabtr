@@ -79,6 +79,7 @@ export default function NewsTicker() {
                 }
                 .ticker-content {
                     animation: ticker 35s linear infinite;
+                    will-change: transform;
                 }
                 @keyframes ticker {
                     0% {
@@ -87,6 +88,9 @@ export default function NewsTicker() {
                     100% {
                         transform: translateX(50%);
                     }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .ticker-content { animation: none; }
                 }
             `}</style>
         </div>

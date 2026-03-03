@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink } from 'lucide-react';
@@ -34,63 +34,34 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
         baseList = [...baseList, ...updates];
     }
 
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isPaused, setIsPaused] = useState(false);
     const isDraggingRef = useRef(false);
     const hasDraggedRef = useRef(false);
     const startXRef = useRef(0);
-    const scrollLeftRef = useRef(0);
-    const [isPaused, setIsPaused] = useState(false);
+    const resumeTimer = useRef<ReturnType<typeof setTimeout>>();
 
-    // Touch/mouse drag handlers (no setPointerCapture — it blocks clicks on child Links)
+    // ~4 seconds per card for comfortable reading speed
+    const durationSeconds = baseList.length * 4;
+
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
-        const el = scrollRef.current;
-        if (!el) return;
         isDraggingRef.current = true;
         hasDraggedRef.current = false;
         startXRef.current = e.clientX;
-        scrollLeftRef.current = el.scrollLeft;
         setIsPaused(true);
+        if (resumeTimer.current) clearTimeout(resumeTimer.current);
     }, []);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDraggingRef.current || !scrollRef.current) return;
-        const dx = e.clientX - startXRef.current;
-        if (Math.abs(dx) > 5) {
+        if (!isDraggingRef.current) return;
+        if (Math.abs(e.clientX - startXRef.current) > 5) {
             hasDraggedRef.current = true;
         }
-        scrollRef.current.scrollLeft = scrollLeftRef.current - dx;
     }, []);
 
     const handlePointerUp = useCallback(() => {
         isDraggingRef.current = false;
-        // Resume auto-scroll after 3 seconds
-        setTimeout(() => setIsPaused(false), 3000);
+        resumeTimer.current = setTimeout(() => setIsPaused(false), 3000);
     }, []);
-
-    // Auto-scroll with requestAnimationFrame
-    const animRef = useRef<number>();
-    const speedRef = useRef(0.6); // px per frame
-
-    useEffect(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-
-        const tick = () => {
-            if (!isPaused && !isDraggingRef.current && el) {
-                el.scrollLeft += speedRef.current;
-                // Loop: when scrolled past half (duplicate content), reset
-                if (el.scrollLeft >= el.scrollWidth / 2) {
-                    el.scrollLeft = 0;
-                }
-            }
-            animRef.current = requestAnimationFrame(tick);
-        };
-
-        animRef.current = requestAnimationFrame(tick);
-        return () => {
-            if (animRef.current) cancelAnimationFrame(animRef.current);
-        };
-    }, [isPaused]);
 
     return (
         <section className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50 overflow-hidden">
@@ -112,7 +83,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                 </Link>
             </div>
 
-            {/* Scrollable Track — touch/drag + auto-scroll */}
+            {/* Scrollable Track — GPU-accelerated CSS animation (no JavaScript per frame) */}
             <div className="max-w-7xl mx-auto px-4">
                 <div className="relative w-full overflow-hidden rounded-xl">
                     {/* Gradient Masks */}
@@ -120,10 +91,12 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-slate-100 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
 
                     <div
-                        ref={scrollRef}
-                        className="flex gap-3 overflow-x-auto scrollbar-hide py-2 cursor-grab active:cursor-grabbing select-none"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                        className="updates-track flex gap-3 py-2 cursor-grab active:cursor-grabbing select-none"
                         dir="ltr"
+                        style={{
+                            animationDuration: `${durationSeconds}s`,
+                            animationPlayState: isPaused ? 'paused' : 'running',
+                        }}
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
@@ -135,7 +108,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                         {baseList.map((update, index) => (
                             <UpdateCard key={`l1-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
                         ))}
-                        {/* List 2 (seamless loop) — hidden from SEO & screen readers */}
+                        {/* List 2 (seamless loop) */}
                         <div aria-hidden="true" className="contents">
                             {baseList.map((update, index) => (
                                 <UpdateCard key={`l2-${update.id}-${index}`} update={update} hasDraggedRef={hasDraggedRef} />
@@ -144,6 +117,21 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     </div>
                 </div>
             </div>
+
+            {/* Pure CSS animation — runs entirely on GPU compositor thread */}
+            <style jsx>{`
+                .updates-track {
+                    animation: scroll-updates linear infinite;
+                    will-change: transform;
+                }
+                @keyframes scroll-updates {
+                    from { transform: translateX(0); }
+                    to   { transform: translateX(-50%); }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .updates-track { animation: none; }
+                }
+            `}</style>
         </section>
     );
 }
@@ -160,14 +148,13 @@ function UpdateCard({ update, hasDraggedRef }: { update: any; hasDraggedRef: Rea
             className="block w-[220px] sm:w-[280px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group/card relative overflow-hidden"
             dir="rtl"
             onClick={(e) => {
-                // Prevent navigation if user was dragging (moved > 5px)
                 if (hasDraggedRef.current) {
                     e.preventDefault();
                 }
             }}
         >
             <div className="flex items-start gap-3 h-full">
-                {/* Icon or Image — smaller on mobile */}
+                {/* Icon or Image */}
                 {isAuto && iconConfig ? (
                     <div className={`w-14 sm:w-16 h-14 sm:h-16 flex-shrink-0 rounded-lg ${iconConfig.bg} flex items-center justify-center`}>
                         <iconConfig.icon size={24} className={iconConfig.text} />
@@ -178,7 +165,7 @@ function UpdateCard({ update, hasDraggedRef }: { update: any; hasDraggedRef: Rea
                             src={update.image}
                             alt={update.title || "صورة الخبر"}
                             fill
-                            className="object-cover group-hover/card:scale-110 transition-transform duration-500 select-none pointer-events-none"
+                            className="object-cover select-none pointer-events-none"
                             sizes="64px"
                         />
                     </div>

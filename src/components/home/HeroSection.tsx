@@ -52,7 +52,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
 
                 {/* --- MOBILE BACKGROUND --- */}
-                <MobileBackground items={[...SIDE_ITEMS_LEFT, ...SIDE_ITEMS_RIGHT]} />
+                <MobileBackground />
             </div>
 
             {/* --- SIDE PILLARS (Moved to Top Level for Interaction) --- */}
@@ -123,27 +123,17 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
     );
 };
 
-const MobileBackground = ({ items }: any) => {
-    // Optimized: Show only 3 floating blobs instead of 6
+const MobileBackground = () => {
+    // Pure CSS blobs — zero JavaScript overhead, GPU-composited
     return (
         <div className="absolute inset-0 lg:hidden overflow-hidden pointer-events-none z-10">
-            {items.slice(0, 3).map((item: any, i: number) => (
-                <motion.div
-                    key={`mob-${i}`}
-                    className="absolute will-change-transform"
-                    initial={{ x: i % 2 === 0 ? -20 : '100%', y: i * 80 }}
-                    animate={{
-                        x: i % 2 === 0 ? '120%' : '-20%',
-                        y: [i * 80, i * 80 + (i % 2 === 0 ? 20 : -20)]
-                    }}
-                    transition={{
-                        x: { duration: 25 + i * 2, repeat: Infinity, repeatType: "reverse", ease: "linear" },
-                        y: { duration: 5, repeat: Infinity, repeatType: "reverse" }
-                    }}
-                >
-                    <div className={`w-16 h-16 rotate-45 bg-${item.color}-500/30 blur-xl rounded-2xl`}></div>
-                </motion.div>
-            ))}
+            <div className="absolute w-16 h-16 bg-emerald-500/20 blur-xl rounded-2xl will-change-transform" style={{ animation: 'mob-float-a 27s linear infinite alternate', top: '10%' }} />
+            <div className="absolute w-16 h-16 bg-blue-500/20 blur-xl rounded-2xl will-change-transform" style={{ animation: 'mob-float-b 29s linear infinite alternate', top: '40%' }} />
+            <div className="absolute w-16 h-16 bg-amber-500/20 blur-xl rounded-2xl will-change-transform" style={{ animation: 'mob-float-a 25s linear infinite alternate', top: '70%' }} />
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes mob-float-a { from{transform:translateX(-20px)}to{transform:translateX(calc(100vw + 20px))} }
+                @keyframes mob-float-b { from{transform:translateX(calc(100vw + 20px))}to{transform:translateX(-20px)} }
+            `}} />
         </div>
     );
 }
