@@ -21,7 +21,6 @@ export class AnalystEngine {
         onInsight?: (insight: Insight) => void
     ): Promise<Insight[]> {
         const log = (msg: string) => {
-            console.log(msg);
             if (onLog) onLog(msg);
         };
 

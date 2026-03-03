@@ -24,7 +24,7 @@ export default function Testimonials() {
 
             const { data } = await supabase
                 .from('site_testimonials')
-                .select('*')
+                .select('id, name, role, location, content, rating')
                 .eq('is_active', true)
                 .order('created_at', { ascending: false })
                 .limit(3);

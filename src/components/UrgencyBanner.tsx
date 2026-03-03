@@ -19,7 +19,7 @@ export default function UrgencyBanner() {
             // Fetch active Banner from dedicated table
             const { data } = await supabase
                 .from('site_banners')
-                .select('*')
+                .select('id, content, link_url, link_text, type')
                 .eq('is_active', true)
                 .limit(1)
                 .maybeSingle();

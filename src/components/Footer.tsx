@@ -15,7 +15,7 @@ export default function Footer() {
   useEffect(() => {
     async function fetchFooterMenus() {
       if (!supabase) return;
-      const { data } = await supabase.from('site_menus').select('*').in('location', ['footer_section_1', 'footer_section_2']).order('sort_order');
+      const { data } = await supabase.from('site_menus').select('id, label, href, icon, location, sort_order').in('location', ['footer_section_1', 'footer_section_2']).order('sort_order');
       if (data) {
         setFooterMenus({
           section1: data.filter(m => m.location === 'footer_section_1'),

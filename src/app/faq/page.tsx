@@ -29,7 +29,7 @@ export default async function FAQPage() {
       const supabase = createClient(supabaseUrl, supabaseKey);
       const { data, error } = await supabase
         .from('faqs')
-        .select('*')
+        .select('id, question, answer, category, tags')
         .eq('active', true);
 
       if (!error && data) {

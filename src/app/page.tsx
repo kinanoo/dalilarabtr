@@ -45,9 +45,8 @@ async function getCategories() {
 
     const { data } = await supabase
       .from('service_categories')
-      .select('*')
+      .select('slug, title, description, icon, sort_order')
       .eq('is_featured', true)
-      // .eq('active', true) // REMOVED: Column might not exist
       .order('sort_order');
 
     if (data && data.length > 0) return data;
@@ -83,8 +82,7 @@ async function getUpdates() {
       supabase
         .from('articles')
         .select('id, title, category, slug, created_at, image')
-        .eq('is_active', true)
-        .neq('status', 'pending')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(10),
       supabase

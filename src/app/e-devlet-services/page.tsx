@@ -19,28 +19,23 @@ export default async function EDevletServicesPage() {
 
   const { data: articles } = await supabase
     .from('articles')
-    .select('*')
+    .select('id, title, intro, last_update, source, slug')
     .eq('category', 'خدمات e-Devlet')
-    .eq('active', true); // Ensure we only get active services
+    .eq('status', 'approved');
 
   const services = (articles || [])
-    .map((article: any) => ({
-      id: article.id, // slug
-      article: article as Article
+    .map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      intro: a.intro,
+      lastUpdate: a.last_update,
+      source: a.source ?? undefined,
     }))
-    .sort((a, b) => a.article.title.localeCompare(b.article.title, 'ar'));
+    .sort((a, b) => a.title.localeCompare(b.title, 'ar'));
 
   return (
     <main className="min-h-screen flex flex-col">
-      <EDevletServicesHub
-        services={services.map(({ id, article }) => ({
-          id,
-          title: article.title,
-          intro: article.intro,
-          lastUpdate: article.lastUpdate,
-          source: article.source ?? undefined,
-        }))}
-      />
+      <EDevletServicesHub services={services} />
       <div className="flex justify-center py-6">
         <ShareMenu
           title="خدمات e-Devlet للأجانب"

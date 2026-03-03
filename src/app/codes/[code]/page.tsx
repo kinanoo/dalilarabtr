@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const { data: item } = await supabase
         .from('security_codes')
-        .select('*')
+        .select('code, title, description')
         .eq('code', decodedCode)
         .single();
 
@@ -51,7 +51,7 @@ export default async function CodeDetailPage({ params }: Props) {
 
     const { data: item } = await supabase
         .from('security_codes')
-        .select('*')
+        .select('code, category, title, description, severity, solution, effect, how_to_remove, duration, related_codes')
         .eq('code', decodedCode)
         .single();
 

@@ -122,7 +122,7 @@ export default function Navbar() {
       // Menus
       const { data: menus } = await supabase
         .from('site_menus')
-        .select('*')
+        .select('id, label, href, icon, sort_order')
         .eq('location', 'header')
         .eq('is_active', true)
         .order('sort_order');
@@ -137,7 +137,7 @@ export default function Navbar() {
       // Tools
       const { data: dbTools } = await supabase
         .from('tools_registry')
-        .select('*')
+        .select('id, key, name, route')
         .eq('is_active', true);
 
       if (dbTools && dbTools.length > 0) {

@@ -50,7 +50,7 @@ export default async function UpdateDetailPage(
 
     const { data: update, error } = await supabase
         .from('updates')
-        .select('*')
+        .select('id, type, title, content, date, link, image, created_at')
         .eq('id', id)
         .single();
 
