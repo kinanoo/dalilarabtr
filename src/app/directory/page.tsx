@@ -154,7 +154,7 @@ export default function DirectoryPage() {
   // تحويل المقالات والسيناريوهات للصيغة المطلوبة
   const allArticles = useMemo((): DirectoryArticle[] => {
     const articles: DirectoryArticle[] = adminArticles.map((a) => ({
-      slug: a.id,
+      slug: a.slug || a.id,
       title: a.title,
       intro: a.intro,
       category: a.category,

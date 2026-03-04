@@ -50,8 +50,9 @@ export default async function CategoryPage(props: {
     try {
       let query = supabase
         .from('articles')
-        .select('id, title, intro, last_update, category, image, tags')
-        .eq('category', categoryName);
+        .select('id, slug, title, intro, last_update, category, image, tags')
+        .eq('category', categoryName)
+        .eq('status', 'approved');
 
       if (activeTag) {
         query = query.contains('tags', [activeTag]);
@@ -61,7 +62,7 @@ export default async function CategoryPage(props: {
 
       if (data) {
         initialArticles = data.map(a => ({
-          slug: a.id,
+          slug: a.slug || a.id,
           title: a.title,
           intro: a.intro,
           lastUpdate: a.last_update,
