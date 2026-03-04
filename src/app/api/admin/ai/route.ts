@@ -514,11 +514,11 @@ async function executeFunction(
       };
 
       if (content_type && searches[content_type]) {
-        results.push(...await searches[content_type]());
+        try { results.push(...await searches[content_type]()); } catch { /* skip failed search */ }
       } else {
         // Search main content types (not all to keep it fast)
         const mainTypes = ['article', 'service', 'faq', 'update', 'scenario', 'code'];
-        const all = await Promise.all(mainTypes.map(t => searches[t]()));
+        const all = await Promise.all(mainTypes.map(t => searches[t]().catch(() => [] as any[])));
         all.forEach(r => results.push(...r));
       }
 
@@ -747,7 +747,9 @@ async function executeFunction(
       if (!table) return { result: { error: 'Invalid content type' } };
 
       const limit = Math.min(rawLimit || 10, 30);
-      const sortBy = sort_field || 'created_at';
+      // security_codes has no created_at column — use 'code' as default sort
+      const DEFAULT_SORT: Record<string, string> = { security_codes: 'code', site_banners: 'created_at', official_sources: 'created_at' };
+      const sortBy = sort_field || DEFAULT_SORT[table] || 'created_at';
       const ascending = sort_order === 'asc';
 
       const selectMap: Record<string, string> = {
@@ -805,44 +807,42 @@ async function executeFunction(
     }
 
     case 'get_dashboard_stats': {
-      const tables = [
-        { name: 'articles', label: 'articles' },
-        { name: 'service_providers', label: 'services' },
-        { name: 'updates', label: 'updates' },
-        { name: 'faqs', label: 'faqs' },
-        { name: 'consultant_scenarios', label: 'scenarios' },
-        { name: 'security_codes', label: 'codes' },
-        { name: 'zones', label: 'zones' },
-        { name: 'comments', label: 'comments' },
-        { name: 'service_reviews', label: 'reviews' },
-        { name: 'member_profiles', label: 'members' },
-      ];
-
-      const stats: Record<string, any> = {};
-
-      // Get total counts in parallel
-      const counts = await Promise.all(
-        tables.map(async (t) => {
-          const { count } = await serviceClient.from(t.name).select('*', { count: 'exact', head: true });
-          return { label: t.label, count: count || 0 };
-        })
-      );
-      for (const c of counts) stats[c.label] = c.count;
-
-      // Get pending counts
-      const [pendingServices, pendingComments, pendingArticles] = await Promise.all([
-        serviceClient.from('service_providers').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        serviceClient.from('comments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        serviceClient.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      ]);
-
-      stats.pending = {
-        services: pendingServices.count || 0,
-        comments: pendingComments.count || 0,
-        articles: pendingArticles.count || 0,
+      const safeTableCount = async (table: string, filters?: Record<string, string>): Promise<number> => {
+        try {
+          let q = serviceClient.from(table).select('*', { count: 'exact', head: true });
+          if (filters) { for (const [k, v] of Object.entries(filters)) q = q.eq(k, v); }
+          const { count } = await q;
+          return count || 0;
+        } catch { return 0; }
       };
 
-      return { result: stats };
+      const [
+        articles, services, updates, faqs, scenarios,
+        codes, zones, comments, reviews, members,
+        pendingArticles, pendingServices, pendingComments,
+      ] = await Promise.all([
+        safeTableCount('articles'),
+        safeTableCount('service_providers'),
+        safeTableCount('updates'),
+        safeTableCount('faqs'),
+        safeTableCount('consultant_scenarios'),
+        safeTableCount('security_codes'),
+        safeTableCount('zones'),
+        safeTableCount('comments'),
+        safeTableCount('service_reviews'),
+        safeTableCount('member_profiles'),
+        safeTableCount('articles', { status: 'pending' }),
+        safeTableCount('service_providers', { status: 'pending' }),
+        safeTableCount('comments', { status: 'pending' }),
+      ]);
+
+      return {
+        result: {
+          articles, services, updates, faqs, scenarios,
+          codes, zones, comments, reviews, members,
+          pending: { articles: pendingArticles, services: pendingServices, comments: pendingComments },
+        },
+      };
     }
 
     case 'manage_comments': {
@@ -910,60 +910,69 @@ async function executeFunction(
 }
 
 // ── Live site snapshot — gives Gemini real-time awareness ──
+// IMPORTANT: No Arabic text in output! systemInstruction causes ByteString crash with Unicode > 255
 async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
+  const safeCount = async (table: string, filters?: Record<string, string>): Promise<number> => {
+    try {
+      let q = serviceClient.from(table).select('*', { count: 'exact', head: true });
+      if (filters) {
+        for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+      }
+      const { count } = await q;
+      return count || 0;
+    } catch { return 0; }
+  };
+
   try {
+    // All counts in parallel — each individually safe
     const [
-      articlesCount, servicesCount, updatesCount, faqsCount,
-      scenariosCount, codesCount, zonesCount, commentsCount,
-      reviewsCount, membersCount, bannersCount,
-      pendingServices, pendingComments, pendingArticles,
-      recentArticles, recentUpdates, activeBanners,
+      articles, services, updates, faqs, scenarios,
+      codes, zones, comments, reviews, members, banners,
+      pendingArticles, pendingServices, pendingComments,
+      recentArticleIds, recentUpdateIds,
     ] = await Promise.all([
-      serviceClient.from('articles').select('*', { count: 'exact', head: true }),
-      serviceClient.from('service_providers').select('*', { count: 'exact', head: true }),
-      serviceClient.from('updates').select('*', { count: 'exact', head: true }),
-      serviceClient.from('faqs').select('*', { count: 'exact', head: true }),
-      serviceClient.from('consultant_scenarios').select('*', { count: 'exact', head: true }),
-      serviceClient.from('security_codes').select('*', { count: 'exact', head: true }),
-      serviceClient.from('zones').select('*', { count: 'exact', head: true }),
-      serviceClient.from('comments').select('*', { count: 'exact', head: true }),
-      serviceClient.from('service_reviews').select('*', { count: 'exact', head: true }),
-      serviceClient.from('member_profiles').select('*', { count: 'exact', head: true }),
-      serviceClient.from('site_banners').select('*', { count: 'exact', head: true }),
-      serviceClient.from('service_providers').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      serviceClient.from('comments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      serviceClient.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      serviceClient.from('articles').select('id, title, category, status, created_at').order('created_at', { ascending: false }).limit(5),
-      serviceClient.from('updates').select('id, title, type, date, active').order('created_at', { ascending: false }).limit(5),
-      serviceClient.from('site_banners').select('id, content, type, is_active').eq('is_active', true),
+      safeCount('articles'),
+      safeCount('service_providers'),
+      safeCount('updates'),
+      safeCount('faqs'),
+      safeCount('consultant_scenarios'),
+      safeCount('security_codes'),
+      safeCount('zones'),
+      safeCount('comments'),
+      safeCount('service_reviews'),
+      safeCount('member_profiles'),
+      safeCount('site_banners'),
+      safeCount('articles', { status: 'pending' }),
+      safeCount('service_providers', { status: 'pending' }),
+      safeCount('comments', { status: 'pending' }),
+      // Only fetch IDs and slugs (ASCII-safe) for recent items
+      serviceClient.from('articles').select('id, slug, status').order('created_at', { ascending: false }).limit(5).then((r: any) => r.data || []).catch(() => []),
+      serviceClient.from('updates').select('id, type, date, active').order('created_at', { ascending: false }).limit(5).then((r: any) => r.data || []).catch(() => []),
     ]);
 
-    const recentArticlesList = (recentArticles.data || [])
-      .map((a: any) => `  - "${a.title}" [${a.category}] (${a.status})`)
+    // Build ASCII-only snapshot (no Arabic to avoid ByteString crash)
+    const recentArticlesStr = recentArticleIds
+      .map((a: any) => `  - id=${a.id}, slug=${a.slug}, status=${a.status}`)
       .join('\n');
 
-    const recentUpdatesList = (recentUpdates.data || [])
-      .map((u: any) => `  - "${u.title}" [${u.type}] (${u.active ? 'active' : 'inactive'})`)
-      .join('\n');
-
-    const activeBannersList = (activeBanners.data || [])
-      .map((b: any) => `  - "${b.content}" [${b.type}]`)
+    const recentUpdatesStr = recentUpdateIds
+      .map((u: any) => `  - id=${u.id}, type=${u.type}, date=${u.date}, active=${u.active}`)
       .join('\n');
 
     return `
+
 ## LIVE SITE DATA (real-time snapshot):
-Total counts: ${articlesCount.count} articles, ${servicesCount.count} services, ${updatesCount.count} updates, ${faqsCount.count} FAQs, ${scenariosCount.count} scenarios, ${codesCount.count} codes, ${zonesCount.count} zones, ${commentsCount.count} comments, ${reviewsCount.count} reviews, ${membersCount.count} members, ${bannersCount.count} banners
+Total: ${articles} articles, ${services} services, ${updates} updates, ${faqs} FAQs, ${scenarios} scenarios, ${codes} codes, ${zones} zones, ${comments} comments, ${reviews} reviews, ${members} members, ${banners} banners
 
-Pending items needing attention: ${pendingArticles.count || 0} articles, ${pendingServices.count || 0} services, ${pendingComments.count || 0} comments
+Pending items needing attention: ${pendingArticles} articles, ${pendingServices} services, ${pendingComments} comments
 
-Last 5 articles:
-${recentArticlesList || '  (none)'}
+Recent article IDs (use get_content_details or list_content to see titles):
+${recentArticlesStr || '  (none)'}
 
-Last 5 updates:
-${recentUpdatesList || '  (none)'}
+Recent update IDs:
+${recentUpdatesStr || '  (none)'}
 
-Active banners:
-${activeBannersList || '  (none)'}
+Use list_content or search_content tools to see full details with titles.
 `;
   } catch {
     return '\n## LIVE DATA: Could not fetch snapshot.\n';
