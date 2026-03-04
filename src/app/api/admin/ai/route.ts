@@ -278,12 +278,88 @@ const tools: FunctionDeclarationsTool[] = [{
       },
     },
     {
-      name: 'query_table',
-      description: 'Flexible direct query to ANY database table. Use for advanced operations or tables not covered by other tools (comments, reviews, members, sources, menus, notifications, suggestions, analytics).',
+      name: 'create_faq',
+      description: 'Create a new FAQ entry.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          table: { type: SchemaType.STRING, description: 'Exact table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, suggestions, content_votes' },
+          question: { type: SchemaType.STRING, description: 'The question in Arabic' },
+          answer: { type: SchemaType.STRING, description: 'The answer in Arabic' },
+          category: { type: SchemaType.STRING, description: 'FAQ category' },
+        },
+        required: ['question', 'answer'],
+      },
+    },
+    {
+      name: 'create_code',
+      description: 'Create a new security/ban code entry (V-code or G-code).',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          code: { type: SchemaType.STRING, description: 'Code like V-87 or G-160' },
+          title: { type: SchemaType.STRING, description: 'Code title' },
+          description: { type: SchemaType.STRING, description: 'What this code means' },
+          category: { type: SchemaType.STRING, description: 'Code category' },
+          severity: { type: SchemaType.STRING, format: 'enum', enum: ['info', 'warning', 'urgent', 'critical'], description: 'Severity level' } as any,
+        },
+        required: ['code', 'title', 'description'],
+      },
+    },
+    {
+      name: 'create_zone',
+      description: 'Create a new forbidden zone/neighborhood entry.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          city: { type: SchemaType.STRING, description: 'City name' },
+          district: { type: SchemaType.STRING, description: 'District name' },
+          neighborhood: { type: SchemaType.STRING, description: 'Neighborhood name' },
+          status: { type: SchemaType.STRING, format: 'enum', enum: ['open', 'closed'], description: 'open or closed' } as any,
+          notes: { type: SchemaType.STRING, description: 'Additional notes' },
+        },
+        required: ['city', 'district', 'neighborhood', 'status'],
+      },
+    },
+    {
+      name: 'create_scenario',
+      description: 'Create a new consultant scenario for the AI legal advisor.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING, description: 'Scenario title' },
+          description: { type: SchemaType.STRING, description: 'Scenario description' },
+          category: { type: SchemaType.STRING, description: 'Scenario category' },
+          risk: { type: SchemaType.STRING, format: 'enum', enum: ['safe', 'medium', 'high', 'critical'], description: 'Risk level' } as any,
+          steps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Steps to resolve' },
+          docs: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Required documents' },
+          cost: { type: SchemaType.STRING, description: 'Expected cost info' },
+          legal: { type: SchemaType.STRING, description: 'Legal basis/reference' },
+          tip: { type: SchemaType.STRING, description: 'Key tip for this scenario' },
+        },
+        required: ['title', 'description'],
+      },
+    },
+    {
+      name: 'create_banner',
+      description: 'Create a new site banner/alert shown at the top of the website.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          content: { type: SchemaType.STRING, description: 'Banner text content' },
+          link_text: { type: SchemaType.STRING, description: 'Link button text (optional)' },
+          link_url: { type: SchemaType.STRING, description: 'Link URL (optional)' },
+          type: { type: SchemaType.STRING, format: 'enum', enum: ['banner', 'alert'], description: 'banner or alert' } as any,
+        },
+        required: ['content'],
+      },
+    },
+    {
+      name: 'query_table',
+      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, suggestions, content_votes' },
           select: { type: SchemaType.STRING, description: 'Columns to select (default: *)' },
           filters: { type: SchemaType.OBJECT, description: 'Key-value equality filters', properties: {} },
           order_by: { type: SchemaType.STRING, description: 'Column to sort by' },
@@ -584,6 +660,69 @@ async function executeFunction(
       return { result: { message: 'Service created', service: data } };
     }
 
+    case 'create_faq': {
+      const { question, answer, category } = args;
+      const { data, error } = await serviceClient.from('faqs').insert({
+        question, answer,
+        category: category || null,
+        active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'FAQ created', faq: data } };
+    }
+
+    case 'create_code': {
+      const { code, title, description, category, severity } = args;
+      const { data, error } = await serviceClient.from('security_codes').insert({
+        code, title, description,
+        category: category || null,
+        severity: severity || 'info',
+        active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Security code created', code_entry: data } };
+    }
+
+    case 'create_zone': {
+      const { city, district, neighborhood, status, notes } = args;
+      const { data, error } = await serviceClient.from('zones').insert({
+        city, district, neighborhood, status,
+        notes: notes || null,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Zone created', zone: data } };
+    }
+
+    case 'create_scenario': {
+      const { title, description, category, risk, steps, docs, cost, legal, tip } = args;
+      const { data, error } = await serviceClient.from('consultant_scenarios').insert({
+        title, description,
+        category: category || null,
+        risk: risk || 'medium',
+        steps: steps || [],
+        docs: docs || [],
+        cost: cost || null,
+        legal: legal || null,
+        tip: tip || null,
+        is_active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Scenario created', scenario: data } };
+    }
+
+    case 'create_banner': {
+      const { content, link_text, link_url, type } = args;
+      const { data, error } = await serviceClient.from('site_banners').insert({
+        content,
+        link_text: link_text || null,
+        link_url: link_url || null,
+        type: type || 'banner',
+        is_active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Banner created', banner: data } };
+    }
+
     case 'count_content': {
       const { content_type, filters } = args;
       const table = TABLE_MAP[content_type];
@@ -770,6 +909,67 @@ async function executeFunction(
   }
 }
 
+// ── Live site snapshot — gives Gemini real-time awareness ──
+async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
+  try {
+    const [
+      articlesCount, servicesCount, updatesCount, faqsCount,
+      scenariosCount, codesCount, zonesCount, commentsCount,
+      reviewsCount, membersCount, bannersCount,
+      pendingServices, pendingComments, pendingArticles,
+      recentArticles, recentUpdates, activeBanners,
+    ] = await Promise.all([
+      serviceClient.from('articles').select('*', { count: 'exact', head: true }),
+      serviceClient.from('service_providers').select('*', { count: 'exact', head: true }),
+      serviceClient.from('updates').select('*', { count: 'exact', head: true }),
+      serviceClient.from('faqs').select('*', { count: 'exact', head: true }),
+      serviceClient.from('consultant_scenarios').select('*', { count: 'exact', head: true }),
+      serviceClient.from('security_codes').select('*', { count: 'exact', head: true }),
+      serviceClient.from('zones').select('*', { count: 'exact', head: true }),
+      serviceClient.from('comments').select('*', { count: 'exact', head: true }),
+      serviceClient.from('service_reviews').select('*', { count: 'exact', head: true }),
+      serviceClient.from('member_profiles').select('*', { count: 'exact', head: true }),
+      serviceClient.from('site_banners').select('*', { count: 'exact', head: true }),
+      serviceClient.from('service_providers').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      serviceClient.from('comments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      serviceClient.from('articles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      serviceClient.from('articles').select('id, title, category, status, created_at').order('created_at', { ascending: false }).limit(5),
+      serviceClient.from('updates').select('id, title, type, date, active').order('created_at', { ascending: false }).limit(5),
+      serviceClient.from('site_banners').select('id, content, type, is_active').eq('is_active', true),
+    ]);
+
+    const recentArticlesList = (recentArticles.data || [])
+      .map((a: any) => `  - "${a.title}" [${a.category}] (${a.status})`)
+      .join('\n');
+
+    const recentUpdatesList = (recentUpdates.data || [])
+      .map((u: any) => `  - "${u.title}" [${u.type}] (${u.active ? 'active' : 'inactive'})`)
+      .join('\n');
+
+    const activeBannersList = (activeBanners.data || [])
+      .map((b: any) => `  - "${b.content}" [${b.type}]`)
+      .join('\n');
+
+    return `
+## LIVE SITE DATA (real-time snapshot):
+Total counts: ${articlesCount.count} articles, ${servicesCount.count} services, ${updatesCount.count} updates, ${faqsCount.count} FAQs, ${scenariosCount.count} scenarios, ${codesCount.count} codes, ${zonesCount.count} zones, ${commentsCount.count} comments, ${reviewsCount.count} reviews, ${membersCount.count} members, ${bannersCount.count} banners
+
+Pending items needing attention: ${pendingArticles.count || 0} articles, ${pendingServices.count || 0} services, ${pendingComments.count || 0} comments
+
+Last 5 articles:
+${recentArticlesList || '  (none)'}
+
+Last 5 updates:
+${recentUpdatesList || '  (none)'}
+
+Active banners:
+${activeBannersList || '  (none)'}
+`;
+  } catch {
+    return '\n## LIVE DATA: Could not fetch snapshot.\n';
+  }
+}
+
 // ── Main handler ──
 export async function POST(request: NextRequest) {
   try {
@@ -833,10 +1033,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ reply: 'GOOGLE_GEMINI_API_KEY not configured.' });
     }
 
+    // Fetch live site snapshot for real-time awareness
+    const siteSnapshot = await fetchSiteSnapshot(serviceClient);
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: SYSTEM_PROMPT + siteSnapshot,
       tools,
     });
 
