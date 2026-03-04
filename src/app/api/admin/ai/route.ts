@@ -4,8 +4,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { GoogleGenerativeAI, SchemaType, type FunctionDeclarationsTool } from '@google/generative-ai';
 
-// ── All table mappings ──
+// ── All table mappings (every DB table the AI can access) ──
 const TABLE_MAP: Record<string, string> = {
+  // Core content
   article: 'articles',
   service: 'service_providers',
   faq: 'faqs',
@@ -14,17 +15,30 @@ const TABLE_MAP: Record<string, string> = {
   update: 'updates',
   banner: 'site_banners',
   scenario: 'consultant_scenarios',
+  // Community
   comment: 'comments',
   review: 'service_reviews',
+  vote: 'content_votes',
+  suggestion: 'content_suggestions',
+  // Members & auth
   member: 'member_profiles',
+  // Site config
   source: 'official_sources',
   menu: 'site_menus',
   notification: 'notifications',
-  suggestion: 'suggestions',
+  testimonial: 'site_testimonials',
+  home_card: 'home_cards',
+  setting: 'site_settings',
+  ticker: 'news_ticker',
+  // System & analytics (read-only for AI)
+  activity_log: 'admin_activity_log',
+  push_sub: 'push_subscriptions',
+  service_category: 'service_categories',
 };
 
 const PK_MAP: Record<string, string> = {
   security_codes: 'code',
+  site_settings: 'key',
 };
 
 function pk(table: string) { return PK_MAP[table] || 'id'; }
@@ -93,6 +107,8 @@ function resolveFilters(filters: Record<string, any>): Record<string, any> {
 const CONTENT_TYPES = [
   'article', 'service', 'faq', 'update', 'scenario',
   'code', 'zone', 'banner', 'comment', 'review', 'member', 'source',
+  'menu', 'notification', 'suggestion', 'vote', 'testimonial',
+  'home_card', 'setting', 'ticker', 'activity_log', 'push_sub', 'service_category',
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -354,12 +370,92 @@ const tools: FunctionDeclarationsTool[] = [{
       },
     },
     {
-      name: 'query_table',
-      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools.',
+      name: 'create_testimonial',
+      description: 'Create a homepage testimonial/review shown on the landing page.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, suggestions, content_votes' },
+          name: { type: SchemaType.STRING, description: 'Person name' },
+          content: { type: SchemaType.STRING, description: 'Testimonial text' },
+          rating: { type: SchemaType.NUMBER, description: 'Rating 1-5' },
+        },
+        required: ['name', 'content'],
+      },
+    },
+    {
+      name: 'create_menu_item',
+      description: 'Create a site navigation menu item (header or footer).',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          label: { type: SchemaType.STRING, description: 'Menu link label text' },
+          href: { type: SchemaType.STRING, description: 'URL path (e.g. /faq, /contact)' },
+          location: { type: SchemaType.STRING, format: 'enum', enum: ['header', 'footer'], description: 'header or footer' } as any,
+          sort_order: { type: SchemaType.NUMBER, description: 'Display order (lower = first)' },
+        },
+        required: ['label', 'href', 'location'],
+      },
+    },
+    {
+      name: 'create_ticker_item',
+      description: 'Add item to the news_ticker table (separate from updates). Appears in homepage ticker.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING, description: 'Ticker headline text' },
+          link: { type: SchemaType.STRING, description: 'Link URL when clicked' },
+        },
+        required: ['title'],
+      },
+    },
+    {
+      name: 'manage_settings',
+      description: 'Read or update global site settings (key-value pairs). Use action=get to read, action=set to update.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          action: { type: SchemaType.STRING, format: 'enum', enum: ['get', 'set', 'list'], description: 'get=read one, set=update one, list=show all' } as any,
+          key: { type: SchemaType.STRING, description: 'Setting key (required for get/set)' },
+          value: { type: SchemaType.STRING, description: 'New value (required for set)' },
+        },
+        required: ['action'],
+      },
+    },
+    {
+      name: 'view_activity_log',
+      description: 'View the admin activity log (audit trail). Shows recent actions: new members, articles, services, comments, reviews, etc.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          limit: { type: SchemaType.NUMBER, description: 'Max entries (default 20)' },
+          event_type: { type: SchemaType.STRING, description: 'Filter by event type: new_member, new_service, new_comment, new_review, new_article, new_scenario, new_faq, new_code, new_zone, new_update, new_source, new_tool' },
+        },
+      },
+    },
+    {
+      name: 'manage_home_cards',
+      description: 'List, create, or update homepage content cards.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          action: { type: SchemaType.STRING, format: 'enum', enum: ['list', 'create', 'update', 'delete'], description: 'What to do' } as any,
+          id: { type: SchemaType.STRING, description: 'Card ID (for update/delete)' },
+          title: { type: SchemaType.STRING, description: 'Card title' },
+          description: { type: SchemaType.STRING, description: 'Card description' },
+          icon: { type: SchemaType.STRING, description: 'Icon name' },
+          link: { type: SchemaType.STRING, description: 'Card link URL' },
+          sort_order: { type: SchemaType.NUMBER, description: 'Display order' },
+        },
+        required: ['action'],
+      },
+    },
+    {
+      name: 'query_table',
+      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools. Supports ALL 24 tables.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, push_subscriptions, service_categories' },
           select: { type: SchemaType.STRING, description: 'Columns to select (default: *)' },
           filters: { type: SchemaType.OBJECT, description: 'Key-value equality filters', properties: {} },
           order_by: { type: SchemaType.STRING, description: 'Column to sort by' },
@@ -391,68 +487,141 @@ CRITICAL: ALWAYS respond in Arabic. The admin speaks Arabic only.
 9. For follow-up questions about items you already found: USE the IDs from your previous tool results (check [Tool context] in history).
 10. Be proactive: if admin says something vague, search for it.
 
-## SITE OVERVIEW:
-The site has these main sections:
-- Knowledge Base: 100+ articles organized by category (residence, visa, kimlik, health, work, education, etc.)
-- Service Directory: Vetted service providers (doctors, lawyers, translators, movers)
-- AI Consultant: Interactive legal scenario analyzer
-- News/Updates: Breaking news and important announcements
-- Tools: Ban calculator, cost calculator, code lookup, zone maps, pharmacy finder
-- Community: Comments and reviews on articles and services
-- Security Codes: V-codes and G-codes (ban/restriction codes)
-- Forbidden Zones: Neighborhoods where Syrians cannot register
+## COMPLETE SITE MAP:
 
-## DATABASE TABLES:
+### Public Pages:
+- / (Homepage) — hero, search bar, news ticker carousel, category grid, latest updates cards
+- /article/[slug] — full article with steps, docs, tips, comments
+- /category/[slug] — articles filtered by category
+- /services — service directory with filters
+- /services/[id] — service provider profile with reviews
+- /updates — all updates timeline with filter tabs (All/News/Articles/Scenarios/Codes/FAQs)
+- /updates/[id] — single update detail
+- /faq — frequently asked questions with category filters
+- /codes — security code lookup tool (V-codes, G-codes)
+- /codes/[code] — single code detail page
+- /zones — forbidden zones map by city
+- /zones/[slug] — zones for specific city
+- /consultant — AI legal scenario analyzer
+- /calculator — ban duration calculator tool
+- /tools — tools overview page
+- /tools/pharmacy — pharmacy finder (e-Devlet integration)
+- /tools/kimlik-check — kimlik number validator
+- /sources — official government sources directory
+- /forms — downloadable official forms and documents
+- /directory — service provider directory (alternative URL)
+- /dictionary — redirects to /directory
+- /education, /health, /housing, /work, /residence — category landing pages
+- /important-links — curated important links page
+- /contact — contact form (sends via WhatsApp, NOT saved to DB)
+- /request — service request form (sends via WhatsApp, NOT saved to DB)
+- /privacy — privacy policy
+- /disclaimer — legal disclaimer
+- /about — about page with site statistics
+- /join — user registration
+- /login — user login
+- /dashboard — user dashboard (profile, saved articles, submitted content)
+- /bookmarks — user saved/bookmarked articles
 
-### articles
-Columns: id, slug, title, category (Arabic name), intro, details (HTML), steps (array), documents (array), tips (array), fees, warning, source (URL), image, tags (array of slugs), seo_keywords, status (approved/draft/pending/rejected), created_at, last_update, user_id
-Category values stored in Arabic: residence=types of residences, kimlik=kimlik and temporary protection, visa=visas, syrians=syrian services, housing=housing, work=work and investment, education=study, health=health and insurance, official=official transactions, edevlet=e-Devlet services, traffic=traffic and cars
+### Admin Pages (/admin/*):
+- /admin/ai-assistant — THIS assistant (you!)
+- /admin/analyst — strategic analysis engine (7-layer analysis: gaps, logic, conflicts, quality, duplications, structure)
+- /admin/integrity — system integrity checks
+- /admin/news-ticker — manages the news_ticker table directly
+- /admin/settings — global site settings
+- /admin/migration — data migration tools
+- /admin/requests — pending articles & services for approval
+- /admin/[content-type] — editors for each content type
 
-### service_providers
+## DATABASE TABLES (COMPLETE — 24 tables):
+
+### CORE CONTENT:
+
+**articles** — Knowledge base guides
+Columns: id, slug, title, category (Arabic), intro, details (HTML), steps (array), documents (array), tips (array), fees, warning, source (URL), image, tags (array of slugs), seo_keywords, status (approved/draft/pending/rejected), created_at, last_update, user_id
+Category values stored in Arabic. Slug mapping: ${CATEGORIES_TEXT}
+
+**service_providers** — Vetted service directory
 Columns: id, name, profession, description, phone, city, district, category (medical/legal/home/transport/education/translation/other), image, bio, status (pending/approved/rejected), is_verified, user_id, created_at
 
-### updates
-Columns: id, type, title, content, date, active (boolean), image, created_at
-Type values: "news" (appears in homepage ticker), or Arabic topic labels for updates page only (e.g. economy, health, law, travel, etc.)
+**updates** — News and announcements
+Columns: id, type, title, content, date, active (boolean), image, link, created_at
+Type: "news" = homepage ticker. Other values (any string/Arabic topic) = updates page only.
 
-### faqs
+**faqs** — Frequently asked questions
 Columns: id, question, answer, category, active (boolean), created_at
 
-### security_codes (PK is code not id)
+**security_codes** (PK is "code" not "id") — Ban/restriction code reference
 Columns: code (e.g. V-87, G-160), title, description, category, severity (info/warning/urgent/critical), active
 
-### zones
-Columns: id, city, district, neighborhood, status (open/closed), notes, created_at
+**zones** — Forbidden neighborhoods for Syrian registration
+Columns: id, city, district, neighborhood, slug, status (open/closed), notes, created_at, updated_at
 
-### consultant_scenarios
+**consultant_scenarios** — AI legal advisor scenarios
 Columns: id, title, description, category, risk (safe/medium/high/critical), steps (array), docs (array), cost, legal, tip, is_active, created_at
 
-### site_banners (the colored bar at TOP of every page — NOT the news ticker!)
-Columns: id, content, link_text, link_url, type (alert=red/warning=amber/info=blue), is_active, created_at
-Only ONE banner is shown at a time (is_active=true, limit 1). Dismissible by users via localStorage.
+### COMMUNITY & ENGAGEMENT:
 
-### comments
-Columns: id, entity_type (article/update/service), entity_id, user_id, author_name, content, status (pending/approved/rejected), created_at
+**comments** — User comments on articles/updates/services
+Columns: id, entity_type (article/update/service), entity_id, user_id, author_name, content, status (pending/approved/rejected), parent_id (for nested replies), is_correction, is_official, likes_count, created_at
 
-### service_reviews
-Columns: id, service_id, user_id, rating (1-5), title, content, created_at
+**service_reviews** — Ratings and reviews on services
+Columns: id, service_id, user_id, rating (1-5), title, content, comment, helpful_count, is_approved, is_verified, created_at
+Related: review_replies (nested), review_helpful_votes, review_reports
 
-### member_profiles
+**content_votes** — Likes/votes on comments, articles, reviews
+Columns: id, entity_type (comment/article/review), entity_id, vote_type (up/down), feedback, reason, visitor_id, created_at
+Unique constraint: one vote per entity per visitor
+
+**content_suggestions** — Community wiki-style suggestions
+Columns: id, entity_type, entity_id, user_id, suggestion_text, status, created_at
+
+### MEMBERS & AUTH:
+
+**member_profiles** — Registered users
 Columns: id, full_name, role (admin/user/moderator), avatar_url, created_at
+Linked to auth.users. Created on OAuth/email signup.
 
-### official_sources
-Columns: id, name, url, description, category, is_official, active, created_at
+### SITE CONFIGURATION:
 
-### site_menus
+**site_banners** (colored bar at TOP of every page — NOT the news ticker!)
+Columns: id, content, link_text, link_url, type (alert=red/warning=amber/info=blue), is_active, created_at
+Only ONE active at a time. Dismissible via localStorage.
+
+**site_menus** — Navigation links (header/footer)
 Columns: id, label, href, location (header/footer), sort_order, is_active, created_at
 
-### content_votes
-Columns: id, entity_type, entity_id, user_id, vote_type (up/down), created_at
+**official_sources** — Government & official links directory
+Columns: id, name, url, description, category, is_official, active, created_at
 
-## CATEGORY SLUGS (article categories - use these for filters):
-${CATEGORIES_TEXT}
+**site_settings** — Global key-value configuration (PK is "key")
+Columns: key, value, updated_at
 
-## TAG SLUGS (article tags):
+**site_testimonials** — Homepage customer testimonials
+Columns: id, name, content, rating, is_active, created_at
+
+**home_cards** — Custom homepage content cards
+Columns: id, title, description, icon, link, sort_order, is_active, created_at
+
+**news_ticker** — Separate ticker management table
+Columns: id, title, link, is_active, sort_order, created_at
+
+**service_categories** — Service category taxonomy
+Columns: id, name, slug, icon, sort_order, created_at
+
+### SYSTEM & ANALYTICS (read-only):
+
+**admin_activity_log** — Audit trail of all admin actions
+Columns: id, event_type (new_member/new_service/new_comment/new_review/new_article/new_scenario/new_faq/new_code/new_zone/new_update/new_source/new_tool), title, detail, entity_id, entity_table, created_at
+Auto-populated by DB triggers. Shows on /updates page as automatic events.
+
+**notifications** — Push/bell notifications
+Columns: id, title, body, link, created_at
+
+**push_subscriptions** — Web Push API browser subscriptions
+Columns: id, endpoint, keys, user_id, created_at
+
+## ARTICLE TAGS (use English slugs for filters):
 ${TAGS_TEXT}
 
 ## STATUS WORKFLOWS:
@@ -463,38 +632,37 @@ ${TAGS_TEXT}
 - Scenarios: is_active=true/false
 - Comments: pending -> approved / rejected
 - Zones: status=open / closed
+- Menus/Testimonials/Home cards/Ticker: is_active=true/false
+- Settings: key-value pairs, updated directly
 
 ## CRITICAL: NEWS TICKER vs UPDATES PAGE vs BANNERS (3 different things!)
 
-1. **News Ticker (شريط الأخبار)** — the scrolling carousel on the HOMEPAGE
+1. **News Ticker** — scrolling carousel on HOMEPAGE
    - Source: "updates" table WHERE type='news' AND active=true, LIMIT 5
-   - Also auto-includes latest articles and scenarios
-   - To add item to ticker: create_update with type='news'
-   - To count ticker items: count_content(update, {type:'news', active:true})
+   - Also auto-merges latest articles (10) and scenarios (5) as cards
+   - ALSO: "news_ticker" table has separate manual ticker items
+   - To add: create_update with type='news' OR add to news_ticker table
 
-2. **Updates Page (صفحة التحديثات)** — the /updates page
+2. **Updates Page** (/updates) — full timeline
    - Shows ALL updates (any type) + automatic events from admin_activity_log
-   - Has filter tabs: All, News, Articles, Scenarios, Codes, FAQs
-   - Updates with Arabic type labels (economy, health, law) appear here but NOT in ticker
+   - Filter tabs: All, News, Articles, Scenarios, Codes, FAQs
 
-3. **Site Banner (البانر العلوي)** — the colored bar at very top of ALL pages
+3. **Site Banner** — colored bar at very top of ALL pages
    - Source: "site_banners" table WHERE is_active=true, LIMIT 1
-   - Types: alert (red), warning (amber), info (blue)
-   - Only ONE banner active at a time
-   - NOT related to updates table at all
-
-When admin asks about "news ticker" or "شريط الأخبار" → filter updates by type='news' + active=true
-When admin asks about "updates page" or "صفحة التحديثات" → all updates regardless of type
-When admin asks about "banner" or "بانر" → site_banners table
+   - NOT related to updates or news_ticker
 
 ## IMPORTANT NOTES:
-- Article categories are stored in Arabic in DB (not English slugs)
-- The slug-to-Arabic mapping is automatic in the backend
-- security_codes table uses "code" as primary key, not "id"
-- When creating articles, choose the best category and tags automatically
-- Articles appear on the site at: /article/[slug]
-- Services appear at: /services/[id]
-- Updates appear at: /updates/[id]
+- Article categories stored in Arabic in DB (auto-mapped from English slugs)
+- security_codes uses "code" as PK, site_settings uses "key" as PK
+- Contact form (/contact) and service request (/request) send via WhatsApp — NOT saved to DB
+- Articles URL: /article/[slug]
+- Services URL: /services/[id]
+- Updates URL: /updates/[id]
+- Codes URL: /codes/[code]
+- Zones URL: /zones/[city-slug]
+- Admin activity log is auto-populated by triggers (not manual)
+- push_subscriptions tracks browser Web Push subscriptions for notifications
+- The strategic analyst (/admin/analyst) uses analyst_insights table for 7-layer analysis
 
 ## RESPONSE FORMAT:
 - Use bullet points and structured lists
@@ -535,6 +703,11 @@ async function executeFunction(
         comment: () => searchTable('comment', 'comments', ['content', 'author_name'], 'id, entity_type, entity_id, author_name, content, status, created_at'),
         review: () => searchTable('review', 'service_reviews', ['title', 'content'], 'id, service_id, rating, title, content'),
         source: () => searchTable('source', 'official_sources', ['name', 'description'], 'id, name, url, category, active'),
+        menu: () => searchTable('menu', 'site_menus', ['label', 'href'], 'id, label, href, location, is_active'),
+        testimonial: () => searchTable('testimonial', 'site_testimonials', ['name', 'content'], 'id, name, content, rating, is_active'),
+        ticker: () => searchTable('ticker', 'news_ticker', ['title'], 'id, title, link, is_active'),
+        suggestion: () => searchTable('suggestion', 'content_suggestions', ['suggestion_text'], 'id, entity_type, entity_id, suggestion_text, status, created_at'),
+        member: () => searchTable('member', 'member_profiles', ['full_name'], 'id, full_name, role, created_at'),
       };
 
       if (content_type && searches[content_type]) {
@@ -771,8 +944,11 @@ async function executeFunction(
       if (!table) return { result: { error: 'Invalid content type' } };
 
       const limit = Math.min(rawLimit || 10, 30);
-      // security_codes has no created_at column — use 'code' as default sort
-      const DEFAULT_SORT: Record<string, string> = { security_codes: 'code', site_banners: 'created_at', official_sources: 'created_at' };
+      // Tables without created_at need a fallback sort field
+      const DEFAULT_SORT: Record<string, string> = {
+        security_codes: 'code',
+        site_settings: 'key',
+      };
       const sortBy = sort_field || DEFAULT_SORT[table] || 'created_at';
       const ascending = sort_order === 'asc';
 
@@ -783,12 +959,23 @@ async function executeFunction(
         updates: 'id, title, content, type, date, active, created_at',
         consultant_scenarios: 'id, title, description, category, risk, is_active, created_at',
         security_codes: 'code, title, description, severity, active',
-        zones: 'id, city, district, neighborhood, status, notes',
-        site_banners: 'id, content, link_text, link_url, type, is_active',
+        zones: 'id, city, district, neighborhood, status, notes, created_at',
+        site_banners: 'id, content, link_text, link_url, type, is_active, created_at',
         comments: 'id, entity_type, entity_id, author_name, content, status, created_at',
         service_reviews: 'id, service_id, rating, title, content, created_at',
         member_profiles: 'id, full_name, role, created_at',
-        official_sources: 'id, name, url, category, active',
+        official_sources: 'id, name, url, category, active, created_at',
+        site_menus: 'id, label, href, location, sort_order, is_active, created_at',
+        notifications: 'id, title, body, link, created_at',
+        content_suggestions: 'id, entity_type, entity_id, suggestion_text, status, created_at',
+        content_votes: 'id, entity_type, entity_id, vote_type, created_at',
+        site_testimonials: 'id, name, content, rating, is_active, created_at',
+        home_cards: 'id, title, description, icon, link, sort_order, is_active, created_at',
+        site_settings: 'key, value, updated_at',
+        news_ticker: 'id, title, link, is_active, sort_order, created_at',
+        admin_activity_log: 'id, event_type, title, detail, entity_id, created_at',
+        push_subscriptions: 'id, endpoint, user_id, created_at',
+        service_categories: 'id, name, slug, icon, sort_order, created_at',
       };
 
       let query = serviceClient
@@ -843,8 +1030,12 @@ async function executeFunction(
       const [
         articles, services, updates, faqs, scenarios,
         codes, zones, comments, reviews, members,
+        sources, menus, testimonials, homeCards, banners, tickerItems,
+        votes, suggestions, pushSubs,
         pendingArticles, pendingServices, pendingComments,
+        newsTickerCount,
       ] = await Promise.all([
+        // Core content
         safeTableCount('articles'),
         safeTableCount('service_providers'),
         safeTableCount('updates'),
@@ -855,16 +1046,30 @@ async function executeFunction(
         safeTableCount('comments'),
         safeTableCount('service_reviews'),
         safeTableCount('member_profiles'),
+        safeTableCount('official_sources'),
+        safeTableCount('site_menus'),
+        safeTableCount('site_testimonials'),
+        safeTableCount('home_cards'),
+        safeTableCount('site_banners'),
+        safeTableCount('news_ticker'),
+        safeTableCount('content_votes'),
+        safeTableCount('content_suggestions'),
+        safeTableCount('push_subscriptions'),
+        // Pending items
         safeTableCount('articles', { status: 'pending' }),
         safeTableCount('service_providers', { status: 'pending' }),
         safeTableCount('comments', { status: 'pending' }),
+        // News ticker specific
+        safeTableCount('updates', { type: 'news', active: 'true' } as any),
       ]);
 
       return {
         result: {
-          articles, services, updates, faqs, scenarios,
-          codes, zones, comments, reviews, members,
+          content: { articles, services, updates, faqs, scenarios, codes, zones },
+          community: { comments, reviews, votes, suggestions, members, pushSubs },
+          site_config: { sources, menus, testimonials, homeCards, banners, tickerItems },
           pending: { articles: pendingArticles, services: pendingServices, comments: pendingComments },
+          homepage_ticker_news: newsTickerCount,
         },
       };
     }
@@ -928,6 +1133,107 @@ async function executeFunction(
       return { result: { count: (data || []).length, rows: data } };
     }
 
+    case 'create_testimonial': {
+      const { name, content, rating } = args;
+      const { data, error } = await serviceClient.from('site_testimonials').insert({
+        name, content,
+        rating: rating || 5,
+        is_active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Testimonial created', testimonial: data } };
+    }
+
+    case 'create_menu_item': {
+      const { label, href, location, sort_order } = args;
+      const { data, error } = await serviceClient.from('site_menus').insert({
+        label, href, location,
+        sort_order: sort_order || 0,
+        is_active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Menu item created', menu: data } };
+    }
+
+    case 'create_ticker_item': {
+      const { title, link } = args;
+      const { data, error } = await serviceClient.from('news_ticker').insert({
+        title,
+        link: link || null,
+        is_active: true,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Ticker item created', ticker: data } };
+    }
+
+    case 'manage_settings': {
+      const { action, key, value } = args;
+      if (action === 'list') {
+        const { data, error } = await serviceClient.from('site_settings').select('*');
+        if (error) return { result: { error: error.message } };
+        return { result: { settings: data } };
+      }
+      if (action === 'get' && key) {
+        const { data, error } = await serviceClient.from('site_settings').select('*').eq('key', key).single();
+        if (error) return { result: { error: `Setting not found: ${error.message}` } };
+        return { result: data };
+      }
+      if (action === 'set' && key && value !== undefined) {
+        const { data, error } = await serviceClient.from('site_settings').upsert({ key, value, updated_at: new Date().toISOString() }).select().single();
+        if (error) return { result: { error: `Update failed: ${error.message}` } };
+        return { result: { message: `Setting "${key}" updated`, setting: data } };
+      }
+      return { result: { error: 'Invalid action or missing key/value' } };
+    }
+
+    case 'view_activity_log': {
+      const { limit: rawLimit, event_type } = args;
+      const limit = Math.min(rawLimit || 20, 50);
+      let query = serviceClient
+        .from('admin_activity_log')
+        .select('id, event_type, title, detail, entity_id, entity_table, created_at')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (event_type) query = query.eq('event_type', event_type);
+      const { data, error } = await query;
+      if (error) return { result: { error: error.message } };
+      return { result: { count: (data || []).length, entries: data } };
+    }
+
+    case 'manage_home_cards': {
+      const { action, id, title, description, icon, link, sort_order } = args;
+      if (action === 'list') {
+        const { data, error } = await serviceClient.from('home_cards').select('*').order('sort_order', { ascending: true });
+        if (error) return { result: { error: error.message } };
+        return { result: { count: (data || []).length, cards: data } };
+      }
+      if (action === 'create') {
+        const { data, error } = await serviceClient.from('home_cards').insert({
+          title, description, icon: icon || null, link: link || null,
+          sort_order: sort_order || 0, is_active: true,
+        }).select().single();
+        if (error) return { result: { error: `Create failed: ${error.message}` } };
+        return { result: { message: 'Home card created', card: data } };
+      }
+      if (action === 'update' && id) {
+        const fields: Record<string, any> = {};
+        if (title) fields.title = title;
+        if (description) fields.description = description;
+        if (icon) fields.icon = icon;
+        if (link) fields.link = link;
+        if (sort_order !== undefined) fields.sort_order = sort_order;
+        const { data, error } = await serviceClient.from('home_cards').update(fields).eq('id', id).select().single();
+        if (error) return { result: { error: `Update failed: ${error.message}` } };
+        return { result: { message: 'Card updated', card: data } };
+      }
+      if (action === 'delete' && id) {
+        const { error } = await serviceClient.from('home_cards').delete().eq('id', id);
+        if (error) return { result: { error: `Delete failed: ${error.message}` } };
+        return { result: { message: 'Card deleted' } };
+      }
+      return { result: { error: 'Invalid action or missing id' } };
+    }
+
     default:
       return { result: { error: 'Unknown function' } };
   }
@@ -951,10 +1257,13 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
     // All counts in parallel — each individually safe
     const [
       articles, services, updates, faqs, scenarios,
-      codes, zones, comments, reviews, members, banners,
+      codes, zones, comments, reviews, members,
+      banners, sources, menus, testimonials, homeCards,
+      tickerItems, votes, suggestions, pushSubs,
       pendingArticles, pendingServices, pendingComments,
-      recentArticleIds, recentUpdateIds,
+      recentArticleIds, recentUpdateIds, recentActivityIds,
     ] = await Promise.all([
+      // Core content
       safeCount('articles'),
       safeCount('service_providers'),
       safeCount('updates'),
@@ -965,13 +1274,24 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
       safeCount('comments'),
       safeCount('service_reviews'),
       safeCount('member_profiles'),
+      // Site config
       safeCount('site_banners'),
+      safeCount('official_sources'),
+      safeCount('site_menus'),
+      safeCount('site_testimonials'),
+      safeCount('home_cards'),
+      safeCount('news_ticker'),
+      safeCount('content_votes'),
+      safeCount('content_suggestions'),
+      safeCount('push_subscriptions'),
+      // Pending
       safeCount('articles', { status: 'pending' }),
       safeCount('service_providers', { status: 'pending' }),
       safeCount('comments', { status: 'pending' }),
-      // Only fetch IDs and slugs (ASCII-safe) for recent items
+      // Recent items (ASCII-safe only — no Arabic text!)
       serviceClient.from('articles').select('id, slug, status').order('created_at', { ascending: false }).limit(5).then((r: any) => r.data || []).catch(() => []),
       serviceClient.from('updates').select('id, type, date, active').order('created_at', { ascending: false }).limit(5).then((r: any) => r.data || []).catch(() => []),
+      serviceClient.from('admin_activity_log').select('id, event_type, entity_id').order('created_at', { ascending: false }).limit(5).then((r: any) => r.data || []).catch(() => []),
     ]);
 
     // Build ASCII-only snapshot (no Arabic to avoid ByteString crash)
@@ -983,20 +1303,27 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
       .map((u: any) => `  - id=${u.id}, type=${u.type}, date=${u.date}, active=${u.active}`)
       .join('\n');
 
+    const recentActivityStr = recentActivityIds
+      .map((a: any) => `  - ${a.event_type}: entity=${a.entity_id}`)
+      .join('\n');
+
     return `
 
 ## LIVE SITE DATA (real-time snapshot):
-Total: ${articles} articles, ${services} services, ${updates} updates, ${faqs} FAQs, ${scenarios} scenarios, ${codes} codes, ${zones} zones, ${comments} comments, ${reviews} reviews, ${members} members, ${banners} banners
+Content: ${articles} articles, ${services} services, ${updates} updates, ${faqs} FAQs, ${scenarios} scenarios, ${codes} codes, ${zones} zones
+Community: ${comments} comments, ${reviews} reviews, ${votes} votes, ${suggestions} suggestions, ${members} members, ${pushSubs} push subscribers
+Config: ${sources} sources, ${menus} menus, ${testimonials} testimonials, ${homeCards} home cards, ${banners} banners, ${tickerItems} ticker items
 
-Pending items needing attention: ${pendingArticles} articles, ${pendingServices} services, ${pendingComments} comments
+Pending: ${pendingArticles} articles, ${pendingServices} services, ${pendingComments} comments
 
-Recent article IDs (use get_content_details or list_content to see titles):
+Recent articles (use list_content for full details):
 ${recentArticlesStr || '  (none)'}
 
-Recent update IDs:
+Recent updates:
 ${recentUpdatesStr || '  (none)'}
 
-Use list_content or search_content tools to see full details with titles.
+Recent activity log:
+${recentActivityStr || '  (none)'}
 `;
   } catch {
     return '\n## LIVE DATA: Could not fetch snapshot.\n';
