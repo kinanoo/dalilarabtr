@@ -2,8 +2,21 @@
 -- مقالات جديدة: التجنيس، المرور، لمّ الشمل
 -- يُنسخ ويُلصق في Supabase SQL Editor ثم RUN
 -- =====================================================
--- ملاحظة: يستخدم ON CONFLICT (slug) لتحديث المقالات الموجودة بنفس الـ slug
+-- الطريقة: حذف المقالات الموجودة بنفس الـ slug ثم إدراج جديدة
 -- =====================================================
+
+-- حذف المقالات الموجودة (إن وُجدت) لتجنب تعارض الـ slug
+DELETE FROM articles WHERE slug IN (
+    'citizenship-general',
+    'citizenship-syrians',
+    'citizenship-investment',
+    'driving-license',
+    'traffic-fines',
+    'car-registration',
+    'family-reunion',
+    'family-reunion-syrians',
+    'spouse-residence'
+);
 
 -- =====================================================
 -- 1. التجنيس التركي (3 مقالات)
@@ -87,19 +100,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
@@ -167,19 +168,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
@@ -241,19 +230,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 
 -- =====================================================
@@ -331,19 +308,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
@@ -412,19 +377,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
@@ -495,19 +448,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 
 -- =====================================================
@@ -585,19 +526,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
@@ -665,19 +594,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
@@ -746,19 +663,7 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (slug) DO UPDATE SET
-    title = EXCLUDED.title,
-    category = EXCLUDED.category,
-    intro = EXCLUDED.intro,
-    details = EXCLUDED.details,
-    steps = EXCLUDED.steps,
-    documents = EXCLUDED.documents,
-    tips = EXCLUDED.tips,
-    fees = EXCLUDED.fees,
-    warning = EXCLUDED.warning,
-    source = EXCLUDED.source,
-    status = EXCLUDED.status,
-    last_update = EXCLUDED.last_update;
+;
 
 -- =====================================================
 -- تم! 9 مقالات جديدة:
