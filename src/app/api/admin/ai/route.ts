@@ -30,10 +30,17 @@ const TABLE_MAP: Record<string, string> = {
   home_card: 'home_cards',
   setting: 'site_settings',
   ticker: 'news_ticker',
+  // Reviews sub-tables
+  review_reply: 'review_replies',
+  review_report: 'review_reports',
+  review_helpful: 'review_helpful_votes',
   // System & analytics (read-only for AI)
   activity_log: 'admin_activity_log',
+  analytics: 'analytics_events',
   push_sub: 'push_subscriptions',
   service_category: 'service_categories',
+  insight: 'analyst_insights',
+  tool_entry: 'tools_registry',
 };
 
 const PK_MAP: Record<string, string> = {
@@ -109,6 +116,7 @@ const CONTENT_TYPES = [
   'code', 'zone', 'banner', 'comment', 'review', 'member', 'source',
   'menu', 'notification', 'suggestion', 'vote', 'testimonial',
   'home_card', 'setting', 'ticker', 'activity_log', 'push_sub', 'service_category',
+  'review_reply', 'review_report', 'review_helpful', 'analytics', 'insight', 'tool_entry',
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -357,14 +365,14 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'create_banner',
-      description: 'Create a new site banner/alert shown at the top of the website.',
+      description: 'Create a site banner (colored bar at TOP of every page). Only 1 active at a time. Deactivate others first.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
           content: { type: SchemaType.STRING, description: 'Banner text content' },
           link_text: { type: SchemaType.STRING, description: 'Link button text (optional)' },
           link_url: { type: SchemaType.STRING, description: 'Link URL (optional)' },
-          type: { type: SchemaType.STRING, format: 'enum', enum: ['banner', 'alert'], description: 'banner or alert' } as any,
+          type: { type: SchemaType.STRING, format: 'enum', enum: ['alert', 'warning', 'info'], description: 'alert=red, warning=amber, info=blue' } as any,
         },
         required: ['content'],
       },
@@ -433,6 +441,41 @@ const tools: FunctionDeclarationsTool[] = [{
       },
     },
     {
+      name: 'create_notification',
+      description: 'Create a push notification to send to all subscribed users.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING, description: 'Notification title' },
+          body: { type: SchemaType.STRING, description: 'Notification body text' },
+          link: { type: SchemaType.STRING, description: 'URL to open when clicked' },
+        },
+        required: ['title', 'body'],
+      },
+    },
+    {
+      name: 'view_analytics',
+      description: 'View site traffic analytics: page views, top pages, visitor counts. Use when admin asks about traffic, visits, or popular pages.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          period: { type: SchemaType.STRING, format: 'enum', enum: ['today', 'week', 'month', 'all'], description: 'Time period to analyze' } as any,
+          top_pages_limit: { type: SchemaType.NUMBER, description: 'How many top pages to show (default 10)' },
+        },
+      },
+    },
+    {
+      name: 'view_insights',
+      description: 'View strategic analysis insights from the /admin/analyst engine. Shows gaps, conflicts, quality issues, duplications.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          type: { type: SchemaType.STRING, description: 'Filter by insight type: gap, logic, conflict, quality, review_mismatch, duplication, structure' },
+          limit: { type: SchemaType.NUMBER, description: 'Max insights (default 20)' },
+        },
+      },
+    },
+    {
       name: 'manage_home_cards',
       description: 'List, create, or update homepage content cards.',
       parameters: {
@@ -455,7 +498,7 @@ const tools: FunctionDeclarationsTool[] = [{
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, push_subscriptions, service_categories' },
+          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, push_subscriptions, service_categories, analytics_events, analyst_insights, tools_registry, review_replies, review_reports, review_helpful_votes' },
           select: { type: SchemaType.STRING, description: 'Columns to select (default: *)' },
           filters: { type: SchemaType.OBJECT, description: 'Key-value equality filters', properties: {} },
           order_by: { type: SchemaType.STRING, description: 'Column to sort by' },
@@ -609,17 +652,39 @@ Columns: id, title, link, is_active, sort_order, created_at
 **service_categories** — Service category taxonomy
 Columns: id, name, slug, icon, sort_order, created_at
 
+### REVIEWS SUB-TABLES:
+
+**review_replies** — Admin replies to service reviews
+Columns: id, review_id, user_id, content, created_at
+
+**review_reports** — Abuse reports on reviews
+Columns: id, review_id, user_id, reason, created_at
+Unique: one report per user per review
+
+**review_helpful_votes** — Helpful/unhelpful votes on reviews
+Columns: id, review_id, user_id, is_helpful, created_at
+
 ### SYSTEM & ANALYTICS (read-only):
 
 **admin_activity_log** — Audit trail of all admin actions
 Columns: id, event_type (new_member/new_service/new_comment/new_review/new_article/new_scenario/new_faq/new_code/new_zone/new_update/new_source/new_tool), title, detail, entity_id, entity_table, created_at
 Auto-populated by DB triggers. Shows on /updates page as automatic events.
 
+**analytics_events** — Page views and session tracking
+Columns: id, event_name (page_view/session_end), page_path, visitor_id, session_id, duration_seconds, meta (JSON), created_at
+Write-only from tracking API. Use query_table to read aggregated data.
+
+**analyst_insights** — Strategic analysis results from /admin/analyst
+Columns: id, type (gap/logic/conflict/quality/review_mismatch/duplication/structure), title, description, severity, entity_type, entity_id, created_at
+
 **notifications** — Push/bell notifications
 Columns: id, title, body, link, created_at
 
 **push_subscriptions** — Web Push API browser subscriptions
 Columns: id, endpoint, keys, user_id, created_at
+
+**tools_registry** — Registered site tools/features
+Columns: id, name, description, url, icon, is_active, created_at
 
 ## ARTICLE TAGS (use English slugs for filters):
 ${TAGS_TEXT}
@@ -913,7 +978,7 @@ async function executeFunction(
         content,
         link_text: link_text || null,
         link_url: link_url || null,
-        type: type || 'banner',
+        type: type || 'alert',
         is_active: true,
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
@@ -948,6 +1013,7 @@ async function executeFunction(
       const DEFAULT_SORT: Record<string, string> = {
         security_codes: 'code',
         site_settings: 'key',
+        tools_registry: 'name',
       };
       const sortBy = sort_field || DEFAULT_SORT[table] || 'created_at';
       const ascending = sort_order === 'asc';
@@ -976,6 +1042,12 @@ async function executeFunction(
         admin_activity_log: 'id, event_type, title, detail, entity_id, created_at',
         push_subscriptions: 'id, endpoint, user_id, created_at',
         service_categories: 'id, name, slug, icon, sort_order, created_at',
+        review_replies: 'id, review_id, user_id, content, created_at',
+        review_reports: 'id, review_id, user_id, reason, created_at',
+        review_helpful_votes: 'id, review_id, user_id, is_helpful, created_at',
+        analytics_events: 'id, event_name, page_path, visitor_id, created_at',
+        analyst_insights: 'id, type, title, description, severity, entity_type, created_at',
+        tools_registry: 'id, name, description, url, icon, is_active',
       };
 
       let query = serviceClient
@@ -1198,6 +1270,91 @@ async function executeFunction(
       const { data, error } = await query;
       if (error) return { result: { error: error.message } };
       return { result: { count: (data || []).length, entries: data } };
+    }
+
+    case 'create_notification': {
+      const { title, body, link } = args;
+      const { data, error } = await serviceClient.from('notifications').insert({
+        title, body,
+        link: link || null,
+      }).select().single();
+      if (error) return { result: { error: `Create failed: ${error.message}` } };
+      return { result: { message: 'Notification created', notification: data } };
+    }
+
+    case 'view_analytics': {
+      const { period, top_pages_limit } = args;
+      const limit = top_pages_limit || 10;
+
+      // Calculate date filter
+      const now = new Date();
+      let dateFilter: string | null = null;
+      if (period === 'today') dateFilter = now.toISOString().split('T')[0];
+      else if (period === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        dateFilter = weekAgo.toISOString();
+      } else if (period === 'month') {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        dateFilter = monthAgo.toISOString();
+      }
+
+      try {
+        let query = serviceClient
+          .from('analytics_events')
+          .select('page_path, event_name, visitor_id, created_at')
+          .eq('event_name', 'page_view');
+
+        if (dateFilter) {
+          query = query.gte('created_at', dateFilter);
+        }
+
+        const { data, error } = await query.limit(5000);
+        if (error) return { result: { error: `Analytics query failed: ${error.message}` } };
+
+        const rows = data || [];
+        const totalViews = rows.length;
+        const uniqueVisitors = new Set(rows.map((r: any) => r.visitor_id)).size;
+
+        // Top pages
+        const pageCounts: Record<string, number> = {};
+        for (const row of rows) {
+          const path = (row as any).page_path || '/';
+          pageCounts[path] = (pageCounts[path] || 0) + 1;
+        }
+        const topPages = Object.entries(pageCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, limit)
+          .map(([path, views]) => ({ path, views }));
+
+        return {
+          result: {
+            period: period || 'all',
+            total_page_views: totalViews,
+            unique_visitors: uniqueVisitors,
+            top_pages: topPages,
+          },
+        };
+      } catch {
+        return { result: { error: 'Analytics table may not exist or is empty' } };
+      }
+    }
+
+    case 'view_insights': {
+      const { type, limit: rawLimit } = args;
+      const limit = Math.min(rawLimit || 20, 50);
+      try {
+        let query = serviceClient
+          .from('analyst_insights')
+          .select('id, type, title, description, severity, entity_type, entity_id, created_at')
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        if (type) query = query.eq('type', type);
+        const { data, error } = await query;
+        if (error) return { result: { error: error.message } };
+        return { result: { count: (data || []).length, insights: data } };
+      } catch {
+        return { result: { error: 'Analyst insights table may not exist' } };
+      }
     }
 
     case 'manage_home_cards': {
