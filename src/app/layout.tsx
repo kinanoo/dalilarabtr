@@ -3,7 +3,15 @@ import { Suspense } from 'react';
 import "./globals.css";
 import "../styles/animations.css";
 import "../styles/dark-mode.css";
-import '@fontsource/cairo/400.css';
+import { Cairo } from 'next/font/google';
+
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-cairo',
+  preload: true,
+});
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import ClientComponents from "@/components/ClientComponents";
@@ -19,7 +27,6 @@ import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // N
 import NotificationManager from "@/components/NotificationManager";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
-import FontLoader from "@/components/FontLoader";
 import NewsTicker from "@/components/NewsTicker";
 import CookieConsent from "@/components/CookieConsent";
 
@@ -108,7 +115,7 @@ export default function RootLayout({
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={cairo.variable}>
       <head>
         {/* Anti-scraping hints */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -155,7 +162,6 @@ export default function RootLayout({
             {/* PWA Components */}
             <ServiceWorkerRegister />
             <PWAInstallPrompt />
-            <FontLoader />
 
             <div className="relative z-10">
               <UrgencyBanner />

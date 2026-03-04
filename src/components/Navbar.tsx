@@ -20,6 +20,7 @@ import TopBar from './TopBar';
 import NavDropdown from './NavDropdown';
 import { supabase } from '@/lib/supabaseClient';
 import NotificationBell from './notifications/NotificationBell';
+import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 
 // Helper to map icon names to components
 export const IconMap: any = {
@@ -114,41 +115,15 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch Dynamic Menus & Tools
+  // Shared site config (menus + tools) — deduplicated with Footer via SWR
+  const { data: siteConfig } = useSiteConfig();
+
   useEffect(() => {
-    async function fetchData() {
-      if (!supabase) return;
-
-      // Menus
-      const { data: menus } = await supabase
-        .from('site_menus')
-        .select('id, label, href, icon, sort_order')
-        .eq('location', 'header')
-        .eq('is_active', true)
-        .order('sort_order');
-
-      // Only override if DB has content
-      if (menus && menus.length > 0) {
-        // Filter out Smart Consultant as requested
-        // const filteredMenus = menus.filter((m: any) => m.label !== 'المستشار الذكي' && m.href !== '/consultant');
-        // setHeaderMenus(filteredMenus); // CAUTION: Disabled to keep TopBar clean (User Request)
-      }
-
-      // Tools
-      const { data: dbTools } = await supabase
-        .from('tools_registry')
-        .select('id, key, name, route')
-        .eq('is_active', true);
-
-      if (dbTools && dbTools.length > 0) {
-        // Deduplicate by route AND remove '/forms' and '/directory' (as they are in Services)
-        const uniqueTools = Array.from(new Map(dbTools.map((item: any) => [item.route, item])).values())
-          .filter((t: any) => t.route !== '/forms' && t.route !== '/directory' && t.route !== '/consultant');
-        setTools(uniqueTools);
-      }
-    }
-    fetchData();
-  }, []);
+    if (!siteConfig?.tools?.length) return;
+    const uniqueTools = Array.from(new Map(siteConfig.tools.map((item: any) => [item.route, item])).values())
+      .filter((t: any) => t.route !== '/forms' && t.route !== '/directory' && t.route !== '/consultant');
+    setTools(uniqueTools);
+  }, [siteConfig]);
 
   useEffect(() => {
     let mounted = true;

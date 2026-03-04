@@ -26,7 +26,12 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      onClick={() => {
+        const html = document.documentElement;
+        html.classList.add('theme-switching');
+        setTheme(isDark ? 'light' : 'dark');
+        setTimeout(() => html.classList.remove('theme-switching'), 400);
+      }}
       className="p-2.5 min-w-11 min-h-11 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
       aria-label="تبديل الوضع المظلم"
       title={isDark ? 'وضع فاتح' : 'وضع مظلم'}

@@ -14,12 +14,10 @@ import { SITE_CONFIG } from '@/lib/config';
 
 // Components
 import HeroSection from '@/components/home/HeroSection';
-import QuickActionsGrid from '@/components/home/QuickActionsGrid';
 import HomeUpdates from '@/components/home/HomeUpdates';
 import GlobalSearch from '@/components/GlobalSearch';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
-import GuidedJourney from '@/components/GuidedJourney';
-import HomeFAQ from '@/components/home/HomeFAQ';
+import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 
 // ============================================
 // 📦 Data Fetching (Server-Side)

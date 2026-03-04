@@ -1,31 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import SocialLinks from './SocialLinks';
 import { SITE_CONFIG } from '@/lib/config';
-import { supabase } from '@/lib/supabaseClient';
 import { usePathname } from 'next/navigation';
+import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 
 export default function Footer() {
   const pathname = usePathname();
-  const [footerMenus, setFooterMenus] = useState<{ section1: any[], section2: any[] }>({ section1: [], section2: [] });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchFooterMenus() {
-      if (!supabase) return;
-      const { data } = await supabase.from('site_menus').select('id, label, href, icon, location, sort_order').in('location', ['footer_section_1', 'footer_section_2']).order('sort_order');
-      if (data) {
-        setFooterMenus({
-          section1: data.filter(m => m.location === 'footer_section_1'),
-          section2: data.filter(m => m.location === 'footer_section_2')
-        });
-      }
-      setLoading(false);
-    }
-    fetchFooterMenus();
-  }, []);
+  const { data: siteConfig } = useSiteConfig();
+  const footerMenus = siteConfig?.footerMenus ?? { section1: [], section2: [] };
 
   if (pathname?.startsWith('/admin')) return null;
 

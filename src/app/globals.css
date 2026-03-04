@@ -5,7 +5,6 @@
 :root {
   --foreground-rgb: 15, 23, 42;
   --background-rgb: 241, 245, 249;
-  --font-cairo: 'Cairo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Arial, 'Noto Sans Arabic', 'Noto Sans', sans-serif;
 }
 
 body {
@@ -25,21 +24,6 @@ body {
 /* ============================================
    Buttons & Interactive Elements
    ============================================ */
-
-button,
-a {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-button:hover,
-a:hover {
-  transform: translateY(-1px);
-}
-
-button:active,
-a:active {
-  transform: translateY(0);
-}
 
 /* Primary button */
 .btn-primary {

@@ -38,7 +38,7 @@ const config: Config = {
         }
       },
       fontFamily: {
-        cairo: ['var(--font-cairo)'],
+        cairo: ['var(--font-cairo)', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Arial', 'Noto Sans Arabic', 'sans-serif'],
       },
       // ✅ نظام shadows موحد - 3 مستويات فقط
       boxShadow: {
