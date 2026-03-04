@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
-import { supabase } from '@/lib/supabaseClient';
 import { Bell, Sparkles, Loader2, Calendar, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, ArrowLeft, Briefcase, Wrench, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -62,18 +61,16 @@ export default function UpdatesClient() {
   const [autoLoading, setAutoLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
 
-  // Fetch auto events from admin_activity_log
+  // Fetch auto events via public API (bypasses admin-only RLS)
   useEffect(() => {
     async function fetchAutoEvents() {
-      if (!supabase) { setAutoLoading(false); return; }
-      const { data } = await supabase
-        .from('admin_activity_log')
-        .select('id, event_type, title, detail, entity_id, created_at')
-        .in('event_type', PUBLIC_EVENT_TYPES)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      setAutoEvents(data || []);
+      try {
+        const res = await fetch('/api/public-events');
+        const json = await res.json();
+        setAutoEvents(json.events || []);
+      } catch {
+        setAutoEvents([]);
+      }
       setAutoLoading(false);
     }
     fetchAutoEvents();
