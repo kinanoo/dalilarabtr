@@ -70,7 +70,8 @@ export async function fetchAllNotifications(limit = 30): Promise<Notification[]>
     const lastSeen = getLastSeen();
 
     // Fetch both sources in parallel
-    const [manualResult, autoResult] = await Promise.all([
+    // admin_activity_log has admin-only RLS, so use public API for auto events
+    const [manualResult, autoEventsRes] = await Promise.all([
         supabase
             .from('notifications')
             .select('id, type, title, message, link, icon, priority, created_at')
@@ -79,13 +80,9 @@ export async function fetchAllNotifications(limit = 30): Promise<Notification[]>
             .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
             .order('created_at', { ascending: false })
             .limit(limit),
-        supabase
-            .from('admin_activity_log')
-            .select('id, event_type, title, detail, entity_id, created_at')
-            .in('event_type', PUBLIC_EVENT_TYPES)
-            .order('created_at', { ascending: false })
-            .limit(limit),
+        fetch('/api/public-events').then(r => r.json()).catch(() => ({ events: [] })),
     ]);
+    const autoResult = { data: autoEventsRes.events || [] };
 
     const items: Notification[] = [];
 
