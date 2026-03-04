@@ -1,6 +1,6 @@
 'use client';
 
-import { type LucideIcon, Sparkles, Plane, GraduationCap, Briefcase, Users, HeartPulse, PlaneTakeoff, FileText, UserCheck, BookOpen, Home, Scale, Smartphone, Stamp, HeartHandshake, Map, MapPin, LifeBuoy, Crown, Car, FileSearch } from 'lucide-react';
+import { type LucideIcon, Sparkles, Plane, GraduationCap, Briefcase, Users, HeartPulse, PlaneTakeoff, FileText, UserCheck, BookOpen, Home, Scale, Smartphone, Stamp, HeartHandshake, Map, MapPin, LifeBuoy, Crown, Car, FileSearch, ShieldCheck, CreditCard, Building2, Baby, Globe, AlertTriangle, Landmark } from 'lucide-react';
 import Link from 'next/link';
 
 // ============================================
@@ -26,7 +26,7 @@ interface JourneyGroup {
 }
 
 // ============================================
-// Data — 15 بطاقة في 3 مجموعات
+// Data — 26 بطاقة في 4 مجموعات (السوريين = الأكبر)
 // ============================================
 
 const JOURNEY_GROUPS: JourneyGroup[] = [
@@ -80,6 +80,95 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
         ],
     },
     {
+        id: 'syrian-services',
+        title: 'خدمات خاصة للسوريين',
+        icon: ShieldCheck,
+        headerBg: 'bg-violet-100 dark:bg-violet-900/20',
+        headerText: 'text-violet-600 dark:text-violet-400',
+        cards: [
+            {
+                id: 'syrian-kimlik-renew',
+                title: 'تجديد الكملك وتحديث البيانات',
+                desc: 'الأوراق المطلوبة، المواعيد، تغيير العنوان، والبصمة',
+                icon: UserCheck,
+                color: 'from-violet-500 to-purple-600',
+                href: '/category/kimlik',
+            },
+            {
+                id: 'syrian-travel',
+                title: 'تصاريح السفر والتنقل',
+                desc: 'إذن السفر بين الولايات، وثيقة السفر، والعودة الطوعية',
+                icon: Globe,
+                color: 'from-blue-500 to-indigo-500',
+                href: '/consultant',
+            },
+            {
+                id: 'syrian-citizenship',
+                title: 'الجنسية الاستثنائية للسوريين',
+                desc: 'شروط التجنيس، الملف المطلوب، والمراحل والمدة',
+                icon: Crown,
+                color: 'from-yellow-500 to-amber-500',
+                href: '/consultant',
+            },
+            {
+                id: 'syrian-codes',
+                title: 'الأكواد الأمنية والترحيل',
+                desc: 'فهم أكواد V-87, G-87, Ç-113 وكيفية الاعتراض',
+                icon: AlertTriangle,
+                color: 'from-red-500 to-rose-600',
+                href: '/codes',
+            },
+            {
+                id: 'syrian-work-insurance',
+                title: 'العمل والتأمين للسوريين',
+                desc: 'إذن العمل بالكملك، حقوق العامل، والتأمين الصحي SGK',
+                icon: Briefcase,
+                color: 'from-emerald-500 to-teal-500',
+                href: '/category/work',
+            },
+            {
+                id: 'syrian-kizilay',
+                title: 'بطاقة الهلال الأحمر (SUY)',
+                desc: 'شروط الأهلية، التسجيل، الرصيد، وتحديث البيانات',
+                icon: CreditCard,
+                color: 'from-red-500 to-pink-500',
+                href: '/category/syrians',
+            },
+            {
+                id: 'syrian-education',
+                title: 'تعليم أبناء السوريين',
+                desc: 'التسجيل بالمدارس، معادلة الشهادات، والمنح الدراسية',
+                icon: GraduationCap,
+                color: 'from-indigo-500 to-blue-500',
+                href: '/category/education',
+            },
+            {
+                id: 'syrian-children',
+                title: 'تسجيل المواليد والأطفال',
+                desc: 'تسجيل مولود جديد، إضافة طفل للكملك، ووثائق الأطفال',
+                icon: Baby,
+                color: 'from-pink-400 to-rose-500',
+                href: '/category/syrians',
+            },
+            {
+                id: 'syrian-consulate',
+                title: 'خدمات القنصلية السورية',
+                desc: 'جواز السفر، تصديق وثائق، وكالات، وأحوال شخصية',
+                icon: Landmark,
+                color: 'from-slate-500 to-gray-600',
+                href: '/category/syrians',
+            },
+            {
+                id: 'syrian-all-services',
+                title: 'جميع خدمات السوريين',
+                desc: 'دليل شامل لكل ما يحتاجه السوري في تركيا',
+                icon: Building2,
+                color: 'from-purple-500 to-violet-600',
+                href: '/category/syrians',
+            },
+        ],
+    },
+    {
         id: 'in-turkey',
         title: 'أنا في تركيا الآن',
         icon: MapPin,
@@ -101,14 +190,6 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 icon: FileText,
                 color: 'from-emerald-500 to-teal-500',
                 href: '/category/residence',
-            },
-            {
-                id: 'syrian-kimlik',
-                title: 'سوري ولديّ كملك',
-                desc: 'الحماية المؤقتة، تجديد الكملك، حقوقك، والخدمات',
-                icon: UserCheck,
-                color: 'from-violet-500 to-purple-600',
-                href: '/category/kimlik',
             },
             {
                 id: 'student-turkey',

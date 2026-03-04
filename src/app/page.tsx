@@ -19,6 +19,7 @@ import HomeUpdates from '@/components/home/HomeUpdates';
 import GlobalSearch from '@/components/GlobalSearch';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import GuidedJourney from '@/components/GuidedJourney';
+import HomeFAQ from '@/components/home/HomeFAQ';
 
 // ============================================
 // 📦 Data Fetching (Server-Side)
@@ -194,7 +195,8 @@ export default async function Home() {
       {/* 3. QUICK ACTIONS (Client) */}
       <QuickActionsGrid />
 
-
+      {/* 4. TOP FAQ — أكثر الأسئلة شيوعاً */}
+      <HomeFAQ />
 
     </main>
   );
