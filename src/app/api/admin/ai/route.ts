@@ -67,8 +67,10 @@ const TAG_LABELS: Record<string, string> = {
   company: 'الشركات',
 };
 
-const CATEGORIES_TEXT = Object.entries(CATEGORY_SLUGS).map(([k, v]) => `${k} = ${v}`).join(', ');
-const TAGS_TEXT = Object.entries(TAG_LABELS).map(([k, v]) => `${k} = ${v}`).join(', ');
+// Build categories/tags text using ONLY ASCII to avoid ByteString crash
+// Format: "slug (Arabic name)" but Arabic is encoded safely
+const CATEGORIES_TEXT = Object.entries(CATEGORY_SLUGS).map(([k]) => k).join(', ');
+const TAGS_TEXT = Object.entries(TAG_LABELS).map(([k]) => k).join(', ');
 
 // ── Content type enum (reused across tools) ──
 const CONTENT_TYPES = ['article', 'service', 'faq', 'update', 'scenario', 'code', 'zone', 'banner'];
@@ -161,7 +163,7 @@ const tools: FunctionDeclarationsTool[] = [{
         type: SchemaType.OBJECT,
         properties: {
           title: { type: SchemaType.STRING, description: 'Article title (in Arabic)' },
-          category: { type: SchemaType.STRING, description: 'Category in Arabic (must match CATEGORY_SLUGS values)' },
+          category: { type: SchemaType.STRING, description: 'Category slug: residence, kimlik, visa, syrians, housing, work, education, health, official, edevlet, traffic' },
           intro: { type: SchemaType.STRING, description: 'Short intro, 1-2 sentences (in Arabic)' },
           details: { type: SchemaType.STRING, description: 'Article details in HTML (Arabic)' },
           steps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Steps array' },
@@ -219,43 +221,68 @@ const tools: FunctionDeclarationsTool[] = [{
         required: ['content_type'],
       },
     },
+    {
+      name: 'list_content',
+      description: 'List/fetch recent items from a table. Use this to SHOW items to the admin. Returns actual data (titles, details). Use instead of count_content when admin wants to SEE items, not just count them.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          content_type: contentTypeSchema,
+          limit: { type: SchemaType.NUMBER, description: 'Max items to return (default 10, max 20)' },
+          filters: {
+            type: SchemaType.OBJECT,
+            description: 'Optional filters as key-value pairs',
+            properties: {},
+          },
+          sort_field: { type: SchemaType.STRING, description: 'Field to sort by (default: created_at)' },
+          sort_order: {
+            type: SchemaType.STRING,
+            format: 'enum',
+            enum: ['asc', 'desc'],
+            description: 'Sort ascending or descending (default: desc = newest first)',
+          } as any,
+        },
+        required: ['content_type'],
+      },
+    },
   ],
 }];
 
 // ── System prompt (English to avoid ByteString encoding issues) ──
 const SYSTEM_PROMPT = `You are the AI assistant for the admin panel of "dalilarabtr.com" - a guide for Arabs and Syrians in Turkey.
-Your job is to execute admin commands on the database quickly and accurately.
+Your job is to execute admin commands on the database.
 
-CRITICAL: Always respond in Arabic. The admin speaks Arabic. Never respond in English.
+CRITICAL: Always respond in Arabic. The admin speaks Arabic only.
 
-Rules:
-1. Always reply in simple Arabic
-2. Before any delete: search first, show results, ask for confirmation, then delete
-3. When creating articles: auto-select the correct category and tags from the lists below
-4. If multiple search results found, show all and ask which one the admin wants
-5. Be concise and direct - no filler text
-6. When searching, use short precise keywords
-7. Slug is auto-generated on creation
+## MOST IMPORTANT RULES - TOOL USAGE:
+- You MUST call tools/functions to get data. NEVER say "I need IDs" or "use search to find them". YOU must search.
+- When admin asks to SHOW or LIST items: call list_content immediately. Do NOT call count_content first.
+- When admin asks to FIND or SEARCH: call search_content immediately with a keyword.
+- When admin asks HOW MANY / COUNT: call count_content.
+- When admin says "yes" or confirms: execute the action immediately using the appropriate tool. Do NOT ask again.
+- ALWAYS call at least one tool before responding. Never respond with just text if you can call a tool instead.
+- After getting tool results, format the data nicely in Arabic and show it directly.
+- NEVER ask the user to provide IDs, search terms, or other info that you can get yourself with tools.
 
-Available categories (CATEGORY_SLUGS - slug: Arabic name):
+## Action rules:
+- Before DELETE: search first, show the item, ask confirmation. Then delete after admin confirms.
+- When creating articles: auto-select category and tags from the available lists.
+- If multiple results: show all with numbers and ask which one.
+- Be concise. Show data in structured format.
+
+## Category slugs (use these as category values):
 ${CATEGORIES_TEXT}
 
-Available tags (TAG_LABELS - slug: Arabic name):
+## Tag slugs (use these as tag values):
 ${TAGS_TEXT}
 
-Content types and their database tables:
-- article: articles (guides and articles)
-- service: service_providers (service providers)
-- faq: faqs (frequently asked questions)
-- update: updates (news and updates)
-- scenario: consultant_scenarios (consultant scenarios)
-- code: security_codes (security codes)
-- zone: zones (restricted zones)
-- banner: site_banners (banners and alerts)
+## Content types:
+article, service, faq, update, scenario, code, zone, banner
 
-Article status: approved (published) / draft / pending / rejected
-Service status: approved + is_verified=true (published) / draft
-Other types: active=true (enabled) / active=false (disabled)`;
+## Status values:
+Article: approved (published) / draft / pending / rejected
+Service: approved + is_verified=true (published) / draft
+Others: active=true or is_active=true (enabled) / false (disabled)`;
 
 // ── Tool execution functions ──
 // serviceClient typed as any because we use dynamic table names
@@ -384,11 +411,14 @@ async function executeFunction(
 
       const id = `${slug}-${Date.now().toString(36)}`;
 
+      // Map category slug to Arabic name if needed
+      const categoryArabic = CATEGORY_SLUGS[category] || category;
+
       const { data, error } = await serviceClient.from('articles').insert({
         id,
         slug,
         title,
-        category,
+        category: categoryArabic,
         intro,
         details: details || null,
         steps: steps || [],
@@ -440,7 +470,7 @@ async function executeFunction(
     case 'count_content': {
       const { content_type, filters } = args;
       const table = TABLE_MAP[content_type];
-      if (!table) return { result: { error: 'نوع محتوى غير صالح' } };
+      if (!table) return { result: { error: 'Invalid content type' } };
 
       let query = serviceClient.from(table).select('*', { count: 'exact', head: true });
       if (filters) {
@@ -450,8 +480,45 @@ async function executeFunction(
       }
 
       const { count, error } = await query;
-      if (error) return { result: { error: `فشل العدّ: ${error.message}` } };
+      if (error) return { result: { error: `Count failed: ${error.message}` } };
       return { result: { count, content_type, filters } };
+    }
+
+    case 'list_content': {
+      const { content_type, limit: rawLimit, filters, sort_field, sort_order } = args;
+      const table = TABLE_MAP[content_type];
+      if (!table) return { result: { error: 'Invalid content type' } };
+
+      const limit = Math.min(rawLimit || 10, 20);
+      const sortBy = sort_field || 'created_at';
+      const ascending = sort_order === 'asc';
+
+      const selectMap: Record<string, string> = {
+        articles: 'id, slug, title, intro, category, status, created_at, last_update',
+        service_providers: 'id, name, profession, city, phone, status, created_at',
+        faqs: 'id, question, answer, category, active',
+        updates: 'id, title, content, type, date, active',
+        consultant_scenarios: 'id, title, description, category, is_active',
+        security_codes: 'code, title, description, severity, active',
+        zones: 'id, city, district, neighborhood, status',
+        site_banners: 'id, content, type, is_active',
+      };
+
+      let query = serviceClient
+        .from(table)
+        .select(selectMap[table] || '*')
+        .order(sortBy, { ascending })
+        .limit(limit);
+
+      if (filters) {
+        for (const [key, value] of Object.entries(filters)) {
+          query = query.eq(key, value as string);
+        }
+      }
+
+      const { data, error } = await query;
+      if (error) return { result: { error: `List failed: ${error.message}` } };
+      return { result: { count: (data || []).length, items: data || [] } };
     }
 
     default:
@@ -543,27 +610,29 @@ export async function POST(request: NextRequest) {
     let result = response.response;
     let actionToReturn: any = null;
 
-    // Loop to handle multiple function calls
-    let maxIterations = 5;
+    // Loop to handle function calls (including multiple per response)
+    let maxIterations = 8;
     while (maxIterations-- > 0) {
       const candidate = result.candidates?.[0];
       const parts = candidate?.content?.parts || [];
 
-      const functionCall = parts.find((p: any) => p.functionCall);
-      if (!functionCall?.functionCall) break;
+      // Collect ALL function calls in this response
+      const functionCalls = parts.filter((p: any) => p.functionCall);
+      if (functionCalls.length === 0) break;
 
-      const { name, args } = functionCall.functionCall;
-      const { result: fnResult, action } = await executeFunction(name, args || {}, serviceClient);
+      // Execute all function calls
+      const functionResponses: any[] = [];
+      for (const fc of functionCalls) {
+        const { name, args } = fc.functionCall!;
+        const { result: fnResult, action } = await executeFunction(name, args || {}, serviceClient);
+        if (action) actionToReturn = action;
+        functionResponses.push({
+          functionResponse: { name, response: fnResult },
+        });
+      }
 
-      if (action) actionToReturn = action;
-
-      // Send function result back to Gemini
-      response = await chat.sendMessage([{
-        functionResponse: {
-          name,
-          response: fnResult,
-        },
-      }]);
+      // Send all function results back to Gemini
+      response = await chat.sendMessage(functionResponses);
       result = response.response;
     }
 
