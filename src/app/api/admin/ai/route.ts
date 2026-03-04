@@ -50,7 +50,6 @@ const TABLE_MAP: Record<string, string> = {
 
 const PK_MAP: Record<string, string> = {
   security_codes: 'code',
-  site_settings: 'key',
   service_categories: 'slug',
   tools_registry: 'key',
 };
@@ -428,13 +427,12 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'manage_settings',
-      description: 'Read or update global site settings (key-value pairs). Use action=get to read, action=set to update.',
+      description: 'Read or update global site settings. SINGLETON row (id=1) with columns: hero_title, hero_subtitle, hero_cta_primary, hero_cta_secondary, stats_articles, stats_users, stats_uptime, footer_trust_1, footer_trust_2, footer_trust_3, whatsapp_number, email_address. Use action=list to see all, action=update with fields to change.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          action: { type: SchemaType.STRING, format: 'enum', enum: ['get', 'set', 'list'], description: 'get=read one, set=update one, list=show all' } as any,
-          key: { type: SchemaType.STRING, description: 'Setting key (required for get/set)' },
-          value: { type: SchemaType.STRING, description: 'New value (required for set)' },
+          action: { type: SchemaType.STRING, format: 'enum', enum: ['list', 'update'], description: 'list=read all settings, update=change specific columns' } as any,
+          fields: { type: SchemaType.OBJECT, description: 'Columns to update: {hero_title: "new", whatsapp_number: "+90..."}', properties: {} },
         },
         required: ['action'],
       },
@@ -498,8 +496,10 @@ const tools: FunctionDeclarationsTool[] = [{
           id: { type: SchemaType.STRING, description: 'Card ID (for update/delete)' },
           title: { type: SchemaType.STRING, description: 'Card title' },
           description: { type: SchemaType.STRING, description: 'Card description' },
-          icon: { type: SchemaType.STRING, description: 'Icon name' },
-          link: { type: SchemaType.STRING, description: 'Card link URL' },
+          icon_name: { type: SchemaType.STRING, description: 'Lucide icon name' },
+          href: { type: SchemaType.STRING, description: 'Card link URL' },
+          section: { type: SchemaType.STRING, description: 'Card section grouping' },
+          color_class: { type: SchemaType.STRING, description: 'CSS color class' },
           sort_order: { type: SchemaType.NUMBER, description: 'Display order' },
         },
         required: ['action'],
@@ -638,7 +638,7 @@ Columns: id, title, description, category, risk_level (safe/medium/high/critical
 Columns: id, entity_type (article/update/service), entity_id, user_id, author_name, content, status (pending/approved/rejected), parent_id (for nested replies), is_correction, is_official, likes_count, created_at
 
 **service_reviews** — Ratings and reviews on services
-Columns: id, service_id, user_id, rating (1-5), title, content, comment, helpful_count, is_approved, is_verified, created_at
+Columns: id, provider_id, client_name, rating (1-5), comment, helpful_count, is_approved, is_verified, user_id, created_at
 Related: review_replies (nested), review_helpful_votes, review_reports
 
 **content_votes** — Likes/votes on comments, articles, reviews
@@ -666,14 +666,16 @@ Columns: id, label, href, location (header/footer), sort_order, is_active, creat
 **official_sources** — Government & official links directory
 Columns: id, name, url, description, category, is_official, active, created_at
 
-**site_settings** — Global key-value configuration (PK is "key")
-Columns: key, value, updated_at
+**site_settings** — Global site configuration (SINGLETON row, id=1)
+Columns: id, hero_title, hero_subtitle, hero_cta_primary, hero_cta_secondary, stats_articles, stats_users, stats_uptime, footer_trust_1, footer_trust_2, footer_trust_3, whatsapp_number, email_address, updated_at
+NOT a key-value store. One row with specific columns. Use manage_settings tool.
 
 **site_testimonials** — Homepage customer testimonials
 Columns: id, name, content, rating, is_active, created_at
 
 **home_cards** — Custom homepage content cards
-Columns: id, title, description, icon, link, sort_order, is_active, created_at
+Columns: id, title, description, icon_name, href, color_class, sort_order, section, created_at
+No is_active column. Use manage_home_cards tool or delete to remove.
 
 **news_ticker** — Separate ticker management table
 Columns: id, text (NOT title!), link, is_active, priority (integer, higher=first), created_at
@@ -684,20 +686,21 @@ Columns: slug (PK), title (NOT name!), icon, description, sort_order, is_feature
 ### REVIEWS SUB-TABLES:
 
 **review_replies** — Admin replies to service reviews
-Columns: id, review_id, user_id, content, created_at
+Columns: id, review_id, author_name, content, is_official (boolean), created_at
 
 **review_reports** — Abuse reports on reviews
 Columns: id, review_id, user_id, reason, created_at
 Unique: one report per user per review
 
-**review_helpful_votes** — Helpful/unhelpful votes on reviews
-Columns: id, review_id, user_id, is_helpful, created_at
+**review_helpful_votes** — Helpful votes on reviews
+Columns: id, review_id, voter_ip, created_at
+No user_id or is_helpful columns. Tracks by voter IP.
 
 ### SYSTEM & ANALYTICS (read-only):
 
 **admin_login_attempts** — Security log of admin login attempts
-Columns: id, email, ip_address, success (boolean), user_agent, created_at
-Read-only. Use to monitor security and suspicious login attempts.
+Columns: id, ip_address, email, success (boolean), attempted_at
+Read-only. No user_agent column. Sort by attempted_at (not created_at).
 
 **admin_activity_log** — Audit trail of all admin actions
 Columns: id, event_type (new_member/new_service/new_comment/new_review/new_article/new_scenario/new_faq/new_code/new_zone/new_update/new_source/new_tool), title, detail, entity_id, entity_table, created_at
@@ -708,7 +711,8 @@ Columns: id, event_name (page_view/session_end), page_path, visitor_id, session_
 Write-only from tracking API. Use query_table to read aggregated data.
 
 **analyst_insights** — Strategic analysis results from /admin/analyst
-Columns: id, type (gap/logic/conflict/quality/review_mismatch/duplication/structure), title, description, severity, entity_type, entity_id, created_at
+Columns: id, type (gap/logic/conflict/quality/review_mismatch/duplication/structure), title, description, severity, metadata (JSONB), is_resolved (boolean), created_at
+No entity_type/entity_id columns. Related entity info stored in metadata JSONB.
 
 **notifications** — Bell notifications (shown in site notification bell)
 Columns: id, type, title, message (NOT body!), link, icon, priority, target_audience, expires_at, is_active, created_at, updated_at
@@ -718,7 +722,8 @@ Columns: id, notification_id, user_identifier (IP/session), read_at
 Unique: one read per notification per user_identifier
 
 **push_subscriptions** — Web Push API browser subscriptions
-Columns: id, endpoint, keys, user_id, created_at
+Columns: id, endpoint, p256dh, auth, user_id, created_at
+Keys are stored as separate p256dh and auth columns (not a single "keys" object).
 
 **tools_registry** (PK is "key" not "id") — Registered site tools/features
 Columns: key (PK), name, route (NOT url!), is_active, settings (JSONB), created_at
@@ -737,9 +742,10 @@ ${TAGS_TEXT}
 - Reviews: is_approved=true/false
 - Zones (public): status=open / closed
 - Restricted zones (admin): active=true/false + is_closed=true/false
-- Menus/Testimonials/Home cards/Ticker/Tools: is_active=true/false
-- Settings: key-value pairs, updated directly
-- Non-toggleable: member, vote, review_reply, review_report, review_helpful, activity_log, login_attempt, analytics, push_sub, service_category, insight, notification, notification_read
+- Menus/Testimonials/Ticker/Tools: is_active=true/false
+- Settings: singleton row (id=1), update columns directly via manage_settings
+- Home cards: no toggle — use manage_home_cards to create/update/delete
+- Non-toggleable: member, vote, review_reply, review_report, review_helpful, activity_log, login_attempt, analytics, push_sub, service_category, insight, notification, notification_read, home_card, setting
 
 ## CRITICAL: NEWS TICKER vs UPDATES PAGE vs BANNERS (3 different things!)
 
@@ -759,7 +765,7 @@ ${TAGS_TEXT}
 
 ## IMPORTANT NOTES:
 - Article categories stored in Arabic in DB (auto-mapped from English slugs)
-- security_codes uses "code" as PK, site_settings uses "key" as PK
+- security_codes uses "code" as PK, site_settings is a singleton row (id=1)
 - Contact form (/contact) and service request (/request) send via WhatsApp — NOT saved to DB
 - Articles URL: /article/[slug]
 - Services URL: /services/[id]
@@ -810,7 +816,7 @@ async function executeFunction(
         zone: () => searchTable('zone', 'zones', ['city', 'district', 'neighborhood'], 'id, city, district, neighborhood, status'),
         banner: () => searchTable('banner', 'site_banners', ['content', 'link_text'], 'id, content, type, is_active'),
         comment: () => searchTable('comment', 'comments', ['content', 'author_name'], 'id, entity_type, entity_id, author_name, content, status, created_at'),
-        review: () => searchTable('review', 'service_reviews', ['title', 'content'], 'id, service_id, rating, title, content'),
+        review: () => searchTable('review', 'service_reviews', ['client_name', 'comment'], 'id, provider_id, client_name, rating, comment, is_approved'),
         source: () => searchTable('source', 'official_sources', ['name', 'description'], 'id, name, url, category, active'),
         menu: () => searchTable('menu', 'site_menus', ['label', 'href'], 'id, label, href, location, is_active'),
         testimonial: () => searchTable('testimonial', 'site_testimonials', ['name', 'content'], 'id, name, content, rating, is_active'),
@@ -889,7 +895,7 @@ async function executeFunction(
       const nonToggleable = [
         'member', 'vote', 'review_reply', 'review_report', 'review_helpful',
         'activity_log', 'login_attempt', 'analytics', 'push_sub', 'service_category',
-        'setting', 'insight', 'notification', 'notification_read',
+        'setting', 'insight', 'notification', 'notification_read', 'home_card',
       ];
       if (nonToggleable.includes(content_type)) {
         return { result: { error: `${content_type} does not have a publish/unpublish toggle` } };
@@ -914,7 +920,7 @@ async function executeFunction(
         updateFields = { is_approved: pub };
       } else if (content_type === 'zone') {
         updateFields = { status: pub ? 'closed' : 'open' };
-      } else if (['banner', 'scenario', 'menu', 'testimonial', 'home_card', 'ticker', 'tool_entry'].includes(content_type)) {
+      } else if (['banner', 'scenario', 'menu', 'testimonial', 'ticker', 'tool_entry'].includes(content_type)) {
         // These all use is_active
         updateFields = { is_active: pub };
       } else if (content_type === 'restricted_zone') {
@@ -1101,9 +1107,10 @@ async function executeFunction(
       // Tables without created_at need a fallback sort field
       const DEFAULT_SORT: Record<string, string> = {
         security_codes: 'code',
-        site_settings: 'key',
+        site_settings: 'id',
         tools_registry: 'key',
         service_categories: 'sort_order',
+        admin_login_attempts: 'attempted_at',
       };
       const sortBy = sort_field || DEFAULT_SORT[table] || 'created_at';
       const ascending = sort_order === 'asc';
@@ -1118,7 +1125,7 @@ async function executeFunction(
         zones: 'id, city, district, neighborhood, status, notes, created_at',
         site_banners: 'id, content, link_text, link_url, type, is_active, created_at',
         comments: 'id, entity_type, entity_id, author_name, content, status, created_at',
-        service_reviews: 'id, service_id, rating, title, content, created_at',
+        service_reviews: 'id, provider_id, client_name, rating, comment, is_approved, user_id, created_at',
         member_profiles: 'id, full_name, role, created_at',
         official_sources: 'id, name, url, category, active, created_at',
         site_menus: 'id, label, href, location, sort_order, is_active, created_at',
@@ -1126,21 +1133,21 @@ async function executeFunction(
         content_suggestions: 'id, suggestion_text, user_name, contact_info, article_id, status, created_at',
         content_votes: 'id, entity_type, entity_id, vote_type, created_at',
         site_testimonials: 'id, name, content, rating, is_active, created_at',
-        home_cards: 'id, title, description, icon, link, sort_order, is_active, created_at',
-        site_settings: 'key, value, updated_at',
+        home_cards: 'id, title, description, href, icon_name, color_class, sort_order, section, created_at',
+        site_settings: 'id, hero_title, hero_subtitle, whatsapp_number, email_address, updated_at',
         news_ticker: 'id, text, link, is_active, priority, created_at',
         admin_activity_log: 'id, event_type, title, detail, entity_id, created_at',
         push_subscriptions: 'id, endpoint, user_id, created_at',
         service_categories: 'slug, title, icon, description, sort_order, is_featured, active, created_at',
-        review_replies: 'id, review_id, user_id, content, created_at',
+        review_replies: 'id, review_id, author_name, content, is_official, created_at',
         review_reports: 'id, review_id, user_id, reason, created_at',
-        review_helpful_votes: 'id, review_id, user_id, is_helpful, created_at',
+        review_helpful_votes: 'id, review_id, voter_ip, created_at',
         analytics_events: 'id, event_name, page_path, visitor_id, created_at',
-        analyst_insights: 'id, type, title, description, severity, entity_type, created_at',
+        analyst_insights: 'id, type, title, description, severity, metadata, is_resolved, created_at',
         tools_registry: 'key, name, route, is_active, settings, created_at',
         notification_reads: 'id, notification_id, user_identifier, read_at',
         restricted_zones: 'id, city, district, neighborhood, is_closed, active, notes, created_at',
-        admin_login_attempts: 'id, email, ip_address, success, user_agent, created_at',
+        admin_login_attempts: 'id, ip_address, email, success, attempted_at',
       };
 
       let query = serviceClient
@@ -1352,23 +1359,22 @@ async function executeFunction(
     }
 
     case 'manage_settings': {
-      const { action, key, value } = args;
+      const { action, fields } = args;
       if (action === 'list') {
-        const { data, error } = await serviceClient.from('site_settings').select('*');
+        const { data, error } = await serviceClient.from('site_settings').select('*').limit(1).single();
         if (error) return { result: { error: error.message } };
         return { result: { settings: data } };
       }
-      if (action === 'get' && key) {
-        const { data, error } = await serviceClient.from('site_settings').select('*').eq('key', key).single();
-        if (error) return { result: { error: `Setting not found: ${error.message}` } };
-        return { result: data };
-      }
-      if (action === 'set' && key && value !== undefined) {
-        const { data, error } = await serviceClient.from('site_settings').upsert({ key, value, updated_at: new Date().toISOString() }).select().single();
+      if (action === 'update' && fields) {
+        const { data, error } = await serviceClient.from('site_settings')
+          .update({ ...fields, updated_at: new Date().toISOString() })
+          .eq('id', 1)
+          .select()
+          .single();
         if (error) return { result: { error: `Update failed: ${error.message}` } };
-        return { result: { message: `Setting "${key}" updated`, setting: data } };
+        return { result: { message: 'Settings updated', settings: data } };
       }
-      return { result: { error: 'Invalid action or missing key/value' } };
+      return { result: { error: 'Invalid action or missing fields' } };
     }
 
     case 'view_activity_log': {
@@ -1462,7 +1468,7 @@ async function executeFunction(
       try {
         let query = serviceClient
           .from('analyst_insights')
-          .select('id, type, title, description, severity, entity_type, entity_id, created_at')
+          .select('id, type, title, description, severity, metadata, is_resolved, created_at')
           .order('created_at', { ascending: false })
           .limit(limit);
         if (type) query = query.eq('type', type);
@@ -1475,7 +1481,7 @@ async function executeFunction(
     }
 
     case 'manage_home_cards': {
-      const { action, id, title, description, icon, link, sort_order } = args;
+      const { action, id, title, description, icon_name, href, sort_order, section, color_class } = args;
       if (action === 'list') {
         const { data, error } = await serviceClient.from('home_cards').select('*').order('sort_order', { ascending: true });
         if (error) return { result: { error: error.message } };
@@ -1483,8 +1489,12 @@ async function executeFunction(
       }
       if (action === 'create') {
         const { data, error } = await serviceClient.from('home_cards').insert({
-          title, description, icon: icon || null, link: link || null,
-          sort_order: sort_order || 0, is_active: true,
+          title, description,
+          icon_name: icon_name || null,
+          href: href || null,
+          sort_order: sort_order || 0,
+          section: section || null,
+          color_class: color_class || null,
         }).select().single();
         if (error) return { result: { error: `Create failed: ${error.message}` } };
         return { result: { message: 'Home card created', card: data } };
@@ -1493,9 +1503,11 @@ async function executeFunction(
         const fields: Record<string, any> = {};
         if (title) fields.title = title;
         if (description) fields.description = description;
-        if (icon) fields.icon = icon;
-        if (link) fields.link = link;
+        if (icon_name) fields.icon_name = icon_name;
+        if (href) fields.href = href;
         if (sort_order !== undefined) fields.sort_order = sort_order;
+        if (section) fields.section = section;
+        if (color_class) fields.color_class = color_class;
         const { data, error } = await serviceClient.from('home_cards').update(fields).eq('id', id).select().single();
         if (error) return { result: { error: `Update failed: ${error.message}` } };
         return { result: { message: 'Card updated', card: data } };
