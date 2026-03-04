@@ -67,7 +67,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'الشروط والأوراق اللازمة لجمع الشمل',
                 icon: Users,
                 color: 'from-pink-500 to-rose-500',
-                href: '/category/residence',
+                href: '/category/residence?tag=family-reunion',
             },
             {
                 id: 'health-travel',
@@ -75,7 +75,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'السياحة العلاجية، التأمين، والمستشفيات',
                 icon: HeartPulse,
                 color: 'from-red-500 to-pink-500',
-                href: '/category/health',
+                href: '/category/health?tag=medical-tourism',
             },
         ],
     },
@@ -92,7 +92,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'الأوراق المطلوبة، المواعيد، تغيير العنوان، والبصمة',
                 icon: UserCheck,
                 color: 'from-violet-500 to-purple-600',
-                href: '/category/kimlik',
+                href: '/category/kimlik?tag=renewal',
             },
             {
                 id: 'syrian-travel',
@@ -124,7 +124,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'إذن العمل بالكملك، حقوق العامل، والتأمين الصحي SGK',
                 icon: Briefcase,
                 color: 'from-emerald-500 to-teal-500',
-                href: '/category/work',
+                href: '/category/work?tag=work-permit',
             },
             {
                 id: 'syrian-kizilay',
@@ -132,7 +132,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'شروط الأهلية، التسجيل، الرصيد، وتحديث البيانات',
                 icon: CreditCard,
                 color: 'from-red-500 to-pink-500',
-                href: '/category/syrians',
+                href: '/category/syrians?tag=kizilay',
             },
             {
                 id: 'syrian-education',
@@ -140,7 +140,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'التسجيل بالمدارس، معادلة الشهادات، والمنح الدراسية',
                 icon: GraduationCap,
                 color: 'from-indigo-500 to-blue-500',
-                href: '/category/education',
+                href: '/category/education?tag=schools',
             },
             {
                 id: 'syrian-children',
@@ -148,7 +148,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'تسجيل مولود جديد، إضافة طفل للكملك، ووثائق الأطفال',
                 icon: Baby,
                 color: 'from-pink-400 to-rose-500',
-                href: '/category/syrians',
+                href: '/category/syrians?tag=children',
             },
             {
                 id: 'syrian-consulate',
@@ -156,7 +156,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'جواز السفر، تصديق وثائق، وكالات، وأحوال شخصية',
                 icon: Landmark,
                 color: 'from-slate-500 to-gray-600',
-                href: '/category/syrians',
+                href: '/category/syrians?tag=consulate',
             },
             {
                 id: 'syrian-all-services',

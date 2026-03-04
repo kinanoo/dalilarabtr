@@ -24,8 +24,8 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
         details: '',
         documents: [],
         steps: [],
-        tips: []
-        // active: true // REMOVED: Schema mismatch
+        tips: [],
+        tags: []
     });
 
     // Fetch Data
@@ -60,7 +60,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
 
             // Sanitization
             delete payload.active; // Hard remove just in case
-            ['steps', 'documents', 'tips'].forEach(k => {
+            ['steps', 'documents', 'tips', 'tags'].forEach(k => {
                 if (!Array.isArray(payload[k])) payload[k] = [];
             });
 

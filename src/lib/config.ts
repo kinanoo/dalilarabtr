@@ -25,3 +25,22 @@ export const CATEGORY_SLUGS: Record<string, string> = {
     'edevlet': 'خدمات e-Devlet',
     'traffic': 'المرور والسيارات'
 };
+
+export const TAG_LABELS: Record<string, string> = {
+    'kizilay': 'بطاقة الهلال الأحمر',
+    'consulate': 'خدمات القنصلية',
+    'children': 'المواليد والأطفال',
+    'travel-permit': 'تصاريح السفر',
+    'citizenship': 'التجنيس',
+    'renewal': 'تجديد',
+    'driving-license': 'رخصة القيادة',
+    'fines': 'المخالفات',
+    'car': 'تسجيل سيارة',
+    'family-reunion': 'لمّ الشمل',
+    'spouse': 'إقامة عائلية',
+    'work-permit': 'إذن العمل',
+    'insurance': 'التأمين',
+    'schools': 'المدارس',
+    'scholarships': 'المنح الدراسية',
+    'medical-tourism': 'السياحة العلاجية',
+};

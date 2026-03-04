@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search } from 'lucide-react';
+import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search, X } from 'lucide-react';
 import { useAdminArticles, isNewContent } from '@/lib/useAdminData';
+import { TAG_LABELS } from '@/lib/config';
 import PageHero from '@/components/PageHero';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 
@@ -16,19 +17,24 @@ type ArticlePreview = {
   category: string;
   createdAt?: string;
   image?: string;
+  tags?: string[];
 };
 
 export default function CategoryArticlesList({
   categoryName,
+  categorySlug,
   initialArticles,
+  activeTag,
 }: {
   categoryName: string;
+  categorySlug?: string;
   initialArticles: ArticlePreview[];
+  activeTag?: string;
 }) {
   const { articles, loading } = useAdminArticles();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // فلترة المقالات حسب التصنيف والبحث
+  // فلترة المقالات حسب التصنيف والبحث والتاغ
   const categoryArticles = useMemo(() => {
     let list = initialArticles;
 
@@ -44,10 +50,16 @@ export default function CategoryArticlesList({
           category: a.category,
           createdAt: a.created_at,
           image: a.image,
+          tags: (a as any).tags || [],
         }));
     }
 
-    // 2. Client-side Search Filter
+    // 2. Tag Filter (client-side fallback for SWR data)
+    if (activeTag) {
+      list = list.filter((a) => a.tags?.includes(activeTag));
+    }
+
+    // 3. Client-side Search Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -59,7 +71,7 @@ export default function CategoryArticlesList({
     }
 
     return list;
-  }, [articles, categoryName, initialArticles, searchQuery]);
+  }, [articles, categoryName, initialArticles, searchQuery, activeTag]);
 
   if (loading) {
     return (
@@ -104,6 +116,22 @@ export default function CategoryArticlesList({
       </PageHero>
 
       <div className="max-w-screen-2xl mx-auto px-4 py-16 w-full">
+        {/* شريط الفلتر النشط */}
+        {activeTag && (
+          <div className="mb-8 flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3">
+            <span className="text-emerald-700 dark:text-emerald-300 font-bold text-sm">
+              تصفية: {TAG_LABELS[activeTag] || activeTag}
+            </span>
+            <Link
+              href={`/category/${categorySlug}`}
+              className="mr-auto flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 transition-colors font-medium"
+            >
+              <X size={14} />
+              إزالة الفلتر
+            </Link>
+          </div>
+        )}
+
         {categoryArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categoryArticles.map((article) => (

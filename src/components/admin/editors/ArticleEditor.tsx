@@ -70,6 +70,16 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                     />
                 </div>
 
+                <div className="md:col-span-2">
+                    <ArrayInput
+                        label="التصنيفات الفرعية (Tags)"
+                        icon={Tags}
+                        values={form.tags || []}
+                        onChange={v => setForm({ ...form, tags: v })}
+                        placeholder="مثال: kizilay, consulate, renewal..."
+                    />
+                </div>
+
                 <Field label="رابط المصدر / الأصلي" icon={LinkIcon}>
                     <input
                         className={`${ltrInputStyles} text-blue-600 underline`}

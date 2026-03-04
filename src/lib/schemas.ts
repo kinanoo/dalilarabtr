@@ -20,7 +20,7 @@ export const articleSchema = z.object({
     tips: z.array(z.string()).optional(),
     image: optionalString,
     published_at: optionalString, // Date string (ISO)
-    // active: z.boolean().optional().default(true), // REMOVED: Table has no active column
+    tags: z.array(z.string()).optional().default([]),
 });
 
 // --- Service Schema ---

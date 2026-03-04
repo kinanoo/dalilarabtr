@@ -10,6 +10,7 @@ export interface Article {
     documents?: string[];
     steps?: string[];
     tips?: string[];
+    tags?: string[];
     seoKeywords?: string[];
     seoTitle?: string;
     seoDescription?: string;

@@ -82,6 +82,7 @@ export function useAdminArticles() {
         documents: a.documents,
         steps: a.steps,
         tips: a.tips,
+        tags: (a as any).tags || [],
         fees: a.fees,
         warning: a.warning ?? undefined,
         source: a.source,

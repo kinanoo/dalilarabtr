@@ -35,18 +35,29 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 }
 
 // 2. مكون الصفحة
-export default async function CategoryPage(props: { params: Promise<{ slug: string }> }) {
+export default async function CategoryPage(props: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tag?: string }>;
+}) {
   const params = await props.params;
+  const sp = await props.searchParams;
   const categoryName = CATEGORY_SLUGS[params.slug];
+  const activeTag = typeof sp?.tag === 'string' ? sp.tag : undefined;
 
   // جلب المقالات من قاعدة البيانات
   let initialArticles: any[] = [];
   if (supabase && categoryName) {
     try {
-      const { data } = await supabase
+      let query = supabase
         .from('articles')
-        .select('id, title, intro, last_update, category, image')
+        .select('id, title, intro, last_update, category, image, tags')
         .eq('category', categoryName);
+
+      if (activeTag) {
+        query = query.contains('tags', [activeTag]);
+      }
+
+      const { data } = await query;
 
       if (data) {
         initialArticles = data.map(a => ({
@@ -55,7 +66,8 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
           intro: a.intro,
           lastUpdate: a.last_update,
           category: a.category,
-          image: a.image
+          image: a.image,
+          tags: a.tags || [],
         }));
       }
     } catch (e) {
@@ -112,7 +124,9 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
       {/* 🆕 مكون Client لعرض المقالات مع الهيرو والبحث */}
       <CategoryArticlesList
         categoryName={categoryName}
+        categorySlug={params.slug}
         initialArticles={initialArticles}
+        activeTag={activeTag}
       />
 
 
