@@ -68,9 +68,27 @@ const TAG_LABELS: Record<string, string> = {
 };
 
 // Build categories/tags text using ONLY ASCII to avoid ByteString crash
-// Format: "slug (Arabic name)" but Arabic is encoded safely
 const CATEGORIES_TEXT = Object.entries(CATEGORY_SLUGS).map(([k]) => k).join(', ');
 const TAGS_TEXT = Object.entries(TAG_LABELS).map(([k]) => k).join(', ');
+
+// Reverse map: Arabic name → English slug (for DB lookups)
+const CATEGORY_SLUG_REVERSE: Record<string, string> = {};
+for (const [slug, arabic] of Object.entries(CATEGORY_SLUGS)) {
+  CATEGORY_SLUG_REVERSE[arabic] = slug;
+}
+
+// Resolve filter values: map English category slugs to Arabic names for DB queries
+function resolveFilters(filters: Record<string, any>): Record<string, any> {
+  const resolved = { ...filters };
+  if (resolved.category) {
+    // If it's an English slug, convert to Arabic name (DB stores Arabic)
+    resolved.category = CATEGORY_SLUGS[resolved.category] || resolved.category;
+  }
+  if (resolved.tags) {
+    resolved.tags = TAG_LABELS[resolved.tags] || resolved.tags;
+  }
+  return resolved;
+}
 
 // ── Content type enum (reused across tools) ──
 const CONTENT_TYPES = ['article', 'service', 'faq', 'update', 'scenario', 'code', 'zone', 'banner'];
@@ -245,6 +263,18 @@ const tools: FunctionDeclarationsTool[] = [{
         required: ['content_type'],
       },
     },
+    {
+      name: 'count_by_group',
+      description: 'Count items grouped by a field (e.g. articles per category, services per city). Returns all groups with counts in ONE call. Use when admin asks "how many per category/section/city".',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          content_type: contentTypeSchema,
+          group_by: { type: SchemaType.STRING, description: 'Field to group by (e.g. category, city, status, type)' },
+        },
+        required: ['content_type', 'group_by'],
+      },
+    },
   ],
 }];
 
@@ -258,7 +288,7 @@ CRITICAL: Always respond in Arabic. The admin speaks Arabic only.
 - You MUST call tools/functions to get data. NEVER say "I need IDs" or "use search to find them". YOU must search.
 - When admin asks to SHOW or LIST items: call list_content immediately. Do NOT call count_content first.
 - When admin asks to FIND or SEARCH: call search_content immediately with a keyword.
-- When admin asks HOW MANY / COUNT: call count_content.
+- When admin asks HOW MANY / COUNT: call count_content. For "how many per category/section" use count_by_group.
 - When admin says "yes" or confirms: execute the action immediately using the appropriate tool. Do NOT ask again.
 - ALWAYS call at least one tool before responding. Never respond with just text if you can call a tool instead.
 - After getting tool results, format the data nicely in Arabic and show it directly.
@@ -474,7 +504,8 @@ async function executeFunction(
 
       let query = serviceClient.from(table).select('*', { count: 'exact', head: true });
       if (filters) {
-        for (const [key, value] of Object.entries(filters)) {
+        const resolved = resolveFilters(filters);
+        for (const [key, value] of Object.entries(resolved)) {
           query = query.eq(key, value as string);
         }
       }
@@ -511,7 +542,8 @@ async function executeFunction(
         .limit(limit);
 
       if (filters) {
-        for (const [key, value] of Object.entries(filters)) {
+        const resolved = resolveFilters(filters);
+        for (const [key, value] of Object.entries(resolved)) {
           query = query.eq(key, value as string);
         }
       }
@@ -521,8 +553,31 @@ async function executeFunction(
       return { result: { count: (data || []).length, items: data || [] } };
     }
 
+    case 'count_by_group': {
+      const { content_type, group_by } = args;
+      const table = TABLE_MAP[content_type];
+      if (!table) return { result: { error: 'Invalid content type' } };
+
+      const { data, error } = await serviceClient.from(table).select(group_by);
+      if (error) return { result: { error: `Group count failed: ${error.message}` } };
+
+      // Count occurrences of each value
+      const counts: Record<string, number> = {};
+      for (const row of (data || [])) {
+        const val = (row as Record<string, any>)[group_by] || 'unknown';
+        counts[val] = (counts[val] || 0) + 1;
+      }
+
+      // Sort by count descending
+      const sorted = Object.entries(counts)
+        .sort(([, a], [, b]) => b - a)
+        .map(([value, count]) => ({ [group_by]: value, count }));
+
+      return { result: { total: (data || []).length, groups: sorted } };
+    }
+
     default:
-      return { result: { error: 'دالة غير معروفة' } };
+      return { result: { error: 'Unknown function' } };
   }
 }
 
