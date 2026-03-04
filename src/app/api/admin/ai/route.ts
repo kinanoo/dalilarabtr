@@ -997,34 +997,33 @@ async function executeFunction(
     case 'create_zone': {
       const { city, district, neighborhood, status, notes, target_table } = args;
 
-      // Admin can choose which zone table to write to
-      if (target_table === 'restricted_zones') {
-        // Admin ZonesManager table
-        const { data, error } = await serviceClient.from('restricted_zones').insert({
-          city, district, neighborhood,
-          is_closed: true,
-          active: true,
+      // Public zones table — only when explicitly requested
+      if (target_table === 'zones') {
+        const slug = `${city}-${district}-${neighborhood}`
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-zA-Z0-9\u0600-\u06FF\-]/g, '')
+          .substring(0, 100) || `zone-${Date.now().toString(36)}`;
+
+        const { data, error } = await serviceClient.from('zones').insert({
+          city, district, neighborhood, slug,
+          status: status || 'closed',
           notes: notes || null,
+          updated_at: new Date().toISOString(),
         }).select().single();
         if (error) return { result: { error: `Create failed: ${error.message}` } };
-        return { result: { message: 'Restricted zone created (admin table)', zone: data } };
+        return { result: { message: 'Public zone created', zone: data, url: `/zones/${slug}` } };
       }
 
-      // Public zones table — generate slug for URL access
-      const slug = `${city}-${district}-${neighborhood}`
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-zA-Z0-9\u0600-\u06FF\-]/g, '')
-        .substring(0, 100) || `zone-${Date.now().toString(36)}`;
-
-      const { data, error } = await serviceClient.from('zones').insert({
-        city, district, neighborhood, slug,
-        status: status || 'closed',
+      // Default: Admin restricted_zones table (ZonesManager)
+      const { data, error } = await serviceClient.from('restricted_zones').insert({
+        city, district, neighborhood,
+        is_closed: true,
+        active: true,
         notes: notes || null,
-        updated_at: new Date().toISOString(),
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
-      return { result: { message: 'Public zone created', zone: data, url: `/zones/${slug}` } };
+      return { result: { message: 'Restricted zone created (admin table)', zone: data } };
     }
 
     case 'create_scenario': {

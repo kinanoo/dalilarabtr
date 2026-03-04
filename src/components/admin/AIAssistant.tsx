@@ -192,19 +192,29 @@ export function AIAssistant() {
 
         {/* Pending action confirmation */}
         {pendingAction && (
-          <div className="mx-auto max-w-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm">
+          <div className={`mx-auto max-w-md border rounded-xl p-4 space-y-3 ${
+            pendingAction.type === 'delete'
+              ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+              : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+          }`}>
+            <div className={`flex items-center gap-2 font-bold text-sm ${
+              pendingAction.type === 'delete' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
+            }`}>
               <Trash2 size={16} />
-              <span>تأكيد العملية</span>
+              <span>{pendingAction.type === 'delete' ? 'تأكيد الحذف' : 'تأكيد التعديل'}</span>
             </div>
-            <p className="text-sm text-red-700 dark:text-red-300">{pendingAction.summary}</p>
+            <p className={`text-sm ${
+              pendingAction.type === 'delete' ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'
+            }`}>{pendingAction.summary}</p>
             <div className="flex gap-2">
               <button
                 onClick={confirmAction}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className={`flex-1 px-4 py-2 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50 ${
+                  pendingAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'
+                }`}
               >
-                {loading ? 'جاري التنفيذ...' : 'تأكيد الحذف'}
+                {loading ? 'جاري التنفيذ...' : pendingAction.type === 'delete' ? 'تأكيد الحذف' : 'تأكيد التعديل'}
               </button>
               <button
                 onClick={cancelAction}
