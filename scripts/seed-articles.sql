@@ -2,6 +2,8 @@
 -- مقالات جديدة: التجنيس، المرور، لمّ الشمل
 -- يُنسخ ويُلصق في Supabase SQL Editor ثم RUN
 -- =====================================================
+-- ملاحظة: يستخدم ON CONFLICT (slug) لتحديث المقالات الموجودة بنفس الـ slug
+-- =====================================================
 
 -- =====================================================
 -- 1. التجنيس التركي (3 مقالات)
@@ -85,12 +87,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -160,12 +167,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -229,12 +241,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -314,12 +331,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -390,12 +412,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -468,12 +495,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -553,12 +585,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -628,12 +665,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
@@ -704,12 +746,17 @@ VALUES (
     '2026-03-04',
     NOW()
 )
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
+    category = EXCLUDED.category,
+    intro = EXCLUDED.intro,
     details = EXCLUDED.details,
     steps = EXCLUDED.steps,
     documents = EXCLUDED.documents,
     tips = EXCLUDED.tips,
+    fees = EXCLUDED.fees,
+    warning = EXCLUDED.warning,
+    source = EXCLUDED.source,
     status = EXCLUDED.status,
     last_update = EXCLUDED.last_update;
 
