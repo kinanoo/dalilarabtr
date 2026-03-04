@@ -34,8 +34,11 @@ const TABLE_MAP: Record<string, string> = {
   review_reply: 'review_replies',
   review_report: 'review_reports',
   review_helpful: 'review_helpful_votes',
+  // Admin restricted zones (separate from public zones table!)
+  restricted_zone: 'restricted_zones',
   // System & analytics (read-only for AI)
   activity_log: 'admin_activity_log',
+  login_attempt: 'admin_login_attempts',
   analytics: 'analytics_events',
   push_sub: 'push_subscriptions',
   service_category: 'service_categories',
@@ -117,6 +120,7 @@ const CONTENT_TYPES = [
   'menu', 'notification', 'suggestion', 'vote', 'testimonial',
   'home_card', 'setting', 'ticker', 'activity_log', 'push_sub', 'service_category',
   'review_reply', 'review_report', 'review_helpful', 'analytics', 'insight', 'tool_entry',
+  'restricted_zone', 'login_attempt',
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -494,11 +498,11 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'query_table',
-      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools. Supports ALL 24 tables.',
+      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools. Supports ALL 31 tables.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, push_subscriptions, service_categories, analytics_events, analyst_insights, tools_registry, review_replies, review_reports, review_helpful_votes' },
+          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, restricted_zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, admin_login_attempts, push_subscriptions, service_categories, analytics_events, analyst_insights, tools_registry, review_replies, review_reports, review_helpful_votes' },
           select: { type: SchemaType.STRING, description: 'Columns to select (default: *)' },
           filters: { type: SchemaType.OBJECT, description: 'Key-value equality filters', properties: {} },
           order_by: { type: SchemaType.STRING, description: 'Column to sort by' },
@@ -565,6 +569,7 @@ CRITICAL: ALWAYS respond in Arabic. The admin speaks Arabic only.
 - /login — user login
 - /dashboard — user dashboard (profile, saved articles, submitted content)
 - /bookmarks — user saved/bookmarked articles
+- /api/prayer-times — Prayer times API (fetches from external service, not stored in DB)
 
 ### Admin Pages (/admin/*):
 - /admin/ai-assistant — THIS assistant (you!)
@@ -576,7 +581,7 @@ CRITICAL: ALWAYS respond in Arabic. The admin speaks Arabic only.
 - /admin/requests — pending articles & services for approval
 - /admin/[content-type] — editors for each content type
 
-## DATABASE TABLES (COMPLETE — 24 tables):
+## DATABASE TABLES (COMPLETE — 31 tables):
 
 ### CORE CONTENT:
 
@@ -597,8 +602,12 @@ Columns: id, question, answer, category, active (boolean), created_at
 **security_codes** (PK is "code" not "id") — Ban/restriction code reference
 Columns: code (e.g. V-87, G-160), title, description, category, severity (info/warning/urgent/critical), active
 
-**zones** — Forbidden neighborhoods for Syrian registration
+**zones** — Public forbidden neighborhoods for Syrian registration (shown on /zones pages)
 Columns: id, city, district, neighborhood, slug, status (open/closed), notes, created_at, updated_at
+
+**restricted_zones** — Admin-managed restricted zones (used by ZonesManager admin component)
+Columns: id, city, district, neighborhood, is_closed (boolean), notes, active (boolean), created_at
+NOTE: This is a SEPARATE table from "zones". Admin uses restricted_zones for CRUD; public pages use zones.
 
 **consultant_scenarios** — AI legal advisor scenarios
 Columns: id, title, description, category, risk (safe/medium/high/critical), steps (array), docs (array), cost, legal, tip, is_active, created_at
@@ -666,6 +675,10 @@ Columns: id, review_id, user_id, is_helpful, created_at
 
 ### SYSTEM & ANALYTICS (read-only):
 
+**admin_login_attempts** — Security log of admin login attempts
+Columns: id, email, ip_address, success (boolean), user_agent, created_at
+Read-only. Use to monitor security and suspicious login attempts.
+
 **admin_activity_log** — Audit trail of all admin actions
 Columns: id, event_type (new_member/new_service/new_comment/new_review/new_article/new_scenario/new_faq/new_code/new_zone/new_update/new_source/new_tool), title, detail, entity_id, entity_table, created_at
 Auto-populated by DB triggers. Shows on /updates page as automatic events.
@@ -728,6 +741,9 @@ ${TAGS_TEXT}
 - Admin activity log is auto-populated by triggers (not manual)
 - push_subscriptions tracks browser Web Push subscriptions for notifications
 - The strategic analyst (/admin/analyst) uses analyst_insights table for 7-layer analysis
+- /api/prayer-times — API endpoint that fetches daily prayer times for Turkey cities (not stored in DB)
+- TWO zone tables: "zones" (public pages, has slug/status) vs "restricted_zones" (admin ZonesManager, has is_closed/active)
+- admin_login_attempts tracks login security — read-only for monitoring
 
 ## RESPONSE FORMAT:
 - Use bullet points and structured lists
@@ -773,6 +789,7 @@ async function executeFunction(
         ticker: () => searchTable('ticker', 'news_ticker', ['title'], 'id, title, link, is_active'),
         suggestion: () => searchTable('suggestion', 'content_suggestions', ['suggestion_text'], 'id, entity_type, entity_id, suggestion_text, status, created_at'),
         member: () => searchTable('member', 'member_profiles', ['full_name'], 'id, full_name, role, created_at'),
+        restricted_zone: () => searchTable('restricted_zone', 'restricted_zones', ['city', 'district', 'neighborhood'], 'id, city, district, neighborhood, is_closed, active'),
       };
 
       if (content_type && searches[content_type]) {
@@ -1048,6 +1065,8 @@ async function executeFunction(
         analytics_events: 'id, event_name, page_path, visitor_id, created_at',
         analyst_insights: 'id, type, title, description, severity, entity_type, created_at',
         tools_registry: 'id, name, description, url, icon, is_active',
+        restricted_zones: 'id, city, district, neighborhood, is_closed, active, notes, created_at',
+        admin_login_attempts: 'id, email, ip_address, success, user_agent, created_at',
       };
 
       let query = serviceClient
@@ -1101,9 +1120,9 @@ async function executeFunction(
 
       const [
         articles, services, updates, faqs, scenarios,
-        codes, zones, comments, reviews, members,
+        codes, zones, restrictedZones, comments, reviews, members,
         sources, menus, testimonials, homeCards, banners, tickerItems,
-        votes, suggestions, pushSubs,
+        votes, suggestions, pushSubs, loginAttempts,
         pendingArticles, pendingServices, pendingComments,
         newsTickerCount,
       ] = await Promise.all([
@@ -1115,6 +1134,7 @@ async function executeFunction(
         safeTableCount('consultant_scenarios'),
         safeTableCount('security_codes'),
         safeTableCount('zones'),
+        safeTableCount('restricted_zones'),
         safeTableCount('comments'),
         safeTableCount('service_reviews'),
         safeTableCount('member_profiles'),
@@ -1127,6 +1147,7 @@ async function executeFunction(
         safeTableCount('content_votes'),
         safeTableCount('content_suggestions'),
         safeTableCount('push_subscriptions'),
+        safeTableCount('admin_login_attempts'),
         // Pending items
         safeTableCount('articles', { status: 'pending' }),
         safeTableCount('service_providers', { status: 'pending' }),
@@ -1137,9 +1158,10 @@ async function executeFunction(
 
       return {
         result: {
-          content: { articles, services, updates, faqs, scenarios, codes, zones },
+          content: { articles, services, updates, faqs, scenarios, codes, zones, restricted_zones: restrictedZones },
           community: { comments, reviews, votes, suggestions, members, pushSubs },
           site_config: { sources, menus, testimonials, homeCards, banners, tickerItems },
+          security: { login_attempts: loginAttempts },
           pending: { articles: pendingArticles, services: pendingServices, comments: pendingComments },
           homepage_ticker_news: newsTickerCount,
         },
@@ -1414,9 +1436,9 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
     // All counts in parallel — each individually safe
     const [
       articles, services, updates, faqs, scenarios,
-      codes, zones, comments, reviews, members,
+      codes, zones, restrictedZones, comments, reviews, members,
       banners, sources, menus, testimonials, homeCards,
-      tickerItems, votes, suggestions, pushSubs,
+      tickerItems, votes, suggestions, pushSubs, loginAttempts,
       pendingArticles, pendingServices, pendingComments,
       recentArticleIds, recentUpdateIds, recentActivityIds,
     ] = await Promise.all([
@@ -1428,6 +1450,7 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
       safeCount('consultant_scenarios'),
       safeCount('security_codes'),
       safeCount('zones'),
+      safeCount('restricted_zones'),
       safeCount('comments'),
       safeCount('service_reviews'),
       safeCount('member_profiles'),
@@ -1441,6 +1464,7 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
       safeCount('content_votes'),
       safeCount('content_suggestions'),
       safeCount('push_subscriptions'),
+      safeCount('admin_login_attempts'),
       // Pending
       safeCount('articles', { status: 'pending' }),
       safeCount('service_providers', { status: 'pending' }),
@@ -1467,9 +1491,10 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
     return `
 
 ## LIVE SITE DATA (real-time snapshot):
-Content: ${articles} articles, ${services} services, ${updates} updates, ${faqs} FAQs, ${scenarios} scenarios, ${codes} codes, ${zones} zones
+Content: ${articles} articles, ${services} services, ${updates} updates, ${faqs} FAQs, ${scenarios} scenarios, ${codes} codes, ${zones} zones (public), ${restrictedZones} restricted_zones (admin)
 Community: ${comments} comments, ${reviews} reviews, ${votes} votes, ${suggestions} suggestions, ${members} members, ${pushSubs} push subscribers
 Config: ${sources} sources, ${menus} menus, ${testimonials} testimonials, ${homeCards} home cards, ${banners} banners, ${tickerItems} ticker items
+Security: ${loginAttempts} login attempts logged
 
 Pending: ${pendingArticles} articles, ${pendingServices} services, ${pendingComments} comments
 
