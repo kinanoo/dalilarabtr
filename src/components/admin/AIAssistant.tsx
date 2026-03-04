@@ -6,6 +6,7 @@ import { Send, Bot, User, Loader2, Trash2, X, Sparkles } from 'lucide-react';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  _context?: string; // tool execution context for Gemini memory
 }
 
 interface PendingAction {
@@ -60,7 +61,11 @@ export function AIAssistant() {
       const data = await res.json();
 
       if (data.reply) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.reply,
+          ...(data._context && { _context: data._context }),
+        }]);
       }
 
       if (data.action) {

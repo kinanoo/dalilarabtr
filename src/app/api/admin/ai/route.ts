@@ -651,10 +651,10 @@ export async function POST(request: NextRequest) {
       tools,
     });
 
-    // Build chat history
+    // Build chat history — include _context from previous tool calls
     const history = messages.slice(0, -1).map((m: any) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
+      parts: [{ text: m._context ? `${m.content}\n\n[Tool context from this turn: ${m._context}]` : m.content }],
     }));
 
     const chat = model.startChat({ history });
@@ -664,6 +664,7 @@ export async function POST(request: NextRequest) {
     let response = await chat.sendMessage(lastMessage);
     let result = response.response;
     let actionToReturn: any = null;
+    const toolLog: string[] = []; // Track tool calls for context memory
 
     // Loop to handle function calls (including multiple per response)
     let maxIterations = 8;
@@ -684,6 +685,8 @@ export async function POST(request: NextRequest) {
         functionResponses.push({
           functionResponse: { name, response: fnResult },
         });
+        // Log tool call for context
+        toolLog.push(`${name}(${JSON.stringify(args)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
       }
 
       // Send all function results back to Gemini
@@ -693,9 +696,13 @@ export async function POST(request: NextRequest) {
 
     const replyText = result.text() || 'لم أتمكن من معالجة طلبك. حاول مرة أخرى.';
 
+    // Return tool context so frontend can store it for future messages
+    const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
+
     return NextResponse.json({
       reply: replyText,
       ...(actionToReturn && { action: actionToReturn }),
+      ...(toolContext && { _context: toolContext }),
     });
 
   } catch (error: any) {
