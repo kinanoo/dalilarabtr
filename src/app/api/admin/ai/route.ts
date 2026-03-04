@@ -67,8 +67,8 @@ const TAG_LABELS: Record<string, string> = {
   company: 'الشركات',
 };
 
-const CATEGORIES_TEXT = Object.entries(CATEGORY_SLUGS).map(([k, v]) => `${k}: ${v}`).join('\n');
-const TAGS_TEXT = Object.entries(TAG_LABELS).map(([k, v]) => `${k}: ${v}`).join('\n');
+const CATEGORIES_TEXT = Object.entries(CATEGORY_SLUGS).map(([k, v]) => `${k} = ${v}`).join(', ');
+const TAGS_TEXT = Object.entries(TAG_LABELS).map(([k, v]) => `${k} = ${v}`).join(', ');
 
 // ── Content type enum (reused across tools) ──
 const CONTENT_TYPES = ['article', 'service', 'faq', 'update', 'scenario', 'code', 'zone', 'banner'];
@@ -85,23 +85,23 @@ const tools: FunctionDeclarationsTool[] = [{
   functionDeclarations: [
     {
       name: 'search_content',
-      description: 'بحث في محتوى الموقع (مقالات، خدمات، أخبار، أسئلة شائعة، سيناريوهات، أكواد، مناطق، بانرات)',
+      description: 'Search website content across all tables (articles, services, FAQs, updates, scenarios, codes, zones, banners)',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          query: { type: SchemaType.STRING, description: 'كلمة البحث' },
-          content_type: { ...contentTypeSchema, description: 'نوع المحتوى (اختياري — إذا لم يحدد يبحث في الكل)' },
+          query: { type: SchemaType.STRING, description: 'Search keyword (Arabic or English)' },
+          content_type: { ...contentTypeSchema, description: 'Optional content type filter. If not specified, searches all types.' },
         },
         required: ['query'],
       },
     },
     {
       name: 'get_content_details',
-      description: 'جلب تفاصيل عنصر واحد بالكامل عبر الـ id',
+      description: 'Get full details of a single item by its ID',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          id: { type: SchemaType.STRING, description: 'معرف العنصر' },
+          id: { type: SchemaType.STRING, description: 'Item ID' },
           content_type: contentTypeSchema,
         },
         required: ['id', 'content_type'],
@@ -109,11 +109,11 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'delete_content',
-      description: 'حذف عنصر من قاعدة البيانات. يجب أن تطلب التأكيد من المستخدم أولاً قبل استخدام هذه الأداة.',
+      description: 'Delete an item from the database. Always search first and ask for confirmation before deleting.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          id: { type: SchemaType.STRING, description: 'معرف العنصر المراد حذفه' },
+          id: { type: SchemaType.STRING, description: 'ID of the item to delete' },
           content_type: contentTypeSchema,
         },
         required: ['id', 'content_type'],
@@ -121,15 +121,15 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'update_content',
-      description: 'تعديل حقول عنصر موجود في قاعدة البيانات',
+      description: 'Update specific fields of an existing item in the database',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          id: { type: SchemaType.STRING, description: 'معرف العنصر' },
+          id: { type: SchemaType.STRING, description: 'Item ID' },
           content_type: contentTypeSchema,
           fields: {
             type: SchemaType.OBJECT,
-            description: 'الحقول المراد تعديلها مع قيمها الجديدة (مثل {title: "عنوان جديد", intro: "مقدمة جديدة"})',
+            description: 'Fields to update with new values, e.g. {title: "new title", intro: "new intro"}',
             properties: {},
           },
         },
@@ -138,17 +138,17 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'toggle_status',
-      description: 'نشر أو إيقاف نشر عنصر (تغيير الحالة)',
+      description: 'Publish or unpublish an item (change its status)',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          id: { type: SchemaType.STRING, description: 'معرف العنصر' },
+          id: { type: SchemaType.STRING, description: 'Item ID' },
           content_type: contentTypeSchema,
           action: {
             type: SchemaType.STRING,
             format: 'enum',
             enum: ['publish', 'unpublish'],
-            description: 'publish للنشر، unpublish للإيقاف',
+            description: 'publish to make visible, unpublish to hide',
           } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         },
         required: ['id', 'content_type', 'action'],
@@ -156,63 +156,63 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'create_article',
-      description: 'إنشاء مقال جديد في الموقع',
+      description: 'Create a new article on the website',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          title: { type: SchemaType.STRING, description: 'عنوان المقال' },
-          category: { type: SchemaType.STRING, description: 'القسم بالعربي (مثل: أنواع الإقامات، الصحة والتأمين)' },
-          intro: { type: SchemaType.STRING, description: 'مقدمة قصيرة 1-2 جملة' },
-          details: { type: SchemaType.STRING, description: 'تفاصيل المقال (HTML)' },
-          steps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'خطوات' },
-          documents: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'وثائق مطلوبة' },
-          tips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'نصائح' },
-          tags: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'تاقات (مثل: citizenship, work-permit)' },
-          warning: { type: SchemaType.STRING, description: 'تحذير (إن وجد)' },
+          title: { type: SchemaType.STRING, description: 'Article title (in Arabic)' },
+          category: { type: SchemaType.STRING, description: 'Category in Arabic (must match CATEGORY_SLUGS values)' },
+          intro: { type: SchemaType.STRING, description: 'Short intro, 1-2 sentences (in Arabic)' },
+          details: { type: SchemaType.STRING, description: 'Article details in HTML (Arabic)' },
+          steps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Steps array' },
+          documents: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Required documents array' },
+          tips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Tips array' },
+          tags: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Tags array (e.g. citizenship, work-permit)' },
+          warning: { type: SchemaType.STRING, description: 'Warning text if any' },
         },
         required: ['title', 'category', 'intro'],
       },
     },
     {
       name: 'create_update',
-      description: 'إنشاء خبر/تحديث جديد',
+      description: 'Create a new news/update item',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          title: { type: SchemaType.STRING, description: 'عنوان الخبر' },
-          content: { type: SchemaType.STRING, description: 'محتوى الخبر' },
-          type: { type: SchemaType.STRING, description: 'نوع الخبر (خبر، تحذير، تحديث)' },
+          title: { type: SchemaType.STRING, description: 'News title' },
+          content: { type: SchemaType.STRING, description: 'News content' },
+          type: { type: SchemaType.STRING, description: 'News type' },
         },
         required: ['title', 'content'],
       },
     },
     {
       name: 'create_service',
-      description: 'إنشاء مزود خدمة جديد',
+      description: 'Create a new service provider',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          name: { type: SchemaType.STRING, description: 'اسم مقدم الخدمة' },
-          profession: { type: SchemaType.STRING, description: 'المهنة' },
-          category: { type: SchemaType.STRING, description: 'تصنيف الخدمة' },
-          city: { type: SchemaType.STRING, description: 'المدينة' },
-          district: { type: SchemaType.STRING, description: 'المنطقة' },
-          phone: { type: SchemaType.STRING, description: 'رقم الهاتف' },
-          description: { type: SchemaType.STRING, description: 'وصف الخدمة' },
+          name: { type: SchemaType.STRING, description: 'Provider name' },
+          profession: { type: SchemaType.STRING, description: 'Profession' },
+          category: { type: SchemaType.STRING, description: 'Service category' },
+          city: { type: SchemaType.STRING, description: 'City' },
+          district: { type: SchemaType.STRING, description: 'District' },
+          phone: { type: SchemaType.STRING, description: 'Phone number' },
+          description: { type: SchemaType.STRING, description: 'Service description' },
         },
         required: ['name', 'profession'],
       },
     },
     {
       name: 'count_content',
-      description: 'عدّ عناصر في جدول معين مع فلاتر اختيارية',
+      description: 'Count items in a table with optional filters',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
           content_type: contentTypeSchema,
           filters: {
             type: SchemaType.OBJECT,
-            description: 'فلاتر اختيارية (مثل { category: "الصحة والتأمين", status: "approved" })',
+            description: 'Optional filters as key-value pairs, e.g. {category: "...", status: "approved"}',
             properties: {},
           },
         },
@@ -222,38 +222,40 @@ const tools: FunctionDeclarationsTool[] = [{
   ],
 }];
 
-// ── System prompt ──
-const SYSTEM_PROMPT = `أنت المساعد الذكي للوحة تحكم موقع "دليل العرب والسوريين في تركيا" (dalilarabtr.com).
-مهمتك تنفيذ أوامر الأدمن على قاعدة البيانات بدقة وسرعة.
+// ── System prompt (English to avoid ByteString encoding issues) ──
+const SYSTEM_PROMPT = `You are the AI assistant for the admin panel of "dalilarabtr.com" - a guide for Arabs and Syrians in Turkey.
+Your job is to execute admin commands on the database quickly and accurately.
 
-القواعد المهمة:
-1. دائماً رد بالعربية الفصحى البسيطة
-2. قبل أي حذف: ابحث أولاً → اعرض النتائج → اطلب التأكيد → ثم احذف
-3. عند إنشاء مقال: اختر القسم (category) والتاقات (tags) المناسبة تلقائياً من القوائم أدناه
-4. إذا وجدت أكثر من نتيجة بحث، اعرضها كلها واسأل أيها المطلوب
-5. كن مختصراً ومباشراً — لا حشو
-6. عند البحث، استخدم كلمات مفتاحية قصيرة ودقيقة
-7. لا تنسَ أن slug يتولد تلقائياً عند الإنشاء
+CRITICAL: Always respond in Arabic. The admin speaks Arabic. Never respond in English.
 
-الأقسام المتاحة (CATEGORY_SLUGS — slug: اسم عربي):
+Rules:
+1. Always reply in simple Arabic
+2. Before any delete: search first, show results, ask for confirmation, then delete
+3. When creating articles: auto-select the correct category and tags from the lists below
+4. If multiple search results found, show all and ask which one the admin wants
+5. Be concise and direct - no filler text
+6. When searching, use short precise keywords
+7. Slug is auto-generated on creation
+
+Available categories (CATEGORY_SLUGS - slug: Arabic name):
 ${CATEGORIES_TEXT}
 
-التاقات المتاحة (TAG_LABELS — slug: اسم عربي):
+Available tags (TAG_LABELS - slug: Arabic name):
 ${TAGS_TEXT}
 
-أنواع المحتوى:
-- article: مقالات ودلائل (جدول articles)
-- service: مزودي خدمات (جدول service_providers)
-- faq: أسئلة شائعة (جدول faqs)
-- update: أخبار وتحديثات (جدول updates)
-- scenario: سيناريوهات المستشار (جدول consultant_scenarios)
-- code: أكواد أمنية (جدول security_codes)
-- zone: مناطق محظورة (جدول zones)
-- banner: بانرات وتنبيهات (جدول site_banners)
+Content types and their database tables:
+- article: articles (guides and articles)
+- service: service_providers (service providers)
+- faq: faqs (frequently asked questions)
+- update: updates (news and updates)
+- scenario: consultant_scenarios (consultant scenarios)
+- code: security_codes (security codes)
+- zone: zones (restricted zones)
+- banner: site_banners (banners and alerts)
 
-حالة المقالات: approved (منشور) / draft (مسودة) / pending (بانتظار المراجعة) / rejected (مرفوض)
-حالة الخدمات: approved + is_verified=true (منشور) / draft (مسودة)
-باقي الأنواع: active=true (مفعّل) / active=false (معطّل)`;
+Article status: approved (published) / draft / pending / rejected
+Service status: approved + is_verified=true (published) / draft
+Other types: active=true (enabled) / active=false (disabled)`;
 
 // ── Tool execution functions ──
 // serviceClient typed as any because we use dynamic table names
