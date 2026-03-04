@@ -19,7 +19,8 @@ import {
     ShieldCheck,
     Megaphone,
     Newspaper,
-    Users
+    Users,
+    Bot
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -111,6 +112,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
         {
             title: 'النظام',
             items: [
+                { href: '/admin/ai-assistant', label: 'المساعد الذكي', icon: Bot },
                 { href: '/admin/analyst', label: 'المحلل الاستراتيجي', icon: BrainCircuit },
                 { href: '/admin/integrity', label: 'فحص النظام', icon: ShieldCheck },
                 { href: '/admin/banners', label: 'البنرات والتنبيهات', icon: Megaphone },
