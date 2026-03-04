@@ -51,6 +51,8 @@ const TABLE_MAP: Record<string, string> = {
 const PK_MAP: Record<string, string> = {
   security_codes: 'code',
   site_settings: 'key',
+  service_categories: 'slug',
+  tools_registry: 'key',
 };
 
 function pk(table: string) { return PK_MAP[table] || 'id'; }
@@ -360,12 +362,12 @@ const tools: FunctionDeclarationsTool[] = [{
           title: { type: SchemaType.STRING, description: 'Scenario title' },
           description: { type: SchemaType.STRING, description: 'Scenario description' },
           category: { type: SchemaType.STRING, description: 'Scenario category' },
-          risk: { type: SchemaType.STRING, format: 'enum', enum: ['safe', 'medium', 'high', 'critical'], description: 'Risk level' } as any,
+          risk_level: { type: SchemaType.STRING, format: 'enum', enum: ['safe', 'medium', 'high', 'critical'], description: 'Risk level' } as any,
           steps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Steps to resolve' },
-          docs: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Required documents' },
+          documents: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Required documents' },
           cost: { type: SchemaType.STRING, description: 'Expected cost info' },
-          legal: { type: SchemaType.STRING, description: 'Legal basis/reference' },
-          tip: { type: SchemaType.STRING, description: 'Key tip for this scenario' },
+          legal_info: { type: SchemaType.STRING, description: 'Legal basis/reference' },
+          tips: { type: SchemaType.STRING, description: 'Key tip for this scenario' },
         },
         required: ['title', 'description'],
       },
@@ -417,11 +419,11 @@ const tools: FunctionDeclarationsTool[] = [{
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          title: { type: SchemaType.STRING, description: 'Ticker headline text' },
+          text: { type: SchemaType.STRING, description: 'Ticker headline text' },
           link: { type: SchemaType.STRING, description: 'Link URL when clicked' },
-          sort_order: { type: SchemaType.NUMBER, description: 'Display order (lower = first). Default 0' },
+          priority: { type: SchemaType.NUMBER, description: 'Display priority (higher = first). Default 0' },
         },
-        required: ['title'],
+        required: ['text'],
       },
     },
     {
@@ -455,10 +457,13 @@ const tools: FunctionDeclarationsTool[] = [{
         type: SchemaType.OBJECT,
         properties: {
           title: { type: SchemaType.STRING, description: 'Notification title' },
-          body: { type: SchemaType.STRING, description: 'Notification body text' },
+          message: { type: SchemaType.STRING, description: 'Notification body text (column is "message" not "body")' },
           link: { type: SchemaType.STRING, description: 'URL to open when clicked' },
+          type: { type: SchemaType.STRING, description: 'Notification type (e.g. info, alert, update)' },
+          icon: { type: SchemaType.STRING, description: 'Icon name for the notification' },
+          priority: { type: SchemaType.NUMBER, description: 'Priority level (higher = more important)' },
         },
-        required: ['title', 'body'],
+        required: ['title', 'message'],
       },
     },
     {
@@ -625,7 +630,7 @@ Columns: id, city, district, neighborhood, is_closed (boolean), notes, active (b
 NOTE: This is a SEPARATE table from "zones". Admin uses restricted_zones for CRUD; public pages use zones.
 
 **consultant_scenarios** — AI legal advisor scenarios
-Columns: id, title, description, category, risk (safe/medium/high/critical), steps (array), docs (array), cost, legal, tip, is_active, created_at
+Columns: id, title, description, category, risk_level (safe/medium/high/critical), steps (array), documents (array), cost, legal_info, tips, is_active, created_at
 
 ### COMMUNITY & ENGAGEMENT:
 
@@ -641,7 +646,7 @@ Columns: id, entity_type (comment/article/review), entity_id, vote_type (up/down
 Unique constraint: one vote per entity per visitor
 
 **content_suggestions** — Community wiki-style suggestions
-Columns: id, entity_type, entity_id, user_id, suggestion_text, status, created_at
+Columns: id, suggestion_text, user_name, contact_info, article_id, status, created_at
 
 ### MEMBERS & AUTH:
 
@@ -671,10 +676,10 @@ Columns: id, name, content, rating, is_active, created_at
 Columns: id, title, description, icon, link, sort_order, is_active, created_at
 
 **news_ticker** — Separate ticker management table
-Columns: id, title, link, is_active, sort_order, created_at
+Columns: id, text (NOT title!), link, is_active, priority (integer, higher=first), created_at
 
-**service_categories** — Service category taxonomy
-Columns: id, name, slug, icon, sort_order, created_at
+**service_categories** (PK is "slug" not "id") — Service category taxonomy
+Columns: slug (PK), title (NOT name!), icon, description, sort_order, is_featured, active, created_at
 
 ### REVIEWS SUB-TABLES:
 
@@ -705,8 +710,8 @@ Write-only from tracking API. Use query_table to read aggregated data.
 **analyst_insights** — Strategic analysis results from /admin/analyst
 Columns: id, type (gap/logic/conflict/quality/review_mismatch/duplication/structure), title, description, severity, entity_type, entity_id, created_at
 
-**notifications** — Push/bell notifications
-Columns: id, title, body, link, created_at
+**notifications** — Bell notifications (shown in site notification bell)
+Columns: id, type, title, message (NOT body!), link, icon, priority, target_audience, expires_at, is_active, created_at, updated_at
 
 **notification_reads** — Tracks which users have read which notifications
 Columns: id, notification_id, user_identifier (IP/session), read_at
@@ -715,8 +720,8 @@ Unique: one read per notification per user_identifier
 **push_subscriptions** — Web Push API browser subscriptions
 Columns: id, endpoint, keys, user_id, created_at
 
-**tools_registry** — Registered site tools/features
-Columns: id, name, description, url, icon, is_active, created_at
+**tools_registry** (PK is "key" not "id") — Registered site tools/features
+Columns: key (PK), name, route (NOT url!), is_active, settings (JSONB), created_at
 
 ## ARTICLE TAGS (use English slugs for filters):
 ${TAGS_TEXT}
@@ -809,8 +814,8 @@ async function executeFunction(
         source: () => searchTable('source', 'official_sources', ['name', 'description'], 'id, name, url, category, active'),
         menu: () => searchTable('menu', 'site_menus', ['label', 'href'], 'id, label, href, location, is_active'),
         testimonial: () => searchTable('testimonial', 'site_testimonials', ['name', 'content'], 'id, name, content, rating, is_active'),
-        ticker: () => searchTable('ticker', 'news_ticker', ['title'], 'id, title, link, is_active'),
-        suggestion: () => searchTable('suggestion', 'content_suggestions', ['suggestion_text'], 'id, entity_type, entity_id, suggestion_text, status, created_at'),
+        ticker: () => searchTable('ticker', 'news_ticker', ['text'], 'id, text, link, is_active, priority'),
+        suggestion: () => searchTable('suggestion', 'content_suggestions', ['suggestion_text', 'user_name'], 'id, suggestion_text, user_name, article_id, status, created_at'),
         member: () => searchTable('member', 'member_profiles', ['full_name'], 'id, full_name, role, created_at'),
         restricted_zone: () => searchTable('restricted_zone', 'restricted_zones', ['city', 'district', 'neighborhood'], 'id, city, district, neighborhood, is_closed, active'),
       };
@@ -1038,16 +1043,16 @@ async function executeFunction(
     }
 
     case 'create_scenario': {
-      const { title, description, category, risk, steps, docs, cost, legal, tip } = args;
+      const { title, description, category, risk_level, steps, documents, cost, legal_info, tips } = args;
       const { data, error } = await serviceClient.from('consultant_scenarios').insert({
         title, description,
         category: category || null,
-        risk: risk || 'medium',
+        risk_level: risk_level || 'medium',
         steps: steps || [],
-        docs: docs || [],
+        documents: documents || [],
         cost: cost || null,
-        legal: legal || null,
-        tip: tip || null,
+        legal_info: legal_info || null,
+        tips: tips || null,
         is_active: true,
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
@@ -1097,7 +1102,8 @@ async function executeFunction(
       const DEFAULT_SORT: Record<string, string> = {
         security_codes: 'code',
         site_settings: 'key',
-        tools_registry: 'name',
+        tools_registry: 'key',
+        service_categories: 'sort_order',
       };
       const sortBy = sort_field || DEFAULT_SORT[table] || 'created_at';
       const ascending = sort_order === 'asc';
@@ -1107,7 +1113,7 @@ async function executeFunction(
         service_providers: 'id, name, profession, city, district, phone, category, status, is_verified, created_at',
         faqs: 'id, question, answer, category, active, created_at',
         updates: 'id, title, content, type, date, active, created_at',
-        consultant_scenarios: 'id, title, description, category, risk, is_active, created_at',
+        consultant_scenarios: 'id, title, description, category, risk_level, is_active, created_at',
         security_codes: 'code, title, description, severity, active',
         zones: 'id, city, district, neighborhood, status, notes, created_at',
         site_banners: 'id, content, link_text, link_url, type, is_active, created_at',
@@ -1116,22 +1122,22 @@ async function executeFunction(
         member_profiles: 'id, full_name, role, created_at',
         official_sources: 'id, name, url, category, active, created_at',
         site_menus: 'id, label, href, location, sort_order, is_active, created_at',
-        notifications: 'id, title, body, link, created_at',
-        content_suggestions: 'id, entity_type, entity_id, suggestion_text, status, created_at',
+        notifications: 'id, type, title, message, link, icon, priority, is_active, created_at',
+        content_suggestions: 'id, suggestion_text, user_name, contact_info, article_id, status, created_at',
         content_votes: 'id, entity_type, entity_id, vote_type, created_at',
         site_testimonials: 'id, name, content, rating, is_active, created_at',
         home_cards: 'id, title, description, icon, link, sort_order, is_active, created_at',
         site_settings: 'key, value, updated_at',
-        news_ticker: 'id, title, link, is_active, sort_order, created_at',
+        news_ticker: 'id, text, link, is_active, priority, created_at',
         admin_activity_log: 'id, event_type, title, detail, entity_id, created_at',
         push_subscriptions: 'id, endpoint, user_id, created_at',
-        service_categories: 'id, name, slug, icon, sort_order, created_at',
+        service_categories: 'slug, title, icon, description, sort_order, is_featured, active, created_at',
         review_replies: 'id, review_id, user_id, content, created_at',
         review_reports: 'id, review_id, user_id, reason, created_at',
         review_helpful_votes: 'id, review_id, user_id, is_helpful, created_at',
         analytics_events: 'id, event_name, page_path, visitor_id, created_at',
         analyst_insights: 'id, type, title, description, severity, entity_type, created_at',
-        tools_registry: 'id, name, description, url, icon, is_active',
+        tools_registry: 'key, name, route, is_active, settings, created_at',
         notification_reads: 'id, notification_id, user_identifier, read_at',
         restricted_zones: 'id, city, district, neighborhood, is_closed, active, notes, created_at',
         admin_login_attempts: 'id, email, ip_address, success, user_agent, created_at',
@@ -1334,11 +1340,11 @@ async function executeFunction(
     }
 
     case 'create_ticker_item': {
-      const { title, link, sort_order } = args;
+      const { text, link, priority } = args;
       const { data, error } = await serviceClient.from('news_ticker').insert({
-        title,
+        text,
         link: link || null,
-        sort_order: sort_order || 0,
+        priority: priority || 0,
         is_active: true,
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
@@ -1380,10 +1386,14 @@ async function executeFunction(
     }
 
     case 'create_notification': {
-      const { title, body, link } = args;
+      const { title, message, link, type, icon, priority } = args;
       const { data, error } = await serviceClient.from('notifications').insert({
-        title, body,
+        title, message,
         link: link || null,
+        type: type || null,
+        icon: icon || null,
+        priority: priority || 0,
+        is_active: true,
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
       return { result: { message: 'Notification created', notification: data } };
