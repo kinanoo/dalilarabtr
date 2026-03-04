@@ -34,6 +34,8 @@ const TABLE_MAP: Record<string, string> = {
   review_reply: 'review_replies',
   review_report: 'review_reports',
   review_helpful: 'review_helpful_votes',
+  // Notification reads tracking
+  notification_read: 'notification_reads',
   // Admin restricted zones (separate from public zones table!)
   restricted_zone: 'restricted_zones',
   // System & analytics (read-only for AI)
@@ -120,7 +122,7 @@ const CONTENT_TYPES = [
   'menu', 'notification', 'suggestion', 'vote', 'testimonial',
   'home_card', 'setting', 'ticker', 'activity_log', 'push_sub', 'service_category',
   'review_reply', 'review_report', 'review_helpful', 'analytics', 'insight', 'tool_entry',
-  'restricted_zone', 'login_attempt',
+  'restricted_zone', 'login_attempt', 'notification_read',
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -498,11 +500,11 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'query_table',
-      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools. Supports ALL 31 tables.',
+      description: 'Flexible direct query to ANY database table. Use for advanced operations not covered by other tools. Supports ALL 32 tables.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
-          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, restricted_zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, admin_login_attempts, push_subscriptions, service_categories, analytics_events, analyst_insights, tools_registry, review_replies, review_reports, review_helpful_votes' },
+          table: { type: SchemaType.STRING, description: 'Table name: articles, service_providers, faqs, updates, consultant_scenarios, security_codes, zones, restricted_zones, site_banners, comments, service_reviews, member_profiles, official_sources, site_menus, notifications, notification_reads, content_suggestions, content_votes, site_testimonials, home_cards, site_settings, news_ticker, admin_activity_log, admin_login_attempts, push_subscriptions, service_categories, analytics_events, analyst_insights, tools_registry, review_replies, review_reports, review_helpful_votes' },
           select: { type: SchemaType.STRING, description: 'Columns to select (default: *)' },
           filters: { type: SchemaType.OBJECT, description: 'Key-value equality filters', properties: {} },
           order_by: { type: SchemaType.STRING, description: 'Column to sort by' },
@@ -581,7 +583,7 @@ CRITICAL: ALWAYS respond in Arabic. The admin speaks Arabic only.
 - /admin/requests — pending articles & services for approval
 - /admin/[content-type] — editors for each content type
 
-## DATABASE TABLES (COMPLETE — 31 tables):
+## DATABASE TABLES (COMPLETE — 32 tables):
 
 ### CORE CONTENT:
 
@@ -692,6 +694,10 @@ Columns: id, type (gap/logic/conflict/quality/review_mismatch/duplication/struct
 
 **notifications** — Push/bell notifications
 Columns: id, title, body, link, created_at
+
+**notification_reads** — Tracks which users have read which notifications
+Columns: id, notification_id, user_identifier (IP/session), read_at
+Unique: one read per notification per user_identifier
 
 **push_subscriptions** — Web Push API browser subscriptions
 Columns: id, endpoint, keys, user_id, created_at
@@ -857,28 +863,48 @@ async function executeFunction(
       const table = TABLE_MAP[content_type];
       if (!table) return { result: { error: 'Invalid content type' } };
 
+      // Types that have NO toggleable field — reject early
+      const nonToggleable = [
+        'member', 'vote', 'review_reply', 'review_report', 'review_helpful',
+        'activity_log', 'login_attempt', 'analytics', 'push_sub', 'service_category',
+        'setting', 'insight', 'notification', 'notification_read',
+      ];
+      if (nonToggleable.includes(content_type)) {
+        return { result: { error: `${content_type} does not have a publish/unpublish toggle` } };
+      }
+
       const pkField = pk(table);
+      const pub = action === 'publish';
       let updateFields: Record<string, any>;
 
+      // Each content type uses its CORRECT column
       if (content_type === 'article') {
-        updateFields = { status: action === 'publish' ? 'approved' : 'draft' };
+        updateFields = { status: pub ? 'approved' : 'draft' };
       } else if (content_type === 'service') {
-        updateFields = action === 'publish'
+        updateFields = pub
           ? { status: 'approved', is_verified: true }
-          : { status: 'draft', is_verified: false };
+          : { status: 'pending', is_verified: false };
       } else if (content_type === 'comment') {
-        updateFields = { status: action === 'publish' ? 'approved' : 'rejected' };
-      } else if (content_type === 'banner') {
-        updateFields = { is_active: action === 'publish' };
-      } else if (content_type === 'scenario') {
-        updateFields = { is_active: action === 'publish' };
+        updateFields = { status: pub ? 'approved' : 'rejected' };
+      } else if (content_type === 'suggestion') {
+        updateFields = { status: pub ? 'approved' : 'rejected' };
+      } else if (content_type === 'review') {
+        updateFields = { is_approved: pub };
+      } else if (content_type === 'zone') {
+        updateFields = { status: pub ? 'closed' : 'open' };
+      } else if (['banner', 'scenario', 'menu', 'testimonial', 'home_card', 'ticker', 'tool_entry'].includes(content_type)) {
+        // These all use is_active
+        updateFields = { is_active: pub };
+      } else if (content_type === 'restricted_zone') {
+        updateFields = { active: pub, is_closed: pub };
       } else {
-        updateFields = { active: action === 'publish' };
+        // faq, code, update, source — these use active (boolean)
+        updateFields = { active: pub };
       }
 
       const { error } = await serviceClient.from(table).update(updateFields).eq(pkField, id);
       if (error) return { result: { error: `Status change failed: ${error.message}` } };
-      return { result: { message: action === 'publish' ? 'Published' : 'Unpublished', id, content_type } };
+      return { result: { message: pub ? 'Published' : 'Unpublished', id, content_type } };
     }
 
     case 'create_article': {
@@ -1065,6 +1091,7 @@ async function executeFunction(
         analytics_events: 'id, event_name, page_path, visitor_id, created_at',
         analyst_insights: 'id, type, title, description, severity, entity_type, created_at',
         tools_registry: 'id, name, description, url, icon, is_active',
+        notification_reads: 'id, notification_id, user_identifier, read_at',
         restricted_zones: 'id, city, district, neighborhood, is_closed, active, notes, created_at',
         admin_login_attempts: 'id, email, ip_address, success, user_agent, created_at',
       };
@@ -1123,6 +1150,9 @@ async function executeFunction(
         codes, zones, restrictedZones, comments, reviews, members,
         sources, menus, testimonials, homeCards, banners, tickerItems,
         votes, suggestions, pushSubs, loginAttempts,
+        notifications, notificationReads, settings,
+        reviewReplies, reviewReports, reviewHelpful,
+        activityLog, analyticsEvents, serviceCategories, insights, toolsReg,
         pendingArticles, pendingServices, pendingComments,
         newsTickerCount,
       ] = await Promise.all([
@@ -1148,6 +1178,18 @@ async function executeFunction(
         safeTableCount('content_suggestions'),
         safeTableCount('push_subscriptions'),
         safeTableCount('admin_login_attempts'),
+        // Previously missing tables
+        safeTableCount('notifications'),
+        safeTableCount('notification_reads'),
+        safeTableCount('site_settings'),
+        safeTableCount('review_replies'),
+        safeTableCount('review_reports'),
+        safeTableCount('review_helpful_votes'),
+        safeTableCount('admin_activity_log'),
+        safeTableCount('analytics_events'),
+        safeTableCount('service_categories'),
+        safeTableCount('analyst_insights'),
+        safeTableCount('tools_registry'),
         // Pending items
         safeTableCount('articles', { status: 'pending' }),
         safeTableCount('service_providers', { status: 'pending' }),
@@ -1159,9 +1201,10 @@ async function executeFunction(
       return {
         result: {
           content: { articles, services, updates, faqs, scenarios, codes, zones, restricted_zones: restrictedZones },
-          community: { comments, reviews, votes, suggestions, members, pushSubs },
-          site_config: { sources, menus, testimonials, homeCards, banners, tickerItems },
-          security: { login_attempts: loginAttempts },
+          community: { comments, reviews, votes, suggestions, members, review_replies: reviewReplies, review_reports: reviewReports, review_helpful: reviewHelpful },
+          notifications: { notifications, notification_reads: notificationReads, push_subscriptions: pushSubs },
+          site_config: { sources, menus, testimonials, homeCards, banners, tickerItems, settings, service_categories: serviceCategories, tools: toolsReg },
+          system: { activity_log: activityLog, analytics_events: analyticsEvents, analyst_insights: insights, login_attempts: loginAttempts },
           pending: { articles: pendingArticles, services: pendingServices, comments: pendingComments },
           homepage_ticker_news: newsTickerCount,
         },
@@ -1439,6 +1482,9 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
       codes, zones, restrictedZones, comments, reviews, members,
       banners, sources, menus, testimonials, homeCards,
       tickerItems, votes, suggestions, pushSubs, loginAttempts,
+      notifications, notifReads, settings,
+      reviewReplies, reviewReports, reviewHelpful,
+      activityLog, analyticsEvents, serviceCategories, insights, toolsReg,
       pendingArticles, pendingServices, pendingComments,
       recentArticleIds, recentUpdateIds, recentActivityIds,
     ] = await Promise.all([
@@ -1465,6 +1511,18 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
       safeCount('content_suggestions'),
       safeCount('push_subscriptions'),
       safeCount('admin_login_attempts'),
+      // Previously missing
+      safeCount('notifications'),
+      safeCount('notification_reads'),
+      safeCount('site_settings'),
+      safeCount('review_replies'),
+      safeCount('review_reports'),
+      safeCount('review_helpful_votes'),
+      safeCount('admin_activity_log'),
+      safeCount('analytics_events'),
+      safeCount('service_categories'),
+      safeCount('analyst_insights'),
+      safeCount('tools_registry'),
       // Pending
       safeCount('articles', { status: 'pending' }),
       safeCount('service_providers', { status: 'pending' }),
@@ -1490,11 +1548,13 @@ async function fetchSiteSnapshot(serviceClient: any): Promise<string> {
 
     return `
 
-## LIVE SITE DATA (real-time snapshot):
+## LIVE SITE DATA (real-time snapshot — ALL 32 tables):
 Content: ${articles} articles, ${services} services, ${updates} updates, ${faqs} FAQs, ${scenarios} scenarios, ${codes} codes, ${zones} zones (public), ${restrictedZones} restricted_zones (admin)
-Community: ${comments} comments, ${reviews} reviews, ${votes} votes, ${suggestions} suggestions, ${members} members, ${pushSubs} push subscribers
-Config: ${sources} sources, ${menus} menus, ${testimonials} testimonials, ${homeCards} home cards, ${banners} banners, ${tickerItems} ticker items
-Security: ${loginAttempts} login attempts logged
+Community: ${comments} comments, ${reviews} reviews, ${votes} votes, ${suggestions} suggestions, ${members} members
+Reviews sub: ${reviewReplies} replies, ${reviewReports} reports, ${reviewHelpful} helpful votes
+Notifications: ${notifications} notifications, ${notifReads} reads, ${pushSubs} push subs
+Config: ${sources} sources, ${menus} menus, ${testimonials} testimonials, ${homeCards} home cards, ${banners} banners, ${tickerItems} ticker items, ${settings} settings, ${serviceCategories} service categories, ${toolsReg} tools
+System: ${activityLog} activity log, ${analyticsEvents} analytics events, ${insights} insights, ${loginAttempts} login attempts
 
 Pending: ${pendingArticles} articles, ${pendingServices} services, ${pendingComments} comments
 
