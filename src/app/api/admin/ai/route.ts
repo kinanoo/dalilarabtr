@@ -577,20 +577,31 @@ CRITICAL: ALWAYS respond in Arabic. The admin speaks Arabic only.
 
 ### Admin Pages (/admin/*):
 - /admin/ai-assistant — THIS assistant (you!)
-- /admin/analyst — strategic analysis engine (7-layer analysis: gaps, logic, conflicts, quality, duplications, structure)
+- /admin/analyst — strategic analysis engine (7-layer analysis)
 - /admin/integrity — system integrity checks
 - /admin/news-ticker — manages the news_ticker table directly
 - /admin/settings — global site settings
 - /admin/migration — data migration tools
 - /admin/requests — pending articles & services for approval
-- /admin/[content-type] — editors for each content type
+- /admin/articles — article editor (CRUD for articles table)
+- /admin/services — service providers editor
+- /admin/faqs — FAQ editor
+- /admin/updates — updates/news editor
+- /admin/codes — security codes editor
+- /admin/scenarios — consultant scenarios editor
+- /admin/zones — zones editor (uses zones table)
+- /admin/banners — site banners management
+- /admin/sources — official sources editor
+- /admin/reviews — service reviews management
+- /admin/community — community content (comments, suggestions, votes)
+- /admin/members — member profiles management
 
 ## DATABASE TABLES (COMPLETE — 32 tables):
 
 ### CORE CONTENT:
 
 **articles** — Knowledge base guides
-Columns: id, slug, title, category (Arabic), intro, details (HTML), steps (array), documents (array), tips (array), fees, warning, source (URL), image, tags (array of slugs), seo_keywords, status (approved/draft/pending/rejected), created_at, last_update, user_id
+Columns: id, slug, title, category (Arabic), intro, details (HTML), steps (array), documents (array), tips (array), fees, warning, source (URL), image, tags (array of slugs), seo_keywords, status (approved/draft/pending/rejected), created_at, last_update
 Category values stored in Arabic. Slug mapping: ${CATEGORIES_TEXT}
 
 **service_providers** — Vetted service directory
