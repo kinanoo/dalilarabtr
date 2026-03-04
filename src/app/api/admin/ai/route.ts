@@ -194,13 +194,13 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'create_update',
-      description: 'Create a news item or update/alert. Types: news, alert, update.',
+      description: 'Create a news/update item. IMPORTANT: type="news" makes it appear in HOMEPAGE NEWS TICKER. Any other type value appears ONLY on the /updates page.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
           title: { type: SchemaType.STRING, description: 'Headline' },
           content: { type: SchemaType.STRING, description: 'Full content text' },
-          type: { type: SchemaType.STRING, description: 'Type: news, alert, or update. Default: news' },
+          type: { type: SchemaType.STRING, description: 'MUST be "news" for homepage ticker. Other values (any string) go to updates page only. Default: news' },
         },
         required: ['title', 'content'],
       },
@@ -412,7 +412,8 @@ Category values stored in Arabic: residence=types of residences, kimlik=kimlik a
 Columns: id, name, profession, description, phone, city, district, category (medical/legal/home/transport/education/translation/other), image, bio, status (pending/approved/rejected), is_verified, user_id, created_at
 
 ### updates
-Columns: id, type (news/alert/update), title, content, date, active (boolean), image, created_at
+Columns: id, type, title, content, date, active (boolean), image, created_at
+Type values: "news" (appears in homepage ticker), or Arabic topic labels for updates page only (e.g. economy, health, law, travel, etc.)
 
 ### faqs
 Columns: id, question, answer, category, active (boolean), created_at
@@ -426,8 +427,9 @@ Columns: id, city, district, neighborhood, status (open/closed), notes, created_
 ### consultant_scenarios
 Columns: id, title, description, category, risk (safe/medium/high/critical), steps (array), docs (array), cost, legal, tip, is_active, created_at
 
-### site_banners
-Columns: id, content, link_text, link_url, type (banner/alert), is_active, created_at
+### site_banners (the colored bar at TOP of every page — NOT the news ticker!)
+Columns: id, content, link_text, link_url, type (alert=red/warning=amber/info=blue), is_active, created_at
+Only ONE banner is shown at a time (is_active=true, limit 1). Dismissible by users via localStorage.
 
 ### comments
 Columns: id, entity_type (article/update/service), entity_id, user_id, author_name, content, status (pending/approved/rejected), created_at
@@ -462,6 +464,29 @@ ${TAGS_TEXT}
 - Comments: pending -> approved / rejected
 - Zones: status=open / closed
 
+## CRITICAL: NEWS TICKER vs UPDATES PAGE vs BANNERS (3 different things!)
+
+1. **News Ticker (شريط الأخبار)** — the scrolling carousel on the HOMEPAGE
+   - Source: "updates" table WHERE type='news' AND active=true, LIMIT 5
+   - Also auto-includes latest articles and scenarios
+   - To add item to ticker: create_update with type='news'
+   - To count ticker items: count_content(update, {type:'news', active:true})
+
+2. **Updates Page (صفحة التحديثات)** — the /updates page
+   - Shows ALL updates (any type) + automatic events from admin_activity_log
+   - Has filter tabs: All, News, Articles, Scenarios, Codes, FAQs
+   - Updates with Arabic type labels (economy, health, law) appear here but NOT in ticker
+
+3. **Site Banner (البانر العلوي)** — the colored bar at very top of ALL pages
+   - Source: "site_banners" table WHERE is_active=true, LIMIT 1
+   - Types: alert (red), warning (amber), info (blue)
+   - Only ONE banner active at a time
+   - NOT related to updates table at all
+
+When admin asks about "news ticker" or "شريط الأخبار" → filter updates by type='news' + active=true
+When admin asks about "updates page" or "صفحة التحديثات" → all updates regardless of type
+When admin asks about "banner" or "بانر" → site_banners table
+
 ## IMPORTANT NOTES:
 - Article categories are stored in Arabic in DB (not English slugs)
 - The slug-to-Arabic mapping is automatic in the backend
@@ -470,7 +495,6 @@ ${TAGS_TEXT}
 - Articles appear on the site at: /article/[slug]
 - Services appear at: /services/[id]
 - Updates appear at: /updates/[id]
-- News ticker on homepage shows updates with type "news"
 
 ## RESPONSE FORMAT:
 - Use bullet points and structured lists
