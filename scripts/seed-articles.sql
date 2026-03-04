@@ -2,26 +2,19 @@
 -- مقالات جديدة: التجنيس، المرور، لمّ الشمل
 -- يُنسخ ويُلصق في Supabase SQL Editor ثم RUN
 -- =====================================================
--- الطريقة: حذف المقالات الموجودة بنفس الـ slug ثم إدراج جديدة
+-- الطريقة: إذا المقال موجود (بنفس الـ slug) → لا يتغير شيء
+--          إذا مو موجود → يتم إدراجه
 -- =====================================================
 
--- حذف المقالات الموجودة (إن وُجدت) لتجنب تعارض الـ slug
-DELETE FROM articles WHERE slug IN (
-    'citizenship-general',
-    'citizenship-syrians',
-    'citizenship-investment',
-    'driving-license',
-    'traffic-fines',
-    'car-registration',
-    'family-reunion',
-    'family-reunion-syrians',
-    'spouse-residence'
-);
+DO $$
+BEGIN
 
 -- =====================================================
 -- 1. التجنيس التركي (3 مقالات)
 -- =====================================================
 
+-- 1.1 الجنسية التركية: الشروط والطرق
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'citizenship-general') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'turkish-citizenship-general-2026',
@@ -99,9 +92,11 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
+-- 1.2 التجنيس الاستثنائي للسوريين
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'citizenship-syrians') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'citizenship-syrians-exceptional-2026',
@@ -167,9 +162,11 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
+-- 1.3 الجنسية عن طريق الاستثمار العقاري
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'citizenship-investment') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'citizenship-investment-2026',
@@ -229,14 +226,16 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
 
 -- =====================================================
 -- 2. المرور ورخصة القيادة (3 مقالات)
 -- =====================================================
 
+-- 2.1 رخصة القيادة
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'driving-license') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'driving-license-turkey-2026',
@@ -307,9 +306,11 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
+-- 2.2 مخالفات المرور
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'traffic-fines') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'traffic-fines-rules-2026',
@@ -376,9 +377,11 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
+-- 2.3 تسجيل وشراء سيارة
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'car-registration') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'car-registration-turkey-2026',
@@ -447,14 +450,16 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
 
 -- =====================================================
 -- 3. لمّ الشمل والإقامة العائلية (3 مقالات)
 -- =====================================================
 
+-- 3.1 لمّ الشمل العائلي
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'family-reunion') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'family-reunion-turkey-2026',
@@ -525,9 +530,11 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
+-- 3.2 لمّ الشمل للسوريين
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'family-reunion-syrians') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'family-reunion-syrians-2026',
@@ -593,9 +600,11 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
 
+-- 3.3 إقامة الزوج/الزوجة
+IF NOT EXISTS (SELECT 1 FROM articles WHERE slug = 'spouse-residence') THEN
 INSERT INTO articles (id, slug, title, category, intro, details, steps, documents, tips, fees, warning, source, image, status, last_update, created_at)
 VALUES (
     'spouse-residence-turkey-2026',
@@ -662,11 +671,13 @@ VALUES (
     'approved',
     '2026-03-04',
     NOW()
-)
-;
+);
+END IF;
+
+END $$;
 
 -- =====================================================
--- تم! 9 مقالات جديدة:
+-- تم! 9 مقالات جديدة (تُضاف فقط إذا لم تكن موجودة):
 -- - 3 مقالات تجنيس (عام، سوريين، استثمار)
 -- - 3 مقالات مرور (رخصة، مخالفات، شراء سيارة)
 -- - 3 مقالات لمّ شمل (عام، سوريين، إقامة زوج)
