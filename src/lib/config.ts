@@ -45,4 +45,5 @@ export const TAG_LABELS: Record<string, string> = {
     'medical-tourism': 'السياحة العلاجية',
     'legal-trouble': 'مشاكل قانونية',
     'lost-docs': 'فقدان الوثائق',
+    'company': 'الشركات',
 };
