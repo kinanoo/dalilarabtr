@@ -337,17 +337,18 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'create_zone',
-      description: 'Create a new forbidden zone/neighborhood entry.',
+      description: 'Create a new forbidden zone. Use target_table="restricted_zones" for admin ZonesManager (default). Use target_table="zones" for public /zones pages.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
           city: { type: SchemaType.STRING, description: 'City name' },
           district: { type: SchemaType.STRING, description: 'District name' },
           neighborhood: { type: SchemaType.STRING, description: 'Neighborhood name' },
-          status: { type: SchemaType.STRING, format: 'enum', enum: ['open', 'closed'], description: 'open or closed' } as any,
+          target_table: { type: SchemaType.STRING, format: 'enum', enum: ['restricted_zones', 'zones'], description: 'Which table: restricted_zones (admin default) or zones (public pages)' } as any,
+          status: { type: SchemaType.STRING, format: 'enum', enum: ['open', 'closed'], description: 'Only for public zones table: open or closed' } as any,
           notes: { type: SchemaType.STRING, description: 'Additional notes' },
         },
-        required: ['city', 'district', 'neighborhood', 'status'],
+        required: ['city', 'district', 'neighborhood'],
       },
     },
     {
@@ -418,6 +419,7 @@ const tools: FunctionDeclarationsTool[] = [{
         properties: {
           title: { type: SchemaType.STRING, description: 'Ticker headline text' },
           link: { type: SchemaType.STRING, description: 'Link URL when clicked' },
+          sort_order: { type: SchemaType.NUMBER, description: 'Display order (lower = first). Default 0' },
         },
         required: ['title'],
       },
@@ -448,7 +450,7 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'create_notification',
-      description: 'Create a push notification to send to all subscribed users.',
+      description: 'Create a notification record in the DB. Appears in the site bell icon. Does NOT send push — use /admin push endpoint separately.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
@@ -605,7 +607,7 @@ Columns: id, question, answer, category, active (boolean), created_at
 Columns: code (e.g. V-87, G-160), title, description, category, severity (info/warning/urgent/critical), active
 
 **zones** — Public forbidden neighborhoods for Syrian registration (shown on /zones pages)
-Columns: id, city, district, neighborhood, slug, status (open/closed), notes, created_at, updated_at
+Columns: id, city, district, neighborhood, slug, name_ar, name_tr, status (open/closed), notes, created_at, updated_at
 
 **restricted_zones** — Admin-managed restricted zones (used by ZonesManager admin component)
 Columns: id, city, district, neighborhood, is_closed (boolean), notes, active (boolean), created_at
@@ -710,14 +712,18 @@ ${TAGS_TEXT}
 
 ## STATUS WORKFLOWS:
 - Articles: pending -> approved (published) / draft / rejected
-- Services: pending -> approved + is_verified=true (published) / rejected
-- Updates/FAQs/Codes: active=true (visible) / active=false (hidden)
-- Banners: is_active=true/false
+- Services: pending -> approved + is_verified=true (published) / pending (unpublished)
+- Updates/FAQs/Codes/Sources: active=true (visible) / active=false (hidden)
+- Banners: is_active=true/false (only 1 active at a time — creating new auto-deactivates others)
 - Scenarios: is_active=true/false
 - Comments: pending -> approved / rejected
-- Zones: status=open / closed
-- Menus/Testimonials/Home cards/Ticker: is_active=true/false
+- Suggestions: status -> approved / rejected
+- Reviews: is_approved=true/false
+- Zones (public): status=open / closed
+- Restricted zones (admin): active=true/false + is_closed=true/false
+- Menus/Testimonials/Home cards/Ticker/Tools: is_active=true/false
 - Settings: key-value pairs, updated directly
+- Non-toggleable: member, vote, review_reply, review_report, review_helpful, activity_log, login_attempt, analytics, push_sub, service_category, insight, notification, notification_read
 
 ## CRITICAL: NEWS TICKER vs UPDATES PAGE vs BANNERS (3 different things!)
 
@@ -989,13 +995,36 @@ async function executeFunction(
     }
 
     case 'create_zone': {
-      const { city, district, neighborhood, status, notes } = args;
+      const { city, district, neighborhood, status, notes, target_table } = args;
+
+      // Admin can choose which zone table to write to
+      if (target_table === 'restricted_zones') {
+        // Admin ZonesManager table
+        const { data, error } = await serviceClient.from('restricted_zones').insert({
+          city, district, neighborhood,
+          is_closed: true,
+          active: true,
+          notes: notes || null,
+        }).select().single();
+        if (error) return { result: { error: `Create failed: ${error.message}` } };
+        return { result: { message: 'Restricted zone created (admin table)', zone: data } };
+      }
+
+      // Public zones table — generate slug for URL access
+      const slug = `${city}-${district}-${neighborhood}`
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9\u0600-\u06FF\-]/g, '')
+        .substring(0, 100) || `zone-${Date.now().toString(36)}`;
+
       const { data, error } = await serviceClient.from('zones').insert({
-        city, district, neighborhood, status,
+        city, district, neighborhood, slug,
+        status: status || 'closed',
         notes: notes || null,
+        updated_at: new Date().toISOString(),
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
-      return { result: { message: 'Zone created', zone: data } };
+      return { result: { message: 'Public zone created', zone: data, url: `/zones/${slug}` } };
     }
 
     case 'create_scenario': {
@@ -1017,6 +1046,8 @@ async function executeFunction(
 
     case 'create_banner': {
       const { content, link_text, link_url, type } = args;
+      // Auto-deactivate all existing banners (only 1 active allowed)
+      await serviceClient.from('site_banners').update({ is_active: false }).eq('is_active', true);
       const { data, error } = await serviceClient.from('site_banners').insert({
         content,
         link_text: link_text || null,
@@ -1025,7 +1056,7 @@ async function executeFunction(
         is_active: true,
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
-      return { result: { message: 'Banner created', banner: data } };
+      return { result: { message: 'Banner created (previous banners auto-deactivated)', banner: data } };
     }
 
     case 'count_content': {
@@ -1293,10 +1324,11 @@ async function executeFunction(
     }
 
     case 'create_ticker_item': {
-      const { title, link } = args;
+      const { title, link, sort_order } = args;
       const { data, error } = await serviceClient.from('news_ticker').insert({
         title,
         link: link || null,
+        sort_order: sort_order || 0,
         is_active: true,
       }).select().single();
       if (error) return { result: { error: `Create failed: ${error.message}` } };
@@ -1683,7 +1715,12 @@ export async function POST(request: NextRequest) {
       result = response.response;
     }
 
-    const replyText = result.text() || 'Could not process your request.';
+    let replyText: string;
+    try {
+      replyText = result.text() || 'Could not process your request.';
+    } catch {
+      replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.';
+    }
     const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
 
     return NextResponse.json({

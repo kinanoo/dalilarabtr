@@ -54,6 +54,7 @@ export function AIAssistant() {
     setMessages(newMessages);
     setInput('');
     setLoading(true);
+    setPendingAction(null); // Clear any pending action when sending new message
 
     try {
       const res = await fetch('/api/admin/ai', {
