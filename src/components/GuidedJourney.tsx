@@ -100,7 +100,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'إذن السفر بين الولايات، وثيقة السفر، والعودة الطوعية',
                 icon: Globe,
                 color: 'from-blue-500 to-indigo-500',
-                href: '/consultant',
+                href: '/category/syrians?tag=travel-permit',
             },
             {
                 id: 'syrian-citizenship',
@@ -108,7 +108,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'شروط التجنيس، الملف المطلوب، والمراحل والمدة',
                 icon: Crown,
                 color: 'from-yellow-500 to-amber-500',
-                href: '/consultant',
+                href: '/category/syrians?tag=citizenship',
             },
             {
                 id: 'syrian-codes',
@@ -213,7 +213,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'شروط التجنيس، الأوراق، المدة، والاستثناءات',
                 icon: Crown,
                 color: 'from-yellow-500 to-amber-500',
-                href: '/consultant',
+                href: '/category/official?tag=citizenship',
             },
             {
                 id: 'traffic-driving',
@@ -238,7 +238,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'ترحيل، أكواد أمنية، منع دخول، أو مخالفات',
                 icon: Scale,
                 color: 'from-red-500 to-rose-600',
-                href: '/consultant',
+                href: '/category/official?tag=legal-trouble',
             },
             {
                 id: 'edevlet',
@@ -278,7 +278,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
                 desc: 'إجراءات استبدال الهوية، الجواز، أو الإقامة',
                 icon: FileSearch,
                 color: 'from-orange-500 to-red-500',
-                href: '/forms',
+                href: '/category/official?tag=lost-docs',
             },
         ],
     },

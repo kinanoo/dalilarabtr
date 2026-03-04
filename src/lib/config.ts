@@ -43,4 +43,6 @@ export const TAG_LABELS: Record<string, string> = {
     'schools': 'المدارس',
     'scholarships': 'المنح الدراسية',
     'medical-tourism': 'السياحة العلاجية',
+    'legal-trouble': 'مشاكل قانونية',
+    'lost-docs': 'فقدان الوثائق',
 };
