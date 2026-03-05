@@ -14,11 +14,8 @@ interface TickerItem {
 export default function NewsTicker() {
     const pathname = usePathname();
     const [items, setItems] = useState<TickerItem[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isVisible, setIsVisible] = useState(true);
-    const textRef = useRef<HTMLSpanElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const animRef = useRef<Animation | null>(null);
+    const trackRef = useRef<HTMLDivElement>(null);
+    const [duration, setDuration] = useState(30);
 
     useEffect(() => {
         async function fetchTicker() {
@@ -34,90 +31,53 @@ export default function NewsTicker() {
         fetchTicker();
     }, []);
 
-    // Animate overflowing text using Web Animations API
+    // Calculate speed based on content width
     useEffect(() => {
-        if (animRef.current) { animRef.current.cancel(); animRef.current = null; }
-
-        const measure = () => {
-            const text = textRef.current;
-            const container = containerRef.current;
-            if (!text || !container) return;
-
-            const diff = text.scrollWidth - container.clientWidth;
-            if (diff <= 0) return;
-
-            animRef.current = text.animate(
-                [
-                    { transform: 'translateX(0)' },
-                    { transform: `translateX(${diff}px)` },
-                ],
-                {
-                    duration: Math.max(5000, diff * 40),
-                    easing: 'ease-in-out',
-                    direction: 'alternate',
-                    iterations: Infinity,
-                    delay: 800,
-                }
-            );
-        };
-
-        // Delay to ensure text is rendered
-        const t = setTimeout(measure, 100);
-        return () => { clearTimeout(t); animRef.current?.cancel(); };
-    }, [currentIndex, items]);
-
-    // Rotate news
-    useEffect(() => {
-        if (items.length <= 1) return;
-
-        const timer = setInterval(() => {
-            setIsVisible(false);
-            setTimeout(() => {
-                setCurrentIndex(prev => (prev + 1) % items.length);
-                setIsVisible(true);
-            }, 300);
-        }, 7000);
-
-        return () => clearInterval(timer);
-    }, [items.length]);
+        if (!trackRef.current || items.length === 0) return;
+        const t = setTimeout(() => {
+            if (!trackRef.current) return;
+            const width = trackRef.current.scrollWidth / 2; // half because content is doubled
+            setDuration(Math.max(15, width / 60)); // ~60px/sec
+        }, 100);
+        return () => clearTimeout(t);
+    }, [items]);
 
     if (pathname !== '/') return null;
 
-    // Always render container to reserve space and prevent CLS
-    const current = items.length > 0 ? items[currentIndex] : null;
-
     return (
-        <div className="bg-[#1a2744] text-white/90 overflow-hidden text-[11px] sm:text-xs min-h-[28px]" dir="rtl">
-            {current && (
-                <div className="flex items-center px-3 py-1.5 max-w-7xl mx-auto">
-                    <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
-                        <div
-                            className="whitespace-nowrap text-center"
-                            style={{
-                                opacity: isVisible ? 1 : 0,
-                                transition: 'opacity 0.3s',
-                            }}
-                        >
-                            <span ref={textRef} className="inline-block">
-                                {current.link ? (
+        <div className="bg-[#1a2744] text-white/90 overflow-hidden text-[11px] sm:text-xs min-h-[28px] flex items-center" dir="rtl">
+            {items.length > 0 && (
+                <div className="relative w-full overflow-hidden">
+                    <div
+                        ref={trackRef}
+                        className="flex items-center whitespace-nowrap will-change-transform"
+                        style={{
+                            animation: `ticker-scroll ${duration}s linear infinite`,
+                        }}
+                    >
+                        {/* Render items twice for seamless loop */}
+                        {[...items, ...items].map((item, i) => (
+                            <span key={`${item.id}-${i}`} className="inline-flex items-center">
+                                {item.link ? (
                                     <Link
-                                        href={current.link}
-                                        className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
+                                        href={item.link}
+                                        className="hover:text-emerald-300 transition-colors px-4"
                                     >
-                                        {current.text}
+                                        {item.text}
                                     </Link>
                                 ) : (
-                                    current.text
+                                    <span className="px-4">{item.text}</span>
                                 )}
+                                <span className="text-emerald-500/60 text-[8px]" aria-hidden="true">&#9670;</span>
                             </span>
-                        </div>
+                        ))}
                     </div>
-
-                    {items.length > 1 && (
-                        <span className="text-[9px] text-white/40 flex-shrink-0 tabular-nums">
-                            {currentIndex + 1}/{items.length}
-                        </span>
-                    )}
+                    <style dangerouslySetInnerHTML={{ __html: `
+                        @keyframes ticker-scroll {
+                            from { transform: translateX(0); }
+                            to { transform: translateX(50%); }
+                        }
+                    `}} />
                 </div>
             )}
         </div>
