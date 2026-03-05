@@ -33,6 +33,7 @@ export async function generateMetadata(
         .from('updates')
         .select('title, content, type')
         .eq('id', id)
+        .eq('active', true)
         .single();
 
     if (!data) return { title: 'التحديث غير موجود' };
@@ -54,6 +55,7 @@ export default async function UpdateDetailPage(
         .from('updates')
         .select('id, type, title, content, date, link, image, created_at')
         .eq('id', id)
+        .eq('active', true)
         .single();
 
     if (error || !update) {

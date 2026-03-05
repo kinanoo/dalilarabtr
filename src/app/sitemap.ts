@@ -77,12 +77,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (supabase) {
     // كل استعلام مستقل — فشل أحدهم لا يؤثر على الباقي
-    const articles = await safeQuery(supabase.from('articles').select('id, slug, last_update'));
+    const articles = await safeQuery(supabase.from('articles').select('id, slug, last_update').eq('status', 'approved'));
     const codes = await safeQuery(supabase.from('security_codes').select('code, created_at'));
     const zones = await safeQuery(supabase.from('zones').select('id, updated_at'));
     const scenarios = await safeQuery(supabase.from('consultant_scenarios').select('id, created_at'));
     const providers = await safeQuery(supabase.from('service_providers').select('id, created_at').eq('status', 'approved'));
-    const updates = await safeQuery(supabase.from('updates').select('id, created_at'));
+    const updates = await safeQuery(supabase.from('updates').select('id, created_at').eq('active', true));
 
     dynamicPages = [
       // Articles

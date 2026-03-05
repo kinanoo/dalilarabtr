@@ -179,7 +179,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
               id: `upd-${u.id}`,
               title: u.title,
               type: 'تحديث',
-              url: `/updates`,
+              url: `/updates/${u.id}`,
               icon: FileText,
               desc: u.date,
               typeKey: 'article',

@@ -32,19 +32,27 @@ export async function generateMetadata(
 
     const { data } = await supabase
         .from('service_providers')
-        .select('name, profession, city, category, description')
+        .select('name, profession, city, category, description, image')
         .eq('id', id)
         .eq('status', 'approved')
         .single();
 
     if (!data) return { title: 'الخدمة غير موجودة' };
 
+    const title = `${data.name} - ${data.profession} في ${data.city} | دليل العرب`;
+    const description = data.description?.substring(0, 160) ||
+        `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
+    const ogImage = data.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`;
+
     return {
-        title: `${data.name} - ${data.profession} في ${data.city} | دليل العرب`,
-        description:
-            data.description?.substring(0, 160) ||
-            `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`,
+        title,
+        description,
         alternates: { canonical: `/services/${id}` },
+        openGraph: {
+            title,
+            description,
+            images: [{ url: ogImage, width: 1200, height: 630, alt: data.name }],
+        },
     };
 }
 

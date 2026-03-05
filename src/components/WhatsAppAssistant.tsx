@@ -185,7 +185,7 @@ export default function WhatsAppAssistant() {
               id: `upd-${u.id}`,
               title: u.title,
               type: 'تحديث',
-              url: `/updates`,
+              url: `/updates/${u.id}`,
               icon: FileText,
               desc: u.date,
               typeKey: 'article',

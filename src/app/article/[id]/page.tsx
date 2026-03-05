@@ -60,7 +60,7 @@ async function fetchArticleData(slug: string) {
         fees: data.fees || '',
         source: data.source || '',
         image: data.image || '',
-        lastUpdate: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+        lastUpdate: (data.last_update || data.created_at) ? new Date(data.last_update || data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
       };
     }
   }

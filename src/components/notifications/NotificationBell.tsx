@@ -62,11 +62,12 @@ export default function NotificationBell() {
         loadNotifications();
     }, [loadNotifications]);
 
-    // Poll every 60 seconds
+    // Poll every 60 seconds — only while panel is open
     useEffect(() => {
+        if (!isOpen) return;
         const interval = setInterval(loadNotifications, 60000);
         return () => clearInterval(interval);
-    }, [loadNotifications]);
+    }, [isOpen, loadNotifications]);
 
     // Refresh when dropdown opens
     useEffect(() => {
