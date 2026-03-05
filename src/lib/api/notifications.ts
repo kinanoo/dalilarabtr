@@ -14,28 +14,12 @@ export type Notification = {
     priority?: string;
     created_at: string;
     is_read: boolean;
+    is_personal: boolean;
+    group_count?: number;
 };
 
 // ============================================
-// Auto-event config (admin_activity_log → notification)
-// ============================================
-
-const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: string; href: (id: string) => string }> = {
-    new_article:  { type: 'مقال جديد',    icon: '📄', href: (id) => `/article/${id}` },
-    new_scenario: { type: 'سيناريو جديد', icon: '🧠', href: (id) => `/consultant?scenario=${id}` },
-    new_faq:      { type: 'سؤال شائع',    icon: '❓', href: () => `/faq` },
-    new_code:     { type: 'كود أمني',     icon: '🛡️', href: () => `/security-codes` },
-    new_zone:     { type: 'منطقة جديدة',  icon: '📍', href: () => `/zones` },
-    new_update:   { type: 'خبر',         icon: '📰', href: (id) => `/updates/${id}` },
-    new_service:  { type: 'خدمة جديدة',   icon: '💼', href: (id) => `/services/${id}` },
-    new_tool:     { type: 'أداة جديدة',   icon: '🔧', href: () => `/tools` },
-    new_source:   { type: 'مصدر رسمي',   icon: '🔗', href: () => `/sources` },
-};
-
-const PUBLIC_EVENT_TYPES = Object.keys(AUTO_EVENT_CONFIG);
-
-// ============================================
-// localStorage-based read tracking
+// localStorage-based read tracking (global only)
 // ============================================
 
 const LAST_SEEN_KEY = 'daleel_notifications_last_seen';
@@ -54,91 +38,131 @@ export function getLastSeen(): string {
     return localStorage.getItem(LAST_SEEN_KEY) || new Date().toISOString();
 }
 
-/** Mark all current notifications as seen (update timestamp to now) */
-export function markAllAsSeen(): void {
+/** Mark all global notifications as seen (update timestamp to now) */
+export function markGlobalAsSeen(): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
 }
 
+/** Mark a single global notification as seen (advance lastSeen to its created_at) */
+export function markGlobalAsSeenUpTo(createdAt: string): void {
+    if (typeof window === 'undefined') return;
+    const current = getLastSeen();
+    if (createdAt > current) {
+        localStorage.setItem(LAST_SEEN_KEY, createdAt);
+    }
+}
+
 // ============================================
-// Fetch combined notifications
+// Database-based read tracking (personal only)
 // ============================================
 
-export async function fetchAllNotifications(limit = 30, userId?: string | null): Promise<Notification[]> {
+/** Mark all personal notifications as read in DB */
+export async function markPersonalAsRead(userId: string): Promise<void> {
+    if (!supabase) return;
+    await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('target_user_id', userId)
+        .eq('is_read', false);
+}
+
+/** Mark a single personal notification as read in DB */
+export async function markOneAsRead(notificationId: string): Promise<void> {
+    if (!supabase) return;
+    await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId)
+        .eq('is_read', false);
+}
+
+// ============================================
+// Fetch notifications (two separate queries)
+// ============================================
+
+export async function fetchAllNotifications(
+    limit = 30,
+    userId?: string | null,
+): Promise<Notification[]> {
     if (!supabase) return [];
 
     const lastSeen = getLastSeen();
+    const now = new Date().toISOString();
 
-    // Build the notifications query:
-    // - Always show broadcast notifications (target_user_id IS NULL)
-    // - If user is logged in, also show their personal notifications
-    let notifQuery = supabase
+    // ── Query 1: Global notifications ──
+    const globalQuery = supabase
         .from('notifications')
-        .select('id, type, title, message, link, icon, priority, created_at')
+        .select('id, type, title, message, link, icon, priority, created_at, group_count')
+        .is('target_user_id', null)
         .eq('is_active', true)
-        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        .or(`expires_at.is.null,expires_at.gt.${now}`)
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(15);
 
-    if (userId) {
-        // Show both: broadcasts (null) + personal (this user)
-        notifQuery = notifQuery.or(`target_user_id.is.null,target_user_id.eq.${userId}`);
-    } else {
-        // Anonymous visitor — only broadcasts
-        notifQuery = notifQuery.is('target_user_id', null);
-    }
+    // ── Query 2: Personal notifications (logged-in only) ──
+    const personalQuery = userId
+        ? supabase
+              .from('notifications')
+              .select('id, type, title, message, link, icon, priority, created_at, is_read, group_count')
+              .eq('target_user_id', userId)
+              .eq('is_active', true)
+              .order('created_at', { ascending: false })
+              .limit(15)
+        : null;
 
-    // Fetch both sources in parallel
-    const [manualResult, autoEventsRes] = await Promise.all([
-        notifQuery,
-        fetch('/api/public-events').then(r => r.json()).catch(() => ({ events: [] })),
+    const [globalResult, personalResult] = await Promise.all([
+        globalQuery,
+        personalQuery || Promise.resolve({ data: [] as any[], error: null }),
     ]);
-    const autoResult = { data: autoEventsRes.events || [] };
 
     const items: Notification[] = [];
 
-    // Manual notifications
-    if (manualResult.data) {
-        for (const n of manualResult.data) {
+    // Global → is_read from localStorage timestamp
+    if (globalResult.data) {
+        for (const n of globalResult.data) {
             items.push({
                 id: n.id,
+                type: n.type,
                 title: n.title,
                 message: n.message,
                 link: n.link || undefined,
                 icon: n.icon || '🔔',
-                type: n.type,
                 priority: n.priority,
                 created_at: n.created_at,
                 is_read: n.created_at <= lastSeen,
+                is_personal: false,
+                group_count: n.group_count ?? 1,
             });
         }
     }
 
-    // Auto events from admin_activity_log
-    if (autoResult.data) {
-        for (const e of autoResult.data) {
-            const cfg = AUTO_EVENT_CONFIG[e.event_type];
-            if (!cfg) continue;
+    // Personal → is_read from database column
+    if (personalResult.data) {
+        for (const n of personalResult.data) {
             items.push({
-                id: `auto_${e.id}`,
-                title: e.title || cfg.type,
-                message: e.detail || '',
-                link: cfg.href(e.entity_id || ''),
-                icon: cfg.icon,
-                type: cfg.type,
-                created_at: e.created_at,
-                is_read: e.created_at <= lastSeen,
+                id: n.id,
+                type: n.type,
+                title: n.title,
+                message: n.message,
+                link: n.link || undefined,
+                icon: n.icon || '🔔',
+                priority: n.priority,
+                created_at: n.created_at,
+                is_read: !!n.is_read,
+                is_personal: true,
+                group_count: n.group_count ?? 1,
             });
         }
     }
 
-    // Sort by date desc and limit
+    // Sort by date desc, limit
     items.sort((a, b) => b.created_at.localeCompare(a.created_at));
     return items.slice(0, limit);
 }
 
 // ============================================
-// Create notification (used by admin panels)
+// Create notification (used by frontend API calls)
 // ============================================
 
 export async function createNotification(payload: {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Loader2, FileText, Briefcase, MessageSquare, AlertTriangle, ChevronRight, X, BrainCircuit, MapPin, ShieldAlert, Star, HelpCircle } from 'lucide-react';
+import { Search, Loader2, FileText, Briefcase, MessageSquare, AlertTriangle, ChevronRight, X, BrainCircuit, MapPin, ShieldAlert, Star, HelpCircle, Newspaper } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -136,6 +136,17 @@ const ResultsList = ({ results, loading, query, mode, onClose, recentSearches = 
                 </Link>
             ))}
 
+            {renderSection('الأخبار والتحديثات', results.updates, <Newspaper size={14} />, (item) => (
+                <Link href={`/admin/community`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                    <div className="p-2 bg-teal-100 text-teal-600 rounded-lg"><Newspaper size={18} /></div>
+                    <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-white group-hover:text-teal-600 transition-colors">{item.title}</div>
+                        <div className="text-xs text-slate-500">{item.type || 'خبر'}</div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-300" />
+                </Link>
+            ))}
+
             {renderSection('الخدمات', results.services, <Briefcase size={14} />, (item) => (
                 <Link href={`/admin/services`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
                     <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><Briefcase size={18} /></div>
@@ -239,7 +250,7 @@ function removeRecentSearch(term: string) {
 export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<any>({
-        articles: [], services: [], comments: [], feedback: [], scenarios: [], zones: [], codes: [], faqs: [], reviews: []
+        articles: [], updates: [], services: [], comments: [], feedback: [], scenarios: [], zones: [], codes: [], faqs: [], reviews: []
     });
     const [loading, setLoading] = useState(false);
     const [isResultsOpen, setIsResultsOpen] = useState(false);
@@ -252,7 +263,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
 
     useEffect(() => {
         if (!debouncedQuery.trim()) {
-            setResults({ articles: [], services: [], comments: [], feedback: [], scenarios: [], zones: [], codes: [], faqs: [], reviews: [] });
+            setResults({ articles: [], updates: [], services: [], comments: [], feedback: [], scenarios: [], zones: [], codes: [], faqs: [], reviews: [] });
             return;
         }
         performSearch();
@@ -307,8 +318,9 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
             }
         };
 
-        const [articles, services, comments, feedback, scenarios, zones, codes, faqs, reviews] = await Promise.all([
+        const [articles, updates, services, comments, feedback, scenarios, zones, codes, faqs, reviews] = await Promise.all([
             searchTable('articles', 'id, title, category', 'title,intro,details'),
+            searchTable('updates', 'id, title, type', 'title,content'),
             searchTable('service_providers', 'id, name, profession', 'name'),
             searchTable('comments', 'id, content, author_name', 'content'),
             searchTable('content_votes', 'id, feedback, reason', 'feedback,reason', (q) => q.eq('vote_type', 'down')),
@@ -320,15 +332,12 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
         ]);
 
         setResults({
-            articles, services, comments, feedback,
-            scenarios: scenarios,
-            zones: zones,
-            codes: codes,
-            faqs, reviews
+            articles, updates, services, comments, feedback,
+            scenarios, zones, codes, faqs, reviews
         });
 
         // Save to recent searches if there were results
-        const hasAny = [articles, services, comments, feedback, scenarios, zones, codes, faqs, reviews].some(arr => arr.length > 0);
+        const hasAny = [articles, updates, services, comments, feedback, scenarios, zones, codes, faqs, reviews].some(arr => arr.length > 0);
         if (hasAny && debouncedQuery.trim().length >= 2) {
             saveRecentSearch(debouncedQuery.trim());
             setRecentSearches(loadRecentSearches());

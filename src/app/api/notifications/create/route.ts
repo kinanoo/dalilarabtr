@@ -13,7 +13,7 @@ const ALLOWED_TYPES = ['reply', 'review', 'comment', 'article', 'law', 'service'
 
 export async function POST(request: Request) {
     try {
-        // Auth check: only admin users can create notifications
+        // Auth check: admins can create any notification; regular users can only create reply notifications
         const cookieStore = await cookies();
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,9 +32,7 @@ export async function POST(request: Request) {
             .eq('id', user.id)
             .single();
 
-        if (profile?.role !== 'admin') {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-        }
+        const isAdmin = profile?.role === 'admin';
 
         const body = await request.json();
         const { type, title, message, link, icon, priority, target_user_id } = body;
@@ -51,9 +49,25 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid notification type' }, { status: 400 });
         }
 
+        // Non-admin users can only create personal reply notifications (not broadcasts)
+        if (!isAdmin) {
+            if (type !== 'reply' || !target_user_id) {
+                return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            }
+            // Prevent users from sending notifications to themselves
+            if (target_user_id === user.id) {
+                return NextResponse.json({ error: 'Cannot notify yourself' }, { status: 400 });
+            }
+        }
+
         // Input length validation
         if (title.length > 200 || message.length > 1000) {
             return NextResponse.json({ error: 'Title or message too long' }, { status: 400 });
+        }
+
+        // Links must be internal (relative paths only) — prevent open redirect
+        if (link && (typeof link !== 'string' || !link.startsWith('/'))) {
+            return NextResponse.json({ error: 'Link must be a relative path' }, { status: 400 });
         }
 
         const { error } = await supabaseAdmin

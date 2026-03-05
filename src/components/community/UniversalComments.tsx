@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
 import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, type Comment } from '@/lib/api/comments';
-import { createNotification } from '@/lib/api/notifications';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -432,29 +431,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         toast.success('تم نشر ردك!');
         setActiveReplyId(null);
 
-        // إشعار لصاحب التعليق الأصلي عند الرد عليه
-        const findComment = (list: Comment[], id: string): Comment | undefined => {
-            for (const c of list) {
-                if (c.id === id) return c;
-                if (c.replies) {
-                    const found = findComment(c.replies, id);
-                    if (found) return found;
-                }
-            }
-        };
-        const parentComment = findComment(comments, parentId);
-        if (parentComment?.user_id && parentComment.user_id !== currentUserId) {
-            const entityPath = entityType === 'article' ? 'article' : entityType === 'service' ? 'services' : entityType;
-            createNotification({
-                type: 'reply',
-                title: 'رد جديد على تعليقك',
-                message: `${name.trim() || 'مجهول'} ردّ على تعليقك: "${replyContent.substring(0, 80)}${replyContent.length > 80 ? '...' : ''}"`,
-                link: `/${entityPath}/${entityId}#comments`,
-                icon: '💬',
-                priority: 'medium',
-                target_user_id: parentComment.user_id,
-            });
-        }
+        // Reply notification now handled by DB trigger (notify_on_new_comment)
 
         const replyObj: Comment = {
             id: newReply?.id || crypto.randomUUID(),
