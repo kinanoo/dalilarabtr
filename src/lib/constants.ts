@@ -91,7 +91,7 @@ export const OFFICIAL_SOURCES = [
     { name: "مديرية النفوس والجنسية (NVI)", url: "https://www.nvi.gov.tr/", desc: "الموقع الرسمي لمديرية النفوس والجنسية." },
     { name: "التحقق من رقم هوية أجنبي", url: "https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula", desc: "التحقق الرسمي من رقم الهوية للأجانب." },
     { name: "بوابة المدارس (e-Okul)", url: "https://e-okul.meb.gov.tr/", desc: "خدمات متابعة الطلاب في المدارس." },
-    { name: "الاستعلام عن إذن العمل", url: "https://izinsorgula.csgb.gov.tr/#/app/giris", desc: "معرفة صلاحية/حالة إذن العمل." },
+    { name: "الاستعلام عن إذن العمل (e-Devlet)", url: "https://www.turkiye.gov.tr/csgb-yabancilara-ait-calisma-izni-calisma-izni-muafiyeti-belgesi-sorgulama", desc: "التحقق من صلاحية/حالة إذن العمل للأجانب عبر e-Devlet." },
     { name: "الاستعلام عن طلب الإقامة (طلبات مستمرة)", url: "https://e-ikamet.goc.gov.tr/Ikamet/DevamEdenBasvuruGiris", desc: "الاستعلام الرسمي عن طلبات الإقامة الجارية." },
     { name: "الاستعلام عن الرقم الضريبي", url: "https://intvd.gib.gov.tr/internetvd/template.jsp?page=IVD_VKNO", desc: "خدمة مصلحة الضرائب (GİB) للاستعلام عن الرقم الضريبي." },
     { name: "استخراج سند قيد عائلي", url: "https://www.turkiye.gov.tr/nvi-nufus-kayit-ornegi-belgesi-sorgulama", desc: "خدمة e-Devlet لاستخراج وثيقة القيد." },
