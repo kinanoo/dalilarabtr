@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
+import { stripHtml } from '@/lib/stripHtml';
 
 export const metadata: Metadata = {
   title: 'الأسئلة الشائعة | دليل العرب في تركيا',
@@ -119,7 +120,7 @@ export default async function FAQPage() {
         name: q.q,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: q.a
+          text: stripHtml(q.a)
         }
       }))
   };

@@ -9,6 +9,7 @@ import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
+import { stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 60;
@@ -38,7 +39,7 @@ export async function generateMetadata(
 
     return {
         title: `${data.title} | دليل العرب`,
-        description: data.content?.replace(/<[^>]*>/g, '').substring(0, 160) || data.title,
+        description: stripHtml(data.content).substring(0, 160) || data.title,
         alternates: { canonical: `/updates/${id}` },
     };
 }
@@ -113,7 +114,7 @@ export default async function UpdateDetailPage(
                                     mini
                                     variant="subtle"
                                     title={update.title}
-                                    text={update.content?.replace(/<[^>]*>/g, '').slice(0, 200)}
+                                    text={stripHtml(update.content).slice(0, 200)}
                                     url={`${SITE_CONFIG.siteUrl}/updates/${id}`}
                                 />
                             </div>

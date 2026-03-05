@@ -67,7 +67,7 @@ export const StaticPageEditor = ({ form, setForm }: StaticPageEditorProps) => {
                     />
                 ) : (
                     <div className="w-full h-full overflow-y-auto bg-white dark:bg-slate-900 p-8">
-                        <div className="prose dark:prose-invert max-w-none dir-rtl" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(form.content || '') }} />
+                        <div className="prose-content max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(form.content || '') }} />
                     </div>
                 )}
             </div>
