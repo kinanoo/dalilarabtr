@@ -114,14 +114,7 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
       <div className="p-4 sm:p-5 flex-grow">
         <div className="flex items-start gap-3 mb-3">
           <div className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl group-hover:bg-blue-600 transition-colors flex-shrink-0">
-            <img
-              src={`https://www.google.com/s2/favicons?domain=${shortUrl}&sz=32`}
-              alt={`${source.name} favicon`}
-              width={20}
-              height={20}
-              className="rounded-sm"
-              loading="lazy"
-            />
+            <Globe size={20} className="text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors" />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
@@ -169,10 +162,6 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
 // ============================================
 
 function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
-  const domain = (() => {
-    try { return new URL(resource.url).hostname.replace('www.', ''); } catch { return ''; }
-  })();
-
   return (
     <a
       href={resource.url}
@@ -182,14 +171,7 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
     >
       <div className="flex items-start gap-3 mb-2">
         <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex-shrink-0">
-          <img
-            src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
-            alt={`${resource.name} favicon`}
-            width={18}
-            height={18}
-            className="rounded-sm"
-            loading="lazy"
-          />
+          <Globe size={18} className="text-emerald-600 dark:text-emerald-400" />
         </div>
         <h3 className="font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base leading-tight">
           {resource.name}
