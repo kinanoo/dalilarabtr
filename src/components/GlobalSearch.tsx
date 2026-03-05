@@ -80,7 +80,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
 
         // Construct Queries
         const updateQuery = searchTokens.map(t => `title.ilike.%${t}%,content.ilike.%${t}%`).join(',');
-        const questionOrQuery = searchTokens.map(t => `question.ilike.%${t}%`).join(',');
+        const questionOrQuery = searchTokens.map(t => `question.ilike.%${t}%,answer.ilike.%${t}%`).join(',');
         const nameOrQuery = searchTokens.map(t => `name.ilike.%${t}%`).join(',');
         const professionOrQuery = searchTokens.map(t => `profession.ilike.%${t}%`).join(',');
 
@@ -148,18 +148,22 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
 
         if (faqsRes && faqsRes.data) {
           faqsRes.data.forEach((f: any) => {
-            const stats = calculateRelevance(f.question, searchTokens, expandedTokens);
+            const qStats = calculateRelevance(f.question, searchTokens, expandedTokens);
+            const aStats = calculateRelevance(f.answer, searchTokens, expandedTokens);
+            const bestScore = Math.max(qStats.score, aStats.score);
+            const bestMatched = Math.max(qStats.matchedTokens, aStats.matchedTokens);
+            const answerSnippet = f.answer ? f.answer.replace(/<[^>]*>/g, '').slice(0, 80) + (f.answer.length > 80 ? '...' : '') : '';
             newResults.push({
               id: `faq-${f.id}`,
               title: f.question,
               type: 'سؤال وجواب',
               url: `/faq?q=${encodeURIComponent(f.question)}`,
               icon: FileText,
-              desc: 'إجابة مباشرة',
+              desc: answerSnippet || 'إجابة مباشرة',
               typeKey: 'article',
               haystack: '',
-              _score: stats.score,
-              _matchedTokens: stats.matchedTokens
+              _score: bestScore,
+              _matchedTokens: bestMatched
             } as any);
           });
         }
