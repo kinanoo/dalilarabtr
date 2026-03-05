@@ -60,7 +60,7 @@ export default function EducationPage() {
                       <span className="text-xs text-slate-400 flex items-center gap-1 mr-auto"><Calendar size={12} />{article.lastUpdate}</span>
                     </div>
                     <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-primary-600 transition">{article.title}</h3>
-                    <p className="text-slate-500 dark:text-slate-300 text-sm mb-6 flex-grow line-clamp-3">{article.intro}</p>
+                    <p className="text-slate-500 dark:text-slate-300 text-sm mb-6 flex-grow line-clamp-3">{article.intro?.replace(/<[^>]*>/g, '')}</p>
                     <div className="flex items-center text-accent-600 font-bold text-sm mt-auto">اقرأ الدليل الكامل <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" /></div>
                   </div>
                 </Link>

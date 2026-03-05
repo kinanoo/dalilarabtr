@@ -95,13 +95,12 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
 
             {/* Intro & Details */}
             <div className="grid grid-cols-1 gap-6">
-                <Field label="مقدمة قصيرة (Summary)" icon={AlertCircle} note="تظهر في بطاقات العرض">
-                    <textarea
-                        required
-                        className={`${textareaStyles} h-24`}
+                <Field label="مقدمة قصيرة (Summary)" icon={AlertCircle} note="تظهر في بطاقات العرض وملخص الإجراء">
+                    <RichTextEditor
                         value={form.intro || ''}
-                        onChange={e => setForm({ ...form, intro: e.target.value })}
+                        onChange={(html) => setForm({ ...form, intro: html })}
                         placeholder="ملخص سريع للمقال..."
+                        minHeight="120px"
                     />
                 </Field>
 

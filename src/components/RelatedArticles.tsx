@@ -55,7 +55,7 @@ export default function RelatedArticles({ currentArticleId, category }: { curren
                                 {article.title}
                             </h3>
                             <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 mb-4 leading-relaxed flex-grow">
-                                {article.intro}
+                                {article.intro?.replace(/<[^>]*>/g, '')}
                             </p>
                             <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-200 dark:border-slate-700/50">
                                 <div className="flex items-center gap-1 text-slate-400 text-xs">

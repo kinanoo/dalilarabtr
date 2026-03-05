@@ -181,7 +181,7 @@ export default function CategoryArticlesList({
                   </h3>
 
                   <p className="text-sm text-slate-500 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed">
-                    {article.intro}
+                    {article.intro?.replace(/<[^>]*>/g, '')}
                   </p>
 
                   <div className="flex items-center text-accent-600 font-bold text-sm mt-auto group-hover:gap-2 transition-all">

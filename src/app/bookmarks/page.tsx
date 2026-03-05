@@ -75,7 +75,7 @@ export default function BookmarksPage() {
                                         </Link>
                                         <BookmarkButton id={article.id} mini className="shrink-0 relative z-10" />
                                     </div>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">{article.intro}</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">{article.intro?.replace(/<[^>]*>/g, '')}</p>
                                     <div className="flex items-center gap-3 text-xs text-slate-400">
                                         <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">{article.category}</span>
                                         <span>{article.lastUpdate}</span>

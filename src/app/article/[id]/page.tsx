@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 import RelatedArticles from '@/components/RelatedArticles';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+import { stripHtml } from '@/lib/stripHtml';
 
 
 export const revalidate = 3600; // ISR: Revalidate every hour
@@ -216,7 +217,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
   const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
   const title = article.seoTitle?.trim() || `${article.title} | ${SITE_CONFIG.name}`;
-  const description = article.seoDescription?.trim() || article.intro;
+  const description = article.seoDescription?.trim() || stripHtml(article.intro);
   const keywords = buildArticleKeywords({
     slug: params.id,
     title: article.title,
@@ -289,7 +290,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
   const jsonLd = buildJsonLd({
     slug: params.id,
     title: article.seoTitle?.trim() || article.title,
-    description: article.seoDescription?.trim() || article.intro,
+    description: article.seoDescription?.trim() || stripHtml(article.intro),
     lastUpdate: article.lastUpdate,
     categoryName: article.category,
     categorySlug,

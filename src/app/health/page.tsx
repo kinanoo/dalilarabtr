@@ -70,7 +70,7 @@ export default function HealthPage() {
                       {article.title}
                     </h3>
                     <p className="text-slate-500 dark:text-slate-300 text-sm mb-6 flex-grow line-clamp-3">
-                      {article.intro}
+                      {article.intro?.replace(/<[^>]*>/g, '')}
                     </p>
                     <div className="flex items-center text-accent-600 font-bold text-sm mt-auto">
                       اقرأ الدليل الكامل <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" />

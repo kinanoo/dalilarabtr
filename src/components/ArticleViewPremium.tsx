@@ -32,6 +32,10 @@ export default function ArticleView({ article, slug, initialComments, children }
     const raw = isObfuscated(article.details) ? deobfuscate(article.details) : article.details;
     return DOMPurify.sanitize(raw);
   }, [article.details]);
+  const safeIntro = useMemo(() => {
+    const raw = isObfuscated(article.intro) ? deobfuscate(article.intro) : article.intro;
+    return DOMPurify.sanitize(raw);
+  }, [article.intro]);
   const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
   const safeSteps = useMemo(() => (article.steps || []).map((s: string) => isObfuscated(s) ? deobfuscate(s) : s), [article.steps]);
   const safeTips = useMemo(() => (article.tips || []).map((t: string) => isObfuscated(t) ? deobfuscate(t) : t), [article.tips]);
@@ -191,9 +195,10 @@ export default function ArticleView({ article, slug, initialComments, children }
                 </h3>
 
                 {/* 👇 الجزء الظاهر دائماً - العنوان/المقدمة */}
-                <p className="text-slate-700 dark:text-slate-100 font-bold mb-3 leading-relaxed">
-                  {article.intro}
-                </p>
+                <div
+                  className="prose-content text-slate-700 dark:text-slate-100 font-medium"
+                  dangerouslySetInnerHTML={{ __html: safeIntro }}
+                />
 
 
 

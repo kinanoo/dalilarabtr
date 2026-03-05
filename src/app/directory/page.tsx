@@ -477,7 +477,7 @@ export default function DirectoryPage() {
                                     </h4>
 
                                     <p className="text-xs sm:text-sm md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2 md:line-clamp-3 mb-2 sm:mb-3 md:mb-4 flex-grow leading-relaxed">
-                                      {article.intro}
+                                      {article.intro?.replace(/<[^>]*>/g, '')}
                                     </p>
 
                                     <div className="flex items-center justify-between mt-auto pt-2 sm:pt-2.5 md:pt-3 border-t border-slate-100 dark:border-slate-800">
