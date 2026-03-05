@@ -30,16 +30,17 @@ export function useAdminCodes() {
     'security_codes',
     [],
     (statics, remotes) => {
-      const transformed: AdminCode[] = remotes.map((d: any) => ({
-        id: d.code,
-        code: d.code,
-        title: d.title,
-        desc: d.description,
-        category: d.category,
-        severity: d.severity as any,
-        active: d.active !== false
-      }));
-      // Just return transformed, no static merge needed if we want fully dynamic
+      const transformed: AdminCode[] = remotes
+        .filter((d: any) => d.active !== false)
+        .map((d: any) => ({
+          id: d.code,
+          code: d.code,
+          title: d.title,
+          desc: d.description,
+          category: d.category,
+          severity: d.severity as any,
+          active: true
+        }));
       return transformed;
     }
   );
@@ -112,18 +113,20 @@ export function useAdminServices() {
   // Custom merger for Services since DB structure (service_providers) differs slightly from static
   const serviceMerger = (statics: AdminService[], remotes: any[]): AdminService[] => {
     // Transform remote raw data to AdminService first
-    const transformedRemotes: AdminService[] = remotes.map((d: any) => ({
-      id: d.id,
-      title: d.name,
-      desc: d.profession + (d.description ? ` - ${d.description.slice(0, 50)}...` : ''),
-      description: d.description,
-      price: null,
-      whatsapp: d.phone,
-      active: true,
-      image: d.image,
-      profession: d.profession,
-      city: d.city
-    }));
+    const transformedRemotes: AdminService[] = remotes
+      .filter((d: any) => d.status === 'approved')
+      .map((d: any) => ({
+        id: d.id,
+        title: d.name,
+        desc: d.profession + (d.description ? ` - ${d.description.slice(0, 50)}...` : ''),
+        description: d.description,
+        price: null,
+        whatsapp: d.phone,
+        active: true,
+        image: d.image,
+        profession: d.profession,
+        city: d.city
+      }));
     return standardMerger(statics, transformedRemotes);
   };
 
@@ -191,13 +194,15 @@ export function useAdminFAQ() {
     'faq',
     'faqs',
     [], // No static FAQs defined in old file logic, so empty
-    (s, r) => r.map((d: any) => ({
-      id: d.id,
-      question: d.question,
-      answer: d.answer,
-      category: d.category,
-      active: d.active !== false
-    }))
+    (s, r) => r
+      .filter((d: any) => d.active !== false)
+      .map((d: any) => ({
+        id: d.id,
+        question: d.question,
+        answer: d.answer,
+        category: d.category,
+        active: true
+      }))
   );
 
   const faqByCategory = useMemo(() => {
