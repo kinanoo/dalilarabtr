@@ -309,7 +309,7 @@ BEGIN
                 END,
                 message = 'اطّلع على آخر المحتوى المنشور',
                 link = CASE NEW.event_type
-                    WHEN 'new_article' THEN '/'
+                    WHEN 'new_article' THEN '/updates'
                     WHEN 'new_update'  THEN '/updates'
                 END,
                 created_at = NOW()  -- Bump to top

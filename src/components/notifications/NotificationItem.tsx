@@ -48,7 +48,7 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
     // Always provide a useful link — fallback by type if DB link is missing
     const effectiveLink = notification.link || (() => {
         switch (notification.type) {
-            case 'article': return '/';
+            case 'article': return '/updates';
             case 'update': return '/updates';
             case 'alert': return '/security-codes';
             case 'service': return '/services';
