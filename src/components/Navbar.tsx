@@ -243,25 +243,18 @@ export default function Navbar() {
                   <AuthButton mobile={true} />
                 </div>
 
-                {/* Navigation Menu */}
+                {/* Primary Links */}
                 <nav className="space-y-2">
                   {[
                     { name: 'الرئيسية', href: '/', icon: Home },
-                    { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
-                    { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
-                    { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
-                    { name: 'نماذج جاهزة', href: '/forms', icon: FileText },
+                    { name: 'المستشار الذكي', href: '/consultant', icon: BrainCircuit },
                   ].map((item, index) => {
                     const isActive = pathname === item.href;
                     return (
                       <motion.div
                         key={item.href}
                         initial={{ x: 20, opacity: 0 }}
-                        animate={{
-                          x: 0,
-                          opacity: 1,
-                          transition: { delay: 0.1 + (index * 0.05) }
-                        }}
+                        animate={{ x: 0, opacity: 1, transition: { delay: 0.1 + (index * 0.05) } }}
                       >
                         <Link
                           href={item.href}
@@ -284,36 +277,65 @@ export default function Navbar() {
                       </motion.div>
                     )
                   })}
+
+                  {/* Services — Eye-catching card */}
+                  <motion.div
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1, transition: { delay: 0.2 } }}
+                  >
+                    <Link
+                      href="/services"
+                      onClick={() => setIsOpen(false)}
+                      className={`
+                        group relative flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden
+                        ${pathname === '/services'
+                          ? 'bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30'
+                          : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-500/30'
+                        }
+                      `}
+                    >
+                      <span className="p-2 rounded-xl bg-white/20">
+                        <Briefcase size={20} />
+                      </span>
+                      <div>
+                        <span className="text-base font-bold block">خدمات ومهن</span>
+                        <span className="text-[11px] text-white/70">تصفّح مقدمي الخدمات والحرفيين</span>
+                      </div>
+                      <Sparkles size={16} className="mr-auto opacity-60" />
+                    </Link>
+                  </motion.div>
                 </nav>
 
                 <hr className="border-slate-100 dark:border-slate-800" />
 
-                {/* Tools Section */}
+                {/* Guide Links */}
                 <motion.div
                   initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1, transition: { delay: 0.35 } }}
+                  animate={{ x: 0, opacity: 1, transition: { delay: 0.25 } }}
                   className="space-y-2"
                 >
-                  <p className="px-2 text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <BrainCircuit size={14} /> الأدوات الذكية
-                  </p>
                   <div className="grid grid-cols-1 gap-2">
-                    {tools.map((item) => {
-                      const staticTool = TOOLS_MENU.find(t => t.href === item.route);
-                      const Icon = staticTool ? staticTool.icon : Calculator;
-                      const isActive = pathname === item.route;
+                    {[
+                      { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
+                      { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
+                      { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
+                      { name: 'الأكواد', href: '/codes', icon: ShieldAlert },
+                      { name: 'خدمات e-Devlet', href: '/e-devlet-services', icon: Smartphone },
+                      { name: 'روابط هامة', href: '/important-links', icon: LinkIcon },
+                    ].map((item) => {
+                      const isActive = pathname === item.href;
                       return (
                         <Link
-                          key={item.route}
-                          href={item.route}
+                          key={item.href}
+                          href={item.href}
                           onClick={() => setIsOpen(false)}
                           className={`
                             group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden
-                            ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
+                            ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
                           `}
                         >
                           <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-                          <Icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                          <item.icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
                           <span className="font-medium text-sm">{item.name}</span>
                         </Link>
                       )
@@ -323,29 +345,41 @@ export default function Navbar() {
 
                 <hr className="border-slate-100 dark:border-slate-800" />
 
-                {/* Request Service */}
+                {/* Smart Tools */}
                 <motion.div
                   initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1, transition: { delay: 0.4 } }}
+                  animate={{ x: 0, opacity: 1, transition: { delay: 0.35 } }}
+                  className="space-y-2"
                 >
-                  <Link
-                    href="/request"
-                    onClick={() => setIsOpen(false)}
-                    className={`
-                      group relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden
-                      ${pathname === '/request'
-                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold shadow-md'
-                        : 'bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }
-                      hover:shadow-[0_4px_12px_-2px_rgba(16,185,129,0.15)]
-                    `}
-                  >
-                    <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-                    <span className={`p-2 rounded-xl transition-colors ${pathname === '/request' ? 'bg-white dark:bg-emerald-950 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-emerald-500'}`}>
-                      <ScrollText size={20} />
-                    </span>
-                    <span className="text-base">اطلب خدمة خاصة</span>
-                  </Link>
+                  <p className="px-2 text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <BrainCircuit size={14} /> الأدوات الذكية
+                  </p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
+                      { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
+                      { name: 'حاسبة تكاليف الإقامة', href: '/calculator', icon: Calculator },
+                      { name: 'المناطق المحظورة', href: '/zones', icon: MapPin },
+                      { name: 'الصيدليات المناوبة', href: '/tools/pharmacy', icon: HeartPulse },
+                    ].map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className={`
+                            group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden
+                            ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
+                          `}
+                        >
+                          <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
+                          <item.icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                          <span className="font-medium text-sm">{item.name}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
                 </motion.div>
               </div>
 
