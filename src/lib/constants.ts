@@ -95,7 +95,7 @@ export const OFFICIAL_SOURCES = [
     { name: "الاستعلام عن طلب الإقامة (طلبات مستمرة)", url: "https://e-ikamet.goc.gov.tr/Ikamet/DevamEdenBasvuruGiris", desc: "الاستعلام الرسمي عن طلبات الإقامة الجارية." },
     { name: "الاستعلام عن الرقم الضريبي", url: "https://intvd.gib.gov.tr/internetvd/template.jsp?page=IVD_VKNO", desc: "خدمة مصلحة الضرائب (GİB) للاستعلام عن الرقم الضريبي." },
     { name: "استخراج سند قيد عائلي", url: "https://www.turkiye.gov.tr/nvi-nufus-kayit-ornegi-belgesi-sorgulama", desc: "خدمة e-Devlet لاستخراج وثيقة القيد." },
-    { name: "استخراج وثيقة العنوان (سند إقامة)", url: "https://www.turkiye.gov.tr/nvi-yerlesim-yeri-ve-diger-adres-belgesi-sorgulama", desc: "خدمة e-Devlet لإثبات العنوان الرسمي." },
+    { name: "الاستعلام عن النفوس (وثيقة العنوان)", url: "https://www.turkiye.gov.tr/nvi-yerlesim-yeri-ve-diger-adres-belgesi-sorgulama?asama=1", desc: "خدمة e-Devlet للاستعلام عن تسجيل النفوس وإثبات العنوان الرسمي." },
     { name: "التحقق من IMEI", url: "https://www.turkiye.gov.tr/imei-sorgulama", desc: "خدمة e-Devlet للتحقق من IMEI." },
     { name: "التحقق من الدعاوى القضائية", url: "https://www.turkiye.gov.tr/davalarim", desc: "خدمة e-Devlet لعرض الدعاوى." },
     { name: "كشف خدمة SGK (4A)", url: "https://www.turkiye.gov.tr/4a-hizmet-dokumu", desc: "عرض أيام/تفاصيل الخدمة في التأمينات." },
