@@ -107,7 +107,7 @@ export const OFFICIAL_SOURCES = [
     { name: "الصيدليات المناوبة (كل الولايات)", url: "https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama", desc: "بحث رسمي عن الصيدليات المناوبة في أي ولاية تركية عبر e-Devlet." },
     { name: "متابعة إرساليات PTT (عبر e-Devlet)", url: "https://www.turkiye.gov.tr/ptt-gonderi-takip", desc: "تتبع شحنات/إرساليات PTT عبر e-Devlet." },
     { name: "إدارة الهجرة (النسخة العربية)", url: "https://ar.goc.gov.tr/", desc: "الواجهة العربية الرسمية لإدارة الهجرة." },
-    { name: "التقديم على إذن السفر (Seyahat İzin)", url: "https://www.turkiye.gov.tr/goc-idaresi-gecici-koruma-seyahat-izin-talebi", desc: "تقديم طلب إذن سفر بين الولايات لحاملي الحماية المؤقتة عبر e-Devlet." },
+    { name: "التقديم على إذن السفر (Yol İzin)", url: "https://www.turkiye.gov.tr/goc-idaresi-yol-izin-belge-basvurusu", desc: "تقديم طلب إذن سفر بين الولايات لحاملي الحماية المؤقتة عبر e-Devlet." },
 ];
 
 export const QUICK_ACTIONS = [
