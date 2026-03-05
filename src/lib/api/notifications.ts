@@ -64,22 +64,33 @@ export function markAllAsSeen(): void {
 // Fetch combined notifications
 // ============================================
 
-export async function fetchAllNotifications(limit = 30): Promise<Notification[]> {
+export async function fetchAllNotifications(limit = 30, userId?: string | null): Promise<Notification[]> {
     if (!supabase) return [];
 
     const lastSeen = getLastSeen();
 
+    // Build the notifications query:
+    // - Always show broadcast notifications (target_user_id IS NULL)
+    // - If user is logged in, also show their personal notifications
+    let notifQuery = supabase
+        .from('notifications')
+        .select('id, type, title, message, link, icon, priority, created_at')
+        .eq('is_active', true)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (userId) {
+        // Show both: broadcasts (null) + personal (this user)
+        notifQuery = notifQuery.or(`target_user_id.is.null,target_user_id.eq.${userId}`);
+    } else {
+        // Anonymous visitor — only broadcasts
+        notifQuery = notifQuery.is('target_user_id', null);
+    }
+
     // Fetch both sources in parallel
-    // admin_activity_log has admin-only RLS, so use public API for auto events
     const [manualResult, autoEventsRes] = await Promise.all([
-        supabase
-            .from('notifications')
-            .select('id, type, title, message, link, icon, priority, created_at')
-            .eq('is_active', true)
-            .is('target_user_id', null)
-            .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-            .order('created_at', { ascending: false })
-            .limit(limit),
+        notifQuery,
         fetch('/api/public-events').then(r => r.json()).catch(() => ({ events: [] })),
     ]);
     const autoResult = { data: autoEventsRes.events || [] };

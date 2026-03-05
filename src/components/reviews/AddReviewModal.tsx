@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X, Star, Send } from 'lucide-react';
 import { addReview, type AddReviewData } from '@/lib/api/reviews';
-import { createNotification } from '@/lib/api/notifications';
+
 
 interface AddReviewModalProps {
     serviceId: string;
@@ -62,16 +62,6 @@ export default function AddReviewModal({
             setError('حدث خطأ: ' + (apiError.message || apiError.details || JSON.stringify(apiError)));
             return;
         }
-
-        // إشعار تقييم جديد
-        createNotification({
-            type: 'review',
-            title: `تقييم جديد: ${serviceName}`,
-            message: `${name.trim() || 'فاعل خير'} أعطى ${rating} نجوم${comment.trim() ? ': ' + comment.trim().substring(0, 60) : ''}`,
-            link: `/services/${serviceId}#reviews-section`,
-            icon: '⭐',
-            priority: 'low',
-        });
 
         // Success
         setSuccess(true);

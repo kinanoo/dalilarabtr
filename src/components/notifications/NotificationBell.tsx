@@ -10,6 +10,7 @@ import {
     markAllAsSeen,
     type Notification,
 } from '@/lib/api/notifications';
+import { supabase } from '@/lib/supabaseClient';
 import NotificationItem from '@/components/notifications/NotificationItem';
 
 export default function NotificationBell() {
@@ -17,23 +18,36 @@ export default function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
     const bellBtnRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
 
     // SSR safety
     useEffect(() => { setMounted(true); }, []);
 
+    // Get current user ID for personal notifications
+    useEffect(() => {
+        if (!supabase) return;
+        supabase.auth.getUser().then(({ data }) => {
+            setUserId(data.user?.id ?? null);
+        });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUserId(session?.user?.id ?? null);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
+
     // Initialize last-seen timestamp on first visit
     useEffect(() => {
         initLastSeen();
         loadNotifications();
-    }, []);
+    }, [userId]);
 
     // Poll every 60 seconds
     useEffect(() => {
         const interval = setInterval(loadNotifications, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [userId]);
 
     // Refresh when dropdown opens
     useEffect(() => {
@@ -68,7 +82,7 @@ export default function NotificationBell() {
 
     const loadNotifications = async () => {
         setLoading(true);
-        const data = await fetchAllNotifications(30);
+        const data = await fetchAllNotifications(30, userId);
         setNotifications(data);
         setLoading(false);
     };
