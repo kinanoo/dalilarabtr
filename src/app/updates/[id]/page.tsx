@@ -8,6 +8,7 @@ import { ArrowRight, Calendar, Newspaper } from 'lucide-react';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 import ShareMenu from '@/components/ShareMenu';
+import HtmlContent from '@/components/ui/HtmlContent';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 60;
@@ -37,7 +38,7 @@ export async function generateMetadata(
 
     return {
         title: `${data.title} | دليل العرب`,
-        description: data.content?.substring(0, 160) || data.title,
+        description: data.content?.replace(/<[^>]*>/g, '').substring(0, 160) || data.title,
         alternates: { canonical: `/updates/${id}` },
     };
 }
@@ -112,7 +113,7 @@ export default async function UpdateDetailPage(
                                     mini
                                     variant="subtle"
                                     title={update.title}
-                                    text={update.content?.slice(0, 200)}
+                                    text={update.content?.replace(/<[^>]*>/g, '').slice(0, 200)}
                                     url={`${SITE_CONFIG.siteUrl}/updates/${id}`}
                                 />
                             </div>
@@ -125,9 +126,10 @@ export default async function UpdateDetailPage(
 
                         {/* Content */}
                         {update.content && (
-                            <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line text-base sm:text-lg">
-                                {update.content}
-                            </div>
+                            <HtmlContent
+                                html={update.content}
+                                className="text-slate-700 dark:text-slate-300 text-base sm:text-lg"
+                            />
                         )}
                     </div>
                 </article>

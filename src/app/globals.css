@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TipTap Editor Styles */
+/* ============================================
+   TipTap Editor Styles (admin editor only)
+   ============================================ */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: right;
@@ -11,17 +13,150 @@
   height: 0;
 }
 .tiptap:focus { outline: none; }
-.tiptap img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0; }
-.tiptap blockquote { border-right: 4px solid #10b981; padding-right: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
-.dark .tiptap blockquote { border-right-color: #059669; color: #94a3b8; }
-.tiptap hr { border-color: #e2e8f0; margin: 1.5rem 0; }
-.dark .tiptap hr { border-color: #334155; }
-.tiptap ul { list-style: disc; padding-right: 1.5rem; }
-.tiptap ol { list-style: decimal; padding-right: 1.5rem; }
-.tiptap h1 { font-size: 1.75rem; font-weight: 800; margin: 1rem 0 0.5rem; }
-.tiptap h2 { font-size: 1.4rem; font-weight: 700; margin: 1rem 0 0.5rem; }
-.tiptap h3 { font-size: 1.15rem; font-weight: 700; margin: 0.75rem 0 0.25rem; }
-.tiptap p { margin: 0.5rem 0; }
+
+/* ============================================
+   Rich Content Rendering — Public Pages + Editor
+   Shared styles for both .tiptap (editor) and
+   .prose-content (public display)
+   ============================================ */
+.tiptap, .prose-content {
+  direction: rtl;
+  text-align: right;
+  line-height: 1.85;
+}
+
+/* Headings */
+.tiptap h1, .prose-content h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 1.5rem 0 0.75rem;
+  color: #0f172a;
+  line-height: 1.4;
+}
+.tiptap h2, .prose-content h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+  color: #0d9488;
+  line-height: 1.4;
+}
+.tiptap h3, .prose-content h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 1rem 0 0.25rem;
+  color: #1e293b;
+  line-height: 1.4;
+}
+html.dark .tiptap h1, html.dark .prose-content h1 { color: #f1f5f9; }
+html.dark .tiptap h2, html.dark .prose-content h2 { color: #5eead4; }
+html.dark .tiptap h3, html.dark .prose-content h3 { color: #e2e8f0; }
+
+/* Paragraphs */
+.tiptap p, .prose-content p {
+  margin: 0.5rem 0;
+  line-height: 1.85;
+}
+
+/* Links */
+.tiptap a, .prose-content a {
+  color: #0d9488;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.tiptap a:hover, .prose-content a:hover {
+  color: #0f766e;
+}
+html.dark .tiptap a, html.dark .prose-content a { color: #5eead4; }
+html.dark .tiptap a:hover, html.dark .prose-content a:hover { color: #99f6e4; }
+
+/* Bold & Strong */
+.tiptap strong, .prose-content strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+html.dark .tiptap strong, html.dark .prose-content strong { color: #f8fafc; }
+
+/* Lists */
+.tiptap ul, .prose-content ul {
+  list-style: disc;
+  padding-right: 1.5rem;
+  padding-left: 0;
+  margin: 0.75rem 0;
+}
+.tiptap ol, .prose-content ol {
+  list-style: decimal;
+  padding-right: 1.5rem;
+  padding-left: 0;
+  margin: 0.75rem 0;
+}
+.tiptap li, .prose-content li {
+  margin: 0.35rem 0;
+  padding-right: 0.25rem;
+}
+.tiptap li::marker, .prose-content li::marker {
+  color: #0d9488;
+}
+html.dark .tiptap li::marker, html.dark .prose-content li::marker {
+  color: #5eead4;
+}
+
+/* Blockquote */
+.tiptap blockquote, .prose-content blockquote {
+  border-right: 4px solid #0d9488;
+  border-left: none;
+  padding: 0.75rem 1rem 0.75rem 0;
+  margin: 1rem 0;
+  color: #475569;
+  font-style: italic;
+  background: rgba(13, 148, 136, 0.04);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+html.dark .tiptap blockquote, html.dark .prose-content blockquote {
+  border-right-color: #14b8a6;
+  color: #94a3b8;
+  background: rgba(20, 184, 166, 0.06);
+}
+
+/* Horizontal Rule */
+.tiptap hr, .prose-content hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 1.5rem 0;
+}
+html.dark .tiptap hr, html.dark .prose-content hr {
+  border-top-color: #334155;
+}
+
+/* Images */
+.tiptap img, .prose-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1.25rem auto;
+  display: block;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Code */
+.tiptap code, .prose-content code {
+  background: #f1f5f9;
+  color: #0d9488;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+html.dark .tiptap code, html.dark .prose-content code {
+  background: #1e293b;
+  color: #5eead4;
+}
+
+/* Underline */
+.tiptap u, .prose-content u {
+  text-underline-offset: 3px;
+  text-decoration-color: #0d9488;
+}
 
 :root {
   --foreground-rgb: 15, 23, 42;

@@ -201,7 +201,7 @@ export default function ArticleView({ article, slug, initialComments, children }
 
                   {/* التفاصيل */}
                   <div
-                    className="text-slate-600 dark:text-slate-200 mb-6 leading-relaxed prose prose-slate dark:prose-invert max-w-none"
+                    className="prose-content text-slate-600 dark:text-slate-200 mb-6 text-base sm:text-lg"
                     dangerouslySetInnerHTML={{ __html: safeDetails }}
                   />
 

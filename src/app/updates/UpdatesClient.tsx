@@ -320,7 +320,7 @@ function ManualUpdateCard({ u }: { u: any }) {
 
           {u.content && (
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
-              {u.content}
+              {u.content.replace(/<[^>]*>/g, '')}
             </p>
           )}
 
