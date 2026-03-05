@@ -24,15 +24,6 @@ const SIDE_ITEMS_RIGHT = [
     { id: 'g6', title: 'السكن', icon: Home, color: 'lime', link: '/housing' },
 ];
 
-const fadeInUp = {
-    hidden: { opacity: 0, y: 28 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.75, ease: 'easeOut' },
-    },
-} as const;
-
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
         <section className="relative z-[15] bg-slate-900 text-white pt-4 pb-10 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
@@ -61,7 +52,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
             {/* --- CENTER CONTENT --- */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
-                <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="pointer-events-none">
+                <div className="animate-fade-in-up pointer-events-none">
                     {/* USP Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-6 hover:bg-white/10 transition-colors shadow-lg pointer-events-auto">
                         <span className="relative flex h-2 w-2">
@@ -83,7 +74,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         {children}
                     </div>
 
-                </motion.div>
+                </div>
             </div>
         </section>
     );
@@ -118,7 +109,7 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
     const toY = direction === 'up' ? `-${scrollDistance}px` : '0px';
 
     return (
-        <div ref={colRef} className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`} style={{ contain: 'layout style' }}>
+        <div ref={colRef} className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`} style={{ contain: 'strict' }}>
             <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes ${animName} {
                     from { transform: translateY(${fromY}); }
@@ -172,7 +163,6 @@ function DiamondItem({ data }: any) {
         <AnimatePresence>
             {!isPopped && (
                 <motion.div
-                    layout={!prefersReducedMotion}
                     initial={{ scale: 1, opacity: 1 }}
                     whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
                     exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0, filter: 'blur(10px)' }}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import "./globals.css";
 import "../styles/animations.css";
 import "../styles/dark-mode.css";
@@ -14,21 +15,22 @@ const cairo = Cairo({
 });
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
-import ClientComponents from "@/components/ClientComponents";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BottomNav from "@/components/mobile/BottomNav";
-import BackToTop from "@/components/BackToTop";
 import UrgencyBanner from '@/components/UrgencyBanner';
-import AmbientBackground from "@/components/ui/AmbientBackground";
-import SelectionShareMenu from '@/components/ui/SelectionShareMenu';
-import { AnalyticsTracker } from "@/components/analytics/AnalyticsTracker"; // New Import
-import NotificationManager from "@/components/NotificationManager";
-import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import NewsTicker from "@/components/NewsTicker";
-import CookieConsent from "@/components/CookieConsent";
+
+// Non-critical components — code-split into separate chunks to reduce initial JS bundle
+const AmbientBackground = dynamic(() => import("@/components/ui/AmbientBackground"));
+const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker").then(m => ({ default: m.AnalyticsTracker })));
+const NotificationManager = dynamic(() => import("@/components/NotificationManager"));
+const SelectionShareMenu = dynamic(() => import("@/components/ui/SelectionShareMenu"));
+const ServiceWorkerRegister = dynamic(() => import("@/components/pwa/ServiceWorkerRegister"));
+const PWAInstallPrompt = dynamic(() => import("@/components/PWAInstallPrompt"));
+const ClientComponents = dynamic(() => import("@/components/ClientComponents"));
+const BackToTop = dynamic(() => import("@/components/BackToTop"));
+const CookieConsent = dynamic(() => import("@/components/CookieConsent"));
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -149,7 +151,6 @@ export default function RootLayout({
             {/* New Animated & Interactive Background */}
             <AmbientBackground />
 
-            {/* Suspense is required because AnalyticsTracker uses useSearchParams */}
             <Suspense fallback={null}>
               <AnalyticsTracker />
             </Suspense>

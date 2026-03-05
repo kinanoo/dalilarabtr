@@ -59,8 +59,7 @@ export default function UrgencyBanner() {
     return (
         <AnimatePresence>
             <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
+                initial={false}
                 exit={{ height: 0, opacity: 0 }}
                 className={`${isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-500' : 'bg-blue-600'} text-white relative z-50 overflow-hidden shadow-lg font-cairo`}
             >

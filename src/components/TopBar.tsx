@@ -87,7 +87,7 @@ export default function TopBar() {
                         onMouseLeave={() => setShowSchedule(false)}
                         onClick={() => setShowSchedule(!showSchedule)}
                     >
-                        <div className="flex items-center gap-2" suppressHydrationWarning>
+                        <div className="flex items-center gap-2 min-w-[120px] sm:min-w-[180px]" suppressHydrationWarning>
                             <span className="text-slate-400 hidden sm:inline">صلاة:</span>
                             {nextPrayer ? (
                                 <div className="flex items-center gap-1.5 animate-pulse group-hover:animate-none">

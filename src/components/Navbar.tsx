@@ -52,7 +52,7 @@ function AuthButton({ mobile = false }: { mobile?: boolean }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) return <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
+  if (loading) return <div className="hidden sm:block w-[90px] h-[32px] rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
 
   const displayClass = mobile ? 'flex' : 'hidden sm:flex';
 

@@ -45,6 +45,18 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
     const isUnread = !notification.is_read;
     const isGrouped = (notification.group_count ?? 1) > 1;
 
+    // Always provide a useful link — fallback by type if DB link is missing
+    const effectiveLink = notification.link || (() => {
+        switch (notification.type) {
+            case 'article': return '/';
+            case 'update': return '/updates';
+            case 'alert': return '/security-codes';
+            case 'service': return '/services';
+            case 'announcement': return '/updates';
+            default: return '/updates';
+        }
+    })();
+
     const inner = (
         <div
             className={`group relative p-4 transition-colors cursor-pointer overflow-hidden border-r-[3px] ${
@@ -143,19 +155,10 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
         </div>
     );
 
-    // If notification has a link, wrap in Link
-    if (notification.link) {
-        return (
-            <Link href={notification.link} onClick={() => { onMarkAsRead(); onClose?.(); }}>
-                {inner}
-            </Link>
-        );
-    }
-
-    // No link — onClick marks as read
+    // Always wrap in Link — effectiveLink always has a value
     return (
-        <div onClick={onMarkAsRead}>
+        <Link href={effectiveLink} onClick={() => { onMarkAsRead(); onClose?.(); }}>
             {inner}
-        </div>
+        </Link>
     );
 }

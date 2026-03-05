@@ -166,14 +166,13 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                             return (
                                 <div
                                     key={`${update.id}-${index}`}
-                                    className="flex-shrink-0 transition-all duration-700"
+                                    className="flex-shrink-0 transition-opacity duration-700"
                                     style={{
                                         width: `calc(${cardWidthPercent}% - ${((cardsPerPage - 1) * gapPx) / cardsPerPage}px)`,
-                                        opacity: isActive ? 1 : 0.4,
-                                        transform: isActive ? 'scale(1)' : 'scale(0.95)',
+                                        opacity: isActive ? 1 : 0.5,
                                     }}
                                 >
-                                    <UpdateCard update={update} />
+                                    <UpdateCard update={update} index={index} />
                                 </div>
                             );
                         })}
@@ -206,7 +205,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     );
 }
 
-function UpdateCard({ update }: { update: any }) {
+function UpdateCard({ update, index = 0 }: { update: any; index?: number }) {
     const isAuto = update.source === 'auto';
     const iconConfig = isAuto ? AUTO_ICON_MAP[update.event_type] : null;
     const href = update.href || `/updates/${update.id}`;
@@ -231,6 +230,7 @@ function UpdateCard({ update }: { update: any }) {
                             fill
                             className="object-cover select-none pointer-events-none"
                             sizes="64px"
+                            priority={index === 0}
                         />
                     </div>
                 ) : null}
