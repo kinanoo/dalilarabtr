@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Search, Filter, ChevronRight, ChevronLeft, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
 import Accordion from '@/components/ui/Accordion';
 import EmptyState from '@/components/EmptyState';
 import { FAQCategory } from '@/lib/faq-types';
@@ -9,6 +9,23 @@ import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
 import { useSearchParams } from 'next/navigation';
+
+// Category visual config — color + icon for known categories
+const CATEGORY_STYLES: Record<string, { icon: typeof Home; bg: string; text: string; border: string }> = {
+  'الإقامة في تركيا': { icon: Home, bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
+  'الكملك': { icon: Shield, bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800' },
+  'إذن العمل': { icon: Briefcase, bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800' },
+  'التعليم': { icon: GraduationCap, bg: 'bg-violet-50 dark:bg-violet-950/30', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-800' },
+  'الصحة والتأمين': { icon: Stethoscope, bg: 'bg-teal-50 dark:bg-teal-950/30', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-200 dark:border-teal-800' },
+  'السفر والتأشيرات': { icon: Plane, bg: 'bg-cyan-50 dark:bg-cyan-950/30', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800' },
+  'القنصلية': { icon: Building2, bg: 'bg-indigo-50 dark:bg-indigo-950/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800' },
+  'الشؤون القانونية': { icon: Scale, bg: 'bg-orange-50 dark:bg-orange-950/30', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800' },
+  'الجنسية التركية': { icon: FileText, bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
+  'السكن': { icon: MapPin, bg: 'bg-pink-50 dark:bg-pink-950/30', text: 'text-pink-600 dark:text-pink-400', border: 'border-pink-200 dark:border-pink-800' },
+  'المالية والضرائب': { icon: Wallet, bg: 'bg-lime-50 dark:bg-lime-950/30', text: 'text-lime-600 dark:text-lime-400', border: 'border-lime-200 dark:border-lime-800' },
+};
+
+const DEFAULT_STYLE = { icon: HelpCircle, bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-slate-600 dark:text-slate-400', border: 'border-slate-200 dark:border-slate-700' };
 
 interface FAQClientProps {
   staticData: FAQCategory[];
@@ -154,91 +171,55 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+      {/* Category Filter Bar — prominent, colored, with icons */}
+      <div className="max-w-7xl mx-auto px-4 -mt-6 relative z-20">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter size={16} className="text-emerald-600" />
+            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300">تصفح حسب التصنيف</h2>
+            {selectedCategory && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategory(null)}
+                className="mr-auto text-xs text-emerald-600 hover:text-emerald-700 font-bold"
+              >
+                عرض الكل
+              </button>
+            )}
+          </div>
+          <div role="tablist" aria-label="تصفية الأسئلة حسب التصنيف" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+            {staticData.map((cat) => {
+              const style = CATEGORY_STYLES[cat.category] || DEFAULT_STYLE;
+              const Icon = style.icon;
+              const isActive = selectedCategory === cat.category;
+              return (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  key={cat.category}
+                  onClick={() => setSelectedCategory(isActive ? null : cat.category)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+                    isActive
+                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-500/20 scale-[1.02]'
+                      : `${style.bg} ${style.border} ${style.text} hover:shadow-md hover:scale-[1.02]`
+                  }`}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  <span className="truncate">{cat.category}</span>
+                  <span className={`text-[10px] mr-auto shrink-0 ${isActive ? 'text-white/70' : 'opacity-50'}`}>
+                    {cat.questions.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
-          {/* Sidebar / Mobile Filter */}
-          <aside className="lg:w-1/4 shrink-0">
-            <div className="sticky top-24 space-y-6">
-
-              {/* Categories (Desktop) */}
-              <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
-                <div className="p-3 border-b border-slate-100 dark:border-slate-800 mb-2">
-                  <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                    <Filter size={18} className="text-emerald-600" /> التصنيفات
-                  </h3>
-                </div>
-                <div role="tablist" aria-label="تصفية الأسئلة" className="space-y-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={selectedCategory === null}
-                    onClick={() => setSelectedCategory(null)}
-                    className={`w-full text-right px-4 py-3 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${selectedCategory === null
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                  >
-                    <span>الكل</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${selectedCategory === null ? 'bg-emerald-500/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{totalCount}</span>
-                  </button>
-                  {staticData.map((cat) => (
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={selectedCategory === cat.category}
-                      key={cat.category}
-                      onClick={() => setSelectedCategory(cat.category)}
-                      className={`w-full text-right px-4 py-3 rounded-xl text-sm font-medium transition-all flex justify-between items-center ${selectedCategory === cat.category
-                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                        }`}
-                    >
-                      <span className="truncate ml-2">{cat.category}</span>
-                      <span className="text-xs opacity-60">({cat.questions.length})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Categories (Mobile via Horizontal Scroll) */}
-              <div className="lg:hidden">
-                <div role="tablist" aria-label="تصفية الأسئلة" className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={selectedCategory === null}
-                    onClick={() => setSelectedCategory(null)}
-                    className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold border transition-all ${selectedCategory === null
-                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/20 shadow-lg'
-                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                      }`}
-                  >
-                    الكل
-                  </button>
-                  {staticData.map((cat) => (
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={selectedCategory === cat.category}
-                      key={cat.category}
-                      onClick={() => setSelectedCategory(cat.category)}
-                      className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium border transition-all ${selectedCategory === cat.category
-                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/20 shadow-lg'
-                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                    >
-                      {cat.category}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </aside>
-
+      <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Main Content */}
-          <main className="flex-1 min-w-0">
+          <main className="w-full">
             {flattenedQuestions.length === 0 ? (
               <EmptyState
                 message={`لا توجد نتائج لـ "${searchQuery}". جرب كلمات مختلفة.`}
@@ -301,7 +282,6 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
               </div>
             )}
           </main>
-        </div>
       </div>
     </div>
   );
