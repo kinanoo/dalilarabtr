@@ -64,7 +64,7 @@ export function useAdminArticles() {
     (statics, remotes) => {
       // Filter out pending/inactive articles for public display
       const approved = remotes.filter((a: any) =>
-        a.status !== 'pending' && a.is_active !== false
+        a.status === 'approved' && a.is_active !== false
       );
       return standardMerger(statics, approved);
     }

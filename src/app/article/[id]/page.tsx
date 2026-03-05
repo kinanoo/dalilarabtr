@@ -302,19 +302,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
   });
 
-  // Comments (Server Side)
-  let comments: any[] = [];
-  if (supabase) {
-    const { data } = await supabase
-      .from('comments')
-      .select('*')
-      .eq('page_slug', params.id)
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(50);
-    if (data) comments = data;
-  }
-
   return (
     <main className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />

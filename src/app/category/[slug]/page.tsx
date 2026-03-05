@@ -103,19 +103,19 @@ export default async function CategoryPage(props: {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "الرئيسية",
-                "item": "https://dalilarabtr.com"
+                "item": SITE_CONFIG.siteUrl
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "الأقسام",
-                "item": "https://dalilarabtr.com/category"
+                "item": `${SITE_CONFIG.siteUrl}/category`
               },
               {
                 "@type": "ListItem",
                 "position": 3,
                 "name": categoryName,
-                "item": `https://dalilarabtr.com/category/${params.slug}`
+                "item": `${SITE_CONFIG.siteUrl}/category/${params.slug}`
               }
             ]
           })

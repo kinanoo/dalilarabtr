@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Try finding exact zone
     const { data: exactZone } = await supabase
         .from('zones')
-        .select('*')
+        .select('name_ar, name_tr')
         .ilike('slug', decodedSlug)
         .single();
 
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Try finding District
     const { data: districtZones } = await supabase
         .from('zones')
-        .select('*')
+        .select('id')
         .ilike('district', decodedSlug)
         .limit(1);
 
@@ -68,7 +68,7 @@ export default async function ZoneDetailPage({ params }: Props) {
         // 1. Try SINGLE by Slug (Neighborhood)
         const { data: exactZone } = await supabase
             .from('zones')
-            .select('*')
+            .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
             .ilike('slug', decodedSlug)
             .single();
 
@@ -79,7 +79,7 @@ export default async function ZoneDetailPage({ params }: Props) {
             // 2. Try NEIGHBORHOOD Name (e.g. "Molla Gürani") - Added as fallback if slug checks fail
             const { data: nameZone } = await supabase
                 .from('zones')
-                .select('*')
+                .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
                 .ilike('neighborhood', decodedSlug)
                 .single();
 
@@ -90,7 +90,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                 // 3. Try DISTRICT (e.g., "Fatih")
                 const { data: districtZones } = await supabase
                     .from('zones')
-                    .select('*')
+                    .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
                     .ilike('district', decodedSlug);
 
                 if (districtZones && districtZones.length > 0) {
@@ -101,7 +101,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                     // 4. Try CITY (e.g., "Istanbul")
                     const { data: cityZones } = await supabase
                         .from('zones')
-                        .select('*')
+                        .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
                         .ilike('city', decodedSlug);
 
                     if (cityZones && cityZones.length > 0) {
@@ -112,7 +112,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                         // 5. Fallback ID check
                         const isIdLike = /^[0-9]+$/.test(decodedSlug) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
                         if (isIdLike) {
-                            const { data: idItem } = await supabase.from('zones').select('*').eq('id', decodedSlug).single();
+                            const { data: idItem } = await supabase.from('zones').select('id, slug, name_ar, neighborhood, city, district, status, is_closed').eq('id', decodedSlug).single();
                             if (idItem) {
                                 singleItem = idItem;
                                 viewType = 'single';
