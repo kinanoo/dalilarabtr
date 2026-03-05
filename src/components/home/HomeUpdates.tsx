@@ -115,14 +115,14 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                         <div className="hidden sm:flex items-center gap-1">
                             <button
                                 onClick={goNext}
-                                className="p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                className="p-2.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 aria-label="التالي"
                             >
                                 <ChevronRight size={18} />
                             </button>
                             <button
                                 onClick={goPrev}
-                                className="p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                className="p-2.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 aria-label="السابق"
                             >
                                 <ChevronLeft size={18} />
@@ -184,19 +184,21 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
             {/* Dots */}
             {totalPages > 1 && (
                 <div className="max-w-7xl mx-auto px-4 mt-3">
-                    <div className="flex justify-center gap-1.5" dir="ltr">
+                    <div className="flex justify-center gap-0" dir="ltr">
                         {Array.from({ length: totalPages }).map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => goTo(i)}
-                                className={`h-1.5 rounded-full transition-all duration-300 ${
+                                className="p-3 flex items-center justify-center"
+                                aria-label={`الصفحة ${i + 1}`}
+                                aria-current={i === currentPage ? 'true' : undefined}
+                            >
+                                <span className={`block h-1.5 rounded-full transition-all duration-300 ${
                                     i === currentPage
                                         ? 'w-6 bg-emerald-500'
                                         : 'w-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
-                                }`}
-                                aria-label={`الصفحة ${i + 1}`}
-                                aria-current={i === currentPage ? 'true' : undefined}
-                            />
+                                }`} />
+                            </button>
                         ))}
                     </div>
                 </div>

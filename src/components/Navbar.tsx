@@ -423,7 +423,7 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-bold transition-all duration-300 outline-none focus:ring-0 border-none relative overflow-hidden group/link
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-300 outline-none focus:ring-0 border-none relative overflow-hidden group/link
                     ${pathname === item.href
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20 translate-y-0'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-gradient-to-tr hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/40 dark:hover:to-teal-900/40 hover:text-emerald-800 dark:hover:text-emerald-300 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-none hover:-translate-y-0.5'

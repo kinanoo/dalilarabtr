@@ -100,7 +100,10 @@ export default function TopBar() {
                                     </span>
                                 </div>
                             ) : (
-                                <span className="text-slate-600">...</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="h-3 w-10 bg-slate-700 rounded animate-pulse" />
+                                    <span className="h-4 w-12 bg-slate-700 rounded animate-pulse" />
+                                </div>
                             )}
                             <Moon size={12} className="text-emerald-500" />
                         </div>
@@ -135,11 +138,11 @@ export default function TopBar() {
                         <button
                             onClick={() => setShowCities(!showCities)}
                             aria-label="تغيير المدينة لمواقيت الصلاة"
-                            className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors bg-slate-800/50 px-2 py-0.5 rounded hover:bg-slate-800"
+                            className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors bg-slate-800/50 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 min-h-[36px]"
                         >
-                            <MapPin size={10} />
+                            <MapPin size={14} />
                             <span>{currentCityName}</span>
-                            <ChevronDown size={10} />
+                            <ChevronDown size={14} />
                         </button>
 
                         {showCities && (

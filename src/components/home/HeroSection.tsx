@@ -52,7 +52,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
             {/* --- CENTER CONTENT --- */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
-                <div className="animate-fade-in-up pointer-events-none">
+                <div className="animate-hero-entrance pointer-events-none">
                     {/* USP Badge */}
                     <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-6 hover:bg-white/10 transition-colors shadow-lg pointer-events-auto">
                         <span className="relative flex h-2 w-2">

@@ -61,7 +61,7 @@ export default function UrgencyBanner() {
             <motion.div
                 initial={false}
                 exit={{ height: 0, opacity: 0 }}
-                className={`${isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-500' : 'bg-blue-600'} text-white relative z-50 overflow-hidden shadow-lg font-cairo`}
+                className={`${isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-500' : 'bg-blue-600'} text-white fixed top-0 left-0 right-0 z-[60] overflow-hidden shadow-lg font-cairo`}
             >
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
 
@@ -79,7 +79,7 @@ export default function UrgencyBanner() {
                         {bannerData.link_url && (
                             <Link
                                 href={bannerData.link_url}
-                                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap shrink-0"
+                                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full text-xs font-bold transition-colors whitespace-nowrap shrink-0"
                             >
                                 {bannerData.link_text || 'اقرأ المزيد'} <ArrowRight size={12} className="rotate-180" />
                             </Link>
