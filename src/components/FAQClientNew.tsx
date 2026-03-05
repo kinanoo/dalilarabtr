@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronRight, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
+import { Search, Filter, ChevronRight, ChevronDown, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
 import Accordion from '@/components/ui/Accordion';
 import EmptyState from '@/components/EmptyState';
 import { FAQCategory } from '@/lib/faq-types';
@@ -41,6 +41,7 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -171,60 +172,92 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
         </div>
       </section>
 
-      {/* Category Filter — compact horizontal pills, only major categories */}
-      <div className="max-w-7xl mx-auto px-4 -mt-6 relative z-20">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg px-4 py-3">
-          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide" role="tablist" aria-label="تصفية الأسئلة حسب التصنيف">
-            {/* "All" button */}
+      {/* Two-column layout: sidebar + content */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+
+          {/* Sidebar — categories list */}
+          <aside className="lg:w-60 xl:w-64 shrink-0">
+            {/* Mobile toggle */}
             <button
               type="button"
-              role="tab"
-              aria-selected={!selectedCategory ? "true" : "false"}
-              onClick={() => setSelectedCategory(null)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold border whitespace-nowrap transition-all shrink-0 ${
-                !selectedCategory
-                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-emerald-300'
-              }`}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm font-bold text-sm text-slate-700 dark:text-slate-300 mb-3"
             >
-              <Filter size={14} className="shrink-0" />
-              الكل
-              <span className={`text-[10px] ${!selectedCategory ? 'text-white/70' : 'opacity-50'}`}>{totalCount}</span>
+              <span className="flex items-center gap-2">
+                <Filter size={16} className="text-emerald-600" />
+                {selectedCategory || 'التصنيفات'}
+              </span>
+              <ChevronDown size={16} className={`transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Only show categories that have a known style (major categories) */}
-            {Object.keys(CATEGORY_STYLES).map((catName) => {
-              const catData = staticData.find(c => c.category === catName);
-              if (!catData || catData.questions.length === 0) return null;
-              const style = CATEGORY_STYLES[catName];
-              const Icon = style.icon;
-              const isActive = selectedCategory === catName;
-              return (
+            {/* Category list — always visible on desktop, toggle on mobile */}
+            <nav className={`${sidebarOpen ? 'block' : 'hidden'} lg:block lg:sticky lg:top-4`}>
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <h2 className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                  <Filter size={14} />
+                  التصنيفات
+                </h2>
+
+                {/* "All" option */}
                 <button
                   type="button"
-                  role="tab"
-                  aria-selected={isActive ? "true" : "false"}
-                  key={catName}
-                  onClick={() => setSelectedCategory(isActive ? null : catName)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold border whitespace-nowrap transition-all shrink-0 ${
-                    isActive
-                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
-                      : `${style.bg} ${style.border} ${style.text} hover:shadow-sm`
+                  onClick={() => { setSelectedCategory(null); setSidebarOpen(false); }}
+                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold transition-colors text-right ${
+                    !selectedCategory
+                      ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-r-[3px] border-emerald-500'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 border-r-[3px] border-transparent'
                   }`}
                 >
-                  <Icon size={14} className="shrink-0" />
-                  {catName}
-                  <span className={`text-[10px] ${isActive ? 'text-white/70' : 'opacity-50'}`}>{catData.questions.length}</span>
+                  <HelpCircle size={16} className="shrink-0" />
+                  <span className="flex-1">الكل</span>
+                  <span className="text-[11px] opacity-60">{totalCount}</span>
                 </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Main Content */}
-          <main className="w-full">
+                {/* All categories from data */}
+                {staticData.map((cat) => {
+                  const style = CATEGORY_STYLES[cat.category] || DEFAULT_STYLE;
+                  const Icon = style.icon;
+                  const isActive = selectedCategory === cat.category;
+                  return (
+                    <button
+                      type="button"
+                      key={cat.category}
+                      onClick={() => { setSelectedCategory(isActive ? null : cat.category); setSidebarOpen(false); }}
+                      className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold transition-colors text-right ${
+                        isActive
+                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-r-[3px] border-emerald-500'
+                          : `text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 border-r-[3px] border-transparent`
+                      }`}
+                    >
+                      <Icon size={16} className={`shrink-0 ${isActive ? 'text-emerald-500' : style.text}`} />
+                      <span className="flex-1 truncate">{cat.category}</span>
+                      <span className="text-[11px] opacity-60">{cat.questions.length}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+          </aside>
+
+          {/* Main Content — questions */}
+          <main className="flex-1 min-w-0">
+            {/* Active filter indicator */}
+            {selectedCategory && (
+              <div className="flex items-center gap-2 mb-4 text-sm text-slate-500 dark:text-slate-400">
+                <span>التصنيف:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{selectedCategory}</span>
+                <span className="opacity-60">({totalFilteredCount} سؤال)</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory(null)}
+                  className="mr-auto text-xs text-red-500 hover:text-red-600 font-bold"
+                >
+                  إزالة الفلتر
+                </button>
+              </div>
+            )}
+
             {flattenedQuestions.length === 0 ? (
               <EmptyState
                 message={`لا توجد نتائج لـ "${searchQuery}". جرب كلمات مختلفة.`}
@@ -239,11 +272,8 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                         items={[{
                           title: q.q,
                           content: (
-                            <div className="space-y-2">
-                              {/* Removed category badge as per user request */}
-                              <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-right font-medium">
-                                {q.a}
-                              </div>
+                            <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-right font-medium">
+                              {q.a}
                             </div>
                           )
                         }]}
@@ -256,15 +286,15 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-3 mt-10">
+                  <div className="flex justify-center items-center gap-3 mt-8">
                     <button
                       type="button"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                       aria-label="الصفحة السابقة"
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold text-slate-600 disabled:hover:scale-100 bg-white dark:bg-slate-900 shadow-sm"
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all flex items-center gap-2 font-bold text-slate-600 bg-white dark:bg-slate-900 shadow-sm"
                     >
-                      <ChevronRight size={18} className="rtl:rotate-180" />
+                      <ChevronRight size={18} />
                       السابق
                     </button>
 
@@ -277,16 +307,17 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
                       aria-label="الصفحة التالية"
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold text-slate-600 disabled:hover:scale-100 bg-white dark:bg-slate-900 shadow-sm"
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all flex items-center gap-2 font-bold text-slate-600 bg-white dark:bg-slate-900 shadow-sm"
                     >
                       التالي
-                      <ChevronRight size={18} className="ltr:rotate-180" />
+                      <ChevronRight size={18} className="rotate-180" />
                     </button>
                   </div>
                 )}
               </div>
             )}
           </main>
+        </div>
       </div>
     </div>
   );
