@@ -33,6 +33,7 @@ export default function HeroSearchInput({
         </div>
         <input
           type="text"
+          aria-label="بحث في المحتوى"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}

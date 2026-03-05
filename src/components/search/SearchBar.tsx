@@ -60,6 +60,7 @@ export default function SearchBar({
                     <input
                         ref={inputRef}
                         type="text"
+                        aria-label="بحث"
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                         onFocus={() => setIsFocused(true)}

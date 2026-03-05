@@ -49,6 +49,7 @@ export default function NewsletterForm({ onSubmit }: NewsletterFormProps) {
                 <div className="flex-1 relative">
                     <input
                         type="email"
+                        aria-label="البريد الإلكتروني للاشتراك"
                         {...register('email')}
                         placeholder="بريدك الإلكتروني"
                         disabled={isSubmitting}

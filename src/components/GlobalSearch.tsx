@@ -386,6 +386,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
 
         <input
           type="search"
+          aria-label="بحث عام في الموقع"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
           onFocus={() => { if (query) setIsOpen(true); }}
