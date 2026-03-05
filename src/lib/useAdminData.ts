@@ -155,17 +155,17 @@ export function useAdminUpdates() {
   })), []);
 
   const updateMerger = (statics: AdminUpdate[], remotes: any[]): AdminUpdate[] => {
-    const transformed: AdminUpdate[] = remotes.map((d: any) => ({
-      id: d.id,
-      type: d.type,
-      title: d.title,
-      date: d.date || (d.created_at ? d.created_at.split('T')[0] : ''),
-      content: d.content,
-      active: d.active !== false,
-      image: d.image
-    }));
-    // FIX: Do not merge statics. Return DB data only to prevent duplicates/ghosts.
-    // const merged = standardMerger(statics, transformed);
+    const transformed: AdminUpdate[] = remotes
+      .filter((d: any) => d.active !== false)
+      .map((d: any) => ({
+        id: d.id,
+        type: d.type,
+        title: d.title,
+        date: d.date || (d.created_at ? d.created_at.split('T')[0] : ''),
+        content: d.content,
+        active: true,
+        image: d.image
+      }));
     return transformed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
 
@@ -232,15 +232,16 @@ export function useAdminSources() {
   })), []);
 
   const sourceMerger = (statics: AdminSource[], remotes: any[]): AdminSource[] => {
-    const transformed: AdminSource[] = remotes.map((d: any) => ({
-      id: d.id,
-      name: d.name,
-      url: d.url,
-      desc: d.description,
-      active: d.active !== false,
-      is_official: d.is_official
-    }));
-    // Append strategy instead of by-ID override for sources usually
+    const transformed: AdminSource[] = remotes
+      .filter((d: any) => d.active !== false)
+      .map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        url: d.url,
+        desc: d.description,
+        active: true,
+        is_official: d.is_official
+      }));
     return [...statics, ...transformed];
   };
 
