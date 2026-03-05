@@ -9,7 +9,6 @@ import ArticleHydratedView from '@/components/ArticleHydratedView';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
-import RelatedArticles from '@/components/RelatedArticles';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
 import { stripHtml } from '@/lib/stripHtml';
@@ -311,8 +310,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
         <UniversalComments entityType="article" entityId={params.id} title="نقاش دليل المقال" />
       </ArticleHydratedView>
 
-      <hr className="my-12 border-slate-200 dark:border-slate-800 max-w-4xl mx-auto opacity-50" />
-      <RelatedArticles currentArticleId={params.id} category={article.category} />
     </main>
   );
 }

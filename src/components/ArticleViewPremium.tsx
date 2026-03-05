@@ -11,6 +11,7 @@ import BookmarkButton from './BookmarkButton';
 import { buildWhatsAppHref } from '@/lib/whatsapp';
 import { SITE_CONFIG, CATEGORY_SLUGS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
+import InlineRelatedArticles from './InlineRelatedArticles';
 
 import { deobfuscate, isObfuscated } from '@/lib/security';
 import DOMPurify from 'isomorphic-dompurify';
@@ -265,6 +266,9 @@ export default function ArticleView({ article, slug, initialComments, children }
                    Wait, `NativeConsultCard` is a component. I should use that component if possible, but the user gave specific styling: "wide, inline card... bg-blue-50/50".
                    I'll rely on the manual code I wrote above for the specific style requested.
                 */}
+
+              {/* قد يهمك أيضاً — Mid-article related articles */}
+              <InlineRelatedArticles currentArticleId={slug} category={article.category} />
 
               {/* التكلفة */}
               {article.fees && (

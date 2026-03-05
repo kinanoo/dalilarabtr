@@ -4,6 +4,7 @@ import { useState } from 'react';
 import PageHero from '@/components/PageHero';
 import { Calculator } from 'lucide-react';
 import ToolSchema from '@/components/ToolSchema';
+import RelatedArticles from '@/components/RelatedArticles';
 
 export default function CalculatorPage() {
   const [age, setAge] = useState(25);
@@ -123,6 +124,10 @@ export default function CalculatorPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="max-w-2xl mx-auto mt-8">
+          <RelatedArticles currentArticleId="" category="أنواع الإقامات" />
         </div>
       </div>
     </>

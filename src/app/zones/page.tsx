@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+import RelatedArticles from '@/components/RelatedArticles';
 
 export default function ZonesPage() {
     return (
@@ -21,6 +22,7 @@ export default function ZonesPage() {
             <div className="max-w-4xl mx-auto px-4 mt-12 space-y-8">
                 <ContentHelpfulWidget entityType="zone" entityId="main-map" />
                 <UniversalComments entityType="zone" entityId="main-map" title="نقاش المناطق المحظورة" />
+                <RelatedArticles currentArticleId="" category="السكن والحياة" />
             </div>
         </main>
     );

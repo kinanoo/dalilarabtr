@@ -7,6 +7,7 @@ import { SITE_CONFIG } from '@/lib/config';
 import { useState } from 'react';
 import { Calculator, AlertTriangle, CheckCircle, Info, Plane, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import RelatedArticles from '@/components/RelatedArticles';
 
 export default function BanCalculator() {
 
@@ -195,6 +196,10 @@ export default function BanCalculator() {
           </AnimatePresence>
 
         </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 pb-12">
+        <RelatedArticles currentArticleId="" category="أنواع الإقامات" />
       </div>
     </main>
   );
