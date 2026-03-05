@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
-import TopBar from './TopBar';
+import PrayerPopover from './PrayerPopover';
 import NavDropdown from './NavDropdown';
 import { supabase } from '@/lib/supabaseClient';
 import NotificationBell from './notifications/NotificationBell';
@@ -243,10 +243,15 @@ export default function Navbar() {
                   <AuthButton mobile={true} />
                 </div>
 
-                {/* 1. Main Navigation */}
+                {/* Navigation Menu */}
                 <nav className="space-y-2">
-                  {headerMenus.map((item, index) => {
-                    const Icon = typeof item.icon === 'string' ? (IconMap[item.icon] || Info) : item.icon;
+                  {[
+                    { name: 'الرئيسية', href: '/', icon: Home },
+                    { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
+                    { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
+                    { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
+                    { name: 'نماذج جاهزة', href: '/forms', icon: FileText },
+                  ].map((item, index) => {
                     const isActive = pathname === item.href;
                     return (
                       <motion.div
@@ -270,13 +275,11 @@ export default function Navbar() {
                             hover:shadow-[0_4px_12px_-2px_rgba(16,185,129,0.15)]
                           `}
                         >
-                          {/* Neon Glow Line (Bottom) - RTL */}
                           <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-
                           <span className={`p-2 rounded-xl transition-colors ${isActive ? 'bg-white dark:bg-emerald-950 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-emerald-500'}`}>
-                            <Icon size={20} />
+                            <item.icon size={20} />
                           </span>
-                          <span className="text-base">{item.label}</span>
+                          <span className="text-base">{item.name}</span>
                         </Link>
                       </motion.div>
                     )
@@ -285,22 +288,20 @@ export default function Navbar() {
 
                 <hr className="border-slate-100 dark:border-slate-800" />
 
-                {/* 2. Tools Section */}
+                {/* Tools Section */}
                 <motion.div
                   initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1, transition: { delay: 0.3 } }}
+                  animate={{ x: 0, opacity: 1, transition: { delay: 0.35 } }}
                   className="space-y-2"
                 >
                   <p className="px-2 text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
                     <BrainCircuit size={14} /> الأدوات الذكية
                   </p>
                   <div className="grid grid-cols-1 gap-2">
-                    {tools.map((item, idx) => {
-                      // Try to find icon from static tools if missing
+                    {tools.map((item) => {
                       const staticTool = TOOLS_MENU.find(t => t.href === item.route);
                       const Icon = staticTool ? staticTool.icon : Calculator;
                       const isActive = pathname === item.route;
-
                       return (
                         <Link
                           key={item.route}
@@ -311,9 +312,7 @@ export default function Navbar() {
                             ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
                           `}
                         >
-                          {/* Neon Glow Line (Bottom) - RTL */}
                           <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-
                           <Icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
                           <span className="font-medium text-sm">{item.name}</span>
                         </Link>
@@ -322,37 +321,31 @@ export default function Navbar() {
                   </div>
                 </motion.div>
 
-                {/* 3. Guides Section */}
+                <hr className="border-slate-100 dark:border-slate-800" />
+
+                {/* Request Service */}
                 <motion.div
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1, transition: { delay: 0.4 } }}
-                  className="space-y-2"
                 >
-                  <p className="px-2 text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <FolderOpen size={14} /> أدلة شاملة
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {GUIDES_MENU.map((item) => {
-                      const isActive = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`
-                            group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden
-                            ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
-                          `}
-                        >
-                          {/* Neon Glow Line (Bottom) - RTL */}
-                          <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-
-                          <item.icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
-                          <span className="font-medium text-sm">{item.name}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
+                  <Link
+                    href="/request"
+                    onClick={() => setIsOpen(false)}
+                    className={`
+                      group relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden
+                      ${pathname === '/request'
+                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold shadow-md'
+                        : 'bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }
+                      hover:shadow-[0_4px_12px_-2px_rgba(16,185,129,0.15)]
+                    `}
+                  >
+                    <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
+                    <span className={`p-2 rounded-xl transition-colors ${pathname === '/request' ? 'bg-white dark:bg-emerald-950 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-emerald-500'}`}>
+                      <ScrollText size={20} />
+                    </span>
+                    <span className="text-base">اطلب خدمة خاصة</span>
+                  </Link>
                 </motion.div>
               </div>
 
@@ -385,7 +378,6 @@ export default function Navbar() {
 
   return (
     <>
-      <TopBar />
       <header
         ref={navRef}
         className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:bg-gradient-to-r dark:from-[#020617]/90 dark:via-[#0f172a]/90 dark:to-[#020617]/90 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-900/30 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${navHidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
@@ -456,6 +448,8 @@ export default function Navbar() {
             {/* Search Removed */}
 
             <NotificationBell />
+
+            <PrayerPopover />
 
             <div className="hidden md:block scale-90">
               <ThemeToggle />
