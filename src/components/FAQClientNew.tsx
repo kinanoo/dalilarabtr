@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, ChevronRight, ChevronDown, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
-import Accordion from '@/components/ui/Accordion';
 import EmptyState from '@/components/EmptyState';
 import { FAQCategory } from '@/lib/faq-types';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
@@ -42,6 +41,7 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -266,22 +266,35 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
               <div className="space-y-4">
                 {/* Questions List */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                  {currentQuestions.map((q, idx) => (
-                    <div key={q.id || idx} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                      <Accordion
-                        items={[{
-                          title: q.q,
-                          content: (
-                            <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-right font-medium">
-                              {q.a}
-                            </div>
-                          )
-                        }]}
-                        defaultOpen={[]}
-                        className="border-none shadow-none bg-transparent"
-                      />
-                    </div>
-                  ))}
+                  {currentQuestions.map((q, idx) => {
+                    const qId = q.id || `q-${idx}`;
+                    const isOpen = openQuestionId === qId;
+                    return (
+                      <div key={qId} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
+                        <button
+                          type="button"
+                          onClick={() => setOpenQuestionId(isOpen ? null : qId)}
+                          className="w-full flex items-center justify-between p-4 sm:p-5 text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                          aria-expanded={isOpen ? "true" : "false"}
+                        >
+                          <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 flex-1">
+                            {q.q}
+                          </h3>
+                          <ChevronDown
+                            size={20}
+                            className={`text-slate-400 shrink-0 mr-3 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
+                        >
+                          <div className="px-4 sm:px-5 pb-4 sm:pb-5 prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-right font-medium">
+                            {q.a}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Pagination */}
