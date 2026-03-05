@@ -100,7 +100,7 @@ export const OFFICIAL_SOURCES = [
     { name: "التحقق من الدعاوى القضائية", url: "https://www.turkiye.gov.tr/davalarim", desc: "خدمة e-Devlet لعرض الدعاوى." },
     { name: "كشف خدمة SGK (4A)", url: "https://www.turkiye.gov.tr/4a-hizmet-dokumu", desc: "عرض أيام/تفاصيل الخدمة في التأمينات." },
     { name: "ديون SGK (4B)", url: "https://www.turkiye.gov.tr/4b-borc-durumu", desc: "الاستعلام عن الديون في SGK." },
-    { name: "المخالفات المرورية للسيارة", url: "https://www.turkiye.gov.tr/emniyet-arac-plakasina-yazilan-ceza-sorgulama", desc: "الاستعلام عن مخالفات السيارة عبر e-Devlet." },
+    { name: "الاستعلام عن المخالفات المرورية", url: "https://www.turkiye.gov.tr/emniyet-arac-plakasina-yazilan-ceza-sorgulama?hizmet=Ekrani", desc: "الاستعلام عن مخالفات السيارة عبر e-Devlet." },
     { name: "العقارات المسجلة باسمك", url: "https://www.turkiye.gov.tr/tapu-bilgileri-sorgulama", desc: "الاستعلام عن الطابو عبر e-Devlet." },
     { name: "الخطوط المسجلة باسمك", url: "https://www.turkiye.gov.tr/mobil-hat-sorgulama", desc: "الاستعلام عن الخطوط المسجلة باسمك." },
     { name: "القنصلية السورية: تطبيق حجز المواعيد", url: "https://mofaex.gov.sy/eservices-app", desc: "الرابط الرسمي لتطبيق/خدمة المواعيد القنصلية." },
