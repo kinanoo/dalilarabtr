@@ -96,7 +96,7 @@ export default function HomeFAQ() {
                         return (
                             <div
                                 key={faq.id}
-                                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-shadow hover:shadow-sm"
+                                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-600 hover:-translate-y-0.5"
                             >
                                 <button
                                     onClick={() => toggle(faq.id)}

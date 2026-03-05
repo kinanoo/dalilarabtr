@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calculator, Wallet, Map, Stethoscope, GraduationCap, Building2, Scale, FileText, Plane, Shield, Activity, Home, HeartHandshake, Flag, Search, ArrowLeft } from 'lucide-react';
@@ -93,6 +93,20 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
 const SideColumn = ({ items, direction = 'up', className }: any) => {
     const loopItems = [...items, ...items, ...items];
+    const colRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState(true);
+
+    // Intersection Observer — pause animation when off-screen
+    useEffect(() => {
+        const el = colRef.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0 }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     // Item (80px) + Gap (24px) = 104px (Desktop)
     const scrollDistance = items.length * 104;
@@ -104,7 +118,7 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
     const toY = direction === 'up' ? `-${scrollDistance}px` : '0px';
 
     return (
-        <div className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`}>
+        <div ref={colRef} className={`absolute top-0 bottom-0 w-[80px] md:w-[160px] overflow-hidden ${className} mask-gradient-y flex flex-col items-center justify-center opacity-30 md:opacity-100 pointer-events-none`} style={{ contain: 'layout style' }}>
             <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes ${animName} {
                     from { transform: translateY(${fromY}); }
@@ -113,7 +127,10 @@ const SideColumn = ({ items, direction = 'up', className }: any) => {
             `}} />
             <div
                 className="flex flex-col gap-6 py-6 pointer-events-auto will-change-transform"
-                style={{ animation: `${animName} ${duration}s linear infinite` }}
+                style={{
+                    animation: `${animName} ${duration}s linear infinite`,
+                    animationPlayState: isVisible ? 'running' : 'paused',
+                }}
             >
                 {loopItems.map((item: any, i: number) => (
                     <DiamondItem key={`${item.id}-${i}`} data={item} />
@@ -142,23 +159,24 @@ function DiamondItem({ data }: any) {
     const Icon = data.icon;
     const router = useRouter();
     const [isPopped, setIsPopped] = useState(false);
+    const prefersReducedMotion = useReducedMotion();
 
     const handleClick = () => {
         setIsPopped(true);
         setTimeout(() => {
             if (data.link) router.push(data.link);
-        }, 300);
+        }, prefersReducedMotion ? 0 : 300);
     };
 
     return (
         <AnimatePresence>
             {!isPopped && (
                 <motion.div
-                    layout
+                    layout={!prefersReducedMotion}
                     initial={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.1 }}
-                    exit={{ scale: 2, opacity: 0, filter: 'blur(10px)' }}
-                    transition={{ duration: 0.3 }}
+                    whileHover={prefersReducedMotion ? undefined : { scale: 1.1 }}
+                    exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0, filter: 'blur(10px)' }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
                     onClick={handleClick}
                     className="group relative cursor-pointer"
                 >

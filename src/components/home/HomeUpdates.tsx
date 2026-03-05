@@ -214,7 +214,7 @@ function UpdateCard({ update }: { update: any }) {
     return (
         <Link
             href={href}
-            className="block h-full bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors group/card relative overflow-hidden"
+            className="block h-full bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden"
             dir="rtl"
         >
             <div className="flex items-start gap-3 h-full">

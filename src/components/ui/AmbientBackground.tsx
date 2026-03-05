@@ -45,15 +45,15 @@ export default function AmbientBackground() {
         }}
       />
 
-      {/* 3. Ambient Animated Waves (Soft & Slow) */}
+      {/* 3. Ambient Animated Waves (Soft & Slow) — GPU-composited */}
       {/* Emerald Wave - Top Right */}
-      <div className="absolute -top-[20%] -right-[10%] w-[80vw] h-[80vw] bg-emerald-200/[0.2] dark:bg-emerald-900/[0.15] rounded-full blur-[100px] animate-wave-slow md:mix-blend-multiply md:dark:mix-blend-screen opacity-60" />
+      <div className="absolute -top-[20%] -right-[10%] w-[80vw] h-[80vw] bg-emerald-200/[0.2] dark:bg-emerald-900/[0.15] rounded-full blur-[100px] animate-wave-slow md:mix-blend-multiply md:dark:mix-blend-screen opacity-60 will-change-transform" />
 
       {/* Teal Wave - Bottom Left */}
-      <div className="absolute -bottom-[20%] -left-[10%] w-[70vw] h-[70vw] bg-teal-200/[0.2] dark:bg-teal-900/[0.15] rounded-full blur-[100px] animate-wave-slower md:mix-blend-multiply md:dark:mix-blend-screen opacity-60" />
+      <div className="absolute -bottom-[20%] -left-[10%] w-[70vw] h-[70vw] bg-teal-200/[0.2] dark:bg-teal-900/[0.15] rounded-full blur-[100px] animate-wave-slower md:mix-blend-multiply md:dark:mix-blend-screen opacity-60 will-change-transform" />
 
       {/* Indigo Pulse - Center */}
-      <div className="absolute top-[30%] left-[20%] w-[50vw] h-[50vw] bg-indigo-200/[0.15] dark:bg-indigo-900/[0.1] rounded-full blur-[120px] animate-pulse-slow md:mix-blend-multiply md:dark:mix-blend-screen opacity-50" />
+      <div className="absolute top-[30%] left-[20%] w-[50vw] h-[50vw] bg-indigo-200/[0.15] dark:bg-indigo-900/[0.1] rounded-full blur-[120px] animate-pulse-slow md:mix-blend-multiply md:dark:mix-blend-screen opacity-50 will-change-transform" />
 
       {/* 4. Noise Texture (Matte Finish) */}
       <div className="absolute inset-0 opacity-[0.25]" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
