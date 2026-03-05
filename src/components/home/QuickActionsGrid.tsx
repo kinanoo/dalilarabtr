@@ -13,21 +13,24 @@ const ICONS: Record<string, any> = {
 export default function QuickActionsGrid() {
     const storageKey = 'quickActions.clickCounts.v1';
     const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
+    const [hasMounted, setHasMounted] = useState(false);
     const [actions, setActions] = useState<any[]>(QUICK_ACTIONS); // Initial with static
     const [isDbLoaded, setIsDbLoaded] = useState(false);
 
-    // 1. Click Tracking
+    // 1. Click Tracking — defer sort to avoid CLS on hydration
     useEffect(() => {
         try {
             const raw = localStorage.getItem(storageKey);
-            if (!raw) return;
-            const parsed = JSON.parse(raw) as Record<string, number>;
-            if (parsed && typeof parsed === 'object') {
-                setClickCounts(parsed);
+            if (raw) {
+                const parsed = JSON.parse(raw) as Record<string, number>;
+                if (parsed && typeof parsed === 'object') {
+                    setClickCounts(parsed);
+                }
             }
         } catch {
             // ignore
         }
+        setHasMounted(true);
     }, []);
 
     // 2. Fetch Data from DB
@@ -70,22 +73,17 @@ export default function QuickActionsGrid() {
         });
     };
 
-    // 3. Sorting (Smart Sort based on clicks + original order)
+    // 3. Sorting — only apply click-based sort after mount to prevent CLS
     const sortedQuickActions = useMemo(() => {
-        // If loaded from DB, `actions` has accurate sort_order from DB
-        // If static, `QUICK_ACTIONS` is array order.
+        if (!hasMounted) return actions;
 
-        // We will prioritize Click Count mainly, then Sort Order.
         return [...actions].sort((a, b) => {
             const aCount = clickCounts[a.href] ?? 0;
             const bCount = clickCounts[b.href] ?? 0;
-
-            if (bCount !== aCount) return bCount - aCount; // Most clicked first
-
-            // If clicks equal, fall back to sort_order (DB) or index (Static)
+            if (bCount !== aCount) return bCount - aCount;
             return (a.sort_order || 0) - (b.sort_order || 0);
         });
-    }, [clickCounts, actions]);
+    }, [clickCounts, actions, hasMounted]);
 
     return (
         <section className="px-4 py-10">

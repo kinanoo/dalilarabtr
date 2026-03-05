@@ -81,42 +81,45 @@ export default function NewsTicker() {
         return () => clearInterval(timer);
     }, [items.length]);
 
-    if (pathname !== '/' || items.length === 0) return null;
+    if (pathname !== '/') return null;
 
-    const current = items[currentIndex];
+    // Always render container to reserve space and prevent CLS
+    const current = items.length > 0 ? items[currentIndex] : null;
 
     return (
-        <div className="bg-[#1a2744] text-white/90 overflow-hidden text-[11px] sm:text-xs" dir="rtl">
-            <div className="flex items-center px-3 py-1.5 max-w-7xl mx-auto">
-                <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
-                    <div
-                        className="whitespace-nowrap text-center"
-                        style={{
-                            opacity: isVisible ? 1 : 0,
-                            transition: 'opacity 0.3s',
-                        }}
-                    >
-                        <span ref={textRef} className="inline-block">
-                            {current.link ? (
-                                <Link
-                                    href={current.link}
-                                    className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
-                                >
-                                    {current.text}
-                                </Link>
-                            ) : (
-                                current.text
-                            )}
-                        </span>
+        <div className="bg-[#1a2744] text-white/90 overflow-hidden text-[11px] sm:text-xs min-h-[28px]" dir="rtl">
+            {current && (
+                <div className="flex items-center px-3 py-1.5 max-w-7xl mx-auto">
+                    <div ref={containerRef} className="flex-1 min-w-0 overflow-hidden">
+                        <div
+                            className="whitespace-nowrap text-center"
+                            style={{
+                                opacity: isVisible ? 1 : 0,
+                                transition: 'opacity 0.3s',
+                            }}
+                        >
+                            <span ref={textRef} className="inline-block">
+                                {current.link ? (
+                                    <Link
+                                        href={current.link}
+                                        className="hover:text-emerald-300 hover:underline underline-offset-2 transition-colors"
+                                    >
+                                        {current.text}
+                                    </Link>
+                                ) : (
+                                    current.text
+                                )}
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                {items.length > 1 && (
-                    <span className="text-[9px] text-white/40 flex-shrink-0 tabular-nums">
-                        {currentIndex + 1}/{items.length}
-                    </span>
-                )}
-            </div>
+                    {items.length > 1 && (
+                        <span className="text-[9px] text-white/40 flex-shrink-0 tabular-nums">
+                            {currentIndex + 1}/{items.length}
+                        </span>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
