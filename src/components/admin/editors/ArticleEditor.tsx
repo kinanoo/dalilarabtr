@@ -5,6 +5,9 @@ import { ArrayInput } from '../ui/ArrayInput';
 import { ArticleForm } from '@/lib/schemas';
 import { ImageUploader } from '../ui/ImageUploader';
 import { CATEGORY_SLUGS } from '@/lib/config';
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(() => import('../ui/RichTextEditor'), { ssr: false });
 
 interface ArticleEditorProps {
     form: Partial<ArticleForm>;
@@ -103,11 +106,11 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                 </Field>
 
                 <Field label="تفاصيل المقال (Details)" icon={FileText}>
-                    <textarea
-                        className={`${textareaStyles} h-64 font-mono text-sm`}
+                    <RichTextEditor
                         value={form.details || ''}
-                        onChange={e => setForm({ ...form, details: e.target.value })}
+                        onChange={(html) => setForm({ ...form, details: html })}
                         placeholder="اكتب تفاصيل المقال هنا..."
+                        minHeight="350px"
                     />
                 </Field>
             </div>

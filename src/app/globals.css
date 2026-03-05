@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TipTap Editor Styles */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: right;
+  color: #94a3b8;
+  pointer-events: none;
+  height: 0;
+}
+.tiptap:focus { outline: none; }
+.tiptap img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0; }
+.tiptap blockquote { border-right: 4px solid #10b981; padding-right: 1rem; margin: 1rem 0; color: #64748b; font-style: italic; }
+.dark .tiptap blockquote { border-right-color: #059669; color: #94a3b8; }
+.tiptap hr { border-color: #e2e8f0; margin: 1.5rem 0; }
+.dark .tiptap hr { border-color: #334155; }
+.tiptap ul { list-style: disc; padding-right: 1.5rem; }
+.tiptap ol { list-style: decimal; padding-right: 1.5rem; }
+.tiptap h1 { font-size: 1.75rem; font-weight: 800; margin: 1rem 0 0.5rem; }
+.tiptap h2 { font-size: 1.4rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+.tiptap h3 { font-size: 1.15rem; font-weight: 700; margin: 0.75rem 0 0.25rem; }
+.tiptap p { margin: 0.5rem 0; }
+
 :root {
   --foreground-rgb: 15, 23, 42;
   --background-rgb: 241, 245, 249;

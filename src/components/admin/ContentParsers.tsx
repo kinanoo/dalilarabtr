@@ -6,6 +6,9 @@ import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock, Send } from 'lucide-reac
 import { toast } from 'sonner';
 import { LATEST_UPDATES } from '@/lib/constants';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(() => import('@/components/admin/ui/RichTextEditor'), { ssr: false });
 // === Types ===
 type DBUpdate = {
     id: string;
@@ -150,7 +153,12 @@ export function UpdatesManager() {
                     />
                     <div>
                         <label className="text-sm font-bold block mb-1">المحتوى</label>
-                        <textarea rows={3} required value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
+                        <RichTextEditor
+                            value={formData.content || ''}
+                            onChange={(html) => setFormData({ ...formData, content: html })}
+                            placeholder="اكتب محتوى الخبر أو التحديث..."
+                            minHeight="200px"
+                        />
                     </div>
 
                     {/* Push notification toggle — only for new updates */}
