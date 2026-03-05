@@ -94,34 +94,23 @@ export default function QuickActionsGrid() {
                         اختصارات سريعة
                     </h2>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
                     {sortedQuickActions.map((action) => {
                         const IconComponent = action.icon || ICONS[action.icon_name] || FolderOpen;
 
                         return (
                             <Link
-                                key={action.href + action.id} // Ensure unique key
+                                key={action.href + action.id}
                                 href={action.href}
                                 onClick={() => trackQuickActionClick(action.href)}
-                                className="group relative flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-emerald-300 dark:hover:border-emerald-700 overflow-hidden"
+                                className="group flex items-center gap-3 px-3.5 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
                             >
-
-                                {/* الخلفية المتدرجة عند التحويم */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent dark:from-emerald-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                <div className="relative z-10 p-3 bg-slate-50 dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-300 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300 mb-3 shadow-sm group-hover:shadow-md">
-                                    <IconComponent size={28} />
+                                <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors shrink-0">
+                                    <IconComponent size={18} />
                                 </div>
-
-                                <h3 className="relative z-10 font-bold text-base text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 text-center mb-1">
+                                <span className="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
                                     {action.title}
-                                </h3>
-
-                                {action.desc && (
-                                    <p className="relative z-10 text-xs text-slate-500 dark:text-slate-400 text-center line-clamp-2">
-                                        {action.desc}
-                                    </p>
-                                )}
+                                </span>
                             </Link>
                         )
                     })}
