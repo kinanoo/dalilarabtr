@@ -83,12 +83,10 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
               }
             });
 
-            // Strict Mode: If query has 3+ words, require >60% match ratio
-            if (originalTokens.length >= 3) {
-              const ratio = matchedTokens / originalTokens.length;
-              if (ratio < 0.6) return false;
+            // Require all tokens to match for 2+ word queries
+            if (originalTokens.length >= 2) {
+              if (matchedTokens < originalTokens.length) return false;
             } else {
-              // Standard Mode: Require at least one original keyword match
               if (matchedTokens === 0) return false;
             }
 
