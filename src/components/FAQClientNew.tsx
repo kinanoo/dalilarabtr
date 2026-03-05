@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronRight, ChevronLeft, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
+import { Search, Filter, ChevronRight, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
 import Accordion from '@/components/ui/Accordion';
 import EmptyState from '@/components/EmptyState';
 import { FAQCategory } from '@/lib/faq-types';
@@ -171,45 +171,50 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
         </div>
       </section>
 
-      {/* Category Filter Bar — prominent, colored, with icons */}
+      {/* Category Filter — compact horizontal pills, only major categories */}
       <div className="max-w-7xl mx-auto px-4 -mt-6 relative z-20">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter size={16} className="text-emerald-600" />
-            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300">تصفح حسب التصنيف</h2>
-            {selectedCategory && (
-              <button
-                type="button"
-                onClick={() => setSelectedCategory(null)}
-                className="mr-auto text-xs text-emerald-600 hover:text-emerald-700 font-bold"
-              >
-                عرض الكل
-              </button>
-            )}
-          </div>
-          <div role="tablist" aria-label="تصفية الأسئلة حسب التصنيف" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-            {staticData.map((cat) => {
-              const style = CATEGORY_STYLES[cat.category] || DEFAULT_STYLE;
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg px-4 py-3">
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide" role="tablist" aria-label="تصفية الأسئلة حسب التصنيف">
+            {/* "All" button */}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!selectedCategory ? "true" : "false"}
+              onClick={() => setSelectedCategory(null)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold border whitespace-nowrap transition-all shrink-0 ${
+                !selectedCategory
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-emerald-300'
+              }`}
+            >
+              <Filter size={14} className="shrink-0" />
+              الكل
+              <span className={`text-[10px] ${!selectedCategory ? 'text-white/70' : 'opacity-50'}`}>{totalCount}</span>
+            </button>
+
+            {/* Only show categories that have a known style (major categories) */}
+            {Object.keys(CATEGORY_STYLES).map((catName) => {
+              const catData = staticData.find(c => c.category === catName);
+              if (!catData || catData.questions.length === 0) return null;
+              const style = CATEGORY_STYLES[catName];
               const Icon = style.icon;
-              const isActive = selectedCategory === cat.category;
+              const isActive = selectedCategory === catName;
               return (
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={isActive}
-                  key={cat.category}
-                  onClick={() => setSelectedCategory(isActive ? null : cat.category)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+                  aria-selected={isActive ? "true" : "false"}
+                  key={catName}
+                  onClick={() => setSelectedCategory(isActive ? null : catName)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold border whitespace-nowrap transition-all shrink-0 ${
                     isActive
-                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-500/20 scale-[1.02]'
-                      : `${style.bg} ${style.border} ${style.text} hover:shadow-md hover:scale-[1.02]`
+                      ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                      : `${style.bg} ${style.border} ${style.text} hover:shadow-sm`
                   }`}
                 >
-                  <Icon size={16} className="shrink-0" />
-                  <span className="truncate">{cat.category}</span>
-                  <span className={`text-[10px] mr-auto shrink-0 ${isActive ? 'text-white/70' : 'opacity-50'}`}>
-                    {cat.questions.length}
-                  </span>
+                  <Icon size={14} className="shrink-0" />
+                  {catName}
+                  <span className={`text-[10px] ${isActive ? 'text-white/70' : 'opacity-50'}`}>{catData.questions.length}</span>
                 </button>
               );
             })}
