@@ -158,25 +158,28 @@ export default function ArticleView({ article, slug, initialComments, children }
             </div>
 
 
-            {/* Featured Image */}
-            {article.image && article.image.startsWith('http') && (
-              <div className="relative w-full h-48 sm:h-64 lg:h-80">
-                <Image
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
-                  priority
-                  onError={(e) => {
-                    (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-
             {/* Content */}
             <div className="p-4 sm:p-6 lg:p-12 space-y-6 lg:space-y-8 break-words overflow-x-hidden w-full max-w-full">
+
+              {/* Featured Image */}
+              {article.image && article.image.startsWith('http') && (
+                <div data-image-wrapper className="relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-800">
+                  <div className="relative w-full aspect-video">
+                    <Image
+                      src={article.image}
+                      alt={article.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
+                      priority
+                      onError={(e) => {
+                        const wrapper = e.currentTarget.closest('[data-image-wrapper]') as HTMLElement;
+                        if (wrapper) wrapper.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* ✅ ملخص الإجراء - Notion Style Callout (High Contrast) */}
               <div
