@@ -76,9 +76,10 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
     if (!portalTarget) setPortalTarget(document.body);
   }, [portalTarget]);
 
-  // التحقق من دعم Native Share API
+  // Native Share API — only on mobile/touch devices (desktop native dialog is not dismissable)
   useEffect(() => {
-    setCanNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setCanNativeShare(isMobile && typeof navigator.share === 'function');
   }, []);
 
   const shareUrl = useMemo(() => {
