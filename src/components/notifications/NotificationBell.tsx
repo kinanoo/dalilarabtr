@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, X, CheckCheck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     fetchAllNotifications,
     initLastSeen,
@@ -159,32 +158,17 @@ export default function NotificationBell() {
         return { position: 'fixed', top: rect.bottom + 8, left: 8, right: 8 };
     }, []);
 
-    const dropdown = (
-        <AnimatePresence>
-            {isOpen && (
+    const dropdown = isOpen ? (
                 <>
                     {/* Mobile backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                    <div
                         className="fixed inset-0 z-[9998] sm:hidden bg-black/20 backdrop-blur-sm"
                         onClick={() => setIsOpen(false)}
                     />
 
-                    <motion.div
+                    <div
                         ref={panelRef}
-                        initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                        animate={{
-                            opacity: 1, scale: 1, y: 0,
-                            transition: { type: 'spring', stiffness: 300, damping: 25 },
-                        }}
-                        exit={{
-                            opacity: 0, scale: 0.95, y: -8,
-                            transition: { duration: 0.15 },
-                        }}
-                        className="z-[9999] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[70vh] sm:max-h-[80vh] flex flex-col overflow-hidden"
+                        className="z-[9999] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[70vh] sm:max-h-[80vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
                         style={{ ...getPanelStyle(), transformOrigin: 'top right' }}
                     >
                         {/* ── Header ── */}
@@ -248,21 +232,14 @@ export default function NotificationBell() {
                                 </div>
                             ) : (
                                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                    {filteredNotifications.map((notification, index) => (
-                                        <motion.div
-                                            key={notification.id}
-                                            initial={{ opacity: 0, x: 10 }}
-                                            animate={{
-                                                opacity: 1, x: 0,
-                                                transition: { delay: Math.min(index * 0.04, 0.5) },
-                                            }}
-                                        >
+                                    {filteredNotifications.map((notification) => (
+                                        <div key={notification.id}>
                                             <NotificationItem
                                                 notification={notification}
                                                 onMarkAsRead={() => handleMarkAsRead(notification)}
                                                 onClose={() => setIsOpen(false)}
                                             />
-                                        </motion.div>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -281,11 +258,9 @@ export default function NotificationBell() {
                                 </button>
                             </div>
                         )}
-                    </motion.div>
+                    </div>
                 </>
-            )}
-        </AnimatePresence>
-    );
+    ) : null;
 
     return (
         <>
@@ -301,19 +276,13 @@ export default function NotificationBell() {
                 >
                     <Bell size={18} />
 
-                    <AnimatePresence>
-                        {totalUnread > 0 && (
-                            <motion.span
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0, opacity: 0 }}
-                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-white dark:ring-slate-950"
+                    {totalUnread > 0 && (
+                            <span
+                                className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-white dark:ring-slate-950 animate-in zoom-in duration-200"
                             >
                                 {totalUnread > 9 ? '9+' : totalUnread}
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
+                            </span>
+                    )}
                 </button>
             </div>
 
@@ -346,11 +315,7 @@ function TabButton({ label, active, badge, onClick }: {
                 </span>
             )}
             {active && (
-                <motion.div
-                    layoutId="notif-tab-indicator"
-                    className="absolute bottom-0 left-2 right-2 h-0.5 bg-emerald-500 rounded-full"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
+                <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-emerald-500 rounded-full" />
             )}
         </button>
     );

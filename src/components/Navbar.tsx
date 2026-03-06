@@ -14,7 +14,6 @@ import {
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
   UserCheck, HeartPulse, Link as LinkIcon, ScrollText
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 import PrayerPopover from './PrayerPopover';
 import NavDropdown from './NavDropdown';
@@ -181,51 +180,22 @@ export default function Navbar() {
 
   const mobileDrawer = portalTarget
     ? createPortal(
-      <AnimatePresence>
-        {isOpen && (
-          <>
+      <>
             {/* Backdrop */}
-            <motion.button
+            <button
               type="button"
               aria-label="إغلاق القائمة"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: 1,
-                transition: { duration: 0.3 }
-              }}
-              exit={{
-                opacity: 0,
-                transition: { duration: 0.25 }
-              }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 z-[110] lg:hidden bg-black/20 dark:bg-black/60 backdrop-blur-md"
+              className={`fixed inset-0 z-[110] lg:hidden bg-black/20 dark:bg-black/60 backdrop-blur-md transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             />
 
-            {/* Drawer - Smooth Slide from Right */}
-            <motion.div
+            {/* Drawer */}
+            <div
               id="mobile-menu"
               role="dialog"
-              aria-modal="true"
+              aria-modal={isOpen || undefined}
               aria-label="القائمة الرئيسية"
-              initial={{ x: '100%' }}
-              animate={{
-                x: 0,
-                transition: {
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 25,
-                  mass: 0.8
-                }
-              }}
-              exit={{
-                x: '100%',
-                transition: {
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 30
-                }
-              }}
-              className="fixed top-0 right-0 z-[120] h-full w-[85vw] max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col"
+              className={`fixed top-0 right-0 z-[120] h-full w-[85vw] max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 dark:from-emerald-950/30 dark:via-cyan-950/30 dark:to-blue-950/30">
@@ -255,11 +225,7 @@ export default function Navbar() {
                   ].map((item, index) => {
                     const isActive = pathname === item.href;
                     return (
-                      <motion.div
-                        key={item.href}
-                        initial={{ x: 20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1, transition: { delay: 0.1 + (index * 0.05) } }}
-                      >
+                      <div key={item.href}>
                         <Link
                           href={item.href}
                           onClick={() => setIsOpen(false)}
@@ -278,15 +244,12 @@ export default function Navbar() {
                           </span>
                           <span className="text-base">{item.name}</span>
                         </Link>
-                      </motion.div>
+                      </div>
                     )
                   })}
 
                   {/* Services — Eye-catching card */}
-                  <motion.div
-                    initial={{ x: 20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1, transition: { delay: 0.2 } }}
-                  >
+                  <div>
                     <Link
                       href="/services"
                       onClick={() => setIsOpen(false)}
@@ -307,17 +270,13 @@ export default function Navbar() {
                       </div>
                       <Sparkles size={16} className="mr-auto opacity-60" />
                     </Link>
-                  </motion.div>
+                  </div>
                 </nav>
 
                 <hr className="border-slate-100 dark:border-slate-800" />
 
                 {/* Guide Links */}
-                <motion.div
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1, transition: { delay: 0.25 } }}
-                  className="space-y-2"
-                >
+                <div className="space-y-2">
                   <div className="grid grid-cols-1 gap-2">
                     {[
                       { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
@@ -345,16 +304,12 @@ export default function Navbar() {
                       )
                     })}
                   </div>
-                </motion.div>
+                </div>
 
                 <hr className="border-slate-100 dark:border-slate-800" />
 
                 {/* Smart Tools */}
-                <motion.div
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1, transition: { delay: 0.35 } }}
-                  className="space-y-2"
-                >
+                <div className="space-y-2">
                   <p className="px-2 text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
                     <BrainCircuit size={14} /> الأدوات الذكية
                   </p>
@@ -384,32 +339,19 @@ export default function Navbar() {
                       )
                     })}
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Footer */}
-              <motion.div
-                initial={{ x: 20, opacity: 0 }}
-                animate={{
-                  x: 0,
-                  opacity: 1,
-                  transition: {
-                    delay: 0.4,
-                    duration: 0.3,
-                    ease: 'easeOut'
-                  }
-                }}
-                className="p-4 border-t border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950"
+              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950"
               >
                 <p className="text-xs text-center text-slate-500 mb-4">{SITE_CONFIG.slogan}</p>
                 <div className="flex justify-center">
                   <ThemeToggle />
                 </div>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>,
+              </div>
+            </div>
+      </>,
       portalTarget
     )
     : null;
