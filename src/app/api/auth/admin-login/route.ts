@@ -24,9 +24,13 @@ export async function POST(request: NextRequest) {
         'unknown';
 
     // Service-role client for rate-limit tracking (bypasses RLS)
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+        return NextResponse.json({ error: 'server_config' }, { status: 500 });
+    }
     const serviceClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        serviceRoleKey
     );
 
     // ── Rate-limit check (graceful — if table doesn't exist, proceed) ──

@@ -27,9 +27,12 @@ export default function AdminCommunityPage() {
     };
 
     const handleApprove = async (id: string) => {
+        if (!confirm('هل تريد نشر هذا التعليق؟')) return;
         if (!supabase) return;
         const { error } = await supabase.from('comments').update({ status: 'approved' }).eq('id', id);
-        if (!error) {
+        if (error) {
+            toast.error('فشل النشر: ' + error.message);
+        } else {
             toast.success('تم النشر');
             fetchComments();
         }
@@ -39,7 +42,9 @@ export default function AdminCommunityPage() {
         if (!confirm('حذف هذا التعليق؟')) return;
         if (!supabase) return;
         const { error } = await supabase.from('comments').delete().eq('id', id);
-        if (!error) {
+        if (error) {
+            toast.error('فشل الحذف: ' + error.message);
+        } else {
             toast.success('تم الحذف');
             fetchComments();
         }

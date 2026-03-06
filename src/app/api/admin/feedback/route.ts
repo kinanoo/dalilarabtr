@@ -38,9 +38,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Service-role client (bypasses RLS for admin check and delete)
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+        return NextResponse.json({ error: 'server_config' }, { status: 500 });
+    }
     const serviceClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        serviceRoleKey
     );
 
     // Check admin role

@@ -107,9 +107,13 @@ export async function GET(request: NextRequest) {
 
     // ── Ensure member_profiles record exists ──
     const user = data.session.user;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+        return NextResponse.redirect(`${origin}/login?error=server_config`);
+    }
     const serviceClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        serviceRoleKey
     );
 
     const { data: profile } = await serviceClient

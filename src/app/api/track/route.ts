@@ -3,11 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 import { isRateLimited } from '@/lib/rate-limit';
 
-// Use service role key on server to bypass RLS (falls back to anon key)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Use service role key on server to bypass RLS
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = serviceRoleKey
+  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
+  : null;
 
 // ─── Bot Detection ──────────────────────────────────────────────────
 const BOT_PATTERNS = [
@@ -105,6 +105,9 @@ export async function POST(req: NextRequest) {
     delete enrichedMeta.country;
 
     // ─── Insert into analytics_events ───────────────────────────────
+    if (!supabase) {
+      return NextResponse.json({ error: 'server_config' }, { status: 500 });
+    }
     const { error } = await supabase.from('analytics_events').insert({
       event_name,
       page_path,

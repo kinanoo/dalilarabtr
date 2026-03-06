@@ -4,10 +4,10 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 // Use service role for server-side notification inserts (bypasses RLS safely)
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAdmin = serviceRoleKey
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
+    : null;
 
 const ALLOWED_TYPES = ['reply', 'review', 'comment', 'article', 'law', 'service', 'update', 'alert', 'announcement'];
 
@@ -26,6 +26,9 @@ export async function POST(request: Request) {
         }
 
         // Check admin role (use service-role client to bypass RLS on member_profiles)
+        if (!supabaseAdmin) {
+            return NextResponse.json({ error: 'server_config' }, { status: 500 });
+        }
         const { data: profile } = await supabaseAdmin
             .from('member_profiles')
             .select('role')
