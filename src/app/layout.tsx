@@ -23,7 +23,10 @@ import Footer from "@/components/Footer";
 const UrgencyBanner = dynamic(() => import('@/components/UrgencyBanner'));
 const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 
-// Non-critical components — code-split into separate chunks to reduce initial JS bundle
+// Wrapper that delays rendering until browser is idle (~2.5s after page load)
+const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
+
+// Non-critical components — code-split AND deferred until after initial render
 const AmbientBackground = dynamic(() => import("@/components/ui/AmbientBackground"));
 const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker").then(m => ({ default: m.AnalyticsTracker })));
 const NotificationManager = dynamic(() => import("@/components/NotificationManager"));
@@ -150,22 +153,6 @@ export default function RootLayout({
         </a>
         <ThemeProviderWrapper>
           <div className="flex flex-col min-h-screen relative">
-            {/* New Animated & Interactive Background */}
-            <AmbientBackground />
-
-            <Suspense fallback={null}>
-              <AnalyticsTracker />
-            </Suspense>
-
-            <NotificationManager />
-
-            {/* Viral Growth Tools */}
-            <SelectionShareMenu />
-
-            {/* PWA Components */}
-            <ServiceWorkerRegister />
-            <PWAInstallPrompt />
-
             <div className="relative z-10">
               <UrgencyBanner />
               <Navbar />
@@ -175,9 +162,21 @@ export default function RootLayout({
               </div>
               <Footer />
             </div>
-            <ClientComponents />
-            <BackToTop />
-            <CookieConsent />
+
+            {/* Non-critical components — deferred until browser is idle */}
+            <LazyGroup>
+              <AmbientBackground />
+              <Suspense fallback={null}>
+                <AnalyticsTracker />
+              </Suspense>
+              <NotificationManager />
+              <SelectionShareMenu />
+              <ServiceWorkerRegister />
+              <PWAInstallPrompt />
+              <ClientComponents />
+              <BackToTop />
+              <CookieConsent />
+            </LazyGroup>
           </div>
         </ThemeProviderWrapper>
       </body>
