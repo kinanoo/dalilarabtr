@@ -279,7 +279,7 @@ BEGIN
         WHEN 'new_update'   THEN '/updates/' || COALESCE(NEW.entity_id, '')
         WHEN 'new_scenario' THEN '/consultant?scenario=' || COALESCE(NEW.entity_id, '')
         WHEN 'new_faq'      THEN '/faq'
-        WHEN 'new_code'     THEN '/security-codes'
+        WHEN 'new_code'     THEN '/codes/' || COALESCE(NEW.entity_id, '')
         WHEN 'new_zone'     THEN '/zones'
         WHEN 'new_tool'     THEN '/tools'
         WHEN 'new_source'   THEN '/sources'

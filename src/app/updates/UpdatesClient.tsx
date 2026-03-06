@@ -12,7 +12,7 @@ const AUTO_EVENT_CONFIG: Record<string, { type: string; icon: typeof FileText; b
   new_article:  { type: 'مقال',      icon: FileText,     bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600', href: (id) => `/article/${id}` },
   new_scenario: { type: 'سيناريو',   icon: AlertCircle,  bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-600',    href: (id) => `/consultant?scenario=${id}` },
   new_faq:      { type: 'سؤال',      icon: HelpCircle,   bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-600',  href: () => `/faq` },
-  new_code:     { type: 'كود أمني',   icon: Shield,       bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600',     href: () => `/security-codes` },
+  new_code:     { type: 'كود أمني',   icon: Shield,       bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-600',     href: (id) => `/codes/${id}` },
   new_zone:     { type: 'منطقة',     icon: MapPin,       bg: 'bg-orange-100 dark:bg-orange-900/30',   text: 'text-orange-600',  href: () => `/zones` },
   new_update:   { type: 'خبر',       icon: Newspaper,    bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-600',   href: (id) => `/updates/${id}` },
   new_service:  { type: 'خدمة',      icon: Briefcase,    bg: 'bg-cyan-100 dark:bg-cyan-900/30',       text: 'text-cyan-600',    href: (id) => `/services/${id}` },

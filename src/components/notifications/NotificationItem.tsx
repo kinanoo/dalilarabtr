@@ -50,7 +50,7 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
         switch (notification.type) {
             case 'article': return '/updates';
             case 'update': return '/updates';
-            case 'alert': return '/security-codes';
+            case 'alert': return '/codes';
             case 'service': return '/services';
             case 'announcement': return '/updates';
             default: return '/updates';
