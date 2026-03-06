@@ -83,6 +83,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'delete_failed' }, { status: 500 });
         }
 
+        // Clean up related notifications & activity log (best-effort, don't block response)
+        const entityId = String(id);
+        serviceClient
+            .from('admin_activity_log')
+            .delete()
+            .eq('entity_table', table)
+            .eq('entity_id', entityId)
+            .then(() => {});
+        serviceClient
+            .from('notifications')
+            .delete()
+            .ilike('title', `%${entityId}%`)
+            .is('target_user_id', null)
+            .then(() => {});
+
         return NextResponse.json({ success: true });
 
     } catch (error: any) {
