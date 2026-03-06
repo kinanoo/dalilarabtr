@@ -148,18 +148,16 @@ export default function GuidedJourney() {
                                     />
                                 </button>
 
-                                {/* Collapsible content — CSS grid transition */}
-                                <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                                    <div className="overflow-hidden">
-                                        <div className="px-4 pb-4 pt-2">
-                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                                                {group.cards.map((card) => (
-                                                    <CardItem key={card.id} card={card} />
-                                                ))}
-                                            </div>
+                                {/* Collapsible content — only render cards when open to reduce DOM size */}
+                                {isOpen && (
+                                    <div className="px-4 pb-4 pt-2 animate-in fade-in duration-200">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                            {group.cards.map((card) => (
+                                                <CardItem key={card.id} card={card} />
+                                            ))}
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         );
                     })}

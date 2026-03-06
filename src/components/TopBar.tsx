@@ -1,54 +1,17 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { getNextPrayer, getPrayerTimes, PrayerTimes, TURKEY_CITIES } from '@/lib/prayer-times';
-import { Moon, Calendar, ChevronDown, MapPin, Clock } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { TURKEY_CITIES } from '@/lib/prayer-times';
+import { Moon, Calendar, ChevronDown, MapPin } from 'lucide-react';
+import { usePrayerData } from '@/lib/hooks/usePrayerData';
 
 export default function TopBar() {
-    const [nextPrayer, setNextPrayer] = useState<{ name: string; time: string; remainingMinutes: number } | null>(null);
-    const [allPrayers, setAllPrayers] = useState<PrayerTimes | null>(null);
-    const [hijriDate, setHijriDate] = useState<string>('');
+    const { nextPrayer, allPrayers, hijriDate, cityId, currentCityName, handleCityChange } = usePrayerData();
 
-    // City State
-    const [cityId, setCityId] = useState('Istanbul');
     const [showCities, setShowCities] = useState(false);
     const [showSchedule, setShowSchedule] = useState(false);
     const cityDropdownRef = useRef<HTMLDivElement>(null);
     const scheduleRef = useRef<HTMLDivElement>(null);
-
-    // Load saved city
-    useEffect(() => {
-        const saved = localStorage.getItem('daleel_prayer_city');
-        if (saved) setCityId(saved);
-    }, []);
-
-    // Fetch Data when city changes
-    useEffect(() => {
-        let cancelled = false;
-        async function loadData() {
-            try {
-                const data = await getPrayerTimes(cityId, 'Turkey');
-                if (cancelled || !data) return;
-
-                setHijriDate(`${data.date.weekday.ar}، ${data.date.day} ${data.date.month.ar}`);
-                setAllPrayers(data.timings);
-                setNextPrayer(getNextPrayer(data.timings));
-            } catch (err) {
-                console.warn('TopBar: Failed to load prayer data', err);
-            }
-        }
-        loadData();
-        return () => { cancelled = true; };
-    }, [cityId]);
-
-    // Handle City Change
-    const handleCitySelect = (id: string) => {
-        setCityId(id);
-        localStorage.setItem('daleel_prayer_city', id);
-        setShowCities(false);
-    };
-
-    const currentCityName = TURKEY_CITIES.find(c => c.id === cityId)?.nameAr || 'إسطنبول';
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -150,7 +113,7 @@ export default function TopBar() {
                                 {TURKEY_CITIES.map((city) => (
                                     <button
                                         key={city.id}
-                                        onClick={() => handleCitySelect(city.id)}
+                                        onClick={() => { handleCityChange(city.id); setShowCities(false); }}
                                         className={`w-full text-start px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 ${city.id === cityId ? 'text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-900/20' : 'text-slate-600 dark:text-slate-300'}`}
                                     >
                                         {city.nameAr}

@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, X, ArrowRight, Bell, Sparkles } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, ArrowRight, Bell, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname } from 'next/navigation';
@@ -10,6 +9,7 @@ import { usePathname } from 'next/navigation';
 export default function UrgencyBanner() {
     const pathname = usePathname();
     const [isVisible, setIsVisible] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
     const [bannerData, setBannerData] = useState<any>(null);
 
     useEffect(() => {
@@ -43,10 +43,12 @@ export default function UrgencyBanner() {
     if (pathname?.startsWith('/admin')) return null;
 
     const handleDismiss = () => {
-        setIsVisible(false);
+        setIsExiting(true);
         if (bannerData?.id && isLocalStorageAvailable()) {
             localStorage.setItem('dismissed_banner_id', bannerData.id.toString());
         }
+        // Remove from DOM after CSS transition completes
+        setTimeout(() => setIsVisible(false), 300);
     };
 
 
@@ -57,11 +59,8 @@ export default function UrgencyBanner() {
     const isWarning = bannerData.type === 'warning';
 
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={false}
-                exit={{ height: 0, opacity: 0 }}
-                className={`${isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-500' : 'bg-blue-600'} text-white fixed top-0 left-0 right-0 z-[60] overflow-hidden shadow-lg font-cairo`}
+            <div
+                className={`${isAlert ? 'bg-red-600' : isWarning ? 'bg-amber-500' : 'bg-blue-600'} text-white fixed top-0 left-0 right-0 z-[60] overflow-hidden shadow-lg font-cairo transition-all duration-300 ease-in-out ${isExiting ? 'max-h-0 opacity-0' : 'max-h-24 opacity-100'}`}
             >
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
 
@@ -87,6 +86,7 @@ export default function UrgencyBanner() {
                     </div>
 
                     <button
+                        type="button"
                         onClick={handleDismiss}
                         className="text-white/80 hover:text-white transition-colors p-2 min-w-11 min-h-11 flex items-center justify-center hover:bg-white/10 rounded-full"
                         aria-label="إغلاق التنبيه"
@@ -94,7 +94,6 @@ export default function UrgencyBanner() {
                         <X size={18} />
                     </button>
                 </div>
-            </motion.div>
-        </AnimatePresence>
+            </div>
     );
 }

@@ -7,7 +7,7 @@ import "../styles/dark-mode.css";
 import { Cairo } from 'next/font/google';
 
 const cairo = Cairo({
-  subsets: ['arabic', 'latin'],
+  subsets: ['arabic'],
   weight: ['400', '600', '700'],
   display: 'swap',
   variable: '--font-cairo',
@@ -18,8 +18,10 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import UrgencyBanner from '@/components/UrgencyBanner';
-import NewsTicker from "@/components/NewsTicker";
+
+// Non-critical above-fold components — lazy loaded to reduce initial JS
+const UrgencyBanner = dynamic(() => import('@/components/UrgencyBanner'));
+const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 
 // Non-critical components — code-split into separate chunks to reduce initial JS bundle
 const AmbientBackground = dynamic(() => import("@/components/ui/AmbientBackground"));

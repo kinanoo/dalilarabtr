@@ -127,14 +127,17 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
-    fetchRemoteUpdatesVersion()
-      .then((v) => {
-        if (!mounted) return;
-        if (v) setCurrentUpdatesVersion(v);
-      })
-      .catch(() => {
-        // ignore
-      });
+    // Delay non-critical remote version check to avoid blocking initial render
+    const timer = setTimeout(() => {
+      fetchRemoteUpdatesVersion()
+        .then((v) => {
+          if (!mounted) return;
+          if (v) setCurrentUpdatesVersion(v);
+        })
+        .catch(() => {
+          // ignore
+        });
+    }, 3000);
 
     try {
       const lastSeen = localStorage.getItem(UPDATES_STORAGE_KEY) || '';
@@ -144,6 +147,7 @@ export default function Navbar() {
     }
     return () => {
       mounted = false;
+      clearTimeout(timer);
     };
   }, [currentUpdatesVersion]);
 
