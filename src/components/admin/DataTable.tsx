@@ -125,7 +125,7 @@ export function DataTable({
             const res = await fetch('/api/admin/delete-record', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ table: tableName, id }),
+                body: JSON.stringify({ table: tableName, id, idField }),
             });
             const result = await res.json();
             if (!res.ok) throw new Error(result.error || 'فشل الحذف');

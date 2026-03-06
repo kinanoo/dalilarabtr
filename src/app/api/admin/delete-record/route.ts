@@ -21,7 +21,7 @@ const ALLOWED_TABLES = [
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { table, id } = body;
+        const { table, id, idField } = body;
 
         if (!table || !id) {
             return NextResponse.json({ error: 'missing_fields' }, { status: 400 });
@@ -68,10 +68,11 @@ export async function POST(request: NextRequest) {
         }
 
         // Perform delete with service client
+        const deleteField = (typeof idField === 'string' && idField) ? idField : 'id';
         const { error } = await serviceClient
             .from(table)
             .delete()
-            .eq('id', id);
+            .eq(deleteField, id);
 
         if (error) {
             console.error('Admin delete error:', error);
