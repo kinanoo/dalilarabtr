@@ -12,17 +12,23 @@ interface PrayerData {
 const CACHE_KEY = 'daleel_prayer_cache';
 const CITY_KEY = 'daleel_prayer_city';
 
+/** Returns today's date string (YYYY-MM-DD) in Turkey timezone */
+function getTurkeyDate(): string {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+}
+
 // Module-level shared state — prevents duplicate fetches across components
 let sharedData: PrayerData | null = null;
 let fetchPromise: Promise<void> | null = null;
 let currentCacheCity: string | null = null;
+let cachedDateStr: string | null = null;
 
 function getCachedData(city: string): PrayerData | null {
     try {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         const cached = JSON.parse(raw);
-        const today = new Date().toISOString().split('T')[0];
+        const today = getTurkeyDate();
         if (cached.date === today && cached.city === city) {
             return {
                 allPrayers: cached.timings,
@@ -36,7 +42,8 @@ function getCachedData(city: string): PrayerData | null {
 
 function saveCache(city: string, timings: PrayerTimes, hijriDate: string) {
     try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getTurkeyDate();
+        cachedDateStr = today;
         localStorage.setItem(CACHE_KEY, JSON.stringify({ date: today, city, timings, hijriDate }));
     } catch {}
 }
@@ -97,17 +104,30 @@ export function usePrayerData() {
         return () => { cancelled = true; };
     }, [cityId]);
 
-    // Recalculate next prayer every minute
+    // Recalculate next prayer every minute + detect day change (Istanbul midnight)
     useEffect(() => {
         if (!data.allPrayers) return;
         const interval = setInterval(() => {
+            const nowDate = getTurkeyDate();
+            if (cachedDateStr && nowDate !== cachedDateStr) {
+                // Day changed in Turkey — re-fetch fresh data
+                sharedData = null;
+                fetchPromise = null;
+                cachedDateStr = null;
+                localStorage.removeItem(CACHE_KEY);
+                fetchAndCache(cityId).then(result => {
+                    sharedData = result;
+                    setData(result);
+                });
+                return;
+            }
             setData(prev => ({
                 ...prev,
                 nextPrayer: prev.allPrayers ? getNextPrayer(prev.allPrayers) : null,
             }));
         }, 60_000);
         return () => clearInterval(interval);
-    }, [data.allPrayers]);
+    }, [data.allPrayers, cityId]);
 
     const handleCityChange = (id: string) => {
         setCityId(id);

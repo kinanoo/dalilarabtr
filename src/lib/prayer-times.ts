@@ -58,8 +58,10 @@ export async function getPrayerTimes(city: string = 'Istanbul', country: string 
 }
 
 export function getNextPrayer(timings: PrayerTimes): { name: string; time: string; remainingMinutes: number } | null {
+    // Use Istanbul time — prayer times are for Turkey regardless of browser timezone
     const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const istanbulNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }));
+    const currentMinutes = istanbulNow.getHours() * 60 + istanbulNow.getMinutes();
 
     const prayers = [
         { name: 'الفجر', key: 'Fajr' },

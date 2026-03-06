@@ -13,10 +13,15 @@ export async function GET(request: NextRequest) {
     const country = searchParams.get('country') || 'Turkey';
 
     try {
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
+        // Use Istanbul timezone — Vercel servers run in UTC, but prayers are for Turkey
+        const now = new Date();
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/Istanbul',
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        }).formatToParts(now);
+        const day = parts.find(p => p.type === 'day')!.value;
+        const month = parts.find(p => p.type === 'month')!.value;
+        const year = parts.find(p => p.type === 'year')!.value;
         const dateStr = `${day}-${month}-${year}`;
 
         const res = await fetch(
