@@ -2,7 +2,21 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { getNextPrayer, getPrayerTimes, PrayerTimes, TURKEY_CITIES } from '@/lib/prayer-times';
-import { Moon, Calendar, ChevronDown, MapPin, Clock } from 'lucide-react';
+import { Calendar, ChevronDown, MapPin, Clock } from 'lucide-react';
+
+function MosqueIcon({ size = 20, className = '' }: { size?: number; className?: string }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M12 3c-2 2-4 4.5-4 7a4 4 0 0 0 8 0c0-2.5-2-5-4-7Z" />
+            <path d="M8 14v6" />
+            <path d="M16 14v6" />
+            <path d="M6 20h12" />
+            <path d="M4 20v-3a2 2 0 0 1 2-2h1" />
+            <path d="M20 20v-3a2 2 0 0 0-2-2h-1" />
+            <path d="M12 10v1" />
+        </svg>
+    );
+}
 
 export default function PrayerPopover() {
     const [nextPrayer, setNextPrayer] = useState<{ name: string; time: string; remainingMinutes: number } | null>(null);
@@ -75,9 +89,9 @@ export default function PrayerPopover() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="مواقيت الصلاة"
-                className="relative p-2 min-w-11 min-h-11 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="relative p-2 min-w-11 min-h-11 flex items-center justify-center text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
             >
-                <Moon size={20} />
+                <MosqueIcon size={20} />
                 {nextPrayer && (
                     <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full" />
                 )}
