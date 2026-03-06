@@ -12,8 +12,8 @@ import {
     markOneAsRead,
     type Notification,
 } from '@/lib/api/notifications';
-import { supabase } from '@/lib/supabaseClient';
 import NotificationItem from '@/components/notifications/NotificationItem';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 type TabKey = 'all' | 'personal';
 
@@ -22,25 +22,13 @@ export default function NotificationBell() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
+    const { userId } = useAuth();
     const [activeTab, setActiveTab] = useState<TabKey>('all');
     const bellBtnRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
 
     // SSR safety
     useEffect(() => { setMounted(true); }, []);
-
-    // Get current user ID for personal notifications
-    useEffect(() => {
-        if (!supabase) return;
-        supabase.auth.getUser().then(({ data }) => {
-            setUserId(data.user?.id ?? null);
-        });
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUserId(session?.user?.id ?? null);
-        });
-        return () => subscription.unsubscribe();
-    }, []);
 
     // Stable loader that always uses current userId
     const loadNotifications = useCallback(async () => {

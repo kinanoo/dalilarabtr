@@ -1,7 +1,7 @@
 'use client';
 
 import { ThemeProvider } from 'next-themes';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 
 /**
  * مزود الموضوع (Theme Provider)
@@ -9,21 +9,6 @@ import { ReactNode, useEffect } from 'react';
  * مع تحسينات: smooth transitions + prevent flash
  */
 export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
-  useEffect(() => {
-    // Prevent flash of wrong theme on initial load
-    const html = document.documentElement;
-
-    // Add transitioning class temporarily
-    html.classList.add('theme-transitioning');
-
-    // Remove after a short delay to enable transitions
-    const timer = setTimeout(() => {
-      html.classList.remove('theme-transitioning');
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <ThemeProvider
       attribute="class"

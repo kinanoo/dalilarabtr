@@ -17,9 +17,9 @@ import {
 import { ThemeToggle } from './ThemeToggle';
 import PrayerPopover from './PrayerPopover';
 import NavDropdown from './NavDropdown';
-import { supabase } from '@/lib/supabaseClient';
 import NotificationBell from './notifications/NotificationBell';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 // Helper to map icon names to components
 export const IconMap: any = {
@@ -30,26 +30,7 @@ export const IconMap: any = {
 
 
 function AuthButton({ mobile = false }: { mobile?: boolean }) {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
-
-    // Check initial user from cookies (same storage as login/dashboard)
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-      setLoading(false);
-    });
-
-    // Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, loading } = useAuth();
 
   if (loading) return <div className="hidden sm:block w-[90px] h-[32px] rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
 

@@ -1,13 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function AmbientBackground() {
   const spotlightRef = useRef<HTMLDivElement>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Skip rendering entirely on mobile — saves GPU resources
+  useEffect(() => {
+    setIsDesktop(window.innerWidth >= 768);
+  }, []);
 
   useEffect(() => {
-    // Optimization: Only track mouse on devices that have a mouse (prevent listener overhead on mobile)
-    if (!window.matchMedia('(hover: hover)').matches) return;
+    // Only track mouse on devices that have a mouse
+    if (!isDesktop || !window.matchMedia('(hover: hover)').matches) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (spotlightRef.current) {
@@ -23,7 +29,10 @@ export default function AmbientBackground() {
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isDesktop]);
+
+  // Don't render anything on mobile — no GPU cost
+  if (!isDesktop) return null;
 
   return (
     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">

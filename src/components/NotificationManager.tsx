@@ -18,14 +18,17 @@ export default function NotificationManager() {
             setIsSupported(true);
             setPermission(Notification.permission);
 
-            // Register Service Worker
-            navigator.serviceWorker.register('/sw.js')
-                .then(() => {
-                    // SW registered successfully
-                })
-                .catch(error => {
+            // Defer SW registration to avoid blocking initial render
+            const register = () => {
+                navigator.serviceWorker.register('/sw.js').catch(error => {
                     console.error('Service Worker registration failed:', error);
                 });
+            };
+            if ('requestIdleCallback' in window) {
+                (window as any).requestIdleCallback(register);
+            } else {
+                setTimeout(register, 2000);
+            }
         }
     }, []);
 
