@@ -18,7 +18,7 @@ export const CodeEditor = ({ form, setForm }: any) => (
                 <input
                     required
                     value={form.code || ''}
-                    onChange={(e: any) => setForm({ ...form, code: e.target.value })}
+                    onChange={(e: any) => setForm({ ...form, code: e.target.value.toUpperCase() })}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-mono font-bold focus:ring-2 focus:ring-emerald-500 transition-all uppercase"
                     placeholder="V-87"
                 />
