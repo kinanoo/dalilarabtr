@@ -5,6 +5,7 @@ import PageHero from '@/components/PageHero';
 import { MapPin, ArrowRight, AlertTriangle, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 3600;
 
@@ -27,10 +28,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         .single();
 
     if (exactZone) {
+        const zoneTitle = `هل منطقة ${exactZone.name_ar} محظورة؟`;
         return {
-            title: `هل منطقة ${exactZone.name_ar} محظورة؟ - دليل المناطق`,
+            title: `${zoneTitle} - دليل المناطق`,
             description: `تحقق من حالة حي ${exactZone.name_ar} (${exactZone.name_tr}) وهل هو محظور لتثبيت النفوس.`,
             alternates: { canonical: `/zones/${decodedSlug}` },
+            openGraph: {
+                title: zoneTitle,
+                images: [{
+                    url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: zoneTitle, category: 'المناطق المحظورة' })}`,
+                    width: 1200, height: 630, alt: zoneTitle,
+                }],
+            },
         };
     }
 
@@ -42,10 +51,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         .limit(1);
 
     if (districtZones && districtZones.length > 0) {
+        const districtTitle = `الأحياء المحظورة في ${decodedSlug}`;
         return {
-            title: `الأحياء المحظورة في ${decodedSlug} - دليل المناطق`,
+            title: `${districtTitle} - دليل المناطق`,
             description: `قائمة بجميع الأحياء المغلقة أمام الأجانب في منطقة ${decodedSlug}، تركيا.`,
             alternates: { canonical: `/zones/${decodedSlug}` },
+            openGraph: {
+                title: districtTitle,
+                images: [{
+                    url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: districtTitle, category: 'المناطق المحظورة' })}`,
+                    width: 1200, height: 630, alt: districtTitle,
+                }],
+            },
         };
     }
 

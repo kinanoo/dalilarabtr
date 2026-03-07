@@ -32,14 +32,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!item) return { title: 'الكود غير موجود' };
 
+    const ogTitle = `شرح الكود ${item.code} - ${item.title}`;
     return {
         title: `معنى الكود ${item.code} - ${item.title} | دليل الأكواد الأمنية`,
         description: item.description?.slice(0, 160) || `تفاصيل ومعنى الكود الأمني ${item.code} وأسباب وضعه وكيفية إزالته.`,
         alternates: { canonical: `/codes/${encodeURIComponent(item.code)}` },
         openGraph: {
-            title: `ما هو الكود ${item.code}؟ (${item.title})`,
+            title: ogTitle,
             description: item.description?.slice(0, 200),
-        }
+            images: [{
+                url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: ogTitle, category: 'أكواد أمنية' })}`,
+                width: 1200, height: 630, alt: ogTitle,
+            }],
+        },
     };
 }
 

@@ -42,7 +42,7 @@ export async function generateMetadata(
     const title = `${data.name} - ${data.profession} في ${data.city} | دليل العرب`;
     const description = data.description?.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
-    const ogImage = data.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`;
+    const ogImage = data.image || `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: `${data.name} — ${data.profession}`, category: data.category || 'خدمات' })}`;
 
     return {
         title,

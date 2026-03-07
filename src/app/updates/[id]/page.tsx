@@ -42,6 +42,14 @@ export async function generateMetadata(
         title: `${data.title} | دليل العرب`,
         description: stripHtml(data.content).substring(0, 160) || data.title,
         alternates: { canonical: `/updates/${id}` },
+        openGraph: {
+            title: data.title,
+            description: stripHtml(data.content).substring(0, 200),
+            images: [{
+                url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: data.title, category: data.type === 'alert' ? 'تنبيه' : 'تحديث' })}`,
+                width: 1200, height: 630, alt: data.title,
+            }],
+        },
     };
 }
 

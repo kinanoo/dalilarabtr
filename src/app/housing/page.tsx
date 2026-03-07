@@ -1,10 +1,22 @@
+import { Metadata } from 'next';
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 import { Home, ArrowLeft, Sparkles, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
+import ShareMenu from '@/components/ShareMenu';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: 'السكن والحياة في تركيا | دليل العرب',
+  description: 'دليلك الشامل للسكن والإيجار والحياة اليومية في تركيا.',
+  openGraph: {
+    title: 'السكن والحياة في تركيا',
+    images: [{ url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: 'السكن والحياة في تركيا', category: 'دليل شامل' })}`, width: 1200, height: 630 }],
+  },
+};
 
 function isNewContent(dateStr: string): boolean {
   if (!dateStr) return false;
@@ -84,6 +96,9 @@ export default async function HousingPage() {
             </div>
           )}
         </div>
+      </div>
+      <div className="max-w-screen-2xl mx-auto px-4 pb-12 flex justify-center">
+        <ShareMenu title="السكن والحياة في تركيا" text="دليلك الشامل للسكن والإيجار والحياة اليومية في تركيا." />
       </div>
     </main>
   );

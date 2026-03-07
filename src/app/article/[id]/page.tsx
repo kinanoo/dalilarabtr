@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
 import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+import ShareMenu from '@/components/ShareMenu';
 import { stripHtml } from '@/lib/stripHtml';
 
 
@@ -322,6 +323,13 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }} />
       <ArticleHydratedView articleData={article} slug={params.id}>
+        <div className="flex justify-center my-6">
+          <ShareMenu
+            title={article.title}
+            text={stripHtml(article.intro).substring(0, 150)}
+            url={url}
+          />
+        </div>
         <ContentHelpfulWidget entityType="article" entityId={params.id} />
         <UniversalComments entityType="article" entityId={params.id} title="نقاش دليل المقال" />
       </ArticleHydratedView>
