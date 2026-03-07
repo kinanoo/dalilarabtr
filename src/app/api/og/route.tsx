@@ -12,6 +12,11 @@ const cairoRegular = fetch(
   'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
 ).then((res) => res.arrayBuffer());
 
+// Satori renders Arabic words LTR — reverse word order so it reads correctly RTL
+function fixArabic(text: string): string {
+  return text.split(' ').reverse().join(' ');
+}
+
 // Split text into lines of roughly maxChars characters, breaking at word boundaries
 function splitLines(text: string, maxChars: number): string[] {
   const words = text.split(' ');
@@ -105,7 +110,7 @@ export async function GET(request: NextRequest) {
                   border: '1px solid rgba(255,255,255,0.3)',
                 }}
               >
-                {category}
+                {fixArabic(category)}
               </span>
             )}
 
@@ -130,7 +135,7 @@ export async function GET(request: NextRequest) {
                     textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {line}
+                  {fixArabic(line)}
                 </div>
               ))}
             </div>
@@ -162,7 +167,7 @@ export async function GET(request: NextRequest) {
               <span
                 style={{ color: 'white', fontSize: '24px', fontWeight: 700 }}
               >
-                دليل العرب في تركيا
+                {fixArabic('دليل العرب في تركيا')}
               </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
