@@ -43,6 +43,7 @@ function CommentItem({
     visitorId,
     userName,
     currentUserId,
+    isAdmin,
     activeReplyId,
     onReply,
     onCancelReply,
@@ -57,6 +58,7 @@ function CommentItem({
     visitorId: string;
     userName: string;
     currentUserId: string | null;
+    isAdmin: boolean;
     activeReplyId: string | null;
     onReply: (id: string) => void;
     onCancelReply: () => void;
@@ -77,6 +79,7 @@ function CommentItem({
     const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
     const isOwner = currentUserId && comment.user_id === currentUserId;
+    const canDelete = isOwner || isAdmin;
 
     const isReplyActive = activeReplyId === comment.id;
     const replyCount = comment.replies?.length || 0;
@@ -173,23 +176,27 @@ function CommentItem({
                         </div>
                     </div>
 
-                    {/* Edit/Delete for owner */}
-                    {isOwner && !editing && (
+                    {/* Edit for owner, Delete for owner or admin */}
+                    {(isOwner || canDelete) && !editing && (
                         <div className="flex items-center gap-1 shrink-0">
-                            <button
-                                onClick={() => { setEditing(true); setEditText(comment.content); }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
-                                title="تعديل"
-                            >
-                                <Pencil size={13} />
-                            </button>
-                            <button
-                                onClick={() => setShowDeleteConfirm(true)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
-                                title="حذف"
-                            >
-                                <Trash2 size={13} />
-                            </button>
+                            {isOwner && (
+                                <button
+                                    onClick={() => { setEditing(true); setEditText(comment.content); }}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
+                                    title="تعديل"
+                                >
+                                    <Pencil size={13} />
+                                </button>
+                            )}
+                            {canDelete && (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+                                    title="حذف"
+                                >
+                                    <Trash2 size={13} />
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -326,6 +333,7 @@ function CommentItem({
                             visitorId={visitorId}
                             userName={userName}
                             currentUserId={currentUserId}
+                            isAdmin={isAdmin}
                             activeReplyId={activeReplyId}
                             onReply={onReply}
                             onCancelReply={onCancelReply}
@@ -350,6 +358,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     const [visitorId, setVisitorId] = useState('');
 
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [name, setName] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [content, setContent] = useState('');
@@ -380,12 +389,13 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         if (user) {
             const { data: profile } = await supabase
                 .from('member_profiles')
-                .select('full_name')
+                .select('full_name, role')
                 .eq('id', user.id)
                 .single();
             const displayName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'عضو';
             setName(displayName);
             setIsLoggedIn(true);
+            setIsAdmin(profile?.role === 'admin');
             setUserKey(user.id);
             setVisitorId(user.id);
             setCurrentUserId(user.id);
@@ -573,6 +583,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                             visitorId={visitorId}
                             userName={name}
                             currentUserId={currentUserId}
+                            isAdmin={isAdmin}
                             activeReplyId={activeReplyId}
                             onReply={setActiveReplyId}
                             onCancelReply={() => setActiveReplyId(null)}
