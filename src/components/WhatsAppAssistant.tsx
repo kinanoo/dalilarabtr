@@ -53,7 +53,7 @@ export default function WhatsAppAssistant() {
   }, [open]);
 
   return (
-    <div ref={wrapperRef} className="fixed bottom-[18px] left-3 md:bottom-6 md:left-6 z-[90] flex flex-col items-center gap-2">
+    <div ref={wrapperRef} className="fixed bottom-[14px] left-2 md:bottom-6 md:left-6 z-[90] flex flex-col items-center gap-2">
       {/* Options */}
       <div className="flex flex-col items-center gap-1.5">
         {FAB_OPTIONS.map((opt, i) => (
