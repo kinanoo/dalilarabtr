@@ -55,8 +55,10 @@ export default function TestimonialsManager() {
             {/* Add New */}
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl mb-6 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end">
                 <div>
-                    <label className="text-xs font-bold mb-1 block">الاسم</label>
+                    <label htmlFor="testimonial-name" className="text-xs font-bold mb-1 block">الاسم</label>
                     <input
+                        id="testimonial-name"
+                        name="testimonial-name"
                         value={newReview.name}
                         onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
                         className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700"
@@ -64,8 +66,10 @@ export default function TestimonialsManager() {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-bold mb-1 block">الصفة/الدور</label>
+                    <label htmlFor="testimonial-role" className="text-xs font-bold mb-1 block">الصفة/الدور</label>
                     <input
+                        id="testimonial-role"
+                        name="testimonial-role"
                         value={newReview.role}
                         onChange={(e) => setNewReview({ ...newReview, role: e.target.value })}
                         className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700"
@@ -73,8 +77,10 @@ export default function TestimonialsManager() {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-bold mb-1 block">المكان</label>
+                    <label htmlFor="testimonial-location" className="text-xs font-bold mb-1 block">المكان</label>
                     <input
+                        id="testimonial-location"
+                        name="testimonial-location"
                         value={newReview.location}
                         onChange={(e) => setNewReview({ ...newReview, location: e.target.value })}
                         className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700"
@@ -82,8 +88,10 @@ export default function TestimonialsManager() {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-bold mb-1 block">التقييم (1-5)</label>
+                    <label htmlFor="testimonial-rating" className="text-xs font-bold mb-1 block">التقييم (1-5)</label>
                     <input
+                        id="testimonial-rating"
+                        name="testimonial-rating"
                         type="number"
                         min="1"
                         max="5"
@@ -93,8 +101,10 @@ export default function TestimonialsManager() {
                     />
                 </div>
                 <div className="md:col-span-3">
-                    <label className="text-xs font-bold mb-1 block">نص الرأي</label>
+                    <label htmlFor="testimonial-content" className="text-xs font-bold mb-1 block">نص الرأي</label>
                     <textarea
+                        id="testimonial-content"
+                        name="testimonial-content"
                         value={newReview.content}
                         onChange={(e) => setNewReview({ ...newReview, content: e.target.value })}
                         className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 h-20"
@@ -103,6 +113,7 @@ export default function TestimonialsManager() {
                 </div>
                 <div>
                     <button
+                        type="button"
                         onClick={handleAdd}
                         className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center justify-center gap-2"
                     >
@@ -130,6 +141,7 @@ export default function TestimonialsManager() {
 
                         <div className="absolute top-4 left-4">
                             <button
+                                type="button"
                                 onClick={() => handleDelete(item.id)}
                                 className="text-red-400 hover:text-red-600 transition-colors"
                                 title="حذف"

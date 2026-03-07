@@ -3,8 +3,10 @@ import React from 'react';
 export const SourceEditor = ({ form, setForm }: any) => (
     <div className="space-y-6 max-w-4xl mx-auto">
         <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">اسم المصدر</label>
+            <label htmlFor="source-name" className="text-sm font-bold text-slate-700 dark:text-slate-300">اسم المصدر</label>
             <input
+                id="source-name"
+                name="source-name"
                 value={form.name || ''}
                 onChange={(e: any) => setForm({ ...form, name: e.target.value })}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -14,8 +16,10 @@ export const SourceEditor = ({ form, setForm }: any) => (
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">التصنيف</label>
+                <label htmlFor="source-category" className="text-sm font-bold text-slate-700 dark:text-slate-300">التصنيف</label>
                 <select
+                    id="source-category"
+                    name="source-category"
                     value={form.category || 'government'}
                     onChange={(e: any) => setForm({ ...form, category: e.target.value })}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
@@ -28,8 +32,10 @@ export const SourceEditor = ({ form, setForm }: any) => (
                 </select>
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الرابط الرسمي (Website)</label>
+                <label htmlFor="source-url" className="text-sm font-bold text-slate-700 dark:text-slate-300">الرابط الرسمي (Website)</label>
                 <input
+                    id="source-url"
+                    name="source-url"
                     value={form.url || ''}
                     onChange={(e: any) => setForm({ ...form, url: e.target.value })}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all text-left"
@@ -40,8 +46,10 @@ export const SourceEditor = ({ form, setForm }: any) => (
         </div>
 
         <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">الوصف أو ملاحظات</label>
+            <label htmlFor="source-description" className="text-sm font-bold text-slate-700 dark:text-slate-300">الوصف أو ملاحظات</label>
             <textarea
+                id="source-description"
+                name="source-description"
                 value={form.description || ''}
                 onChange={(e: any) => setForm({ ...form, description: e.target.value })}
                 className="w-full p-4 h-32 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"

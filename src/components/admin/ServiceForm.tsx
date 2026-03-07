@@ -116,9 +116,11 @@ export default function ServiceForm() {
                 {/* Main Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم (أو اسم المحل)</label>
+                        <label htmlFor="service-name" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم (أو اسم المحل)</label>
                         <input
                             required
+                            id="service-name"
+                            name="service-name"
                             type="text"
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -127,9 +129,11 @@ export default function ServiceForm() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">المهنة / التخصص</label>
+                        <label htmlFor="service-profession" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">المهنة / التخصص</label>
                         <input
                             required
+                            id="service-profession"
+                            name="service-profession"
                             type="text"
                             value={formData.profession}
                             onChange={e => setFormData({ ...formData, profession: e.target.value })}
@@ -142,8 +146,10 @@ export default function ServiceForm() {
                 {/* Location & Contact */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">المدينة</label>
+                        <label htmlFor="service-city" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">المدينة</label>
                         <select
+                            id="service-city"
+                            name="service-city"
                             value={formData.city}
                             onChange={e => setFormData({ ...formData, city: e.target.value })}
                             className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -158,9 +164,11 @@ export default function ServiceForm() {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف (واتساب)</label>
+                        <label htmlFor="service-phone" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف (واتساب)</label>
                         <input
                             required
+                            id="service-phone"
+                            name="service-phone"
                             type="tel"
                             dir="ltr"
                             value={formData.phone}
@@ -173,8 +181,10 @@ export default function ServiceForm() {
 
                 {/* Description */}
                 <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">وصف الخدمة</label>
+                    <label htmlFor="service-description" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">وصف الخدمة</label>
                     <textarea
+                        id="service-description"
+                        name="service-description"
                         rows={3}
                         value={formData.description}
                         onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -191,6 +201,8 @@ export default function ServiceForm() {
                             {imageFile ? imageFile.name : "اضغط لرفع صورة الكرت (اختياري)"}
                         </span>
                         <input
+                            id="service-image"
+                            name="service-image"
                             type="file"
                             accept="image/*"
                             className="hidden"

@@ -99,6 +99,7 @@ export default function BanCalculator() {
               </label>
               <select
                 id="ban-duration"
+                name="ban-duration"
                 aria-label="مدة المخالفة"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
@@ -120,6 +121,7 @@ export default function BanCalculator() {
               </label>
               <select
                 id="exit-type"
+                name="exit-type"
                 aria-label="طريقة الخروج"
                 value={exitType}
                 onChange={(e) => setExitType(e.target.value)}
@@ -137,6 +139,7 @@ export default function BanCalculator() {
               </label>
               <select
                 id="fine-paid"
+                name="fine-paid"
                 aria-label="هل دُفعت الغرامة"
                 value={finePaid}
                 onChange={(e) => setFinePaid(e.target.value)}

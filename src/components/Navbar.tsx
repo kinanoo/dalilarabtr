@@ -75,7 +75,9 @@ export default function Navbar() {
     route: t.href // Map href to route
   })));
   const navRef = useRef<HTMLElement>(null);
-  const portalTarget = typeof document !== 'undefined' ? document.body : null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const portalTarget = mounted ? document.body : null;
 
   // Hide navbar on scroll down, show on scroll up
   const [navHidden, setNavHidden] = useState(false);

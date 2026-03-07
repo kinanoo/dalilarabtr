@@ -24,7 +24,7 @@ export const GenericEditor = ({ form, setForm, type }: GenericEditorProps) => {
                 if (typeof form[key] === 'object') return null; // Skip arrays/objs
                 return (
                     <Field key={key} label={key} icon={Edit3}>
-                        <input className={inputStyles} value={form[key] || ''} onChange={e => setForm({ ...form, [key]: e.target.value })} />
+                        <input id={`generic-field-${key}`} name={`generic-field-${key}`} className={inputStyles} value={form[key] || ''} onChange={e => setForm({ ...form, [key]: e.target.value })} />
                     </Field>
                 )
             })}

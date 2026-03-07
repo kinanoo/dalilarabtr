@@ -198,38 +198,38 @@ export default function HomeManager() {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold mb-1 block">العنوان</label>
-                                <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition" placeholder="مثال: تجديد الإقامة" />
+                                <label htmlFor="card-title" className="text-xs font-bold mb-1 block">العنوان</label>
+                                <input id="card-title" name="card-title" required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition" placeholder="مثال: تجديد الإقامة" />
                             </div>
                             <div>
-                                <label className="text-xs font-bold mb-1 block">الوصف القصير</label>
-                                <textarea rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition" placeholder="وصف يظهر تحت العنوان..." />
+                                <label htmlFor="card-description" className="text-xs font-bold mb-1 block">الوصف القصير</label>
+                                <textarea id="card-description" name="card-description" rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition" placeholder="وصف يظهر تحت العنوان..." />
                             </div>
                             <div>
-                                <label className="text-xs font-bold mb-1 block">الرابط (Route)</label>
+                                <label htmlFor="card-href" className="text-xs font-bold mb-1 block">الرابط (Route)</label>
                                 <div className="relative">
                                     <ExternalLink size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input required value={form.href} onChange={e => setForm({ ...form, href: e.target.value })} className="w-full pl-10 pr-2.5 py-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition dir-ltr text-left" placeholder="/example" />
+                                    <input id="card-href" name="card-href" required value={form.href} onChange={e => setForm({ ...form, href: e.target.value })} className="w-full pl-10 pr-2.5 py-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition dir-ltr text-left" placeholder="/example" />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-bold mb-1 block">الأيقونة</label>
-                                    <select value={form.icon_name} onChange={e => setForm({ ...form, icon_name: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition">
+                                    <label htmlFor="card-icon" className="text-xs font-bold mb-1 block">الأيقونة</label>
+                                    <select id="card-icon" name="card-icon" value={form.icon_name} onChange={e => setForm({ ...form, icon_name: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition">
                                         {Object.keys(ICONS).map(icon => <option key={icon} value={icon}>{icon}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold mb-1 block">الترتيب</label>
-                                    <input type="number" value={form.sort_order} onChange={e => setForm({ ...form, sort_order: parseInt(e.target.value) })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition" />
+                                    <label htmlFor="card-sort-order" className="text-xs font-bold mb-1 block">الترتيب</label>
+                                    <input id="card-sort-order" name="card-sort-order" type="number" value={form.sort_order} onChange={e => setForm({ ...form, sort_order: parseInt(e.target.value) })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition" />
                                 </div>
                             </div>
 
                             {activeTab === 'journey' && (
                                 <div>
-                                    <label className="text-xs font-bold mb-1 block">اللون (للتدرج اللوني)</label>
-                                    <select value={form.color_class} onChange={e => setForm({ ...form, color_class: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition">
+                                    <label htmlFor="card-color" className="text-xs font-bold mb-1 block">اللون (للتدرج اللوني)</label>
+                                    <select id="card-color" name="card-color" value={form.color_class} onChange={e => setForm({ ...form, color_class: e.target.value })} className="w-full p-2.5 rounded-xl border dark:bg-slate-800 focus:ring-2 ring-emerald-500 outline-none transition">
                                         {COLORS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                                     </select>
                                 </div>

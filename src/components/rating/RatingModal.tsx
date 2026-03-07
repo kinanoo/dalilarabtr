@@ -99,6 +99,8 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">اسمك (اختياري)</label>
                                     <input
+                                        id="rating-client-name"
+                                        name="client_name"
                                         className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
                                         placeholder="فاعل خير"
                                         value={clientName}
@@ -108,6 +110,8 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 mb-1 block">تعليقك (اختياري)</label>
                                     <textarea
+                                        id="rating-comment"
+                                        name="comment"
                                         rows={3}
                                         className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
                                         placeholder="اكتب ملاحظاتك هنا..."

@@ -145,6 +145,7 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                         <div className="flex-1 space-y-3">
                             {/* Name Field (Subtle) */}
                             <input
+                                id="comment-user-name"
                                 name="user_name"
                                 type="text"
                                 placeholder="اكتب اسمك (اختياري)..."
@@ -154,8 +155,9 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                             {/* Comment Bubble Input */}
                             <div className="relative w-full">
                                 <textarea
+                                    id="comment-content"
                                     name="content"
-                                    rows={2} // Starts small, expands if needed (auto-expand logic not here but strictly UI)
+                                    rows={2}
                                     placeholder="اكتب تعليقاً..."
                                     className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-3xl py-3 px-5 pr-14 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 resize-none leading-relaxed shadow-sm block transition-all"
                                 ></textarea>
