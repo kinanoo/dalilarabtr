@@ -18,6 +18,7 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
 
 // Non-critical above-fold components — lazy loaded to reduce initial JS
 const UrgencyBanner = dynamic(() => import('@/components/UrgencyBanner'));
@@ -145,6 +146,10 @@ export default function RootLayout({
 
         {/* Google Analytics */}
         {GA_ID && <GoogleAnalytics />}
+
+        {/* Structured Data — Organization + WebSite (for Google logo & sitelinks) */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
       </head>
       <body className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
         {/* Skip to main content for keyboard/screen reader users */}
