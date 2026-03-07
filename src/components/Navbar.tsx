@@ -9,7 +9,7 @@ import { SITE_CONFIG } from '@/lib/config';
 import { GUIDES_MENU, LATEST_UPDATES_VERSION, UPDATES_STORAGE_KEY, PRIMARY_NAV, TOOLS_MENU } from '@/lib/constants';
 import { fetchRemoteUpdatesVersion } from '@/lib/remoteData';
 import {
-  Menu, X, BrainCircuit, Search, Bell, Sparkles, ChevronDown,
+  Menu, X, BrainCircuit, Search, Bell, Sparkles, ChevronDown, ChevronLeft,
   Home, Briefcase, FileText, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
   UserCheck, HeartPulse, Link as LinkIcon, ScrollText
@@ -61,6 +61,7 @@ function AuthButton({ mobile = false }: { mobile?: boolean }) {
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [currentUpdatesVersion, setCurrentUpdatesVersion] = useState(LATEST_UPDATES_VERSION);
   // Initialize with Static Data (Fallback)
@@ -192,11 +193,11 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* Items - with Stagger & Neon Effects */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+              {/* Items */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
 
-                {/* 0. Mobile Auth Button */}
-                <div className="mb-4" onClick={() => setIsOpen(false)}>
+                {/* Auth Button */}
+                <div className="mb-2" onClick={() => setIsOpen(false)}>
                   <AuthButton mobile={true} />
                 </div>
 
@@ -205,124 +206,124 @@ export default function Navbar() {
                   {[
                     { name: 'الرئيسية', href: '/', icon: Home },
                     { name: 'المستشار الذكي', href: '/consultant', icon: BrainCircuit },
-                  ].map((item, index) => {
+                  ].map((item) => {
                     const isActive = pathname === item.href;
                     return (
-                      <div key={item.href}>
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`
-                            group relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden
-                            ${isActive
-                              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold shadow-md'
-                              : 'bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                            }
-                            hover:shadow-[0_4px_12px_-2px_rgba(16,185,129,0.15)]
-                          `}
-                        >
-                          <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-                          <span className={`p-2 rounded-xl transition-colors ${isActive ? 'bg-white dark:bg-emerald-950 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-emerald-500'}`}>
-                            <item.icon size={20} />
-                          </span>
-                          <span className="text-base">{item.name}</span>
-                        </Link>
-                      </div>
-                    )
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`group relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold shadow-md' : 'bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'} hover:shadow-[0_4px_12px_-2px_rgba(16,185,129,0.15)]`}
+                      >
+                        <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
+                        <span className={`p-2 rounded-xl transition-colors ${isActive ? 'bg-white dark:bg-emerald-950 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-emerald-500'}`}>
+                          <item.icon size={20} />
+                        </span>
+                        <span className="text-base">{item.name}</span>
+                      </Link>
+                    );
                   })}
 
-                  {/* Services — Eye-catching card */}
-                  <div>
-                    <Link
-                      href="/services"
-                      onClick={() => setIsOpen(false)}
-                      className={`
-                        group relative flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden
-                        ${pathname === '/services'
-                          ? 'bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30'
-                          : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-500/30'
-                        }
-                      `}
-                    >
-                      <span className="p-2 rounded-xl bg-white/20">
-                        <Briefcase size={20} />
-                      </span>
-                      <div>
-                        <span className="text-base font-bold block">خدمات ومهن</span>
-                        <span className="text-[11px] text-white/70">تصفّح مقدمي الخدمات والحرفيين</span>
-                      </div>
-                      <Sparkles size={16} className="mr-auto opacity-60" />
-                    </Link>
-                  </div>
+                  {/* Services Card */}
+                  <Link
+                    href="/services"
+                    onClick={() => setIsOpen(false)}
+                    className={`group relative flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden ${pathname === '/services' ? 'bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-500/30'}`}
+                  >
+                    <span className="p-2 rounded-xl bg-white/20"><Briefcase size={20} /></span>
+                    <div>
+                      <span className="text-base font-bold block">خدمات ومهن</span>
+                      <span className="text-[11px] text-white/70">تصفّح مقدمي الخدمات والحرفيين</span>
+                    </div>
+                    <Sparkles size={16} className="mr-auto opacity-60" />
+                  </Link>
                 </nav>
 
-                <hr className="border-slate-100 dark:border-slate-800" />
-
-                {/* Guide Links */}
-                <div className="space-y-2">
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
-                      { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
-                      { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
-                      { name: 'الأكواد', href: '/codes', icon: ShieldAlert },
-                      { name: 'خدمات e-Devlet', href: '/e-devlet-services', icon: Smartphone },
-                      { name: 'روابط هامة', href: '/important-links', icon: LinkIcon },
-                    ].map((item) => {
-                      const isActive = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`
-                            group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden
-                            ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
-                          `}
-                        >
-                          <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-                          <item.icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
-                          <span className="font-medium text-sm">{item.name}</span>
-                        </Link>
-                      )
-                    })}
+                {/* ── Collapsible: الدليل والمعلومات ── */}
+                <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setOpenSection(openSection === 'guide' ? null : 'guide')}
+                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                        <FolderOpen size={16} className="text-emerald-600 dark:text-emerald-400" />
+                      </span>
+                      <span className="font-bold text-sm text-slate-700 dark:text-slate-200">الدليل والمعلومات</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">6</span>
+                    </span>
+                    <ChevronLeft size={16} className={`text-slate-400 transition-transform duration-300 ${openSection === 'guide' ? '-rotate-90' : ''}`} />
+                  </button>
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${openSection === 'guide' ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-2 pb-2 space-y-1">
+                      {[
+                        { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
+                        { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
+                        { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
+                        { name: 'خدمات e-Devlet', href: '/e-devlet-services', icon: Smartphone },
+                        { name: 'الأكواد', href: '/codes', icon: ShieldAlert },
+                        { name: 'روابط هامة', href: '/important-links', icon: LinkIcon },
+                      ].map((item) => {
+                        const isActive = pathname === item.href;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 overflow-hidden ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                          >
+                            <item.icon size={16} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                            <span className="font-medium text-sm">{item.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                <hr className="border-slate-100 dark:border-slate-800" />
-
-                {/* Smart Tools */}
-                <div className="space-y-2">
-                  <p className="px-2 text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <BrainCircuit size={14} /> الأدوات الذكية
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
-                      { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
-                      { name: 'حاسبة تكاليف الإقامة', href: '/calculator', icon: Calculator },
-                      { name: 'المناطق المحظورة', href: '/zones', icon: MapPin },
-                      { name: 'الصيدليات المناوبة', href: '/tools/pharmacy', icon: HeartPulse },
-                    ].map((item) => {
-                      const isActive = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setIsOpen(false)}
-                          className={`
-                            group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden
-                            ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
-                          `}
-                        >
-                          <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-                          <item.icon size={18} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
-                          <span className="font-medium text-sm">{item.name}</span>
-                        </Link>
-                      )
-                    })}
+                {/* ── Collapsible: الأدوات الذكية ── */}
+                <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setOpenSection(openSection === 'tools' ? null : 'tools')}
+                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <BrainCircuit size={16} className="text-blue-600 dark:text-blue-400" />
+                      </span>
+                      <span className="font-bold text-sm text-slate-700 dark:text-slate-200">الأدوات الذكية</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">5</span>
+                    </span>
+                    <ChevronLeft size={16} className={`text-slate-400 transition-transform duration-300 ${openSection === 'tools' ? '-rotate-90' : ''}`} />
+                  </button>
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${openSection === 'tools' ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-2 pb-2 space-y-1">
+                      {[
+                        { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
+                        { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
+                        { name: 'حاسبة تكاليف الإقامة', href: '/calculator', icon: Calculator },
+                        { name: 'المناطق المحظورة', href: '/zones', icon: MapPin },
+                        { name: 'الصيدليات المناوبة', href: '/tools/pharmacy', icon: HeartPulse },
+                      ].map((item) => {
+                        const isActive = pathname === item.href;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsOpen(false)}
+                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 overflow-hidden ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                          >
+                            <item.icon size={16} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                            <span className="font-medium text-sm">{item.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
+
               </div>
 
               {/* Footer */}
@@ -391,7 +392,7 @@ export default function Navbar() {
             })}
 
             {/* Dropdowns */}
-            <NavDropdown title="دليل الأجنبي" items={GUIDES_MENU} />
+            <NavDropdown title="الدليل" items={GUIDES_MENU} />
             <NavDropdown
               title="أدوات ذكية"
               items={tools.map(t => {
