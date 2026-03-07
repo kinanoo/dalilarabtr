@@ -1,6 +1,14 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { Users, FileText, Wrench } from 'lucide-react';
+import TurkeyMap from './TurkeyMap';
+
+const STATS = [
+    { icon: Users, value: '12,000+', label: 'مستخدم' },
+    { icon: FileText, value: '200+', label: 'مقال ودليل' },
+    { icon: Wrench, value: '50+', label: 'أداة وخدمة' },
+] as const;
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
@@ -11,6 +19,9 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-emerald-950 to-slate-950 z-0" />
                 <MobileBackground />
             </div>
+
+            {/* Turkey Map — decorative background */}
+            <TurkeyMap />
 
             {/* Center Content */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
@@ -34,6 +45,17 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
                     <div className="mt-8 max-w-xl mx-auto relative z-[25] pointer-events-auto">
                         {children}
+                    </div>
+
+                    {/* Stats Row */}
+                    <div className="flex items-center justify-center gap-6 sm:gap-10 mt-8 pointer-events-auto">
+                        {STATS.map((stat, i) => (
+                            <div key={i} className="flex items-center gap-2 text-slate-300/80">
+                                <stat.icon size={16} className="text-emerald-400/70" />
+                                <span className="text-sm sm:text-base font-bold text-white/90">{stat.value}</span>
+                                <span className="text-xs text-slate-400 hidden sm:inline">{stat.label}</span>
+                            </div>
+                        ))}
                     </div>
 
                 </div>

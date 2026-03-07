@@ -107,6 +107,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     <Bell size={18} className="text-amber-500" />
                     <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                         آخر التحديثات
+                        <span className="text-slate-400 text-sm font-normal mr-1">({updates.length})</span>
                     </h2>
                 </div>
 
@@ -181,25 +182,30 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
 
             </div>
 
-            {/* Dots */}
+            {/* Dots + Counter */}
             {totalPages > 1 && (
                 <div className="max-w-7xl mx-auto px-4 mt-3">
-                    <div className="flex justify-center gap-0" dir="ltr">
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => goTo(i)}
-                                className="p-3 flex items-center justify-center"
-                                aria-label={`الصفحة ${i + 1}`}
-                                aria-current={i === currentPage ? 'true' : undefined}
-                            >
-                                <span className={`block h-1.5 rounded-full transition-all duration-300 ${
-                                    i === currentPage
-                                        ? 'w-6 bg-emerald-500'
-                                        : 'w-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
-                                }`} />
-                            </button>
-                        ))}
+                    <div className="flex items-center justify-center gap-3" dir="ltr">
+                        <div className="flex gap-0">
+                            {Array.from({ length: totalPages }).map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => goTo(i)}
+                                    className="p-3 flex items-center justify-center"
+                                    aria-label={`الصفحة ${i + 1}`}
+                                    aria-current={i === currentPage ? 'true' : undefined}
+                                >
+                                    <span className={`block h-1.5 rounded-full transition-all duration-300 ${
+                                        i === currentPage
+                                            ? 'w-6 bg-emerald-500'
+                                            : 'w-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
+                                    }`} />
+                                </button>
+                            ))}
+                        </div>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-bold tabular-nums" dir="rtl">
+                            {currentPage + 1} / {totalPages}
+                        </span>
                     </div>
                 </div>
             )}
@@ -215,17 +221,17 @@ function UpdateCard({ update, index = 0 }: { update: any; index?: number }) {
     return (
         <Link
             href={href}
-            className="block h-full bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden"
+            className="block h-full bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden"
             dir="rtl"
         >
             <div className="flex items-start gap-3 h-full">
                 {/* Icon or Image */}
                 {isAuto && iconConfig ? (
-                    <div className={`w-14 sm:w-16 h-14 sm:h-16 flex-shrink-0 rounded-lg ${iconConfig.bg} flex items-center justify-center`}>
-                        <iconConfig.icon size={24} className={iconConfig.text} />
+                    <div className={`w-16 sm:w-20 h-16 sm:h-20 flex-shrink-0 rounded-lg ${iconConfig.bg} flex items-center justify-center`}>
+                        <iconConfig.icon size={28} className={iconConfig.text} />
                     </div>
                 ) : update.image ? (
-                    <div className="relative w-14 sm:w-16 h-14 sm:h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    <div className="relative w-16 sm:w-20 h-16 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <Image
                             src={update.image}
                             alt={update.title || "صورة الخبر"}
@@ -239,7 +245,7 @@ function UpdateCard({ update, index = 0 }: { update: any; index?: number }) {
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                             update.type === 'هام' || update.type === 'عاجل'
                                 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                                 : isAuto
@@ -249,18 +255,18 @@ function UpdateCard({ update, index = 0 }: { update: any; index?: number }) {
                             {update.type}
                         </span>
                         {isNewContent(update.sortDate || update.date) && (
-                            <span className="flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-full">
+                            <span className="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
                                 <Sparkles size={8} /> جديد
                             </span>
                         )}
                     </div>
 
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm leading-snug line-clamp-2 group-hover/card:text-emerald-600 transition-colors">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-snug line-clamp-2 group-hover/card:text-emerald-600 transition-colors">
                         {update.title}
                     </h3>
 
-                    <span className="text-[9px] text-slate-400 flex items-center gap-1 mt-1.5">
-                        <Calendar size={10} /> {update.date}
+                    <span className="text-xs text-slate-400 flex items-center gap-1 mt-1.5">
+                        <Calendar size={12} /> {update.date}
                     </span>
                 </div>
             </div>
