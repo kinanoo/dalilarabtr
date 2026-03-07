@@ -40,3 +40,21 @@ export function getAuthClient() {
   if (typeof window === 'undefined') return serverClient;
   return getBrowserClient();
 }
+
+// Plain anon client for public reads (no auth session — bypasses RLS user-specific policies)
+const ANON_KEY = '__daleel_supabase_anon' as const;
+declare global {
+  interface Window {
+    [ANON_KEY]?: SupabaseClient;
+  }
+}
+export function getAnonClient(): SupabaseClient | null {
+  if (typeof window === 'undefined') return serverClient;
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+  if (!window[ANON_KEY]) {
+    window[ANON_KEY] = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  return window[ANON_KEY];
+}

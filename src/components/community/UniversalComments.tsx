@@ -406,8 +406,13 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
 
     const loadComments = async () => {
         setLoading(true);
-        const { data } = await fetchComments(entityType, entityId);
-        if (data) setComments(data);
+        try {
+            const { data, error } = await fetchComments(entityType, entityId);
+            if (error) console.error('[Comments] fetch error:', error, { entityType, entityId });
+            if (data) setComments(data);
+        } catch (err) {
+            console.error('[Comments] unexpected error:', err);
+        }
         setLoading(false);
     };
 
@@ -492,6 +497,9 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         setComments((prev) => [newComment, ...prev]);
         setContent('');
         setIsCorrection(false);
+
+        // Reload from server after a short delay to confirm persistence
+        setTimeout(() => loadComments(), 1500);
     };
 
     const handleEditComment = async (commentId: string, newContent: string) => {

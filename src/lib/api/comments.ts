@@ -1,4 +1,4 @@
-import { supabase, getAuthClient } from '../supabaseClient';
+import { supabase, getAuthClient, getAnonClient } from '../supabaseClient';
 
 export type Comment = {
     id: string;
@@ -37,12 +37,15 @@ function buildCommentTree(flat: Comment[]): Comment[] {
 }
 
 export async function fetchComments(entityType: string, entityId: string) {
-    if (!supabase) return { data: [], error: 'Supabase not initialized' };
+    // Use plain anon client for public reads — avoids RLS user-specific policies
+    // that may hide comments from authenticated users (admin)
+    const sb = getAnonClient() || supabase;
+    if (!sb) return { data: [], error: 'Supabase not initialized' };
 
     // Normalize: always decode so encoded and decoded IDs match
     const normalizedId = decodeURIComponent(entityId);
 
-    const { data: flatComments, error } = await supabase
+    const { data: flatComments, error } = await sb
         .from('comments')
         .select('id, entity_type, entity_id, author_name, content, is_correction, is_official, status, created_at, parent_id, user_id, likes_count')
         .eq('entity_type', entityType)
@@ -55,7 +58,7 @@ export async function fetchComments(entityType: string, entityId: string) {
 
     // Batch-fetch like counts for all comments
     const commentIds = flatComments.map((c) => c.id);
-    const { data: votes } = await supabase
+    const { data: votes } = await sb
         .from('content_votes')
         .select('entity_id')
         .eq('entity_type', 'comment')

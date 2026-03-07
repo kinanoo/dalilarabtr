@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     description: 'إجابات شاملة على أكثر من 600 سؤال حول الإقامة، الكملك، العمل، الصحة، والحياة في تركيا.',
     url: `${SITE_CONFIG.siteUrl}/faq`,
     type: 'website',
+    images: [{ url: `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
   },
 };
 

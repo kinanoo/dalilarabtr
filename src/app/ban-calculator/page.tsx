@@ -12,6 +12,7 @@ export const metadata: Metadata = {
         description: 'حاسبة قانونية دقيقة لحساب مدة المنع من دخول تركيا بناءً على مدة المخالفة ونوع الخروج.',
         url: 'https://dalilarabtr.com/ban-calculator',
         type: 'website',
+        images: [{ url: 'https://dalilarabtr.com/og-image.jpg', width: 1200, height: 630 }],
     },
 };
 

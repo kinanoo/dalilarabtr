@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     description: 'احسب التكلفة التقريبية لإقامتك في تركيا — ضريبة + تأمين + رسوم البطاقة',
     url: 'https://dalilarabtr.com/calculator',
     type: 'website',
+    images: [{ url: 'https://dalilarabtr.com/og-image.jpg', width: 1200, height: 630 }],
   },
   alternates: { canonical: '/calculator' },
 };
