@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import TurkeyMap from './TurkeyMap';
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
@@ -12,9 +11,6 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-emerald-950 to-slate-950 z-0" />
                 <MobileBackground />
             </div>
-
-            {/* Turkey Map — decorative background */}
-            <TurkeyMap />
 
             {/* Center Content */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
