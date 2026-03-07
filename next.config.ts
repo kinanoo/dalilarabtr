@@ -3,11 +3,11 @@ import type { NextConfig } from "next";
 // Shared CSP directives (reused for global + admin)
 const cspBase = [
   "default-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com",
-  "font-src 'self' data:",
-  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
-  "frame-src 'self' https://tckimlik.nvi.gov.tr",
+  "style-src 'self' 'unsafe-inline' https://vercel.live",
+  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com https://vercel.live",
+  "font-src 'self' data: https://vercel.live",
+  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com",
+  "frame-src 'self' https://tckimlik.nvi.gov.tr https://vercel.live",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -16,13 +16,13 @@ const cspBase = [
 // Global: NO unsafe-eval (public pages don't need it)
 const cspGlobal = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live",
 ].join('; ');
 
 // Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
 const cspAdmin = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live",
 ].join('; ');
 
 // Shared security headers (applied to all routes)

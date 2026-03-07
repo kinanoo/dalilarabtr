@@ -1,140 +1,112 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Download, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PWAInstallPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstallBanner, setShowInstallBanner] = useState(false);
-    const [isStandalone, setIsStandalone] = useState(true); // Default strictly true until checked
 
     useEffect(() => {
-        // 1. Check if we're already installed (standalone mode)
-        const checkStandalone = window.matchMedia('(display-mode: standalone)').matches
-            || (window.navigator as any).standalone
-            || document.referrer.includes('android-app://');
+        // Already installed — bail out
+        if (
+            window.matchMedia('(display-mode: standalone)').matches ||
+            (window.navigator as any).standalone ||
+            document.referrer.includes('android-app://')
+        ) return;
 
-        setIsStandalone(checkStandalone);
-
-        if (checkStandalone) return;
-
-        // 2. Enforce dismissal policy
+        // Enforce dismissal policy
         try {
             const dismissedAt = localStorage.getItem('pwa_dismissed_at');
             const dismissCount = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
-
             if (dismissedAt) {
-                const timeSinceLastPrompt = Date.now() - parseInt(dismissedAt, 10);
+                const elapsed = Date.now() - parseInt(dismissedAt, 10);
                 const waitDays = dismissCount === 1 ? 3 : 5;
-                if (timeSinceLastPrompt < waitDays * 24 * 60 * 60 * 1000) {
-                    return; // Haven't passed the wait period
-                }
+                if (elapsed < waitDays * 86_400_000) return;
             }
-        } catch (e) {
-            // ignore localStorage errors (e.g., incognito mode)
-        }
+        } catch { /* ignore */ }
 
-        // 3. Android / Desktop Support (listen for 'beforeinstallprompt')
-        let showTimer: NodeJS.Timeout;
-        const handleBeforeInstallPrompt = (e: Event) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault();
-            // Stash the event so it can be triggered later.
+        let showTimer: ReturnType<typeof setTimeout>;
+        let hideTimer: ReturnType<typeof setTimeout>;
+
+        const handler = (e: Event) => {
+            // Stash the event for later — no preventDefault() needed (Chrome 119+ removed mini-infobar)
             setDeferredPrompt(e);
-
-            // Clear any previously set timer to avoid multiple triggers
             if (showTimer) clearTimeout(showTimer);
 
-            // Wait 60 seconds before showing
             showTimer = setTimeout(() => {
                 setShowInstallBanner(true);
-
-                // Keep for 10 seconds then hide
-                setTimeout(() => {
-                    setShowInstallBanner(false);
-                }, 10000);
-
-            }, 60000);
+                hideTimer = setTimeout(() => setShowInstallBanner(false), 10_000);
+            }, 60_000);
         };
 
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-        // Hide banner if user installs it manually during the session
-        window.addEventListener('appinstalled', () => {
+        const onInstalled = () => {
             setShowInstallBanner(false);
             setDeferredPrompt(null);
-        });
+        };
+
+        window.addEventListener('beforeinstallprompt', handler);
+        window.addEventListener('appinstalled', onInstalled);
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('beforeinstallprompt', handler);
+            window.removeEventListener('appinstalled', onInstalled);
+            clearTimeout(showTimer);
+            clearTimeout(hideTimer);
         };
     }, []);
 
-    const handleDismiss = () => {
+    const handleDismiss = useCallback(() => {
         setShowInstallBanner(false);
         try {
-            const currentCount = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
+            const count = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
             localStorage.setItem('pwa_dismissed_at', Date.now().toString());
-            localStorage.setItem('pwa_dismiss_count', (currentCount + 1).toString());
-        } catch (e) { }
-    };
+            localStorage.setItem('pwa_dismiss_count', (count + 1).toString());
+        } catch { /* ignore */ }
+    }, []);
 
-    const handleInstallClick = async () => {
+    const handleInstall = useCallback(async () => {
         if (!deferredPrompt) return;
-
-        // Show the install prompt
         deferredPrompt.prompt();
-
-        // Wait for the user to respond to the prompt
-        const { outcome } = await deferredPrompt.userChoice;
-
-        // We've used the prompt, and can't use it again, throw it away
+        await deferredPrompt.userChoice;
         setDeferredPrompt(null);
         setShowInstallBanner(false);
-    };
+    }, [deferredPrompt]);
 
-    if (isStandalone || !showInstallBanner) return null;
+    if (!showInstallBanner) return null;
 
     return (
-        <AnimatePresence>
-            {showInstallBanner && (
-                <motion.div
-                    initial={{ y: 150, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 150, opacity: 0 }}
-                    className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[9999] bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl p-4 flex flex-col gap-3"
-                >
-                    <button
-                        type="button"
-                        onClick={handleDismiss}
-                        aria-label="إغلاق"
-                        className="absolute top-1 left-1 p-2 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                    >
-                        <X size={18} />
-                    </button>
+        <div
+            className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-[9999] bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl p-4 flex flex-col gap-3 animate-slideInUp"
+        >
+            <button
+                type="button"
+                onClick={handleDismiss}
+                aria-label="إغلاق"
+                className="absolute top-1 left-1 p-2 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+            >
+                <X size={18} />
+            </button>
 
-                    <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 shrink-0 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center text-emerald-600">
-                            <Download size={24} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-slate-800 dark:text-white text-sm">أضف التطبيق لهاتفك</h3>
-                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                ثبت دليل العرب للوصول السريع و تجربة أسرع بدون الحاجة للمتصفح.
-                            </p>
-                        </div>
-                    </div>
+            <div className="flex items-start gap-3">
+                <div className="w-12 h-12 shrink-0 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center text-emerald-600">
+                    <Download size={24} />
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 dark:text-white text-sm">أضف التطبيق لهاتفك</h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                        ثبت دليل العرب للوصول السريع و تجربة أسرع بدون الحاجة للمتصفح.
+                    </p>
+                </div>
+            </div>
 
-                    <button
-                        type="button"
-                        onClick={handleInstallClick}
-                        className="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
-                    >
-                        تثبيت التطبيق مجاناً
-                    </button>
-                </motion.div>
-            )}
-        </AnimatePresence>
+            <button
+                type="button"
+                onClick={handleInstall}
+                className="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
+            >
+                تثبيت التطبيق مجاناً
+            </button>
+        </div>
     );
 }
