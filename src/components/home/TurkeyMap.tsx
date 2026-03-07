@@ -1,69 +1,52 @@
 'use client';
 
+// Real Turkey outline from simple-world-map (CC license)
+// viewBox calibrated to the path's bounding box
+const TURKEY_PATH = "M472.812,421.906l-2.305-1.426l-1.271-1.013l-2.138,0.916l0,0l-1.477,3.74l2.219-0.5l1.562-1.188l3.438,0.938l-1.946,1.877L465.719,425l-1.91,2.093v1.021l1.22,1.021v1.123l-0.511,1.332l0.511,1.123l1.625-0.812l1.625,1.737l-0.406,1.228l-0.604,0.82l0.907,1.021l4.461,0.916l3.139-1.331v-1.937l1.521,0.303l3.648,2.144l3.948-0.614l1.721-1.633l1.114,0.406v1.841h1.521l1.313-2.55l11.549-1.229l5.04-0.613l-1.331-1.746l-0.025-2.359l1.011-1.21l-3.682-2.956l0.197-2.551h-2.022l-3.354-1.643l0,0l-1.929,2.041l-7.088-0.209l-4.253-2.549l-4.082,0.366l-4.544,2.729L472.812,421.906z";
+
 const CITIES = [
-    { name: 'إسطنبول', x: 190, y: 68, size: 'lg' },
-    { name: 'أنقرة', x: 260, y: 95, size: 'md' },
-    { name: 'إزمير', x: 155, y: 125, size: 'md' },
-    { name: 'غازي عنتاب', x: 340, y: 140, size: 'md' },
-    { name: 'أنطاليا', x: 225, y: 155, size: 'sm' },
-] as const;
+    { name: 'إسطنبول', cx: 472, cy: 422, size: 'lg' as const },
+    { name: 'أنقرة', cx: 486, cy: 425, size: 'md' as const },
+    { name: 'إزمير', cx: 466, cy: 430, size: 'md' as const },
+    { name: 'غازي عنتاب', cx: 499, cy: 431, size: 'md' as const },
+    { name: 'أنطاليا', cx: 477, cy: 435, size: 'sm' as const },
+];
 
 export default function TurkeyMap() {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]" aria-hidden="true">
             <svg
-                viewBox="0 0 500 220"
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-[60%] max-w-[500px] opacity-[0.07] lg:opacity-[0.12]"
+                viewBox="460 416 52 24"
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-[70%] max-w-[600px] opacity-[0.15] lg:opacity-[0.2]"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                preserveAspectRatio="xMidYMid meet"
             >
-                {/* Turkey outline — simplified */}
+                {/* Turkey real geographic outline */}
                 <path
-                    d="M60,95 L75,80 L95,75 L110,80 L125,72 L140,68 L155,72 L170,65 L185,60 L195,55 L210,58 L220,52 L230,55 L240,60 L250,58 L265,62 L280,58 L295,55 L310,58 L325,62 L340,58 L355,55 L370,58 L385,62 L400,58 L415,55 L430,60 L440,65 L445,75 L440,85 L445,95 L440,105 L445,115 L440,125 L430,135 L420,140 L405,145 L390,148 L375,150 L360,148 L345,152 L330,155 L315,152 L300,148 L285,152 L270,155 L255,152 L240,148 L225,155 L210,160 L195,155 L180,150 L165,148 L150,145 L135,140 L120,138 L105,135 L90,130 L80,125 L70,118 L65,110 L60,100 Z"
+                    d={TURKEY_PATH}
                     stroke="currentColor"
-                    strokeWidth="1.5"
+                    strokeWidth="0.3"
                     className="text-emerald-400"
                     fill="currentColor"
-                    fillOpacity="0.05"
+                    fillOpacity="0.08"
+                    strokeLinejoin="round"
                 />
 
                 {/* City dots with pulse animation */}
-                {CITIES.map((city, i) => (
-                    <g key={city.name}>
-                        {/* Pulse ring */}
-                        <circle
-                            cx={city.x}
-                            cy={city.y}
-                            r={city.size === 'lg' ? 12 : city.size === 'md' ? 9 : 7}
-                            className="text-emerald-400"
-                            fill="currentColor"
-                            opacity="0"
-                        >
-                            <animate
-                                attributeName="opacity"
-                                values="0.6;0"
-                                dur="2.5s"
-                                begin={`${i * 0.5}s`}
-                                repeatCount="indefinite"
-                            />
-                            <animate
-                                attributeName="r"
-                                values={city.size === 'lg' ? '4;16' : city.size === 'md' ? '3;12' : '3;10'}
-                                dur="2.5s"
-                                begin={`${i * 0.5}s`}
-                                repeatCount="indefinite"
-                            />
-                        </circle>
-                        {/* Solid dot */}
-                        <circle
-                            cx={city.x}
-                            cy={city.y}
-                            r={city.size === 'lg' ? 4 : city.size === 'md' ? 3 : 2.5}
-                            className="text-emerald-400"
-                            fill="currentColor"
-                        />
-                    </g>
-                ))}
+                {CITIES.map((city, i) => {
+                    const r = city.size === 'lg' ? 0.8 : city.size === 'md' ? 0.6 : 0.5;
+                    const pulseR = city.size === 'lg' ? '0.8;3' : city.size === 'md' ? '0.6;2.5' : '0.5;2';
+                    return (
+                        <g key={city.name}>
+                            <circle cx={city.cx} cy={city.cy} r={r} className="text-emerald-400" fill="currentColor" opacity="0">
+                                <animate attributeName="opacity" values="0.7;0" dur="2.5s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
+                                <animate attributeName="r" values={pulseR} dur="2.5s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
+                            </circle>
+                            <circle cx={city.cx} cy={city.cy} r={r} className="text-emerald-400" fill="currentColor" />
+                        </g>
+                    );
+                })}
             </svg>
         </div>
     );
