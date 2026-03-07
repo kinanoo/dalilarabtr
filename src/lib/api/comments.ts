@@ -1,4 +1,4 @@
-import { supabase, getAuthClient, getAnonClient } from '../supabaseClient';
+import { supabase, getAnonClient } from '../supabaseClient';
 
 export type Comment = {
     id: string;
@@ -134,16 +134,16 @@ export async function updateComment(
     commentId: string,
     content: string
 ): Promise<{ success: boolean; error: any }> {
-    const sb = getAuthClient();
-    if (!sb) return { success: false, error: 'Supabase not initialized' };
-
     try {
-        const { error } = await sb
-            .from('comments')
-            .update({ content })
-            .eq('id', commentId);
-
-        if (error) throw error;
+        const res = await fetch(`/api/comments`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: commentId, content }),
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || 'update_failed');
+        }
         return { success: true, error: null };
     } catch (error) {
         console.error('Error updating comment:', error);
@@ -154,16 +154,12 @@ export async function updateComment(
 export async function deleteComment(
     commentId: string
 ): Promise<{ success: boolean; error: any }> {
-    const sb = getAuthClient();
-    if (!sb) return { success: false, error: 'Supabase not initialized' };
-
     try {
-        const { error } = await sb
-            .from('comments')
-            .delete()
-            .eq('id', commentId);
-
-        if (error) throw error;
+        const res = await fetch(`/api/comments?id=${commentId}`, { method: 'DELETE' });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || 'delete_failed');
+        }
         return { success: true, error: null };
     } catch (error) {
         console.error('Error deleting comment:', error);
