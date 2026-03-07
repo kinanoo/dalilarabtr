@@ -163,8 +163,9 @@ html.dark .tiptap code, html.dark .prose-content code {
   --background-rgb: 241, 245, 249;
 }
 
-body {
+html, body {
   overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Accessibility: Respect user's motion preferences */

@@ -9,6 +9,7 @@
 export const revalidate = 300; // Cache for 5 minutes (ISR)
 
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -101,55 +102,20 @@ async function getUpdates() {
   }
 }
 
-// ============================================
-// 🔍 Schema.org
-// ============================================
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: SITE_CONFIG.name,
-  description: SITE_CONFIG.slogan,
-  url: SITE_CONFIG.siteUrl,
-  logo: {
-    '@type': 'ImageObject',
-    url: `${SITE_CONFIG.siteUrl}/logo.png`,
-    width: 256,
-    height: 256,
-  },
-  image: `${SITE_CONFIG.siteUrl}/og-image.jpg`,
-  contactPoint: {
-    '@type': 'ContactPoint',
-    telephone: `+${SITE_CONFIG.whatsapp}`,
-    contactType: 'customer service',
-    availableLanguage: ['Arabic', 'Turkish'],
-  },
-};
-
-const webSiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: SITE_CONFIG.name,
-  description: SITE_CONFIG.slogan,
-  url: SITE_CONFIG.siteUrl,
-  inLanguage: 'ar',
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: {
-      '@type': 'EntryPoint',
-      urlTemplate: `${SITE_CONFIG.siteUrl}/?q={search_term_string}`,
-    },
-    'query-input': 'required name=search_term_string',
-  },
-};
-
 const HOME_DESCRIPTION = "الدليل الشامل للعرب في تركيا. خدمات قانونية، إقامات، أكواد أمنية، ودليل شامل لكل ما تحتاجه.";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: SITE_CONFIG.name,
   description: HOME_DESCRIPTION,
   alternates: { canonical: '/' },
   openGraph: {
+    type: 'website',
+    locale: 'ar_SA',
+    url: SITE_CONFIG.siteUrl,
+    siteName: SITE_CONFIG.name,
+    title: SITE_CONFIG.name,
     description: HOME_DESCRIPTION,
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: SITE_CONFIG.name }],
   },
 };
 
@@ -162,16 +128,6 @@ export default async function Home() {
 
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-transparent selection:bg-emerald-200 dark:selection:bg-emerald-700">
-
-      {/* Schema Scripts */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
-      />
 
       {/* 1. HERO SECTION (Client) */}
       <HeroSection>

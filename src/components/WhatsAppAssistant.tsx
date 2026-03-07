@@ -42,7 +42,7 @@ export default function WhatsAppAssistant() {
   if (!isVisible) return null;
 
   return (
-    <div ref={wrapperRef} className="fixed bottom-1 left-4 md:bottom-2 md:left-8 z-[90] flex flex-col items-center gap-1.5">
+    <div ref={wrapperRef} className="fixed bottom-1 left-2 md:bottom-2 md:left-4 z-[90] flex flex-col items-center gap-1.5">
       {/* Options */}
       <div className="flex flex-col items-center gap-1">
         {/* Consultant */}
@@ -93,14 +93,14 @@ export default function WhatsAppAssistant() {
       <button
         type="button"
         onClick={() => setOpen(prev => !prev)}
-        className="w-10 h-10 rounded-full bg-green-500 hover:bg-green-600 text-white shadow-md shadow-green-600/20 flex items-center justify-center transition-all duration-300 active:scale-90"
+        className={`w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 text-white shadow-md shadow-green-600/20 flex items-center justify-center transition-all duration-300 active:scale-90${!open ? ' animate-pulse' : ''}`}
         aria-label={open ? 'إغلاق القائمة' : 'تواصل معنا'}
         aria-expanded={open ? 'true' : 'false'}
       >
         {open ? (
           <span className="text-lg font-bold leading-none transition-transform duration-300 rotate-45">+</span>
         ) : (
-          <WhatsAppIcon size={18} />
+          <WhatsAppIcon size={22} />
         )}
       </button>
     </div>

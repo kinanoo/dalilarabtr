@@ -146,12 +146,11 @@ export default function RootLayout({
 
         {/* Google Analytics */}
         {GA_ID && <GoogleAnalytics />}
-
-        {/* Structured Data — Organization + WebSite (for Google logo & sitelinks) */}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
       </head>
       <body suppressHydrationWarning className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
+        {/* Structured Data — in body to prevent Next.js head duplication */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
         {/* Skip to main content for keyboard/screen reader users */}
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-600 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
           تخطي إلى المحتوى الرئيسي

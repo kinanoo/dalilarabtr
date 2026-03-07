@@ -80,7 +80,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const articles = await safeQuery(supabase.from('articles').select('id, slug, last_update').eq('status', 'approved'));
     const codes = await safeQuery(supabase.from('security_codes').select('code, created_at'));
     const zones = await safeQuery(supabase.from('zones').select('id, updated_at'));
-    const scenarios = await safeQuery(supabase.from('consultant_scenarios').select('id, created_at'));
     const providers = await safeQuery(supabase.from('service_providers').select('id, created_at').eq('status', 'approved'));
     const updates = await safeQuery(supabase.from('updates').select('id, created_at').eq('active', true));
 
@@ -106,19 +105,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'monthly' as const,
         priority: 0.6,
       })),
-      // Consultant Scenarios
-      ...scenarios.map((s) => ({
-        url: `${baseUrl}/consultant?scenario=${s.id}`,
-        lastModified: new Date(s.created_at || new Date()),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      })),
+      // Consultant Scenarios — excluded (query-param URLs waste crawl budget)
       // Service Providers
       ...providers.map((p) => ({
         url: `${baseUrl}/services/${p.id}`,
         lastModified: new Date(p.created_at || new Date()),
         changeFrequency: 'weekly' as const,
-        priority: 0.9,
+        priority: 0.7,
       })),
       // Updates
       ...updates.map((u) => ({

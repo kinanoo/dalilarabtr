@@ -46,6 +46,7 @@ async function fetchArticleData(slug: string) {
     if (data) {
       return {
         title: data.title,
+        slug: data.slug || '',
         seoTitle: data.seo_title || data.title,
         seoDescription: data.seo_description || data.intro,
         seoKeywords: data.seo_keywords || [],
@@ -214,9 +215,17 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     };
   }
 
-  const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
+  // Prefer English slug for canonical URL (SEO best practice)
+  const canonicalSlug = article.slug || params.id;
+  const canonicalUrl = `${SITE_CONFIG.siteUrl}/article/${canonicalSlug}`;
   const title = article.seoTitle?.trim() || `${article.title} | ${SITE_CONFIG.name}`;
-  const description = article.seoDescription?.trim() || stripHtml(article.intro);
+  // Build description: prefer seoDescription, then intro, pad with details if too short
+  let rawDesc = article.seoDescription?.trim() || stripHtml(article.intro);
+  if (rawDesc.length < 120) {
+    const extra = stripHtml(article.details);
+    if (extra) rawDesc = (rawDesc + ' ' + extra).trim();
+  }
+  const description = rawDesc.length > 155 ? rawDesc.substring(0, 155).trim() + '…' : rawDesc;
   const keywords = buildArticleKeywords({
     slug: params.id,
     title: article.title,
@@ -236,12 +245,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     description,
     keywords,
     authors: [{ name: SITE_CONFIG.name }],
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: article.title,
       description,
       type: 'article',
-      url,
+      url: canonicalUrl,
       images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630, alt: article.title }],
       publishedTime: dateModified,
       modifiedTime: dateModified,
@@ -273,7 +282,8 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     );
   }
 
-  const url = `${SITE_CONFIG.siteUrl}/article/${params.id}`;
+  const canonicalSlug = article.slug || params.id;
+  const url = `${SITE_CONFIG.siteUrl}/article/${canonicalSlug}`;
   const categorySlug = getCategorySlugFromName(article.category);
   const articleBody = [article.intro, article.details, ...(article.steps || []), ...(article.tips || [])].filter(Boolean).join(' ');
   const keywords = buildArticleKeywords({
@@ -289,7 +299,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
   const jsonLd = buildJsonLd({
     slug: params.id,
     title: article.seoTitle?.trim() || article.title,
-    description: article.seoDescription?.trim() || stripHtml(article.intro),
+    description: (() => { let d = article.seoDescription?.trim() || stripHtml(article.intro); if (d.length < 120) { const extra = stripHtml(article.details); if (extra) d = (d + ' ' + extra).trim(); } return d.length > 155 ? d.substring(0, 155).trim() + '…' : d; })(),
     lastUpdate: article.lastUpdate,
     categoryName: article.category,
     categorySlug,
