@@ -12,7 +12,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
                 {/* Dot Grid Pattern */}
                 <div
-                    className="absolute inset-0 z-[1] opacity-[0.06]"
+                    className="absolute inset-0 z-[1] opacity-[0.15]"
                     style={{
                         backgroundImage: 'radial-gradient(circle, rgb(52 211 153) 1px, transparent 1px)',
                         backgroundSize: '24px 24px',

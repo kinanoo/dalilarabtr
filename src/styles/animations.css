@@ -173,13 +173,37 @@
 
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
 }
 .scroll-reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ============================================
+   🃏 Card Stagger — cards slide up one by one
+   ============================================ */
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-stagger {
+  opacity: 0;
+  animation: cardSlideUp 0.4s ease-out forwards;
+}
+.card-stagger:nth-child(1)  { animation-delay: 0.03s; }
+.card-stagger:nth-child(2)  { animation-delay: 0.07s; }
+.card-stagger:nth-child(3)  { animation-delay: 0.11s; }
+.card-stagger:nth-child(4)  { animation-delay: 0.15s; }
+.card-stagger:nth-child(5)  { animation-delay: 0.19s; }
+.card-stagger:nth-child(6)  { animation-delay: 0.23s; }
+.card-stagger:nth-child(7)  { animation-delay: 0.27s; }
+.card-stagger:nth-child(8)  { animation-delay: 0.31s; }
+.card-stagger:nth-child(9)  { animation-delay: 0.35s; }
+.card-stagger:nth-child(10) { animation-delay: 0.39s; }
 
 /* ============================================
    🎭 Loading States

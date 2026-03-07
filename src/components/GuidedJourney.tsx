@@ -173,7 +173,7 @@ function CardItem({ card }: { card: JourneyCard }) {
     return (
         <Link
             href={card.href}
-            className="group relative flex flex-col items-center text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3.5 border border-slate-100 dark:border-slate-700/50 hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300 overflow-hidden"
+            className="card-stagger group relative flex flex-col items-center text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3.5 border border-slate-100 dark:border-slate-700/50 hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300 overflow-hidden"
         >
             {/* Top gradient bar */}
             <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${card.color} opacity-60 group-hover:opacity-100 transition-opacity`} />

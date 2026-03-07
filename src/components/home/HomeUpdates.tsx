@@ -188,23 +188,25 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
             {totalPages > 1 && (
                 <div className="max-w-7xl mx-auto px-4 mt-3">
                     <div className="flex items-center justify-center gap-3" dir="ltr">
-                        <div className="flex gap-0">
-                            {Array.from({ length: totalPages }).map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => goTo(i)}
-                                    className="p-3 flex items-center justify-center"
-                                    aria-label={`الصفحة ${i + 1}`}
-                                    aria-current={i === currentPage ? 'true' : undefined}
-                                >
-                                    <span className={`block h-1.5 rounded-full transition-all duration-300 ${
-                                        i === currentPage
-                                            ? 'w-6 bg-emerald-500'
-                                            : 'w-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
-                                    }`} />
-                                </button>
-                            ))}
-                        </div>
+                        {totalPages <= 8 && (
+                            <div className="flex gap-0">
+                                {Array.from({ length: totalPages }).map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => goTo(i)}
+                                        className="p-1.5 sm:p-3 flex items-center justify-center"
+                                        aria-label={`الصفحة ${i + 1}`}
+                                        aria-current={i === currentPage ? 'true' : undefined}
+                                    >
+                                        <span className={`block h-1.5 rounded-full transition-all duration-300 ${
+                                            i === currentPage
+                                                ? 'w-5 sm:w-6 bg-emerald-500'
+                                                : 'w-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
+                                        }`} />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         <span className="text-xs text-slate-400 dark:text-slate-500 font-bold tabular-nums" dir="rtl">
                             {currentPage + 1} / {totalPages}
                         </span>
