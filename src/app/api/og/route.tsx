@@ -18,6 +18,9 @@ function fixArabic(text: string): string {
     .split(' ')
     .reverse()
     .map((word) => {
+      // Word fully wrapped in brackets: keep as-is (both sides cancel out)
+      if (word.startsWith('(') && word.endsWith(')')) return word;
+      if (word.startsWith(')') && word.endsWith('(')) return word;
       // Move bracket from start to end (and swap type)
       if (word.startsWith('(')) return word.slice(1) + ')';
       if (word.startsWith(')')) return word.slice(1) + '(';
