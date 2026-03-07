@@ -19,6 +19,7 @@ import HomeUpdates from '@/components/home/HomeUpdates';
 import GlobalSearch from '@/components/GlobalSearch';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
+import ScrollReveal from '@/components/ui/ScrollReveal';
 
 // ============================================
 // 📦 Data Fetching (Server-Side)
@@ -144,13 +145,19 @@ export default async function Home() {
       </Suspense>
 
       {/* 🧭 Guided Journey (Client) */}
-      <GuidedJourney />
+      <ScrollReveal>
+        <GuidedJourney />
+      </ScrollReveal>
 
       {/* 3. QUICK ACTIONS (Client) */}
-      <QuickActionsGrid />
+      <ScrollReveal>
+        <QuickActionsGrid />
+      </ScrollReveal>
 
       {/* 4. TOP FAQ — أكثر الأسئلة شيوعاً */}
-      <HomeFAQ />
+      <ScrollReveal>
+        <HomeFAQ />
+      </ScrollReveal>
 
     </main>
   );

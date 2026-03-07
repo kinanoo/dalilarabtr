@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useState, useEffect } from 'react';
+import { useScrollReveal } from '@/lib/hooks/useScrollReveal';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -41,6 +42,7 @@ function useCardsPerPage(): number {
 }
 
 export default function HomeUpdates({ updates }: { updates: any[] }) {
+    const sectionRef = useScrollReveal<HTMLElement>();
     if (!updates || updates.length === 0) return null;
 
     const cardsPerPage = useCardsPerPage();
@@ -100,7 +102,7 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     const gapPx = 12;
 
     return (
-        <section className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50">
+        <section ref={sectionRef} className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50">
             {/* Header */}
             <div className="max-w-7xl mx-auto px-4 mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -221,7 +223,7 @@ function UpdateCard({ update, index = 0 }: { update: any; index?: number }) {
     return (
         <Link
             href={href}
-            className="block h-full bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden"
+            className="block h-full bg-white dark:bg-white/[0.04] dark:backdrop-blur-md rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/30 hover:shadow-lg dark:hover:shadow-emerald-500/5 hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden"
             dir="rtl"
         >
             <div className="flex items-start gap-3 h-full">
