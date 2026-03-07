@@ -12,6 +12,11 @@ const cairoRegular = fetch(
   'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
 ).then((res) => res.arrayBuffer());
 
+// Satori reverses Arabic word order — pre-reverse so it renders correctly
+function fixArabic(text: string): string {
+  return text.split(' ').reverse().join(' ');
+}
+
 function truncateTitle(title: string, maxLen = 90): string {
   if (title.length <= maxLen) return title;
   return title.substring(0, maxLen).replace(/\s+\S*$/, '') + '...';
@@ -87,7 +92,7 @@ export async function GET(request: NextRequest) {
                     border: '1px solid rgba(255,255,255,0.3)',
                   }}
                 >
-                  {category}
+                  {fixArabic(category)}
                 </span>
               </div>
             )}
@@ -103,7 +108,7 @@ export async function GET(request: NextRequest) {
                 textShadow: '0 2px 10px rgba(0,0,0,0.3)',
               }}
             >
-              {title}
+              {fixArabic(title)}
             </h1>
           </div>
 
@@ -133,7 +138,7 @@ export async function GET(request: NextRequest) {
               <span
                 style={{ color: 'white', fontSize: '24px', fontWeight: 700 }}
               >
-                دليل العرب في تركيا
+                {fixArabic('دليل العرب في تركيا')}
               </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
