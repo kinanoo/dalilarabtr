@@ -112,8 +112,8 @@ export async function postComment(payload: {
 }) {
     if (!supabase) return { data: null, error: 'Supabase not initialized' };
 
-    // Block reserved admin-like names
-    if (isReservedName(payload.author_name)) {
+    // Block reserved admin-like names (only for anonymous / non-logged-in users)
+    if (!payload.user_id && isReservedName(payload.author_name)) {
         return { data: null, error: { message: 'هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.' } };
     }
 

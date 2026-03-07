@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Star, User, Send, Loader2, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -26,7 +26,16 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
+
+    // Check if user is logged in (to allow reserved names for admins)
+    useEffect(() => {
+        if (!supabase) return;
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) setIsLoggedIn(true);
+        });
+    }, []);
 
     async function handleAction(formData: FormData) {
         setError(null);
@@ -56,8 +65,8 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
             return;
         }
 
-        // 3. Reserved name check
-        if (isReservedName(user_name)) {
+        // 3. Reserved name check (skip for logged-in users)
+        if (!isLoggedIn && isReservedName(user_name)) {
             setError('هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.');
             setIsSubmitting(false);
             return;
