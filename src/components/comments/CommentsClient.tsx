@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
 import { containsProfanity } from '@/lib/profanity-filter';
+import { isReservedName } from '@/lib/api/comments';
 
 type Comment = {
     id: string;
@@ -51,6 +52,13 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
         // 2. Profanity Check (Client Side)
         if (containsProfanity(content) || containsProfanity(user_name)) {
             setError('نأسف، التعليق يحتوي على كلمات غير لائقة.');
+            setIsSubmitting(false);
+            return;
+        }
+
+        // 3. Reserved name check
+        if (isReservedName(user_name)) {
+            setError('هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.');
             setIsSubmitting(false);
             return;
         }

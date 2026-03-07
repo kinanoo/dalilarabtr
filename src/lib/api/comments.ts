@@ -1,5 +1,23 @@
 import { supabase, getAnonClient } from '../supabaseClient';
 
+// Reserved names that only the admin/system should use
+const RESERVED_PATTERNS = [
+    'الإدارة', 'الاداره', 'الادارة', 'إدارة', 'اداره', 'ادارة',
+    'أدمن', 'ادمن', 'admin', 'administrator', 'moderator',
+    'دليل العرب', 'دليلالعرب', 'dalil', 'dalilarab',
+    'المشرف', 'مشرف', 'المدير', 'مدير',
+    'الموقع', 'فريق الموقع', 'فريق الدعم',
+    'الدعم الفني', 'خدمة العملاء',
+];
+
+export function isReservedName(name: string): boolean {
+    if (!name) return false;
+    const normalized = name.trim().toLowerCase().replace(/\s+/g, ' ');
+    return RESERVED_PATTERNS.some(p =>
+        normalized === p.toLowerCase() || normalized.includes(p.toLowerCase())
+    );
+}
+
 export type Comment = {
     id: string;
     entity_type: string;
@@ -93,6 +111,11 @@ export async function postComment(payload: {
     user_id?: string;
 }) {
     if (!supabase) return { data: null, error: 'Supabase not initialized' };
+
+    // Block reserved admin-like names
+    if (isReservedName(payload.author_name)) {
+        return { data: null, error: { message: 'هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.' } };
+    }
 
     // Destructure user_id out so it's not spread into insert when absent
     const { user_id, ...rest } = payload;

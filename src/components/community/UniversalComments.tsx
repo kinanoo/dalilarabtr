@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
-import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, type Comment } from '@/lib/api/comments';
+import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, isReservedName, type Comment } from '@/lib/api/comments';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -472,6 +472,11 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!content.trim()) return;
+
+        if (!isLoggedIn && isReservedName(name)) {
+            toast.error('هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.');
+            return;
+        }
 
         setSubmitting(true);
         const { data: newData, error } = await postComment({
