@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2 } from 'lucide-react';
+import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2, MessageCircle, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
 
 export default function AdminCommunityPage() {
     const [comments, setComments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [converting, setConverting] = useState<string | null>(null);
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
+    const [replyContent, setReplyContent] = useState('');
 
     useEffect(() => {
         fetchComments();
@@ -17,12 +20,24 @@ export default function AdminCommunityPage() {
 
     const fetchComments = async () => {
         if (!supabase) return;
-        const { data, error } = await supabase
+        // Fetch all comments, then separate parents from replies in JS
+        const { data } = await supabase
             .from('comments')
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (data) setComments(data);
+        if (data) {
+            const parents = data.filter(c => !c.parent_id);
+            const replies = data.filter(c => c.parent_id);
+            // Attach replies to their parent
+            const enriched = parents.map(p => ({
+                ...p,
+                replies: replies
+                    .filter(r => r.parent_id === p.id)
+                    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+            }));
+            setComments(enriched);
+        }
         setLoading(false);
     };
 
@@ -71,6 +86,43 @@ export default function AdminCommunityPage() {
             toast.error('خطأ: ' + err.message);
         } finally {
             setConverting(null);
+        }
+    };
+
+    const handleReply = async (comment: any) => {
+        if (!supabase || !replyContent.trim()) return;
+        const { error } = await supabase.from('comments').insert({
+            parent_id: comment.id,
+            entity_type: comment.entity_type,
+            entity_id: comment.entity_id,
+            author_name: 'الإدارة',
+            content: replyContent.trim(),
+            status: 'approved',
+            is_official: true,
+        });
+        if (error) {
+            toast.error('فشل إرسال الرد: ' + error.message);
+        } else {
+            toast.success('تم إرسال الرد');
+            // Notify the commenter if they have a user_id
+            if (comment.user_id) {
+                const link =
+                    comment.entity_type === 'article' ? `/article/${comment.entity_id}` :
+                    comment.entity_type === 'service' ? `/services/${comment.entity_id}` :
+                    undefined;
+                createNotification({
+                    type: 'reply',
+                    title: 'ردّ من الإدارة على تعليقك',
+                    message: `ردّت إدارة الموقع: "${replyContent.trim().substring(0, 80)}${replyContent.trim().length > 80 ? '...' : ''}"`,
+                    link,
+                    icon: '💬',
+                    priority: 'high',
+                    target_user_id: comment.user_id,
+                });
+            }
+            setReplyContent('');
+            setReplyingTo(null);
+            fetchComments();
         }
     };
 
@@ -160,6 +212,55 @@ export default function AdminCommunityPage() {
                             >
                                 عرض المحتوى الأصلي
                             </Link>
+                        </div>
+
+                        {/* Admin replies */}
+                        <div className="mt-4 space-y-3">
+                            {c.replies?.map((reply: any) => (
+                                <div key={reply.id} className="bg-emerald-50 dark:bg-emerald-900/10 p-3 sm:p-4 rounded-xl flex gap-3 border border-emerald-100 dark:border-emerald-800 mr-4 sm:mr-8">
+                                    <MessageCircle size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-bold text-emerald-800 dark:text-emerald-400 text-sm">{reply.author_name}</span>
+                                            <span className="text-[10px] text-emerald-600/60">{new Date(reply.created_at).toLocaleDateString('ar-EG')}</span>
+                                        </div>
+                                        <p className="text-emerald-700 dark:text-emerald-300 text-sm leading-relaxed">{reply.content}</p>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {replyingTo === c.id ? (
+                                <div className="flex gap-2 mr-4 sm:mr-8">
+                                    <input
+                                        className="flex-1 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                        value={replyContent}
+                                        onChange={e => setReplyContent(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleReply(c); } }}
+                                        placeholder="اكتب رد الإدارة..."
+                                        autoFocus
+                                    />
+                                    <button
+                                        onClick={() => handleReply(c)}
+                                        disabled={!replyContent.trim()}
+                                        className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 transition disabled:opacity-50 flex items-center gap-1.5"
+                                    >
+                                        <Send size={14} /> إرسال
+                                    </button>
+                                    <button
+                                        onClick={() => { setReplyingTo(null); setReplyContent(''); }}
+                                        className="px-3 py-2 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+                                    >
+                                        إلغاء
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => { setReplyingTo(c.id); setReplyContent(''); }}
+                                    className="text-emerald-600 font-bold text-xs flex items-center gap-1.5 hover:underline mr-4 sm:mr-8"
+                                >
+                                    <MessageCircle size={14} /> رد على التعليق
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
