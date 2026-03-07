@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import InteractiveParticles from './InteractiveParticles';
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
@@ -10,14 +11,8 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
             <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-emerald-950 to-slate-950 z-0" />
 
-                {/* Dot Grid Pattern */}
-                <div
-                    className="absolute inset-0 z-[1] opacity-[0.15]"
-                    style={{
-                        backgroundImage: 'radial-gradient(circle, rgb(52 211 153) 1px, transparent 1px)',
-                        backgroundSize: '24px 24px',
-                    }}
-                />
+                {/* Interactive Dot Grid — dots flee from cursor */}
+                <InteractiveParticles />
 
                 {/* Aurora Orbs */}
                 <AuroraBackground />
