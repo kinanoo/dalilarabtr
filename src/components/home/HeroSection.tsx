@@ -9,6 +9,20 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
             {/* Background */}
             <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-emerald-950 to-slate-950 z-0" />
+
+                {/* Dot Grid Pattern */}
+                <div
+                    className="absolute inset-0 z-[1] opacity-[0.06]"
+                    style={{
+                        backgroundImage: 'radial-gradient(circle, rgb(52 211 153) 1px, transparent 1px)',
+                        backgroundSize: '24px 24px',
+                    }}
+                />
+
+                {/* Aurora Orbs */}
+                <AuroraBackground />
+
+                {/* Mobile floating blurs (kept for small screens) */}
                 <MobileBackground />
             </div>
 
@@ -39,6 +53,34 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 </div>
             </div>
         </section>
+    );
+}
+
+/* Aurora — large blurred orbs that drift slowly (visible on all screens) */
+const AuroraBackground = () => {
+    return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
+            {/* Large emerald orb — top right */}
+            <div
+                className="absolute w-[400px] h-[400px] bg-emerald-500/[0.07] blur-[100px] rounded-full will-change-transform"
+                style={{ animation: 'aurora-a 18s ease-in-out infinite alternate', top: '-20%', right: '-10%' }}
+            />
+            {/* Cyan orb — bottom left */}
+            <div
+                className="absolute w-[350px] h-[350px] bg-cyan-500/[0.06] blur-[100px] rounded-full will-change-transform"
+                style={{ animation: 'aurora-b 22s ease-in-out infinite alternate', bottom: '-15%', left: '-5%' }}
+            />
+            {/* Teal orb — center */}
+            <div
+                className="absolute w-[300px] h-[300px] bg-teal-400/[0.05] blur-[120px] rounded-full will-change-transform"
+                style={{ animation: 'aurora-c 20s ease-in-out infinite alternate', top: '30%', left: '40%' }}
+            />
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes aurora-a { from{transform:translate(0,0) scale(1)}to{transform:translate(-60px,40px) scale(1.2)} }
+                @keyframes aurora-b { from{transform:translate(0,0) scale(1)}to{transform:translate(50px,-30px) scale(1.15)} }
+                @keyframes aurora-c { from{transform:translate(0,0) scale(0.9)}to{transform:translate(-40px,20px) scale(1.1)} }
+            `}} />
+        </div>
     );
 }
 
