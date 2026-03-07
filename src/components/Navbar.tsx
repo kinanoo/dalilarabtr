@@ -356,7 +356,7 @@ export default function Navbar() {
           <div className="flex items-center shrink-0">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="relative w-9 h-9 shrink-0">
-                <Image src="/logo.png" alt="شعار دليل العرب" width={36} height={36} className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
+                <Image src="/logo.png" alt="شعار دليل العرب" width={36} height={36} priority className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
               </div>
               <div className="hidden sm:block">
                 <div className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
