@@ -257,7 +257,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description,
       type: 'article',
       url: canonicalUrl,
-      images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630, alt: article.title }],
+      images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: article.title, ...(article.category ? { category: article.category } : {}) })}`, width: 1200, height: 630, alt: article.title }],
       publishedTime: dateModified,
       modifiedTime: dateModified,
       section: article.category,
@@ -267,7 +267,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: [article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`],
+      images: [article.image || `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: article.title, ...(article.category ? { category: article.category } : {}) })}`],
     },
   };
 }

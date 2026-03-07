@@ -1,0 +1,171 @@
+import { ImageResponse } from 'next/og';
+import { NextRequest } from 'next/server';
+
+export const runtime = 'edge';
+
+// Cache font fetches at module level (reused across requests)
+const cairoBold = fetch(
+  'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hAc5W1Q.ttf'
+).then((res) => res.arrayBuffer());
+
+const cairoRegular = fetch(
+  'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
+).then((res) => res.arrayBuffer());
+
+function truncateTitle(title: string, maxLen = 90): string {
+  if (title.length <= maxLen) return title;
+  return title.substring(0, maxLen).replace(/\s+\S*$/, '') + '...';
+}
+
+function getTitleSize(title: string): number {
+  if (title.length > 80) return 40;
+  if (title.length > 60) return 44;
+  if (title.length > 40) return 48;
+  return 52;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = request.nextUrl;
+    const rawTitle = searchParams.get('title') || 'دليل العرب في تركيا';
+    const category = searchParams.get('category') || '';
+
+    const title = truncateTitle(rawTitle);
+    const fontSize = getTitleSize(title);
+
+    const [boldFont, regularFont] = await Promise.all([cairoBold, cairoRegular]);
+
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(135deg, #065f46 0%, #0d9488 50%, #047857 100%)',
+            fontFamily: 'Cairo',
+            direction: 'rtl',
+            padding: '60px',
+            position: 'relative',
+          }}
+        >
+          {/* Dot pattern overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage:
+                'radial-gradient(circle at 25% 25%, rgba(255,255,255,0.06) 1px, transparent 1px)',
+              backgroundSize: '30px 30px',
+              display: 'flex',
+            }}
+          />
+
+          {/* Top: category + title */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              zIndex: 1,
+            }}
+          >
+            {category && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <span
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    color: 'white',
+                    padding: '8px 24px',
+                    borderRadius: '9999px',
+                    fontSize: '22px',
+                    fontWeight: 400,
+                    border: '1px solid rgba(255,255,255,0.3)',
+                  }}
+                >
+                  {category}
+                </span>
+              </div>
+            )}
+
+            <h1
+              style={{
+                color: 'white',
+                fontSize: `${fontSize}px`,
+                fontWeight: 700,
+                lineHeight: 1.4,
+                textAlign: 'right',
+                margin: 0,
+                textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+              }}
+            >
+              {title}
+            </h1>
+          </div>
+
+          {/* Bottom branding */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: '16px',
+              padding: '16px 24px',
+              zIndex: 1,
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://dalilarabtr.com/logo.png"
+                width="48"
+                height="48"
+                alt=""
+                style={{ borderRadius: '8px' }}
+              />
+              <span
+                style={{ color: 'white', fontSize: '24px', fontWeight: 700 }}
+              >
+                دليل العرب في تركيا
+              </span>
+            </div>
+            <span
+              style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '20px',
+                fontWeight: 400,
+              }}
+            >
+              dalilarabtr.com
+            </span>
+          </div>
+        </div>
+      ),
+      {
+        width: 1200,
+        height: 630,
+        fonts: [
+          { name: 'Cairo', data: boldFont, weight: 700 as const, style: 'normal' as const },
+          { name: 'Cairo', data: regularFont, weight: 400 as const, style: 'normal' as const },
+        ],
+        headers: {
+          'Cache-Control':
+            'public, immutable, no-transform, max-age=31536000, s-maxage=31536000',
+        },
+      }
+    );
+  } catch (e) {
+    console.error('OG image generation failed:', e);
+    return new Response(null, {
+      status: 302,
+      headers: { Location: '/og-image.jpg' },
+    });
+  }
+}
