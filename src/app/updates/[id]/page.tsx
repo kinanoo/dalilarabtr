@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Calendar, Newspaper } from 'lucide-react';
 import UniversalComments from '@/components/community/UniversalComments';
-import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
 import { stripHtml } from '@/lib/stripHtml';
@@ -147,7 +147,6 @@ export default async function UpdateDetailPage(
 
                 {/* Community Interaction */}
                 <div className="mt-8 space-y-6">
-                    <ContentHelpfulWidget entityType="update" entityId={id} />
                     <UniversalComments
                         entityType="update"
                         entityId={id}

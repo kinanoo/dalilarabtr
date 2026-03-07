@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalComments';
-import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -188,7 +188,6 @@ export default async function ServiceDetailsPage(
                     entityId={id}
                     title="التعليقات والمناقشة"
                 />
-                <ContentHelpfulWidget entityType="service" entityId={id} />
             </div>
         </div>
     );

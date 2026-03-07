@@ -15,7 +15,7 @@ import ShareMenu from '@/components/ShareMenu';
 import BookmarkButton from '@/components/BookmarkButton';
 import CommentsClient from '@/components/comments/CommentsClient';
 import UniversalComments from '@/components/community/UniversalComments';
-import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+
 
 import { useAdminScenarios } from '@/lib/useAdminData';
 import { fetchRemoteArticleDataById } from '@/lib/remoteData';
@@ -1049,7 +1049,6 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                   </div>
 
                   <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-8 space-y-6">
-                    <ContentHelpfulWidget entityType="scenario" entityId={shownResult.id} />
                     <UniversalComments entityType="scenario" entityId={shownResult.id} title="مجتمع المستشار" />
                   </div>
 

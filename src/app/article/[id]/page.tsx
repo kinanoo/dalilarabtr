@@ -10,7 +10,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
-import ContentHelpfulWidget from '@/components/community/ContentHelpfulWidget';
+
 import ShareMenu from '@/components/ShareMenu';
 import { stripHtml } from '@/lib/stripHtml';
 
@@ -330,7 +330,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
             url={url}
           />
         </div>
-        <ContentHelpfulWidget entityType="article" entityId={params.id} />
         <UniversalComments entityType="article" entityId={params.id} title="نقاش دليل المقال" />
       </ArticleHydratedView>
 
