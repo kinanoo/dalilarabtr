@@ -3,21 +3,25 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-// Cache font fetches at module level (reused across requests)
+// Bundle fonts at build time — eliminates runtime network fetch on cold starts
 const cairoBold = fetch(
-  'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hAc5W1Q.ttf'
+  new URL('./fonts/Cairo-Bold.ttf', import.meta.url)
 ).then((res) => res.arrayBuffer());
 
 const cairoRegular = fetch(
-  'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
+  new URL('./fonts/Cairo-Regular.ttf', import.meta.url)
 ).then((res) => res.arrayBuffer());
 
-// Satori renders Arabic words LTR — reverse word order + fix bracket positions
+// Satori renders Arabic words LTR — reverse word order + fix bracket/slash positions
 function fixArabic(text: string): string {
   return text
     .split(' ')
     .reverse()
     .map((word) => {
+      // Reverse slash-separated parts (e.g. "احتساب/عرض" → "عرض/احتساب")
+      if (word.includes('/')) {
+        word = word.split('/').reverse().join('/');
+      }
       // Word fully wrapped in brackets: keep as-is (both sides cancel out)
       if (word.startsWith('(') && word.endsWith(')')) return word;
       if (word.startsWith(')') && word.endsWith('(')) return word;
