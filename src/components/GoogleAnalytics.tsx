@@ -7,7 +7,7 @@ import Script from 'next/script';
  * يتتبع الزيارات والاستخدام بدون التأثير على الأداء
  */
 export function GoogleAnalytics() {
-  const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   // إذا لم يتم تعيين الـ ID، لا نحمّل Analytics
   if (!gaId) {
