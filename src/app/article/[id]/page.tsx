@@ -187,6 +187,12 @@ function buildJsonLd(args: {
     ...(wordCount > 0 && { wordCount }),
     ...(args.keywords && args.keywords.length > 0 && { keywords: args.keywords.join(', ') }),
     image: args.image || `${args.siteUrl}/og-image.jpg`,
+    reviewedBy: {
+      '@type': 'Organization',
+      name: 'فريق دليل العرب القانوني',
+      url: args.siteUrl,
+    },
+    lastReviewed: dateModified,
   };
 
   const breadcrumbItems = [

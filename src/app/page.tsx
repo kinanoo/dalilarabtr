@@ -20,6 +20,7 @@ import GlobalSearch from '@/components/GlobalSearch';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import { TOP_FAQS } from '@/lib/home-faq-data';
 
 // ============================================
 // 📦 Data Fetching (Server-Side)
@@ -127,8 +128,22 @@ export const metadata: Metadata = {
 export default async function Home() {
   const updates = await getUpdates();
 
+  const homeFaqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: TOP_FAQS.map(faq => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-transparent selection:bg-emerald-200 dark:selection:bg-emerald-700">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqSchema) }} />
 
       {/* 1. HERO SECTION (Client) */}
       <HeroSection>

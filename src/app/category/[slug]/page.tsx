@@ -91,7 +91,7 @@ export default async function CategoryPage(props: {
 
   return (
     <main className="flex flex-col min-h-screen">
-      {/* JSON-LD Schema */}
+      {/* JSON-LD: BreadcrumbList */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -121,6 +121,26 @@ export default async function CategoryPage(props: {
           })
         }}
       />
+      {/* JSON-LD: ItemList — قائمة المقالات في هذا التصنيف */}
+      {initialArticles.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              "name": categoryName,
+              "numberOfItems": initialArticles.length,
+              "itemListElement": initialArticles.slice(0, 20).map((a: any, i: number) => ({
+                "@type": "ListItem",
+                "position": i + 1,
+                "url": `${SITE_CONFIG.siteUrl}/article/${a.slug}`,
+                "name": a.title,
+              })),
+            })
+          }}
+        />
+      )}
 
       {/* 🆕 مكون Client لعرض المقالات مع الهيرو والبحث */}
       <CategoryArticlesList
