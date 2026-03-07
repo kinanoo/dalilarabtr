@@ -19,7 +19,7 @@ const FAB_OPTIONS = [
     id: 'consultant',
     label: 'المستشار',
     href: '/consultant',
-    icon: <Scale size={20} />,
+    icon: <Scale size={16} />,
     color: 'bg-sky-500 hover:bg-sky-600 text-white shadow-sky-500/30',
     external: false,
   },
@@ -27,7 +27,7 @@ const FAB_OPTIONS = [
     id: 'whatsapp',
     label: 'واتساب',
     href: getSiteWhatsAppHref() || '#',
-    icon: <WhatsAppIcon size={20} />,
+    icon: <WhatsAppIcon size={16} />,
     color: 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/30',
     external: true,
   },
@@ -53,21 +53,21 @@ export default function WhatsAppAssistant() {
   }, [open]);
 
   return (
-    <div ref={wrapperRef} className="fixed bottom-20 left-4 md:bottom-6 md:left-6 z-[90] flex flex-col items-center gap-3">
+    <div ref={wrapperRef} className="fixed bottom-[70px] left-3 md:bottom-6 md:left-6 z-[90] flex flex-col items-center gap-2">
       {/* Options */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-1.5">
         {FAB_OPTIONS.map((opt, i) => (
           <div
             key={opt.id}
-            className="flex items-center gap-2 transition-all duration-300 ease-out"
+            className="flex items-center gap-1.5 transition-all duration-300 ease-out"
             style={{
               opacity: open ? 1 : 0,
-              transform: open ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.8)',
+              transform: open ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.8)',
               transitionDelay: open ? `${(FAB_OPTIONS.length - 1 - i) * 60}ms` : '0ms',
               pointerEvents: open ? 'auto' : 'none',
             }}
           >
-            <span className="text-xs font-bold bg-slate-900/80 dark:bg-slate-100/90 text-white dark:text-slate-900 px-2.5 py-1 rounded-lg shadow-lg backdrop-blur-sm whitespace-nowrap">
+            <span className="text-[10px] font-bold bg-slate-900/80 dark:bg-slate-100/90 text-white dark:text-slate-900 px-2 py-0.5 rounded-md shadow-lg backdrop-blur-sm whitespace-nowrap">
               {opt.label}
             </span>
             {opt.external ? (
@@ -79,7 +79,7 @@ export default function WhatsAppAssistant() {
                   trackWhatsAppClick('fab');
                   setOpen(false);
                 }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${opt.color}`}
+                className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 ${opt.color}`}
                 aria-label={opt.label}
               >
                 {opt.icon}
@@ -88,7 +88,7 @@ export default function WhatsAppAssistant() {
               <Link
                 href={opt.href}
                 onClick={() => setOpen(false)}
-                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${opt.color}`}
+                className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 ${opt.color}`}
                 aria-label={opt.label}
               >
                 {opt.icon}
@@ -102,12 +102,12 @@ export default function WhatsAppAssistant() {
       <button
         type="button"
         onClick={() => setOpen(prev => !prev)}
-        className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-xl shadow-indigo-600/30 hover:shadow-indigo-500/40 flex items-center justify-center transition-all duration-300 active:scale-90"
+        className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white/90 shadow-lg shadow-purple-600/20 flex items-center justify-center transition-all duration-300 active:scale-90"
         aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
         aria-expanded={open ? 'true' : 'false'}
       >
         <Plus
-          size={26}
+          size={20}
           strokeWidth={2.5}
           className="transition-transform duration-300"
           style={{ transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}
