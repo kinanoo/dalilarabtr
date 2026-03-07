@@ -93,8 +93,7 @@ export async function postComment(payload: {
     const insertObj: any = {
         ...rest,
         page_slug: payload.entity_id, // backward compat
-        // Authenticated users get auto-approved; anonymous comments require moderation
-        status: user_id ? 'approved' : 'pending',
+        status: 'approved',
     };
     // Only include user_id if provided (column may not exist yet)
     if (user_id) {
