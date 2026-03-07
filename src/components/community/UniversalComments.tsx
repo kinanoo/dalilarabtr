@@ -512,9 +512,6 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         setComments((prev) => [newComment, ...prev]);
         setContent('');
         setIsCorrection(false);
-
-        // Reload from server after a short delay to confirm persistence
-        setTimeout(() => loadComments(), 1500);
     };
 
     const handleEditComment = async (commentId: string, newContent: string) => {
