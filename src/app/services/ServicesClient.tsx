@@ -360,7 +360,7 @@ export default function ServicesClient() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-in fade-in"
           onClick={() => setPreviewImage(null)}
         >
-          <button onClick={() => setPreviewImage(null)} className="absolute top-4 right-4 text-white"><X size={32} /></button>
+          <button onClick={() => setPreviewImage(null)} aria-label="إغلاق المعاينة" className="absolute top-4 right-4 text-white"><X size={32} /></button>
           <div className="relative max-w-full max-h-[90vh] w-auto h-auto">
             <Image
               src={previewImage}

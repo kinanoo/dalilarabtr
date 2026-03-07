@@ -255,10 +255,10 @@ export default function CodesManager() {
                                     </div>
 
                                     <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(code)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="تعديل">
+                                        <button onClick={() => handleEdit(code)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="تعديل" aria-label="تعديل">
                                             <Edit size={18} />
                                         </button>
-                                        <button onClick={() => handleDelete(code.code)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="حذف">
+                                        <button onClick={() => handleDelete(code.code)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="حذف" aria-label="حذف">
                                             <Trash2 size={18} />
                                         </button>
                                     </div>

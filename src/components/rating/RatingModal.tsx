@@ -68,7 +68,7 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
                         <Star className="fill-amber-400 text-amber-400" size={20} />
                         تقييم الخدمة
                     </h3>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <button onClick={onClose} aria-label="إغلاق" className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <X size={20} />
                     </button>
                 </div>

@@ -198,8 +198,8 @@ export function UpdatesManager() {
                                 </div>
                             </div>
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => { setEditingId(u.id); setFormData(u); setSendPush(false); }} className="text-blue-500"><Edit size={16} /></button>
-                                <button onClick={() => handleDelete(u.id, u.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors" title="حذف"><Trash2 size={16} /></button>
+                                <button onClick={() => { setEditingId(u.id); setFormData(u); setSendPush(false); }} className="text-blue-500" aria-label="تعديل"><Edit size={16} /></button>
+                                <button onClick={() => handleDelete(u.id, u.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors" title="حذف" aria-label="حذف"><Trash2 size={16} /></button>
                             </div>
                         </div>
                     ))}
@@ -288,7 +288,7 @@ export function FAQManager() {
                                 <h4 className="font-bold text-sm text-slate-800 dark:text-white">س: {f.question}</h4>
                                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">ج: {f.answer}</p>
                             </div>
-                            <button onClick={() => handleDelete(f.id)} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16} /></button>
+                            <button onClick={() => handleDelete(f.id)} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" aria-label="حذف"><Trash2 size={16} /></button>
                         </div>
                     ))}
                 </div>

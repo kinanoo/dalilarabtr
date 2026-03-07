@@ -154,6 +154,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                                 <button
                                     onClick={onClose}
                                     className="w-8 h-8 text-slate-400 hover:text-red-500 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    aria-label="إغلاق القائمة"
                                 >
                                     <ChevronRight size={18} />
                                 </button>
@@ -259,7 +260,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                     )}
 
                     {collapsed && (
-                        <Link href="/admin" className="w-10 h-10 rounded-xl bg-white/5 p-1.5 flex items-center justify-center border border-white/10 hover:border-emerald-500/30 transition-colors" title="الرئيسية">
+                        <Link href="/admin" className="w-10 h-10 rounded-xl bg-white/5 p-1.5 flex items-center justify-center border border-white/10 hover:border-emerald-500/30 transition-colors" title="الرئيسية" aria-label="الرئيسية">
                             <Image src="/logo.png" alt="Dalil" width={40} height={40} className="w-full h-full object-contain" />
                         </Link>
                     )}
@@ -271,6 +272,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                             onClick={onToggle}
                             className="flex w-8 h-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
                             title={collapsed ? "توسيع القائمة" : "تصغير القائمة"}
+                            aria-label={collapsed ? "توسيع القائمة" : "تصغير القائمة"}
                         >
                             {collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                         </button>

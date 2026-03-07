@@ -228,7 +228,7 @@ export default function ArticleManager() {
                                         onChange={e => updateArrayItem('steps', i, e.target.value)}
                                         className="flex-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
                                     />
-                                    <button type="button" onClick={() => removeArrayItem('steps', i)} className="text-red-400"><X size={14} /></button>
+                                    <button type="button" onClick={() => removeArrayItem('steps', i)} className="text-red-400" aria-label="حذف العنصر"><X size={14} /></button>
                                 </div>
                             ))}
                             <button type="button" onClick={() => addArrayItem('steps')} className="text-xs text-emerald-600 font-bold flex items-center gap-1 mt-2">
@@ -247,7 +247,7 @@ export default function ArticleManager() {
                                         onChange={e => updateArrayItem('documents', i, e.target.value)}
                                         className="flex-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
                                     />
-                                    <button type="button" onClick={() => removeArrayItem('documents', i)} className="text-red-400"><X size={14} /></button>
+                                    <button type="button" onClick={() => removeArrayItem('documents', i)} className="text-red-400" aria-label="حذف العنصر"><X size={14} /></button>
                                 </div>
                             ))}
                             <button type="button" onClick={() => addArrayItem('documents')} className="text-xs text-emerald-600 font-bold flex items-center gap-1 mt-2">
@@ -266,7 +266,7 @@ export default function ArticleManager() {
                                         onChange={e => updateArrayItem('tips', i, e.target.value)}
                                         className="flex-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2"
                                     />
-                                    <button type="button" onClick={() => removeArrayItem('tips', i)} className="text-red-400"><X size={14} /></button>
+                                    <button type="button" onClick={() => removeArrayItem('tips', i)} className="text-red-400" aria-label="حذف العنصر"><X size={14} /></button>
                                 </div>
                             ))}
                             <button type="button" onClick={() => addArrayItem('tips')} className="text-xs text-emerald-600 font-bold flex items-center gap-1 mt-2">
@@ -372,10 +372,10 @@ export default function ArticleManager() {
                                         </div>
                                     </div>
                                     <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(article)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="تعديل">
+                                        <button onClick={() => handleEdit(article)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg" title="تعديل" aria-label="تعديل">
                                             <Edit size={18} />
                                         </button>
-                                        <button onClick={() => handleDelete(article.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="حذف">
+                                        <button onClick={() => handleDelete(article.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg" title="حذف" aria-label="حذف">
                                             <Trash2 size={18} />
                                         </button>
                                     </div>

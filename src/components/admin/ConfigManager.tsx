@@ -129,7 +129,7 @@ export default function ConfigManager() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="p-4 bg-slate-50 dark:bg-slate-800 font-bold border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                         <span>إدارة القوائم</span>
-                        <button onClick={fetchMenus} className="text-slate-400 hover:text-blue-500"><RefreshCw size={16} /></button>
+                        <button onClick={fetchMenus} className="text-slate-400 hover:text-blue-500" aria-label="تحديث"><RefreshCw size={16} /></button>
                     </div>
                     {loading ? (
                         <div className="p-8 text-center text-slate-400 flex justify-center"><Loader2 className="animate-spin" /></div>
@@ -155,8 +155,8 @@ export default function ConfigManager() {
                                                 value={menuForm.sort_order}
                                                 onChange={e => setMenuForm({ ...menuForm, sort_order: parseInt(e.target.value) })}
                                             />
-                                            <button onClick={() => handleSaveMenu(menu.id)} className="p-1 bg-green-100 text-green-600 rounded"><Check size={16} /></button>
-                                            <button onClick={() => setEditingMenu(null)} className="p-1 bg-red-100 text-red-600 rounded"><X size={16} /></button>
+                                            <button onClick={() => handleSaveMenu(menu.id)} className="p-1 bg-green-100 text-green-600 rounded" aria-label="حفظ"><Check size={16} /></button>
+                                            <button onClick={() => setEditingMenu(null)} className="p-1 bg-red-100 text-red-600 rounded" aria-label="إلغاء"><X size={16} /></button>
                                         </div>
                                     ) : (
                                         <>
@@ -172,10 +172,11 @@ export default function ConfigManager() {
                                                 <button
                                                     onClick={() => { setEditingMenu(menu.id); setMenuForm(menu); }}
                                                     className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"
+                                                    aria-label="تعديل"
                                                 >
                                                     <Edit size={16} />
                                                 </button>
-                                                <button onClick={() => handleDeleteMenu(menu.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
+                                                <button onClick={() => handleDeleteMenu(menu.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" aria-label="حذف"><Trash2 size={16} /></button>
                                             </div>
                                         </>
                                     )}
@@ -191,7 +192,7 @@ export default function ConfigManager() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="p-4 bg-slate-50 dark:bg-slate-800 font-bold border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                         <span>إدارة التصنيفات</span>
-                        <button onClick={fetchCategories} className="text-slate-400 hover:text-blue-500"><RefreshCw size={16} /></button>
+                        <button onClick={fetchCategories} className="text-slate-400 hover:text-blue-500" aria-label="تحديث"><RefreshCw size={16} /></button>
                     </div>
                     {loading ? (
                         <div className="p-8 text-center text-slate-400 flex justify-center"><Loader2 className="animate-spin" /></div>
@@ -212,8 +213,8 @@ export default function ConfigManager() {
                                                 value={catForm.sort_order}
                                                 onChange={e => setCatForm({ ...catForm, sort_order: parseInt(e.target.value) })}
                                             />
-                                            <button onClick={() => handleSaveCategory(cat.slug)} className="p-1 bg-green-100 text-green-600 rounded"><Check size={16} /></button>
-                                            <button onClick={() => setEditingCategory(null)} className="p-1 bg-slate-100 text-slate-600 rounded">إلغاء</button>
+                                            <button onClick={() => handleSaveCategory(cat.slug)} className="p-1 bg-green-100 text-green-600 rounded" aria-label="حفظ"><Check size={16} /></button>
+                                            <button onClick={() => setEditingCategory(null)} className="p-1 bg-slate-100 text-slate-600 rounded" aria-label="إلغاء">إلغاء</button>
                                         </div>
                                     ) : (
                                         <>
@@ -226,12 +227,14 @@ export default function ConfigManager() {
                                                 <button
                                                     onClick={() => toggleCatStatus(cat.slug, cat.active)}
                                                     className={`text-[10px] px-2 py-1 rounded font-bold ${cat.active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}
+                                                    aria-label={cat.active ? 'تعطيل' : 'تفعيل'}
                                                 >
                                                     {cat.active ? 'فعال' : 'معطل'}
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditingCategory(cat.slug); setCatForm(cat); }}
                                                     className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"
+                                                    aria-label="تعديل"
                                                 >
                                                     <Edit size={16} />
                                                 </button>

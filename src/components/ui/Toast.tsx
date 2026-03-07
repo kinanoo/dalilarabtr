@@ -90,7 +90,7 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
             <div className="flex-1 text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug">
                 {toast.message}
             </div>
-            <button onClick={onClose} className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <button onClick={onClose} className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="إغلاق">
                 <X size={16} />
             </button>
         </motion.div>
