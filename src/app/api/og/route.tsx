@@ -144,6 +144,7 @@ export async function GET(request: NextRequest) {
                     fontSize: `${fontSize}px`,
                     fontWeight: 700,
                     lineHeight: 1.5,
+                    letterSpacing: '-1px',
                     textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                   }}
                 >
