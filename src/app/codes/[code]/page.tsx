@@ -6,7 +6,7 @@ import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight, Clock, Link2
 import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
-
+import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG } from '@/lib/config';
 
 import RelatedArticles from '@/components/RelatedArticles';
@@ -198,6 +198,10 @@ export default async function CodeDetailPage({ params }: Props) {
                         text={`تعرف على معنى الكود ${item.code} وتفاصيله القانونية.`}
                         url={`${SITE_CONFIG.siteUrl}/codes/${encodeURIComponent(item.code)}`}
                     />
+                </div>
+
+                <div className="mt-8">
+                    <UniversalComments entityType="scenario" entityId={`code-${item.code}`} title="ناقش هذا الكود" />
                 </div>
 
                 <RelatedArticles currentArticleId="" category="معاملات رسمية" />

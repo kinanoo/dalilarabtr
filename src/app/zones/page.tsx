@@ -9,6 +9,8 @@ export const metadata: Metadata = {
     alternates: { canonical: '/zones' },
 };
 
+import UniversalComments from '@/components/community/UniversalComments';
+
 import RelatedArticles from '@/components/RelatedArticles';
 
 export default function ZonesPage() {
@@ -18,6 +20,7 @@ export default function ZonesPage() {
             <ZonesClient />
 
             <div className="max-w-4xl mx-auto px-4 mt-12 space-y-8">
+                <UniversalComments entityType="zone" entityId="main-map" title="نقاش المناطق المحظورة" />
                 <RelatedArticles currentArticleId="" category="السكن والحياة" />
             </div>
         </main>

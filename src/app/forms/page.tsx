@@ -3,7 +3,7 @@
 import PageHero from '@/components/PageHero';
 import { useAdminForms } from '@/lib/useAdminData';
 import { FileText, Download, Shield, Loader2, ExternalLink } from 'lucide-react';
-
+import UniversalComments from '@/components/community/UniversalComments';
 
 
 export default function FormsPage() {
@@ -72,6 +72,11 @@ export default function FormsPage() {
           </div>
         )}
 
+        <div className="mt-16">
+          <div className="">
+            <UniversalComments entityType="article" entityId="forms-library" title="أسئلة عن النماذج" />
+          </div>
+        </div>
       </div>
     </main>
   );
