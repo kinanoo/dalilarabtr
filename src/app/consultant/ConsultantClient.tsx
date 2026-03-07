@@ -13,8 +13,8 @@ import ToolSchema from '@/components/ToolSchema';
 import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import BookmarkButton from '@/components/BookmarkButton';
-import CommentsClient from '@/components/comments/CommentsClient';
-import UniversalComments from '@/components/community/UniversalComments';
+
+
 
 
 import { useAdminScenarios } from '@/lib/useAdminData';
@@ -1046,10 +1046,6 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         )}
                       </div>
                     )}
-                  </div>
-
-                  <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-8 space-y-6">
-                    <UniversalComments entityType="scenario" entityId={shownResult.id} title="مجتمع المستشار" />
                   </div>
 
                   {/* إخلاء مسؤولية */}

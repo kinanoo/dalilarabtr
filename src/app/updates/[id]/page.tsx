@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Calendar, Newspaper } from 'lucide-react';
-import UniversalComments from '@/components/community/UniversalComments';
+
 
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
@@ -145,14 +145,6 @@ export default async function UpdateDetailPage(
                     </div>
                 </article>
 
-                {/* Community Interaction */}
-                <div className="mt-8 space-y-6">
-                    <UniversalComments
-                        entityType="update"
-                        entityId={id}
-                        title="التعليقات والمناقشة"
-                    />
-                </div>
             </div>
         </div>
     );

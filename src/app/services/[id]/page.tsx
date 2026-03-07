@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
-import UniversalComments from '@/components/community/UniversalComments';
+
 
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
@@ -181,14 +181,6 @@ export default async function ServiceDetailsPage(
                 </div>
             </div>
 
-            {/* Reviews + Comments */}
-            <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
-                <UniversalComments
-                    entityType="service"
-                    entityId={id}
-                    title="التعليقات والمناقشة"
-                />
-            </div>
         </div>
     );
 }
