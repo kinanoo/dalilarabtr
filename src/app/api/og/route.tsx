@@ -12,9 +12,33 @@ const cairoRegular = fetch(
   'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
 ).then((res) => res.arrayBuffer());
 
-// Satori reverses Arabic word order — pre-reverse so it renders correctly
+// Satori renders Arabic LTR — reverse words + swap brackets so it displays correctly
 function fixArabic(text: string): string {
-  return text.split(' ').reverse().join(' ');
+  return text
+    .split(' ')
+    .reverse()
+    .join(' ')
+    .replace(/[()[\]{}]/g, (c) => {
+      const swap: Record<string, string> = { '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{' };
+      return swap[c] || c;
+    });
+}
+
+// Split text into lines of roughly maxChars characters, breaking at word boundaries
+function splitLines(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    if (current && (current + ' ' + word).length > maxChars) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = current ? current + ' ' + word : word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
 }
 
 function truncateTitle(title: string, maxLen = 90): string {
@@ -22,11 +46,11 @@ function truncateTitle(title: string, maxLen = 90): string {
   return title.substring(0, maxLen).replace(/\s+\S*$/, '') + '...';
 }
 
-function getTitleSize(title: string): number {
-  if (title.length > 80) return 40;
-  if (title.length > 60) return 44;
-  if (title.length > 40) return 48;
-  return 52;
+function getTitleSize(len: number): { fontSize: number; charsPerLine: number } {
+  if (len > 80) return { fontSize: 40, charsPerLine: 38 };
+  if (len > 60) return { fontSize: 44, charsPerLine: 34 };
+  if (len > 40) return { fontSize: 48, charsPerLine: 30 };
+  return { fontSize: 52, charsPerLine: 26 };
 }
 
 export async function GET(request: NextRequest) {
@@ -36,7 +60,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || '';
 
     const title = truncateTitle(rawTitle);
-    const fontSize = getTitleSize(title);
+    const { fontSize, charsPerLine } = getTitleSize(title.length);
+    const lines = splitLines(title, charsPerLine);
 
     const [boldFont, regularFont] = await Promise.all([cairoBold, cairoRegular]);
 
@@ -75,7 +100,7 @@ export async function GET(request: NextRequest) {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '24px',
+              gap: '20px',
               zIndex: 1,
             }}
           >
@@ -97,28 +122,22 @@ export async function GET(request: NextRequest) {
               </div>
             )}
 
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                flexDirection: 'row-reverse',
-                justifyContent: 'flex-start',
-                gap: '4px 10px',
-              }}
-            >
-              {title.split(' ').map((word, i) => (
-                <span
+            {/* Title — each line rendered separately for correct order */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {lines.map((line, i) => (
+                <div
                   key={i}
                   style={{
                     color: 'white',
                     fontSize: `${fontSize}px`,
                     fontWeight: 700,
-                    lineHeight: 1.4,
+                    lineHeight: 1.5,
+                    textAlign: 'right',
                     textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {word}
-                </span>
+                  {fixArabic(line)}
+                </div>
               ))}
             </div>
           </div>
