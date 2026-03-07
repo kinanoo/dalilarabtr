@@ -12,8 +12,8 @@
 
 'use client';
 
-import { useMemo, useState, useEffect, useRef } from 'react';
-import { Search, ArrowLeft, FileText, Briefcase, Link2, Globe } from 'lucide-react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { Search, ArrowLeft, FileText, Briefcase, Link2, Globe, TrendingUp, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,34 @@ import {
   SearchResult
 } from '@/lib/searchIndex';
 
-// ...
+// Popular searches shown when input is focused but empty
+const POPULAR_SEARCHES = [
+  'تجديد الإقامة',
+  'الكملك',
+  'المناطق المحظورة',
+  'إذن العمل',
+  'الأكواد الأمنية',
+  'الإقامة السياحية',
+  'الجنسية التركية',
+  'التأمين الصحي',
+];
+
+const RECENT_SEARCHES_KEY = 'dalil_recent_searches';
+const MAX_RECENT = 5;
+
+function getRecentSearches(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+  } catch { return []; }
+}
+
+function saveRecentSearch(term: string) {
+  if (typeof window === 'undefined' || !term.trim()) return;
+  const recent = getRecentSearches().filter(s => s !== term.trim());
+  recent.unshift(term.trim());
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+}
 
 export default function GlobalSearch({ variant = 'default' }: { variant?: 'default' | 'hero' }) {
   const [query, setQuery] = useState('');
@@ -38,6 +65,13 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const debounceTime = useMemo(() => getOptimalDebounceTime(), []);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Load recent searches on mount
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
 
   /* =========================================================
      🧬 DNA TRANSPLANT: LOGIC CLONED FROM WhatsAppAssistant
@@ -50,10 +84,35 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
   // Use the SAME hook
   const { index: searchIndex } = useSearchIndex();
 
+  // Autocomplete suggestions from index titles
+  const suggestions = useMemo(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 1) return [];
+    const needle = normalizeArabic(trimmed);
+    if (needle.length < 1) return [];
+
+    const matches: { title: string; url: string }[] = [];
+    const seen = new Set<string>();
+
+    for (const item of searchIndex) {
+      const normTitle = normalizeArabic(item.title);
+      if (normTitle.includes(needle) && !seen.has(item.title)) {
+        seen.add(item.title);
+        matches.push({ title: item.title, url: item.url });
+        if (matches.length >= 6) break;
+      }
+    }
+    return matches;
+  }, [query, searchIndex]);
+
   // Debounce effect for query
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(query);
+      if (query.trim().length >= 2) {
+        setIsOpen(true);
+        setShowSuggestions(false);
+      }
     }, debounceTime);
 
     return () => {
@@ -358,6 +417,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setShowSuggestions(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -370,10 +430,21 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (results.length > 0) {
+      saveRecentSearch(query.trim());
+      setRecentSearches(getRecentSearches());
       router.push(results[0].url);
       setIsOpen(false);
+      setShowSuggestions(false);
     }
   };
+
+  const handleSuggestionClick = useCallback((text: string) => {
+    setQuery(text);
+    setIsOpen(true);
+    setShowSuggestions(false);
+    saveRecentSearch(text);
+    setRecentSearches(getRecentSearches());
+  }, []);
 
   return (
     <div ref={wrapperRef} className={`relative mx-auto ${isHero ? 'max-w-xl' : 'max-w-3xl md:max-w-3xl lg:max-w-2xl xl:max-w-2xl'}`}>
@@ -392,8 +463,14 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
           type="search"
           aria-label="بحث عام في الموقع"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
-          onFocus={() => { if (query) setIsOpen(true); }}
+          onChange={(e) => {
+            const v = e.target.value;
+            setQuery(v);
+            setShowSuggestions(true);
+            // isOpen will be set by debounce effect when results are ready
+            if (!v.trim()) setIsOpen(false);
+          }}
+          onFocus={() => { setShowSuggestions(true); if (debouncedQuery.trim().length >= 2) setIsOpen(true); }}
           placeholder={isHero ? "ماذا تريد أن تعرف اليوم؟ (إقامة، قانون...)" : "ابحث بأي صيغة... (ضيعت كملك، فقدت جواز، بسبور ضاع...)"}
           autoFocus={false}
           className={`
@@ -419,7 +496,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         {!isHero && query && (
           <button
             type="button"
-            onClick={() => { setQuery(''); setIsOpen(false); }}
+            onClick={() => { setQuery(''); setDebouncedQuery(''); setIsOpen(false); setShowSuggestions(false); }}
             className="absolute inset-y-0 end-4 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             مسح
@@ -428,6 +505,84 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
       </form>
 
       <AnimatePresence>
+        {/* Suggestions dropdown — popular + recent + autocomplete */}
+        {showSuggestions && !isOpen && query.length === 0 && (recentSearches.length > 0 || true) && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
+          >
+            {/* Recent searches */}
+            {recentSearches.length > 0 && (
+              <div className="px-4 pt-4 pb-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 mb-3">
+                  <Clock size={13} />
+                  <span>عمليات بحث سابقة</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {recentSearches.map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => handleSuggestionClick(term)}
+                      className="text-sm px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors font-medium"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Popular searches */}
+            <div className={`px-4 pb-4 ${recentSearches.length > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800 mt-2' : 'pt-4'}`}>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 mb-3">
+                <TrendingUp size={13} />
+                <span>الأكثر بحثاً</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {POPULAR_SEARCHES.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => handleSuggestionClick(term)}
+                    className="text-sm px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors font-medium border border-emerald-100 dark:border-emerald-900/30"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Autocomplete suggestions while typing */}
+        {showSuggestions && query.length >= 1 && suggestions.length > 0 && !isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
+          >
+            <div className="py-1">
+              {suggestions.map((s) => (
+                <button
+                  key={s.url}
+                  type="button"
+                  onClick={() => handleSuggestionClick(s.title)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-right"
+                >
+                  <Search size={14} className="text-slate-300 dark:text-slate-600 shrink-0" />
+                  <span className="text-sm text-slate-700 dark:text-slate-200 font-medium truncate">{s.title}</span>
+                  <ArrowLeft size={14} className="text-slate-300 dark:text-slate-600 mr-auto shrink-0" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Search results */}
         {isOpen && (results.length > 0 || query.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -450,7 +605,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
                   <Link
                     key={result.id}
                     href={result.url}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => { setIsOpen(false); saveRecentSearch(query.trim()); setRecentSearches(getRecentSearches()); }}
                     className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0 group"
                   >
                     <div className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 p-2 rounded-lg group-hover:bg-emerald-100 group-hover:text-emerald-600 transition">
