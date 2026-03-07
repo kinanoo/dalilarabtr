@@ -555,21 +555,8 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
 
     return (
         <section className={`bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 ${className}`}>
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-xl">
-                    <MessageSquare size={24} />
-                </div>
-                <div>
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h3>
-                    {totalCount > 0 && (
-                        <p className="text-slate-500 text-sm">{totalCount} تعليق</p>
-                    )}
-                </div>
-            </div>
-
             {/* Comments List */}
-            <div className="space-y-4 mb-10">
+            <div className="space-y-4 mb-6">
                 {loading ? (
                     <div className="text-center py-4 text-slate-400">جاري التحميل...</div>
                 ) : comments.length === 0 ? (
