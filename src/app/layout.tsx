@@ -57,6 +57,12 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: SEO_KEYWORDS,
+  alternates: {
+    languages: {
+      'ar': SITE_URL,
+      'x-default': SITE_URL,
+    },
+  },
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
