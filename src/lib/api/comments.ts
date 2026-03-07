@@ -47,7 +47,7 @@ export async function fetchComments(entityType: string, entityId: string) {
 
     const { data: flatComments, error } = await sb
         .from('comments')
-        .select('id, entity_type, entity_id, author_name, content, is_correction, is_official, status, created_at, parent_id, user_id, likes_count')
+        .select('id, entity_type, entity_id, author_name, content, is_correction, is_official, status, created_at, parent_id, user_id')
         .eq('entity_type', entityType)
         .eq('entity_id', normalizedId)
         .or('status.eq.approved,is_official.eq.true')

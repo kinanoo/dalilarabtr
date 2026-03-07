@@ -53,7 +53,7 @@ export function getAnonClient(): SupabaseClient | null {
   if (!supabaseUrl || !supabaseAnonKey) return null;
   if (!window[ANON_KEY]) {
     window[ANON_KEY] = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
+      auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-anon-public' },
     });
   }
   return window[ANON_KEY];
