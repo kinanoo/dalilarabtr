@@ -109,7 +109,6 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
                     <Bell size={18} className="text-amber-500" />
                     <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                         آخر التحديثات
-                        <span className="text-slate-400 text-sm font-normal mr-1">({updates.length})</span>
                     </h2>
                 </div>
 
