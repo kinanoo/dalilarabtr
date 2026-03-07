@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
             justifyContent: 'space-between',
             background: 'linear-gradient(135deg, #065f46 0%, #0d9488 50%, #047857 100%)',
             fontFamily: 'Cairo',
-            direction: 'rtl',
             padding: '60px',
             position: 'relative',
           }}
@@ -121,21 +120,6 @@ export async function GET(request: NextRequest) {
               border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://dalilarabtr.com/logo.png"
-                width="48"
-                height="48"
-                alt=""
-                style={{ borderRadius: '8px' }}
-              />
-              <span
-                style={{ color: 'white', fontSize: '24px', fontWeight: 700 }}
-              >
-                دليل العرب في تركيا
-              </span>
-            </div>
             <span
               style={{
                 color: 'rgba(255,255,255,0.7)',
@@ -145,6 +129,21 @@ export async function GET(request: NextRequest) {
             >
               dalilarabtr.com
             </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span
+                style={{ color: 'white', fontSize: '24px', fontWeight: 700 }}
+              >
+                دليل العرب في تركيا
+              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://dalilarabtr.com/logo.png"
+                width="48"
+                height="48"
+                alt=""
+                style={{ borderRadius: '8px' }}
+              />
+            </div>
           </div>
         </div>
       ),
