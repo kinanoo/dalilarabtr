@@ -99,7 +99,7 @@ export async function postComment(payload: {
         ...rest,
         entity_id: normalizedId,
         page_slug: normalizedId, // backward compat
-        status: 'approved',
+        status: user_id ? 'approved' : 'pending',
     };
     // Only include user_id if provided (column may not exist yet)
     if (user_id) {

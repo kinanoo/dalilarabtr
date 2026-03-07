@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'حاسبة تكاليف الإقامة في تركيا | دليل العرب في تركيا',
     description: 'احسب التكلفة التقريبية لإقامتك في تركيا — ضريبة + تأمين + رسوم البطاقة',
+    url: 'https://dalilarabtr.com/calculator',
     type: 'website',
   },
   alternates: { canonical: '/calculator' },

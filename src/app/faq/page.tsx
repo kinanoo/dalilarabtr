@@ -12,6 +12,12 @@ export const metadata: Metadata = {
   title: 'الأسئلة الشائعة | دليل العرب في تركيا',
   description: 'إجابات شاملة على أكثر من 600 سؤال حول الإقامة، الكملك، العمل، الصحة، والحياة في تركيا.',
   alternates: { canonical: '/faq' },
+  openGraph: {
+    title: 'الأسئلة الشائعة | دليل العرب في تركيا',
+    description: 'إجابات شاملة على أكثر من 600 سؤال حول الإقامة، الكملك، العمل، الصحة، والحياة في تركيا.',
+    url: `${SITE_CONFIG.siteUrl}/faq`,
+    type: 'website',
+  },
 };
 
 export const revalidate = 60; // Revalidate every minute
