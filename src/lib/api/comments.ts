@@ -39,11 +39,14 @@ function buildCommentTree(flat: Comment[]): Comment[] {
 export async function fetchComments(entityType: string, entityId: string) {
     if (!supabase) return { data: [], error: 'Supabase not initialized' };
 
+    // Normalize: always decode so encoded and decoded IDs match
+    const normalizedId = decodeURIComponent(entityId);
+
     const { data: flatComments, error } = await supabase
         .from('comments')
         .select('id, entity_type, entity_id, author_name, content, is_correction, is_official, status, created_at, parent_id, user_id, likes_count')
         .eq('entity_type', entityType)
-        .eq('entity_id', entityId)
+        .eq('entity_id', normalizedId)
         .or('status.eq.approved,is_official.eq.true')
         .order('created_at', { ascending: true }); // ascending so tree order is correct
 
@@ -90,9 +93,12 @@ export async function postComment(payload: {
 
     // Destructure user_id out so it's not spread into insert when absent
     const { user_id, ...rest } = payload;
+    // Normalize entity_id: always decode so IDs are stored consistently
+    const normalizedId = decodeURIComponent(rest.entity_id);
     const insertObj: any = {
         ...rest,
-        page_slug: payload.entity_id, // backward compat
+        entity_id: normalizedId,
+        page_slug: normalizedId, // backward compat
         status: 'approved',
     };
     // Only include user_id if provided (column may not exist yet)
