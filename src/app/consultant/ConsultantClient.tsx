@@ -1049,7 +1049,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                   </div>
 
                   <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-8 space-y-6">
-                    <UniversalComments entityType="scenario" entityId={shownResult.id} title="مجتمع المستشار" />
+                    <UniversalComments entityType="scenario" entityId={shownResult.id} />
                   </div>
 
                   {/* إخلاء مسؤولية */}

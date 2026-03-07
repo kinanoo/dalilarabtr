@@ -201,7 +201,7 @@ export default async function CodeDetailPage({ params }: Props) {
                 </div>
 
                 <div className="mt-8">
-                    <UniversalComments entityType="scenario" entityId={`code-${item.code}`} title="ناقش هذا الكود" />
+                    <UniversalComments entityType="scenario" entityId={`code-${item.code}`} />
                 </div>
 
                 <RelatedArticles currentArticleId="" category="معاملات رسمية" />

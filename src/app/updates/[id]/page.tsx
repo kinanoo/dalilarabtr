@@ -147,11 +147,7 @@ export default async function UpdateDetailPage(
 
                 {/* Community Interaction */}
                 <div className="mt-8 space-y-6">
-                    <UniversalComments
-                        entityType="update"
-                        entityId={id}
-                        title="التعليقات والمناقشة"
-                    />
+                    <UniversalComments entityType="update" entityId={id} />
                 </div>
             </div>
         </div>

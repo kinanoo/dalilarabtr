@@ -183,11 +183,7 @@ export default async function ServiceDetailsPage(
 
             {/* Reviews + Comments */}
             <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
-                <UniversalComments
-                    entityType="service"
-                    entityId={id}
-                    title="التعليقات والمناقشة"
-                />
+                <UniversalComments entityType="service" entityId={id} />
             </div>
         </div>
     );

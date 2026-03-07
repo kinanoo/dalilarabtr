@@ -110,7 +110,6 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
                     <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-1">
                         تجارب الأعضاء
                     </h3>
-                    <p className="text-slate-500 text-sm">شاركنا رأيك ليستفيد الجميع</p>
                 </div>
                 <div className="flex items-baseline gap-2 bg-slate-50 dark:bg-slate-800/50 px-4 py-2 rounded-xl">
                     <span className="text-3xl font-black text-amber-500">{avgRating}</span>
@@ -197,9 +196,7 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
             {/* 📜 List - Clean Social Style */}
             <div className="space-y-6">
                 {initialComments.length === 0 ? (
-                    <div className="text-center py-12 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/50">
-                        <p className="text-slate-400 font-medium">كن أول من يشارك تجربته هنا</p>
-                    </div>
+                    <div className="py-2" />
                 ) : (
                     initialComments.map((comment) => (
                         <div key={comment.id} className="group flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">

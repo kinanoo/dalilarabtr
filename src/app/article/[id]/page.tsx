@@ -330,7 +330,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
             url={url}
           />
         </div>
-        <UniversalComments entityType="article" entityId={params.id} title="نقاش دليل المقال" />
+        <UniversalComments entityType="article" entityId={params.id} />
       </ArticleHydratedView>
 
     </main>

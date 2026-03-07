@@ -74,7 +74,7 @@ export default function FormsPage() {
 
         <div className="mt-16">
           <div className="">
-            <UniversalComments entityType="article" entityId="forms-library" title="أسئلة عن النماذج" />
+            <UniversalComments entityType="article" entityId="forms-library" />
           </div>
         </div>
       </div>

@@ -20,7 +20,7 @@ export default function ZonesPage() {
             <ZonesClient />
 
             <div className="max-w-4xl mx-auto px-4 mt-12 space-y-8">
-                <UniversalComments entityType="zone" entityId="main-map" title="نقاش المناطق المحظورة" />
+                <UniversalComments entityType="zone" entityId="main-map" />
                 <RelatedArticles currentArticleId="" category="السكن والحياة" />
             </div>
         </main>

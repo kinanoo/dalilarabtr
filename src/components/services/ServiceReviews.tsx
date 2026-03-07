@@ -179,7 +179,6 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                             <Star size={32} />
                         </div>
                         <h4 className="font-bold text-slate-700 dark:text-slate-200 mb-1">لا توجد تقييمات حتى الآن</h4>
-                        <p className="text-slate-500 text-sm">كن أول من يشارك تجربته مع هذه الخدمة!</p>
                     </div>
                 ) : (
                     reviews.map((review) => {
