@@ -97,19 +97,30 @@ export async function GET(request: NextRequest) {
               </div>
             )}
 
-            <h1
+            <div
               style={{
-                color: 'white',
-                fontSize: `${fontSize}px`,
-                fontWeight: 700,
-                lineHeight: 1.4,
-                textAlign: 'right',
-                margin: 0,
-                textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                display: 'flex',
+                flexWrap: 'wrap',
+                flexDirection: 'row-reverse',
+                justifyContent: 'flex-start',
+                gap: '4px 10px',
               }}
             >
-              {fixArabic(title)}
-            </h1>
+              {title.split(' ').map((word, i) => (
+                <span
+                  key={i}
+                  style={{
+                    color: 'white',
+                    fontSize: `${fontSize}px`,
+                    fontWeight: 700,
+                    lineHeight: 1.4,
+                    textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  {word}
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Bottom branding */}
