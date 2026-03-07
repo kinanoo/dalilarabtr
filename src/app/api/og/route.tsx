@@ -12,13 +12,21 @@ const cairoRegular = fetch(
   'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
 ).then((res) => res.arrayBuffer());
 
-// Satori renders Arabic words LTR — reverse word order + swap brackets
+// Satori renders Arabic words LTR — reverse word order + fix bracket positions
 function fixArabic(text: string): string {
   return text
     .split(' ')
     .reverse()
-    .join(' ')
-    .replace(/[()]/g, (c) => (c === '(' ? ')' : '('));
+    .map((word) => {
+      // Move bracket from start to end (and swap type)
+      if (word.startsWith('(')) return word.slice(1) + ')';
+      if (word.startsWith(')')) return word.slice(1) + '(';
+      // Move bracket from end to start (and swap type)
+      if (word.endsWith(')')) return '(' + word.slice(0, -1);
+      if (word.endsWith('(')) return ')' + word.slice(0, -1);
+      return word;
+    })
+    .join(' ');
 }
 
 // Split text into lines of roughly maxChars characters, breaking at word boundaries
