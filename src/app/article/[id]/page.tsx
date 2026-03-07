@@ -48,7 +48,7 @@ async function fetchArticleData(slug: string) {
         title: data.title,
         slug: data.slug || '',
         seoTitle: data.seo_title || data.title,
-        seoDescription: data.seo_description || data.intro,
+        seoDescription: data.seo_description || '',
         seoKeywords: data.seo_keywords || [],
         category: data.category,
         intro: data.intro || '',
