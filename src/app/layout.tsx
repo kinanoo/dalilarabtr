@@ -144,6 +144,9 @@ export default function RootLayout({
         {/* PWA theme color */}
         <meta name="theme-color" content="#10b981" />
 
+        {/* Sitemap discovery */}
+        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
         {/* Preconnect to external services for faster loading */}
         <link rel="preconnect" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
         <link rel="dns-prefetch" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
