@@ -12,18 +12,6 @@ const cairoRegular = fetch(
   'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf'
 ).then((res) => res.arrayBuffer());
 
-// Satori renders Arabic LTR — reverse words + swap brackets so it displays correctly
-function fixArabic(text: string): string {
-  return text
-    .split(' ')
-    .reverse()
-    .join(' ')
-    .replace(/[()[\]{}]/g, (c) => {
-      const swap: Record<string, string> = { '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{' };
-      return swap[c] || c;
-    });
-}
-
 // Split text into lines of roughly maxChars characters, breaking at word boundaries
 function splitLines(text: string, maxChars: number): string[] {
   const words = text.split(' ');
@@ -100,30 +88,37 @@ export async function GET(request: NextRequest) {
             style={{
               display: 'flex',
               flexDirection: 'column',
+              alignItems: 'flex-end',
               gap: '20px',
               zIndex: 1,
             }}
           >
             {category && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <span
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    padding: '8px 24px',
-                    borderRadius: '9999px',
-                    fontSize: '22px',
-                    fontWeight: 400,
-                    border: '1px solid rgba(255,255,255,0.3)',
-                  }}
-                >
-                  {fixArabic(category)}
-                </span>
-              </div>
+              <span
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  padding: '8px 24px',
+                  borderRadius: '9999px',
+                  fontSize: '22px',
+                  fontWeight: 400,
+                  border: '1px solid rgba(255,255,255,0.3)',
+                }}
+              >
+                {category}
+              </span>
             )}
 
-            {/* Title — each line rendered separately for correct order */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            {/* Title — each line as separate div, right-aligned via parent */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '0px',
+                width: '100%',
+              }}
+            >
               {lines.map((line, i) => (
                 <div
                   key={i}
@@ -132,11 +127,10 @@ export async function GET(request: NextRequest) {
                     fontSize: `${fontSize}px`,
                     fontWeight: 700,
                     lineHeight: 1.5,
-                    textAlign: 'right',
                     textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {fixArabic(line)}
+                  {line}
                 </div>
               ))}
             </div>
@@ -168,7 +162,7 @@ export async function GET(request: NextRequest) {
               <span
                 style={{ color: 'white', fontSize: '24px', fontWeight: 700 }}
               >
-                {fixArabic('دليل العرب في تركيا')}
+                دليل العرب في تركيا
               </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
