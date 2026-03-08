@@ -20,18 +20,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!supabase) return { title: `منطقة ${decodedSlug}` };
 
-    // Try finding exact zone
+    // Try finding by neighborhood
     const { data: exactZone } = await supabase
         .from('zones')
-        .select('name_ar, name_tr')
-        .ilike('slug', decodedSlug)
+        .select('neighborhood, city, district')
+        .ilike('neighborhood', decodedSlug)
+        .limit(1)
         .single();
 
     if (exactZone) {
-        const zoneTitle = `هل منطقة ${exactZone.name_ar} محظورة؟`;
+        const zoneTitle = `هل حي ${exactZone.neighborhood} محظور؟`;
         return {
             title: `${zoneTitle} - دليل المناطق`,
-            description: `تحقق من حالة حي ${exactZone.name_ar} (${exactZone.name_tr}) وهل هو محظور لتثبيت النفوس.`,
+            description: `تحقق من حالة حي ${exactZone.neighborhood} في ${exactZone.district}/${exactZone.city} وهل هو محظور لتثبيت النفوس.`,
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
                 title: zoneTitle,
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
     }
 
-    // Try finding District
+    // Try finding by district
     const { data: districtZones } = await supabase
         .from('zones')
         .select('id')
@@ -66,6 +67,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
     }
 
+    // Try finding by city
+    const { data: cityZones } = await supabase
+        .from('zones')
+        .select('id')
+        .ilike('city', decodedSlug)
+        .limit(1);
+
+    if (cityZones && cityZones.length > 0) {
+        const cityTitle = `الأحياء المحظورة في ${decodedSlug}`;
+        return {
+            title: `${cityTitle} - دليل المناطق`,
+            description: `قائمة بجميع الأحياء المغلقة أمام الأجانب في مدينة ${decodedSlug}، تركيا.`,
+            alternates: { canonical: `/zones/${decodedSlug}` },
+            openGraph: {
+                title: cityTitle,
+                images: [{
+                    url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: cityTitle, category: 'المناطق المحظورة' })}`,
+                    width: 1200, height: 630, alt: cityTitle,
+                }],
+            },
+        };
+    }
+
     return { title: 'المنطقة غير موجودة' };
 }
 
@@ -81,66 +105,52 @@ export default async function ZoneDetailPage({ params }: Props) {
     let groupItems: any[] = [];
     let title = '';
 
-    try {
-        // 1. Try SINGLE by Slug (Neighborhood)
-        const { data: exactZone } = await supabase
+    const ZONE_COLS = 'id, neighborhood, city, district, status, is_banned';
+
+    // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ")
+    {
+        const { data } = await supabase
             .from('zones')
-            .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
-            .ilike('slug', decodedSlug)
+            .select(ZONE_COLS)
+            .ilike('neighborhood', decodedSlug)
+            .limit(1)
             .single();
+        if (data) { singleItem = data; viewType = 'single'; }
+    }
 
-        if (exactZone) {
-            singleItem = exactZone;
-            viewType = 'single';
-        } else {
-            // 2. Try NEIGHBORHOOD Name (e.g. "Molla Gürani") - Added as fallback if slug checks fail
-            const { data: nameZone } = await supabase
-                .from('zones')
-                .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
-                .ilike('neighborhood', decodedSlug)
-                .single();
-
-            if (nameZone) {
-                singleItem = nameZone;
-                viewType = 'single';
-            } else {
-                // 3. Try DISTRICT (e.g., "Fatih")
-                const { data: districtZones } = await supabase
-                    .from('zones')
-                    .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
-                    .ilike('district', decodedSlug);
-
-                if (districtZones && districtZones.length > 0) {
-                    viewType = 'district';
-                    groupItems = districtZones;
-                    title = districtZones[0].district;
-                } else {
-                    // 4. Try CITY (e.g., "Istanbul")
-                    const { data: cityZones } = await supabase
-                        .from('zones')
-                        .select('id, slug, name_ar, neighborhood, city, district, status, is_closed')
-                        .ilike('city', decodedSlug);
-
-                    if (cityZones && cityZones.length > 0) {
-                        viewType = 'city';
-                        groupItems = cityZones;
-                        title = cityZones[0].city;
-                    } else {
-                        // 5. Fallback ID check
-                        const isIdLike = /^[0-9]+$/.test(decodedSlug) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
-                        if (isIdLike) {
-                            const { data: idItem } = await supabase.from('zones').select('id, slug, name_ar, neighborhood, city, district, status, is_closed').eq('id', decodedSlug).single();
-                            if (idItem) {
-                                singleItem = idItem;
-                                viewType = 'single';
-                            }
-                        }
-                    }
-                }
-            }
+    // 2. Try DISTRICT (e.g., "Fatih")
+    if (!singleItem) {
+        const { data } = await supabase
+            .from('zones')
+            .select(ZONE_COLS)
+            .ilike('district', decodedSlug);
+        if (data && data.length > 0) {
+            viewType = 'district';
+            groupItems = data;
+            title = data[0].district;
         }
-    } catch (err) {
-        console.error('Error fetching zone/district:', err);
+    }
+
+    // 3. Try CITY (e.g., "Istanbul", "Gaziantep")
+    if (!singleItem && groupItems.length === 0) {
+        const { data } = await supabase
+            .from('zones')
+            .select(ZONE_COLS)
+            .ilike('city', decodedSlug);
+        if (data && data.length > 0) {
+            viewType = 'city';
+            groupItems = data;
+            title = data[0].city;
+        }
+    }
+
+    // 4. Fallback: ID check
+    if (!singleItem && groupItems.length === 0) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
+        if (isUUID) {
+            const { data } = await supabase.from('zones').select(ZONE_COLS).eq('id', decodedSlug).single();
+            if (data) { singleItem = data; viewType = 'single'; }
+        }
     }
 
     // --- RENDER LOGIC ---
@@ -148,13 +158,12 @@ export default async function ZoneDetailPage({ params }: Props) {
     // A. Single Zone View
     if (viewType === 'single' && singleItem) {
         const item = singleItem;
-        // Check closure status safely
-        const locked = item.status === 'closed' || item.is_closed === true;
+        const locked = item.status === 'closed' || item.is_banned === true;
 
         return (
             <main className="min-h-screen bg-white dark:bg-slate-950 font-cairo">
                 <PageHero
-                    title={item.name_ar || item.neighborhood}
+                    title={item.neighborhood}
                     description={`${item.city} - ${item.district}`}
                     icon={<MapPin className="w-10 h-10 md:w-12 md:h-12 text-pink-500" />}
                 />
@@ -190,11 +199,20 @@ export default async function ZoneDetailPage({ params }: Props) {
 
     // B. Group View (District or City Summary)
     if ((viewType === 'district' || viewType === 'city') && groupItems.length > 0) {
+        // Group by district for city view
+        const districtGroups: Record<string, typeof groupItems> = {};
+        for (const item of groupItems) {
+            const d = item.district || 'أخرى';
+            if (!districtGroups[d]) districtGroups[d] = [];
+            districtGroups[d].push(item);
+        }
+        const sortedDistricts = Object.entries(districtGroups).sort((a, b) => b[1].length - a[1].length);
+
         return (
             <main className="min-h-screen bg-white dark:bg-slate-950 font-cairo">
                 <PageHero
                     title={viewType === 'district' ? `مناطق ${title} المحظورة` : `أحياء ${title} المحظورة`}
-                    description={`قائمة بجميع الأحياء المغلقة أمام الأجانب في ${title}`}
+                    description={`قائمة بجميع الأحياء المغلقة أمام الأجانب في ${title} — ${groupItems.length} حي`}
                     icon={<MapPin className="w-10 h-10 md:w-12 md:h-12 text-pink-500" />}
                 />
                 <div className="max-w-4xl mx-auto px-4 py-12">
@@ -204,27 +222,40 @@ export default async function ZoneDetailPage({ params }: Props) {
                     </Link>
 
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 flex-wrap">
                             <ShieldAlert className="text-red-500" />
                             {viewType === 'district' ? `الأحياء المحظورة في ${title}` : `الأحياء المحظورة في مدينة ${title}`}
                             <span className="bg-red-100 text-red-700 text-sm px-3 py-1 rounded-full">{groupItems.length} حي مغلق</span>
                         </h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {groupItems.map((item: any) => (
-                                <Link
-                                    key={item.id}
-                                    href={`/zones/${item.slug || item.id}`}
-                                    className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30 hover:border-red-300 transition group"
-                                >
-                                    <div>
-                                        <div className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-red-600 transition-colors">{item.neighborhood}</div>
-                                        <div className="text-xs text-red-600 dark:text-red-400 mt-1">{item.district} - {item.city}</div>
+                        {viewType === 'city' && sortedDistricts.length > 1 ? (
+                            <div className="space-y-6">
+                                {sortedDistricts.map(([district, items]) => (
+                                    <div key={district}>
+                                        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                                            <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{items.length}</span>
+                                            {district}
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {items.map((item: any) => (
+                                                <div key={item.id} className="p-3 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                                                    <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{item.neighborhood}</div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <ArrowRight size={16} className="text-red-400 rotate-180 group-hover:-translate-x-1 transition-transform" />
-                                </Link>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {groupItems.map((item: any) => (
+                                    <div key={item.id} className="p-3 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{item.neighborhood}</div>
+                                        {viewType === 'district' && <div className="text-xs text-red-600 dark:text-red-400 mt-1">{item.city}</div>}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-8 flex justify-center">
