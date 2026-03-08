@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { ArticleEditor } from '@/components/admin/editors/ArticleEditor';
-import { Loader2, ArrowRight, Save } from 'lucide-react';
+import { Loader2, ArrowRight, Save, Send } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
@@ -15,6 +15,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
     const isNew = id === 'new';
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
+    const [sendPush, setSendPush] = useState(false);
 
     // Initial Form State
     const [form, setForm] = useState<any>({
@@ -76,7 +77,32 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
 
             if (error) throw error;
 
-            toast.success(isNew ? 'تم إنشاء المقال بنجاح' : 'تم حفظ التعديلات');
+            // Send push notification for new articles
+            if (isNew && sendPush && payload.title) {
+                try {
+                    const pushRes = await fetch('/api/admin/push', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: 'مقال جديد',
+                            message: payload.title,
+                            url: `/article/${payload.id}`,
+                        }),
+                    });
+                    const pushResult = await pushRes.json();
+                    if (pushRes.ok) {
+                        toast.success(`تم النشر + إرسال إشعار لـ ${pushResult.successCount} مشترك`);
+                    } else {
+                        toast.success('تم إنشاء المقال بنجاح');
+                        toast.error('فشل إرسال الإشعار: ' + (pushResult.error || ''));
+                    }
+                } catch {
+                    toast.success('تم إنشاء المقال بنجاح');
+                    toast.error('فشل إرسال الإشعار');
+                }
+            } else {
+                toast.success(isNew ? 'تم إنشاء المقال بنجاح' : 'تم حفظ التعديلات');
+            }
             router.refresh();
             router.push('/admin/articles');
         } catch (err: any) {
@@ -107,7 +133,19 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {/* Sticky Save Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-4 z-50 md:pl-64 shadow-lg">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-4 z-50 md:pl-64 shadow-lg">
+                {isNew && (
+                    <label className="flex items-center gap-2 cursor-pointer mr-auto">
+                        <input
+                            type="checkbox"
+                            checked={sendPush}
+                            onChange={e => setSendPush(e.target.checked)}
+                            className="w-4 h-4 rounded accent-emerald-600"
+                        />
+                        <Send size={14} className="text-emerald-600" />
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">إرسال إشعار push</span>
+                    </label>
+                )}
                 <button
                     onClick={() => router.back()}
                     className="px-6 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
@@ -117,10 +155,14 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-8 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+                    className={`px-8 py-2 text-white rounded-xl font-bold shadow-lg flex items-center gap-2 ${
+                        isNew && sendPush
+                            ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
+                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
+                    }`}
                 >
                     {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    {saving ? 'جاري الحفظ...' : 'حفظ ونشر'}
+                    {saving ? 'جاري الحفظ...' : isNew && sendPush ? 'نشر + إشعار' : 'حفظ ونشر'}
                 </button>
             </div>
         </div>
