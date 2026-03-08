@@ -80,9 +80,10 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
   const portalTarget = mounted ? document.body : null;
 
-  // Hide navbar on scroll down, show on scroll up
+  // Hide navbar on scroll down, show on scroll up (works on mobile touch too)
   const [navHidden, setNavHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const touchStartY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,16 +91,35 @@ export default function Navbar() {
       const diff = currentY - lastScrollY.current;
 
       if (diff > 8 && currentY > 80) {
-        // Scrolling down past threshold — hide
         setNavHidden(true);
-      } else if (diff < -3) {
-        // Any small scroll up — show immediately
+      } else if (diff < 0) {
+        // ANY scroll up — show immediately
         setNavHidden(false);
       }
       lastScrollY.current = currentY;
     };
+
+    // Touch events for reliable mobile detection
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      const touchY = e.touches[0].clientY;
+      // Finger moving down = scrolling up → show navbar
+      if (touchY > touchStartY.current + 5) {
+        setNavHidden(false);
+      }
+      touchStartY.current = touchY;
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
   }, []);
 
   // Shared site config (menus + tools) — deduplicated with Footer via SWR
