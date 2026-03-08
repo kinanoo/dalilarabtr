@@ -91,10 +91,12 @@ export default function AdminCommunityPage() {
 
     const handleReply = async (comment: any) => {
         if (!supabase || !replyContent.trim()) return;
+        const entityId = comment.entity_id || comment.page_slug || '';
         const { error } = await supabase.from('comments').insert({
             parent_id: comment.id,
             entity_type: comment.entity_type,
-            entity_id: comment.entity_id,
+            entity_id: entityId,
+            page_slug: entityId,
             author_name: 'الإدارة',
             content: replyContent.trim(),
             status: 'approved',
