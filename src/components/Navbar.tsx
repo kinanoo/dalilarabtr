@@ -415,10 +415,6 @@ export default function Navbar() {
 
             <PrayerPopover />
 
-            <div className="hidden md:block scale-90">
-              <ThemeToggle />
-            </div>
-
             {/* Mobile Menu Toggle */}
             <button
               type="button"

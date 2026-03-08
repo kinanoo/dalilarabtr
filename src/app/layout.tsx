@@ -31,7 +31,7 @@ const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
 const AmbientBackground = dynamic(() => import("@/components/ui/AmbientBackground"));
 const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker").then(m => ({ default: m.AnalyticsTracker })));
 const NotificationManager = dynamic(() => import("@/components/NotificationManager"));
-const SelectionShareMenu = dynamic(() => import("@/components/ui/SelectionShareMenu"));
+const CopyProtection = dynamic(() => import("@/components/ui/CopyProtection"));
 const ServiceWorkerRegister = dynamic(() => import("@/components/pwa/ServiceWorkerRegister"));
 const PWAInstallPrompt = dynamic(() => import("@/components/PWAInstallPrompt"));
 const ClientComponents = dynamic(() => import("@/components/ClientComponents"));
@@ -183,7 +183,7 @@ export default function RootLayout({
                 <AnalyticsTracker />
               </Suspense>
               <NotificationManager />
-              <SelectionShareMenu />
+              <CopyProtection />
               <ServiceWorkerRegister />
               <PWAInstallPrompt />
               <ClientComponents />
