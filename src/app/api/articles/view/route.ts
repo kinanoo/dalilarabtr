@@ -6,6 +6,16 @@ const svc = serviceRoleKey
     ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
     : null;
 
+// Deterministic seed (25–48) so no article ever shows "0 views"
+function viewSeed(id: string): number {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) {
+        h = ((h << 5) - h) + id.charCodeAt(i);
+        h |= 0;
+    }
+    return 25 + (Math.abs(h) % 24);
+}
+
 async function findArticle(decoded: string, fields: string): Promise<Record<string, any> | null> {
     if (!svc) return null;
     const { data } = await svc.from('articles').select(fields).eq('slug', decoded).maybeSingle();
@@ -28,13 +38,14 @@ export async function POST(req: NextRequest) {
             if (row) {
                 const newViews = (row.views || 0) + 1;
                 await svc.from('articles').update({ views: newViews }).eq('id', row.id);
-                return NextResponse.json({ views: newViews });
+                return NextResponse.json({ views: newViews + viewSeed(row.id) });
             }
         }
 
         // Just fetch current view count
-        const row = await findArticle(decoded, 'views');
-        return NextResponse.json({ views: row?.views || 0 });
+        const row = await findArticle(decoded, 'id, views');
+        const real = row?.views || 0;
+        return NextResponse.json({ views: real + (row ? viewSeed(row.id) : 25) });
     } catch {
         return NextResponse.json({ views: null });
     }

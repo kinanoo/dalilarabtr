@@ -93,13 +93,10 @@ export default function CopyProtection() {
             setTimeout(() => { document.body.style.display = ''; }, 100);
         };
 
-        // CSS-based protection: make body text unselectable except h1 and inputs
+        // CSS: only block print, keep text selectable (copy is blocked via JS)
         const style = document.createElement('style');
         style.id = '_cp_style';
         style.textContent = `
-            body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-            h1, input, textarea, [contenteditable], button, a, nav, select,
-            h1 *, input *, textarea * { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
             @media print { body { display: none !important; } }
         `;
         document.head.appendChild(style);
