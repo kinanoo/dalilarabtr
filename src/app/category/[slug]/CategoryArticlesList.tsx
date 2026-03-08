@@ -3,8 +3,8 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search, X } from 'lucide-react';
-import { useAdminArticles, isNewContent } from '@/lib/useAdminData';
+import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search, X, Clock, RefreshCw } from 'lucide-react';
+import { useAdminArticles, isNewContent, isRecentlyUpdated, estimateReadingTime } from '@/lib/useAdminData';
 import { TAG_LABELS } from '@/lib/config';
 import PageHero from '@/components/PageHero';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -161,17 +161,20 @@ export default function CategoryArticlesList({
                       <FileText size={24} />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {/* علامة جديد */}
+                    <div className="flex items-center gap-2 flex-wrap">
                       {article.createdAt && isNewContent(article.createdAt) && (
                         <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
                           <Sparkles size={10} /> جديد
                         </span>
                       )}
-
+                      {article.lastUpdate && isRecentlyUpdated(article.lastUpdate) && !(article.createdAt && isNewContent(article.createdAt)) && (
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <RefreshCw size={9} /> محدّث
+                        </span>
+                      )}
                       <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center gap-1">
-                        <Calendar size={10} />
-                        {article.lastUpdate}
+                        <Clock size={10} />
+                        {estimateReadingTime(article)} د
                       </span>
                     </div>
                   </div>

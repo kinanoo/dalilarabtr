@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { Article } from '@/lib/types'; // Only Type
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, BrainCircuit, ChevronDown } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, BrainCircuit, ChevronDown, Clock, Eye, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ShareMenu from './ShareMenu';
@@ -15,12 +15,35 @@ import InlineRelatedArticles from './InlineRelatedArticles';
 
 import { deobfuscate, isObfuscated } from '@/lib/security';
 import DOMPurify from 'isomorphic-dompurify';
+import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/useAdminData';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
   const [showDetails, setShowDetails] = useState(false);
+  const [views, setViews] = useState<number | null>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const officialSources = getOfficialSourceUrls(article.source);
+  const readingTime = estimateReadingTime(article);
+  const recentlyUpdated = isRecentlyUpdated(article.lastUpdate);
+
+  // Track article view + fetch count
+  useEffect(() => {
+    const key = `article_viewed_${slug}`;
+    const lastViewed = localStorage.getItem(key);
+    const now = Date.now();
+    const shouldTrack = !lastViewed || (now - Number(lastViewed)) > 5 * 60 * 1000; // 5 min cooldown
+
+    fetch(`/api/articles/view`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articleId: slug, track: shouldTrack }),
+    })
+      .then(r => r.json())
+      .then(d => { if (d.views != null) setViews(d.views); })
+      .catch(() => {});
+
+    if (shouldTrack) localStorage.setItem(key, String(now));
+  }, [slug]);
 
   const whatsAppHref = useMemo(() => {
     const url = `${SITE_CONFIG.siteUrl}/article/${slug}`;
@@ -120,6 +143,11 @@ export default function ArticleView({ article, slug, initialComments, children }
                   <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">
                     {article.category}
                   </span>
+                  {recentlyUpdated && (
+                    <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                      <RefreshCw size={11} /> محدّث
+                    </span>
+                  )}
                   {progress === 100 && (
                     <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 animate-in fade-in zoom-in">
                       <CheckCircle size={12} /> مكتمل
@@ -129,6 +157,10 @@ export default function ArticleView({ article, slug, initialComments, children }
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 lg:mb-6 leading-tight">{article.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-slate-400 text-sm font-medium">
                   <span className="flex items-center gap-2"><Sparkles size={16} className="text-emerald-400" /> آخر تحديث: {article.lastUpdate}</span>
+                  <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>
+                  {views != null && views > 0 && (
+                    <span className="flex items-center gap-2"><Eye size={14} /> {formatViewCount(views)}</span>
+                  )}
                   {officialSources.length > 0 && (
                     <a href={officialSources[0]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors border-b border-transparent hover:border-emerald-400 pb-0.5">
                       <ExternalLink size={14} /> المصدر الرسمي

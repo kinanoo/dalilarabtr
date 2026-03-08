@@ -5,6 +5,7 @@ import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply
 import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, isReservedName, type Comment } from '@/lib/api/comments';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
+import { fetchUserBadgeStats, getPrimaryBadge, type Badge } from '@/lib/api/badges';
 
 interface UniversalCommentsProps {
     entityType: 'article' | 'service' | 'update' | 'scenario' | 'zone';
@@ -51,6 +52,7 @@ function CommentItem({
     onEdit,
     onDelete,
     submittingReply,
+    badgeCache,
     depth = 0,
 }: {
     comment: Comment;
@@ -66,6 +68,7 @@ function CommentItem({
     onEdit: (commentId: string, newContent: string) => Promise<void>;
     onDelete: (commentId: string) => Promise<void>;
     submittingReply: boolean;
+    badgeCache: Record<string, Badge | null>;
     depth?: number;
 }) {
     const [likes, setLikes] = useState(comment.likes_count);
@@ -80,6 +83,7 @@ function CommentItem({
 
     const isOwner = currentUserId && comment.user_id === currentUserId;
     const canDelete = isOwner || isAdmin;
+    const userBadge = comment.user_id ? badgeCache[comment.user_id] : null;
 
     const isReplyActive = activeReplyId === comment.id;
     const replyCount = comment.replies?.length || 0;
@@ -168,6 +172,11 @@ function CommentItem({
                             {comment.is_correction && (
                                 <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
                                     <AlertTriangle size={9} /> تصحيح
+                                </span>
+                            )}
+                            {userBadge && !comment.is_official && (
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${userBadge.color}`}>
+                                    {userBadge.icon} {userBadge.label}
                                 </span>
                             )}
                             <span className="text-xs text-slate-400">
@@ -341,6 +350,7 @@ function CommentItem({
                             onEdit={onEdit}
                             onDelete={onDelete}
                             submittingReply={submittingReply}
+                            badgeCache={badgeCache}
                             depth={1}
                         />
                     ))}
@@ -367,6 +377,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
 
     const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
     const [submittingReply, setSubmittingReply] = useState(false);
+    const [badgeCache, setBadgeCache] = useState<Record<string, Badge | null>>({});
 
     useEffect(() => {
         loadComments();
@@ -419,7 +430,25 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         try {
             const { data, error } = await fetchComments(entityType, entityId);
             if (error) console.error('[Comments] fetch error:', error, { entityType, entityId });
-            if (data) setComments(data);
+            if (data) {
+                setComments(data);
+                // Load badges for logged-in commenters
+                const userIds = new Set<string>();
+                for (const c of data) {
+                    if (c.user_id) userIds.add(c.user_id);
+                    for (const r of c.replies || []) {
+                        if (r.user_id) userIds.add(r.user_id);
+                    }
+                }
+                for (const uid of userIds) {
+                    if (!badgeCache[uid]) {
+                        fetchUserBadgeStats(uid).then(stats => {
+                            const badge = getPrimaryBadge(stats);
+                            setBadgeCache(prev => ({ ...prev, [uid]: badge }));
+                        });
+                    }
+                }
+            }
         } catch (err) {
             console.error('[Comments] unexpected error:', err);
         }
@@ -578,6 +607,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                             onEdit={handleEditComment}
                             onDelete={handleDeleteComment}
                             submittingReply={submittingReply}
+                            badgeCache={badgeCache}
                         />
                     ))
                 )}

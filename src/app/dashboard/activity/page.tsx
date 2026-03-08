@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
-import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Tabs from '@/components/ui/Tabs';
 import EmptyState from '@/components/EmptyState';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { getMyActivityStats, getMyReviews, getMyComments, getMyServices, getMyArticles } from '@/lib/api/profile';
+import { computeBadges, type Badge } from '@/lib/api/badges';
 
 const STATUS_MAP: Record<string, { label: string; classes: string; icon: any }> = {
     approved: { label: 'منشور', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
@@ -49,6 +50,7 @@ export default function ActivityPage() {
     const [services, setServices] = useState<any[]>([]);
     const [articles, setArticles] = useState<any[]>([]);
     const [bookmarkedArticles, setBookmarkedArticles] = useState<any[]>([]);
+    const [badges, setBadges] = useState<Badge[]>([]);
     const { bookmarks, isLoaded: bookmarksLoaded } = useBookmarks();
     const router = useRouter();
 
@@ -86,6 +88,15 @@ export default function ActivityPage() {
         setComments(commentsRes.data);
         setServices(servicesRes.data);
         setArticles(articlesRes.data);
+
+        // Compute user badges from activity counts
+        const corrections = commentsRes.data.filter((c: any) => c.is_correction).length;
+        setBadges(computeBadges({
+            comments: statsRes.data.comments_count,
+            reviews: statsRes.data.reviews_count,
+            corrections,
+        }));
+
         setLoading(false);
     };
 
@@ -251,6 +262,22 @@ export default function ActivityPage() {
                     );
                 })}
             </div>
+
+            {/* Badges / Achievements */}
+            {badges.length > 0 && (
+                <div className="mb-8 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2 text-sm">
+                        <Award size={16} className="text-amber-500" /> إنجازاتي
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                        {badges.map((b) => (
+                            <span key={b.type} className={`text-xs font-bold px-3 py-1.5 rounded-full ${b.color}`}>
+                                {b.icon} {b.label}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Tabs */}
             <Tabs tabs={tabs} variant="underline" />
