@@ -251,15 +251,48 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
     loadScenario(key);
   };
 
-  // Filter dynamic scenarios — also include 'general' category in all paths
+  // All scenario IDs hardcoded in the JSX below — excluded from dynamic results to prevent duplicates
+  const HARDCODED_IDS = useMemo(() => new Set([
+    // syrian
+    'syrian-lost-id', 'syrian-move-kimlik', 'syrian-fix-address', 'syrian-update-data',
+    'syrian-travel-medical', 'syrian-travel-visit', 'syrian-leaving-turkey', 'syrian-syria-visit-risk', 'syria-visit-official',
+    'syrian-citizenship', 'syrian-return-code', 'protection-status-2026', 'syria-mass-return-2025',
+    'syrian-marriage', 'syrian-marriage-not-registered', 'syrian-newborn',
+    'syrian-child-school-no-kimlik', 'syrian-denklik',
+    'syrian-bank-kimlik-yellow', 'syrian-property-ownership',
+    // tourist
+    'tourist-new', 'tourist-extension', 'tourist-convert-kimlik',
+    'tourist-reject', 'tourist-overstay', 'tourist-bank-open',
+    // investor
+    'investor-citizen', 'investor-residence',
+    // student
+    'student-residence', 'student-work-rights', 'student-turkiye-burslari',
+    'student-denklik', 'student-highschool-denklik', 'student-transcript', 'student-yos', 'student-tomer',
+    // worker
+    'work-permit-employee', 'work-permit-company', 'work-permit-cost', 'work-sgk',
+    'company-setup', 'company-monthly-obligations', 'company-closure',
+    // daily
+    'daily-edevlet', 'daily-enabiz', 'daily-family-doctor', 'daily-family-doctor-change',
+    'daily-uyap', 'daily-kades', 'daily-address', 'daily-nvi-appointment', 'daily-goc-appointment',
+    'daily-mhrs-booking', 'daily-mobile-lines-check', 'daily-citizenship-status', 'daily-ptt-services',
+    'daily-bank-open', 'daily-notary', 'daily-fast', 'daily-paypal', 'daily-crypto',
+    'daily-credit-score', 'daily-booking-block', 'daily-sworn-translator', 'daily-uets', 'daily-tax-number',
+    'bank-block', 'debt-check',
+    'daily-lost-driving-license', 'daily-driving-license-exchange', 'daily-vehicle-inspection', 'daily-utility-dispute', 'daily-unhcr-document',
+    'housing-rent-increase', 'housing-deposit', 'housing-eviction', 'housing-tahliye-undertaking',
+    'legal-deport', 'legal-divorce', 'daily-cimer',
+    // emergency
+    'emergency-detention', 'emergency-police-station', 'emergency-undocumented',
+    // family
+    'family-aile-ikamet',
+  ]), []);
+
+  // Filter dynamic scenarios — only exact category+subcategory match, excluding hardcoded IDs
   const getDynamicScenarios = (cat: string, sub: string) => {
     return scenarios.filter(s => {
       if ((s as any).is_active === false) return false;
-      // Exact category+subcategory match
-      if ((s as any).category === cat && (s as any).subcategory === sub) return true;
-      // General scenarios appear everywhere
-      if ((s as any).category === 'general') return true;
-      return false;
+      if (HARDCODED_IDS.has(s.id)) return false;
+      return (s as any).category === cat && (s as any).subcategory === sub;
     });
   };
 
@@ -554,12 +587,18 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="تثبيت زواج (كملك)" onClick={() => processLogic('syrian-marriage')} />
                         <BtnSmall text="زواج غير مسجل/مشاكل تسجيل" onClick={() => processLogic('syrian-marriage-not-registered')} />
                         <BtnSmall text="تسجيل مولود جديد" onClick={() => processLogic('syrian-newborn')} />
+                        {getDynamicScenarios('syrian', 'civil').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'education' && (
                       <>
                         <BtnSmall text="طفلي لا يذهب للمدرسة (لا يوجد كملك)" onClick={() => processLogic('syrian-child-school-no-kimlik')} />
                         <BtnSmall text="معادلة شهادة (Denklik)" onClick={() => processLogic('syrian-denklik')} />
+                        {getDynamicScenarios('syrian', 'education').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'bank' && (
@@ -567,6 +606,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="فتح حساب بنكي مع كملك/بطاقة صفراء" onClick={() => processLogic('syrian-bank-kimlik-yellow')} />
                         <BtnSmall text="فتح حساب بنكي (إجراءات عامة)" onClick={() => processLogic('daily-bank-open')} />
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank-block')} />
+                        {getDynamicScenarios('syrian', 'bank').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'housing' && (
@@ -575,6 +617,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="استرداد التأمين (الوديعة)" onClick={() => processLogic('housing-deposit')} />
                         <BtnSmall text="خلاف مع المالك/زيادة الإيجار" onClick={() => processLogic('housing-rent-increase')} />
                         <BtnSmall text="دعوى/إخلاء" onClick={() => processLogic('housing-eviction')} />
+                        {getDynamicScenarios('syrian', 'housing').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'work' && (
@@ -582,11 +627,17 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="إذن عمل (موظف)" onClick={() => processLogic('work-permit-employee')} />
                         <BtnSmall text="إذن عمل عبر شركة (صاحب شركة)" onClick={() => processLogic('work-permit-company')} />
                         <BtnSmall text="جدول رسوم إذن العمل 2026" onClick={() => processLogic('work-permit-cost')} />
+                        {getDynamicScenarios('syrian', 'work').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'syrian' && answers.q2 === 'property' && (
                       <>
                         <BtnSmall text="تملك عقار للسوريين (القواعد العامة)" onClick={() => processLogic('syrian-property-ownership')} />
+                        {getDynamicScenarios('syrian', 'property').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
@@ -598,6 +649,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="تحويل كملك لإقامة" onClick={() => processLogic('tourist-convert-kimlik')} />
                         <BtnSmall text="تثبيت/تحديث عنوان نفوس" onClick={() => processLogic('daily-address')} />
                         <BtnSmall text="حجز موعد الهجرة" onClick={() => processLogic('daily-goc-appointment')} />
+                        {getDynamicScenarios('tourist', 'res').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'prob' && (
@@ -605,6 +659,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="تم الرفض (التبليغ)" onClick={() => processLogic('tourist-reject')} />
                         <BtnSmall text="كسرت الفيزا (Overstay)" onClick={() => processLogic('tourist-overstay')} />
                         <BtnSmall text="قرار ترحيل (Deport)" onClick={() => processLogic('legal-deport')} />
+                        {getDynamicScenarios('tourist', 'prob').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'life' && (
@@ -612,18 +669,27 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="فتح حساب بنكي" onClick={() => processLogic('tourist-bank-open')} />
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank-block')} />
                         <BtnSmall text="فحص الديون (GSS/İcra)" onClick={() => processLogic('debt-check')} />
+                        {getDynamicScenarios('tourist', 'life').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'address' && (
                       <>
                         <BtnSmall text="تثبيت/تحديث عنوان نفوس" onClick={() => processLogic('daily-address')} />
                         <BtnSmall text="حجز موعد نفوس (NVI)" onClick={() => processLogic('daily-nvi-appointment')} />
+                        {getDynamicScenarios('tourist', 'address').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'goc' && (
                       <>
                         <BtnSmall text="حجز موعد الهجرة" onClick={() => processLogic('daily-goc-appointment')} />
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily-uets')} />
+                        {getDynamicScenarios('tourist', 'goc').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'health' && (
@@ -631,6 +697,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="حجز موعد مشفى (MHRS)" onClick={() => processLogic('daily-mhrs-booking')} />
                         <BtnSmall text="اختيار طبيب العائلة" onClick={() => processLogic('daily-family-doctor')} />
                         <BtnSmall text="تغيير طبيب العائلة" onClick={() => processLogic('daily-family-doctor-change')} />
+                        {getDynamicScenarios('tourist', 'health').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'housing' && (
@@ -639,6 +708,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="استرداد التأمين (الوديعة)" onClick={() => processLogic('housing-deposit')} />
                         <BtnSmall text="دعوى/إخلاء" onClick={() => processLogic('housing-eviction')} />
                         <BtnSmall text="تعهد إخلاء (Tahliye Taahhüdü)" onClick={() => processLogic('housing-tahliye-undertaking')} />
+                        {getDynamicScenarios('tourist', 'housing').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'tourist' && answers.q2 === 'official' && (
@@ -646,18 +718,38 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily-uets')} />
                         <BtnSmall text="CIMER (شكوى/استعلام)" onClick={() => processLogic('daily-cimer')} />
                         <BtnSmall text="UYAP (متابعة قضايا/تنفيذ)" onClick={() => processLogic('daily-uyap')} />
+                        {getDynamicScenarios('tourist', 'official').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
                     {/* Investor Submenus */}
-                    {answers.q1 === 'investor' && answers.q2 === 'cit' && <BtnSmall text="جنسية 400 ألف" onClick={() => processLogic('investor-citizen')} />}
-                    {answers.q1 === 'investor' && answers.q2 === 'res' && <BtnSmall text="إقامة عقارية 200 ألف" onClick={() => processLogic('investor-residence')} />}
-                    {answers.q1 === 'investor' && answers.q2 === 'cit' && <BtnSmall text="متابعة ملف الجنسية" onClick={() => processLogic('daily-citizenship-status')} />}
+                    {answers.q1 === 'investor' && answers.q2 === 'cit' && (
+                      <>
+                        <BtnSmall text="جنسية 400 ألف" onClick={() => processLogic('investor-citizen')} />
+                        <BtnSmall text="متابعة ملف الجنسية" onClick={() => processLogic('daily-citizenship-status')} />
+                        {getDynamicScenarios('investor', 'cit').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
+                      </>
+                    )}
+                    {answers.q1 === 'investor' && answers.q2 === 'res' && (
+                      <>
+                        <BtnSmall text="إقامة عقارية 200 ألف" onClick={() => processLogic('investor-residence')} />
+                        {getDynamicScenarios('investor', 'res').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
+                      </>
+                    )}
                     {answers.q1 === 'investor' && answers.q2 === 'comp' && (
                       <>
                         <BtnSmall text="تأسيس شركة" onClick={() => processLogic('company-setup')} />
                         <BtnSmall text="الالتزامات الشهرية (ضرائب/محاسب/SGK)" onClick={() => processLogic('company-monthly-obligations')} />
                         <BtnSmall text="إغلاق/تصفية شركة" onClick={() => processLogic('company-closure')} />
+                        {getDynamicScenarios('investor', 'comp').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'investor' && answers.q2 === 'fin' && (
@@ -666,6 +758,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank-block')} />
                         <BtnSmall text="FAST (تحويلات سريعة)" onClick={() => processLogic('daily-fast')} />
                         <BtnSmall text="تقييم/نقطة الائتمان" onClick={() => processLogic('daily-credit-score')} />
+                        {getDynamicScenarios('investor', 'fin').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'investor' && answers.q2 === 'legal' && (
@@ -673,6 +768,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily-uets')} />
                         <BtnSmall text="UYAP (متابعة قضايا/تنفيذ)" onClick={() => processLogic('daily-uyap')} />
                         <BtnSmall text="CIMER (شكوى/استعلام)" onClick={() => processLogic('daily-cimer')} />
+                        {getDynamicScenarios('investor', 'legal').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
@@ -682,6 +780,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="إقامة الطالب" onClick={() => processLogic('student-residence')} />
                         <BtnSmall text="حق العمل للطالب" onClick={() => processLogic('student-work-rights')} />
                         <BtnSmall text="منح Türkiye Bursları" onClick={() => processLogic('student-turkiye-burslari')} />
+                        {getDynamicScenarios('student', 'res').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'study' && (
@@ -692,12 +793,18 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="امتحان اليوس" onClick={() => processLogic('student-yos')} />
                         <BtnSmall text="تومر (TÖMER)" onClick={() => processLogic('student-tomer')} />
                         <BtnSmall text="معادلة شهادة للسوريين" onClick={() => processLogic('syrian-denklik')} />
+                        {getDynamicScenarios('student', 'study').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'address' && (
                       <>
                         <BtnSmall text="تثبيت/تحديث عنوان نفوس" onClick={() => processLogic('daily-address')} />
                         <BtnSmall text="حجز موعد نفوس (NVI)" onClick={() => processLogic('daily-nvi-appointment')} />
+                        {getDynamicScenarios('student', 'address').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'health' && (
@@ -705,18 +812,27 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="حجز موعد مشفى (MHRS)" onClick={() => processLogic('daily-mhrs-booking')} />
                         <BtnSmall text="اختيار طبيب العائلة" onClick={() => processLogic('daily-family-doctor')} />
                         <BtnSmall text="تغيير طبيب العائلة" onClick={() => processLogic('daily-family-doctor-change')} />
+                        {getDynamicScenarios('student', 'health').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'fin' && (
                       <>
                         <BtnSmall text="فحص الديون (GSS/İcra)" onClick={() => processLogic('debt-check')} />
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank-block')} />
+                        {getDynamicScenarios('student', 'fin').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'student' && answers.q2 === 'official' && (
                       <>
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily-uets')} />
                         <BtnSmall text="CIMER (شكوى/استعلام)" onClick={() => processLogic('daily-cimer')} />
+                        {getDynamicScenarios('student', 'official').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
@@ -727,6 +843,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="إذن عمل (صاحب شركة)" onClick={() => processLogic('work-permit-company')} />
                         <BtnSmall text="جدول رسوم إذن العمل 2026" onClick={() => processLogic('work-permit-cost')} />
                         <BtnSmall text="تسجيل SGK" onClick={() => processLogic('work-sgk')} />
+                        {getDynamicScenarios('worker', 'permit').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'worker' && answers.q2 === 'company' && (
@@ -734,18 +853,27 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="تأسيس شركة" onClick={() => processLogic('company-setup')} />
                         <BtnSmall text="الالتزامات الشهرية" onClick={() => processLogic('company-monthly-obligations')} />
                         <BtnSmall text="إغلاق/تصفية شركة" onClick={() => processLogic('company-closure')} />
+                        {getDynamicScenarios('worker', 'company').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'worker' && answers.q2 === 'tax' && (
                       <>
                         <BtnSmall text="الرقم الضريبي" onClick={() => processLogic('daily-tax-number')} />
                         <BtnSmall text="الالتزامات الشهرية" onClick={() => processLogic('company-monthly-obligations')} />
+                        {getDynamicScenarios('worker', 'tax').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'worker' && answers.q2 === 'legal' && (
                       <>
                         <BtnSmall text="UETS (تبليغ إلكتروني)" onClick={() => processLogic('daily-uets')} />
                         <BtnSmall text="UYAP (متابعة قضايا)" onClick={() => processLogic('daily-uyap')} />
+                        {getDynamicScenarios('worker', 'legal').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
@@ -765,6 +893,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="التحقق من الخطوط المسجلة باسمي" onClick={() => processLogic('daily-mobile-lines-check')} />
                         <BtnSmall text="متابعة ملف الجنسية" onClick={() => processLogic('daily-citizenship-status')} />
                         <BtnSmall text="خدمات بريد PTT" onClick={() => processLogic('daily-ptt-services')} />
+                        {getDynamicScenarios('daily', 'gov').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'daily' && answers.q2 === 'fin' && (
@@ -778,6 +909,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="تقييم/نقطة الائتمان" onClick={() => processLogic('daily-credit-score')} />
                         <BtnSmall text="حظر الحجز/Booking (إشكالات)" onClick={() => processLogic('daily-booking-block')} />
                         <BtnSmall text="الترجمة المحلفة (Yeminli Tercüman)" onClick={() => processLogic('daily-sworn-translator')} />
+                        {getDynamicScenarios('daily', 'fin').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'daily' && answers.q2 === 'prob' && (
@@ -792,6 +926,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="وثيقة UNHCR (المفوضية)" onClick={() => processLogic('daily-unhcr-document')} />
                         <BtnSmall text="دعوى طلاق" onClick={() => processLogic('legal-divorce')} />
                         <BtnSmall text="دعوى إخلاء" onClick={() => processLogic('housing-eviction')} />
+                        {getDynamicScenarios('daily', 'prob').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'daily' && answers.q2 === 'health' && (
@@ -799,6 +936,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="حجز موعد مشفى (MHRS)" onClick={() => processLogic('daily-mhrs-booking')} />
                         <BtnSmall text="اختيار طبيب العائلة" onClick={() => processLogic('daily-family-doctor')} />
                         <BtnSmall text="تغيير طبيب العائلة" onClick={() => processLogic('daily-family-doctor-change')} />
+                        {getDynamicScenarios('daily', 'health').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'daily' && answers.q2 === 'debt' && (
@@ -806,6 +946,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="فحص الديون (GSS/İcra)" onClick={() => processLogic('debt-check')} />
                         <BtnSmall text="UYAP (قضايا/تنفيذ)" onClick={() => processLogic('daily-uyap')} />
                         <BtnSmall text="رفع حجز/تجميد حساب بنكي" onClick={() => processLogic('bank-block')} />
+                        {getDynamicScenarios('daily', 'debt').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
@@ -815,6 +958,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="كسرت الفيزا (Overstay) — الغرامات وحظر الدخول" onClick={() => processLogic('tourist-overstay')} />
                         <BtnSmall text="رفض إقامة — كيف أطعن؟" onClick={() => processLogic('tourist-reject')} />
                         <BtnSmall text="إزالة كود العودة V-87 (سوريين)" onClick={() => processLogic('syrian-return-code')} />
+                        {getDynamicScenarios('emergency', 'overstay').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'emergency' && answers.q2 === 'deport' && (
@@ -822,6 +968,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="صدر بحقي قرار ترحيل" onClick={() => processLogic('legal-deport')} />
                         <BtnSmall text="محتجز في مركز ترحيل (GGM)" onClick={() => processLogic('emergency-detention')} />
                         <BtnSmall text="تم استدعائي/احتجازي في الشرطة" onClick={() => processLogic('emergency-police-station')} />
+                        {getDynamicScenarios('emergency', 'deport').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'emergency' && answers.q2 === 'violence' && (
@@ -829,6 +978,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="بلاغ عنف عائلي (KADES)" onClick={() => processLogic('daily-kades')} />
                         <BtnSmall text="دعوى طلاق (عنف/إكراه)" onClick={() => processLogic('legal-divorce')} />
                         <BtnSmall text="إخلاء قسري من المالك" onClick={() => processLogic('housing-eviction')} />
+                        {getDynamicScenarios('emergency', 'violence').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'emergency' && answers.q2 === 'docs' && (
@@ -837,6 +989,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="وثيقة المفوضية (UNHCR)" onClick={() => processLogic('daily-unhcr-document')} />
                         <BtnSmall text="فقدت الكملك (بدل ضائع)" onClick={() => processLogic('syrian-lost-id')} />
                         <BtnSmall text="بدل فاقد رخصة قيادة" onClick={() => processLogic('daily-lost-driving-license')} />
+                        {getDynamicScenarios('emergency', 'docs').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
 
@@ -846,6 +1001,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="إقامة الأسرة (Aile İkamet İzni)" onClick={() => processLogic('family-aile-ikamet')} />
                         <BtnSmall text="تقديم إقامة سياحية (أول مرة)" onClick={() => processLogic('tourist-new')} />
                         <BtnSmall text="تجديد إقامة سياحية" onClick={() => processLogic('tourist-extension')} />
+                        {getDynamicScenarios('family', 'residence').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'family' && answers.q2 === 'civil' && (
@@ -854,6 +1012,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="زواج غير مسجل / مشاكل تسجيل" onClick={() => processLogic('syrian-marriage-not-registered')} />
                         <BtnSmall text="تسجيل مولود جديد" onClick={() => processLogic('syrian-newborn')} />
                         <BtnSmall text="دعوى طلاق" onClick={() => processLogic('legal-divorce')} />
+                        {getDynamicScenarios('family', 'civil').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'family' && answers.q2 === 'children' && (
@@ -862,6 +1023,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="معادلة شهادة الثانوية" onClick={() => processLogic('student-highschool-denklik')} />
                         <BtnSmall text="معادلة شهادة للسوريين" onClick={() => processLogic('syrian-denklik')} />
                         <BtnSmall text="معادلة شهادة جامعية (YÖK)" onClick={() => processLogic('student-denklik')} />
+                        {getDynamicScenarios('family', 'children').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'family' && answers.q2 === 'health' && (
@@ -870,6 +1034,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="اختيار طبيب العائلة" onClick={() => processLogic('daily-family-doctor')} />
                         <BtnSmall text="تغيير طبيب العائلة" onClick={() => processLogic('daily-family-doctor-change')} />
                         <BtnSmall text="e-Nabız (الملف الصحي)" onClick={() => processLogic('daily-enabiz')} />
+                        {getDynamicScenarios('family', 'health').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                     {answers.q1 === 'family' && answers.q2 === 'housing' && (
@@ -879,6 +1046,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                         <BtnSmall text="استرداد التأمين (الوديعة)" onClick={() => processLogic('housing-deposit')} />
                         <BtnSmall text="إخلاء / تعهد إخلاء" onClick={() => processLogic('housing-eviction')} />
                         <BtnSmall text="اعتراض على فاتورة (كهرباء/ماء/غاز)" onClick={() => processLogic('daily-utility-dispute')} />
+                        {getDynamicScenarios('family', 'housing').map(s => (
+                          <BtnSmall key={s.id} text={s.title} onClick={() => processLogic(s.id)} />
+                        ))}
                       </>
                     )}
                   </div>
