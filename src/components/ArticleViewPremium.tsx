@@ -31,7 +31,7 @@ export default function ArticleView({ article, slug, initialComments, children }
     const key = `article_viewed_${slug}`;
     const lastViewed = localStorage.getItem(key);
     const now = Date.now();
-    const shouldTrack = !lastViewed || (now - Number(lastViewed)) > 5 * 60 * 1000; // 5 min cooldown
+    const shouldTrack = !lastViewed || (now - Number(lastViewed)) > 60 * 1000; // 60 sec cooldown
 
     fetch(`/api/articles/view`, {
       method: 'POST',
