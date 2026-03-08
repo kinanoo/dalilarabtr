@@ -120,36 +120,25 @@ export async function getReviewStats(serviceId: string): Promise<{ data: ReviewS
 // ============================================
 
 export async function addReview(reviewData: AddReviewData): Promise<{ data: ServiceReview | null; error: any }> {
-    if (!supabase) {
-        return { data: null, error: new Error('Supabase not initialized') };
-    }
-
     try {
-        const insertObj: any = {
-            service_id: reviewData.service_id,
-            client_name: reviewData.reviewer_name,
-            rating: reviewData.rating,
-            comment: reviewData.comment,
-            is_approved: true,
-        };
-        if (reviewData.user_id) {
-            insertObj.user_id = reviewData.user_id;
-        }
+        const res = await fetch('/api/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                service_id: reviewData.service_id,
+                rating: reviewData.rating,
+                comment: reviewData.comment,
+                client_name: reviewData.reviewer_name,
+                user_id: reviewData.user_id,
+            }),
+        });
 
-        const { data, error } = await supabase
-            .from('service_reviews')
-            .insert([insertObj])
-            .select()
-            .single();
+        const result = await res.json();
 
-        if (error) {
-            // Duplicate review — same user already reviewed this service
-            if (error.code === '23505') {
-                return { data: null, error: { message: 'لقد قمت بتقييم هذه الخدمة مسبقاً', code: '23505' } };
-            }
-            throw error;
+        if (!res.ok) {
+            return { data: null, error: { message: result.error, code: result.code } };
         }
-        return { data, error: null };
+        return { data: result.data, error: null };
     } catch (error) {
         console.error('Error adding review:', error);
         return { data: null, error };

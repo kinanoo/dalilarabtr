@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { Star, X, Loader2, Send } from 'lucide-react';
 import StarRating from './StarRating';
 
@@ -28,18 +27,21 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
         setLoading(true);
 
         try {
-            if (!supabase) throw new Error('No DB');
-
-            const { error } = await supabase.from('service_reviews').insert([
-                {
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     service_id: serviceId,
                     rating,
                     comment,
                     client_name: clientName || 'زائر',
-                }
-            ]);
+                }),
+            });
 
-            if (error) throw error;
+            if (!res.ok) {
+                const result = await res.json();
+                throw new Error(result.error || 'فشل الإرسال');
+            }
 
             setSubmitted(true);
             setTimeout(() => {
