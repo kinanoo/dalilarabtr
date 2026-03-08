@@ -37,7 +37,7 @@ export default function NewsTicker() {
         const t = setTimeout(() => {
             if (!trackRef.current) return;
             const width = trackRef.current.scrollWidth / 2; // half because content is doubled
-            setDuration(Math.max(15, width / 60)); // ~60px/sec
+            setDuration(Math.max(8, width / 120)); // ~120px/sec
         }, 100);
         return () => clearTimeout(t);
     }, [items]);
