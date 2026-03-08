@@ -13,7 +13,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { Search, ArrowLeft, FileText, Briefcase, Link2, Globe, TrendingUp, Clock } from 'lucide-react';
+import { Search, ArrowLeft, FileText, Briefcase, Link2, Globe, TrendingUp, Clock, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -143,15 +143,26 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         const nameOrQuery = searchTokens.map(t => `name.ilike.%${t}%`).join(',');
         const professionOrQuery = searchTokens.map(t => `profession.ilike.%${t}%`).join(',');
 
+        // Build security_codes query (special: detect numbers for code lookup)
+        const numbers = trimmed.match(/\d+/g);
+        const codeOrParts: string[] = [];
+        if (numbers) numbers.forEach(n => codeOrParts.push(`code.ilike.%${n}%`));
+        searchTokens.forEach(t => {
+          codeOrParts.push(`title.ilike.%${t}%`);
+          codeOrParts.push(`description.ilike.%${t}%`);
+        });
+        const codeOrQuery = codeOrParts.join(',');
+
         // Parallel Search
         const responses = await Promise.allSettled([
           supabase.from('service_providers').select('id, name, profession').eq('status', 'approved').or(`${nameOrQuery},${professionOrQuery}`).limit(5),
           supabase.from('faqs').select('id, question, answer').or(questionOrQuery).limit(5),
           supabase.from('updates').select('id, title, date, content').eq('active', true).or(updateQuery).limit(5),
-          supabase.from('official_sources').select('id, name, description, url').or(`${nameOrQuery},description.ilike.%${trimmed}%`).limit(5)
+          supabase.from('official_sources').select('id, name, description, url').or(`${nameOrQuery},description.ilike.%${trimmed}%`).limit(5),
+          supabase.from('security_codes').select('code, title, description').or(codeOrQuery).limit(5)
         ]);
 
-        const [servicesRes, faqsRes, updatesRes, sourcesRes] = responses.map(r =>
+        const [servicesRes, faqsRes, updatesRes, sourcesRes, codesRes] = responses.map(r =>
           r.status === 'fulfilled' ? r.value : { data: [] }
         );
 
@@ -268,6 +279,27 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
           });
         }
 
+        if (codesRes && codesRes.data) {
+          codesRes.data.forEach((c: any) => {
+            const combinedText = `${c.code} ${c.title} ${c.description || ''}`;
+            const stats = calculateRelevance(combinedText, searchTokens, expandedTokens);
+            // Boost code results when query contains numbers
+            const numberBoost = numbers ? 30 : 0;
+            newResults.push({
+              id: `code-${c.code}`,
+              title: `كود ${c.code}: ${c.title}`,
+              type: 'كود أمني',
+              url: `/codes/${c.code}`,
+              icon: ShieldAlert,
+              desc: c.description?.substring(0, 80) || 'شرح الكود الأمني',
+              typeKey: 'tool',
+              haystack: '',
+              _score: stats.score + numberBoost,
+              _matchedTokens: stats.matchedTokens
+            } as any);
+          });
+        }
+
         setRemoteResults(newResults);
 
       } catch (err) {
@@ -291,19 +323,42 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
 
     const maybeAdd = (item: SearchIndexItem) => {
       let score = 0;
+      let matchedTokens = 0;
+      const titleNorm = normalizeArabic(item.title);
+
       // Exact substring
       if (item.haystack.includes(needle)) score += 50;
 
-      // All tokens match
-      const allTokensMatch = originalTokens.every(token => {
-        const t = normalizeArabic(token);
-        return t.length < 2 || item.haystack.includes(t);
+      // Count individual token matches (direct + synonym)
+      originalTokens.forEach(token => {
+        const tokenNorm = normalizeArabic(token);
+        if (tokenNorm.length < 2) return;
+        if (item.haystack.includes(tokenNorm) || titleNorm.includes(tokenNorm)) {
+          matchedTokens++;
+        }
       });
 
-      if (allTokensMatch && originalTokens.length > 0) {
+      // Also count expanded synonym matches as partial token matches
+      if (matchedTokens < originalTokens.length) {
+        const unmatchedOriginal = originalTokens.filter(token => {
+          const t = normalizeArabic(token);
+          return t.length >= 2 && !item.haystack.includes(t) && !titleNorm.includes(t);
+        });
+        for (const token of unmatchedOriginal) {
+          const hasSynonymMatch = expandedTokens.some(exp => {
+            if (exp === token) return false;
+            const expNorm = normalizeArabic(exp);
+            return expNorm.length >= 2 && (item.haystack.includes(expNorm) || titleNorm.includes(expNorm));
+          });
+          if (hasSynonymMatch) matchedTokens++;
+        }
+      }
+
+      // All tokens match bonus
+      if (matchedTokens === originalTokens.length && originalTokens.length > 0) {
         const allTokensInTitle = originalTokens.every(token => {
           const t = normalizeArabic(token);
-          return normalizeArabic(item.title).includes(t);
+          return t.length < 2 || titleNorm.includes(t);
         });
         if (allTokensInTitle) score += 150;
         else score += 40;
@@ -315,7 +370,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         if (tokenNorm.length < 2) return;
         if (item.haystack.includes(tokenNorm)) {
           score += 5;
-          if (normalizeArabic(item.title).includes(tokenNorm)) score += 10;
+          if (titleNorm.includes(tokenNorm)) score += 10;
         }
       });
 
@@ -325,7 +380,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         if (item.haystack.includes(t)) score += 3;
       });
 
-      if (score > 0) {
+      if (score > 0 || matchedTokens > 0) {
         scored.push({
           id: item.id,
           title: item.title,
@@ -335,7 +390,8 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
           desc: item.desc,
           url: item.url,
           icon: item.icon,
-          _score: score,
+          _score: Math.max(score, matchedTokens * 8),
+          _matchedTokens: matchedTokens,
         } as any);
       }
     };
@@ -397,8 +453,8 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
     const queryTokensCount = intelligentTokenize(debouncedQuery).originalTokens.length;
 
     if (queryTokensCount >= 3) {
-      const threshold = Math.ceil(queryTokensCount * 0.6);
-      finalResults = allResults.filter(r => (r as any)._matchedTokens >= threshold);
+      const threshold = Math.max(1, Math.ceil(queryTokensCount * 0.35));
+      finalResults = allResults.filter(r => (r._matchedTokens ?? 0) >= threshold || (r._score ?? 0) >= 40);
     } else if (maxScore >= 100) {
       finalResults = allResults.filter(r => (r._score || 0) >= 40);
     } else if (maxScore >= 50) {

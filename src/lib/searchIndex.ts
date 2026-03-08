@@ -55,7 +55,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     desc: 'كيفية استخراج إذن سفر عبر إي دولات والشروط.',
     url: '/consultant?scenario=syrian-travel-visit',
     icon: Plane,
-    haystack: normalizeArabic('اذن سفر طريقة استخراج اي دولات اجازة')
+    haystack: normalizeArabic('اذن سفر طريقة استخراج اي دولات اجازة تقديم رابط طلب تصريح سفر زيارة رحلة')
   },
   {
     id: 'scn-tourist-res',
@@ -65,7 +65,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     desc: 'شروط التقديم والتجديد للإقامة السياحية.',
     url: '/consultant?scenario=tourist-new',
     icon: FileText,
-    haystack: normalizeArabic('اقامة سياحية تقديم تجديد اول مرة')
+    haystack: normalizeArabic('اقامة سياحية تقديم تجديد اول مرة رابط طلب تحويل كملك')
   },
   {
     id: 'scn-kimlik-check',
@@ -75,7 +75,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     desc: 'رابط فحص قيد الكملك وصحته.',
     url: '/tools/kimlik-check',
     icon: UserCheck,
-    haystack: normalizeArabic('فحص كملك قيد فعال مبطل تي جي')
+    haystack: normalizeArabic('فحص كملك قيد فعال مبطل تي جي تحويل اقامة نقل')
   },
 
   // --- GUIDES ---
@@ -87,7 +87,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'خدمة',
     typeKey: 'service',
     icon: BookOpen,
-    haystack: normalizeArabic('اقامة سياحية عقارية طالب عائلية تجديد موعد اوراق مطلوبة iqama residence ikamet')
+    haystack: normalizeArabic('اقامة سياحية عقارية طالب عائلية تجديد موعد اوراق مطلوبة iqama residence ikamet تقديم تحويل نقل كملك رابط طلب اقلب')
   },
   {
     id: 'guide-work',
@@ -97,7 +97,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'خدمة',
     typeKey: 'service',
     icon: Briefcase,
-    haystack: normalizeArabic('اذن عمل تصريح عمل calisma izni work permit مؤسسة تامين sgk')
+    haystack: normalizeArabic('اذن عمل تصريح عمل calisma izni work permit مؤسسة تامين sgk تقديم رابط طلب استخراج')
   },
   {
     id: 'guide-education',
@@ -149,7 +149,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'أداة',
     typeKey: 'tool',
     icon: BrainCircuit,
-    haystack: normalizeArabic('مستشار قانوني محامي ذكي استشارة مجانية سؤال وجواب اقامة لجوء كملك استثمار')
+    haystack: normalizeArabic('مستشار قانوني محامي ذكي استشارة مجانية سؤال وجواب اقامة لجوء كملك استثمار سفر عمل تحويل نقل')
   },
   {
     id: 'tool-zones',
@@ -169,7 +169,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'أداة',
     typeKey: 'tool',
     icon: Calculator,
-    haystack: normalizeArabic('منع دخول كود V87 ترحيل مخالفت فيزا')
+    haystack: normalizeArabic('منع دخول كود V87 ترحيل مخالفت فيزا حاسبة مدة حظر اكواد')
   },
   {
     id: 'tool-codes',
@@ -179,7 +179,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'أداة',
     typeKey: 'tool',
     icon: ShieldAlert,
-    haystack: normalizeArabic('كود اكواد ترحيل منع امني codes')
+    haystack: normalizeArabic('كود اكواد ترحيل منع امني codes معنى شرح رقم رموز v87 v160 g87 g82 حظر تجميد')
   },
   {
     id: 'tool-faq',
@@ -189,7 +189,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'أداة',
     typeKey: 'tool',
     icon: BookOpen,
-    haystack: normalizeArabic('اسئلة سؤال جواب استفسار')
+    haystack: normalizeArabic('اسئلة سؤال جواب استفسار اجابة شائعة معلومات')
   },
   {
     id: 'tool-kimlik',
@@ -199,7 +199,7 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
     type: 'أداة',
     typeKey: 'tool',
     icon: UserCheck,
-    haystack: normalizeArabic('فحص كملك صلاحية ابطال رقم تي جي TC NVI')
+    haystack: normalizeArabic('فحص كملك صلاحية ابطال رقم تي جي TC NVI تحويل اقامة')
   },
   {
     id: 'tool-pharmacy',
