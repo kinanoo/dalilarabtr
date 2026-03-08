@@ -43,18 +43,17 @@ export async function POST(req: NextRequest) {
         };
         if (user_id) insertObj.user_id = user_id;
 
-        const { data, error } = await svc
+        // Insert without RETURNING to avoid trigger issues
+        const { error } = await svc
             .from('service_reviews')
-            .insert([insertObj])
-            .select()
-            .single();
+            .insert([insertObj]);
 
         if (error) {
             console.error('Review insert error:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        // Update service provider rating + count
+        // Manually recalculate service provider rating (safer than relying on trigger)
         const { data: stats } = await svc
             .from('service_reviews')
             .select('rating')
@@ -72,7 +71,7 @@ export async function POST(req: NextRequest) {
                 .eq('id', service_id);
         }
 
-        return NextResponse.json({ data, error: null });
+        return NextResponse.json({ data: { rating, service_id }, error: null });
     } catch (err: any) {
         console.error('Review API error:', err);
         return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
