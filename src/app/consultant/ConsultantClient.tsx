@@ -310,7 +310,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
   return (
     <main className="flex flex-col min-h-screen overflow-x-hidden">
       <ToolSchema tool="consultant" />
-      {/* Header */}
+      {/* Header — compact hero */}
       <div className="relative">
         <PageHero
           title={
@@ -319,16 +319,17 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
             </>
           }
-          description="النظام الخبير: تشخيص دقيق لأكثر من 80 حالة قانونية وخدمية."
-          icon={<Briefcase className="w-9 h-9 md:w-14 md:h-14 text-emerald-400" />}
-          titleClassName="text-4xl sm:text-5xl md:text-7xl tracking-tight leading-snug pb-1"
-          descriptionClassName="text-primary-100/80 leading-relaxed"
+          description="تشخيص دقيق لأكثر من 80 حالة قانونية وخدمية"
+          icon={<Briefcase className="w-8 h-8 md:w-10 md:h-10 text-emerald-400" />}
+          className="!py-8 sm:!py-10 !pb-14 sm:!pb-16"
+          titleClassName="text-2xl sm:text-3xl md:text-4xl tracking-tight leading-snug"
+          descriptionClassName="text-primary-100/70 text-sm md:text-base leading-relaxed"
         />
       </div>
 
-      {/* Main Content */}
-      <div className="w-full max-w-full lg:max-w-6xl mx-auto px-2 sm:px-4 mt-8 relative z-20 pb-8">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] lg:rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative min-h-[60vh]">
+      {/* Main Content — overlaps hero */}
+      <div className="w-full max-w-full lg:max-w-6xl mx-auto px-2 sm:px-4 -mt-8 sm:-mt-10 relative z-20 pb-8">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[2rem] lg:rounded-[2.5rem] shadow-2xl ring-1 ring-black/5 dark:ring-white/5 overflow-hidden flex flex-col relative min-h-[50vh]">
           {step > 1 && (
             <button
               onClick={() => setStep((s) => Math.max(1, s - 1))}
@@ -344,14 +345,14 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
             <motion.div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-600" initial={{ width: 0 }} animate={{ width: `${(step / 3) * 100}%` }} />
           </div>
 
-          <div className="px-3 sm:px-6 md:px-12 pt-4 sm:pt-6 md:pt-8 pb-4 sm:pb-6 md:pb-8 flex-grow flex flex-col justify-start">
+          <div className="px-3 sm:px-5 md:px-10 pt-4 sm:pt-5 md:pt-6 pb-4 sm:pb-6 flex-grow flex flex-col justify-start">
             <AnimatePresence mode="wait">
               {/* Step 1 */}
               {step === 1 && (
-                <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6 sm:space-y-10">
-                  <div className="text-center space-y-2">
-                    <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة 1 من 3</span>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">من أنت؟ (الصفة القانونية)</h2>
+                <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4 sm:space-y-6">
+                  <div className="text-center space-y-1">
+                    <span className="text-emerald-600 font-bold text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 1 من 3</span>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">من أنت؟ (الصفة القانونية)</h2>
                   </div>
 
                   {/* Search Bar */}
@@ -400,16 +401,16 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 md:gap-5">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                     {[
-                      { id: 'syrian', icon: '🪪', t: 'سوري (كملك)', d: 'حماية مؤقتة' },
-                      { id: 'tourist', icon: '✈️', t: 'سائح / إقامة', d: 'إقامات قصيرة' },
-                      { id: 'investor', icon: '🏢', t: 'مستثمر', d: 'عقار / جنسية' },
-                      { id: 'student', icon: '🎓', t: 'طالب', d: 'جامعة / تومر' },
-                      { id: 'worker', icon: '💼', t: 'عامل / شركة', d: 'إذن عمل' },
-                      { id: 'daily', icon: '⚡', t: 'خدمات يومية', d: 'نوتير / بنك' },
-                      { id: 'emergency', icon: '🚨', t: 'مشكلة طارئة', d: 'ترحيل / احتجاز' },
-                      { id: 'family', icon: '👨‍👩‍👧', t: 'عائلة مقيمة', d: 'زواج / أطفال / سكن' },
+                      { id: 'syrian', icon: '🪪', t: 'سوري (كملك)', d: 'حماية مؤقتة', accent: 'emerald' },
+                      { id: 'tourist', icon: '✈️', t: 'سائح / إقامة', d: 'إقامات قصيرة', accent: 'blue' },
+                      { id: 'investor', icon: '🏢', t: 'مستثمر', d: 'عقار / جنسية', accent: 'amber' },
+                      { id: 'student', icon: '🎓', t: 'طالب', d: 'جامعة / تومر', accent: 'violet' },
+                      { id: 'worker', icon: '💼', t: 'عامل / شركة', d: 'إذن عمل', accent: 'cyan' },
+                      { id: 'daily', icon: '⚡', t: 'خدمات يومية', d: 'نوتير / بنك', accent: 'orange' },
+                      { id: 'emergency', icon: '🚨', t: 'مشكلة طارئة', d: 'ترحيل / احتجاز', accent: 'rose' },
+                      { id: 'family', icon: '👨‍👩‍👧', t: 'عائلة مقيمة', d: 'زواج / أطفال', accent: 'pink' },
                     ].map((b) => (
                       <button
                         key={b.id}
@@ -417,13 +418,14 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                           setAnswers({ ...answers, q1: b.id });
                           setStep(2);
                         }}
-                        className="group relative p-3 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:shadow-xl transition-all duration-300 flex flex-col items-center gap-2 sm:gap-4 bg-white dark:bg-slate-950 overflow-hidden text-center"
+                        className="group relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col items-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-950 text-center"
                       >
-                        <div className="text-2xl sm:text-3xl md:text-4xl mb-0 sm:mb-1 group-hover:scale-110 transition-transform duration-300">{b.icon}</div>
+                        <div className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform duration-200">{b.icon}</div>
                         <div>
-                          <span className="block font-bold text-sm sm:text-base md:text-lg text-slate-800 dark:text-slate-100 mb-0.5 sm:mb-1">{b.t}</span>
-                          <span className="block text-[10px] sm:text-xs text-slate-400 font-medium">{b.d}</span>
+                          <span className="block font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-tight">{b.t}</span>
+                          <span className="block text-[10px] sm:text-[11px] text-slate-400 mt-0.5">{b.d}</span>
                         </div>
+                        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-t from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                       </button>
                     ))}
                   </div>
@@ -432,10 +434,10 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
 
               {/* Step 2 */}
               {step === 2 && (
-                <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-6 sm:space-y-8">
-                  <div className="text-center space-y-2">
-                    <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة 2 من 3</span>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">ما هو المجال؟</h2>
+                <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
+                  <div className="text-center space-y-1">
+                    <span className="text-emerald-600 font-bold text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 2 من 3</span>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">ما هو المجال؟</h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-full sm:max-w-2xl mx-auto">
@@ -527,10 +529,10 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
 
               {/* Step 3 */}
               {step === 3 && !loading && (
-                <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
-                  <div className="text-center space-y-2">
-                    <span className="text-emerald-600 font-bold text-xs sm:text-sm tracking-widest uppercase">الخطوة الأخيرة</span>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة:</h2>
+                <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-3 sm:space-y-5">
+                  <div className="text-center space-y-1">
+                    <span className="text-emerald-600 font-bold text-[10px] sm:text-xs tracking-widest uppercase">الخطوة الأخيرة</span>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة:</h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-full sm:max-w-2xl mx-auto">
@@ -1282,11 +1284,11 @@ function Btn({ text, icon, onClick }: { text: string; icon: ReactNode; onClick: 
   return (
     <button
       onClick={onClick}
-      className="w-full p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:shadow-lg transition-all duration-300 text-right font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 flex items-center gap-3 sm:gap-4 group"
+      className="w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-right font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-950 flex items-center gap-3 group"
     >
-      <div className="p-2 sm:p-3 rounded-full bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-900 group-hover:text-emerald-500 transition-colors flex-shrink-0">{icon}</div>
+      <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 transition-colors flex-shrink-0">{icon}</div>
       <span className="flex-grow text-sm sm:text-base">{text}</span>
-      <ChevronRight size={18} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
+      <ChevronRight size={16} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 group-hover:translate-x-[-2px] transition-all flex-shrink-0" />
     </button>
   );
 }
@@ -1295,10 +1297,10 @@ function BtnSmall({ text, onClick }: { text: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full p-2.5 sm:p-3.5 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all text-right font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm bg-white dark:bg-slate-950 flex justify-between items-center group"
+      className="w-full p-2.5 sm:p-3 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 hover:-translate-y-0.5 transition-all duration-200 text-right font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm bg-white dark:bg-slate-950 flex justify-between items-center group"
     >
       <span>{text}</span>
-      <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500" />
+      <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 group-hover:translate-x-[-2px] transition-all" />
     </button>
   );
 }
