@@ -73,12 +73,16 @@ export function UpdatesManager() {
             // Send push notification for new updates (not edits)
             if (!editingId && sendPush && formData.title) {
                 try {
+                    // Strip HTML tags from rich text content for clean notification text
+                    const plainMessage = formData.content
+                        ? formData.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim()
+                        : formData.title;
                     const pushRes = await fetch('/api/admin/push', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             title: formData.title,
-                            message: formData.content || formData.title,
+                            message: plainMessage || formData.title,
                             url: formData.link || '/updates',
                         }),
                     });
