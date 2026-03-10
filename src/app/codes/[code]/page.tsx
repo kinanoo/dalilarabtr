@@ -20,7 +20,7 @@ type Props = {
 // 1. Generate Metadata for SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { code } = await params;
-    const decodedCode = decodeURIComponent(code);
+    const decodedCode = decodeURIComponent(code).toUpperCase();
 
     if (!supabase) return { title: `Code ${decodedCode}` };
 
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // 2. The Page Component
 export default async function CodeDetailPage({ params }: Props) {
     const { code } = await params;
-    const decodedCode = decodeURIComponent(code);
+    const decodedCode = decodeURIComponent(code).toUpperCase();
 
     if (!supabase) return notFound();
 
