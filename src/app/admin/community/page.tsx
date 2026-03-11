@@ -109,8 +109,12 @@ export default function AdminCommunityPage() {
             // Notify the commenter if they have a user_id
             if (comment.user_id) {
                 const link =
-                    comment.entity_type === 'article' ? `/article/${comment.entity_id}` :
-                    comment.entity_type === 'service' ? `/services/${comment.entity_id}` :
+                    comment.entity_type === 'article'  ? `/article/${comment.entity_id}` :
+                    comment.entity_type === 'service'  ? `/services/${comment.entity_id}` :
+                    comment.entity_type === 'update'   ? `/updates/${comment.entity_id}` :
+                    comment.entity_type === 'scenario' && comment.entity_id?.startsWith('code-') ? `/codes/${comment.entity_id.replace('code-', '')}` :
+                    comment.entity_type === 'scenario' ? `/consultant?scenario=${comment.entity_id}` :
+                    comment.entity_type === 'zone'     ? `/zones/${comment.entity_id}` :
                     undefined;
                 createNotification({
                     type: 'reply',
@@ -202,7 +206,7 @@ export default function AdminCommunityPage() {
                             <Link
                                 href={
                                     c.entity_type === 'article'  ? `/article/${c.entity_id}` :
-                                    c.entity_type === 'update'   ? `/updates#upd-${c.entity_id}` :
+                                    c.entity_type === 'update'   ? `/updates/${c.entity_id}` :
                                     c.entity_type === 'service'  ? `/services/${c.entity_id}` :
                                     c.entity_type === 'scenario' && c.entity_id?.startsWith('code-') ? `/codes/${c.entity_id.replace('code-', '')}` :
                                     c.entity_type === 'scenario' ? `/consultant?scenario=${c.entity_id}` :
