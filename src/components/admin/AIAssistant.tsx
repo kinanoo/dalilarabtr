@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Send, Bot, User, Loader2, Trash2, X, Sparkles, Eraser, Brain } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Bot, User, Loader2, Trash2, X, Sparkles, Eraser, Brain, Mic, MicOff, Copy, Check } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,6 +19,26 @@ interface PendingAction {
   contentId: string;
   table: string;
   summary: string;
+  isBatch?: boolean;
+  ids?: string[];
+}
+
+// ── LocalStorage keys ──
+const CHAT_HISTORY_KEY = 'ai_assistant_history';
+const DEEP_THINK_KEY = 'ai_assistant_deep_think';
+
+function loadHistory(): Message[] {
+  try {
+    const raw = localStorage.getItem(CHAT_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveHistory(messages: Message[]) {
+  try {
+    const trimmed = messages.slice(-50);
+    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(trimmed));
+  } catch { /* quota exceeded */ }
 }
 
 // ── Quick commands ──
@@ -29,8 +49,10 @@ const QUICK_COMMANDS = [
   { label: 'تعليقات معلقة', prompt: 'اعرض التعليقات المعلقة بانتظار الموافقة' },
   { label: 'سجل النشاط', prompt: 'اعرض آخر 10 أحداث في سجل النشاط' },
   { label: 'الزيارات', prompt: 'اعرض إحصائيات الزيارات لهذا الأسبوع — أكثر الصفحات زيارة' },
+  { label: 'إرسال إشعار', prompt: 'أريد إرسال إشعار push للمشتركين' },
   { label: 'الإعدادات', prompt: 'اعرض كل إعدادات الموقع الحالية' },
   { label: 'البانر', prompt: 'هل يوجد بانر نشط حالياً؟ اعرض تفاصيله' },
+  { label: 'اقبل الكل', prompt: 'اقبل كل التعليقات المعلقة دفعة واحدة' },
 ];
 
 // ── Markdown-like renderer for AI responses ──
@@ -42,14 +64,13 @@ function renderMarkdown(text: string) {
 
   const flushList = () => {
     if (listItems.length === 0) return;
-    const tag = listType === 'ol' ? 'ol' : 'ul';
     elements.push(
-      tag === 'ol' ? (
-        <ol key={`list-${elements.length}`} className="list-decimal list-inside space-y-1 my-2 text-sm">
+      listType === 'ol' ? (
+        <ol key={`list-${elements.length}`} className="list-decimal list-inside space-y-1.5 my-2 text-[13px] leading-relaxed">
           {listItems.map((item, i) => <li key={i}>{inlineFormat(item)}</li>)}
         </ol>
       ) : (
-        <ul key={`list-${elements.length}`} className="list-disc list-inside space-y-1 my-2 text-sm">
+        <ul key={`list-${elements.length}`} className="list-disc list-inside space-y-1.5 my-2 text-[13px] leading-relaxed">
           {listItems.map((item, i) => <li key={i}>{inlineFormat(item)}</li>)}
         </ul>
       )
@@ -61,19 +82,17 @@ function renderMarkdown(text: string) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Heading ## or ###
     if (/^###?\s/.test(line)) {
       flushList();
       const content = line.replace(/^#{2,3}\s/, '');
       elements.push(
-        <div key={`h-${i}`} className="font-bold text-sm mt-3 mb-1 text-blue-700 dark:text-blue-300">
+        <div key={`h-${i}`} className="font-bold text-[13px] mt-3 mb-1.5 text-blue-700 dark:text-blue-300">
           {inlineFormat(content)}
         </div>
       );
       continue;
     }
 
-    // Unordered list: - item or * item
     const ulMatch = line.match(/^[\s]*[-*•]\s+(.*)/);
     if (ulMatch) {
       if (listType !== 'ul') flushList();
@@ -82,7 +101,6 @@ function renderMarkdown(text: string) {
       continue;
     }
 
-    // Ordered list: 1. item or 1) item
     const olMatch = line.match(/^[\s]*\d+[.)]\s+(.*)/);
     if (olMatch) {
       if (listType !== 'ol') flushList();
@@ -91,17 +109,15 @@ function renderMarkdown(text: string) {
       continue;
     }
 
-    // Empty line
     if (!line.trim()) {
       flushList();
       elements.push(<div key={`br-${i}`} className="h-2" />);
       continue;
     }
 
-    // Regular text
     flushList();
     elements.push(
-      <p key={`p-${i}`} className="text-sm leading-relaxed my-0.5">
+      <p key={`p-${i}`} className="text-[13px] leading-relaxed my-0.5">
         {inlineFormat(line)}
       </p>
     );
@@ -112,7 +128,6 @@ function renderMarkdown(text: string) {
 }
 
 function inlineFormat(text: string): React.ReactNode {
-  // Split by **bold** and `code`
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
@@ -125,6 +140,77 @@ function inlineFormat(text: string): React.ReactNode {
   });
 }
 
+// ── Copy button — visible on mobile, hover on desktop ──
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard API not available */ }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title="نسخ الرد"
+      className="absolute -bottom-1 left-2 p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-500 transition-all shadow-sm opacity-50 sm:opacity-0 sm:group-hover/msg:opacity-100 active:scale-90"
+    >
+      {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+    </button>
+  );
+}
+
+// ── Voice Input Hook ──
+function useVoiceInput(onResult: (text: string) => void) {
+  const [isListening, setIsListening] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    setIsSupported(!!SpeechRecognition);
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ar-SA';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event: any) => {
+        const text = event.results[0][0].transcript;
+        if (text) onResult(text);
+        setIsListening(false);
+      };
+
+      recognition.onerror = () => { setIsListening(false); };
+      recognition.onend = () => { setIsListening(false); };
+
+      recognitionRef.current = recognition;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (!recognitionRef.current) return;
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch { setIsListening(false); }
+    }
+  }, [isListening]);
+
+  return { isListening, isSupported, toggle };
+}
+
 // ── Main Component ──
 export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -133,10 +219,56 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [deepThink, setDeepThink] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  // Voice input
+  const handleVoiceResult = useCallback((text: string) => {
+    setInput(prev => prev ? `${prev} ${text}` : text);
+  }, []);
+  const { isListening, isSupported: voiceSupported, toggle: toggleVoice } = useVoiceInput(handleVoiceResult);
+
+  // Init: load persisted state
+  useEffect(() => {
+    setMounted(true);
+    setMessages(loadHistory());
+    setDeepThink(localStorage.getItem(DEEP_THINK_KEY) === 'true');
+    setHistoryLoaded(true);
+  }, []);
+
+  // Persist messages
+  useEffect(() => {
+    if (historyLoaded) saveHistory(messages);
+  }, [messages, historyLoaded]);
+
+  // Persist deep think preference
+  useEffect(() => {
+    if (historyLoaded) localStorage.setItem(DEEP_THINK_KEY, String(deepThink));
+  }, [deepThink, historyLoaded]);
+
+  // ── visualViewport keyboard handler ──
+  // On iOS/Android, the virtual keyboard shrinks the visual viewport.
+  // We track this to resize the chat panel so the input stays visible.
+  useEffect(() => {
+    if (!isOpen) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const onResize = () => {
+      setViewportHeight(vv.height);
+    };
+
+    vv.addEventListener('resize', onResize);
+    // Set initial
+    setViewportHeight(vv.height);
+
+    return () => {
+      vv.removeEventListener('resize', onResize);
+      setViewportHeight(null);
+    };
+  }, [isOpen]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -146,9 +278,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
 
   // Focus input when opened
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 300);
-    }
+    if (isOpen) setTimeout(() => inputRef.current?.focus(), 300);
   }, [isOpen]);
 
   // Escape to close
@@ -159,7 +289,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when open (mobile)
+  // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -167,7 +297,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     }
   }, [isOpen]);
 
-  const sendMessage = async (text?: string) => {
+  const sendMessage = useCallback(async (text?: string) => {
     const messageText = text || input.trim();
     if (!messageText || loading) return;
 
@@ -178,7 +308,6 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     setLoading(true);
     setPendingAction(null);
 
-    // Reset textarea height
     if (inputRef.current) inputRef.current.style.height = '44px';
 
     try {
@@ -201,9 +330,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         }]);
       }
 
-      if (data.action) {
-        setPendingAction(data.action);
-      }
+      if (data.action) setPendingAction(data.action);
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -212,7 +339,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     } finally {
       setLoading(false);
     }
-  };
+  }, [input, loading, messages, deepThink]);
 
   const confirmAction = async () => {
     if (!pendingAction) return;
@@ -249,6 +376,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   const clearChat = () => {
     setMessages([]);
     setPendingAction(null);
+    saveHistory([]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -259,6 +387,11 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   };
 
   const showQuickCommands = messages.length === 0;
+
+  // Panel height: use visualViewport height when keyboard is open, otherwise full screen
+  const panelStyle: React.CSSProperties = viewportHeight
+    ? { height: `${viewportHeight}px`, top: 0, left: 0, right: 0, bottom: 'auto' }
+    : {};
 
   const overlay = isOpen ? (
     <>
@@ -277,20 +410,25 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+        style={panelStyle}
+        dir="rtl"
         className="fixed inset-0 sm:inset-4 sm:top-8 sm:bottom-8 z-[201] flex flex-col bg-white dark:bg-slate-950 sm:rounded-3xl sm:max-w-2xl sm:mx-auto sm:shadow-2xl overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-l from-blue-600 to-indigo-700 text-white shrink-0">
+        {/* Header — with safe-area-inset-top for notch/dynamic island */}
+        <div
+          className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-l from-blue-600 to-indigo-700 text-white shrink-0"
+          style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
               <Bot size={20} />
             </div>
             <div>
               <h2 className="font-bold text-sm">المساعد الذكي</h2>
-              <p className="text-[11px] opacity-80">يفهم كل شيء عن الموقع</p>
+              <p className="text-[10px] opacity-70 hidden min-[360px]:block">تحكم كامل بالموقع</p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {/* Deep Think toggle */}
             <button
               type="button"
@@ -341,27 +479,28 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         </AnimatePresence>
 
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 custom-scrollbar">
           {showQuickCommands && (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <Sparkles size={32} className="text-white" />
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 overflow-y-auto">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Sparkles size={28} className="text-white sm:hidden" />
+                <Sparkles size={32} className="text-white hidden sm:block" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">كيف أقدر أساعدك؟</h3>
+                <h3 className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">كيف أقدر أساعدك؟</h3>
                 <p className="text-slate-400 text-xs max-w-xs">
-                  ابحث، أنشئ، عدّل، احذف — أي شيء تحتاجه في الموقع
+                  ابحث، أنشئ، عدّل، احذف، أرسل إشعارات — أي شيء تحتاجه
                 </p>
               </div>
 
-              {/* Quick commands grid */}
-              <div className="w-full max-w-sm grid grid-cols-2 gap-2">
-                {QUICK_COMMANDS.map((cmd) => (
+              {/* Quick commands grid — scrollable on short screens */}
+              <div className="w-full max-w-sm grid grid-cols-2 gap-2 px-2">
+                {QUICK_COMMANDS.slice(0, 8).map((cmd) => (
                   <button
                     type="button"
                     key={cmd.label}
                     onClick={() => sendMessage(cmd.prompt)}
-                    className="px-3 py-2.5 text-xs font-bold bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95"
+                    className="px-3 py-3 text-xs font-bold bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95"
                   >
                     {cmd.label}
                   </button>
@@ -377,7 +516,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-2 sm:gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 {/* Avatar */}
                 <div className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5 ${
@@ -389,15 +528,18 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 </div>
 
                 {/* Message bubble */}
-                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
+                <div className={`relative max-w-[90%] sm:max-w-[85%] rounded-2xl px-3 sm:px-3.5 py-2.5 ${
                   msg.role === 'user'
                     ? 'bg-emerald-600 text-white rounded-tr-sm'
-                    : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-tl-sm border border-slate-200 dark:border-slate-800'
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-tl-sm border border-slate-200 dark:border-slate-800 group/msg'
                 }`}>
                   {msg.role === 'user' ? (
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                    <p className="text-[13px] leading-relaxed">{msg.content}</p>
                   ) : (
-                    renderMarkdown(msg.content)
+                    <>
+                      {renderMarkdown(msg.content)}
+                      <CopyButton text={msg.content} />
+                    </>
                   )}
                 </div>
               </motion.div>
@@ -470,16 +612,16 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick commands (scrollable) when messages exist */}
+        {/* Quick commands strip — larger touch targets */}
         {messages.length > 0 && !loading && (
           <div className="shrink-0 px-3 py-1.5 border-t border-slate-100 dark:border-slate-800/50 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-1.5 w-max">
+            <div className="flex gap-2 w-max">
               {QUICK_COMMANDS.map((cmd) => (
                 <button
                   type="button"
                   key={cmd.label}
                   onClick={() => sendMessage(cmd.prompt)}
-                  className="px-2.5 py-1 text-[11px] font-medium whitespace-nowrap bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:text-blue-600 transition-colors active:scale-95"
+                  className="px-3 py-2 text-xs font-medium whitespace-nowrap bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:text-blue-600 transition-colors active:scale-95"
                 >
                   {cmd.label}
                 </button>
@@ -488,18 +630,22 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           </div>
         )}
 
-        {/* Input area — safe-area aware */}
-        <div className="shrink-0 border-t border-slate-200 dark:border-slate-800 p-3 bg-white dark:bg-slate-950" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-          <div className="flex gap-2 items-end">
+        {/* Input area — safe-area-inset-bottom for home indicator */}
+        <div
+          className="shrink-0 border-t border-slate-200 dark:border-slate-800 p-3 bg-white dark:bg-slate-950"
+          style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex gap-2 items-end" dir="rtl">
             <textarea
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="اكتب أمراً... مثال: أنشئ مقال عن الإقامة السياحية"
+              placeholder={isListening ? 'تكلّم الآن...' : 'اكتب أمراً...'}
               rows={1}
+              dir="rtl"
               disabled={loading}
-              className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-all"
+              className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 py-3 text-[13px] sm:text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 transition-all"
               style={{ minHeight: '44px', maxHeight: '120px' }}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -507,6 +653,21 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
               }}
             />
+            {/* Action buttons — grouped together on the left side (RTL) */}
+            {voiceSupported && (
+              <button
+                type="button"
+                onClick={toggleVoice}
+                title={isListening ? 'إيقاف التسجيل' : 'إدخال صوتي'}
+                className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
+                  isListening
+                    ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/30'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => sendMessage()}
@@ -526,7 +687,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   return createPortal(<AnimatePresence>{overlay}</AnimatePresence>, document.body);
 }
 
-// ── FAB Button (used in admin layout) ──
+// ── FAB Button — safe-area aware ──
 export function AIFab({ onClick }: { onClick: () => void }) {
   return (
     <motion.button
@@ -534,7 +695,8 @@ export function AIFab({ onClick }: { onClick: () => void }) {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', delay: 0.5 }}
       onClick={onClick}
-      className="fixed bottom-6 left-6 z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all"
+      className="fixed z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all"
+      style={{ bottom: 'max(24px, calc(24px + env(safe-area-inset-bottom)))', left: '24px' }}
       title="المساعد الذكي"
     >
       <Bot size={24} />

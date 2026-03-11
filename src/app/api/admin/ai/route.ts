@@ -450,7 +450,7 @@ const tools: FunctionDeclarationsTool[] = [{
     },
     {
       name: 'create_notification',
-      description: 'Create a notification record in the DB. Appears in the site bell icon. Does NOT send push — use /admin push endpoint separately.',
+      description: 'Create a notification record in the DB. Appears in the site bell icon. Does NOT send push — use send_push_notification for that.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
@@ -462,6 +462,42 @@ const tools: FunctionDeclarationsTool[] = [{
           priority: { type: SchemaType.NUMBER, description: 'Priority level (higher = more important)' },
         },
         required: ['title', 'message'],
+      },
+    },
+    {
+      name: 'send_push_notification',
+      description: 'Send a REAL push notification to ALL subscribed users\' devices + save to bell notifications. Use when admin says "أرسل إشعار" or "بلّغ المشتركين" or wants to notify users about new content.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          title: { type: SchemaType.STRING, description: 'Push notification title (short, attention-grabbing)' },
+          message: { type: SchemaType.STRING, description: 'Push notification body text (1-2 sentences max)' },
+          url: { type: SchemaType.STRING, description: 'URL to open when notification is clicked (e.g. /updates/123, /article/slug). Default: /updates' },
+        },
+        required: ['title', 'message'],
+      },
+    },
+    {
+      name: 'batch_approve_comments',
+      description: 'Approve or reject ALL pending comments at once. Use when admin says "اقبل كل التعليقات" or "ارفض كل التعليقات المعلقة".',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          action: { type: SchemaType.STRING, format: 'enum', enum: ['approve', 'reject'], description: 'approve or reject all pending' } as any,
+        },
+        required: ['action'],
+      },
+    },
+    {
+      name: 'batch_delete',
+      description: 'Delete multiple items from a table by their IDs. Returns confirmation request. Use when admin wants to delete several items at once.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          content_type: contentTypeSchema,
+          ids: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: 'Array of item IDs to delete' },
+        },
+        required: ['content_type', 'ids'],
       },
     },
     {
@@ -779,13 +815,26 @@ ${TAGS_TEXT}
 - TWO zone tables: "zones" (public pages, has slug/status) vs "restricted_zones" (admin ZonesManager, has is_closed/active)
 - admin_login_attempts tracks login security — read-only for monitoring
 
+## PUSH NOTIFICATIONS:
+- Use send_push_notification to send REAL push notifications to all subscribed users' phones/browsers
+- This also saves to bell notifications automatically
+- Use when admin says "أرسل إشعار", "بلّغ المشتركين", "خبّر المستخدمين"
+- After creating content (article, update, news), OFFER to send a push notification about it
+- Keep push titles SHORT (under 50 chars) and messages under 2 sentences
+
+## BATCH OPERATIONS:
+- Use batch_approve_comments to approve/reject ALL pending comments at once
+- Use batch_delete to delete multiple items at once (requires admin confirmation)
+- Be proactive: if there are many pending items, offer batch operations
+
 ## RESPONSE FORMAT:
 - Use bullet points and structured lists
 - Show item titles, IDs, and key info
 - For articles: show title, category, status
 - For services: show name, profession, city, phone
 - For counts: show numbers clearly
-- Be concise but complete`;
+- Be concise but complete
+- After creating content, always ask: "هل تريد إرسال إشعار للمشتركين؟"`;
 
 // ── Tool execution ──
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1520,6 +1569,141 @@ async function executeFunction(
       return { result: { error: 'Invalid action or missing id' } };
     }
 
+    case 'send_push_notification': {
+      const { title, message, url } = args;
+      try {
+        // Call the existing push endpoint internally
+        const webpush = (await import('web-push')).default;
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+
+        if (!vapidPublicKey || !vapidPrivateKey) {
+          return { result: { error: 'VAPID keys not configured. Cannot send push notifications.' } };
+        }
+
+        webpush.setVapidDetails(
+          `mailto:${process.env.ADMIN_EMAIL || 'support@dalilarab.com'}`,
+          vapidPublicKey,
+          vapidPrivateKey
+        );
+
+        const targetUrl = (url && url !== '/') ? url : '/updates';
+
+        // Save to bell notifications
+        await serviceClient.from('notifications').insert({
+          type: 'announcement',
+          title,
+          message,
+          link: targetUrl,
+          icon: '📢',
+          priority: 'high',
+          target_audience: 'all',
+          is_active: true,
+        });
+
+        // Get all push subscriptions
+        const { data: subscriptions } = await serviceClient
+          .from('push_subscriptions')
+          .select('endpoint, p256dh, auth');
+
+        if (!subscriptions || subscriptions.length === 0) {
+          return { result: { message: 'Notification saved to bell. No push subscribers found.', subscribers: 0 } };
+        }
+
+        const payload = JSON.stringify({ title, message, url: targetUrl });
+        let successCount = 0;
+        let failCount = 0;
+        const expiredEndpoints: string[] = [];
+
+        const promises = subscriptions.map((sub: any) =>
+          webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload
+          )
+            .then(() => { successCount++; })
+            .catch((err: any) => {
+              failCount++;
+              if (err?.statusCode === 410 || err?.statusCode === 404) {
+                expiredEndpoints.push(sub.endpoint);
+              }
+            })
+        );
+
+        await Promise.all(promises);
+
+        if (expiredEndpoints.length > 0) {
+          await serviceClient.from('push_subscriptions').delete().in('endpoint', expiredEndpoints);
+        }
+
+        return {
+          result: {
+            message: `Push notification sent successfully`,
+            success: successCount,
+            failed: failCount,
+            total_subscribers: subscriptions.length,
+            cleaned_expired: expiredEndpoints.length,
+          },
+        };
+      } catch (err: any) {
+        return { result: { error: `Push notification failed: ${err.message}` } };
+      }
+    }
+
+    case 'batch_approve_comments': {
+      const { action } = args;
+      const newStatus = action === 'approve' ? 'approved' : 'rejected';
+
+      // Get count first
+      const { count } = await serviceClient
+        .from('comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      if (!count || count === 0) {
+        return { result: { message: 'No pending comments found.', count: 0 } };
+      }
+
+      // Batch update all pending
+      const { error } = await serviceClient
+        .from('comments')
+        .update({ status: newStatus })
+        .eq('status', 'pending');
+
+      if (error) return { result: { error: `Batch ${action} failed: ${error.message}` } };
+      return { result: { message: `${count} comments ${action}d successfully`, count } };
+    }
+
+    case 'batch_delete': {
+      const { content_type, ids } = args;
+      const table = TABLE_MAP[content_type];
+      if (!table) return { result: { error: 'Invalid content type' } };
+      if (!ids || ids.length === 0) return { result: { error: 'No IDs provided' } };
+
+      const pkField = pk(table);
+
+      // Get items for summary
+      const { data: items } = await serviceClient.from(table).select('*').in(pkField, ids);
+      if (!items || items.length === 0) return { result: { error: 'No items found with given IDs' } };
+
+      const summaries = items.map((item: any) => {
+        return item.title || item.name || item.question || item.content || item.code || item[pkField];
+      });
+
+      return {
+        result: { message: `Will delete ${items.length} items`, items: summaries },
+        action: {
+          id: `batch-del-${Date.now()}`,
+          type: 'delete',
+          contentType: content_type,
+          contentId: ids.join(','),
+          table,
+          summary: `${items.length} ${content_type}(s): ${summaries.slice(0, 3).join(', ')}${summaries.length > 3 ? '...' : ''}`,
+          isBatch: true,
+          ids,
+        },
+      };
+    }
+
     default:
       return { result: { error: 'Unknown function' } };
   }
@@ -1686,6 +1870,20 @@ export async function POST(request: NextRequest) {
     // ── Handle confirmed pending action ──
     if (pendingAction?.confirmed && pendingAction.table && pendingAction.contentId) {
       const pkField = pk(pendingAction.table);
+
+      // Batch delete support
+      if (pendingAction.isBatch && pendingAction.ids) {
+        const { error } = await serviceClient
+          .from(pendingAction.table)
+          .delete()
+          .in(pkField, pendingAction.ids);
+
+        if (error) {
+          return NextResponse.json({ reply: `Batch delete failed: ${error.message}` });
+        }
+        return NextResponse.json({ reply: `تم حذف ${pendingAction.ids.length} عناصر بنجاح.` });
+      }
+
       const { error } = await serviceClient
         .from(pendingAction.table)
         .delete()
