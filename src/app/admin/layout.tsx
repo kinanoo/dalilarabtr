@@ -8,6 +8,7 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
+import { AIAssistant, AIFab } from '@/components/admin/AIAssistant';
 import { Loader2, ShieldAlert } from 'lucide-react';
 
 export default function AdminLayout({
@@ -21,6 +22,7 @@ export default function AdminLayout({
     // All hooks must be declared before any conditional return (Rules of Hooks)
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [aiOpen, setAiOpen] = useState(false);
 
     // ─── Auth Guard State ───────────────────────────────────────────────
     const [authState, setAuthState] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
@@ -155,6 +157,12 @@ export default function AdminLayout({
                         {children}
                     </div>
                 </main>
+
+                {/* AI Assistant — FAB + Overlay (hidden on /admin/ai-assistant page) */}
+                {pathname !== '/admin/ai-assistant' && !aiOpen && (
+                    <AIFab onClick={() => setAiOpen(true)} />
+                )}
+                <AIAssistant isOpen={aiOpen} onClose={() => setAiOpen(false)} />
             </div>
         </ToastProvider>
     );

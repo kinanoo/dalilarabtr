@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import {
   FileText,
   ShieldAlert,
   Zap,
   Newspaper,
-  Megaphone
+  Megaphone,
+  Sparkles,
+  Bot,
+  ArrowLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
@@ -13,6 +17,7 @@ import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import NewsTickerManager from '@/components/admin/NewsTickerManager';
+import { AIAssistant } from '@/components/admin/AIAssistant';
 import { motion } from 'framer-motion';
 
 const containerVariants: any = {
@@ -62,6 +67,8 @@ const QuickActionBtn = ({ title, icon: Icon, color, href }: { title: string; ico
 };
 
 export default function AdminDashboard() {
+  const [aiOpen, setAiOpen] = useState(false);
+
   return (
     <motion.div
       variants={containerVariants}
@@ -98,7 +105,46 @@ export default function AdminDashboard() {
         <NewsTickerManager />
       </motion.section>
 
-      {/* 5. Quick Actions Grid */}
+      {/* 5. AI Assistant Card */}
+      <motion.section variants={itemVariants}>
+        <button
+          type="button"
+          onClick={() => setAiOpen(true)}
+          className="w-full text-right group"
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-blue-600 via-indigo-600 to-violet-700 p-5 sm:p-7 shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 transition-all active:scale-[0.99]">
+            {/* Decorative circles */}
+            <div className="absolute -top-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
+
+            <div className="relative flex items-center gap-4">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Bot size={28} className="text-white sm:hidden" />
+                <Sparkles size={32} className="text-white hidden sm:block" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-white mb-1">المساعد الذكي</h3>
+                <p className="text-blue-100 text-xs sm:text-sm leading-relaxed">
+                  ابحث، أنشئ مقالات، عدّل، احذف — أي شيء تحتاجه بأمر واحد
+                </p>
+              </div>
+              <ArrowLeft size={24} className="text-white/60 group-hover:text-white group-hover:-translate-x-1 transition-all shrink-0" />
+            </div>
+
+            {/* Example chips */}
+            <div className="relative mt-4 flex gap-2 overflow-x-auto scrollbar-hide">
+              {['أنشئ خبر جديد', 'إحصائيات الموقع', 'تعليقات معلقة'].map(ex => (
+                <span key={ex} className="whitespace-nowrap px-3 py-1.5 rounded-full bg-white/15 text-white text-[11px] font-medium backdrop-blur-sm">
+                  {ex}
+                </span>
+              ))}
+            </div>
+          </div>
+        </button>
+        <AIAssistant isOpen={aiOpen} onClose={() => setAiOpen(false)} />
+      </motion.section>
+
+      {/* 6. Quick Actions Grid */}
       <motion.section variants={itemVariants}>
         <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
           <Zap className="text-yellow-500" />

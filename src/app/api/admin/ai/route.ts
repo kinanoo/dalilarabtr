@@ -1640,7 +1640,7 @@ ${recentActivityStr || '  (none)'}
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { messages, pendingAction } = body;
+    const { messages, pendingAction, useDeepModel } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'missing_messages' }, { status: 400 });
@@ -1707,8 +1707,10 @@ export async function POST(request: NextRequest) {
     const siteSnapshot = await fetchSiteSnapshot(serviceClient);
 
     const genAI = new GoogleGenerativeAI(apiKey);
+    // Use stronger model for complex tasks when deep think is enabled
+    const modelId = useDeepModel ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: modelId,
       systemInstruction: SYSTEM_PROMPT + siteSnapshot,
       tools,
     });
