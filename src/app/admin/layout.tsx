@@ -119,6 +119,14 @@ export default function AdminLayout({
 
     return (
         <ToastProvider>
+            {/* Admin-specific PWA manifest — overrides root manifest */}
+            <head>
+                <link rel="manifest" href="/admin-manifest.json" />
+                <meta name="theme-color" content="#0f172a" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-title" content="لوحة التحكم" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+            </head>
             <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
                 <AdminSidebar
                     collapsed={sidebarCollapsed}

@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { BellRing, MessageCircle, FileWarning, CheckCircle, X, Users, Briefcase, Star } from 'lucide-react';
+import {
+    BellRing, MessageCircle, FileWarning, CheckCircle, X,
+    Users, Briefcase, Star, Check, XCircle, Loader2,
+} from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 const DISMISS_KEY = 'action_center_dismissed';
 const LAST_VISIT_KEY = 'admin_last_visit_ts';
@@ -29,42 +33,108 @@ export function ActionCenter() {
     });
     const [loading, setLoading] = useState(true);
     const [dismissed, setDismissed] = useState<Record<string, number>>({});
+    const [batchLoading, setBatchLoading] = useState<string | null>(null);
 
     useEffect(() => {
         setDismissed(getDismissed());
     }, []);
 
-    useEffect(() => {
-        const fetchCounts = async () => {
-            if (!supabase) return;
+    const fetchCounts = useCallback(async () => {
+        if (!supabase) return;
 
-            const lastVisit = localStorage.getItem(LAST_VISIT_KEY) || new Date(0).toISOString();
+        const lastVisit = localStorage.getItem(LAST_VISIT_KEY) || new Date(0).toISOString();
 
-            const [comments, feedback, members, services, reviews] = await Promise.all([
-                supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-                supabase.from('content_votes').select('id', { count: 'exact', head: true }).eq('vote_type', 'down'),
-                supabase.from('member_profiles').select('id', { count: 'exact', head: true }).gt('created_at', lastVisit),
-                supabase.from('service_providers').select('id', { count: 'exact', head: true }).gt('created_at', lastVisit),
-                supabase.from('service_reviews').select('id', { count: 'exact', head: true }).gt('created_at', lastVisit),
-            ]);
+        const [comments, feedback, members, services, reviews] = await Promise.all([
+            supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+            supabase.from('content_votes').select('id', { count: 'exact', head: true }).eq('vote_type', 'down'),
+            supabase.from('member_profiles').select('id', { count: 'exact', head: true }).gt('created_at', lastVisit),
+            supabase.from('service_providers').select('id', { count: 'exact', head: true }).gt('created_at', lastVisit),
+            supabase.from('service_reviews').select('id', { count: 'exact', head: true }).gt('created_at', lastVisit),
+        ]);
 
-            const cCount = comments.count || 0;
-            const fCount = feedback.count || 0;
+        const cCount = comments.count || 0;
+        const fCount = feedback.count || 0;
 
-            setCounts({
-                pendingComments: cCount,
-                negativeFeedback: fCount,
-                totalIssues: cCount + fCount,
-            });
-            setSinceLast({
-                newMembers: members.count || 0,
-                newServices: services.count || 0,
-                newReviews: reviews.count || 0,
-            });
-            setLoading(false);
-        };
-        fetchCounts();
+        setCounts({
+            pendingComments: cCount,
+            negativeFeedback: fCount,
+            totalIssues: cCount + fCount,
+        });
+        setSinceLast({
+            newMembers: members.count || 0,
+            newServices: services.count || 0,
+            newReviews: reviews.count || 0,
+        });
+        setLoading(false);
     }, []);
+
+    useEffect(() => {
+        fetchCounts();
+    }, [fetchCounts]);
+
+    // ── Realtime subscriptions ────────────────────────────────────
+    useEffect(() => {
+        if (!supabase) return;
+
+        const channel = supabase
+            .channel('action-center-live')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'comments',
+            }, () => {
+                setCounts(prev => ({
+                    ...prev,
+                    pendingComments: prev.pendingComments + 1,
+                    totalIssues: prev.totalIssues + 1,
+                }));
+            })
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'member_profiles',
+            }, () => {
+                setSinceLast(prev => ({ ...prev, newMembers: prev.newMembers + 1 }));
+            })
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'service_reviews',
+            }, () => {
+                setSinceLast(prev => ({ ...prev, newReviews: prev.newReviews + 1 }));
+            })
+            .subscribe();
+
+        return () => { supabase?.removeChannel(channel); };
+    }, []);
+
+    // ── Batch approve/reject ──────────────────────────────────────
+    async function handleBatch(action: 'approve' | 'reject') {
+        setBatchLoading(action);
+        try {
+            const res = await fetch('/api/admin/batch-comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action }),
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                toast.success(data.message);
+                setCounts(prev => ({
+                    ...prev,
+                    pendingComments: 0,
+                    totalIssues: prev.negativeFeedback,
+                }));
+            } else {
+                toast.error(data.error || 'فشلت العملية');
+            }
+        } catch {
+            toast.error('خطأ في الاتصال');
+        } finally {
+            setBatchLoading(null);
+        }
+    }
 
     const dismiss = (key: string, count: number) => {
         const next = { ...dismissed, [key]: count };
@@ -137,9 +207,10 @@ export function ActionCenter() {
                                     </div>
                                 </Link>
                                 <button
+                                    type="button"
                                     onClick={() => dismiss('negativeFeedback', counts.negativeFeedback)}
                                     title="تجاهل"
-                                    className="absolute top-2 left-2 p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-0 group-hover/card:opacity-100 transition-all"
+                                    className="absolute top-2 left-2 p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-50 sm:opacity-0 group-hover/card:opacity-100 transition-all"
                                 >
                                     <X size={14} />
                                 </button>
@@ -147,7 +218,7 @@ export function ActionCenter() {
                         )}
 
                         {showComments && (
-                            <div className="relative group/card">
+                            <div className="relative group/card space-y-2">
                                 <Link href="/admin/community" className="bg-white dark:bg-slate-900 border-l-4 border-l-indigo-500 p-4 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-4 group">
                                     <div className="p-3 bg-indigo-100 text-indigo-600 rounded-lg group-hover:bg-indigo-500 group-hover:text-white transition-colors">
                                         <MessageCircle size={24} />
@@ -158,12 +229,43 @@ export function ActionCenter() {
                                     </div>
                                 </Link>
                                 <button
+                                    type="button"
                                     onClick={() => dismiss('pendingComments', counts.pendingComments)}
                                     title="تجاهل"
-                                    className="absolute top-2 left-2 p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-0 group-hover/card:opacity-100 transition-all"
+                                    className="absolute top-2 left-2 p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-50 sm:opacity-0 group-hover/card:opacity-100 transition-all"
                                 >
                                     <X size={14} />
                                 </button>
+
+                                {/* Quick Actions */}
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleBatch('approve')}
+                                        disabled={batchLoading !== null}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                        {batchLoading === 'approve' ? (
+                                            <Loader2 size={14} className="animate-spin" />
+                                        ) : (
+                                            <Check size={14} />
+                                        )}
+                                        قبول الكل
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleBatch('reject')}
+                                        disabled={batchLoading !== null}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/30 active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                        {batchLoading === 'reject' ? (
+                                            <Loader2 size={14} className="animate-spin" />
+                                        ) : (
+                                            <XCircle size={14} />
+                                        )}
+                                        رفض الكل
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
