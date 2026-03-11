@@ -380,7 +380,10 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Desktop only: Enter sends, Shift+Enter = new line
+    // Mobile: Enter always creates new line, send via button only
+    const isMobile = window.matchMedia('(hover: none)').matches;
+    if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
       e.preventDefault();
       sendMessage();
     }
