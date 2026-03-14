@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { GoogleGenerativeAI, SchemaType, type FunctionDeclarationsTool } from '@google/generative-ai';
+import { isRateLimited } from '@/lib/rate-limit';
 
 // ── All table mappings (every DB table the AI can access) ──
 const TABLE_MAP: Record<string, string> = {
@@ -1830,6 +1831,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'missing_messages' }, { status: 400 });
     }
 
+    // ── Rate limiting (15 requests/min per IP to prevent Gemini API cost abuse) ──
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(`ai:${clientIp}`, 15)) {
+      return NextResponse.json({ reply: 'عدد الطلبات كثير. انتظر قليلاً ثم حاول مرة أخرى.' }, { status: 429 });
+    }
+
     // ── Auth ──
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
@@ -1869,6 +1876,11 @@ export async function POST(request: NextRequest) {
 
     // ── Handle confirmed pending action ──
     if (pendingAction?.confirmed && pendingAction.table && pendingAction.contentId) {
+      // Validate table name against whitelist to prevent arbitrary table deletion
+      const allowedTables = new Set(Object.values(TABLE_MAP));
+      if (!allowedTables.has(pendingAction.table)) {
+        return NextResponse.json({ reply: 'Invalid table name.' }, { status: 400 });
+      }
       const pkField = pk(pendingAction.table);
 
       // Batch delete support
@@ -1879,7 +1891,8 @@ export async function POST(request: NextRequest) {
           .in(pkField, pendingAction.ids);
 
         if (error) {
-          return NextResponse.json({ reply: `Batch delete failed: ${error.message}` });
+          console.error('Batch delete failed:', error);
+          return NextResponse.json({ reply: 'فشل الحذف الجماعي. حاول مرة أخرى.' });
         }
         return NextResponse.json({ reply: `تم حذف ${pendingAction.ids.length} عناصر بنجاح.` });
       }
@@ -1890,7 +1903,8 @@ export async function POST(request: NextRequest) {
         .eq(pkField, pendingAction.contentId);
 
       if (error) {
-        return NextResponse.json({ reply: `Delete failed: ${error.message}` });
+        console.error('Delete failed:', error);
+        return NextResponse.json({ reply: 'فشل الحذف. حاول مرة أخرى.' });
       }
       return NextResponse.json({ reply: `Deleted "${pendingAction.summary}" successfully.` });
     }
@@ -1968,7 +1982,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('AI Assistant error:', error);
     return NextResponse.json({
-      reply: `Error: ${error instanceof Error ? error.message : 'Unknown error'}. Try again.`,
+      reply: 'حدث خطأ في معالجة طلبك. حاول مرة أخرى.',
     });
   }
 }

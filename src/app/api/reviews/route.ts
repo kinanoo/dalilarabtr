@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { isRateLimited } from '@/lib/rate-limit';
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -17,7 +19,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { service_id, rating, comment, client_name, user_id } = body;
+        const { service_id, rating, comment, client_name } = body;
 
         if (!service_id || !rating || rating < 1 || rating > 5) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -34,13 +36,33 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid service ID' }, { status: 400 });
         }
 
-        // Check for duplicate review by same user
-        if (user_id) {
+        // Extract user_id from authenticated session (NOT from request body)
+        let userId: string | null = null;
+        try {
+            const cookieStore = await cookies();
+            const authClient = createServerClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                {
+                    cookies: {
+                        getAll() { return cookieStore.getAll(); },
+                        setAll() {},
+                    },
+                }
+            );
+            const { data: { user } } = await authClient.auth.getUser();
+            if (user) userId = user.id;
+        } catch {
+            // Not authenticated — proceed as anonymous
+        }
+
+        // Check for duplicate review by same authenticated user
+        if (userId) {
             const { data: existing } = await svc
                 .from('service_reviews')
                 .select('id')
                 .eq('service_id', service_id)
-                .eq('user_id', user_id)
+                .eq('user_id', userId)
                 .maybeSingle();
 
             if (existing) {
@@ -51,14 +73,14 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const insertObj: Record<string, any> = {
+        const insertObj: Record<string, string | number | boolean | null> = {
             service_id,
             rating,
             client_name: client_name || 'زائر',
             comment: comment || null,
             is_approved: true,
         };
-        if (user_id) insertObj.user_id = user_id;
+        if (userId) insertObj.user_id = userId;
 
         // Insert without RETURNING to avoid trigger issues
         const { error } = await svc
@@ -67,7 +89,7 @@ export async function POST(req: NextRequest) {
 
         if (error) {
             console.error('Review insert error:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return NextResponse.json({ error: 'فشل حفظ التقييم' }, { status: 500 });
         }
 
         // Manually recalculate service provider rating (safer than relying on trigger)
@@ -78,7 +100,7 @@ export async function POST(req: NextRequest) {
             .eq('is_approved', true);
 
         if (stats && stats.length > 0) {
-            const avg = stats.reduce((sum: number, r: any) => sum + r.rating, 0) / stats.length;
+            const avg = stats.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / stats.length;
             await svc
                 .from('service_providers')
                 .update({
@@ -91,6 +113,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ data: { rating, service_id }, error: null });
     } catch (err) {
         console.error('Review API error:', err);
-        return NextResponse.json({ error: (err instanceof Error ? err.message : 'Server error') }, { status: 500 });
+        return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 });
     }
 }

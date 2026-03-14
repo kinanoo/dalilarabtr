@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited } from '@/lib/rate-limit';
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const svc = serviceRoleKey
@@ -26,6 +27,12 @@ async function findArticle(decoded: string, fields: string): Promise<Record<stri
 
 export async function POST(req: NextRequest) {
     try {
+        // Rate limit to prevent view count manipulation
+        const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        if (isRateLimited(`views:${clientIp}`, 30)) {
+            return NextResponse.json({ views: null });
+        }
+
         const { articleId, track } = await req.json();
         if (!articleId || !svc) {
             return NextResponse.json({ views: null });
