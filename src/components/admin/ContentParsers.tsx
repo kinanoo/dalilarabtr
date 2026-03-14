@@ -114,7 +114,8 @@ export function UpdatesManager() {
         const toastId = toast.loading(`جاري حذف: ${title || 'التحديث'}...`);
 
 
-        const { error } = await supabase!.from('updates').delete().eq('id', id);
+        if (!supabase) return;
+        const { error } = await supabase.from('updates').delete().eq('id', id);
 
         if (error) {
             console.error('❌ Delete failed:', error);
@@ -242,7 +243,8 @@ export function FAQManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
-        const { error } = await supabase!.from('faqs').delete().eq('id', id);
+        if (!supabase) return;
+        const { error } = await supabase.from('faqs').delete().eq('id', id);
         if (error) {
             console.error('Delete FAQ Error:', error);
             toast.error('فشل الحذف: ' + error.message);

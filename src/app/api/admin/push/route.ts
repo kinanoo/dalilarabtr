@@ -49,6 +49,18 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { title, message, url } = body;
 
+        // Input validation
+        if (!title || typeof title !== 'string' || title.length > 200) {
+            return NextResponse.json({ error: 'عنوان غير صالح (الحد 200 حرف)' }, { status: 400 });
+        }
+        if (message && (typeof message !== 'string' || message.length > 1000)) {
+            return NextResponse.json({ error: 'رسالة طويلة جداً (الحد 1000 حرف)' }, { status: 400 });
+        }
+        // URL must be a relative path (no external URLs to prevent phishing)
+        if (url && (typeof url !== 'string' || url.length > 500 || (!url.startsWith('/') && !url.startsWith('http')))) {
+            return NextResponse.json({ error: 'رابط غير صالح' }, { status: 400 });
+        }
+
         // Default to /updates if no meaningful URL
         const targetUrl = (url && url !== '/') ? url : '/updates';
 

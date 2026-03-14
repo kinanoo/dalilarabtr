@@ -93,7 +93,8 @@ export default function CodesManager() {
 
     const handleDelete = async (code: string) => {
         if (!confirm(`هل أنت متأكد من حذف الكود ${code}؟`)) return;
-        const { error } = await supabase!.from('security_codes').delete().eq('code', code);
+        if (!supabase) return;
+        const { error } = await supabase.from('security_codes').delete().eq('code', code);
         if (!error) fetchCodes();
     };
 

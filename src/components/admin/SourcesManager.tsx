@@ -51,7 +51,8 @@ export function SourcesManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('حذف؟')) return;
-        await supabase!.from('official_sources').delete().eq('id', id);
+        if (!supabase) return;
+        await supabase.from('official_sources').delete().eq('id', id);
         fetchSources();
     }
 

@@ -71,8 +71,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'forbidden' }, { status: 403 });
         }
 
-        // Perform delete with service client
-        const deleteField = (typeof idField === 'string' && idField) ? idField : 'id';
+        // Perform delete with service client — whitelist allowed ID field names
+        const ALLOWED_ID_FIELDS = ['id', 'code', 'slug', 'key'];
+        const deleteField = (typeof idField === 'string' && ALLOWED_ID_FIELDS.includes(idField)) ? idField : 'id';
         const { error } = await serviceClient
             .from(table)
             .delete()

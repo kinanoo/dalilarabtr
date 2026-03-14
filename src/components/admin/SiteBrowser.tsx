@@ -290,8 +290,8 @@ function CardEditor({ cardId, onBack }: { cardId: string, onBack: () => void }) 
     });
 
     useEffect(() => {
-        if (!isNew) {
-            supabase?.from('home_cards').select('*').eq('id', cardId).single().then(({ data }) => {
+        if (!isNew && supabase) {
+            supabase.from('home_cards').select('*').eq('id', cardId).single().then(({ data }) => {
                 if (data) setForm(data);
             });
         }
@@ -404,7 +404,7 @@ function ArticleEditor({ articleId, categoryContext, onBack }: { articleId: stri
 
     useEffect(() => {
         if (articleId !== 'new') {
-            supabase?.from('articles').select('*').eq('id', articleId).single().then(({ data }) => { if (data) setForm({ ...data, documents: data.documents || [], steps: data.steps || [], tips: data.tips || [] }); });
+            if (supabase) supabase.from('articles').select('*').eq('id', articleId).single().then(({ data }) => { if (data) setForm({ ...data, documents: data.documents || [], steps: data.steps || [], tips: data.tips || [] }); });
         }
     }, [articleId]);
 

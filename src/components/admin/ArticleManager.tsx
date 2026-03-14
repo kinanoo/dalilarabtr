@@ -116,7 +116,8 @@ export default function ArticleManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('هل أنت متأكد من الحذف؟')) return;
-        const { error } = await supabase!.from('articles').delete().eq('id', id);
+        if (!supabase) return;
+        const { error } = await supabase.from('articles').delete().eq('id', id);
         if (!error) fetchArticles();
     };
 

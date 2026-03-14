@@ -35,25 +35,12 @@ export default function AdminMembersPage() {
             .order('created_at', { ascending: false });
 
         if (profiles) {
-            // Try to get emails from auth.users via admin_activity_log
-            // (auth.users is not directly accessible from client)
-            // We'll show what we have from member_profiles + activity log emails
-            const memberIds = profiles.map((p) => p.id);
-            const { data: activityEmails } = await supabase
-                .from('admin_activity_log')
-                .select('entity_id, detail')
-                .eq('event_type', 'new_member')
-                .in('entity_id', memberIds);
-
-            const emailMap = new Map<string, string>();
-            for (const a of activityEmails || []) {
-                if (a.entity_id && a.detail) emailMap.set(a.entity_id, a.detail);
-            }
-
+            // Note: admin_activity_log is blocked by RLS from client-side.
+            // Email data is not available here — member_profiles.email is used if present.
             setMembers(
                 profiles.map((p) => ({
                     ...p,
-                    email: emailMap.get(p.id) || '',
+                    email: p.email || '',
                 }))
             );
         }

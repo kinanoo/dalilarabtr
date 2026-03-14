@@ -66,6 +66,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'missing event_name' }, { status: 400 });
     }
 
+    // Validate meta size to prevent DB bloat (max 2KB)
+    if (meta && JSON.stringify(meta).length > 2048) {
+      return NextResponse.json({ error: 'meta too large' }, { status: 400 });
+    }
+
     // ─── Skip admin pages (don't pollute analytics with admin activity) ─
     if (page_path?.startsWith('/admin')) {
       return NextResponse.json({ ok: true, filtered: 'admin' });

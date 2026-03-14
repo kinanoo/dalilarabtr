@@ -73,7 +73,8 @@ export default function ZonesManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('هل أنت متأكد من الحذف؟ سيصبح الحي "مفتوحاً".')) return;
-        const { error } = await supabase!.from('restricted_zones').delete().eq('id', id);
+        if (!supabase) return;
+        const { error } = await supabase.from('restricted_zones').delete().eq('id', id);
         if (!error) fetchZones();
     };
 

@@ -69,6 +69,9 @@ export async function PATCH(request: NextRequest) {
     if (!body?.id || !body?.content?.trim()) {
         return NextResponse.json({ error: 'Missing id or content' }, { status: 400 });
     }
+    if (typeof body.content !== 'string' || body.content.length > 5000) {
+        return NextResponse.json({ error: 'Content too long (max 5000 chars)' }, { status: 400 });
+    }
 
     const cookieStore = await cookies();
     const authClient = createServerClient(

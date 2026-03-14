@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         serviceRoleKey
     );
 
-    // ── Rate-limit check (graceful — if table doesn't exist, proceed) ──
+    // ── Rate-limit check (fail-closed: block login if check fails) ──
     const cutoff = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000).toISOString();
     const { count: failCount, error: rlError } = await serviceClient
         .from('admin_login_attempts')
@@ -42,7 +42,14 @@ export async function POST(request: NextRequest) {
         .eq('success', false)
         .gte('attempted_at', cutoff);
 
-    if (!rlError && (failCount || 0) >= MAX_ATTEMPTS) {
+    if (rlError) {
+        console.error('Rate limit check failed:', rlError.message);
+        return NextResponse.json(
+            { error: 'rate_limited', remaining: 0, lockout_minutes: LOCKOUT_MINUTES },
+            { status: 429 }
+        );
+    }
+    if ((failCount || 0) >= MAX_ATTEMPTS) {
         return NextResponse.json(
             { error: 'rate_limited', remaining: 0, lockout_minutes: LOCKOUT_MINUTES },
             { status: 429 }
