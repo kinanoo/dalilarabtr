@@ -12,14 +12,24 @@ export default function CopyProtection() {
 
     // Check if user is actually admin (role check, not just logged in)
     useEffect(() => {
-        if (!user || !supabase) { setIsAdmin(false); return; }
+        // Fast path: check cached admin status
+        try {
+            if (localStorage.getItem('daleel_is_admin') === 'true') {
+                setIsAdmin(true);
+                if (!user || !supabase) return; // still revalidate below if logged in
+            }
+        } catch {}
+
+        if (!user || !supabase) { return; }
         supabase
             .from('member_profiles')
             .select('role')
             .eq('id', user.id)
             .single()
             .then(({ data }) => {
-                setIsAdmin(data?.role === 'admin');
+                const admin = data?.role === 'admin';
+                setIsAdmin(admin);
+                try { localStorage.setItem('daleel_is_admin', admin ? 'true' : 'false'); } catch {}
             });
     }, [user]);
 
