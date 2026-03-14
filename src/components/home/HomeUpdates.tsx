@@ -58,14 +58,23 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
         if (currentPage >= totalPages) setCurrentPage(Math.max(0, totalPages - 1));
     }, [totalPages, currentPage]);
 
-    // Auto-advance every 6 seconds
+    // Auto-advance every 6 seconds — only when visible on screen
+    const [isVisible, setIsVisible] = useState(false);
     useEffect(() => {
-        if (isHovered || totalPages <= 1) return;
+        const el = sectionRef.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(([e]) => setIsVisible(e.isIntersecting), { threshold: 0.1 });
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (isHovered || totalPages <= 1 || !isVisible) return;
         autoplayRef.current = setInterval(() => {
             setCurrentPage(prev => (prev + 1) % totalPages);
         }, 6000);
         return () => clearInterval(autoplayRef.current);
-    }, [isHovered, totalPages]);
+    }, [isHovered, totalPages, isVisible]);
 
     const goTo = useCallback((page: number) => {
         setCurrentPage(page);

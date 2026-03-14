@@ -27,16 +27,8 @@ const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 // Wrapper that delays rendering until browser is idle (~2.5s after page load)
 const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
 
-// Non-critical components — code-split AND deferred until after initial render
-const AmbientBackground = dynamic(() => import("@/components/ui/AmbientBackground"));
-const AnalyticsTracker = dynamic(() => import("@/components/analytics/AnalyticsTracker").then(m => ({ default: m.AnalyticsTracker })));
-const NotificationManager = dynamic(() => import("@/components/NotificationManager"));
-const CopyProtection = dynamic(() => import("@/components/ui/CopyProtection"));
-const ServiceWorkerRegister = dynamic(() => import("@/components/pwa/ServiceWorkerRegister"));
-const PWAInstallPrompt = dynamic(() => import("@/components/PWAInstallPrompt"));
-const ClientComponents = dynamic(() => import("@/components/ClientComponents"));
-const BackToTop = dynamic(() => import("@/components/BackToTop"));
-const CookieConsent = dynamic(() => import("@/components/CookieConsent"));
+// All non-critical components in one deferred bundle (loaded after idle)
+const DeferredExtras = dynamic(() => import("@/components/DeferredExtras"));
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -178,17 +170,7 @@ export default function RootLayout({
 
             {/* Non-critical components — deferred until browser is idle */}
             <LazyGroup>
-              <AmbientBackground />
-              <Suspense fallback={null}>
-                <AnalyticsTracker />
-              </Suspense>
-              <NotificationManager />
-              <CopyProtection />
-              <ServiceWorkerRegister />
-              <PWAInstallPrompt />
-              <ClientComponents />
-              <BackToTop />
-              <CookieConsent />
+              <DeferredExtras />
             </LazyGroup>
           </div>
         </ThemeProviderWrapper>
