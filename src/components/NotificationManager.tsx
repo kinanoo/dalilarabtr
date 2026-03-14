@@ -108,7 +108,7 @@ export default function NotificationManager() {
     if (!isSupported || permission !== 'default' || !isVisible) return null;
 
     return (
-        <div className="fixed bottom-20 sm:bottom-4 right-4 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-700">
+        <div className="fixed bottom-4 right-4 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-700">
             <div className="flex items-center gap-2 bg-slate-900/90 dark:bg-slate-100/90 text-white dark:text-slate-900 pl-2 pr-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md border border-white/10">
                 <button
                     onClick={handleDismiss}

@@ -86,8 +86,19 @@ export default function Navbar() {
   const touchStartY = useRef(0);
 
   useEffect(() => {
+    // Start from actual scroll position to avoid false triggers on mount
+    lastScrollY.current = window.scrollY;
+
     const handleScroll = () => {
       const currentY = window.scrollY;
+
+      // Always show when near the top
+      if (currentY <= 10) {
+        setNavHidden(false);
+        lastScrollY.current = currentY;
+        return;
+      }
+
       const diff = currentY - lastScrollY.current;
 
       if (diff > 8 && currentY > 80) {
@@ -105,9 +116,14 @@ export default function Navbar() {
     };
     const handleTouchMove = (e: TouchEvent) => {
       const touchY = e.touches[0].clientY;
-      // Finger moving down = scrolling up → show navbar
-      if (touchY > touchStartY.current + 5) {
+      const diff = touchY - touchStartY.current;
+      // Finger moving down (>3px) = scrolling up → show navbar
+      if (diff > 3) {
         setNavHidden(false);
+      }
+      // Finger moving up (>10px) = scrolling down → hide navbar
+      else if (diff < -10 && window.scrollY > 80) {
+        setNavHidden(true);
       }
       touchStartY.current = touchY;
     };

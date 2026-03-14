@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Cookie, X } from 'lucide-react';
 
 const STORAGE_KEY = 'cookie_consent_accepted';
+const DISMISS_KEY = 'cookie_consent_dismissed_at';
+const DISMISS_COOLDOWN = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export default function CookieConsent() {
     const [isVisible, setIsVisible] = useState(false);
@@ -17,11 +19,15 @@ export default function CookieConsent() {
 
         try {
             const accepted = localStorage.getItem(STORAGE_KEY);
-            if (!accepted) {
-                // Delay showing for better UX (let page load first)
-                const timer = setTimeout(() => setIsVisible(true), 2000);
-                return () => clearTimeout(timer);
-            }
+            if (accepted) return;
+
+            // Check if dismissed within cooldown period
+            const dismissedAt = localStorage.getItem(DISMISS_KEY);
+            if (dismissedAt && Date.now() - parseInt(dismissedAt, 10) < DISMISS_COOLDOWN) return;
+
+            // Delay showing for better UX (let page load first)
+            const timer = setTimeout(() => setIsVisible(true), 2000);
+            return () => clearTimeout(timer);
         } catch {
             // localStorage unavailable
         }
@@ -35,8 +41,10 @@ export default function CookieConsent() {
     };
 
     const handleDismiss = () => {
-        // Dismiss but don't save — will show again next visit
         setIsVisible(false);
+        try {
+            localStorage.setItem(DISMISS_KEY, Date.now().toString());
+        } catch { /* ignore */ }
     };
 
     return (
