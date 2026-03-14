@@ -80,62 +80,41 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
   const portalTarget = mounted ? document.body : null;
 
-  // Hide navbar on scroll down, show on scroll up (works on mobile touch too)
+  // Hide navbar on scroll down, show on scroll up
   const [navHidden, setNavHidden] = useState(false);
-  const lastScrollY = useRef(0);
-  const touchStartY = useRef(0);
 
   useEffect(() => {
-    // Start from actual scroll position to avoid false triggers on mount
-    lastScrollY.current = window.scrollY;
+    let lastY = window.scrollY;
+    let ticking = false;
+    let hidden = false;
 
-    const handleScroll = () => {
-      const currentY = window.scrollY;
+    function update() {
+      const y = window.scrollY;
 
-      // Always show when near the top
-      if (currentY <= 10) {
-        setNavHidden(false);
-        lastScrollY.current = currentY;
-        return;
+      if (y <= 0) {
+        // At the very top — always show
+        if (hidden) { hidden = false; setNavHidden(false); }
+      } else if (y > lastY && y > 60) {
+        // Scrolling DOWN past navbar height
+        if (!hidden) { hidden = true; setNavHidden(true); }
+      } else if (y < lastY) {
+        // Scrolling UP — show immediately
+        if (hidden) { hidden = false; setNavHidden(false); }
       }
 
-      const diff = currentY - lastScrollY.current;
+      lastY = y;
+      ticking = false;
+    }
 
-      if (diff > 8 && currentY > 80) {
-        setNavHidden(true);
-      } else if (diff < 0) {
-        // ANY scroll up — show immediately
-        setNavHidden(false);
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
       }
-      lastScrollY.current = currentY;
-    };
+    }
 
-    // Touch events for reliable mobile detection
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-    const handleTouchMove = (e: TouchEvent) => {
-      const touchY = e.touches[0].clientY;
-      const diff = touchY - touchStartY.current;
-      // Finger moving down (>3px) = scrolling up → show navbar
-      if (diff > 3) {
-        setNavHidden(false);
-      }
-      // Finger moving up (>10px) = scrolling down → hide navbar
-      else if (diff < -10 && window.scrollY > 80) {
-        setNavHidden(true);
-      }
-      touchStartY.current = touchY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Shared site config (menus + tools) — deduplicated with Footer via SWR
@@ -384,7 +363,7 @@ export default function Navbar() {
     <>
       <header
         ref={navRef}
-        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
