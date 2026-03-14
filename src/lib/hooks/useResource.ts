@@ -20,11 +20,23 @@ export function useResource<T extends { id: string; active?: boolean }>(
         if (!tableName || !supabase) return [];
 
         try {
-            const { data, error } = await supabase.from(tableName).select('*');
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+            const { data, error } = await supabase
+                .from(tableName)
+                .select('*')
+                .abortSignal(controller.signal);
+
+            clearTimeout(timeout);
             if (error) throw error;
             return data as T[];
-        } catch (err) {
-            console.error(`Error fetching ${tableName}:`, err);
+        } catch (err: any) {
+            if (err?.name === 'AbortError') {
+                console.warn(`Timeout fetching ${tableName} (10s)`);
+            } else {
+                console.error(`Error fetching ${tableName}:`, err);
+            }
             return []; // Return empty on error to fallback to static
         }
     };

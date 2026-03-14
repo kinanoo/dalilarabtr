@@ -58,3 +58,17 @@ export function getAnonClient(): SupabaseClient | null {
   }
   return window[ANON_KEY];
 }
+
+/**
+ * Race a promise against a timeout. Returns fallback value on timeout.
+ * Use for server-side Supabase queries to prevent pages from hanging.
+ */
+export function withTimeout<T>(promise: PromiseLike<T> | Promise<T>, ms = 8000): Promise<T | null> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<null>(resolve => setTimeout(() => {
+      console.warn(`Supabase query timed out after ${ms}ms`);
+      return resolve(null);
+    }, ms)),
+  ]);
+}

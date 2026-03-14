@@ -1,7 +1,20 @@
 'use client';
 
 import { ReactNode } from 'react';
-import InteractiveParticles from './InteractiveParticles';
+import dynamic from 'next/dynamic';
+
+const InteractiveParticles = dynamic(() => import('./InteractiveParticles'), {
+    ssr: false,
+    loading: () => (
+        <div
+            className="absolute inset-0 z-[1] opacity-[0.15]"
+            style={{
+                backgroundImage: 'radial-gradient(circle, rgb(52 211 153) 1px, transparent 1px)',
+                backgroundSize: '28px 28px',
+            }}
+        />
+    ),
+});
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (

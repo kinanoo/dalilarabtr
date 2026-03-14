@@ -1,7 +1,7 @@
 import PageHero from '@/components/PageHero';
 import { Users, Scale, BadgeCheck, ShieldCheck } from 'lucide-react';
 import { Metadata } from 'next';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, withTimeout } from '@/lib/supabaseClient';
 
 export const revalidate = 3600; // Cache for 1 hour
 
@@ -14,11 +14,16 @@ export const metadata: Metadata = {
 async function getStats() {
   if (!supabase) return { articles: 0, codes: 0 };
 
-  const [articlesRes, codesRes] = await Promise.all([
-    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-    supabase.from('security_codes').select('code', { count: 'exact', head: true }),
-  ]);
+  const result = await withTimeout(
+    Promise.all([
+      supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+      supabase.from('security_codes').select('code', { count: 'exact', head: true }),
+    ])
+  );
 
+  if (!result) return { articles: 0, codes: 0 };
+
+  const [articlesRes, codesRes] = result;
   return {
     articles: articlesRes.count || 0,
     codes: codesRes.count || 0,

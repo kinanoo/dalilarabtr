@@ -1,6 +1,7 @@
 import FAQClientNew from '@/components/FAQClientNew';
 import { getFAQData } from '@/lib/faq';
 import { createClient } from '@supabase/supabase-js';
+import { withTimeout } from '@/lib/supabaseClient';
 import { FAQCategory, FAQQuestion } from '@/lib/faq-types';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
@@ -35,13 +36,12 @@ export default async function FAQPage() {
 
     if (supabaseUrl && supabaseKey) {
       const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase
-        .from('faqs')
-        .select('id, question, answer, category, tags')
-        .eq('active', true);
+      const result = await withTimeout(
+        supabase.from('faqs').select('id, question, answer, category, tags').eq('active', true)
+      );
 
-      if (!error && data) {
-        dynamicFaqs = data;
+      if (result && !result.error && result.data) {
+        dynamicFaqs = result.data;
       }
     }
   } catch (err) {

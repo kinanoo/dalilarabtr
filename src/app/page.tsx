@@ -10,14 +10,14 @@ export const revalidate = 300; // Cache for 5 minutes (ISR)
 
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 
 // Components
 import HeroSection from '@/components/home/HeroSection';
 import HomeUpdates from '@/components/home/HomeUpdates';
-import GlobalSearch from '@/components/GlobalSearch';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
+import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import { TOP_FAQS } from '@/lib/home-faq-data';
@@ -40,28 +40,38 @@ async function getUpdates() {
   try {
     if (!supabase) return [];
 
-    // Query actual content tables — dates are always accurate
-    const [manualRes, articlesRes, scenariosRes] = await Promise.all([
-      supabase
-        .from('updates')
-        .select('id, title, date, type')
-        .eq('active', true)
-        .eq('type', 'news')
-        .order('date', { ascending: false })
-        .limit(5),
-      supabase
-        .from('articles')
-        .select('id, title, category, slug, created_at, image')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
-        .limit(10),
-      supabase
-        .from('consultant_scenarios')
-        .select('id, title, created_at')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(5),
-    ]);
+    // Query with 8s timeout — if Supabase is slow, render page without updates
+    const result = await withTimeout(
+      Promise.all([
+        supabase
+          .from('updates')
+          .select('id, title, date, type')
+          .eq('active', true)
+          .eq('type', 'news')
+          .order('date', { ascending: false })
+          .limit(5),
+        supabase
+          .from('articles')
+          .select('id, title, category, slug, created_at, image')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('consultant_scenarios')
+          .select('id, title, created_at')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ]),
+      8000, // 8 second timeout
+    );
+
+    if (!result) {
+      console.warn('getUpdates: Supabase timeout (8s) — rendering without updates');
+      return [];
+    }
+
+    const [manualRes, articlesRes, scenariosRes] = result;
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -149,7 +159,7 @@ export default async function Home() {
       <HeroSection>
         {/* Search is ABOVE the button as requested */}
         <div id="search" className="w-full relative z-30 mb-8">
-          <GlobalSearch variant="hero" />
+          <LazyGlobalSearch />
         </div>
         <HomeConsultantBtn />
       </HeroSection>
