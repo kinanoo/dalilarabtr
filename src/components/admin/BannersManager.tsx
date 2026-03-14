@@ -5,8 +5,19 @@ import { supabase } from '@/lib/supabaseClient';
 import { Trash2, Edit2, Plus, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+// === Type Definitions ===
+interface Banner {
+    id: string;
+    content: string;
+    type: string;
+    is_active: boolean;
+    link_url?: string;
+    link_text?: string;
+    created_at?: string;
+}
+
 export default function BannersManager() {
-    const [banners, setBanners] = useState<any[]>([]);
+    const [banners, setBanners] = useState<Banner[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [newBanner, setNewBanner] = useState<{
         content: string;

@@ -164,8 +164,8 @@ export default function ServicesManager() {
                 setFormData({}); // Clear after add
             }
 
-        } catch (err: any) {
-            setMessage({ type: 'error', text: err.message || 'حدث خطأ' });
+        } catch (err) {
+            setMessage({ type: 'error', text: (err instanceof Error ? err.message : 'حدث خطأ') });
         } finally {
             setFormLoading(false);
         }

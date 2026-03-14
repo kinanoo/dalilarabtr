@@ -128,11 +128,12 @@ export default function InlineStarRating({
         setSubmitting(false);
 
         if (error) {
-            if (error.code === '23505') {
+            const errObj = error as Record<string, unknown>;
+            if (errObj.code === '23505') {
                 setAlreadyReviewed(true);
                 setErrorMsg('لقد قمت بتقييم هذه الخدمة مسبقاً');
             } else {
-                setErrorMsg(error.message || 'فشل إرسال التقييم');
+                setErrorMsg(typeof errObj.message === 'string' ? errObj.message : 'فشل إرسال التقييم');
             }
             setShowPopup(true);
             return;
@@ -178,7 +179,7 @@ export default function InlineStarRating({
 
         setSubmitting(false);
         if (!ok) {
-            setErrorMsg(error?.message || 'فشل تحديث التقييم');
+            setErrorMsg(error instanceof Error ? error.message : 'فشل تحديث التقييم');
             return;
         }
 
@@ -204,7 +205,7 @@ export default function InlineStarRating({
         setSubmitting(false);
         if (!ok) {
             setShowConfirmDelete(false);
-            setErrorMsg(error?.message || 'فشل حذف التقييم');
+            setErrorMsg(error instanceof Error ? error.message : 'فشل حذف التقييم');
             return;
         }
 

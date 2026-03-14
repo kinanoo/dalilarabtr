@@ -138,7 +138,7 @@ export function UpdatesManager() {
                     </div>
                     <div>
                         <label className="text-sm font-bold block mb-1">النوع</label>
-                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as any })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as DBUpdate['type'] })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
                             <option value="news">خبر (News)</option>
                             <option value="alert">تنبيه (Alert)</option>
                             <option value="feature">ميزة جديدة (Feature)</option>

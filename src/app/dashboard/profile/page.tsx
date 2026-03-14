@@ -69,7 +69,7 @@ export default function ProfilePage() {
         if (success) {
             toast.success('تم حفظ التغييرات بنجاح');
         } else {
-            toast.error(`خطأ: ${error?.message || 'فشل الحفظ'}`);
+            toast.error(`خطأ: ${error instanceof Error ? error.message : 'فشل الحفظ'}`);
         }
     };
 

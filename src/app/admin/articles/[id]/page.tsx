@@ -9,6 +9,27 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
 
+interface ArticleFormData {
+    id?: string;
+    title: string;
+    category: string;
+    intro: string;
+    details: string;
+    documents: string[];
+    steps: string[];
+    tips: string[];
+    tags: string[];
+    image?: string;
+    fees?: string;
+    source?: string;
+    warning?: string;
+    lastUpdate?: string;
+    published_at?: string;
+    active?: boolean;
+    status?: string;
+    [key: string]: string | string[] | boolean | undefined;
+}
+
 export default function ArticleEditPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
@@ -18,7 +39,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
     const [sendPush, setSendPush] = useState(false);
 
     // Initial Form State
-    const [form, setForm] = useState<any>({
+    const [form, setForm] = useState<ArticleFormData>({
         title: '',
         category: 'e-Devlet',
         intro: '',
@@ -105,8 +126,8 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
             }
             router.refresh();
             router.push('/admin/articles');
-        } catch (err: any) {
-            toast.error('خطأ في الحفظ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

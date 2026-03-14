@@ -59,7 +59,7 @@ export default function AddReviewModal({
 
         if (apiError) {
             console.error('Review Error:', apiError);
-            setError('حدث خطأ: ' + (apiError.message || apiError.details || JSON.stringify(apiError)));
+            setError('حدث خطأ: ' + (apiError instanceof Error ? apiError.message : JSON.stringify(apiError)));
             return;
         }
 

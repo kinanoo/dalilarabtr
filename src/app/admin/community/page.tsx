@@ -7,8 +7,25 @@ import { toast } from 'sonner';
 import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
 
+interface Comment {
+    id: string;
+    content: string;
+    author_name: string;
+    status: string;
+    created_at: string;
+    entity_type: string;
+    entity_id: string;
+    entity_title?: string;
+    user_id?: string;
+    parent_id?: string;
+    page_slug?: string;
+    is_correction?: boolean;
+    is_official?: boolean;
+    replies?: Comment[];
+}
+
 export default function AdminCommunityPage() {
-    const [comments, setComments] = useState<any[]>([]);
+    const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
     const [converting, setConverting] = useState<string | null>(null);
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -65,7 +82,7 @@ export default function AdminCommunityPage() {
         }
     };
 
-    const convertToUpdate = async (comment: any) => {
+    const convertToUpdate = async (comment: Comment) => {
         if (!supabase) return;
         setConverting(comment.id);
         try {
@@ -82,14 +99,14 @@ export default function AdminCommunityPage() {
             if (approveError) console.warn('Auto-approve comment failed:', approveError.message);
             toast.success('✅ تم إنشاء التحديث ونشره مباشرة');
             fetchComments();
-        } catch (err: any) {
-            toast.error('خطأ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setConverting(null);
         }
     };
 
-    const handleReply = async (comment: any) => {
+    const handleReply = async (comment: Comment) => {
         if (!supabase || !replyContent.trim()) return;
         const entityId = comment.entity_id || comment.page_slug || '';
         const { error } = await supabase.from('comments').insert({
@@ -222,7 +239,7 @@ export default function AdminCommunityPage() {
 
                         {/* Admin replies */}
                         <div className="mt-4 space-y-3">
-                            {c.replies?.map((reply: any) => (
+                            {c.replies?.map((reply: Comment) => (
                                 <div key={reply.id} className="bg-emerald-50 dark:bg-emerald-900/10 p-3 sm:p-4 rounded-xl flex gap-3 border border-emerald-100 dark:border-emerald-800 mr-4 sm:mr-8">
                                     <MessageCircle size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                                     <div className="flex-1 min-w-0">

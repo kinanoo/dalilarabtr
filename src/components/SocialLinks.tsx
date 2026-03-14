@@ -2,7 +2,15 @@
 
 import { Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 
-const socialLinks: any[] = [
+// === Type Definitions ===
+interface SocialLink {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+    color: string;
+}
+
+const socialLinks: SocialLink[] = [
     // Empty array to hide social icons for now. Re-add when there are valid URLs.
 ];
 

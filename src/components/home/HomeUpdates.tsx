@@ -6,6 +6,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 
+// === Type Definitions ===
+interface Update {
+    id: string;
+    title: string;
+    type: string;
+    date: string;
+    sortDate?: string;
+    image?: string;
+    href?: string;
+    source?: string;
+    event_type?: string;
+}
+
 function isNewContent(dateStr: string): boolean {
     if (!dateStr) return false;
     const date = new Date(dateStr);
@@ -41,7 +54,7 @@ function useCardsPerPage(): number {
     return count;
 }
 
-export default function HomeUpdates({ updates }: { updates: any[] }) {
+export default function HomeUpdates({ updates }: { updates: Update[] }) {
     const sectionRef = useScrollReveal<HTMLElement>();
     if (!updates || updates.length === 0) return null;
 
@@ -225,9 +238,9 @@ export default function HomeUpdates({ updates }: { updates: any[] }) {
     );
 }
 
-function UpdateCard({ update, index = 0 }: { update: any; index?: number }) {
+function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
     const isAuto = update.source === 'auto';
-    const iconConfig = isAuto ? AUTO_ICON_MAP[update.event_type] : null;
+    const iconConfig = isAuto && update.event_type ? AUTO_ICON_MAP[update.event_type] : null;
     const href = update.href || `/updates/${update.id}`;
 
     return (

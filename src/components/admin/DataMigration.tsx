@@ -101,9 +101,9 @@ export default function DataMigration() {
             await migrateUpdates();
             await migrateFAQs();
             addLog('🎉 تمت العملية بالكامل! كل شيء الآن في قاعدة البيانات.');
-        } catch (e: any) {
+        } catch (e) {
             console.error(e);
-            addLog(`❌ حدث خطأ غير متوقع: ${e.message}`);
+            addLog(`❌ حدث خطأ غير متوقع: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
             setLoading(false);
         }

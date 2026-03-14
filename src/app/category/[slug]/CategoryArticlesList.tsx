@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search, X, Clock, RefreshCw } from 'lucide-react';
 import { useAdminArticles, isNewContent, isRecentlyUpdated, estimateReadingTime } from '@/lib/useAdminData';
+import type { AdminArticle } from '@/lib/types';
 import { TAG_LABELS } from '@/lib/config';
 import PageHero from '@/components/PageHero';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -42,7 +43,7 @@ export default function CategoryArticlesList({
     if (articles.length > 0) {
       list = articles
         .filter((a) => a.category === categoryName)
-        .map((a) => ({
+        .map((a: AdminArticle) => ({
           slug: a.slug || a.id,
           title: a.title,
           intro: a.intro,
@@ -50,7 +51,7 @@ export default function CategoryArticlesList({
           category: a.category,
           createdAt: a.created_at,
           image: a.image,
-          tags: (a as any).tags || [],
+          tags: a.tags || [],
         }));
     }
 
@@ -63,10 +64,9 @@ export default function CategoryArticlesList({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
-        (a: any) =>
+        (a) =>
           a.title?.toLowerCase().includes(q) ||
-          a.intro?.toLowerCase().includes(q) ||
-          a.details?.toLowerCase().includes(q)
+          a.intro?.toLowerCase().includes(q)
       );
     }
 

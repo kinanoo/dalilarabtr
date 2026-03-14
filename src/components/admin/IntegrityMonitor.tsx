@@ -7,6 +7,20 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
+// === Type Definitions ===
+interface IntegrityIssue {
+    type: string;
+    severity: string;
+    label: string;
+    count: number;
+    table: string;
+}
+
+interface IntegrityReport {
+    timestamp: string;
+    issues: IntegrityIssue[];
+}
+
 const IGNORED_KEY = 'integrity_ignored_types';
 
 function getIgnored(): Record<string, boolean> {
@@ -18,7 +32,7 @@ function saveIgnored(d: Record<string, boolean>) {
 
 export default function IntegrityMonitor() {
     const [loading, setLoading] = useState(false);
-    const [report, setReport] = useState<any>(null);
+    const [report, setReport] = useState<IntegrityReport | null>(null);
     const [lastScan, setLastScan] = useState<string | null>(null);
     const [ignored, setIgnored] = useState<Record<string, boolean>>({});
 
@@ -71,8 +85,8 @@ export default function IntegrityMonitor() {
             if (error) throw error;
             setReport(data);
             setLastScan(new Date().toLocaleTimeString('ar-SA'));
-        } catch (err: any) {
-            console.warn('RPC Scan failed, attempting client-side fallback...', err.message);
+        } catch (err) {
+            console.warn('RPC Scan failed, attempting client-side fallback...', (err instanceof Error ? err.message : String(err)));
             await runClientSideScan();
         } finally {
             setLoading(false);
@@ -96,21 +110,21 @@ export default function IntegrityMonitor() {
     };
 
     // Only count non-ignored issues
-    const activeIssues = report?.issues?.filter((i: any) => !ignored[i.type]) || [];
-    const ignoredIssues = report?.issues?.filter((i: any) => ignored[i.type]) || [];
-    const totalIssues = activeIssues.reduce((acc: number, curr: any) => acc + (curr.count || 0), 0);
+    const activeIssues = report?.issues?.filter((i: IntegrityIssue) => !ignored[i.type]) || [];
+    const ignoredIssues = report?.issues?.filter((i: IntegrityIssue) => ignored[i.type]) || [];
+    const totalIssues = activeIssues.reduce((acc: number, curr: IntegrityIssue) => acc + (curr.count || 0), 0);
 
     // Severity-weighted score with diminishing returns (log scale)
     const severityWeight: Record<string, number> = { critical: 3, high: 2, medium: 1 };
-    const totalPenalty = activeIssues.reduce((acc: number, issue: any) => {
+    const totalPenalty = activeIssues.reduce((acc: number, issue: IntegrityIssue) => {
         if (!issue.count || issue.count === 0) return acc;
         const weight = severityWeight[issue.severity] || 1;
         return acc + weight * Math.min(10, Math.ceil(Math.log2(issue.count + 1)));
     }, 0);
     const healthScore = report ? Math.max(0, 100 - totalPenalty) : 0;
 
-    const activeWithIssues = activeIssues.filter((i: any) => i.count > 0);
-    const ignoredWithIssues = ignoredIssues.filter((i: any) => i.count > 0);
+    const activeWithIssues = activeIssues.filter((i: IntegrityIssue) => i.count > 0);
+    const ignoredWithIssues = ignoredIssues.filter((i: IntegrityIssue) => i.count > 0);
 
     return (
         <div className="space-y-8">
@@ -187,7 +201,7 @@ export default function IntegrityMonitor() {
                             </div>
                         ) : (
                             <>
-                                {activeWithIssues.map((issue: any, idx: number) => {
+                                {activeWithIssues.map((issue: IntegrityIssue, idx: number) => {
                                     const Icon = getSeverityIcon(issue.severity);
                                     return (
                                         <motion.div
@@ -243,7 +257,7 @@ export default function IntegrityMonitor() {
                                             فئات متجاهَلة ({ignoredWithIssues.length}) — لا تؤثر على النتيجة
                                         </p>
                                         <div className="space-y-2">
-                                            {ignoredWithIssues.map((issue: any) => (
+                                            {ignoredWithIssues.map((issue: IntegrityIssue) => (
                                                 <div key={issue.type} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-60 hover:opacity-100 transition-opacity">
                                                     <div className="flex items-center gap-3">
                                                         <span className="text-slate-400 font-bold text-sm">{issue.label}</span>

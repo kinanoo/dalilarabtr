@@ -68,8 +68,8 @@ export default function AddScenarioPage() {
 
             router.push('/dashboard');
 
-        } catch (error: any) {
-            toast.error('حدث خطأ أثناء الإرسال: ' + (error?.message || 'خطأ غير معروف'));
+        } catch (error) {
+            toast.error('حدث خطأ أثناء الإرسال: ' + (error instanceof Error ? error.message : 'خطأ غير معروف'));
         } finally {
             setLoading(false);
         }

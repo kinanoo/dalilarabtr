@@ -42,7 +42,8 @@ export function DataTable({
     refreshKey,
     toggleField
 }: DataTableProps) {
-    const [data, setData] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [data, setData] = useState<Record<string, any>[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState('');
@@ -110,9 +111,9 @@ export function DataTable({
             setData(rows || []);
             setTotal(count || 0);
 
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error fetching data:', err);
-            toast.error('فشل تحميل البيانات: ' + err.message);
+            toast.error('فشل تحميل البيانات: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setLoading(false);
         }
@@ -131,8 +132,8 @@ export function DataTable({
             if (!res.ok) throw new Error(result.error || 'فشل الحذف');
             toast.success('تم الحذف بنجاح');
             fetchData();
-        } catch (err: any) {
-            toast.error('خطأ في الحذف: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ في الحذف: ' + (err instanceof Error ? err.message : String(err)));
         }
     }
 
@@ -146,8 +147,8 @@ export function DataTable({
             if (error) throw error;
             toast.success(currentValue ? 'تم التعطيل' : 'تم التفعيل');
             fetchData();
-        } catch (err: any) {
-            toast.error('خطأ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ: ' + (err instanceof Error ? err.message : String(err)));
         }
     }
 

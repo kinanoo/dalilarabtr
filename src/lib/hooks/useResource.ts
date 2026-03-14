@@ -31,8 +31,8 @@ export function useResource<T extends { id: string; active?: boolean }>(
             clearTimeout(timeout);
             if (error) throw error;
             return data as T[];
-        } catch (err: any) {
-            if (err?.name === 'AbortError') {
+        } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') {
                 console.warn(`Timeout fetching ${tableName} (10s)`);
             } else {
                 console.error(`Error fetching ${tableName}:`, err);

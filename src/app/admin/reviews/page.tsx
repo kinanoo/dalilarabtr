@@ -7,11 +7,49 @@ import { toast } from 'sonner';
 import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
 
+interface ReviewReply {
+    id: string;
+    review_id: string;
+    author_name: string;
+    content: string;
+    is_official?: boolean;
+    created_at: string;
+}
+
+interface Review {
+    id: string;
+    client_name: string;
+    rating: number;
+    comment: string;
+    service_id: string;
+    service_name?: string;
+    user_id?: string;
+    created_at: string;
+    review_replies?: ReviewReply[];
+}
+
+interface FeedbackItem {
+    id: string;
+    entity_type: string;
+    entity_id: string;
+    vote_type: string;
+    reason?: string;
+    feedback?: string;
+    created_at: string;
+    entity_title?: string | null;
+}
+
+interface EntityRecord {
+    id: string;
+    title?: string;
+    name?: string;
+}
+
 export default function AdminReviewsPage() {
 
     const [activeTab, setActiveTab] = useState<'reviews' | 'feedback'>('feedback');
-    const [reviews, setReviews] = useState<any[]>([]);
-    const [feedbackItems, setFeedbackItems] = useState<any[]>([]);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [replyContent, setReplyContent] = useState('');
@@ -48,9 +86,9 @@ export default function AdminReviewsPage() {
             ]);
 
             const entityMap: Record<string, string> = {};
-            (articlesRes.data  || []).forEach((a: any) => entityMap[a.id] = a.title);
-            (servicesRes.data  || []).forEach((s: any) => entityMap[s.id] = s.name);
-            (updatesRes.data   || []).forEach((u: any) => entityMap[u.id] = u.title);
+            (articlesRes.data  || []).forEach((a: EntityRecord) => entityMap[a.id] = a.title || '');
+            (servicesRes.data  || []).forEach((s: EntityRecord) => entityMap[s.id] = s.name || '');
+            (updatesRes.data   || []).forEach((u: EntityRecord) => entityMap[u.id] = u.title || '');
 
             setFeedbackItems(feedbackData.map(f => ({ ...f, entity_title: entityMap[f.entity_id] || null })));
         } else {
@@ -82,7 +120,7 @@ export default function AdminReviewsPage() {
         if (!error) {
             toast.success('تم إرسال الرد');
             // إشعار للمقيّم عند رد الإدارة
-            const review = reviews.find((r: any) => r.id === reviewId);
+            const review = reviews.find((r: Review) => r.id === reviewId);
             if (review?.user_id) {
                 createNotification({
                     type: 'reply',
@@ -304,7 +342,7 @@ export default function AdminReviewsPage() {
 
                                 {/* Replies */}
                                 <div className="space-y-4">
-                                    {review.review_replies?.slice().sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((reply: any) => (
+                                    {review.review_replies?.slice().sort((a: ReviewReply, b: ReviewReply) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((reply: ReviewReply) => (
                                         <div key={reply.id} className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl flex gap-3 border border-emerald-100 dark:border-emerald-800">
                                             <MessageCircle size={18} className="text-emerald-600 shrink-0 mt-1" />
                                             <div>

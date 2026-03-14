@@ -91,8 +91,8 @@ export default function AddServicePage() {
 
             router.push('/dashboard');
 
-        } catch (error: any) {
-            const errDetails = error?.message || JSON.stringify(error) || 'خطأ غير معروف';
+        } catch (error) {
+            const errDetails = (error instanceof Error ? error.message : JSON.stringify(error)) || 'خطأ غير معروف';
             console.error('Error submitting service:', errDetails);
             toast.error('حدث خطأ أثناء الإرسال: ' + errDetails);
         } finally {

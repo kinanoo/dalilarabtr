@@ -110,7 +110,7 @@ export default function RequestsPage() {
 
         toast.promise(
             async () => {
-                const updateData: any = { status: newStatus };
+                const updateData: Record<string, string | boolean> = { status: newStatus };
                 if (item.type === 'service' && action === 'approve') {
                     updateData.is_verified = true; // Auto verify services on approval
                 }

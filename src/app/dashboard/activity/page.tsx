@@ -3,15 +3,16 @@
 import { useState, useEffect } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, Award } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Tabs from '@/components/ui/Tabs';
 import EmptyState from '@/components/EmptyState';
 import { useBookmarks } from '@/hooks/useBookmarks';
-import { getMyActivityStats, getMyReviews, getMyComments, getMyServices, getMyArticles } from '@/lib/api/profile';
+import { getMyActivityStats, getMyReviews, getMyComments, getMyServices, getMyArticles, type UserReview, type UserComment, type UserService, type UserArticle } from '@/lib/api/profile';
 import { computeBadges, type Badge } from '@/lib/api/badges';
 
-const STATUS_MAP: Record<string, { label: string; classes: string; icon: any }> = {
+const STATUS_MAP: Record<string, { label: string; classes: string; icon: LucideIcon }> = {
     approved: { label: 'منشور', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
     published: { label: 'منشور', classes: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
     pending: { label: 'قيد المراجعة', classes: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400', icon: Clock },
@@ -45,11 +46,19 @@ function StarDisplay({ rating }: { rating: number }) {
 export default function ActivityPage() {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ reviews_count: 0, comments_count: 0, services_count: 0, articles_count: 0 });
-    const [reviews, setReviews] = useState<any[]>([]);
-    const [comments, setComments] = useState<any[]>([]);
-    const [services, setServices] = useState<any[]>([]);
-    const [articles, setArticles] = useState<any[]>([]);
-    const [bookmarkedArticles, setBookmarkedArticles] = useState<any[]>([]);
+    interface BookmarkedArticle {
+        id: string;
+        title: string;
+        slug?: string;
+        category: string;
+        created_at: string;
+    }
+
+    const [reviews, setReviews] = useState<UserReview[]>([]);
+    const [comments, setComments] = useState<UserComment[]>([]);
+    const [services, setServices] = useState<UserService[]>([]);
+    const [articles, setArticles] = useState<UserArticle[]>([]);
+    const [bookmarkedArticles, setBookmarkedArticles] = useState<BookmarkedArticle[]>([]);
     const [badges, setBadges] = useState<Badge[]>([]);
     const { bookmarks, isLoaded: bookmarksLoaded } = useBookmarks();
     const router = useRouter();
@@ -90,7 +99,7 @@ export default function ActivityPage() {
         setArticles(articlesRes.data);
 
         // Compute user badges from activity counts
-        const corrections = commentsRes.data.filter((c: any) => c.is_correction).length;
+        const corrections = commentsRes.data.filter((c) => c.is_correction).length;
         setBadges(computeBadges({
             comments: statsRes.data.comments_count,
             reviews: statsRes.data.reviews_count,

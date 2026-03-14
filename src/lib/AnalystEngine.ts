@@ -91,8 +91,8 @@ export class AnalystEngine {
             if (onLog) onLog("✅ اكتمل التحليل بنجاح!");
 
             return allInsights;
-        } catch (error: any) {
-            log(`❌ حدث خطأ أثناء التحليل: ${error.message || error}`);
+        } catch (error) {
+            log(`❌ حدث خطأ أثناء التحليل: ${error instanceof Error ? error.message : String(error)}`);
             console.error("Analysis Failed:", error);
         }
 

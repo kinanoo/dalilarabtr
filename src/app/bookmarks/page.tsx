@@ -12,7 +12,17 @@ import { supabase } from '@/lib/supabaseClient';
 
 export default function BookmarksPage() {
     const { bookmarks, isLoaded } = useBookmarks();
-    const [savedArticles, setSavedArticles] = useState<any[]>([]);
+    interface BookmarkedArticle {
+        id: string;
+        slug: string;
+        title: string;
+        intro: string | null;
+        category: string;
+        last_update: string | null;
+        lastUpdate: string | null;
+    }
+
+    const [savedArticles, setSavedArticles] = useState<BookmarkedArticle[]>([]);
     const [fetching, setFetching] = useState(false);
 
     useEffect(() => {

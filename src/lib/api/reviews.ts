@@ -47,7 +47,7 @@ export type AddReviewData = {
 export async function getServiceReviews(
     serviceId: string,
     options: { limit?: number; offset?: number; orderBy?: 'newest' | 'highest' | 'helpful' } = {}
-): Promise<{ data: ServiceReview[]; error: any }> {
+): Promise<{ data: ServiceReview[]; error: unknown }> {
     if (!supabase) {
         return { data: [], error: new Error('Supabase not initialized') };
     }
@@ -94,7 +94,7 @@ export async function getServiceReviews(
 // ⭐ جلب إحصائيات التقييمات
 // ============================================
 
-export async function getReviewStats(serviceId: string): Promise<{ data: ReviewStats | null; error: any }> {
+export async function getReviewStats(serviceId: string): Promise<{ data: ReviewStats | null; error: unknown }> {
     if (!supabase) {
         return { data: null, error: new Error('Supabase not initialized') };
     }
@@ -119,7 +119,7 @@ export async function getReviewStats(serviceId: string): Promise<{ data: ReviewS
 // ➕ إضافة تقييم جديد
 // ============================================
 
-export async function addReview(reviewData: AddReviewData): Promise<{ data: ServiceReview | null; error: any }> {
+export async function addReview(reviewData: AddReviewData): Promise<{ data: ServiceReview | null; error: unknown }> {
     try {
         const res = await fetch('/api/reviews', {
             method: 'POST',
@@ -152,7 +152,7 @@ export async function addReview(reviewData: AddReviewData): Promise<{ data: Serv
 export async function markReviewHelpful(
     reviewId: string,
     voterIp: string
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
     if (!supabase) {
         return { success: false, error: new Error('Supabase not initialized') };
     }
@@ -222,7 +222,7 @@ export async function updateReview(
     serviceId: string,
     userId: string,
     data: { rating?: number; comment?: string }
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
     const sb = getAuthClient();
     if (!sb || !userId) return { success: false, error: 'Missing params' };
 
@@ -249,7 +249,7 @@ export async function updateReview(
 export async function deleteReview(
     serviceId: string,
     userId: string
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
     const sb = getAuthClient();
     if (!sb || !userId) return { success: false, error: 'Missing params' };
 
@@ -288,7 +288,7 @@ export async function deleteReview(
 export async function getUserReview(
     serviceId: string,
     userId: string
-): Promise<{ data: ServiceReview | null; error: any }> {
+): Promise<{ data: ServiceReview | null; error: unknown }> {
     const sb = getAuthClient();
     if (!sb || !userId) return { data: null, error: null };
 
@@ -315,7 +315,7 @@ export async function reportReview(
     reviewId: string,
     userId: string,
     reason: string
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
     if (!supabase) {
         return { success: false, error: new Error('Supabase not initialized') };
     }

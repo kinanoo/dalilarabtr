@@ -73,9 +73,9 @@ export function AnalystDashboard() {
             await AnalystEngine.runFullAnalysis(onLog, onInsight);
             // Final sync (silent) to get IDs or updates
             await fetchInsights(true);
-        } catch (err: any) {
-            console.error('runAnalysis error:', err?.message || err);
-            onLog('❌ خطأ في التحليل: ' + (err?.message || 'خطأ غير معروف'));
+        } catch (err) {
+            console.error('runAnalysis error:', err instanceof Error ? err.message : err);
+            onLog('❌ خطأ في التحليل: ' + (err instanceof Error ? err.message : 'خطأ غير معروف'));
         } finally {
             setAnalyzing(false);
         }

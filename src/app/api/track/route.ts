@@ -126,8 +126,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    console.error('[track] error:', err.message);
+  } catch (err) {
+    console.error('[track] error:', err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }

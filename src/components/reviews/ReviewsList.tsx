@@ -62,7 +62,7 @@ export default function ReviewsList({ serviceId, limit = 10 }: ReviewsListProps)
                     <SlidersHorizontal size={16} className="text-slate-500" />
                     <select
                         value={orderBy}
-                        onChange={(e) => setOrderBy(e.target.value as any)}
+                        onChange={(e) => setOrderBy(e.target.value as 'newest' | 'highest' | 'helpful')}
                         className="text-sm border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
                     >
                         <option value="newest">الأحدث</option>

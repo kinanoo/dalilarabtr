@@ -8,6 +8,19 @@ import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+interface CodeFormData {
+    code: string;
+    title?: string;
+    severity: string;
+    category: string;
+    description?: string;
+    how_to_remove?: string;
+    duration?: string;
+    related_codes?: string[];
+    related_codes_text?: string;
+    [key: string]: string | string[] | undefined;
+}
+
 export default function CodeEditPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
@@ -16,7 +29,7 @@ export default function CodeEditPage({ params }: { params: Promise<{ id: string 
     const [saving, setSaving] = useState(false);
 
     // Initial Form State
-    const [form, setForm] = useState<any>({
+    const [form, setForm] = useState<CodeFormData>({
         code: '',
         severity: 'info',
         category: 'general'
@@ -92,8 +105,8 @@ export default function CodeEditPage({ params }: { params: Promise<{ id: string 
             toast.success(isNew ? 'تم إضافة الكود بنجاح' : 'تم حفظ التعديلات');
             router.refresh();
             router.push('/admin/codes');
-        } catch (err: any) {
-            toast.error('خطأ في الحفظ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

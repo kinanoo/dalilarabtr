@@ -9,6 +9,15 @@ import { ServiceEditor } from '@/components/admin/editors/ServiceEditor';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
 
+interface ServiceFormData {
+    [key: string]: string | boolean | undefined;
+}
+
+interface SelectedItem {
+    id: string;
+    data?: ServiceFormData;
+}
+
 // Copied SaveBar for independence
 const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () => void, onDelete: () => void, onCancel: () => void, loading: boolean, isNew: boolean }) => (
     <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-between items-center gap-4 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
@@ -47,8 +56,8 @@ export default function AdminServicesPage() {
     const issueType = searchParams.get('issue');
     const editId = searchParams.get('id');
 
-    const [selectedItem, setSelectedItem] = useState<{ id: string; data?: any } | null>(null);
-    const [form, setForm] = useState<any>({});
+    const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+    const [form, setForm] = useState<ServiceFormData>({});
     const [saving, setSaving] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -67,10 +76,10 @@ export default function AdminServicesPage() {
 
     const getCustomFilter = () => {
         if (issueType === 'missing_phone') {
-            return (q: any) => q.or('phone.is.null,phone.eq.""');
+            return (q: { or: (filter: string) => unknown }) => q.or('phone.is.null,phone.eq.""');
         }
         if (issueType === 'missing_city') {
-            return (q: any) => q.or('city.is.null,city.eq.""');
+            return (q: { or: (filter: string) => unknown }) => q.or('city.is.null,city.eq.""');
         }
         return undefined;
     };
@@ -127,9 +136,9 @@ export default function AdminServicesPage() {
             setSelectedItem(null);
             setRefreshKey(k => k + 1);
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("Supabase Error:", JSON.stringify(err, null, 2));
-            toast.error('❌ حدث خطأ: ' + (err.message || 'خطأ غير معروف'));
+            toast.error('❌ حدث خطأ: ' + (err instanceof Error ? err.message : 'خطأ غير معروف'));
         } finally {
             setSaving(false);
         }
@@ -151,8 +160,8 @@ export default function AdminServicesPage() {
             toast.success('🗑️ تم الحذف');
             setSelectedItem(null);
             setRefreshKey(k => k + 1);
-        } catch (err: any) {
-            toast.error('❌ خطأ: ' + err.message);
+        } catch (err) {
+            toast.error('❌ خطأ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

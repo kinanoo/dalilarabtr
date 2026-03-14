@@ -1644,8 +1644,8 @@ async function executeFunction(
             cleaned_expired: expiredEndpoints.length,
           },
         };
-      } catch (err: any) {
-        return { result: { error: `Push notification failed: ${err.message}` } };
+      } catch (err) {
+        return { result: { error: `Push notification failed: ${err instanceof Error ? err.message : String(err)}` } };
       }
     }
 
@@ -1965,10 +1965,10 @@ export async function POST(request: NextRequest) {
       ...(toolContext && { _context: toolContext }),
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('AI Assistant error:', error);
     return NextResponse.json({
-      reply: `Error: ${error.message || 'Unknown error'}. Try again.`,
+      reply: `Error: ${error instanceof Error ? error.message : 'Unknown error'}. Try again.`,
     });
   }
 }

@@ -81,9 +81,9 @@ export default function ServiceForm() {
             });
             setImageFile(null);
 
-        } catch (err: any) {
+        } catch (err) {
             console.error(err);
-            setError(err.message || 'حدث خطأ غير متوقع');
+            setError((err instanceof Error ? err.message : String(err)) || 'حدث خطأ غير متوقع');
         } finally {
             setLoading(false);
         }

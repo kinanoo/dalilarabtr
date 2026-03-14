@@ -9,6 +9,23 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
 
+interface ScenarioFormData {
+    id?: string;
+    title: string;
+    description: string;
+    risk: string;
+    steps: string[];
+    docs: string[];
+    cost: string;
+    legal: string;
+    tip: string;
+    category: string;
+    subcategory?: string;
+    is_active: boolean;
+    desc?: string;
+    [key: string]: string | string[] | boolean | undefined;
+}
+
 export default function ScenarioEditPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params); // Next.js 15+ correctly unwraps params
     // Decode ID to ensure we match database value even if URL encoded
@@ -20,7 +37,7 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
     const [saving, setSaving] = useState(false);
 
     // Initial Form State
-    const [form, setForm] = useState<any>({
+    const [form, setForm] = useState<ScenarioFormData>({
         title: '',
         description: '',
         risk: 'medium',
@@ -89,8 +106,8 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
             toast.success(isNew ? 'تم إنشاء السيناريو بنجاح' : 'تم حفظ التعديلات');
             router.refresh();
             router.push('/admin/scenarios');
-        } catch (err: any) {
-            toast.error('خطأ في الحفظ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

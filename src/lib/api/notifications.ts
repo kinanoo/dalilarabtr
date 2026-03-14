@@ -113,7 +113,7 @@ export async function fetchAllNotifications(
 
     const [globalResult, personalResult] = await Promise.all([
         globalQuery,
-        personalQuery || Promise.resolve({ data: [] as any[], error: null }),
+        personalQuery || Promise.resolve({ data: [] as Record<string, unknown>[], error: null }),
     ]);
 
     const items: Notification[] = [];
@@ -173,7 +173,7 @@ export async function createNotification(payload: {
     icon?: string;
     priority?: string;
     target_user_id?: string | null;
-}): Promise<{ success: boolean; error: any }> {
+}): Promise<{ success: boolean; error: unknown }> {
     try {
         const res = await fetch('/api/notifications/create', {
             method: 'POST',

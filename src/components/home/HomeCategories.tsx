@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import {
     FileText, Plane, Briefcase, HeartPulse, GraduationCap,
-    UserCheck, ShieldCheck, Sparkles, BrainCircuit, IdCard
+    UserCheck, ShieldCheck, Sparkles, BrainCircuit, IdCard,
+    type LucideIcon
 } from 'lucide-react';
 
-const IconMap: any = {
+const IconMap: Record<string, LucideIcon> = {
     IdCard, FileText, Plane, Briefcase, HeartPulse, GraduationCap,
     UserCheck, ShieldCheck, Sparkles, BrainCircuit
 };
@@ -20,7 +21,14 @@ const TILE_COLORS = [
     'bg-pink-500 dark:bg-pink-600',
 ];
 
-export default function HomeCategories({ categories }: { categories: any[] }) {
+interface Category {
+    id?: string;
+    slug: string;
+    title: string;
+    icon: string;
+}
+
+export default function HomeCategories({ categories }: { categories: Category[] }) {
     if (!categories || categories.length === 0) return null;
 
     return (

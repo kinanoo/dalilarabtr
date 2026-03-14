@@ -7,7 +7,7 @@ import StarRating from './StarRating';
 interface RatingModalProps {
     isOpen: boolean;
     onClose: () => void;
-    serviceId: any;
+    serviceId: string;
     serviceName: string;
 }
 

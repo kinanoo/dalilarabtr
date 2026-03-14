@@ -105,9 +105,9 @@ export const ImageUploader = ({
             onChange(data.publicUrl);
             toast.success('تم رفع الصورة بنجاح');
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Upload Error:', error);
-            toast.error('فشل الرفع: ' + error.message);
+            toast.error('فشل الرفع: ' + (error instanceof Error ? error.message : String(error)));
         } finally {
             setUploading(false);
             toast.dismiss(loadingToast);

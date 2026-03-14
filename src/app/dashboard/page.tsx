@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { Loader2, Briefcase, FileText, BrainCircuit, UserCircle, Activity, Star, MessageCircle } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getMyActivityStats } from '@/lib/api/profile';
@@ -56,7 +57,16 @@ export default function DashboardPage() {
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>;
 
-    const ActionCard = ({ title, desc, icon: Icon, href, color, pending }: any) => (
+    interface ActionCardProps {
+        title: string;
+        desc: string;
+        icon: LucideIcon;
+        href: string;
+        color: string;
+        pending?: boolean;
+    }
+
+    const ActionCard = ({ title, desc, icon: Icon, href, color, pending }: ActionCardProps) => (
         <Link href={href} className="group relative bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className={`w-14 h-14 rounded-2xl bg-${color}-50 dark:bg-${color}-900/20 text-${color}-600 dark:text-${color}-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                 <Icon size={28} />

@@ -121,7 +121,7 @@ export async function postComment(payload: {
     const { user_id, ...rest } = payload;
     // Normalize entity_id: always decode so IDs are stored consistently
     const normalizedId = decodeURIComponent(rest.entity_id);
-    const insertObj: any = {
+    const insertObj: Record<string, string | boolean | undefined> = {
         ...rest,
         entity_id: normalizedId,
         page_slug: normalizedId, // backward compat
@@ -156,7 +156,7 @@ export async function postComment(payload: {
 export async function updateComment(
     commentId: string,
     content: string
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
     try {
         const res = await fetch(`/api/comments`, {
             method: 'PATCH',
@@ -176,7 +176,7 @@ export async function updateComment(
 
 export async function deleteComment(
     commentId: string
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
     try {
         const res = await fetch(`/api/comments?id=${commentId}`, { method: 'DELETE' });
         if (!res.ok) {
@@ -190,7 +190,7 @@ export async function deleteComment(
     }
 }
 
-export async function toggleCommentLike(commentId: string, visitorId?: string): Promise<{ liked: boolean; error?: any }> {
+export async function toggleCommentLike(commentId: string, visitorId?: string): Promise<{ liked: boolean; error?: unknown }> {
     if (!supabase) return { liked: false, error: 'Supabase not initialized' };
 
     // Check if already liked

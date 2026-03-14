@@ -141,7 +141,7 @@ export default function CodesManager() {
                             <label className="block text-sm font-bold mb-1">درجة الخطورة</label>
                             <select
                                 value={formData.severity}
-                                onChange={e => setFormData({ ...formData, severity: e.target.value as any })}
+                                onChange={e => setFormData({ ...formData, severity: e.target.value as DBCode['severity'] })}
                                 className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700"
                             >
                                 <option value="safe">Safe (آمن)</option>

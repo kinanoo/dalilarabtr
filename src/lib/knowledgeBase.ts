@@ -1,3 +1,4 @@
+import type React from 'react';
 // import { ARTICLES } from '@/lib/articles'; // REMOVED
 import {
   LATEST_UPDATES,
@@ -27,8 +28,8 @@ export interface KnowledgeEntry {
   url: string;
   text: string;
   description?: string;
-  icon?: any;
-  metadata?: any;
+  icon?: React.ComponentType<{ size?: number | string; className?: string }>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface KnowledgeSearchHit {

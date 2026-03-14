@@ -269,7 +269,7 @@ export default function ConfigManager() {
 }
 
 function GeneralSettingsForm() {
-    const [settings, setSettings] = useState<any>({});
+    const [settings, setSettings] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

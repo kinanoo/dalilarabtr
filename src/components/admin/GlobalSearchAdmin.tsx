@@ -58,7 +58,14 @@ const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () =>
 );
 
 // --- Quick Button ---
-const QuickBtn = ({ icon: Icon, label, color, onClick }: any) => (
+interface QuickBtnProps {
+    icon: React.ElementType;
+    label: string;
+    color: string;
+    onClick: () => void;
+}
+
+const QuickBtn = ({ icon: Icon, label, color, onClick }: QuickBtnProps) => (
     <button onClick={onClick} className={`flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-${color}-500 hover:bg-${color}-50 dark:hover:bg-${color}-950/20 transition-all group shadow-sm hover:shadow-xl hover:-translate-y-1 h-full`}>
         <div className={`p-4 rounded-full bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400 mb-3 group-hover:scale-110 transition-transform`}>
             <Icon size={28} />
@@ -81,8 +88,8 @@ export default function AdminDashboard() {
     const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
     // Editor State
-    const [selectedItem, setSelectedItem] = useState<{ id: string; type: string; title: string; subtitle?: string; data: any } | null>(null);
-    const [form, setForm] = useState<any>({});
+    const [selectedItem, setSelectedItem] = useState<{ id: string; type: string; title: string; subtitle?: string; data: Record<string, unknown> } | null>(null);
+    const [form, setForm] = useState<Record<string, unknown>>({});
     const [saving, setSaving] = useState(false);
 
     // Debounced Search Handler
@@ -142,7 +149,7 @@ export default function AdminDashboard() {
 
     // Save Handling
     // --- Payload Sanitation & Validation ---
-    const sanitizePayload = (type: string, data: any) => {
+    const sanitizePayload = (type: string, data: Record<string, unknown>) => {
         const clean = { ...data };
 
         // 1. Unified Cleanup (Remove nulls/undefined/empty strings if needed or keep based on schema)
@@ -208,7 +215,7 @@ export default function AdminDashboard() {
 
 
         // Validation: FAQ Answer
-        if (selectedItem.type === 'faq' && (!form.answer || !form.answer.trim())) {
+        if (selectedItem.type === 'faq' && (!form.answer || !(form.answer as string).trim())) {
             return toast.error('❌ الخطأ: حقل الإجابة (Answer) مطلوب.');
         }
 
@@ -276,9 +283,9 @@ export default function AdminDashboard() {
             setResults([]);
             router.refresh();
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("💥 [AdminSave] Error:", err);
-            toast.error('❌ حدث خطأ: ' + err.message);
+            toast.error('❌ حدث خطأ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }
@@ -315,8 +322,8 @@ export default function AdminDashboard() {
 
             toast.success('🗑️ تم الحذف');
             setSelectedItem(null);
-        } catch (err: any) {
-            toast.error('❌ خطأ في الحذف: ' + err.message);
+        } catch (err) {
+            toast.error('❌ خطأ في الحذف: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

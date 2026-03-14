@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json({ data: { rating, service_id }, error: null });
-    } catch (err: any) {
+    } catch (err) {
         console.error('Review API error:', err);
-        return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
+        return NextResponse.json({ error: (err instanceof Error ? err.message : 'Server error') }, { status: 500 });
     }
 }

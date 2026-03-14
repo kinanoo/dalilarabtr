@@ -8,6 +8,16 @@ import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+interface ZoneFormData {
+    id?: string;
+    city: string;
+    district?: string;
+    neighborhood?: string;
+    status: string;
+    notes?: string;
+    [key: string]: string | undefined;
+}
+
 export default function ZoneEditPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
@@ -16,7 +26,7 @@ export default function ZoneEditPage({ params }: { params: Promise<{ id: string 
     const [saving, setSaving] = useState(false);
 
     // Initial Form State
-    const [form, setForm] = useState<any>({
+    const [form, setForm] = useState<ZoneFormData>({
         city: 'Istanbul',
         status: 'closed'
     });
@@ -65,8 +75,8 @@ export default function ZoneEditPage({ params }: { params: Promise<{ id: string 
             toast.success(isNew ? 'تم إضافة المنطقة بنجاح' : 'تم حفظ التعديلات');
             router.refresh();
             router.push('/admin/zones');
-        } catch (err: any) {
-            toast.error('خطأ في الحفظ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

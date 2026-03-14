@@ -7,6 +7,24 @@ import { supabase } from '@/lib/supabaseClient';
 import { hasUserReviewed, reportReview } from '@/lib/api/reviews';
 import AddReviewModal from '@/components/reviews/AddReviewModal';
 
+interface ReviewReply {
+    id: string;
+    content: string;
+    author_name: string;
+    created_at: string;
+    is_official: boolean;
+}
+
+interface ReviewItem {
+    id: string;
+    client_name: string;
+    rating: number;
+    comment: string | null;
+    helpful_count: number;
+    created_at: string;
+    review_replies?: ReviewReply[];
+}
+
 interface ReviewsProps {
     serviceId: string;
     serviceName?: string;
@@ -39,7 +57,7 @@ function addToStorageSet(key: string, value: string) {
 }
 
 export default function ServiceReviews({ serviceId, serviceName = "الخدمة" }: ReviewsProps) {
-    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviews, setReviews] = useState<ReviewItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGuest, setIsGuest] = useState(true);
@@ -290,7 +308,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                                         {/* Replies Section */}
                                         {review.review_replies && review.review_replies.length > 0 && (
                                             <div className="space-y-4 pr-4 border-r-2 border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 p-4 rounded-xl">
-                                                {review.review_replies.map((reply: any) => (
+                                                {review.review_replies.map((reply) => (
                                                     <div key={reply.id} className="relative">
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className={`font-bold text-sm ${reply.is_official ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>

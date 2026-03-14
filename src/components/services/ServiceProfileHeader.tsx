@@ -3,8 +3,21 @@
 import { CheckCircle2, MapPin, Share2, Star } from 'lucide-react';
 import Image from 'next/image';
 
+// === Type Definitions ===
+interface Service {
+    name: string;
+    image?: string;
+    is_verified?: boolean;
+    profession: string;
+    city: string;
+    district?: string;
+    rating_avg?: number | string;
+    review_count?: number;
+    category: string;
+}
+
 interface HeaderProps {
-    service: any;
+    service: Service;
 }
 
 export default function ServiceProfileHeader({ service }: HeaderProps) {

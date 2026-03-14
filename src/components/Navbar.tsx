@@ -22,7 +22,7 @@ import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 // Helper to map icon names to components
-export const IconMap: any = {
+export const IconMap: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
   Home, Briefcase, FileText, BrainCircuit, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
   UserCheck, HeartPulse, Link: LinkIcon, ScrollText

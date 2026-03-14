@@ -33,7 +33,7 @@ export type UserActivityStats = {
 // جلب البروفايل
 // ============================================
 
-export async function getMyProfile(): Promise<{ data: MemberProfile | null; error: any }> {
+export async function getMyProfile(): Promise<{ data: MemberProfile | null; error: unknown }> {
     const sb = getAuthClient();
     if (!sb) return { data: null, error: 'Supabase not initialized' };
 
@@ -53,7 +53,7 @@ export async function getMyProfile(): Promise<{ data: MemberProfile | null; erro
 // تحديث البروفايل
 // ============================================
 
-export async function updateProfile(updates: ProfileUpdateData): Promise<{ success: boolean; error: any }> {
+export async function updateProfile(updates: ProfileUpdateData): Promise<{ success: boolean; error: unknown }> {
     const sb = getAuthClient();
     if (!sb) return { success: false, error: 'Supabase not initialized' };
 
@@ -73,7 +73,7 @@ export async function updateProfile(updates: ProfileUpdateData): Promise<{ succe
 // إحصائيات النشاط
 // ============================================
 
-export async function getMyActivityStats(): Promise<{ data: UserActivityStats; error: any }> {
+export async function getMyActivityStats(): Promise<{ data: UserActivityStats; error: unknown }> {
     const empty = { reviews_count: 0, comments_count: 0, services_count: 0, articles_count: 0 };
     const sb = getAuthClient();
     if (!sb) return { data: empty, error: 'Supabase not initialized' };
@@ -103,7 +103,17 @@ export async function getMyActivityStats(): Promise<{ data: UserActivityStats; e
 // تقييماتي
 // ============================================
 
-export async function getMyReviews(): Promise<{ data: any[]; error: any }> {
+export type UserReview = {
+    id: string;
+    service_id: string;
+    rating: number;
+    comment: string | null;
+    status: string;
+    created_at: string;
+    user_id: string;
+};
+
+export async function getMyReviews(): Promise<{ data: UserReview[]; error: unknown }> {
     const sb = getAuthClient();
     if (!sb) return { data: [], error: 'Supabase not initialized' };
 
@@ -123,7 +133,18 @@ export async function getMyReviews(): Promise<{ data: any[]; error: any }> {
 // تعليقاتي
 // ============================================
 
-export async function getMyComments(): Promise<{ data: any[]; error: any }> {
+export type UserComment = {
+    id: string;
+    entity_type: string;
+    entity_id: string;
+    content: string;
+    status: string;
+    is_correction: boolean;
+    created_at: string;
+    user_id: string;
+};
+
+export async function getMyComments(): Promise<{ data: UserComment[]; error: unknown }> {
     const sb = getAuthClient();
     if (!sb) return { data: [], error: 'Supabase not initialized' };
 
@@ -143,7 +164,18 @@ export async function getMyComments(): Promise<{ data: any[]; error: any }> {
 // خدماتي
 // ============================================
 
-export async function getMyServices(): Promise<{ data: any[]; error: any }> {
+export type UserService = {
+    id: string;
+    name: string;
+    profession: string | null;
+    city: string | null;
+    status: string;
+    created_at: string;
+    rating: number | null;
+    review_count: number | null;
+};
+
+export async function getMyServices(): Promise<{ data: UserService[]; error: unknown }> {
     const sb = getAuthClient();
     if (!sb) return { data: [], error: 'Supabase not initialized' };
 
@@ -163,7 +195,16 @@ export async function getMyServices(): Promise<{ data: any[]; error: any }> {
 // مقالاتي
 // ============================================
 
-export async function getMyArticles(): Promise<{ data: any[]; error: any }> {
+export type UserArticle = {
+    id: string;
+    title: string;
+    slug?: string;
+    category: string;
+    status: string;
+    created_at: string;
+};
+
+export async function getMyArticles(): Promise<{ data: UserArticle[]; error: unknown }> {
     const sb = getAuthClient();
     if (!sb) return { data: [], error: 'Supabase not initialized' };
 

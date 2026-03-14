@@ -8,6 +8,15 @@ import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+interface FaqFormData {
+    id?: string;
+    question: string;
+    answer: string;
+    category: string;
+    active: boolean;
+    [key: string]: string | boolean | undefined;
+}
+
 export default function FaqEditPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
@@ -16,7 +25,7 @@ export default function FaqEditPage({ params }: { params: Promise<{ id: string }
     const [saving, setSaving] = useState(false);
 
     // Initial Form State
-    const [form, setForm] = useState<any>({
+    const [form, setForm] = useState<FaqFormData>({
         question: '',
         answer: '',
         category: 'عام',
@@ -62,8 +71,8 @@ export default function FaqEditPage({ params }: { params: Promise<{ id: string }
             toast.success(isNew ? 'تم إضافة السؤال بنجاح' : 'تم حفظ التعديلات');
             router.refresh();
             router.push('/admin/faqs');
-        } catch (err: any) {
-            toast.error('خطأ في الحفظ: ' + err.message);
+        } catch (err) {
+            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
         }

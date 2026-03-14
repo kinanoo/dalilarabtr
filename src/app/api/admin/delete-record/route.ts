@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Admin delete error:', error);
         return NextResponse.json({ error: 'internal_error' }, { status: 500 });
     }

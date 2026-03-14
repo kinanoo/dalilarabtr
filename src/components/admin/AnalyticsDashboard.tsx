@@ -10,6 +10,77 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+// === Type Definitions ===
+interface PageStat {
+    page_path: string;
+    views: number | string;
+}
+
+interface DeviceStat {
+    device: string;
+    count: number | string;
+}
+
+interface BrowserStat {
+    browser: string;
+    count: number | string;
+}
+
+interface CountryStat {
+    country: string;
+    count: number | string;
+}
+
+interface CityStat {
+    city: string;
+    country: string;
+    count: number | string;
+}
+
+interface ReferrerStat {
+    source: string;
+    count: number | string;
+}
+
+interface ContentPerf {
+    article_id?: string;
+    title: string;
+    page_views: number | string;
+    avg_duration: number | string;
+    comment_count: number | string;
+}
+
+interface DashboardStats {
+    active_users_now?: number;
+    today_unique_visitors?: number;
+    today_page_views?: number;
+    avg_session_duration?: number;
+    week_visitors?: number;
+    month_visitors?: number;
+    total_visitors_all_time?: number;
+    total_comments?: number;
+    total_reviews?: number;
+    total_articles?: number;
+    total_services?: number;
+    total_scenarios?: number;
+    total_zones?: number;
+}
+
+interface PeriodComparison {
+    visitors_change_pct?: number;
+    views_change_pct?: number;
+    last_week_visitors?: number;
+    last_week_views?: number;
+    this_week_views?: number;
+}
+
+interface SpikeMetrics {
+    is_spiking: boolean;
+    active_now: number;
+    spike_pct: number;
+    avg_hourly_30d: number;
+}
+
 /** Format seconds into Arabic readable duration */
 function formatDuration(seconds: number): string {
     if (!seconds || seconds <= 0) return '—';
@@ -96,16 +167,16 @@ const deviceIcon: Record<string, React.ElementType> = {
 };
 
 export function AnalyticsDashboard() {
-    const [stats, setStats] = useState<any>(null);
-    const [topPages, setTopPages] = useState<any[]>([]);
-    const [deviceStats, setDeviceStats] = useState<any[]>([]);
-    const [countryStats, setCountryStats] = useState<any[]>([]);
-    const [cityStats, setCityStats] = useState<any[]>([]);
-    const [referrerStats, setReferrerStats] = useState<any[]>([]);
-    const [browserStats, setBrowserStats] = useState<any[]>([]);
-    const [comparison, setComparison] = useState<any>(null);
-    const [spikeMetrics, setSpikeMetrics] = useState<any>(null);
-    const [contentPerf, setContentPerf] = useState<any[]>([]);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [topPages, setTopPages] = useState<PageStat[]>([]);
+    const [deviceStats, setDeviceStats] = useState<DeviceStat[]>([]);
+    const [countryStats, setCountryStats] = useState<CountryStat[]>([]);
+    const [cityStats, setCityStats] = useState<CityStat[]>([]);
+    const [referrerStats, setReferrerStats] = useState<ReferrerStat[]>([]);
+    const [browserStats, setBrowserStats] = useState<BrowserStat[]>([]);
+    const [comparison, setComparison] = useState<PeriodComparison | null>(null);
+    const [spikeMetrics, setSpikeMetrics] = useState<SpikeMetrics | null>(null);
+    const [contentPerf, setContentPerf] = useState<ContentPerf[]>([]);
     const [loading, setLoading] = useState(true);
     const [rpcError, setRpcError] = useState(false);
 
@@ -204,7 +275,7 @@ export function AnalyticsDashboard() {
     );
 
     const avgDuration: number = stats.avg_session_duration || 0;
-    const totalDevices = deviceStats.reduce((sum: number, d: any) => sum + Number(d.count), 0) || 1;
+    const totalDevices = deviceStats.reduce((sum: number, d: DeviceStat) => sum + Number(d.count), 0) || 1;
 
     return (
         <div className="space-y-8">
@@ -312,7 +383,7 @@ export function AnalyticsDashboard() {
                         الأكثر زيارة
                     </h3>
                     <div className="space-y-4">
-                        {topPages.length > 0 ? topPages.map((page: any, idx: number) => (
+                        {topPages.length > 0 ? topPages.map((page: PageStat, idx: number) => (
                             <div key={idx} className="flex items-center gap-3">
                                 <span className="font-mono text-xs font-bold text-slate-400 w-5 shrink-0">#{idx + 1}</span>
                                 <div className="flex-1 min-w-0">
@@ -348,7 +419,7 @@ export function AnalyticsDashboard() {
                         <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">آخر 30 يوم</span>
                     </h3>
                     <div className="space-y-3">
-                        {contentPerf.map((art: any, idx: number) => (
+                        {contentPerf.map((art: ContentPerf, idx: number) => (
                             <div key={art.article_id || idx} className="flex items-center gap-3 group">
                                 <span className="font-mono text-xs font-bold text-slate-400 w-5 shrink-0">#{idx + 1}</span>
                                 <div className="flex-1 min-w-0">
@@ -399,7 +470,7 @@ export function AnalyticsDashboard() {
                     </h3>
                     {deviceStats.length > 0 ? (
                         <div className="space-y-4">
-                            {deviceStats.map((d: any) => {
+                            {deviceStats.map((d: DeviceStat) => {
                                 const pct = Math.round((Number(d.count) / totalDevices) * 100);
                                 const DeviceIcon = d.device === 'mobile' ? Smartphone : d.device === 'tablet' ? Tablet : Monitor;
                                 return (
@@ -433,7 +504,7 @@ export function AnalyticsDashboard() {
                         <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                             <p className="text-xs font-bold text-slate-400 mb-3 uppercase">المتصفحات</p>
                             <div className="flex flex-wrap gap-2">
-                                {browserStats.map((b: any) => (
+                                {browserStats.map((b: BrowserStat) => (
                                     <span key={b.browser} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full font-bold">
                                         {b.browser} <span className="text-slate-400">({b.count})</span>
                                     </span>
@@ -451,7 +522,7 @@ export function AnalyticsDashboard() {
                     </h3>
                     {countryStats.length > 0 ? (
                         <div className="space-y-3">
-                            {countryStats.map((c: any) => (
+                            {countryStats.map((c: CountryStat) => (
                                 <div key={c.country} className="flex items-center gap-3">
                                     <span className="text-lg shrink-0">{countryFlag[c.country] || '🌍'}</span>
                                     <div className="flex-1 min-w-0">
@@ -478,7 +549,7 @@ export function AnalyticsDashboard() {
                                 <MapPin size={12} /> المدن
                             </p>
                             <div className="space-y-2">
-                                {cityStats.map((c: any) => (
+                                {cityStats.map((c: CityStat) => (
                                     <div key={`${c.city}-${c.country}`} className="flex items-center justify-between">
                                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">
                                             {c.city}
@@ -502,7 +573,7 @@ export function AnalyticsDashboard() {
                     </h3>
                     {referrerStats.length > 0 ? (
                         <div className="space-y-3">
-                            {referrerStats.map((r: any) => (
+                            {referrerStats.map((r: ReferrerStat) => (
                                 <div key={r.source} className="flex items-center gap-3">
                                     <span className="text-lg shrink-0">{sourceIcon[r.source] || '🌐'}</span>
                                     <div className="flex-1 min-w-0">
@@ -533,10 +604,10 @@ export function AnalyticsDashboard() {
                     نظرة عامة على المحتوى
                 </h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-                    <ContentStatCard title="المحتوى المنشور" count={stats.total_articles} icon={FileText} color="emerald" label="مقال وتحديث" />
-                    <ContentStatCard title="الخدمات" count={stats.total_services} icon={Briefcase} color="blue" label="مزود خدمة" />
-                    <ContentStatCard title="السيناريوهات" count={stats.total_scenarios} icon={BrainCircuit} color="violet" label="سيناريو ذكي" />
-                    <ContentStatCard title="المناطق المحظورة" count={stats.total_zones} icon={MapPin} color="red" label="منطقة مسجلة" />
+                    <ContentStatCard title="المحتوى المنشور" count={stats.total_articles ?? 0} icon={FileText} color="emerald" label="مقال وتحديث" />
+                    <ContentStatCard title="الخدمات" count={stats.total_services ?? 0} icon={Briefcase} color="blue" label="مزود خدمة" />
+                    <ContentStatCard title="السيناريوهات" count={stats.total_scenarios ?? 0} icon={BrainCircuit} color="violet" label="سيناريو ذكي" />
+                    <ContentStatCard title="المناطق المحظورة" count={stats.total_zones ?? 0} icon={MapPin} color="red" label="منطقة مسجلة" />
                 </div>
             </div>
         </div>

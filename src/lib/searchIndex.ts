@@ -21,7 +21,7 @@ export type SearchIndexItem = {
   typeKey: 'service' | 'article' | 'tool'; // Constrained for better type safety
   desc: string;
   url: string;
-  icon: any;
+  icon: LucideIcon;
   haystack: string;
   keywords?: string;
 };
@@ -313,6 +313,25 @@ function stripHtml(html: string): string {
  * جلب مقالات من قاعدة البيانات (Client-Side Indexing)
  * يجلب البيانات الضرورية للبحث الشامل
  */
+interface ArticleRow {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  intro: string | null;
+  details: string | null;
+  steps: string[] | null;
+  tips: string[] | null;
+  published_at: string | null;
+}
+
+interface ScenarioRow {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+}
+
 async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
   if (!supabase) return [];
 
@@ -325,7 +344,7 @@ async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
     if (error) throw error;
     if (!data) return [];
 
-    return data.map((a: any) => {
+    return (data as ArticleRow[]).map((a) => {
       const parts = [
         a.title,
         a.intro || '',
@@ -366,7 +385,7 @@ async function fetchScenariosIndex(): Promise<SearchIndexItem[]> {
     if (error) throw error;
     if (!data) return [];
 
-    return data.map((s: any) => ({
+    return (data as ScenarioRow[]).map((s) => ({
       id: `scn-${s.id}`,
       title: s.title,
       type: 'استشارة ذكية',
