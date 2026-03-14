@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock, Send } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,15 +38,15 @@ export function UpdatesManager() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [sendPush, setSendPush] = useState(false);
 
-    const fetchUpdates = async () => {
+    const fetchUpdates = useCallback(async () => {
         setLoading(true);
         if (!supabase) return;
         const { data } = await supabase.from('updates').select('*').order('date', { ascending: false });
         if (data) setUpdates(data);
         setLoading(false);
-    };
+    }, []);
 
-    useEffect(() => { fetchUpdates(); }, []);
+    useEffect(() => { fetchUpdates(); }, [fetchUpdates]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -219,15 +219,15 @@ export function FAQManager() {
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState<Partial<DBFAQ>>({ category: 'general', question: '', answer: '', active: true });
 
-    const fetchFaqs = async () => {
+    const fetchFaqs = useCallback(async () => {
         setLoading(true);
         if (!supabase) return;
         const { data } = await supabase.from('faqs').select('*').order('created_at', { ascending: false });
         if (data) setFaqs(data);
         setLoading(false);
-    };
+    }, []);
 
-    useEffect(() => { fetchFaqs(); }, []);
+    useEffect(() => { fetchFaqs(); }, [fetchFaqs]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

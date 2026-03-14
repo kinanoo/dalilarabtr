@@ -40,7 +40,7 @@ export default function ArticleView({ article, slug, initialComments, children }
     })
       .then(r => r.json())
       .then(d => { if (d.views != null) setViews(d.views); })
-      .catch(() => {});
+      .catch(() => { /* view tracking is non-critical — silent fail is intentional */ });
 
     if (shouldTrack) localStorage.setItem(key, String(now));
   }, [slug]);

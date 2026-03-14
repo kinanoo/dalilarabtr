@@ -45,12 +45,6 @@ export function useBookmarks() {
         };
     }, []);
 
-    const saveBoookmarks = (newBookmarks: string[]) => {
-        setBookmarks(newBookmarks);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newBookmarks));
-        window.dispatchEvent(new Event('bookmarks-updated'));
-    };
-
     const addBookmark = useCallback((id: string) => {
         setBookmarks(prev => {
             if (prev.includes(id)) return prev;
