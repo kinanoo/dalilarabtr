@@ -37,9 +37,10 @@ export async function GET(request: NextRequest) {
         if (!storedCsrf || storedCsrf !== stateData.csrf) {
             return NextResponse.redirect(`${origin}/login?error=state_mismatch`);
         }
-        // Validate redirect target is same-origin relative path (prevent open redirect)
+        // Validate redirect target — whitelist safe prefixes (prevent open redirect)
+        const SAFE_PREFIXES = ['/dashboard', '/admin', '/bookmarks', '/services', '/faq', '/codes', '/tools', '/updates', '/category', '/consultant', '/article'];
         const rawNext = stateData.next || '/dashboard';
-        if (typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//')) {
+        if (typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//') && SAFE_PREFIXES.some(p => rawNext === p || rawNext.startsWith(p + '/'))) {
             next = rawNext;
         }
     } catch {

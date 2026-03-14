@@ -85,18 +85,22 @@ export async function POST(request: NextRequest) {
 
         // Clean up related notifications & activity log (best-effort, don't block response)
         const entityId = String(id);
-        serviceClient
-            .from('admin_activity_log')
-            .delete()
-            .eq('entity_table', table)
-            .eq('entity_id', entityId)
-            .then(() => {});
-        serviceClient
-            .from('notifications')
-            .delete()
-            .ilike('title', `%${entityId}%`)
-            .is('target_user_id', null)
-            .then(() => {});
+        // Only run cleanup if entityId looks like a valid UUID (prevent wildcard injection)
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (UUID_RE.test(entityId)) {
+            serviceClient
+                .from('admin_activity_log')
+                .delete()
+                .eq('entity_table', table)
+                .eq('entity_id', entityId)
+                .then(() => {});
+            serviceClient
+                .from('notifications')
+                .delete()
+                .ilike('title', `%${entityId}%`)
+                .is('target_user_id', null)
+                .then(() => {});
+        }
 
         return NextResponse.json({ success: true });
 

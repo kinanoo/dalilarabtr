@@ -17,6 +17,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        // Input validation
+        if (comment && (typeof comment !== 'string' || comment.length > 2000)) {
+            return NextResponse.json({ error: 'Comment too long (max 2000 chars)' }, { status: 400 });
+        }
+        if (client_name && (typeof client_name !== 'string' || client_name.length > 100)) {
+            return NextResponse.json({ error: 'Name too long (max 100 chars)' }, { status: 400 });
+        }
+        if (typeof service_id !== 'string' || service_id.length > 50) {
+            return NextResponse.json({ error: 'Invalid service ID' }, { status: 400 });
+        }
+
         // Check for duplicate review by same user
         if (user_id) {
             const { data: existing } = await svc
