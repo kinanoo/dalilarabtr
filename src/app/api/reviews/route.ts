@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isRateLimited } from '@/lib/rate-limit';
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const svc = serviceRoleKey
@@ -9,6 +10,11 @@ const svc = serviceRoleKey
 export async function POST(req: NextRequest) {
     try {
         if (!svc) return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
+
+        const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        if (isRateLimited(`reviews:${clientIp}`, 10)) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
 
         const body = await req.json();
         const { service_id, rating, comment, client_name, user_id } = body;

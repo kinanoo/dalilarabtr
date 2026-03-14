@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
+import { isRateLimited } from '@/lib/rate-limit';
 
 /**
  * DELETE /api/comments?id=<uuid>
@@ -10,6 +11,11 @@ import { cookies } from 'next/headers';
  * Uses service-role client to bypass RLS.
  */
 export async function DELETE(request: NextRequest) {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(`comments:${clientIp}`, 20)) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const id = new URL(request.url).searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
@@ -54,6 +60,11 @@ export async function DELETE(request: NextRequest) {
  * Uses service-role client to bypass RLS.
  */
 export async function PATCH(request: NextRequest) {
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(`comments:${clientIp}`, 20)) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await request.json().catch(() => null);
     if (!body?.id || !body?.content?.trim()) {
         return NextResponse.json({ error: 'Missing id or content' }, { status: 400 });

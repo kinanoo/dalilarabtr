@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { isRateLimited } from '@/lib/rate-limit';
 
 // Use service role for server-side notification inserts (bypasses RLS safely)
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -11,8 +12,13 @@ const supabaseAdmin = serviceRoleKey
 
 const ALLOWED_TYPES = ['reply', 'review', 'comment', 'article', 'law', 'service', 'update', 'alert', 'announcement'];
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        if (isRateLimited(`notif:${clientIp}`, 10)) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
         // Auth check: admins can create any notification; regular users can only create reply notifications
         const cookieStore = await cookies();
         const supabase = createServerClient(
