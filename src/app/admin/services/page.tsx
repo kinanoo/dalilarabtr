@@ -225,7 +225,7 @@ export default function AdminServicesPage() {
                                 <h3 className="font-bold text-xl">{selectedItem.id === 'new' ? 'إضافة خدمة جديدة' : 'تعديل خدمة'}</h3>
                                 <p className="text-xs text-slate-400 font-mono mt-1">{selectedItem.id === 'new' ? 'New Entry' : selectedItem.id}</p>
                             </div>
-                            <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full"><X size={20} /></button>
+                            <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full" aria-label="إغلاق"><X size={20} /></button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 max-h-[70vh]">

@@ -375,7 +375,7 @@ function CategoryView({ category, onBack, onNavigate }: { category: string, onBa
         <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
             <div className="flex items-center justify-between border-b pb-4">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200"><ArrowRight size={20} /></button>
+                    <button onClick={onBack} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200" aria-label="رجوع"><ArrowRight size={20} /></button>
                     <h2 className="text-xl font-bold">تصفح: {category}</h2>
                 </div>
                 <button onClick={() => onNavigate('edit-article:new')} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex gap-2">
@@ -420,7 +420,7 @@ function ArticleEditor({ articleId, categoryContext, onBack }: { articleId: stri
     return (
         <div className="max-w-3xl mx-auto space-y-6 pb-20 pt-4 animate-in slide-in-from-bottom-4">
             <div className="flex items-center gap-4 border-b pb-4">
-                <button onClick={onBack} className="p-2 bg-slate-100 rounded-full"><ArrowRight size={20} /></button>
+                <button onClick={onBack} className="p-2 bg-slate-100 rounded-full" aria-label="رجوع"><ArrowRight size={20} /></button>
                 <h2 className="text-xl font-bold">{articleId === 'new' ? 'مقال جديد' : `تعديل: ${form.title}`}</h2>
             </div>
             <form onSubmit={save} className="bg-white p-6 rounded-2xl border shadow-sm space-y-4">

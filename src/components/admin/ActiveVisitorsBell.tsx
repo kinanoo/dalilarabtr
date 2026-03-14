@@ -288,12 +288,14 @@ export function ActiveVisitorsBell() {
                                         disabled={loading}
                                         className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                         title="تحديث"
+                                        aria-label="تحديث الزوار"
                                     >
                                         <RefreshCw size={14} className={`text-slate-400 ${loading ? 'animate-spin' : ''}`} />
                                     </button>
                                     <button
                                         onClick={() => setIsOpen(false)}
                                         className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                        aria-label="إغلاق"
                                     >
                                         <X size={16} className="text-slate-500" />
                                     </button>

@@ -128,22 +128,22 @@ export default function SelectionShareMenu() {
             {/* Arrow */}
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 rotate-45"></div>
 
-            <button onClick={() => handleShare('whatsapp')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-emerald-400" title="شارك عبر واتساب">
+            <button onClick={() => handleShare('whatsapp')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-emerald-400" title="شارك عبر واتساب" aria-label="شارك عبر واتساب">
                 <MessageCircle size={18} />
             </button>
             <div className="w-px h-4 bg-slate-700"></div>
 
-            <button onClick={() => handleShare('twitter')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-sky-400" title="شارك عبر X">
+            <button onClick={() => handleShare('twitter')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-sky-400" title="شارك عبر X" aria-label="شارك عبر X">
                 <Twitter size={18} />
             </button>
             <div className="w-px h-4 bg-slate-700"></div>
 
-            <button onClick={() => handleShare('facebook')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-blue-500" title="شارك عبر فيسبوك">
+            <button onClick={() => handleShare('facebook')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-blue-500" title="شارك عبر فيسبوك" aria-label="شارك عبر فيسبوك">
                 <Facebook size={18} />
             </button>
             <div className="w-px h-4 bg-slate-700"></div>
 
-            <button onClick={() => handleShare('copy')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-amber-500" title="نسخ مع الرابط">
+            <button onClick={() => handleShare('copy')} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-amber-500" title="نسخ مع الرابط" aria-label="نسخ مع الرابط">
                 <LinkIcon size={18} />
             </button>
         </div>

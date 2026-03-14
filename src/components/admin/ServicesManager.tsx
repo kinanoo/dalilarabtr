@@ -237,10 +237,10 @@ export default function ServicesManager() {
                                     </div>
 
                                     <div className="flex items-center gap-1">
-                                        <button onClick={() => handleEdit(service)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                                        <button onClick={() => handleEdit(service)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" aria-label="تعديل">
                                             <Edit size={16} />
                                         </button>
-                                        <button onClick={() => handleDelete(service.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                                        <button onClick={() => handleDelete(service.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors" aria-label="حذف">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
@@ -311,10 +311,10 @@ export default function ServicesManager() {
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => handleEdit(service)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="تعديل">
+                                                    <button onClick={() => handleEdit(service)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="تعديل" aria-label="تعديل">
                                                         <Edit size={18} />
                                                     </button>
-                                                    <button onClick={() => handleDelete(service.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف">
+                                                    <button onClick={() => handleDelete(service.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف" aria-label="حذف">
                                                         <Trash2 size={18} />
                                                     </button>
                                                 </div>

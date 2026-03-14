@@ -183,7 +183,7 @@ export default function ZonesManager() {
                                         </div>
                                     </div>
 
-                                    <button onClick={() => handleDelete(zone.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="إزالة الحظر">
+                                    <button onClick={() => handleDelete(zone.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="إزالة الحظر" aria-label="إزالة الحظر">
                                         <Trash2 size={18} />
                                     </button>
                                 </div>

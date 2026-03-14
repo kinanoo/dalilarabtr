@@ -157,6 +157,7 @@ function CopyButton({ text }: { text: string }) {
       type="button"
       onClick={handleCopy}
       title="نسخ الرد"
+      aria-label="نسخ الرد"
       className="absolute -bottom-1 left-2 p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-500 transition-all shadow-sm opacity-50 sm:opacity-0 sm:group-hover/msg:opacity-100 active:scale-90"
     >
       {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
@@ -438,6 +439,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
               onClick={() => setDeepThink(!deepThink)}
               className={`p-2.5 rounded-full transition-colors ${deepThink ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
               title={deepThink ? 'التفكير العميق مفعّل (نموذج أقوى)' : 'تفعيل التفكير العميق'}
+              aria-label={deepThink ? 'التفكير العميق مفعّل' : 'تفعيل التفكير العميق'}
             >
               <Brain size={18} />
             </button>
@@ -448,6 +450,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 onClick={clearChat}
                 className="p-2.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                 title="مسح المحادثة"
+                aria-label="مسح المحادثة"
               >
                 <Eraser size={18} />
               </button>
@@ -458,6 +461,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
               onClick={onClose}
               className="p-2.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors"
               title="إغلاق"
+              aria-label="إغلاق"
             >
               <X size={20} />
             </button>

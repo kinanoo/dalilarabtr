@@ -82,13 +82,13 @@ export default function SuggestionsManager() {
                                 </span>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => updateStatus(suggestion.id, 'approved')} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="اعتماد">
+                                <button onClick={() => updateStatus(suggestion.id, 'approved')} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="اعتماد" aria-label="اعتماد">
                                     <CheckCircle size={18} />
                                 </button>
-                                <button onClick={() => updateStatus(suggestion.id, 'rejected')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg" title="تجاهل">
+                                <button onClick={() => updateStatus(suggestion.id, 'rejected')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg" title="تجاهل" aria-label="تجاهل">
                                     <XCircle size={18} />
                                 </button>
-                                <button onClick={() => handleDelete(suggestion.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف">
+                                <button onClick={() => handleDelete(suggestion.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف" aria-label="حذف">
                                     <Trash2 size={18} />
                                 </button>
                             </div>

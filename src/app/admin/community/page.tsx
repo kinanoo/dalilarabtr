@@ -176,11 +176,11 @@ export default function AdminCommunityPage() {
 
                             <div className="flex items-center gap-1 flex-shrink-0 bg-white dark:bg-slate-950 p-1 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm">
                                 {c.status === 'pending' && (
-                                    <button onClick={() => handleApprove(c.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="موافقة">
+                                    <button onClick={() => handleApprove(c.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="موافقة" aria-label="موافقة">
                                         <CheckCircle2 size={18} />
                                     </button>
                                 )}
-                                <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="حذف">
+                                <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="حذف" aria-label="حذف">
                                     <Trash2 size={18} />
                                 </button>
                             </div>

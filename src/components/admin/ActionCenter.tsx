@@ -210,6 +210,7 @@ export function ActionCenter() {
                                     type="button"
                                     onClick={() => dismiss('negativeFeedback', counts.negativeFeedback)}
                                     title="تجاهل"
+                                    aria-label="تجاهل الملاحظات السلبية"
                                     className="absolute top-2 left-2 p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-50 sm:opacity-0 group-hover/card:opacity-100 transition-all"
                                 >
                                     <X size={14} />
@@ -232,6 +233,7 @@ export function ActionCenter() {
                                     type="button"
                                     onClick={() => dismiss('pendingComments', counts.pendingComments)}
                                     title="تجاهل"
+                                    aria-label="تجاهل التعليقات المعلقة"
                                     className="absolute top-2 left-2 p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-50 sm:opacity-0 group-hover/card:opacity-100 transition-all"
                                 >
                                     <X size={14} />

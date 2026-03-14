@@ -50,6 +50,7 @@ const SearchInput = ({ query, setQuery, setIsResultsOpen, loading, isModal = fal
             <button
                 onClick={() => { setQuery(''); setIsResultsOpen(false); inputRef?.current?.focus(); }}
                 className="absolute inset-y-0 left-3 text-slate-400 hover:text-slate-600"
+                aria-label="مسح البحث"
             >
                 <X size={16} />
             </button>
@@ -106,6 +107,7 @@ const ResultsList = ({ results, loading, query, mode, onClose, recentSearches = 
                                 onClick={() => onRemoveRecent?.(term)}
                                 className="p-2 text-slate-300 hover:text-red-400 opacity-0 group-hover/recent:opacity-100 transition-all ml-1 rounded-lg"
                                 title="حذف من السجل"
+                                aria-label="حذف من السجل"
                             >
                                 <X size={13} />
                             </button>
@@ -354,6 +356,7 @@ export function GlobalSearch({ mode = 'inline' }: { mode?: 'inline' | 'modal' })
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-500 transition-colors"
+                    aria-label="بحث"
                 >
                     <Search size={20} />
                 </button>
