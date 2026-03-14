@@ -80,26 +80,22 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
   const portalTarget = mounted ? document.body : null;
 
-  // Hide navbar on scroll down, show on scroll up
-  const [navHidden, setNavHidden] = useState(false);
-
+  // Hide navbar on scroll down, show on scroll up — direct DOM manipulation for reliability
   useEffect(() => {
+    const header = navRef.current;
+    if (!header) return;
+
     let lastY = window.scrollY;
     let ticking = false;
-    let hidden = false;
 
     function update() {
       const y = window.scrollY;
+      if (!header) { ticking = false; return; }
 
-      if (y <= 0) {
-        // At the very top — always show
-        if (hidden) { hidden = false; setNavHidden(false); }
+      if (y <= 0 || y < lastY) {
+        header.style.transform = 'translateY(0)';
       } else if (y > lastY && y > 60) {
-        // Scrolling DOWN past navbar height
-        if (!hidden) { hidden = true; setNavHidden(true); }
-      } else if (y < lastY) {
-        // Scrolling UP — show immediately
-        if (hidden) { hidden = false; setNavHidden(false); }
+        header.style.transform = 'translateY(-100%)';
       }
 
       lastY = y;
@@ -363,7 +359,8 @@ export default function Navbar() {
     <>
       <header
         ref={navRef}
-        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+        className="sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform"
+        style={{ transition: 'transform 0.3s ease-out' }}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
