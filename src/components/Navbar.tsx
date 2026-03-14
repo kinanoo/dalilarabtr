@@ -80,37 +80,20 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
   const portalTarget = mounted ? document.body : null;
 
-  // Hide navbar on scroll down, show on scroll up — direct DOM manipulation for reliability
+  // Hide navbar on scroll down, show on scroll up
   useEffect(() => {
-    const header = navRef.current;
-    if (!header) return;
-
     let lastY = window.scrollY;
-    let ticking = false;
 
-    function update() {
+    const handler = () => {
+      const header = navRef.current;
+      if (!header) return;
       const y = window.scrollY;
-      if (!header) { ticking = false; return; }
-
-      if (y <= 0 || y < lastY) {
-        header.style.transform = 'translateY(0)';
-      } else if (y > lastY && y > 60) {
-        header.style.transform = 'translateY(-100%)';
-      }
-
+      header.style.transform = (y > 60 && y > lastY) ? 'translateY(-100%)' : 'translateY(0)';
       lastY = y;
-      ticking = false;
-    }
+    };
 
-    function onScroll() {
-      if (!ticking) {
-        requestAnimationFrame(update);
-        ticking = true;
-      }
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
   }, []);
 
   // Shared site config (menus + tools) — deduplicated with Footer via SWR
