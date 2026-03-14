@@ -77,23 +77,27 @@ export default function Navbar() {
   })));
   const navRef = useRef<HTMLElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
   useEffect(() => { setMounted(true); }, []);
   const portalTarget = mounted ? document.body : null;
 
   // Hide navbar on scroll down, show on scroll up
   useEffect(() => {
-    let lastY = window.scrollY;
-
-    const handler = () => {
-      const header = navRef.current;
-      if (!header) return;
+    const onScroll = () => {
       const y = window.scrollY;
-      header.style.transform = (y > 60 && y > lastY) ? 'translateY(-100%)' : 'translateY(0)';
-      lastY = y;
+      if (y <= 60) {
+        setNavHidden(false);
+      } else if (y > lastScrollY.current + 5) {
+        setNavHidden(true);
+      } else if (y < lastScrollY.current - 5) {
+        setNavHidden(false);
+      }
+      lastScrollY.current = y;
     };
 
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Shared site config (menus + tools) — deduplicated with Footer via SWR
@@ -342,8 +346,7 @@ export default function Navbar() {
     <>
       <header
         ref={navRef}
-        className="sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform"
-        style={{ transition: 'transform 0.3s ease-out' }}
+        className={`sticky ${navHidden ? '-top-16' : 'top-0'} z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] transition-[top] duration-300 ease-out`}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
