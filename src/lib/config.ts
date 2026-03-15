@@ -8,10 +8,10 @@ export const SITE_CONFIG = {
     // روابط السوشيال ميديا — أضف روابطك هنا لما تجهز الحسابات
     // Google بيستخدمها لبناء Knowledge Panel وعرض اللوغو بنتائج البحث
     socialLinks: [
-        process.env.NEXT_PUBLIC_FACEBOOK_URL,
-        process.env.NEXT_PUBLIC_INSTAGRAM_URL,
-        process.env.NEXT_PUBLIC_TWITTER_URL,
-        process.env.NEXT_PUBLIC_YOUTUBE_URL,
+        'https://www.facebook.com/dalilarabtr',
+        'https://www.instagram.com/dalilarabtr',
+        'https://www.youtube.com/@dalilarabtr',
+        'https://x.com/dalilarabtr',
         process.env.NEXT_PUBLIC_TELEGRAM_URL,
     ].filter((url): url is string => !!url),
 };
