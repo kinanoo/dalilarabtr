@@ -74,9 +74,15 @@ User-agent: PetalBot
 Disallow: /
 
 # ===========================================
-# 🗺️ Sitemap
+# 🗺️ Sitemaps — مقسّمة لتسريع الفهرسة
 # ===========================================
+Sitemap: https://dalilarabtr.com/server-sitemap-index.xml
 Sitemap: https://dalilarabtr.com/sitemap.xml
+Sitemap: https://dalilarabtr.com/sitemap-articles.xml
+Sitemap: https://dalilarabtr.com/sitemap-categories.xml
+Sitemap: https://dalilarabtr.com/sitemap-codes.xml
+Sitemap: https://dalilarabtr.com/sitemap-zones.xml
+Sitemap: https://dalilarabtr.com/sitemap-static.xml
 
 # ===========================================
 # ℹ️ معلومات
