@@ -18,6 +18,8 @@ export async function GET() {
     `${baseUrl}/sitemap-categories.xml`,
     `${baseUrl}/sitemap-codes.xml`,
     `${baseUrl}/sitemap-zones.xml`,
+    `${baseUrl}/sitemap-services.xml`,
+    `${baseUrl}/sitemap-updates.xml`,
     `${baseUrl}/sitemap-static.xml`,
   ];
 
