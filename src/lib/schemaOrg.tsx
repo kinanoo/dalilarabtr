@@ -78,9 +78,7 @@ export function generateOrganizationSchema() {
         availableLanguage: ['Arabic', 'Turkish'],
       },
     } : {}),
-    sameAs: [
-      // أضف روابط السوشيال ميديا هنا إن وجدت
-    ],
+    ...(SITE_CONFIG.socialLinks.length > 0 ? { sameAs: SITE_CONFIG.socialLinks } : {}),
   };
 }
 

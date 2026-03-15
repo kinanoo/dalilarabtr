@@ -4,7 +4,16 @@ export const SITE_CONFIG = {
     lang: "ar",
     country: "تركيا",
     whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487",
-    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '')
+    siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, ''),
+    // روابط السوشيال ميديا — أضف روابطك هنا لما تجهز الحسابات
+    // Google بيستخدمها لبناء Knowledge Panel وعرض اللوغو بنتائج البحث
+    socialLinks: [
+        'https://www.facebook.com/dalilarabtr',
+        'https://www.instagram.com/dalilarabtr',
+        'https://www.youtube.com/@dalilarabtr',
+        'https://x.com/dalilarabtr',
+        process.env.NEXT_PUBLIC_TELEGRAM_URL,
+    ].filter((url): url is string => !!url),
 };
 
 /** Build article URL — prefers short slug over Arabic id */
