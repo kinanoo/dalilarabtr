@@ -39,14 +39,9 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 <div className="animate-hero-entrance pointer-events-none">
                     <h1 className="text-4xl md:text-6xl font-black mb-0 leading-tight drop-shadow-2xl">
                         دليلك القانوني{' '}
-                        <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-                            الشامل
-                            <span className="absolute right-0 left-0 text-emerald-300/40 font-medium tracking-wide leading-none text-center overflow-hidden" style={{ fontWeight: 500, fontSize: 'clamp(6px, 1.8vw, 10px)', bottom: '-4px' }}>
-                                أول دليل ذكي بالعربية في تركيا
-                            </span>
-                        </span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
                     </h1>
-                    <div className="mb-2 mt-5 md:mt-6" />
+                    <div className="mb-2 mt-3 md:mt-4" />
 
                     <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed">
                         كل ما تحتاجه في تركيا: إقامات، قانون، أكواد أمنية، وخدمات ذكية.
