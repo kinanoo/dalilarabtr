@@ -79,7 +79,7 @@ export default function DashboardHome({ onNavigate }: { onNavigate: (tab: string
                     <p className="text-slate-500 text-sm">إليك نظرة عامة على أداء المنصة اليوم.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Link href="/" target="_blank" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 transition">
+                    <Link href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 transition">
                         <ExternalLink size={18} />
                         زيارة الموقع
                     </Link>

@@ -447,7 +447,7 @@ export default function AdminDashboard() {
                     columns={[
                         { key: 'name', label: 'المصدر' },
                         { key: 'category', label: 'التصنيف' },
-                        { key: 'url', label: 'الرابط', render: (v: any) => v ? <a href={v} target="_blank" className="text-blue-500 underline">زيارة</a> : '-' }
+                        { key: 'url', label: 'الرابط', render: (v: any) => v ? <a href={v} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">زيارة</a> : '-' }
                     ]}
                     searchFields={['name', 'category']}
                     onEdit={(row) => setSelectedItem({ id: row.id, type: 'source', title: row.name, data: row })}

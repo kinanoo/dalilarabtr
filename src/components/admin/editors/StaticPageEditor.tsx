@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
-import { Globe, Edit, FileText, Smartphone, Monitor } from 'lucide-react';
-import Editor from '@monaco-editor/react';
+import { Globe, Edit, FileText, Smartphone, Monitor, Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Lazy load Monaco Editor — 2MB+ bundle, only loaded when admin opens static page editor
+const Editor = dynamic(() => import('@monaco-editor/react'), {
+    ssr: false,
+    loading: () => (
+        <div className="flex items-center justify-center h-[400px] bg-slate-100 dark:bg-slate-800 rounded-xl">
+            <Loader2 className="animate-spin text-emerald-500" size={32} />
+            <span className="mr-3 text-slate-500">جاري تحميل المحرر...</span>
+        </div>
+    ),
+});
 import { Field } from '../ui/Field';
 import { inputStyles, ltrInputStyles } from '../ui/styles';
 import { StaticPageForm } from '@/lib/schemas';

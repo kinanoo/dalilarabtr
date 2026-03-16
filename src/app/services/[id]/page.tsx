@@ -79,8 +79,26 @@ export default async function ServiceDetailsPage(
         `مرحباً أستاذ ${provider.name}، رأيت خدمتك "${provider.profession}" على منصة دليل العرب في تركيا وأود الاستفسار.`
     )}`;
 
+    // Schema.org: Service + LocalBusiness
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: `${provider.profession} — ${provider.name}`,
+        description: provider.description || `خدمات ${provider.category} في ${provider.city}`,
+        provider: {
+            '@type': 'LocalBusiness',
+            name: provider.name,
+            ...(provider.city && { address: { '@type': 'PostalAddress', addressLocality: provider.city, addressCountry: 'TR' } }),
+            ...(cleanPhone && { telephone: cleanPhone }),
+            ...(provider.image && { image: provider.image }),
+        },
+        areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
+        url: `${SITE_CONFIG.siteUrl}/services/${id}`,
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             {/* Header / Cover */}
             <div className="bg-slate-900 text-white pt-8 pb-32 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-900 to-emerald-900/20" />

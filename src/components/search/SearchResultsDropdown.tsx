@@ -29,6 +29,9 @@ export default function SearchResultsDropdown({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
+      role="listbox"
+      aria-label="نتائج البحث"
+      aria-live="polite"
       className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden max-h-[60vh] overflow-y-auto"
     >
       {results.length > 0 ? (
@@ -49,6 +52,8 @@ export default function SearchResultsDropdown({
               key={result.id}
               href={result.url}
               onClick={onResultClick}
+              role="option"
+              aria-label={`${result.title} — ${result.type}`}
               className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0 group"
             >
               <div className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 p-2 rounded-lg group-hover:bg-emerald-100 group-hover:text-emerald-600 transition">

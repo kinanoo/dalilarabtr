@@ -254,7 +254,7 @@ export default function AdminReviewsPage() {
                                         {item.entity_id && (
                                             <Link
                                                 href={getPublicUrl(item.entity_type, item.entity_id)}
-                                                target="_blank"
+                                                target="_blank" rel="noopener noreferrer"
                                                 className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors max-w-xs truncate"
                                                 title="معاينة المحتوى كما يراه الزائر"
                                             >

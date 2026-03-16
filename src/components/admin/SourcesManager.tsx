@@ -99,7 +99,7 @@ export function SourcesManager() {
                                         {s.name}
                                         {s.is_official && <span className="text-[10px] bg-blue-100 text-blue-700 px-1 rounded">رسمي</span>}
                                     </h4>
-                                    <a href={s.url} target="_blank" className="text-xs text-blue-500 hover:underline flex items-center gap-1 mt-0.5">
+                                    <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline flex items-center gap-1 mt-0.5">
                                         {s.url} <ExternalLink size={10} />
                                     </a>
                                 </div>

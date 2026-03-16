@@ -129,18 +129,18 @@ function ToolsPageSchema() {
     '@type': 'CollectionPage',
     'name': 'أدوات مجانية للأجانب في تركيا',
     'description': 'مجموعة أدوات مجانية لمساعدة الأجانب في تركيا',
-    'url': 'https://daleel-arab.com/tools',
+    'url': `${SITE_CONFIG.siteUrl}/tools`,
     'inLanguage': 'ar',
     'isPartOf': {
       '@type': 'WebSite',
-      'name': 'دليل العرب في تركيا',
-      'url': 'https://daleel-arab.com'
+      'name': SITE_CONFIG.name,
+      'url': SITE_CONFIG.siteUrl,
     },
     'hasPart': TOOLS.filter(t => t.badge !== 'قريباً').map(tool => ({
       '@type': 'WebApplication',
       'name': tool.title,
       'description': tool.description,
-      'url': `https://daleel-arab.com${tool.href}`,
+      'url': `${SITE_CONFIG.siteUrl}${tool.href}`,
       'applicationCategory': 'UtilityApplication',
       'isAccessibleForFree': true
     }))

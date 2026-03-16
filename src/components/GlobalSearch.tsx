@@ -123,6 +123,12 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         )}
       </form>
 
+      {/* Screen reader announcement for search results */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {isOpen && results.length > 0 && `تم العثور على ${results.length} نتيجة`}
+        {isOpen && results.length === 0 && query.length > 0 && 'لا توجد نتائج'}
+      </div>
+
       <AnimatePresence>
         {/* Popular + Recent (no query, input focused) */}
         {showSuggestions && !isOpen && query.length === 0 && (
