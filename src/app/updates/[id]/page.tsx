@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle, Zap } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle } from 'lucide-react';
 import UniversalComments from '@/components/community/UniversalComments';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
@@ -100,7 +100,6 @@ export default async function UpdateDetailPage(
     const typeLabel = update.type === 'news' ? 'خبر' : isAlert ? 'تنبيه هام' : 'تحديث';
     const readTime = update.content ? estimateReadTime(update.content) : 0;
     const plainContent = update.content ? stripHtml(update.content) : '';
-    const summary = plainContent.length > 200 ? plainContent.substring(0, 200) + '...' : '';
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
@@ -144,15 +143,6 @@ export default async function UpdateDetailPage(
                                 {readTime} دقيقة قراءة
                             </span>
                         )}
-                        <div className="mr-auto">
-                            <ShareMenu
-                                mini
-                                variant="subtle"
-                                title={update.title}
-                                text={plainContent.slice(0, 200)}
-                                url={`${SITE_CONFIG.siteUrl}/updates/${id}`}
-                            />
-                        </div>
                     </div>
 
                     {/* Title */}
@@ -169,7 +159,18 @@ export default async function UpdateDetailPage(
                     {/* Main content */}
                     <div className="space-y-5">
                         {/* Article card */}
-                        <article className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+                        <article className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden relative">
+                            {/* Share button — top left corner */}
+                            <div className="absolute top-4 left-4 z-10">
+                                <ShareMenu
+                                    mini
+                                    variant="subtle"
+                                    title={update.title}
+                                    text={plainContent.slice(0, 200)}
+                                    url={`${SITE_CONFIG.siteUrl}/updates/${id}`}
+                                />
+                            </div>
+
                             {/* Image */}
                             {update.image && (
                                 <div className="relative w-full h-48 sm:h-64 md:h-72">
@@ -185,23 +186,6 @@ export default async function UpdateDetailPage(
                             )}
 
                             <div className="p-5 sm:p-8">
-                                {/* Summary box */}
-                                {summary && (
-                                    <div className={`mb-6 p-4 rounded-xl border-r-4 ${
-                                        isAlert
-                                            ? 'bg-red-50 dark:bg-red-950/20 border-red-500 text-red-800 dark:text-red-200'
-                                            : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 text-emerald-800 dark:text-emerald-200'
-                                    }`}>
-                                        <div className="flex items-start gap-2">
-                                            <Zap size={16} className="flex-shrink-0 mt-0.5 opacity-60" />
-                                            <div>
-                                                <p className="text-xs font-bold mb-1 opacity-70">ملخص</p>
-                                                <p className="text-sm leading-relaxed">{summary}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
                                 {/* Main content */}
                                 {update.content && (
                                     <div className="prose-update">
