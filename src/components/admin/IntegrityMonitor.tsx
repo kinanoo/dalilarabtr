@@ -6,6 +6,7 @@ import { ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, AlertOctagon, Arrow
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import logger from '@/lib/logger';
 
 // === Type Definitions ===
 interface IntegrityIssue {
@@ -71,7 +72,7 @@ export default function IntegrityMonitor() {
             setReport(fallbackReport);
             setLastScan(new Date().toLocaleTimeString('ar-SA'));
         } catch (e) {
-            console.error('Fallback scan failed', e);
+            logger.error('Fallback scan failed', e);
             toast.error('فشل الفحص تماماً. يرجى التحقق من اتصال الإنترنت.');
         }
     };
@@ -86,7 +87,7 @@ export default function IntegrityMonitor() {
             setReport(data);
             setLastScan(new Date().toLocaleTimeString('ar-SA'));
         } catch (err) {
-            console.warn('RPC Scan failed, attempting client-side fallback...', (err instanceof Error ? err.message : String(err)));
+            logger.warn('RPC Scan failed, attempting client-side fallback...', (err instanceof Error ? err.message : String(err)));
             await runClientSideScan();
         } finally {
             setLoading(false);

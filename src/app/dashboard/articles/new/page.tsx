@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
+import logger from '@/lib/logger';
 
 const CATEGORIES = [
     'أخبار عامة',
@@ -76,7 +77,7 @@ export default function AddArticlePage() {
 
         } catch (error) {
             const errDetails = (error instanceof Error ? error.message : JSON.stringify(error)) || 'خطأ غير معروف';
-            console.error('Error submitting article:', errDetails);
+            logger.error('Error submitting article:', errDetails);
             toast.error('حدث خطأ أثناء الإرسال: ' + errDetails);
         } finally {
             setLoading(false);

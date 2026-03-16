@@ -5,6 +5,7 @@ import { Bell, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 import { urlBase64ToUint8Array } from '@/lib/utils/vapid';
+import logger from '@/lib/logger';
 
 const DISMISS_KEY = 'daleel.push_prompt_dismissed';
 
@@ -21,7 +22,7 @@ export default function NotificationManager() {
             // Defer SW registration to avoid blocking initial render
             const register = () => {
                 navigator.serviceWorker.register('/sw.js').catch(error => {
-                    console.error('Service Worker registration failed:', error);
+                    logger.error('Service Worker registration failed:', error);
                 });
             };
             if ('requestIdleCallback' in window) {
@@ -57,7 +58,7 @@ export default function NotificationManager() {
 
                 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
                 if (!vapidPublicKey) {
-                    console.error('VAPID Public Key not found');
+                    logger.error('VAPID Public Key not found');
                     return;
                 }
 
@@ -83,7 +84,7 @@ export default function NotificationManager() {
                     if (error.code === '23505') {
                         toast.success('تم تفعيل الإشعارات بنجاح!');
                     } else {
-                        console.error('Error saving subscription:', error);
+                        logger.error('Error saving subscription:', error);
                         toast.error('حدث خطأ أثناء حفظ الاشتراك');
                     }
                 } else {
@@ -95,7 +96,7 @@ export default function NotificationManager() {
 
             setIsVisible(false);
         } catch (error) {
-            console.error('Error requesting permission:', error);
+            logger.error('Error requesting permission:', error);
             toast.error('حدث خطأ أثناء تفعيل الإشعارات');
         }
     };

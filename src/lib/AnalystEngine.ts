@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 export type InsightType = 'gap' | 'logic' | 'conflict' | 'quality' | 'review_mismatch' | 'duplication' | 'structure';
 export type Severity = 'high' | 'medium' | 'low';
@@ -93,7 +94,7 @@ export class AnalystEngine {
             return allInsights;
         } catch (error) {
             log(`❌ حدث خطأ أثناء التحليل: ${error instanceof Error ? error.message : String(error)}`);
-            console.error("Analysis Failed:", error);
+            logger.error("Analysis Failed:", error);
         }
 
         return allInsights;
@@ -457,7 +458,7 @@ export class AnalystEngine {
             }
             for (const batch of chunked) {
                 const { error } = await supabase.from('analyst_insights').insert(batch);
-                if (error) console.error("Error saving batch:", error);
+                if (error) logger.error("Error saving batch:", error);
             }
         }
     }

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
+import logger from '@/lib/logger';
 
 // Allowed tables for admin deletion (whitelist for safety)
 const ALLOWED_TABLES = [
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
             .eq(deleteField, id);
 
         if (error) {
-            console.error('Admin delete error:', error);
+            logger.error('Admin delete error:', error);
             return NextResponse.json({ error: 'delete_failed' }, { status: 500 });
         }
 
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
 
     } catch (error) {
-        console.error('Admin delete error:', error);
+        logger.error('Admin delete error:', error);
         return NextResponse.json({ error: 'internal_error' }, { status: 500 });
     }
 }

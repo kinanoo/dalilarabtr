@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Upload, Plus, Save, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import logger from '@/lib/logger';
 
 export default function ServiceForm() {
     const [loading, setLoading] = useState(false);
@@ -82,7 +83,7 @@ export default function ServiceForm() {
             setImageFile(null);
 
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             setError((err instanceof Error ? err.message : String(err)) || 'حدث خطأ غير متوقع');
         } finally {
             setLoading(false);

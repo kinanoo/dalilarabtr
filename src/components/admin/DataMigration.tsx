@@ -11,6 +11,7 @@ import {
     LATEST_UPDATES
 } from '@/lib/constants';
 import { CATEGORY_SLUGS } from '@/lib/config';
+import logger from '@/lib/logger';
 
 const CONFIRM_WORD = 'MIGRATE';
 
@@ -102,7 +103,7 @@ export default function DataMigration() {
             await migrateFAQs();
             addLog('🎉 تمت العملية بالكامل! كل شيء الآن في قاعدة البيانات.');
         } catch (e) {
-            console.error(e);
+            logger.error(e);
             addLog(`❌ حدث خطأ غير متوقع: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
             setLoading(false);

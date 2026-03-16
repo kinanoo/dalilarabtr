@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Trash2, Edit2, Plus, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import logger from '@/lib/logger';
 
 // === Type Definitions ===
 interface Banner {
@@ -58,7 +59,7 @@ export default function BannersManager() {
             setNewBanner({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
             fetchBanners();
         } else {
-            console.error('Insert error:', error);
+            logger.error('Insert error:', error);
             toast.error('فشل إضافة البنر، حاول مجدداً');
         }
     }
@@ -76,7 +77,7 @@ export default function BannersManager() {
             toast.success(!currentState ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
             fetchBanners();
         } else {
-            console.error('Update error:', error);
+            logger.error('Update error:', error);
             toast.error('فشل تحديث البنر، حاول مجدداً');
         }
     }
@@ -92,7 +93,7 @@ export default function BannersManager() {
             toast.success('تم حذف البنر بنجاح', { id: toastId });
             fetchBanners();
         } else {
-            console.error('Delete error:', error);
+            logger.error('Delete error:', error);
             toast.error('فشل حذف البنر، حاول مجدداً', { id: toastId });
         }
     }

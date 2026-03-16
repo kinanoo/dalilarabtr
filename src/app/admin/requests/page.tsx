@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { CheckCircle, XCircle, Clock, User, Phone, MapPin, FileText, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import logger from '@/lib/logger';
 
 type RequestType = 'service' | 'article';
 
@@ -94,7 +95,7 @@ export default function RequestsPage() {
             setRequests(combined);
 
         } catch (error) {
-            console.error('Error fetching requests:', error);
+            logger.error('Error fetching requests:', error);
             toast.error('فشل جلب الطلبات');
         } finally {
             setLoading(false);

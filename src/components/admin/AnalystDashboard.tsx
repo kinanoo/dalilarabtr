@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useRouter } from 'next/navigation';
+import logger from '@/lib/logger';
 
 export function AnalystDashboard() {
     const router = useRouter();
@@ -36,7 +37,7 @@ export function AnalystDashboard() {
             .eq('is_resolved', false)
             .order('created_at', { ascending: false });
 
-        if (error) console.error('fetchInsights error:', error.message);
+        if (error) logger.error('fetchInsights error:', error.message);
         if (data) setInsights(data as Insight[]);
         if (!silent) setLoading(false);
     }
@@ -49,7 +50,7 @@ export function AnalystDashboard() {
 
         // Update DB — log error but don't revert (optimistic is fine for UX)
         const { error } = await supabase.from('analyst_insights').update({ is_resolved: true }).eq('id', id);
-        if (error) console.error('handleIgnore error:', error.message);
+        if (error) logger.error('handleIgnore error:', error.message);
     }
 
     async function runAnalysis() {
@@ -74,7 +75,7 @@ export function AnalystDashboard() {
             // Final sync (silent) to get IDs or updates
             await fetchInsights(true);
         } catch (err) {
-            console.error('runAnalysis error:', err instanceof Error ? err.message : err);
+            logger.error('runAnalysis error:', err instanceof Error ? err.message : err);
             onLog('❌ خطأ في التحليل: ' + (err instanceof Error ? err.message : 'خطأ غير معروف'));
         } finally {
             setAnalyzing(false);

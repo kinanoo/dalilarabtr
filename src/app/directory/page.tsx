@@ -15,6 +15,7 @@ import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { getFAQData, type FAQCategory } from '@/lib/faq';
 import { SERVICES_LIST, OFFICIAL_SOURCES } from '@/lib/constants';
+import logger from '@/lib/logger';
 
 type DirectoryArticle = {
   slug: string;
@@ -144,7 +145,7 @@ export default function DirectoryPage() {
             setZones(data.items);
           }
         })
-        .catch(err => console.error('Failed to load zones:', err));
+        .catch(err => logger.error('Failed to load zones:', err));
 
     } catch {
       // ignore

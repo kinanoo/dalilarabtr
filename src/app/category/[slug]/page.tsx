@@ -5,6 +5,7 @@ import CategoryArticlesList from './CategoryArticlesList';
 import { supabase } from '@/lib/supabaseClient';
 
 import { Metadata } from 'next';
+import logger from '@/lib/logger';
 
 // 1. السماح بالباراميترات الديناميكية (Dynamic Params)
 export const dynamicParams = true;
@@ -78,7 +79,7 @@ export default async function CategoryPage(props: {
         }));
       }
     } catch (e) {
-      console.error('Error loading category articles', e);
+      logger.error('Error loading category articles', e);
     }
   }
 

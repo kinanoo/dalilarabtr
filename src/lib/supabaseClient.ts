@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
+import logger from '@/lib/logger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -67,7 +68,7 @@ export function withTimeout<T>(promise: PromiseLike<T> | Promise<T>, ms = 8000):
   return Promise.race([
     Promise.resolve(promise),
     new Promise<null>(resolve => setTimeout(() => {
-      console.warn(`Supabase query timed out after ${ms}ms`);
+      logger.warn(`Supabase query timed out after ${ms}ms`);
       return resolve(null);
     }, ms)),
   ]);

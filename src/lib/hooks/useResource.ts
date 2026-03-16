@@ -1,5 +1,6 @@
 import useSWR from 'swr';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 /**
  * Universal Resource Hook
@@ -33,9 +34,9 @@ export function useResource<T extends { id: string; active?: boolean }>(
             return data as T[];
         } catch (err) {
             if (err instanceof DOMException && err.name === 'AbortError') {
-                console.warn(`Timeout fetching ${tableName} (10s)`);
+                logger.warn(`Timeout fetching ${tableName} (10s)`);
             } else {
-                console.error(`Error fetching ${tableName}:`, err);
+                logger.error(`Error fetching ${tableName}:`, err);
             }
             return []; // Return empty on error to fallback to static
         }

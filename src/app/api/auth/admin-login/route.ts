@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import logger from '@/lib/logger';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
         .gte('attempted_at', cutoff);
 
     if (rlError) {
-        console.error('Rate limit check failed:', rlError.message);
+        logger.error('Rate limit check failed:', rlError.message);
         return NextResponse.json(
             { error: 'rate_limited', remaining: 0, lockout_minutes: LOCKOUT_MINUTES },
             { status: 429 }

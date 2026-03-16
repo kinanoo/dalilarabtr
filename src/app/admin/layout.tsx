@@ -10,6 +10,7 @@ import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
 import { AIAssistant, AIFab } from '@/components/admin/AIAssistant';
 import { Loader2, ShieldAlert } from 'lucide-react';
+import logger from '@/lib/logger';
 
 export default function AdminLayout({
     children,
@@ -78,7 +79,7 @@ export default function AdminLayout({
             // Server-side signout ensures HTTP-only cookies are properly cleared
             await fetch('/api/auth/signout', { method: 'POST' });
         } catch (e) {
-            console.error('Logout error:', e);
+            logger.error('Logout error:', e);
         }
         window.location.href = '/admin/login';
     };

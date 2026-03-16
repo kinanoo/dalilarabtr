@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 /**
  * 🔒 التحقق من متغيرات البيئة (Environment Variables Validation)
  * ================================================================
@@ -35,7 +36,7 @@ function getRequiredEnv(key: string): string {
     : process.env[key];
 
   if (!value) {
-    console.warn(`⚠️ متغير البيئة ${key} غير موجود. استخدم قيمة افتراضية.`);
+    logger.warn(`⚠️ متغير البيئة ${key} غير موجود. استخدم قيمة افتراضية.`);
     throw new Error(`متغير البيئة المطلوب ${key} غير موجود`);
   }
 
@@ -95,11 +96,11 @@ function isValidPhone(phone: string): boolean {
 
 // التحقق من القيم
 if (ENV.SITE_URL && !isValidUrl(ENV.SITE_URL)) {
-  console.warn(`⚠️ SITE_URL غير صحيح: ${ENV.SITE_URL}`);
+  logger.warn(`⚠️ SITE_URL غير صحيح: ${ENV.SITE_URL}`);
 }
 
 if (ENV.WHATSAPP_PHONE && !isValidPhone(ENV.WHATSAPP_PHONE)) {
-  console.warn(`⚠️ WHATSAPP_PHONE غير صحيح: ${ENV.WHATSAPP_PHONE}`);
+  logger.warn(`⚠️ WHATSAPP_PHONE غير صحيح: ${ENV.WHATSAPP_PHONE}`);
 }
 
 // ============================================

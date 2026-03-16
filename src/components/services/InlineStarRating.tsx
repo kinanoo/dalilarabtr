@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { addReview, hasUserReviewed, getUserReview, updateReview, deleteReview } from '@/lib/api/reviews';
 import { postComment } from '@/lib/api/comments';
+import logger from '@/lib/logger';
 // createNotification removed — reviews don't broadcast to all users
 
 interface InlineStarRatingProps {
@@ -149,7 +150,7 @@ export default function InlineStarRating({
                 user_id: userId || undefined,
             });
             if (commentError) {
-                console.error('Failed to post review comment:', commentError);
+                logger.error('Failed to post review comment:', commentError);
             } else {
                 // Notify UniversalComments to refresh
                 window.dispatchEvent(new CustomEvent('comments-updated'));

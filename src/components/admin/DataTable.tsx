@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
+import logger from '@/lib/logger';
 
 interface Column {
     key: string;
@@ -112,7 +113,7 @@ export function DataTable({
             setTotal(count || 0);
 
         } catch (err) {
-            console.error('Error fetching data:', err);
+            logger.error('Error fetching data:', err);
             toast.error('فشل تحميل البيانات: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setLoading(false);

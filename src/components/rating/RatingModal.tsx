@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Star, X, Loader2, Send } from 'lucide-react';
 import StarRating from './StarRating';
+import logger from '@/lib/logger';
 
 interface RatingModalProps {
     isOpen: boolean;
@@ -53,7 +54,7 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
             }, 2000);
 
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             alert('حدث خطأ أثناء الإرسال');
         } finally {
             setLoading(false);

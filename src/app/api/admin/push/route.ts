@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import logger from '@/lib/logger';
 
 // Configure Web Push with VAPID keys
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -134,7 +135,7 @@ export async function POST(request: Request) {
         });
 
     } catch (error) {
-        console.error('Push notification error:', error);
+        logger.error('Push notification error:', error);
         return NextResponse.json({ error: 'خطأ داخلي في الخادم' }, { status: 500 });
     }
 }

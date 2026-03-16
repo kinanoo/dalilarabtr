@@ -6,6 +6,7 @@ import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2
 import { toast } from 'sonner';
 import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
+import logger from '@/lib/logger';
 
 interface Comment {
     id: string;
@@ -96,7 +97,7 @@ export default function AdminCommunityPage() {
             if (error) throw error;
             // Auto-approve the source comment (best-effort — non-critical if fails)
             const { error: approveError } = await supabase.from('comments').update({ status: 'approved' }).eq('id', comment.id);
-            if (approveError) console.warn('Auto-approve comment failed:', approveError.message);
+            if (approveError) logger.warn('Auto-approve comment failed:', approveError.message);
             toast.success('✅ تم إنشاء التحديث ونشره مباشرة');
             fetchComments();
         } catch (err) {

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 
 export type SearchResult = {
@@ -90,7 +91,7 @@ export async function searchAllTables(query: string): Promise<SearchResult[]> {
         return results;
 
     } catch (err) {
-        console.error("Client-Side Search Error:", err);
+        logger.error("Client-Side Search Error:", err);
         return [];
     }
 }
@@ -131,7 +132,7 @@ export async function fetchItemDetails(id: string, type: string) {
     const { data, error } = await query.single();
 
     if (error) {
-        console.error(`Error fetching ${type} ${id}:`, error);
+        logger.error(`Error fetching ${type} ${id}:`, error);
         return null;
     }
     return data;

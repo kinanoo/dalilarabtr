@@ -24,6 +24,7 @@ import ConfigManager from './ConfigManager';
 import DataMigration from './DataMigration';
 import { AdminSidebar } from './AdminSidebar';
 import { DataTable } from './DataTable';
+import logger from '@/lib/logger';
 
 // --- SaveBar Component ---
 const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () => void, onDelete: () => void, onCancel: () => void, loading: boolean, isNew: boolean }) => (
@@ -110,7 +111,7 @@ export default function AdminDashboard() {
                 const data = await searchAllTables(text);
                 setResults(data);
             } catch (error) {
-                console.error("Search error:", error);
+                logger.error("Search error:", error);
             } finally {
                 setLoading(false);
                 setSearching(false);
@@ -284,7 +285,7 @@ export default function AdminDashboard() {
             router.refresh();
 
         } catch (err) {
-            console.error("💥 [AdminSave] Error:", err);
+            logger.error("💥 [AdminSave] Error:", err);
             toast.error('❌ حدث خطأ: ' + (err instanceof Error ? err.message : String(err)));
         } finally {
             setSaving(false);
