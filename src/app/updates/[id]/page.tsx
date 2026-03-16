@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Calendar, Clock, Share2, MessageCircle, Eye, ChevronLeft, Newspaper, AlertTriangle, Zap } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle, Zap } from 'lucide-react';
 import UniversalComments from '@/components/community/UniversalComments';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
@@ -120,7 +120,7 @@ export default async function UpdateDetailPage(
                         العودة للتحديثات
                     </Link>
 
-                    {/* Type + Date row */}
+                    {/* Type + Date + Share row */}
                     <div className="flex flex-wrap items-center gap-3 mb-3">
                         <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg ${
                             isAlert
@@ -144,6 +144,15 @@ export default async function UpdateDetailPage(
                                 {readTime} دقيقة قراءة
                             </span>
                         )}
+                        <div className="mr-auto">
+                            <ShareMenu
+                                mini
+                                variant="subtle"
+                                title={update.title}
+                                text={plainContent.slice(0, 200)}
+                                url={`${SITE_CONFIG.siteUrl}/updates/${id}`}
+                            />
+                        </div>
                     </div>
 
                     {/* Title */}
@@ -218,69 +227,12 @@ export default async function UpdateDetailPage(
                             </div>
                         </article>
 
-                        {/* Share bar */}
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm text-slate-500">
-                                <Share2 size={15} />
-                                <span className="font-bold">شارك هذا التحديث</span>
-                            </div>
-                            <ShareMenu
-                                mini
-                                variant="subtle"
-                                title={update.title}
-                                text={plainContent.slice(0, 200)}
-                                url={`${SITE_CONFIG.siteUrl}/updates/${id}`}
-                            />
-                        </div>
-
                         {/* Comments */}
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                                <MessageCircle size={16} className="text-emerald-600" />
-                                <h3 className="text-base font-black text-slate-800 dark:text-slate-100">التعليقات والمناقشة</h3>
-                            </div>
-                            <div className="p-5">
-                                <UniversalComments entityType="update" entityId={id} />
-                            </div>
-                        </div>
+                        <UniversalComments entityType="update" entityId={id} />
                     </div>
 
                     {/* Sidebar */}
                     <aside className="space-y-5">
-                        {/* Quick info card */}
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-                            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-1.5">
-                                <Eye size={14} className="text-emerald-600" />
-                                معلومات سريعة
-                            </h3>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-slate-500">النوع</span>
-                                    <span className={`font-bold text-xs px-2 py-0.5 rounded-lg ${
-                                        isAlert
-                                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'
-                                    }`}>{typeLabel}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-slate-500">التاريخ</span>
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">{getRelativeDate(update.date)}</span>
-                                </div>
-                                {readTime > 0 && (
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-slate-500">وقت القراءة</span>
-                                        <span className="font-bold text-slate-800 dark:text-slate-200">{readTime} دقيقة</span>
-                                    </div>
-                                )}
-                                {update.date && (
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-slate-500">تاريخ محدد</span>
-                                        <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">{update.date}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
                         {/* Related Updates */}
                         {relatedUpdates && relatedUpdates.length > 0 && (
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
