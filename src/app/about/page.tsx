@@ -9,6 +9,12 @@ export const metadata: Metadata = {
   title: 'عن الموقع | دليل العرب في تركيا',
   description: 'تعرّف على دليل العرب والسوريين في تركيا، رسالتنا، وفريقنا المتخصص في تقديم المعلومات القانونية والإجرائية.',
   alternates: { canonical: '/about' },
+  openGraph: {
+    title: 'عن دليل العرب في تركيا',
+    description: 'الدليل الشامل للعرب والسوريين في تركيا — معلومات قانونية وإجرائية موثوقة.',
+    url: 'https://dalilarabtr.com/about',
+    type: 'website',
+  },
 };
 
 async function getStats() {
