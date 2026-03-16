@@ -45,15 +45,15 @@ export default function NewsTicker() {
 
     return (
         <div
-            className="relative overflow-hidden text-[11px] sm:text-xs font-medium select-none"
+            className="relative overflow-hidden text-[11px] sm:text-xs font-medium select-none border-b border-emerald-500/20"
             dir="rtl"
             role="marquee"
             aria-label="شريط الأخبار"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >
-            {/* Background */}
-            <div className="absolute inset-0 bg-gradient-to-l from-slate-900 via-[#0f1d35] to-slate-900" />
+            {/* Background — slightly different shade from hero to create separation */}
+            <div className="absolute inset-0 bg-gradient-to-l from-[#0a1628] via-[#0c1a30] to-[#0a1628]" />
 
             <div className="relative flex items-center h-[28px] sm:h-[30px]">
                 {/* Scrolling track — full width, no badge */}
@@ -85,8 +85,8 @@ export default function NewsTicker() {
                 </div>
 
                 {/* Edge fades */}
-                <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#0f1d35] to-transparent z-[5]" />
-                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-slate-900 to-transparent z-[5]" />
+                <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#0c1a30] to-transparent z-[5]" />
+                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[#0a1628] to-transparent z-[5]" />
             </div>
 
             <style dangerouslySetInnerHTML={{ __html: `
