@@ -2,6 +2,7 @@ import PageHero from '@/components/PageHero';
 import { Users, Scale, BadgeCheck, ShieldCheck } from 'lucide-react';
 import { Metadata } from 'next';
 import { supabase, withTimeout } from '@/lib/supabaseClient';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 3600; // Cache for 1 hour
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'عن دليل العرب في تركيا',
     description: 'الدليل الشامل للعرب والسوريين في تركيا — معلومات قانونية وإجرائية موثوقة.',
-    url: 'https://dalilarabtr.com/about',
+    url: `${SITE_CONFIG.siteUrl}/about`,
     type: 'website',
   },
 };

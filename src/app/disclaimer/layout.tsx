@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'إخلاء المسؤولية | دليل العرب في تركيا',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'إخلاء المسؤولية | دليل العرب في تركيا',
     description: 'إخلاء مسؤولية قانوني — المعلومات المنشورة للتثقيف فقط ولا تُعدّ استشارة قانونية رسمية.',
-    url: 'https://dalilarabtr.com/disclaimer',
+    url: `${SITE_CONFIG.siteUrl}/disclaimer`,
     type: 'website',
   },
 };

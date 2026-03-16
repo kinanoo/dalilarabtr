@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'النماذج الرسمية | دليل العرب في تركيا',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'النماذج والاستمارات الرسمية التركية بالعربي',
     description: 'حمّل النماذج الرسمية مترجمة: طلبات إقامة، إذن عمل، وخدمات حكومية تركية.',
-    url: 'https://dalilarabtr.com/forms',
+    url: `${SITE_CONFIG.siteUrl}/forms`,
     type: 'website',
   },
 };

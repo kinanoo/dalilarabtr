@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'الروابط المهمة | دليل العرب في تركيا',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'روابط مهمة للأجانب في تركيا',
     description: 'روابط مباشرة للمواقع الحكومية التركية والخدمات الإلكترونية الأساسية.',
-    url: 'https://dalilarabtr.com/important-links',
+    url: `${SITE_CONFIG.siteUrl}/important-links`,
     type: 'website',
   },
 };

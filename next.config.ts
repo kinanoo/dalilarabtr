@@ -44,13 +44,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Global security headers (catch-all — applied first, overridden by specific rules below)
+        source: '/(.*)',
+        headers: [
+          ...securityHeaders,
+          { key: 'Content-Security-Policy', value: cspGlobal },
+        ],
+      },
+      {
         // OG image endpoint: allow cross-origin access so WhatsApp/Facebook/Twitter crawlers can fetch it
         source: '/api/og',
         headers: [
-          ...securityHeaders.filter(h => h.key !== 'Cross-Origin-Resource-Policy' && h.key !== 'Cross-Origin-Opener-Policy'),
           { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'unsafe-none' },
           { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Content-Security-Policy', value: cspGlobal },
         ],
       },
       {
@@ -60,13 +67,6 @@ const nextConfig: NextConfig = {
           { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-      {
-        source: '/(.*)',
-        headers: [
-          ...securityHeaders,
-          { key: 'Content-Security-Policy', value: cspGlobal },
         ],
       },
       {

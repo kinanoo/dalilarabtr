@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'الدليل الشامل | دليل العرب في تركيا',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'الدليل الشامل للعرب في تركيا',
     description: 'كل ما تحتاجه من معلومات عن الإقامة والعمل والخدمات والقانون في تركيا.',
-    url: 'https://dalilarabtr.com/directory',
+    url: `${SITE_CONFIG.siteUrl}/directory`,
     type: 'website',
   },
 };

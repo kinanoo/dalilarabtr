@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'حاسبة تكاليف الإقامة في تركيا 2026 | ضريبة، تأمين، رسوم',
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'حاسبة تكاليف الإقامة في تركيا | دليل العرب في تركيا',
     description: 'احسب التكلفة التقريبية لإقامتك في تركيا — ضريبة + تأمين + رسوم البطاقة',
-    url: 'https://dalilarabtr.com/calculator',
+    url: `${SITE_CONFIG.siteUrl}/calculator`,
     type: 'website',
-    images: [{ url: 'https://dalilarabtr.com/og-image.jpg', width: 1200, height: 630 }],
+    images: [{ url: `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
   },
   alternates: { canonical: '/calculator' },
 };

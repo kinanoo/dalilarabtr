@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'آخر التحديثات | دليل العرب في تركيا',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'آخر الأخبار والتحديثات للعرب في تركيا',
     description: 'أحدث الأخبار والتغييرات المتعلقة بالإقامات والقوانين والخدمات في تركيا.',
-    url: 'https://dalilarabtr.com/updates',
+    url: `${SITE_CONFIG.siteUrl}/updates`,
     type: 'website',
   },
 };

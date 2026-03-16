@@ -1,5 +1,6 @@
 import ServicesClient from './ServicesClient';
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
     title: 'دليل الخدمات في تركيا | أطباء، محامون، ومترجمون',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'دليل الخدمات العربية في تركيا',
         description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات عرب موثوقين في كل مدن تركيا.',
-        url: 'https://dalilarabtr.com/services',
+        url: `${SITE_CONFIG.siteUrl}/services`,
         type: 'website',
     },
 };

@@ -1,6 +1,7 @@
 import BanCalculatorClient from './BanCalculatorClient';
 import ToolSchema from '@/components/ToolSchema';
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
     title: 'حاسبة مدة المنع من تركيا 2026 | أكواد الترحيل (V-87, Ç-114)',
@@ -10,9 +11,9 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'حاسبة مدة المنع من تركيا 2026 | دليل العرب في تركيا',
         description: 'حاسبة قانونية دقيقة لحساب مدة المنع من دخول تركيا بناءً على مدة المخالفة ونوع الخروج.',
-        url: 'https://dalilarabtr.com/ban-calculator',
+        url: `${SITE_CONFIG.siteUrl}/ban-calculator`,
         type: 'website',
-        images: [{ url: 'https://dalilarabtr.com/og-image.jpg', width: 1200, height: 630 }],
+        images: [{ url: `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
     },
 };
 

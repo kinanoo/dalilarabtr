@@ -1,6 +1,7 @@
 import ZonesClient from './ZonesClient';
 import ToolSchema from '@/components/ToolSchema';
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
     title: 'فاحص المناطق المحظورة للسوريين 2026 | قائمة الأحياء المغلقة',
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'فاحص المناطق المحظورة للأجانب في تركيا 2026',
         description: 'تحقق فوراً إذا كان الحي مفتوح أو مغلق لتسجيل النفوس. يغطي كل الولايات التركية.',
-        url: 'https://dalilarabtr.com/zones',
+        url: `${SITE_CONFIG.siteUrl}/zones`,
         type: 'website',
     },
 };

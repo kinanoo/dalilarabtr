@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'طلب خدمة | دليل العرب في تركيا',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'طلب خدمة — حجز مواعيد، ترجمة، معاملات',
     description: 'قدّم طلب خدمة: حجز مواعيد، ترجمة رسمية، معاملات إقامة، وخدمات قانونية في تركيا.',
-    url: 'https://dalilarabtr.com/request',
+    url: `${SITE_CONFIG.siteUrl}/request`,
     type: 'website',
   },
 };
