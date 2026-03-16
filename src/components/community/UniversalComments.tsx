@@ -635,13 +635,11 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                                 {name}
                             </div>
                         ) : (
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg text-sm outline-none border border-transparent focus:border-emerald-500 w-full"
-                                placeholder="الاسم (اختياري)"
-                            />
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-300 font-medium flex-1">
+                                <Lock size={13} className="text-slate-400" />
+                                <span>{name}</span>
+                                <span className="text-[10px] text-slate-400 mr-auto">(هوية مجهولة ثابتة)</span>
+                            </div>
                         )}
                     </div>
 
