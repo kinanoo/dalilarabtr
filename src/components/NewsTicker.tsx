@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import { Rss } from 'lucide-react';
 
 interface TickerItem {
     id: string;
@@ -14,7 +13,7 @@ interface TickerItem {
 export default function NewsTicker() {
     const [items, setItems] = useState<TickerItem[]>([]);
     const trackRef = useRef<HTMLDivElement>(null);
-    const [duration, setDuration] = useState(30);
+    const [duration, setDuration] = useState(20);
     const [isPaused, setIsPaused] = useState(false);
 
     useEffect(() => {
@@ -31,13 +30,13 @@ export default function NewsTicker() {
         fetchTicker();
     }, []);
 
-    // Calculate speed based on content width
+    // Fast speed
     useEffect(() => {
         if (!trackRef.current || items.length === 0) return;
         const t = setTimeout(() => {
             if (!trackRef.current) return;
             const width = trackRef.current.scrollWidth / 2;
-            setDuration(Math.max(12, width / 140));
+            setDuration(Math.max(8, width / 220));
         }, 100);
         return () => clearTimeout(t);
     }, [items]);
@@ -46,7 +45,7 @@ export default function NewsTicker() {
 
     return (
         <div
-            className="relative overflow-hidden text-xs sm:text-sm font-medium select-none"
+            className="relative overflow-hidden text-[11px] sm:text-xs font-medium select-none"
             dir="rtl"
             role="marquee"
             aria-label="شريط الأخبار"
@@ -56,17 +55,8 @@ export default function NewsTicker() {
             {/* Background */}
             <div className="absolute inset-0 bg-gradient-to-l from-slate-900 via-[#0f1d35] to-slate-900" />
 
-            <div className="relative flex items-center min-h-[36px] sm:min-h-[40px]">
-                {/* Badge — right side */}
-                <div className="flex-shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-1 bg-emerald-600 text-white text-[11px] sm:text-xs font-bold z-10 h-full">
-                    <Rss size={13} className="opacity-80" />
-                    <span>آخر الأخبار</span>
-                </div>
-
-                {/* Edge fade — right side */}
-                <div className="absolute right-[85px] sm:right-[100px] top-0 bottom-0 w-6 bg-gradient-to-l from-[#0f1d35] to-transparent z-[5]" />
-
-                {/* Scrolling track */}
+            <div className="relative flex items-center h-[28px] sm:h-[30px]">
+                {/* Scrolling track — full width, no badge */}
                 <div className="flex-1 overflow-hidden">
                     <div
                         ref={trackRef}
@@ -81,21 +71,22 @@ export default function NewsTicker() {
                                 {item.link ? (
                                     <Link
                                         href={item.link}
-                                        className="text-slate-200 hover:text-emerald-300 transition-colors px-4 py-1"
+                                        className="text-slate-300 hover:text-emerald-300 transition-colors px-3"
                                     >
                                         {item.text}
                                     </Link>
                                 ) : (
-                                    <span className="text-slate-200 px-4 py-1">{item.text}</span>
+                                    <span className="text-slate-300 px-3">{item.text}</span>
                                 )}
-                                <span className="text-emerald-500/40 mx-1" aria-hidden="true">◆</span>
+                                <span className="text-emerald-600/50 text-[8px]" aria-hidden="true">●</span>
                             </span>
                         ))}
                     </div>
                 </div>
 
-                {/* Edge fade — left side */}
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-900 to-transparent z-[5]" />
+                {/* Edge fades */}
+                <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#0f1d35] to-transparent z-[5]" />
+                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-slate-900 to-transparent z-[5]" />
             </div>
 
             <style dangerouslySetInnerHTML={{ __html: `
