@@ -78,9 +78,8 @@ html.theme-switching * {
    🎯 Component Improvements
    ============================================ */
 
-/* Cards في Dark Mode */
-.dark .card,
-.dark [class*="bg-white"] {
+/* Cards في Dark Mode — use explicit .card class instead of broad attribute selector */
+.dark .card {
     background-color: var(--bg-secondary);
     border-color: var(--border-primary);
     box-shadow: var(--shadow-md);
@@ -91,8 +90,7 @@ html.theme-switching * {
     box-shadow: var(--shadow-lg);
 }
 
-/* Buttons في Dark Mode */
-.dark button,
+/* Buttons في Dark Mode — only .btn class, not all buttons */
 .dark .btn {
     border-color: var(--border-secondary);
 }
@@ -107,24 +105,24 @@ html.theme-switching * {
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
-/* Input Fields */
-.dark input,
-.dark textarea,
-.dark select {
+/* Input Fields — scoped to form-input class to avoid overriding Tailwind-styled inputs */
+.dark .form-input,
+.dark .form-textarea,
+.dark .form-select {
     background-color: var(--bg-tertiary);
     border-color: var(--border-primary);
     color: var(--text-primary);
 }
 
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
+.dark .form-input:focus,
+.dark .form-textarea:focus,
+.dark .form-select:focus {
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
-.dark input::placeholder,
-.dark textarea::placeholder {
+.dark .form-input::placeholder,
+.dark .form-textarea::placeholder {
     color: var(--text-muted);
 }
 
@@ -132,13 +130,14 @@ html.theme-switching * {
    🖼️ Images في Dark Mode
    ============================================ */
 
-.dark img {
+/* Only dim content images, not UI icons or logos */
+.dark .content-image {
     opacity: 0.9;
     filter: brightness(0.9) contrast(1.05);
     transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
-.dark img:hover {
+.dark .content-image:hover {
     opacity: 1;
     filter: brightness(1) contrast(1);
 }

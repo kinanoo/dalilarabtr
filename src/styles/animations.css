@@ -212,6 +212,42 @@
 .loading-spinner { animation: rotate 1s linear infinite; }
 
 /* ============================================
+   🌌 Aurora & Hero Background Animations
+   ============================================ */
+
+@keyframes aurora-a {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-60px, 40px) scale(1.2); }
+}
+
+@keyframes aurora-b {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(50px, -30px) scale(1.15); }
+}
+
+@keyframes aurora-c {
+  from { transform: translate(0, 0) scale(0.9); }
+  to { transform: translate(-40px, 20px) scale(1.1); }
+}
+
+@keyframes mob-float-a {
+  from { transform: translateX(-20px); }
+  to { transform: translateX(calc(100vw + 20px)); }
+}
+
+@keyframes mob-float-b {
+  from { transform: translateX(calc(100vw + 20px)); }
+  to { transform: translateX(-20px); }
+}
+
+.animate-aurora-a { animation: aurora-a 18s ease-in-out infinite alternate; }
+.animate-aurora-b { animation: aurora-b 22s ease-in-out infinite alternate; }
+.animate-aurora-c { animation: aurora-c 20s ease-in-out infinite alternate; }
+.animate-mob-float-a { animation: mob-float-a 27s linear infinite alternate; }
+.animate-mob-float-b { animation: mob-float-b 29s linear infinite alternate; }
+.animate-mob-float-a-slow { animation: mob-float-a 25s linear infinite alternate; }
+
+/* ============================================
    ⚡ Reduce motion
    ============================================ */
 

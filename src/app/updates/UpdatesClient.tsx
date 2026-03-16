@@ -1,28 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useAdminUpdates, isNewContent } from '@/lib/useAdminData';
+import { useAdminUpdates } from '@/lib/useAdminData';
 import {
-    Bell, Sparkles, Loader2, Calendar, FileText, AlertCircle, HelpCircle,
-    Shield, MapPin, Newspaper, ArrowLeft, Briefcase, Wrench, ExternalLink,
-    Search, Filter, Clock, TrendingUp, ChevronDown, Flame, Eye
+    Bell, Sparkles, Loader2, Calendar,
+    Newspaper, ArrowLeft,
+    Search, Filter, Clock, TrendingUp, ChevronDown, Flame, Eye,
+    FileText, AlertCircle, Shield, HelpCircle
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-const PUBLIC_EVENT_TYPES = ['new_article', 'new_scenario', 'new_faq', 'new_code', 'new_zone', 'new_update', 'new_service', 'new_tool', 'new_source'];
-
-const AUTO_EVENT_CONFIG: Record<string, { type: string; label: string; icon: typeof FileText; color: string; bgLight: string; bgDark: string; href: (id: string) => string }> = {
-    new_article:  { type: 'مقال',      label: 'مقالات',       icon: FileText,     color: 'emerald', bgLight: 'bg-emerald-50',  bgDark: 'dark:bg-emerald-950/30', href: (id) => `/article/${id}` },
-    new_scenario: { type: 'سيناريو',   label: 'سيناريوهات',   icon: AlertCircle,  color: 'blue',    bgLight: 'bg-blue-50',     bgDark: 'dark:bg-blue-950/30',    href: (id) => `/consultant?scenario=${id}` },
-    new_faq:      { type: 'سؤال',      label: 'أسئلة',        icon: HelpCircle,   color: 'violet',  bgLight: 'bg-violet-50',   bgDark: 'dark:bg-violet-950/30',  href: () => `/faq` },
-    new_code:     { type: 'كود أمني',  label: 'أكواد أمنية',  icon: Shield,       color: 'red',     bgLight: 'bg-red-50',      bgDark: 'dark:bg-red-950/30',     href: (id) => `/codes/${id}` },
-    new_zone:     { type: 'منطقة',     label: 'مناطق',        icon: MapPin,       color: 'orange',  bgLight: 'bg-orange-50',   bgDark: 'dark:bg-orange-950/30',  href: () => `/zones` },
-    new_update:   { type: 'خبر',       label: 'أخبار',        icon: Newspaper,    color: 'amber',   bgLight: 'bg-amber-50',    bgDark: 'dark:bg-amber-950/30',   href: (id) => `/updates/${id}` },
-    new_service:  { type: 'خدمة',      label: 'خدمات',        icon: Briefcase,    color: 'cyan',    bgLight: 'bg-cyan-50',     bgDark: 'dark:bg-cyan-950/30',    href: (id) => `/services/${id}` },
-    new_tool:     { type: 'أداة',      label: 'أدوات',        icon: Wrench,       color: 'pink',    bgLight: 'bg-pink-50',     bgDark: 'dark:bg-pink-950/30',    href: () => `/tools` },
-    new_source:   { type: 'مصدر رسمي', label: 'مصادر رسمية',  icon: ExternalLink, color: 'teal',    bgLight: 'bg-teal-50',     bgDark: 'dark:bg-teal-950/30',    href: () => `/sources` },
-};
+import { isNewContent, formatDate, AUTO_EVENT_CONFIG } from '@/lib/updateUtils';
 
 const FILTER_TABS = [
     { key: 'all', label: 'الكل', icon: Filter },
@@ -32,19 +20,6 @@ const FILTER_TABS = [
     { key: 'new_code', label: 'أكواد', icon: Shield },
     { key: 'new_faq', label: 'أسئلة', icon: HelpCircle },
 ];
-
-function formatDate(dateStr: string): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'اليوم';
-    if (diffDays === 1) return 'أمس';
-    if (diffDays === 2) return 'قبل يومين';
-    if (diffDays <= 7) return `قبل ${diffDays} أيام`;
-    return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
-}
 
 function groupByDate(items: any[]): { label: string; date: string; items: any[] }[] {
     const now = new Date();

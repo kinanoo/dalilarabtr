@@ -67,25 +67,11 @@ const AuroraBackground = () => {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
             {/* Large emerald orb — top right */}
-            <div
-                className="absolute w-[400px] h-[400px] bg-emerald-500/[0.07] blur-[100px] rounded-full will-change-transform"
-                style={{ animation: 'aurora-a 18s ease-in-out infinite alternate', top: '-20%', right: '-10%' }}
-            />
+            <div className="absolute w-[400px] h-[400px] bg-emerald-500/[0.07] blur-[100px] rounded-full will-change-transform animate-aurora-a -top-[20%] -right-[10%]" />
             {/* Cyan orb — bottom left */}
-            <div
-                className="absolute w-[350px] h-[350px] bg-cyan-500/[0.06] blur-[100px] rounded-full will-change-transform"
-                style={{ animation: 'aurora-b 22s ease-in-out infinite alternate', bottom: '-15%', left: '-5%' }}
-            />
+            <div className="absolute w-[350px] h-[350px] bg-cyan-500/[0.06] blur-[100px] rounded-full will-change-transform animate-aurora-b -bottom-[15%] -left-[5%]" />
             {/* Teal orb — center */}
-            <div
-                className="absolute w-[300px] h-[300px] bg-teal-400/[0.05] blur-[120px] rounded-full will-change-transform"
-                style={{ animation: 'aurora-c 20s ease-in-out infinite alternate', top: '30%', left: '40%' }}
-            />
-            <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes aurora-a { from{transform:translate(0,0) scale(1)}to{transform:translate(-60px,40px) scale(1.2)} }
-                @keyframes aurora-b { from{transform:translate(0,0) scale(1)}to{transform:translate(50px,-30px) scale(1.15)} }
-                @keyframes aurora-c { from{transform:translate(0,0) scale(0.9)}to{transform:translate(-40px,20px) scale(1.1)} }
-            `}} />
+            <div className="absolute w-[300px] h-[300px] bg-teal-400/[0.05] blur-[120px] rounded-full will-change-transform animate-aurora-c top-[30%] left-[40%]" />
         </div>
     );
 }
@@ -93,13 +79,9 @@ const AuroraBackground = () => {
 const MobileBackground = () => {
     return (
         <div className="absolute inset-0 lg:hidden overflow-hidden pointer-events-none z-10">
-            <div className="absolute w-16 h-16 bg-emerald-500/20 blur-xl rounded-2xl will-change-transform" style={{ animation: 'mob-float-a 27s linear infinite alternate', top: '10%' }} />
-            <div className="absolute w-16 h-16 bg-blue-500/20 blur-xl rounded-2xl will-change-transform" style={{ animation: 'mob-float-b 29s linear infinite alternate', top: '40%' }} />
-            <div className="absolute w-16 h-16 bg-amber-500/20 blur-xl rounded-2xl will-change-transform" style={{ animation: 'mob-float-a 25s linear infinite alternate', top: '70%' }} />
-            <style dangerouslySetInnerHTML={{ __html: `
-                @keyframes mob-float-a { from{transform:translateX(-20px)}to{transform:translateX(calc(100vw + 20px))} }
-                @keyframes mob-float-b { from{transform:translateX(calc(100vw + 20px))}to{transform:translateX(-20px)} }
-            `}} />
+            <div className="absolute w-16 h-16 bg-emerald-500/20 blur-xl rounded-2xl will-change-transform animate-mob-float-a top-[10%]" />
+            <div className="absolute w-16 h-16 bg-blue-500/20 blur-xl rounded-2xl will-change-transform animate-mob-float-b top-[40%]" />
+            <div className="absolute w-16 h-16 bg-amber-500/20 blur-xl rounded-2xl will-change-transform animate-mob-float-a-slow top-[70%]" />
         </div>
     );
 }

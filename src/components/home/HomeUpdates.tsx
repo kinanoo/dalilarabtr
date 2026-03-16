@@ -5,10 +5,10 @@ import { useScrollReveal } from '@/lib/hooks/useScrollReveal';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-    Bell, ArrowLeft, Sparkles, FileText, AlertCircle, HelpCircle, Shield,
-    MapPin, Newspaper, Briefcase, Wrench, ExternalLink, ChevronLeft,
-    ChevronRight, Flame, Clock, Eye
+    Bell, ArrowLeft, Sparkles,
+    ChevronLeft, ChevronRight, Flame, Clock, Eye, Newspaper
 } from 'lucide-react';
+import { isNewContent, getRelativeDate, getEventIcon } from '@/lib/updateUtils';
 
 // === Types ===
 interface Update {
@@ -22,38 +22,6 @@ interface Update {
     source?: string;
     event_type?: string;
 }
-
-function isNewContent(dateStr: string): boolean {
-    if (!dateStr) return false;
-    const date = new Date(dateStr);
-    const now = new Date();
-    return Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)) <= 7;
-}
-
-function getRelativeDate(dateStr: string, sortDate?: string): string {
-    const raw = sortDate || dateStr;
-    if (!raw) return dateStr;
-    const date = new Date(raw);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'اليوم';
-    if (diffDays === 1) return 'أمس';
-    if (diffDays === 2) return 'قبل يومين';
-    if (diffDays <= 7) return `قبل ${diffDays} أيام`;
-    return dateStr;
-}
-
-const AUTO_ICON_MAP: Record<string, { icon: typeof FileText; color: string; bgLight: string; bgDark: string }> = {
-    new_article:  { icon: FileText,     color: 'emerald', bgLight: 'bg-emerald-50',  bgDark: 'dark:bg-emerald-950/30' },
-    new_scenario: { icon: AlertCircle,  color: 'blue',    bgLight: 'bg-blue-50',     bgDark: 'dark:bg-blue-950/30' },
-    new_faq:      { icon: HelpCircle,   color: 'violet',  bgLight: 'bg-violet-50',   bgDark: 'dark:bg-violet-950/30' },
-    new_code:     { icon: Shield,       color: 'red',     bgLight: 'bg-red-50',      bgDark: 'dark:bg-red-950/30' },
-    new_zone:     { icon: MapPin,       color: 'orange',  bgLight: 'bg-orange-50',   bgDark: 'dark:bg-orange-950/30' },
-    new_update:   { icon: Newspaper,    color: 'amber',   bgLight: 'bg-amber-50',    bgDark: 'dark:bg-amber-950/30' },
-    new_service:  { icon: Briefcase,    color: 'cyan',    bgLight: 'bg-cyan-50',     bgDark: 'dark:bg-cyan-950/30' },
-    new_tool:     { icon: Wrench,       color: 'pink',    bgLight: 'bg-pink-50',     bgDark: 'dark:bg-pink-950/30' },
-    new_source:   { icon: ExternalLink, color: 'teal',    bgLight: 'bg-teal-50',     bgDark: 'dark:bg-teal-950/30' },
-};
 
 function useCardsPerPage(): number {
     const [count, setCount] = useState(1);
@@ -252,7 +220,7 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
 
 function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
     const isAuto = update.source === 'auto';
-    const iconConfig = isAuto && update.event_type ? AUTO_ICON_MAP[update.event_type] : null;
+    const iconConfig = isAuto && update.event_type ? getEventIcon(update.event_type) : null;
     const href = update.href || `/updates/${update.id}`;
     const isUrgent = update.type === 'هام' || update.type === 'عاجل';
     const isNew = isNewContent(update.sortDate || update.date);
