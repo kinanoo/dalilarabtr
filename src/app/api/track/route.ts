@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 import { isRateLimited } from '@/lib/rate-limit';
+import logger from '@/lib/logger';
 
 // Use service role key on server to bypass RLS
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -126,13 +127,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      console.error('[track] insert error:', error.message);
+      logger.error('[track] insert error:', error.message);
       return NextResponse.json({ error: 'Tracking failed' }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[track] error:', err instanceof Error ? err.message : String(err));
+    logger.error('[track] error:', err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }

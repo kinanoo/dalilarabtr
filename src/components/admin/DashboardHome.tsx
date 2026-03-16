@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Briefcase, FileText, Bell, Users, TrendingUp, Clock, Plus, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import logger from '@/lib/logger';
 
 export default function DashboardHome({ onNavigate }: { onNavigate: (tab: string) => void }) {
     const { showToast } = useToast();
@@ -43,7 +44,7 @@ export default function DashboardHome({ onNavigate }: { onNavigate: (tab: string
                 if (recent) setRecentServices(recent);
 
             } catch (err) {
-                console.error(err);
+                logger.error(err);
                 showToast('فشل تحميل بيانات اللوحة', 'error');
             }
         }

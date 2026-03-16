@@ -7,6 +7,7 @@ import {
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import { normalizeArabic } from '@/lib/arabicSearch';
+import logger from '@/lib/logger';
 // import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios'; // REMOVED
 
 // ...
@@ -365,7 +366,7 @@ async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
       };
     });
   } catch (err) {
-    console.warn('Failed to fetch articles index:', err);
+    logger.warn('Failed to fetch articles index:', err);
     return [];
   }
 }
@@ -396,7 +397,7 @@ async function fetchScenariosIndex(): Promise<SearchIndexItem[]> {
       haystack: normalizeArabic(`${s.title} ${s.description || ''} ${s.category || ''}`)
     }));
   } catch (err) {
-    console.warn('Failed to fetch scenarios index:', err);
+    logger.warn('Failed to fetch scenarios index:', err);
     return [];
   }
 }

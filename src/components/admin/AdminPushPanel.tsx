@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Send, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 export default function AdminPushPanel() {
     const [title, setTitle] = useState('');
@@ -38,7 +39,7 @@ export default function AdminPushPanel() {
             setMessage('');
             setUrl('');
         } catch (error) {
-            console.error('Send error:', error);
+            logger.error('Send error:', error);
             toast.error('حدث خطأ أثناء الإرسال');
         } finally {
             setIsSending(false);

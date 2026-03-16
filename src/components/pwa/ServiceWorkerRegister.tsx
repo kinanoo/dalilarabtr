@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import logger from '@/lib/logger';
 
 export default function ServiceWorkerRegister() {
     useEffect(() => {
@@ -12,7 +13,7 @@ export default function ServiceWorkerRegister() {
                     // SW registered successfully
                 })
                 .catch((error) => {
-                    console.error('Service Worker registration failed:', error);
+                    logger.error('Service Worker registration failed:', error);
                 });
         }
     }, []);

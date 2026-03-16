@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { GoogleGenerativeAI, SchemaType, type FunctionDeclarationsTool } from '@google/generative-ai';
 import { isRateLimited } from '@/lib/rate-limit';
+import logger from '@/lib/logger';
 
 // ── All table mappings (every DB table the AI can access) ──
 const TABLE_MAP: Record<string, string> = {
@@ -1891,7 +1892,7 @@ export async function POST(request: NextRequest) {
           .in(pkField, pendingAction.ids);
 
         if (error) {
-          console.error('Batch delete failed:', error);
+          logger.error('Batch delete failed:', error);
           return NextResponse.json({ reply: 'فشل الحذف الجماعي. حاول مرة أخرى.' });
         }
         return NextResponse.json({ reply: `تم حذف ${pendingAction.ids.length} عناصر بنجاح.` });
@@ -1903,7 +1904,7 @@ export async function POST(request: NextRequest) {
         .eq(pkField, pendingAction.contentId);
 
       if (error) {
-        console.error('Delete failed:', error);
+        logger.error('Delete failed:', error);
         return NextResponse.json({ reply: 'فشل الحذف. حاول مرة أخرى.' });
       }
       return NextResponse.json({ reply: `Deleted "${pendingAction.summary}" successfully.` });
@@ -1980,7 +1981,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('AI Assistant error:', error);
+    logger.error('AI Assistant error:', error);
     return NextResponse.json({
       reply: 'حدث خطأ في معالجة طلبك. حاول مرة أخرى.',
     });

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { LATEST_UPDATES } from '@/lib/constants';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import dynamic from 'next/dynamic';
+import logger from '@/lib/logger';
 
 const RichTextEditor = dynamic(() => import('@/components/admin/ui/RichTextEditor'), { ssr: false });
 // === Types ===
@@ -118,7 +119,7 @@ export function UpdatesManager() {
         const { error } = await supabase.from('updates').delete().eq('id', id);
 
         if (error) {
-            console.error('❌ Delete failed:', error);
+            logger.error('❌ Delete failed:', error);
             toast.error(`فشل الحذف: ${error.message}`, { id: toastId });
         } else {
 
@@ -246,7 +247,7 @@ export function FAQManager() {
         if (!supabase) return;
         const { error } = await supabase.from('faqs').delete().eq('id', id);
         if (error) {
-            console.error('Delete FAQ Error:', error);
+            logger.error('Delete FAQ Error:', error);
             toast.error('فشل الحذف: ' + error.message);
         } else {
             fetchFaqs();

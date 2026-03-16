@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import logger from '@/lib/logger';
 
 type VibrationPattern = number | number[];
 
@@ -12,7 +13,7 @@ export function useHaptic() {
             try {
                 navigator.vibrate(pattern);
             } catch (error) {
-                console.warn('Vibration not supported or failed:', error);
+                logger.warn('Vibration not supported or failed:', error);
             }
         }
     }, []);

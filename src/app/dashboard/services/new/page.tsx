@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
+import logger from '@/lib/logger';
 
 const CATEGORIES = [
     'طبيب',
@@ -93,7 +94,7 @@ export default function AddServicePage() {
 
         } catch (error) {
             const errDetails = (error instanceof Error ? error.message : JSON.stringify(error)) || 'خطأ غير معروف';
-            console.error('Error submitting service:', errDetails);
+            logger.error('Error submitting service:', errDetails);
             toast.error('حدث خطأ أثناء الإرسال: ' + errDetails);
         } finally {
             setLoading(false);

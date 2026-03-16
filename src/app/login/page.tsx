@@ -6,6 +6,7 @@ import { Loader2, ShieldCheck, AlertCircle, LogIn, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import logger from '@/lib/logger';
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -41,7 +42,7 @@ export default function LoginPage() {
         });
 
         if (authError) {
-            console.error('Login Error:', authError);
+            logger.error('Login Error:', authError);
             setError(`البريد الإلكتروني أو كلمة المرور غير صحيحة (${authError.message})`);
             setLoading(false);
             return;

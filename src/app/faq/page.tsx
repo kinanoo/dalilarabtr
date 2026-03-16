@@ -8,6 +8,7 @@ import { Metadata } from 'next';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import { stripHtml } from '@/lib/stripHtml';
+import logger from '@/lib/logger';
 
 export const metadata: Metadata = {
   title: 'الأسئلة الشائعة | دليل العرب في تركيا',
@@ -45,7 +46,7 @@ export default async function FAQPage() {
       }
     }
   } catch (err) {
-    console.error('Failed to fetch dynamic FAQs:', err);
+    logger.error('Failed to fetch dynamic FAQs:', err);
   }
 
   // 3. Transform Dynamic Data to Categories

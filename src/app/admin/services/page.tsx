@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ServiceEditor } from '@/components/admin/editors/ServiceEditor';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
+import logger from '@/lib/logger';
 
 interface ServiceFormData {
     [key: string]: string | boolean | undefined;
@@ -137,7 +138,7 @@ export default function AdminServicesPage() {
             setRefreshKey(k => k + 1);
 
         } catch (err) {
-            console.error("Supabase Error:", JSON.stringify(err, null, 2));
+            logger.error("Supabase Error:", JSON.stringify(err, null, 2));
             toast.error('❌ حدث خطأ: ' + (err instanceof Error ? err.message : 'خطأ غير معروف'));
         } finally {
             setSaving(false);

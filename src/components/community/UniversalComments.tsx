@@ -6,6 +6,7 @@ import { fetchComments, postComment, toggleCommentLike, updateComment, deleteCom
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserBadgeStats, getPrimaryBadge, type Badge } from '@/lib/api/badges';
+import logger from '@/lib/logger';
 
 interface UniversalCommentsProps {
     entityType: 'article' | 'service' | 'update' | 'scenario' | 'zone';
@@ -429,7 +430,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         setLoading(true);
         try {
             const { data, error } = await fetchComments(entityType, entityId);
-            if (error) console.error('[Comments] fetch error:', error, { entityType, entityId });
+            if (error) logger.error('[Comments] fetch error:', error, { entityType, entityId });
             if (data) {
                 setComments(data);
                 // Load badges for logged-in commenters
@@ -450,7 +451,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                 }
             }
         } catch (err) {
-            console.error('[Comments] unexpected error:', err);
+            logger.error('[Comments] unexpected error:', err);
         }
         setLoading(false);
     };

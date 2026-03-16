@@ -3,6 +3,7 @@
 import React, { ReactNode, useState, useEffect } from 'react';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import logger from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -29,7 +30,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('❌ Error caught by boundary:', error, errorInfo);
+    logger.error('❌ Error caught by boundary:', error, errorInfo);
     // يمكنك إضافة خدمة تسجيل الأخطاء هنا (مثل Sentry)
   }
 
@@ -90,7 +91,7 @@ export function ErrorBoundaryWrapper({ children }: { children: ReactNode }) {
     const handleError = (event: ErrorEvent) => {
       setHasError(true);
       setError(event.error);
-      console.error('Global error:', event.error);
+      logger.error('Global error:', event.error);
     };
 
     window.addEventListener('error', handleError);

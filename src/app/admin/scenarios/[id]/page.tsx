@@ -8,6 +8,7 @@ import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
+import logger from '@/lib/logger';
 
 interface ScenarioFormData {
     id?: string;
@@ -62,7 +63,7 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
                 .single();
 
             if (error) {
-                console.error("Fetch error:", error);
+                logger.error("Fetch error:", error);
                 toast.error('لم يتم العثور على السيناريو');
                 router.push('/admin/scenarios');
                 return;

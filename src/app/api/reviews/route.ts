@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { isRateLimited } from '@/lib/rate-limit';
+import logger from '@/lib/logger';
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const svc = serviceRoleKey
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
             .insert([insertObj]);
 
         if (error) {
-            console.error('Review insert error:', error);
+            logger.error('Review insert error:', error);
             return NextResponse.json({ error: 'فشل حفظ التقييم' }, { status: 500 });
         }
 
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ data: { rating, service_id }, error: null });
     } catch (err) {
-        console.error('Review API error:', err);
+        logger.error('Review API error:', err);
         return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 });
     }
 }

@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 export type PrayerTimes = {
     Fajr: string;
     Sunrise: string;
@@ -52,7 +53,7 @@ export async function getPrayerTimes(city: string = 'Istanbul', country: string 
             date: data.date
         };
     } catch (error) {
-        console.warn('Prayer times unavailable:', error instanceof Error ? error.message : 'Unknown error');
+        logger.warn('Prayer times unavailable:', error instanceof Error ? error.message : 'Unknown error');
         return null;
     }
 }

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Plus, Search, Trash2, Edit, Save, X, Loader2, MapPin, Phone, Briefcase, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import logger from '@/lib/logger';
 
 // Types
 type ServiceProvider = {
@@ -77,7 +78,7 @@ export default function ServicesManager() {
             else setHasMore(true);
 
         } catch (err) {
-            console.error(err);
+            logger.error(err);
         } finally {
             setLoading(false);
         }
@@ -93,7 +94,7 @@ export default function ServicesManager() {
             setServices(prev => prev.filter(s => s.id !== id));
         } catch (err) {
             toast.error('حدث خطأ أثناء الحذف');
-            console.error(err);
+            logger.error(err);
         }
     }
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Star, Send } from 'lucide-react';
 import { addReview, type AddReviewData } from '@/lib/api/reviews';
+import logger from '@/lib/logger';
 
 
 interface AddReviewModalProps {
@@ -58,7 +59,7 @@ export default function AddReviewModal({
         setSubmitting(false);
 
         if (apiError) {
-            console.error('Review Error:', apiError);
+            logger.error('Review Error:', apiError);
             setError('حدث خطأ: ' + (apiError instanceof Error ? apiError.message : JSON.stringify(apiError)));
             return;
         }

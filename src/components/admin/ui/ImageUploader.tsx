@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
+import logger from '@/lib/logger';
 
 // Compress image client-side before upload (target: small KB sizes)
 async function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<File> {
@@ -106,7 +107,7 @@ export const ImageUploader = ({
             toast.success('تم رفع الصورة بنجاح');
 
         } catch (error) {
-            console.error('Upload Error:', error);
+            logger.error('Upload Error:', error);
             toast.error('فشل الرفع: ' + (error instanceof Error ? error.message : String(error)));
         } finally {
             setUploading(false);

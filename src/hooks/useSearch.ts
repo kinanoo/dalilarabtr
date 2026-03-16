@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import logger from '@/lib/logger';
 
 interface SearchResult {
     id: string;
@@ -21,7 +22,7 @@ export function useSearch(data: SearchResult[], debounceMs: number = 300) {
             try {
                 setSearchHistory(JSON.parse(stored));
             } catch (e) {
-                console.error('Failed to parse search history', e);
+                logger.error('Failed to parse search history', e);
             }
         }
     }, []);

@@ -1,4 +1,5 @@
 import { supabase, getAnonClient } from '../supabaseClient';
+import logger from '@/lib/logger';
 
 // Reserved names that only the admin/system should use
 const RESERVED_PATTERNS = [
@@ -169,7 +170,7 @@ export async function updateComment(
         }
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error updating comment:', error);
+        logger.error('Error updating comment:', error);
         return { success: false, error };
     }
 }
@@ -185,7 +186,7 @@ export async function deleteComment(
         }
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error deleting comment:', error);
+        logger.error('Error deleting comment:', error);
         return { success: false, error };
     }
 }

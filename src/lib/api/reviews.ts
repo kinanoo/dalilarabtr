@@ -1,4 +1,5 @@
 import { supabase, getAuthClient } from '../supabaseClient';
+import logger from '@/lib/logger';
 
 // ============================================
 // 📊 Types
@@ -85,7 +86,7 @@ export async function getServiceReviews(
         if (error) throw error;
         return { data: data || [], error: null };
     } catch (error) {
-        console.error('Error fetching reviews:', error);
+        logger.error('Error fetching reviews:', error);
         return { data: [], error };
     }
 }
@@ -110,7 +111,7 @@ export async function getReviewStats(serviceId: string): Promise<{ data: ReviewS
         const stats = data?.[0] || null;
         return { data: stats, error: null };
     } catch (error) {
-        console.error('Error fetching review stats:', error);
+        logger.error('Error fetching review stats:', error);
         return { data: null, error };
     }
 }
@@ -140,7 +141,7 @@ export async function addReview(reviewData: AddReviewData): Promise<{ data: Serv
         }
         return { data: result.data, error: null };
     } catch (error) {
-        console.error('Error adding review:', error);
+        logger.error('Error adding review:', error);
         return { data: null, error };
     }
 }
@@ -183,7 +184,7 @@ export async function markReviewHelpful(
         // إذا فشل التحديث، لا بأس - سنحسبه من الـ votes
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error marking review helpful:', error);
+        logger.error('Error marking review helpful:', error);
         return { success: false, error };
     }
 }
@@ -237,7 +238,7 @@ export async function updateReview(
         if (error) throw error;
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error updating review:', error);
+        logger.error('Error updating review:', error);
         return { success: false, error };
     }
 }
@@ -276,7 +277,7 @@ export async function deleteReview(
         }
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error deleting review:', error);
+        logger.error('Error deleting review:', error);
         return { success: false, error };
     }
 }
@@ -334,7 +335,7 @@ export async function reportReview(
         }
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error reporting review:', error);
+        logger.error('Error reporting review:', error);
         return { success: false, error };
     }
 }

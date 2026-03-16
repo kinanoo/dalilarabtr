@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Trash2, Plus, CheckCircle, XCircle, Newspaper, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
+import logger from '@/lib/logger';
 
 interface TickerItem {
     id: string;
@@ -55,7 +56,7 @@ export default function NewsTickerManager() {
             setNewItem({ text: '', link: '', is_active: true });
             fetchItems();
         } else {
-            console.error('Insert error:', error);
+            logger.error('Insert error:', error);
             toast.error('فشل إضافة الخبر، حاول مجدداً');
         }
     }
@@ -82,7 +83,7 @@ export default function NewsTickerManager() {
             toast.success('تم حذف الخبر', { id: toastId });
             fetchItems();
         } else {
-            console.error('Delete error:', error);
+            logger.error('Delete error:', error);
             toast.error('فشل حذف الخبر، حاول مجدداً', { id: toastId });
         }
     }

@@ -21,6 +21,7 @@ import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import { TOP_FAQS } from '@/lib/home-faq-data';
+import logger from '@/lib/logger';
 
 // ============================================
 // 📦 Data Fetching (Server-Side)
@@ -67,7 +68,7 @@ async function getUpdates() {
     );
 
     if (!result) {
-      console.warn('getUpdates: Supabase timeout (8s) — rendering without updates');
+      logger.warn('getUpdates: Supabase timeout (8s) — rendering without updates');
       return [];
     }
 
@@ -109,7 +110,7 @@ async function getUpdates() {
 
     return merged;
   } catch (error) {
-    console.error('Error fetching updates:', error);
+    logger.error('Error fetching updates:', error);
     return [];
   }
 }

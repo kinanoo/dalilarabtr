@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import logger from '@/lib/logger';
 
 /**
  * GET /api/auth/google/callback?code=xxx&state=xxx
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     const tokens = await tokenRes.json();
     if (!tokens.id_token) {
-        console.error('Google token exchange failed:', tokens);
+        logger.error('Google token exchange failed:', tokens);
         return NextResponse.redirect(`${origin}/login?error=token_failed`);
     }
 
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (authError || !data.session) {
-        console.error('Supabase signInWithIdToken failed:', authError);
+        logger.error('Supabase signInWithIdToken failed:', authError);
         return NextResponse.redirect(`${origin}/login?error=auth_failed`);
     }
 

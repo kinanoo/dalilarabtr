@@ -7,6 +7,7 @@ import { ar } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
 import { containsProfanity } from '@/lib/profanity-filter';
 import { isReservedName } from '@/lib/api/comments';
+import logger from '@/lib/logger';
 
 type Comment = {
     id: string;
@@ -92,7 +93,7 @@ export default function CommentsClient({ pageSlug, initialComments }: Props) {
             ]);
 
         if (dbError) {
-            console.error(dbError);
+            logger.error(dbError);
             setError('حدث خطأ أثناء الإرسال. تأكد من اتصالك بالإنترنت.');
             // Ideally revert optimistic update, but keeping it simple
         } else {

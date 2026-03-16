@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import logger from '@/lib/logger';
 
 // ============================================
 // Types
@@ -186,7 +187,7 @@ export async function createNotification(payload: {
         }
         return { success: true, error: null };
     } catch (error) {
-        console.error('Error creating notification:', error);
+        logger.error('Error creating notification:', error);
         return { success: false, error };
     }
 }

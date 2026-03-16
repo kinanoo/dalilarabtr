@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import logger from '@/lib/logger';
 
 export const runtime = 'edge';
 
@@ -214,7 +215,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (e) {
-    console.error('OG image generation failed:', e);
+    logger.error('OG image generation failed:', e);
     return new Response(null, {
       status: 302,
       headers: { Location: '/og-image.jpg' },

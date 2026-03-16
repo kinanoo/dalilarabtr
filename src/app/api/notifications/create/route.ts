@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { isRateLimited } from '@/lib/rate-limit';
+import logger from '@/lib/logger';
 
 // Use service role for server-side notification inserts (bypasses RLS safely)
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
             });
 
         if (error) {
-            console.error('Failed to create notification:', error);
+            logger.error('Failed to create notification:', error);
             return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 });
         }
 

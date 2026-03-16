@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
 import { MapPin, ShieldAlert, Building2, ChevronLeft } from 'lucide-react';
+import logger from '@/lib/logger';
 
 type ClosedAreaItem = {
   c: string; // City
@@ -135,7 +136,7 @@ export default function ZonesPage() {
         if (active) setData(payload);
       } catch (error) {
         if (active) setLoadError('تعذر تحميل قاعدة البيانات.');
-        console.error(error);
+        logger.error(error);
       } finally {
         if (active) setLoading(false);
       }

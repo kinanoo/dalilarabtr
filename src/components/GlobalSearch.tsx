@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { normalizeArabic, tokenizeArabicQuery } from '@/lib/arabicSearch';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 import {
   getUnifiedSearchIndex,
   getOptimalDebounceTime,
@@ -303,7 +304,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         setRemoteResults(newResults);
 
       } catch (err) {
-        console.error("Global search error:", err);
+        logger.error("Global search error:", err);
       } finally {
         setIsSearching(false);
       }

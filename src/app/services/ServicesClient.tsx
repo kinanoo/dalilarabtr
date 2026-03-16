@@ -8,6 +8,7 @@ import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
+import logger from '@/lib/logger';
 
 export default function ServicesClient() {
   // --- State ---
@@ -68,7 +69,7 @@ export default function ServicesClient() {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Supabase Error:', error);
+      logger.error('Supabase Error:', error);
       setErrorMsg(error.message + ' (' + error.code + ')');
     }
 
