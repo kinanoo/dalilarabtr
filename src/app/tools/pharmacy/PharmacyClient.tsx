@@ -1,35 +1,37 @@
 'use client';
 
-import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight, Phone, Info } from 'lucide-react';
+import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight, Phone, Info, Clock, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
-
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-    title: 'الصيدليات المناوبة في تركيا 2026 | رابط E-Devlet الرسمي',
-    description: 'رابط مباشر وفوري لمعرفة الصيدلية المناوبة في منطقتك (إسطنبول، غازي عنتاب، مرسين، وكل المدن) عبر بوابة الحكومة التركية الرسمية E-Devlet.',
-    keywords: 'صيدليات مناوبة تركيا, نوبتشي اجزاني, صيدلية مناوبة اسطنبول, صيدلية مناوبة غازي عنتاب, E-Devlet pharmacy, Nöbetçi Eczane',
-};
 
 export default function PharmacyPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo flex flex-col">
 
-            {/* Hero Section - Matching Main Site Theme */}
-            <section className="relative bg-primary-900 dark:bg-primary-950 text-white pt-24 pb-16 px-4 overflow-hidden rounded-b-[60px] shadow-lg">
-                <div className="absolute inset-0 opacity-10" />
-                <div className="max-w-4xl mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-sm rounded-full mb-4">
-                        <HeartPulse className="w-8 h-8 text-red-500" />
+            {/* Hero Section - Compact & Action-oriented */}
+            <section className="relative bg-gradient-to-bl from-red-900 via-red-950 to-slate-900 text-white pt-16 pb-12 px-4 overflow-hidden rounded-b-[40px] shadow-lg">
+                <div className="max-w-3xl mx-auto text-center relative z-10">
+                    <div className="inline-flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-sm rounded-2xl mb-3">
+                        <HeartPulse className="w-7 h-7 text-red-400" />
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
-                        الصيدليات المناوبة <span className="text-red-500">(Nöbetçi)</span>
+                    <h1 className="text-2xl md:text-4xl font-extrabold mb-2">
+                        الصيدلية المناوبة الآن
                     </h1>
-                    <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                        البوابة الحكومية الرسمية للوصول لأقرب صيدلية في جميع الولايات التركية.
+                    <p className="text-sm md:text-base text-slate-300 max-w-lg mx-auto">
+                        اعرف أقرب صيدلية مفتوحة في منطقتك — رابط رسمي مباشر من e-Devlet
                     </p>
+                    <div className="flex items-center justify-center gap-3 mt-3 text-xs text-slate-400">
+                        <span className="flex items-center gap-1">
+                            <Clock size={12} />
+                            محدّث لحظياً
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                            <MapPin size={12} />
+                            81 ولاية تركية
+                        </span>
+                    </div>
                 </div>
             </section>
 
@@ -107,6 +109,32 @@ export default function PharmacyPage() {
                         </div>
                     </div>
 
+                    {/* FAQ Section — visible for SEO */}
+                    <div className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <span className="text-lg">❓</span>
+                            أسئلة شائعة عن الصيدليات المناوبة
+                        </h3>
+                        <div className="space-y-3">
+                            <PharmacyFaq
+                                question="كيف أعرف الصيدلية المناوبة في موقعي الآن؟"
+                                answer="اضغط على رابط e-Devlet الرسمي أعلاه، ثم اختر الولاية (İl) والمنطقة (İlçe) وستظهر لك قائمة الصيدليات المناوبة المفتوحة حالياً مع العناوين وأرقام الهاتف."
+                            />
+                            <PharmacyFaq
+                                question="ما هي ساعات عمل الصيدلية المناوبة؟"
+                                answer="الصيدلية المناوبة (Nöbetçi Eczane) تعمل على مدار الساعة 24/7 خلال فترة مناوبتها. يتم تغيير المناوبة يومياً."
+                            />
+                            <PharmacyFaq
+                                question="هل أحتاج حساب e-Devlet لمعرفة الصيدلية المناوبة؟"
+                                answer="لا، خدمة البحث عن الصيدليات المناوبة متاحة للجميع بدون تسجيل دخول. فقط اضغط الرابط واختر منطقتك."
+                            />
+                            <PharmacyFaq
+                                question="هل الخدمة تغطي كل مدن تركيا؟"
+                                answer="نعم، الخدمة مرتبطة ببوابة الحكومة الإلكترونية e-Devlet وتغطي كافة الولايات التركية الـ 81 بما فيها إسطنبول، أنقرة، غازي عنتاب، مرسين، أنطاليا وغيرها."
+                            />
+                        </div>
+                    </div>
+
                     <div className="mt-6 flex justify-center">
                         <ShareMenu
                             title="الصيدليات المناوبة في تركيا"
@@ -129,5 +157,20 @@ export default function PharmacyPage() {
                 </div>
             </main>
 </div>
+    );
+}
+
+/** FAQ accordion item */
+function PharmacyFaq({ question, answer }: { question: string; answer: string }) {
+    return (
+        <details className="group border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+            <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors list-none [&::-webkit-details-marker]:hidden">
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-right">{question}</h4>
+                <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+            </summary>
+            <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
+                {answer}
+            </div>
+        </details>
     );
 }

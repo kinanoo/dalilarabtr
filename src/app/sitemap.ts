@@ -95,5 +95,49 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 0.8,
     },
+    // Tools — high traffic pages
+    {
+      url: `${baseUrl}/tools/kimlik-check`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/tools/pharmacy`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    // Category pages
+    {
+      url: `${baseUrl}/residence`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/work`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/forms`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/request`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
   ];
 }

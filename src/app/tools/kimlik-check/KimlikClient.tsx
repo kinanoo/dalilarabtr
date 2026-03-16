@@ -316,6 +316,32 @@ export default function KimlikCheckPage() {
                         </div>
                     </div>
 
+                    {/* ===== Section 4.5: Visible FAQ — helps SEO + user engagement ===== */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-5 md:p-8">
+                        <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-5 flex items-center gap-2">
+                            <span className="text-xl">❓</span>
+                            أسئلة شائعة عن فحص الكملك
+                        </h2>
+                        <div className="space-y-4">
+                            <FaqItem
+                                question="كيف أتأكد من صلاحية الكملك؟"
+                                answer="ادخل رقم الكملك (11 رقم) في أداة الفحص أعلاه للتحقق الخوارزمي الفوري. ثم استخدم الرابط المباشر لموقع النفوس التركي الرسمي (NVI) لمعرفة إن كان القيد فعّال أو مُبطل."
+                            />
+                            <FaqItem
+                                question="كيف أعرف الكملك شغال أو موقوف؟"
+                                answer='ادخل موقع النفوس التركي NVI وأدخل رقم الكملك واسمك وتاريخ ميلادك. إذا ظهرت بياناتك فالقيد فعّال. إذا ظهرت رسالة "Kayıt Bulunamadı" فالقيد مُبطل أو موقوف.'
+                            />
+                            <FaqItem
+                                question="ما هو رابط فحص الكملك 99 للأجانب؟"
+                                answer="رابط فحص الكملك للأجانب (الذي يبدأ بـ 99) هو صفحة Yabancı Kimlik No Doğrulama على موقع tckimlik.nvi.gov.tr — الموقع الرسمي لمديرية النفوس والمواطنة التركية."
+                            />
+                            <FaqItem
+                                question="هل فحص الكملك على هذا الموقع آمن؟"
+                                answer="نعم، أداتنا تتحقق فقط من صحة خوارزمية الرقم محلياً على جهازك دون إرسال أي بيانات لأي سيرفر. للتحقق من حالة القيد الفعلية، نوجهك للموقع الحكومي الرسمي مباشرة."
+                            />
+                        </div>
+                    </div>
+
                     {/* ===== Section 5: Share + Related ===== */}
                     <div className="flex justify-center">
                         <ShareMenu
@@ -349,6 +375,21 @@ function StepBadge({ step, text }: { step: number; text: string }) {
             <span className="text-sm font-extrabold">{step}</span>
             {text}
         </span>
+    );
+}
+
+/** FAQ item — visible on page for SEO + UX */
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+    return (
+        <details className="group border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+            <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors list-none [&::-webkit-details-marker]:hidden">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-right">{question}</h3>
+                <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+            </summary>
+            <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
+                {answer}
+            </div>
+        </details>
     );
 }
 
