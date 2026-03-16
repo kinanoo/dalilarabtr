@@ -18,7 +18,7 @@ const InteractiveParticles = dynamic(() => import('./InteractiveParticles'), {
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
-        <section className="relative z-[15] bg-slate-900 text-white pt-3 pb-8 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
+        <section className="relative z-[15] bg-slate-900 text-white pt-2 pb-6 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
 
             {/* Background */}
             <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
@@ -39,14 +39,14 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 <div className="animate-hero-entrance pointer-events-none">
                     <h1 className="text-4xl md:text-6xl font-black mb-0 leading-tight drop-shadow-2xl">
                         دليلك القانوني{' '}
-                        <span className="relative inline-block">
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
-                            <span className="absolute -bottom-4 md:-bottom-5 right-0 left-0 text-[10px] md:text-[11px] text-emerald-300/60 font-medium tracking-wide whitespace-nowrap text-center">
+                        <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                            الشامل
+                            <span className="block text-[8px] md:text-[10px] text-emerald-300/40 font-medium tracking-wide mt-0 leading-none bg-clip-text text-transparent bg-gradient-to-r from-emerald-400/40 to-cyan-400/40" style={{ fontWeight: 500 }}>
                                 أول دليل ذكي بالعربية في تركيا
                             </span>
                         </span>
                     </h1>
-                    <div className="mb-3 mt-5 md:mt-6" />
+                    <div className="mb-2 mt-3 md:mt-4" />
 
                     <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed">
                         كل ما تحتاجه في تركيا: إقامات، قانون، أكواد أمنية، وخدمات ذكية.

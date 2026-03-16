@@ -57,8 +57,8 @@ export default function UrgencyBanner() {
 
     return (
         <div
-            className={`relative z-[60] overflow-hidden shadow-lg font-cairo transition-all duration-300 ease-in-out ${
-                isExiting ? 'max-h-0 opacity-0' : 'max-h-28 opacity-100'
+            className={`relative z-[50] overflow-hidden shadow-lg font-cairo transition-all duration-300 ease-in-out ${
+                isExiting ? 'max-h-0 opacity-0 py-0' : 'max-h-24 opacity-100'
             }`}
         >
             {/* Gradient background */}
@@ -81,29 +81,27 @@ export default function UrgencyBanner() {
                 />
             )}
 
-            <div className="relative max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {/* Icon with pulse ring */}
+            <div className="relative max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    {/* Icon — no pulse ring on mobile to save space */}
                     <span className="relative flex-shrink-0">
-                        <span className={`absolute inset-0 rounded-full animate-ping opacity-30 ${
+                        <span className={`absolute inset-0 rounded-full animate-ping opacity-30 hidden sm:block ${
                             isAlert ? 'bg-red-300' : isWarning ? 'bg-amber-300' : 'bg-blue-300'
                         }`} />
-                        <span className="relative flex items-center justify-center w-8 h-8 bg-white/20 rounded-full">
-                            <Icon size={16} className="text-white" />
+                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full">
+                            <Icon size={14} className="text-white sm:w-4 sm:h-4" />
                         </span>
                     </span>
 
-                    <div className="text-sm text-white flex-1 min-w-0">
-                        <span className="font-extrabold ml-1.5 text-white/95">{label}:</span>
-                        <span className="font-medium">
-                            {bannerData.content}
-                        </span>
+                    <div className="text-xs sm:text-sm text-white flex-1 min-w-0 line-clamp-2">
+                        <span className="font-extrabold ml-1 text-white/95">{label}:</span>
+                        <span className="font-medium"> {bannerData.content}</span>
                     </div>
 
                     {bannerData.link_url && (
                         <Link
                             href={bannerData.link_url}
-                            className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full text-xs font-bold text-white transition-colors whitespace-nowrap shrink-0"
+                            className="hidden sm:flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full text-xs font-bold text-white transition-colors whitespace-nowrap shrink-0"
                         >
                             {bannerData.link_text || 'اقرأ المزيد'} <ArrowRight size={12} className="rotate-180" />
                         </Link>
@@ -113,10 +111,10 @@ export default function UrgencyBanner() {
                 <button
                     type="button"
                     onClick={handleDismiss}
-                    className="text-white/70 hover:text-white transition-colors p-2 min-w-10 min-h-10 flex items-center justify-center hover:bg-white/10 rounded-full flex-shrink-0"
+                    className="text-white/70 hover:text-white transition-colors p-1.5 sm:p-2 flex items-center justify-center hover:bg-white/10 rounded-full flex-shrink-0"
                     aria-label="إغلاق التنبيه"
                 >
-                    <X size={18} />
+                    <X size={16} />
                 </button>
             </div>
 
