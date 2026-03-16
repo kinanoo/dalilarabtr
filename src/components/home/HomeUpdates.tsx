@@ -260,7 +260,7 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
     return (
         <Link
             href={href}
-            className={`block h-full rounded-xl p-4 border hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden ${
+            className={`block h-full rounded-xl p-3 sm:p-4 border hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden ${
                 isUrgent
                     ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50 hover:border-red-400 hover:shadow-lg hover:shadow-red-500/10'
                     : 'bg-white dark:bg-white/[0.04] dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/30 hover:shadow-md'
@@ -273,31 +273,33 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
             )}
 
             <div className="flex items-start gap-3 h-full relative">
-                {/* Icon/Image */}
-                {isUrgent ? (
-                    <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-                        <Flame size={22} className="text-red-500" />
-                    </div>
-                ) : isAuto && iconConfig ? (
-                    <div className={`w-12 h-12 flex-shrink-0 rounded-lg ${iconConfig.bgLight} ${iconConfig.bgDark} flex items-center justify-center`}>
-                        <iconConfig.icon size={22} className={`text-${iconConfig.color}-600`} />
-                    </div>
-                ) : update.image ? (
-                    <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <Image
-                            src={update.image}
-                            alt={update.title || ""}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                            priority={index === 0}
-                        />
-                    </div>
-                ) : (
-                    <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-                        <Newspaper size={22} className="text-amber-600" />
-                    </div>
-                )}
+                {/* Icon/Image — hidden on mobile for more title space */}
+                <div className="hidden sm:block flex-shrink-0">
+                    {isUrgent ? (
+                        <div className="w-11 h-11 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                            <Flame size={20} className="text-red-500" />
+                        </div>
+                    ) : isAuto && iconConfig ? (
+                        <div className={`w-11 h-11 rounded-lg ${iconConfig.bgLight} ${iconConfig.bgDark} flex items-center justify-center`}>
+                            <iconConfig.icon size={20} className={`text-${iconConfig.color}-600`} />
+                        </div>
+                    ) : update.image ? (
+                        <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+                            <Image
+                                src={update.image}
+                                alt={update.title || ""}
+                                fill
+                                className="object-cover"
+                                sizes="44px"
+                                priority={index === 0}
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-11 h-11 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
+                            <Newspaper size={20} className="text-amber-600" />
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
