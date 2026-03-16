@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
     ShieldAlert, ShieldCheck, CheckCircle2, AlertTriangle,
-    ExternalLink, Copy, ArrowRight, UserCheck, Hash, ArrowDown
+    ExternalLink, Copy, Check, UserCheck, Hash, ChevronDown, BookOpen
 } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
@@ -13,6 +13,8 @@ import RelatedArticles from '@/components/RelatedArticles';
 export default function KimlikCheckPage() {
     const [tcNumber, setTcNumber] = useState('');
     const [result, setResult] = useState<'valid' | 'invalid' | null>(null);
+    const [copied, setCopied] = useState(false);
+    const [guideOpen, setGuideOpen] = useState(false);
 
     const validateTC = (value: string) => {
         if (!value) { setResult(null); return; }
@@ -38,203 +40,59 @@ export default function KimlikCheckPage() {
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(tcNumber);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
+
+    // Dynamic border color based on state
+    const inputBorderClass = result === 'valid'
+        ? 'border-green-500 ring-4 ring-green-500/20'
+        : result === 'invalid' && tcNumber.length === 11
+            ? 'border-red-500 ring-4 ring-red-500/20'
+            : tcNumber.length > 0
+                ? 'border-emerald-400 ring-4 ring-emerald-400/10'
+                : 'border-slate-300 dark:border-slate-700';
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo flex flex-col">
 
-            {/* Hero */}
-            <section className="relative bg-primary-900 dark:bg-primary-950 text-white pt-24 pb-16 px-4 overflow-hidden rounded-b-[60px] shadow-lg">
-                <div className="absolute inset-0 opacity-10" />
-                <div className="max-w-4xl mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-sm rounded-full mb-4">
-                        <UserCheck className="w-8 h-8 text-emerald-400" />
+            {/* ===== Hero — Compact ===== */}
+            <section className="bg-gradient-to-bl from-primary-900 via-primary-950 to-slate-900 text-white pt-16 pb-12 px-4 rounded-b-[40px]">
+                <div className="max-w-3xl mx-auto text-center">
+                    <div className="inline-flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-sm rounded-2xl mb-3">
+                        <UserCheck className="w-7 h-7 text-emerald-400" />
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
+                    <h1 className="text-2xl md:text-4xl font-extrabold mb-2">
                         فاحص الكملك التركي
                     </h1>
-                    <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-                        دليل مصوّر لفحص صلاحية الكملك عبر موقع النفوس الرسمي، مع أداة التحقق من صحة الرقم.
+                    <p className="text-sm md:text-base text-slate-300 max-w-lg mx-auto">
+                        تحقق من صحة رقم الكملك فوراً، أو انتقل للموقع الرسمي لفحص صلاحية القيد
                     </p>
                 </div>
             </section>
 
-            <main className="flex-grow pt-10 pb-16 px-4 -mt-10 relative z-20">
-                <div className="container mx-auto max-w-3xl space-y-6">
+            <main className="flex-grow pt-6 pb-16 px-4 -mt-6 relative z-20">
+                <div className="container mx-auto max-w-2xl space-y-5">
 
-                    {/* ========================================= */}
-                    {/* Section 1: Visual Guide — NVI Form Fields */}
-                    {/* ========================================= */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    {/* ===== Section 1: Algorithm Checker (FIRST!) ===== */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-5 md:p-8">
 
-                        {/* Header */}
-                        <div className="px-6 py-5 bg-gradient-to-l from-blue-900 to-blue-950 text-white">
-                            <div className="flex items-center gap-2 text-sm text-blue-200 mb-1">
-                                <ShieldCheck size={16} />
-                                <span>T.C. Nüfus ve Vatandaşlık İşleri Genel Müdürlüğü</span>
-                            </div>
-                            <h2 className="text-lg font-bold">
-                                Yabancı/Mavi Kartlı Kimlik No Doğrulama
-                            </h2>
-                        </div>
-
-                        {/* Visual Form Recreation with Arabic Annotations */}
-                        <div className="p-6 md:p-8">
-                            <p className="text-sm text-emerald-700 dark:text-emerald-400 font-bold mb-6 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl text-center">
-                                هذه صورة توضيحية لنموذج الفحص في موقع النفوس الرسمي — اتبع الخطوات أدناه
-                            </p>
-
-                            <div className="space-y-4">
-                                {/* Field 1 */}
-                                <FormFieldGuide
-                                    label="Yabancı/Mavi Kartlı Kimlik No"
-                                    arabic="رقم الكملك (11 خانة تبدأ بـ 99)"
-                                    placeholder="99xxxxxxxxx"
-                                    step={1}
-                                />
-
-                                {/* Field 2 */}
-                                <FormFieldGuide
-                                    label="Ad"
-                                    arabic="الاسم الأول (كما في الكملك بالتركية)"
-                                    placeholder="AHMAD"
-                                    step={2}
-                                />
-
-                                {/* Field 3 */}
-                                <FormFieldGuide
-                                    label="Soyad"
-                                    arabic="الكنية / اسم العائلة"
-                                    placeholder="MOHAMMAD"
-                                    step={3}
-                                />
-
-                                {/* Field 4 */}
-                                <FormFieldGuide
-                                    label="Doğum Gün"
-                                    arabic="يوم الميلاد (رقم)"
-                                    placeholder="15"
-                                    step={4}
-                                />
-
-                                {/* Field 5 */}
-                                <FormFieldGuide
-                                    label="Doğum Ay"
-                                    arabic="شهر الميلاد (رقم)"
-                                    placeholder="03"
-                                    step={5}
-                                />
-
-                                {/* Field 6 */}
-                                <FormFieldGuide
-                                    label="Doğum Yılı"
-                                    arabic="سنة الميلاد"
-                                    placeholder="1990"
-                                    step={6}
-                                />
-
-                                {/* reCAPTCHA */}
-                                <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3">
-                                        <div className="w-5 h-5 border-2 border-slate-400 rounded" />
-                                        <span className="text-sm text-slate-700 dark:text-slate-300">Ben robot değilim</span>
-                                    </div>
-                                    <div className="flex-1 text-right">
-                                        <span className="inline-flex items-center gap-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full">
-                                            <span className="text-base">7</span>
-                                            علّم على &quot;أنا لست روبوت&quot;
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Doğrula Button */}
-                                <div className="flex items-center gap-4 pt-2">
-                                    <div className="bg-blue-800 text-white px-6 py-2.5 rounded text-sm font-bold">
-                                        Doğrula
-                                    </div>
-                                    <div className="flex-1 text-right">
-                                        <span className="inline-flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-full">
-                                            <span className="text-base">8</span>
-                                            اضغط &quot;Doğrula&quot; للتحقق
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Result explanation */}
-                            <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                                <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-3">النتيجة:</h4>
-                                <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
-                                        <span>إذا ظهرت <strong>بياناتك أسفل حقول الإدخال</strong> = القيد <strong className="text-green-700 dark:text-green-400">فعّال وشغّال</strong></span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
-                                        <span>إذا ظهرت رسالة <strong className="text-red-600 dark:text-red-400">Kayıt Bulunamadı</strong> = القيد غير موجود أو مُبطل</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ========================================= */}
-                    {/* Section 2: CTA — Go to Official NVI Site  */}
-                    {/* ========================================= */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 text-center relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500" />
-
-                        <ArrowDown className="mx-auto w-6 h-6 text-emerald-500 mb-3 animate-bounce" />
-
-                        <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 mb-3">
-                            جاهز للفحص؟ انتقل للموقع الرسمي
-                        </h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-                            اضغط الزر أدناه للانتقال مباشرة لصفحة فحص الكملك في موقع النفوس التركي الرسمي (NVI)
-                        </p>
-
-                        <a
-                            href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-3 w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold py-4 px-8 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 hover:scale-[1.02] hover:shadow-xl"
-                        >
-                            <span>فتح موقع النفوس الرسمي (NVI)</span>
-                            <ExternalLink className="w-5 h-5" />
-                        </a>
-
-                        <div className="mt-4 flex justify-center gap-4 text-xs text-slate-400 dark:text-slate-500">
-                            <span className="flex items-center gap-1">
-                                <ShieldCheck size={12} className="text-emerald-500" />
-                                موقع حكومي رسمي
-                            </span>
-                            <span>tckimlik.nvi.gov.tr</span>
-                        </div>
-                    </div>
-
-                    {/* ========================================= */}
-                    {/* Section 3: Algorithm Checker               */}
-                    {/* ========================================= */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 overflow-hidden">
-
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 bg-violet-100 dark:bg-violet-900/30 rounded-xl">
-                                <Hash className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                        <div className="flex items-center gap-3 mb-5">
+                            <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                                <Hash className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
                                 <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100">
-                                    فحص الخوارزمية (بدون إنترنت)
+                                    فحص رقم الكملك
                                 </h2>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    تحقق سريع من بنية الرقم — لا يحتاج بيانات شخصية
+                                    فحص فوري — بدون إنترنت ولا بيانات شخصية
                                 </p>
                             </div>
                         </div>
 
-                        <div className="mb-6">
-                            <label htmlFor="kimlik-number" className="block text-slate-700 dark:text-slate-300 font-bold mb-2 text-sm">
-                                أدخل رقم الكملك (11 خانة):
-                            </label>
+                        {/* Input */}
+                        <div className="mb-4">
                             <div className="relative">
                                 <input
                                     id="kimlik-number"
@@ -246,56 +104,67 @@ export default function KimlikCheckPage() {
                                     aria-label="أدخل رقم الكملك المكون من 11 رقم"
                                     value={tcNumber}
                                     onChange={handleChange}
-                                    placeholder="99XXXXXXXXX"
-                                    className="w-full px-6 py-4 text-2xl font-mono tracking-widest text-center border-2 border-slate-300 dark:border-slate-700 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none transition-all dark:bg-slate-950 dark:text-white placeholder:text-slate-400"
+                                    placeholder="أدخل رقم الكملك هنا"
+                                    className={`w-full px-5 py-4 text-xl md:text-2xl font-mono tracking-wider text-center border-2 rounded-2xl outline-none transition-all duration-300 dark:bg-slate-950 dark:text-white placeholder:text-slate-400 placeholder:text-base placeholder:font-cairo placeholder:tracking-normal ${inputBorderClass}`}
                                     maxLength={11}
                                 />
-                                {tcNumber && (
-                                    <button
-                                        onClick={copyToClipboard}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
-                                        title="نسخ الرقم"
-                                    >
-                                        <Copy className="w-5 h-5" />
-                                    </button>
-                                )}
+                                {/* Copy button */}
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                    {tcNumber ? (
+                                        <button
+                                            onClick={copyToClipboard}
+                                            className="p-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                                            title="نسخ الرقم"
+                                            aria-label="نسخ الرقم"
+                                        >
+                                            {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                                        </button>
+                                    ) : null}
+                                </div>
+                                {/* Counter */}
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <span className={`text-xs font-bold px-2 py-1 rounded-lg ${tcNumber.length === 11 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                        {tcNumber.length}/11
+                                    </span>
+                                </div>
                             </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
-                                يبدأ بـ 99 للأجانب — هذا الفحص لا يخزّن أي بيانات
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 text-center">
+                                يبدأ بـ 99 للأجانب — لا نخزّن أي بيانات
                             </p>
                         </div>
 
-                        {/* Validation Result */}
+                        {/* Result — Valid */}
                         {result === 'valid' && (
-                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-5 mb-4">
-                                <div className="flex items-start gap-3">
+                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4">
+                                <div className="flex items-center gap-3">
                                     <div className="p-2 bg-green-100 dark:bg-green-800/50 rounded-full shrink-0">
                                         <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-green-700 dark:text-green-400">
-                                            الرقم صحيح خوارزمياً
+                                        <h3 className="font-bold text-green-700 dark:text-green-400">
+                                            الرقم صحيح خوارزمياً ✓
                                         </h3>
-                                        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                                            بنية الرقم سليمة. لكن لمعرفة إن كان القيد <strong>فعّال</strong> أم لا، يجب الفحص في موقع النفوس أعلاه.
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                                            بنية الرقم سليمة. لمعرفة إن كان القيد <strong>فعّال</strong>، افحصه بالموقع الرسمي أدناه.
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         )}
 
+                        {/* Result — Invalid */}
                         {result === 'invalid' && tcNumber.length === 11 && (
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-5 mb-4">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-red-100 dark:bg-red-800/50 rounded-full">
+                                    <div className="p-2 bg-red-100 dark:bg-red-800/50 rounded-full shrink-0">
                                         <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-red-700 dark:text-red-400">
-                                            الرقم غير صالح
+                                        <h3 className="font-bold text-red-700 dark:text-red-400">
+                                            الرقم غير صالح ✕
                                         </h3>
-                                        <p className="text-sm text-red-600/80 dark:text-red-300/80 mt-1">
-                                            هذا الرقم لا يتبع خوارزمية الأرقام التركية. تأكد من كتابته بشكل صحيح.
+                                        <p className="text-xs text-red-600/80 dark:text-red-300/80 mt-0.5">
+                                            لا يتبع خوارزمية الأرقام التركية. تأكد من كتابته بشكل صحيح.
                                         </p>
                                     </div>
                                 </div>
@@ -303,31 +172,151 @@ export default function KimlikCheckPage() {
                         )}
                     </div>
 
-                    {/* Educational Content */}
-                    <div className="grid md:grid-cols-2 gap-4">
+                    {/* ===== Section 2: CTA — Official NVI Site ===== */}
+                    <a
+                        href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group block bg-emerald-600 hover:bg-emerald-700 rounded-2xl p-5 text-white transition-all shadow-lg shadow-emerald-600/20 hover:shadow-xl hover:scale-[1.01]"
+                    >
+                        <div className="flex items-center justify-between gap-4">
+                            <div>
+                                <h2 className="text-lg font-extrabold mb-1">
+                                    فحص صلاحية القيد — الموقع الرسمي
+                                </h2>
+                                <p className="text-sm text-emerald-100 opacity-90">
+                                    انتقل لموقع النفوس التركي (NVI) لمعرفة إن كان القيد فعّال أو مُبطل
+                                </p>
+                                <div className="flex items-center gap-3 mt-2 text-xs text-emerald-200">
+                                    <span className="flex items-center gap-1">
+                                        <ShieldCheck size={12} />
+                                        موقع حكومي رسمي
+                                    </span>
+                                    <span>tckimlik.nvi.gov.tr</span>
+                                </div>
+                            </div>
+                            <div className="shrink-0 p-3 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors">
+                                <ExternalLink className="w-6 h-6" />
+                            </div>
+                        </div>
+                    </a>
+
+                    {/* ===== Section 3: Visual Guide (Collapsible) ===== */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+
+                        {/* Toggle Button */}
+                        <button
+                            onClick={() => setGuideOpen(!guideOpen)}
+                            className="w-full flex items-center justify-between gap-3 p-5 text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            aria-expanded={guideOpen}
+                            aria-label="عرض أو إخفاء الدليل المصوّر"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div className="text-right">
+                                    <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100">
+                                        دليل مصوّر: كيف تفحص بالموقع الرسمي؟
+                                    </h2>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        شرح خطوة بخطوة مع ترجمة عربية لكل حقل
+                                    </p>
+                                </div>
+                            </div>
+                            <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 ${guideOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {/* Collapsible Content */}
+                        <div className={`overflow-hidden transition-all duration-300 ${guideOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                            <div className="px-5 pb-6 md:px-8 md:pb-8">
+
+                                {/* NVI Header */}
+                                <div className="px-4 py-3 bg-gradient-to-l from-blue-900 to-blue-950 text-white rounded-xl mb-5">
+                                    <div className="flex items-center gap-2 text-xs text-blue-200 mb-0.5">
+                                        <ShieldCheck size={14} />
+                                        <span>T.C. Nüfus ve Vatandaşlık İşleri Genel Müdürlüğü</span>
+                                    </div>
+                                    <p className="text-sm font-bold">
+                                        Yabancı/Mavi Kartlı Kimlik No Doğrulama
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <FormFieldGuide label="Yabancı/Mavi Kartlı Kimlik No" arabic="رقم الكملك (11 خانة تبدأ بـ 99)" placeholder="99xxxxxxxxx" step={1} />
+                                    <FormFieldGuide label="Ad" arabic="الاسم الأول بالتركية" placeholder="AHMAD" step={2} />
+                                    <FormFieldGuide label="Soyad" arabic="الكنية / اسم العائلة" placeholder="MOHAMMAD" step={3} />
+                                    <FormFieldGuide label="Doğum Gün" arabic="يوم الميلاد" placeholder="15" step={4} />
+                                    <FormFieldGuide label="Doğum Ay" arabic="شهر الميلاد" placeholder="03" step={5} />
+                                    <FormFieldGuide label="Doğum Yılı" arabic="سنة الميلاد" placeholder="1990" step={6} />
+
+                                    {/* reCAPTCHA */}
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2">
+                                            <div className="w-4 h-4 border-2 border-slate-400 rounded" />
+                                            <span className="text-xs text-slate-700 dark:text-slate-300">Ben robot değilim</span>
+                                        </div>
+                                        <StepBadge step={7} text='علّم "أنا لست روبوت"' />
+                                    </div>
+
+                                    {/* Doğrula Button */}
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
+                                        <div className="bg-blue-800 text-white px-5 py-2 rounded text-sm font-bold">
+                                            Doğrula
+                                        </div>
+                                        <StepBadge step={8} text='اضغط "Doğrula" للتحقق' />
+                                    </div>
+                                </div>
+
+                                {/* Result explanation */}
+                                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                                    <h4 className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">النتيجة:</h4>
+                                    <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                                        <p className="flex items-start gap-2">
+                                            <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                                            <span>ظهور بياناتك = القيد <strong className="text-green-700 dark:text-green-400">فعّال</strong></span>
+                                        </p>
+                                        <p className="flex items-start gap-2">
+                                            <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                                            <span>رسالة <strong className="text-red-600 dark:text-red-400">Kayıt Bulunamadı</strong> = القيد مُبطل</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ===== Section 4: Educational Cards ===== */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
                             <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2 text-sm">
-                                <ShieldCheck className="w-5 h-5" />
+                                <ShieldCheck className="w-4 h-4 shrink-0" />
                                 كيف أعرف أن الكملك توقف؟
                             </h4>
-                            <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300 list-disc list-inside">
-                                <li>رسالة <span className="font-bold text-red-600 dark:text-red-400">Kayıt Bulunamadı</span> تعني أن القيد غير موجود أو مبطل.</li>
-                                <li>الأفضل دائماً التحقق عبر <span className="font-bold">e-Devlet</span> للتفاصيل الكاملة.</li>
+                            <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-red-500 mt-0.5">•</span>
+                                    رسالة <strong className="text-red-600 dark:text-red-400">Kayıt Bulunamadı</strong> = القيد غير موجود أو مبطل
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-blue-500 mt-0.5">•</span>
+                                    الأفضل التحقق عبر <strong>e-Devlet</strong> للتفاصيل الكاملة
+                                </li>
                             </ul>
                         </div>
 
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
                             <h4 className="font-bold text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-2 text-sm">
-                                <ShieldAlert className="w-5 h-5" />
+                                <ShieldAlert className="w-4 h-4 shrink-0" />
                                 تحذير هام
                             </h4>
                             <p className="text-sm text-slate-700 dark:text-slate-300">
-                                لا تعطي معلومات الكملك الكاملة (اسم الأب، المواليد) لأي موقع غير رسمي. هذا الموقع يفحص &quot;خوارزمية الرقم&quot; فقط ولا يخزن أي بيانات.
+                                لا تعطي معلومات الكملك الكاملة (اسم الأب، المواليد) لأي موقع غير رسمي. هذا الفحص يتحقق من &quot;خوارزمية الرقم&quot; فقط.
                             </p>
                         </div>
                     </div>
 
-                    {/* Share + Back */}
+                    {/* ===== Section 5: Share + Related ===== */}
                     <div className="flex justify-center">
                         <ShareMenu
                             title="فاحص الكملك التركي"
@@ -342,10 +331,9 @@ export default function KimlikCheckPage() {
                     <div className="text-center">
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                            className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-sm"
                         >
-                            <span>العودة للصفحة الرئيسية</span>
-                            <ArrowRight className="w-4 h-4 rotate-180" />
+                            العودة للصفحة الرئيسية
                         </Link>
                     </div>
                 </div>
@@ -354,7 +342,17 @@ export default function KimlikCheckPage() {
     );
 }
 
-/** Visual guide for a single NVI form field */
+/** Step badge — numbered annotation */
+function StepBadge({ step, text }: { step: number; text: string }) {
+    return (
+        <span className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold px-3 py-1.5 rounded-full">
+            <span className="text-sm font-extrabold">{step}</span>
+            {text}
+        </span>
+    );
+}
+
+/** Visual guide for a single NVI form field — mobile-optimized */
 function FormFieldGuide({ label, arabic, placeholder, step }: {
     label: string;
     arabic: string;
@@ -362,21 +360,18 @@ function FormFieldGuide({ label, arabic, placeholder, step }: {
     step: number;
 }) {
     return (
-        <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-            {/* Turkish field label + placeholder */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+            {/* Turkish field */}
             <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</div>
-                <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-400 font-mono">
+                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">{label}</div>
+                <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm text-slate-400 font-mono">
                     {placeholder}
                 </div>
             </div>
 
             {/* Arabic annotation */}
-            <div className="text-right shrink-0">
-                <span className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold px-3 py-1.5 rounded-full">
-                    <span className="text-base">{step}</span>
-                    {arabic}
-                </span>
+            <div className="sm:text-right">
+                <StepBadge step={step} text={arabic} />
             </div>
         </div>
     );

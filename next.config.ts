@@ -111,8 +111,8 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', 'framer-motion', 'date-fns'],
   },
 
-  // 🔄 React Strict Mode disabled for Leaflet map compatibility
-  reactStrictMode: false,
+  // 🔄 React Strict Mode — enabled for better performance and bug detection
+  reactStrictMode: true,
 
   // 🔕 Hide dev indicator
   devIndicators: ({ buildActivity: false } as unknown) as NextConfig['devIndicators'],

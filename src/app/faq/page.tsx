@@ -115,21 +115,32 @@ export default async function FAQPage() {
   // Recalculate total
   const totalCount = mergedData.reduce((sum, cat) => sum + cat.questions.length, 0);
 
-  // Schema.org — 10 questions only (rich results limit)
+  // Schema.org — pick 10 diverse questions (spread across categories)
+  // Google shows up to 10 FAQ rich results — diverse = more search visibility
+  const diverseQuestions: { q: string; a: string }[] = [];
+  const perCat = Math.max(1, Math.floor(10 / mergedData.length));
+  for (const cat of mergedData) {
+    diverseQuestions.push(...cat.questions.slice(0, perCat));
+    if (diverseQuestions.length >= 10) break;
+  }
+  // Fill remaining slots
+  if (diverseQuestions.length < 10) {
+    const used = new Set(diverseQuestions.map(q => q.q));
+    const rest = mergedData.flatMap(c => c.questions).filter(q => !used.has(q.q));
+    diverseQuestions.push(...rest.slice(0, 10 - diverseQuestions.length));
+  }
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: mergedData
-      .flatMap(cat => cat.questions)
-      .slice(0, 10)
-      .map(q => ({
-        '@type': 'Question',
-        name: q.q,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: stripHtml(q.a)
-        }
-      }))
+    mainEntity: diverseQuestions.slice(0, 10).map(q => ({
+      '@type': 'Question',
+      name: q.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: stripHtml(q.a)
+      }
+    }))
   };
 
   return (
