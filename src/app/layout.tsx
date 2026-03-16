@@ -18,6 +18,7 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ScrollRestoration from "@/components/ScrollRestoration";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
 
 // Non-critical above-fold components — lazy loaded to reduce initial JS
@@ -157,6 +158,7 @@ export default function RootLayout({
           تخطي إلى المحتوى الرئيسي
         </a>
         <ThemeProviderWrapper>
+          <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
             <div className="relative z-10">
               <UrgencyBanner />

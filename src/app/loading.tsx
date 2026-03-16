@@ -1,67 +1,28 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { Loader2, WifiOff, RefreshCw } from 'lucide-react';
-
+/**
+ * Global loading fallback — server component (zero JS sent to browser)
+ * سكيليتون خفيف بدل spinner ثقيل مع useState و timers
+ * هاد بيقلل حجم الـ bundle وبيسرّع أول عرض للصفحة
+ */
 export default function Loading() {
-    const [elapsed, setElapsed] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => setElapsed(s => s + 1), 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Phase 1: Normal loading (0-5s)
-    if (elapsed < 5) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh] bg-slate-50 dark:bg-slate-950">
-                <div className="text-center space-y-4">
-                    <Loader2 size={40} className="animate-spin text-emerald-600 mx-auto" />
-                    <p className="text-base font-bold text-slate-600 dark:text-slate-300">
-                        جاري التحميل...
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    // Phase 2: Taking long (5-15s)
-    if (elapsed < 15) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh] bg-slate-50 dark:bg-slate-950">
-                <div className="text-center space-y-4 max-w-sm mx-auto px-4">
-                    <Loader2 size={40} className="animate-spin text-amber-500 mx-auto" />
-                    <p className="text-base font-bold text-slate-700 dark:text-slate-200">
-                        التحميل أبطأ من المعتاد...
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                        يبدو أن الخادم يحتاج وقتاً أطول. يرجى الانتظار.
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    // Phase 3: Likely a problem (15s+)
-    return (
-        <div className="flex items-center justify-center min-h-[60vh] bg-slate-50 dark:bg-slate-950">
-            <div className="text-center space-y-5 max-w-sm mx-auto px-4">
-                <WifiOff size={48} className="text-red-400 mx-auto" />
-                <p className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                    تعذّر تحميل الصفحة
-                </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                    قد يكون هناك مشكلة مؤقتة في الخادم. جرّب تحديث الصفحة.
-                </p>
-                <button
-                    type="button"
-                    onClick={() => window.location.reload()}
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors shadow-lg"
-                >
-                    <RefreshCw size={16} />
-                    تحديث الصفحة
-                </button>
-            </div>
+  return (
+    <div className="min-h-[60vh] bg-slate-50 dark:bg-slate-950 px-4 py-12">
+      <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
+        {/* Title skeleton */}
+        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        {/* Subtitle skeleton */}
+        <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/2" />
+        {/* Content skeleton lines */}
+        <div className="space-y-3 pt-4">
+          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-full" />
+          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-5/6" />
+          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-4/6" />
         </div>
-    );
+        {/* Card skeletons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+          <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -14,6 +14,8 @@ Disallow: /*.json$
 Disallow: /*?utm_*
 Disallow: /404
 Disallow: /500
+Disallow: /login
+Disallow: /dashboard/
 
 # ===========================================
 # 🔍 Google - الأولوية القصوى
