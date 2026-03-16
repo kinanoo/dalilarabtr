@@ -18,7 +18,7 @@ const InteractiveParticles = dynamic(() => import('./InteractiveParticles'), {
 
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
-        <section className="relative z-[15] bg-slate-900 text-white pt-4 pb-10 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
+        <section className="relative z-[15] bg-slate-900 text-white pt-3 pb-8 px-4 shadow-2xl" style={{ overflowX: 'clip' }}>
 
             {/* Background */}
             <div className="absolute inset-0 overflow-hidden -z-10 border-b border-white/5">
@@ -37,24 +37,19 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
             {/* Center Content */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
                 <div className="animate-hero-entrance pointer-events-none">
-                    {/* USP Badge */}
-                    <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-6 hover:bg-white/10 transition-colors shadow-lg pointer-events-auto">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span className="text-emerald-100 text-xs md:text-sm font-bold">أول دليل ذكي بالعربية في تركيا</span>
-                    </div>
-
-                    <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight drop-shadow-2xl">
+                    <h1 className="text-4xl md:text-6xl font-black mb-2 leading-tight drop-shadow-2xl">
                         دليلك القانوني <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
                     </h1>
 
-                    <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto mb-3 leading-relaxed">
+                    <p className="text-[11px] md:text-xs text-emerald-300/70 font-medium mb-3 tracking-wide">
+                        أول دليل ذكي بالعربية في تركيا
+                    </p>
+
+                    <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed">
                         كل ما تحتاجه في تركيا: إقامات، قانون، أكواد أمنية، وخدمات ذكية.
                     </p>
 
-                    <div className="mt-8 max-w-xl mx-auto relative z-[25] pointer-events-auto">
+                    <div className="mt-6 max-w-xl mx-auto relative z-[25] pointer-events-auto">
                         {children}
                     </div>
 

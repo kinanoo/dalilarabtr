@@ -9,9 +9,12 @@
 export const revalidate = 300; // Cache for 5 minutes (ISR)
 
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
+
+const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 
 // Components
 import HeroSection from '@/components/home/HeroSection';
@@ -155,6 +158,9 @@ export default async function Home() {
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-transparent selection:bg-emerald-200 dark:selection:bg-emerald-700">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqSchema) }} />
+
+      {/* News Ticker — homepage only */}
+      <NewsTicker />
 
       {/* 1. HERO SECTION (Client) */}
       <HeroSection>

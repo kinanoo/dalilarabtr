@@ -23,7 +23,6 @@ import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaO
 
 // Non-critical above-fold components — lazy loaded to reduce initial JS
 const UrgencyBanner = dynamic(() => import('@/components/UrgencyBanner'));
-const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 
 // Wrapper that delays rendering until browser is idle (~2.5s after page load)
 const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
@@ -163,7 +162,6 @@ export default function RootLayout({
             <div className="relative z-10">
               <UrgencyBanner />
               <Navbar />
-              <NewsTicker />
               <div id="main-content">
                 {children}
               </div>
