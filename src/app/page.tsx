@@ -165,7 +165,7 @@ export default async function Home() {
       {/* 1. HERO SECTION (Client) */}
       <HeroSection>
         {/* Search is ABOVE the button as requested */}
-        <div id="search" className="w-full relative z-30 mb-8">
+        <div id="search" className="w-full relative z-30 mb-3">
           <LazyGlobalSearch />
         </div>
         <HomeConsultantBtn />

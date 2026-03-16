@@ -39,9 +39,9 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                 <div className="animate-hero-entrance pointer-events-none">
                     <h1 className="text-4xl md:text-6xl font-black mb-0 leading-tight drop-shadow-2xl">
                         دليلك القانوني{' '}
-                        <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                        <span className="inline-block align-bottom text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
                             الشامل
-                            <span className="block text-[8px] md:text-[10px] text-emerald-300/40 font-medium tracking-wide mt-0 leading-none bg-clip-text text-transparent bg-gradient-to-r from-emerald-400/40 to-cyan-400/40" style={{ fontWeight: 500 }}>
+                            <span className="block text-[8px] md:text-[10px] text-emerald-300/40 font-medium tracking-wide mt-1.5 leading-none bg-clip-text text-transparent bg-gradient-to-r from-emerald-400/40 to-cyan-400/40" style={{ fontWeight: 500 }}>
                                 أول دليل ذكي بالعربية في تركيا
                             </span>
                         </span>
