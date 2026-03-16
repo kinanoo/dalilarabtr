@@ -11,7 +11,6 @@ import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
 import RelatedArticles from '@/components/RelatedArticles';
-import Breadcrumbs from '@/components/Breadcrumbs';
 import { stripHtml } from '@/lib/stripHtml';
 
 
@@ -318,20 +317,10 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
   });
 
-  // Breadcrumb items for visual navigation
-  const breadcrumbItems = [
-    ...(categorySlug ? [{ name: article.category, href: `/category/${categorySlug}` }] : []),
-    { name: article.title.length > 40 ? article.title.substring(0, 40) + '…' : article.title, href: `/article/${canonicalSlug}` },
-  ];
-
   return (
     <main className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }} />
-      {/* Visual Breadcrumbs — helps users navigate + Google shows in search results */}
-      <div className="container mx-auto px-4 pt-4">
-        <Breadcrumbs items={breadcrumbItems} />
-      </div>
       <ArticleHydratedView articleData={article} slug={params.id}>
         <UniversalComments entityType="article" entityId={params.id} />
       </ArticleHydratedView>
