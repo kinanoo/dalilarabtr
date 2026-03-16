@@ -41,7 +41,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         دليلك القانوني{' '}
                         <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
                             الشامل
-                            <span className="absolute right-0 left-0 top-full text-emerald-300/40 font-medium tracking-wide -mt-1 leading-none text-center overflow-hidden" style={{ fontWeight: 500, fontSize: 'clamp(6px, 1.8vw, 10px)' }}>
+                            <span className="absolute right-0 left-0 top-full text-emerald-300/40 font-medium tracking-wide mt-px leading-none text-center overflow-hidden" style={{ fontWeight: 500, fontSize: 'clamp(6px, 1.8vw, 10px)' }}>
                                 أول دليل ذكي بالعربية في تركيا
                             </span>
                         </span>
