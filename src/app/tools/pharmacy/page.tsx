@@ -1,6 +1,7 @@
 import PharmacyClient from './PharmacyClient';
 import ToolSchema from '@/components/ToolSchema';
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
     title: 'الصيدلية المناوبة الآن 2026 | أقرب صيدلية مفتوحة في تركيا',
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'الصيدلية المناوبة الآن — اعرف أقرب صيدلية مفتوحة',
         description: 'رابط رسمي مباشر لمعرفة الصيدلية المناوبة في منطقتك الآن. يغطي كل الولايات التركية الـ 81.',
-        url: 'https://dalilarabtr.com/tools/pharmacy',
+        url: `${SITE_CONFIG.siteUrl}/tools/pharmacy`,
     },
 };
 

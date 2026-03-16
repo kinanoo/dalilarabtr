@@ -1,6 +1,7 @@
 import KimlikClient from './KimlikClient';
 import ToolSchema from '@/components/ToolSchema';
 import { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
     title: 'فحص الكملك التركي 2026 | هل الكملك شغال؟ تأكد فوراً مجاناً',
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'فحص الكملك التركي — تأكد من صلاحية قيدك فوراً',
         description: 'أداة مجانية للتحقق من رقم الكملك + رابط مباشر لموقع النفوس الرسمي. اعرف إذا الكملك شغال أو موقوف.',
-        url: 'https://dalilarabtr.com/tools/kimlik-check',
+        url: `${SITE_CONFIG.siteUrl}/tools/kimlik-check`,
     },
 };
 

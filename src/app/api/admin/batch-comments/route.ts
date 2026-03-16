@@ -66,7 +66,7 @@ export async function POST(request: Request) {
             .eq('status', 'pending');
 
         if (error) {
-            return NextResponse.json({ error: `فشل التحديث: ${error.message}` }, { status: 500 });
+            return NextResponse.json({ error: 'فشل التحديث' }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -76,8 +76,7 @@ export async function POST(request: Request) {
                 : `تم رفض ${count} تعليق`,
             count,
         });
-    } catch (error) {
-        console.error('Batch comments error:', error);
+    } catch {
         return NextResponse.json({ error: 'خطأ داخلي' }, { status: 500 });
     }
 }

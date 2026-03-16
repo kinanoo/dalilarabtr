@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import logger from '@/lib/logger';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const runtime = 'edge';
 
@@ -191,7 +192,7 @@ export async function GET(request: NextRequest) {
               </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://dalilarabtr.com/logo.png"
+                src={`${SITE_CONFIG.siteUrl}/logo.png`}
                 width="48"
                 height="48"
                 alt=""
