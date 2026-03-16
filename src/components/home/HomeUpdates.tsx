@@ -4,7 +4,7 @@ import { useRef, useCallback, useState, useEffect } from 'react';
 import { useScrollReveal } from '@/lib/hooks/useScrollReveal';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, ArrowLeft, Calendar, Sparkles, FileText, AlertCircle, HelpCircle, Shield, MapPin, Newspaper, Briefcase, Wrench, ExternalLink, ChevronLeft, ChevronRight, Flame, Clock } from 'lucide-react';
 
 // === Type Definitions ===
 interface Update {
@@ -25,6 +25,20 @@ function isNewContent(dateStr: string): boolean {
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays <= 7;
+}
+
+function getRelativeDate(dateStr: string, sortDate?: string): string {
+    const raw = sortDate || dateStr;
+    if (!raw) return dateStr;
+    const date = new Date(raw);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'اليوم';
+    if (diffDays === 1) return 'أمس';
+    if (diffDays === 2) return 'قبل يومين';
+    if (diffDays <= 7) return `قبل ${diffDays} أيام`;
+    return dateStr;
 }
 
 const AUTO_ICON_MAP: Record<string, { icon: typeof FileText; bg: string; text: string }> = {
@@ -65,6 +79,9 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
     const [isHovered, setIsHovered] = useState(false);
     const touchStartRef = useRef(0);
     const autoplayRef = useRef<ReturnType<typeof setInterval>>();
+
+    // Count new items
+    const newCount = updates.filter(u => isNewContent(u.sortDate || u.date)).length;
 
     // Clamp currentPage when totalPages changes (e.g. resize)
     useEffect(() => {
@@ -126,12 +143,25 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
     return (
         <section ref={sectionRef} className="py-6 sm:py-8 border-b border-slate-100 dark:border-slate-800/50">
             {/* Header */}
-            <div className="max-w-7xl mx-auto px-4 mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Bell size={18} className="text-amber-500" />
+            <div className="max-w-7xl mx-auto px-4 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                    <div className="relative">
+                        <Bell size={20} className="text-amber-500" />
+                        {newCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
+                                {newCount}
+                            </span>
+                        )}
+                    </div>
                     <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                         آخر التحديثات
                     </h2>
+                    {newCount > 0 && (
+                        <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
+                            <Sparkles size={10} />
+                            {newCount} جديد
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -139,14 +169,14 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                         <div className="hidden sm:flex items-center gap-1">
                             <button
                                 onClick={goNext}
-                                className="p-2.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 aria-label="التالي"
                             >
                                 <ChevronRight size={18} />
                             </button>
                             <button
                                 onClick={goPrev}
-                                className="p-2.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
                                 aria-label="السابق"
                             >
                                 <ChevronLeft size={18} />
@@ -155,9 +185,9 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                     )}
                     <Link
                         href="/updates"
-                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
                     >
-                        الكل
+                        عرض الكل
                         <ArrowLeft size={14} />
                     </Link>
                 </div>
@@ -242,21 +272,36 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
     const isAuto = update.source === 'auto';
     const iconConfig = isAuto && update.event_type ? AUTO_ICON_MAP[update.event_type] : null;
     const href = update.href || `/updates/${update.id}`;
+    const isUrgent = update.type === 'هام' || update.type === 'عاجل';
+    const isNew = isNewContent(update.sortDate || update.date);
 
     return (
         <Link
             href={href}
-            className="block h-full bg-white dark:bg-white/[0.04] dark:backdrop-blur-md rounded-xl p-4 border border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/30 hover:shadow-lg dark:hover:shadow-emerald-500/5 hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden"
+            className={`block h-full rounded-xl p-4 border hover:-translate-y-1 transition-all duration-300 group/card relative overflow-hidden ${
+                isUrgent
+                    ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50 hover:border-red-400 dark:hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10'
+                    : 'bg-white dark:bg-white/[0.04] dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/30 hover:shadow-lg dark:hover:shadow-emerald-500/5'
+            }`}
             dir="rtl"
         >
-            <div className="flex items-start gap-3 h-full">
+            {/* Urgent pulse border effect */}
+            {isUrgent && (
+                <div className="absolute inset-0 rounded-xl border-2 border-red-400/50 animate-pulse pointer-events-none" />
+            )}
+
+            <div className="flex items-start gap-3 h-full relative">
                 {/* Icon or Image */}
-                {isAuto && iconConfig ? (
-                    <div className={`w-16 sm:w-20 h-16 sm:h-20 flex-shrink-0 rounded-lg ${iconConfig.bg} flex items-center justify-center`}>
-                        <iconConfig.icon size={28} className={iconConfig.text} />
+                {isUrgent ? (
+                    <div className="w-14 sm:w-16 h-14 sm:h-16 flex-shrink-0 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                        <Flame size={26} className="text-red-500" />
+                    </div>
+                ) : isAuto && iconConfig ? (
+                    <div className={`w-14 sm:w-16 h-14 sm:h-16 flex-shrink-0 rounded-lg ${iconConfig.bg} flex items-center justify-center`}>
+                        <iconConfig.icon size={26} className={iconConfig.text} />
                     </div>
                 ) : update.image ? (
-                    <div className="relative w-16 sm:w-20 h-16 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    <div className="relative w-14 sm:w-16 h-14 sm:h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <Image
                             src={update.image}
                             alt={update.title || "صورة الخبر"}
@@ -269,29 +314,35 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
                 ) : null}
 
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                            update.type === 'هام' || update.type === 'عاجل'
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                            isUrgent
+                                ? 'bg-red-500 text-white dark:bg-red-600 animate-pulse'
                                 : isAuto
                                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                                     : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                         }`}>
+                            {isUrgent && <Flame size={10} />}
                             {update.type}
                         </span>
-                        {isNewContent(update.sortDate || update.date) && (
+                        {isNew && !isUrgent && (
                             <span className="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
                                 <Sparkles size={8} /> جديد
                             </span>
                         )}
                     </div>
 
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-snug line-clamp-2 group-hover/card:text-emerald-600 transition-colors">
+                    <h3 className={`font-bold text-sm sm:text-base leading-snug line-clamp-2 transition-colors ${
+                        isUrgent
+                            ? 'text-red-800 dark:text-red-200 group-hover/card:text-red-600'
+                            : 'text-slate-800 dark:text-slate-100 group-hover/card:text-emerald-600'
+                    }`}>
                         {update.title}
                     </h3>
 
                     <span className="text-xs text-slate-400 flex items-center gap-1 mt-1.5">
-                        <Calendar size={12} /> {update.date}
+                        <Clock size={11} />
+                        {getRelativeDate(update.date, update.sortDate)}
                     </span>
                 </div>
             </div>
