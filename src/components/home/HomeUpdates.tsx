@@ -9,6 +9,7 @@ import {
     ChevronLeft, ChevronRight, Flame, Clock, Eye, Newspaper
 } from 'lucide-react';
 import { isNewContent, getRelativeDate, getEventIcon } from '@/lib/updateUtils';
+import { BREAKPOINTS } from '@/lib/breakpoints';
 
 // === Types ===
 interface Update {
@@ -27,8 +28,8 @@ function useCardsPerPage(): number {
     const [count, setCount] = useState(1);
     useEffect(() => {
         const update = () => {
-            if (window.innerWidth >= 1024) setCount(3);
-            else if (window.innerWidth >= 640) setCount(2);
+            if (window.innerWidth >= BREAKPOINTS.lg) setCount(3);
+            else if (window.innerWidth >= BREAKPOINTS.sm) setCount(2);
             else setCount(1);
         };
         update();
@@ -255,7 +256,7 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
                         <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                             <Image
                                 src={update.image}
-                                alt={update.title || ""}
+                                alt={update.title || "صورة التحديث"}
                                 fill
                                 className="object-cover"
                                 sizes="44px"

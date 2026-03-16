@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { BREAKPOINTS } from '@/lib/breakpoints';
 
 function getOrCreate(key: string, storage: Storage): string {
     let val = storage.getItem(key);
@@ -18,8 +19,8 @@ function getOrCreate(key: string, storage: Storage): string {
 
 function getDeviceType(): string {
     const w = window.screen.width;
-    if (w <= 768) return 'mobile';
-    if (w <= 1024) return 'tablet';
+    if (w <= BREAKPOINTS.md) return 'mobile';
+    if (w <= BREAKPOINTS.lg) return 'tablet';
     return 'desktop';
 }
 

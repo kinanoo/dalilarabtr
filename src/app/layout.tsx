@@ -30,6 +30,9 @@ const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
 // All non-critical components in one deferred bundle (loaded after idle)
 const DeferredExtras = dynamic(() => import("@/components/DeferredExtras"));
 
+// Web Vitals — reports LCP, FID, CLS, FCP, TTFB, INP to Google Analytics
+const WebVitals = dynamic(() => import('@/components/WebVitals').then(m => ({ default: m.WebVitals })));
+
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
 // ============================================
@@ -149,6 +152,8 @@ export default function RootLayout({
         {GA_ID && <GoogleAnalytics />}
       </head>
       <body suppressHydrationWarning className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
+        {/* Web Vitals — reports LCP, CLS, INP to Google Analytics */}
+        {GA_ID && <WebVitals />}
         {/* Structured Data — in body to prevent Next.js head duplication */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />

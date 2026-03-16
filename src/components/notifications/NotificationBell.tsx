@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, X, CheckCheck } from 'lucide-react';
+import { BREAKPOINTS } from '@/lib/breakpoints';
 import {
     fetchAllNotifications,
     initLastSeen,
@@ -135,7 +136,7 @@ export default function NotificationBell() {
         if (!bellBtnRef.current) return { position: 'fixed', top: 64, left: 16, right: 16 };
         const rect = bellBtnRef.current.getBoundingClientRect();
         const vw = window.innerWidth;
-        const isDesktop = vw >= 640;
+        const isDesktop = vw >= BREAKPOINTS.sm;
         if (isDesktop) {
             const panelWidth = Math.min(380, vw - 32);
             let left = rect.left + rect.width / 2 - panelWidth / 2;

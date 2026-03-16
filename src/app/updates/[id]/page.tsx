@@ -236,7 +236,7 @@ export default async function UpdateDetailPage(
                                                     <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
                                                         <Image
                                                             src={item.image}
-                                                            alt=""
+                                                            alt={item.title || "تحديث ذو صلة"}
                                                             fill
                                                             className="object-cover"
                                                             sizes="48px"
