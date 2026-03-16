@@ -57,7 +57,7 @@ export default function UrgencyBanner() {
 
     return (
         <div
-            className={`fixed top-0 left-0 right-0 z-[60] overflow-hidden shadow-lg font-cairo transition-all duration-300 ease-in-out ${
+            className={`relative z-[60] overflow-hidden shadow-lg font-cairo transition-all duration-300 ease-in-out ${
                 isExiting ? 'max-h-0 opacity-0' : 'max-h-28 opacity-100'
             }`}
         >

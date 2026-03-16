@@ -37,13 +37,16 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
             {/* Center Content */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
                 <div className="animate-hero-entrance pointer-events-none">
-                    <h1 className="text-4xl md:text-6xl font-black mb-2 leading-tight drop-shadow-2xl">
-                        دليلك القانوني <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
+                    <h1 className="text-4xl md:text-6xl font-black mb-0 leading-tight drop-shadow-2xl">
+                        دليلك القانوني{' '}
+                        <span className="relative inline-block">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
+                            <span className="absolute -bottom-4 md:-bottom-5 right-0 left-0 text-[10px] md:text-[11px] text-emerald-300/60 font-medium tracking-wide whitespace-nowrap text-center">
+                                أول دليل ذكي بالعربية في تركيا
+                            </span>
+                        </span>
                     </h1>
-
-                    <p className="text-[11px] md:text-xs text-emerald-300/70 font-medium mb-3 tracking-wide">
-                        أول دليل ذكي بالعربية في تركيا
-                    </p>
+                    <div className="mb-3 mt-5 md:mt-6" />
 
                     <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed">
                         كل ما تحتاجه في تركيا: إقامات، قانون، أكواد أمنية، وخدمات ذكية.
