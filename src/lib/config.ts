@@ -3,7 +3,8 @@ export const SITE_CONFIG = {
     slogan: "مستشارك القانوني الذكي - متاح 24/7 بالعربية",
     lang: "ar",
     country: "تركيا",
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487",
+    email: "dalilarabtr@gmail.com",
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487", // kept for services page only
     siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, ''),
     // روابط السوشيال ميديا — أضف روابطك هنا لما تجهز الحسابات
     // Google بيستخدمها لبناء Knowledge Panel وعرض اللوغو بنتائج البحث

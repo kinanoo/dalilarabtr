@@ -3,11 +3,10 @@
 import PageHero from '@/components/PageHero';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState, Suspense } from 'react';
-import { Copy, User, Phone, FileText, CheckCircle, MessageCircle, AlertCircle } from 'lucide-react';
+import { Copy, User, FileText, CheckCircle, AlertCircle, Send, Mail } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
 import { SERVICES_LIST } from '@/lib/constants';
 import { fetchRemoteServices, mergeServices, subscribeDemoDataUpdated, type RuntimeService } from '@/lib/remoteData';
-import { buildWhatsAppHref } from '@/lib/whatsapp';
 
 // Validation
 import { useForm } from 'react-hook-form';
@@ -36,7 +35,7 @@ function RequestForm() {
       serviceId: initialServiceId,
       details: ''
     },
-    mode: 'onChange' // Validate as user types for better feedback
+    mode: 'onChange'
   });
 
   const selectedServiceId = watch('serviceId');
@@ -50,7 +49,6 @@ function RequestForm() {
       const merged = mergeServices(remoteServices);
       setServices(merged);
 
-      // If current selected ID is invalid, reset to 'other' (unless it is 'other')
       if (selectedServiceId && selectedServiceId !== 'other' && !merged.find(s => s.id === selectedServiceId)) {
         setValue('serviceId', 'other');
       } else if (!selectedServiceId) {
@@ -73,23 +71,19 @@ function RequestForm() {
 
 
   const onSubmit = (data: RequestServiceInputs) => {
-    // تجهيز رسالة الواتساب
-    const message = `
-*طلب خدمة جديدة من الموقع* 🚀
-------------------------
-👤 *الاسم:* ${data.name || 'غير محدد'}
-💼 *الخدمة المطلوبة:* ${services.find((s) => s.id === data.serviceId)?.title || 'غير محددة'}
-📝 *التفاصيل:* ${data.details || 'لا يوجد'}
-------------------------
-يرجى الرد وتزويدي بالتكلفة والإجراءات.
-    `.trim();
+    const serviceName = services.find((s) => s.id === data.serviceId)?.title || 'غير محددة';
+    const subject = encodeURIComponent(`طلب خدمة: ${serviceName}`);
+    const body = encodeURIComponent(
+      `الاسم: ${data.name || 'غير محدد'}\nالخدمة المطلوبة: ${serviceName}\n\nالتفاصيل:\n${data.details || 'لا يوجد'}\n\nيرجى الرد وتزويدي بالتكلفة والإجراءات.`
+    );
 
+    // Copy to clipboard as backup
+    const message = `الاسم: ${data.name || 'غير محدد'}\nالخدمة: ${serviceName}\n\n${data.details || ''}`;
     const copyToClipboard = async () => {
       try {
         if (navigator.clipboard?.writeText) {
           await navigator.clipboard.writeText(message);
         } else {
-          // Fallback
           const textarea = document.createElement('textarea');
           textarea.value = message;
           textarea.style.position = 'fixed';
@@ -108,18 +102,15 @@ function RequestForm() {
 
     void copyToClipboard();
 
-    const recipientPhone = (selectedService as RuntimeService | undefined)?.whatsapp || SITE_CONFIG.whatsapp;
-    const whatsAppHref = buildWhatsAppHref(recipientPhone, message) || buildWhatsAppHref(SITE_CONFIG.whatsapp, message);
-    if (whatsAppHref && typeof window !== 'undefined') {
-      window.open(whatsAppHref, '_blank', 'noopener,noreferrer');
-    }
+    // Open email client
+    window.location.href = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
   };
 
   return (
     <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">نموذج طلب خدمة</h2>
-        <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">عند الإرسال سيفتح واتساب مباشرة وسيتم أيضاً نسخ نص الطلب.</p>
+        <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح تطبيق البريد الإلكتروني لإرسال طلبك مباشرة.</p>
       </div>
 
       <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -181,12 +172,12 @@ function RequestForm() {
           disabled={!isValid}
           className={`w-full py-4 rounded-xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2
             ${isValid
-              ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-600/20'
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
               : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
           `}
         >
-          <span>{copied ? 'تم النسخ وفتح واتساب' : 'إرسال الطلب عبر واتساب'}</span>
-          {copied ? <Copy size={20} /> : <MessageCircle size={20} />}
+          <span>{copied ? 'تم النسخ — جارٍ فتح البريد' : 'إرسال الطلب عبر البريد الإلكتروني'}</span>
+          {copied ? <Copy size={20} /> : <Send size={20} />}
         </button>
 
         <p className="text-xs text-center text-slate-400 dark:text-slate-500 mt-4">

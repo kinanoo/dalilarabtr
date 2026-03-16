@@ -3,13 +3,13 @@ import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: `اتصل بنا — ${SITE_CONFIG.name}`,
-  description: 'تواصل معنا مباشرة عبر واتساب أو نموذج الاتصال. نردّ عادةً خلال 24 ساعة. استفسار عام، اقتراح تحسين، مشكلة تقنية، أو طلب خدمة.',
+  description: 'تواصل معنا مباشرة عبر البريد الإلكتروني أو نموذج الاتصال. نردّ عادةً خلال 24 ساعة. استفسار عام، اقتراح تحسين، مشكلة تقنية، أو طلب خدمة.',
   alternates: {
     canonical: `${SITE_CONFIG.siteUrl}/contact`,
   },
   openGraph: {
     title: `اتصل بنا — ${SITE_CONFIG.name}`,
-    description: 'تواصل معنا مباشرة عبر واتساب. نردّ عادةً خلال 24 ساعة.',
+    description: 'تواصل معنا مباشرة عبر البريد الإلكتروني. نردّ عادةً خلال 24 ساعة.',
     url: `${SITE_CONFIG.siteUrl}/contact`,
     type: 'website',
   },

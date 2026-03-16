@@ -8,7 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
-import { buildWhatsAppHref } from '@/lib/whatsapp';
+import { Mail } from 'lucide-react';
 import { SITE_CONFIG, CATEGORY_SLUGS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
 import InlineRelatedArticles from './InlineRelatedArticles';
@@ -45,10 +45,10 @@ export default function ArticleView({ article, slug, initialComments, children }
     if (shouldTrack) localStorage.setItem(key, String(now));
   }, [slug]);
 
-  const whatsAppHref = useMemo(() => {
-    const url = `${SITE_CONFIG.siteUrl}/article/${slug}`;
-    const text = `السلام عليكم، أحتاج مساعدة بخصوص: ${article.title}\n${url}`;
-    return buildWhatsAppHref(SITE_CONFIG.whatsapp, text);
+  const emailHref = useMemo(() => {
+    const subject = encodeURIComponent(`استفسار: ${article.title}`);
+    const body = encodeURIComponent(`السلام عليكم،\n\nأحتاج مساعدة بخصوص: ${article.title}\n${SITE_CONFIG.siteUrl}/article/${slug}\n\n`);
+    return `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
   }, [article.title, slug]);
 
   // 🛡️ فك تشفير المحتوى المحمي
@@ -348,8 +348,9 @@ export default function ArticleView({ article, slug, initialComments, children }
                     <p className="text-sm text-slate-500 dark:text-slate-400">تحدث مع مستشار مختص لإنهاء معاملتك قانونياً.</p>
                   </div>
                 </div>
-                <a href={whatsAppHref ?? undefined} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-600/20 whitespace-nowrap text-center">
-                  طلب استشارة
+                <a href={emailHref} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-600/20 whitespace-nowrap text-center inline-flex items-center justify-center gap-2">
+                  <Mail size={16} />
+                  تواصل عبر البريد
                 </a>
               </div>
 

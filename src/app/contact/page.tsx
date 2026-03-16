@@ -3,9 +3,8 @@
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 import { useState } from 'react';
-import { User, MessageCircle, Copy, AlertCircle, Scale, HelpCircle, FileText } from 'lucide-react';
+import { User, MessageCircle, Copy, AlertCircle, Scale, HelpCircle, FileText, Mail, Send } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
-import { getSiteWhatsAppHref, buildWhatsAppHref } from '@/lib/whatsapp';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,16 +33,13 @@ export default function ContactPage() {
 
   const onSubmit = (data: ContactInputs) => {
     const typeLabel = MESSAGE_TYPES.find(t => t.value === data.messageType)?.label || data.messageType;
-    const msg = `
-*رسالة جديدة من الموقع* 📩
-------------------------
-👤 *الاسم:* ${data.name || 'غير محدد'}
-📋 *النوع:* ${typeLabel}
-💬 *الرسالة:*
-${data.message}
-------------------------
-    `.trim();
+    const subject = encodeURIComponent(`[${typeLabel}] رسالة من الموقع`);
+    const body = encodeURIComponent(
+      `الاسم: ${data.name || 'غير محدد'}\nنوع الرسالة: ${typeLabel}\n\n${data.message}`
+    );
 
+    // Copy to clipboard as backup
+    const msg = `الاسم: ${data.name || 'غير محدد'}\nنوع الرسالة: ${typeLabel}\n\n${data.message}`;
     const copyToClipboard = async () => {
       try {
         if (navigator.clipboard?.writeText) {
@@ -65,10 +61,8 @@ ${data.message}
 
     void copyToClipboard();
 
-    const href = buildWhatsAppHref(SITE_CONFIG.whatsapp, msg);
-    if (href && typeof window !== 'undefined') {
-      window.open(href, '_blank', 'noopener,noreferrer');
-    }
+    // Open email client
+    window.location.href = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -80,14 +74,14 @@ ${data.message}
         {/* Quick Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <a
-            href={getSiteWhatsAppHref('مرحباً، أريد الاستفسار عن...') || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-green-500 hover:shadow-lg transition-all duration-300"
+            href={`mailto:${SITE_CONFIG.email}`}
+            className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-emerald-500 hover:shadow-lg transition-all duration-300"
           >
-            <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">💬</div>
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">واتساب مباشر</h3>
-            <p className="text-xs text-slate-400">تواصل فوري مع الفريق</p>
+            <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">
+              <Mail className="w-8 h-8 mx-auto text-emerald-500" />
+            </div>
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">البريد الإلكتروني</h3>
+            <p className="text-xs text-slate-400">{SITE_CONFIG.email}</p>
           </a>
 
           <Link
@@ -117,7 +111,7 @@ ${data.message}
         <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">أرسل رسالتك</h2>
-            <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">عند الإرسال سيُفتح واتساب مباشرة وسيُنسخ النص تلقائياً.</p>
+            <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح تطبيق البريد الإلكتروني لإرسال رسالتك مباشرة.</p>
           </div>
 
           <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -178,12 +172,12 @@ ${data.message}
               disabled={!isValid}
               className={`w-full py-3.5 rounded-xl font-bold text-base transition shadow-lg flex items-center justify-center gap-2
                 ${isValid
-                  ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-600/20'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                   : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
               `}
             >
-              <span>{copied ? 'تم النسخ وفتح واتساب' : 'إرسال عبر واتساب'}</span>
-              {copied ? <Copy size={18} /> : <MessageCircle size={18} />}
+              <span>{copied ? 'تم النسخ — جارٍ فتح البريد' : 'إرسال عبر البريد الإلكتروني'}</span>
+              {copied ? <Copy size={18} /> : <Send size={18} />}
             </button>
 
           </form>
@@ -191,7 +185,7 @@ ${data.message}
 
         {/* Response Note */}
         <p className="text-center text-xs text-slate-400 dark:text-slate-500">
-          نردّ عادةً خلال 24 ساعة عبر واتساب. إذا كان طلبك متعلقاً بخدمة محددة، استخدم صفحة{' '}
+          نردّ عادةً خلال 24 ساعة عبر البريد الإلكتروني. إذا كان طلبك متعلقاً بخدمة محددة، استخدم صفحة{' '}
           <Link href="/request" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">طلب خدمة</Link>.
         </p>
 

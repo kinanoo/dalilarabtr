@@ -344,7 +344,7 @@ export default function ServicesClient() {
             انضم الآن لدليل العرب وكن جزءاً من أكبر تجمع خدمي موثوق في تركيا.
           </p>
           <a
-            href={`https://wa.me/${SITE_CONFIG.whatsapp}`}
+            href={`mailto:${SITE_CONFIG.email}?subject=${encodeURIComponent('طلب إضافة خدمة في دليل العرب')}`}
             className="inline-flex items-center gap-2 bg-emerald-500 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-emerald-600 hover:scale-105 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
           >
             تواصل معنا لإضافة خدمتك

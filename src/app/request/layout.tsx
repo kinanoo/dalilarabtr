@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'طلب خدمة | دليل العرب في تركيا',
-  description: 'قدّم طلب خدمة جديد عبر واتساب: حجز مواعيد، ترجمة، معاملات إقامة، وخدمات قانونية في تركيا.',
+  description: 'قدّم طلب خدمة جديد: حجز مواعيد، ترجمة، معاملات إقامة، وخدمات قانونية في تركيا.',
   alternates: { canonical: '/request' },
 };
 
