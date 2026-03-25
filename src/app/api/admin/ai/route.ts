@@ -2075,7 +2075,20 @@ export async function POST(request: NextRequest) {
         } else {
           // ── OPENAI / ANTHROPIC / OPENROUTER PATH ──
           const isAnthropic = currentProvider.provider === 'anthropic';
-          const openaiTools = convertGeminiToolsToOpenAI(tools);
+          const isOpenRouter = currentProvider.provider === 'openrouter';
+
+          // For OpenRouter free tier: use only essential tools to save tokens
+          const ESSENTIAL_TOOL_NAMES = new Set([
+            'search_content', 'list_content', 'get_content_details', 'count_content',
+            'get_dashboard_stats', 'delete_content', 'update_content', 'toggle_status',
+            'manage_comments', 'batch_approve_comments', 'create_ticker_item',
+            'view_activity_log', 'query_table', 'manage_settings',
+          ]);
+          const providerTools = isOpenRouter
+            ? [{ functionDeclarations: (tools[0] as any).functionDeclarations.filter((fn: any) => ESSENTIAL_TOOL_NAMES.has(fn.name)) }] as FunctionDeclarationsTool[]
+            : tools;
+
+          const openaiTools = convertGeminiToolsToOpenAI(providerTools);
 
           const buildChatMessages = () => {
             const chatMessages: any[] = [];
@@ -2134,8 +2147,8 @@ export async function POST(request: NextRequest) {
               let maxIterations = useTools ? 10 : 1;
               let replyText = '';
 
-              // Use lower max_tokens for OpenRouter free tier
-              const providerMaxTokens = currentProvider.provider === 'openrouter' ? 3000 : 8192;
+              // Use lower max_tokens for OpenRouter free tier to stay within credit budget
+              const providerMaxTokens = isOpenRouter ? 2000 : 8192;
 
               while (maxIterations-- > 0) {
                 let data: any;
@@ -2147,7 +2160,7 @@ export async function POST(request: NextRequest) {
                     system: systemPrompt,
                     messages: chatMessages.filter((m: any) => m.role !== 'system'),
                   };
-                  if (useTools) bodyPayload.tools = convertGeminiToolsToAnthropic(tools);
+                  if (useTools) bodyPayload.tools = convertGeminiToolsToAnthropic(providerTools);
                   const res = await fetch(apiUrl, {
                     method: 'POST',
                     headers,
