@@ -2012,26 +2012,6 @@ export async function POST(request: NextRequest) {
     const siteSnapshot = await fetchSiteSnapshot(serviceClient);
     const fullSystemPrompt = SYSTEM_PROMPT + siteSnapshot;
 
-    // Condensed prompt for OpenRouter free tier (saves ~8K tokens)
-    const COMPACT_SYSTEM_PROMPT = `You are the admin assistant for dalilarabtr.com (guide for Arabs in Turkey).
-ALWAYS respond in Arabic. You have FULL database access via tools.
-
-RULES:
-1. ALWAYS call tools to get data. NEVER say you can't access the database.
-2. list_content: show items. search_content: find items. get_dashboard_stats: overview.
-3. count_content: how many. query_table: raw SQL-like queries.
-4. delete_content/update_content: modify data. toggle_status: activate/deactivate.
-5. manage_comments/batch_approve_comments: handle comments.
-6. create_ticker_item: add to news ticker. manage_settings: site settings.
-7. view_activity_log: recent actions.
-
-TABLES: articles, faqs, security_codes, updates, news_ticker, comments, service_providers,
-consultant_scenarios, zones, restricted_zones, site_banners, site_menus, site_testimonials,
-service_reviews, content_suggestions, member_profiles, site_settings, push_subscriptions.
-
-news_ticker = scrolling bar on homepage (fields: text, link, is_active, priority).
-Format responses with bullet points. Be concise.` + siteSnapshot;
-
     // ── Try each provider in order — auto-fallback on failure ──
     let lastError = '';
     for (const currentProvider of allProviders) {
@@ -2039,8 +2019,7 @@ Format responses with bullet points. Be concise.` + siteSnapshot;
       let actionToReturn: any = null;
       const toolLog: string[] = [];
 
-      // Use compact prompt for OpenRouter to save tokens
-      const systemPrompt = currentProvider.provider === 'openrouter' ? COMPACT_SYSTEM_PROMPT : fullSystemPrompt;
+      const systemPrompt = fullSystemPrompt;
 
       try {
         if (currentProvider.provider === 'gemini') {
@@ -2098,20 +2077,7 @@ Format responses with bullet points. Be concise.` + siteSnapshot;
         } else {
           // ── OPENAI / ANTHROPIC / OPENROUTER PATH ──
           const isAnthropic = currentProvider.provider === 'anthropic';
-          const isOpenRouter = currentProvider.provider === 'openrouter';
-
-          // For OpenRouter free tier: use only essential tools to save tokens
-          const ESSENTIAL_TOOL_NAMES = new Set([
-            'search_content', 'list_content', 'get_content_details', 'count_content',
-            'get_dashboard_stats', 'delete_content', 'update_content', 'toggle_status',
-            'manage_comments', 'batch_approve_comments', 'create_ticker_item',
-            'view_activity_log', 'query_table', 'manage_settings',
-          ]);
-          const providerTools = isOpenRouter
-            ? [{ functionDeclarations: (tools[0] as any).functionDeclarations.filter((fn: any) => ESSENTIAL_TOOL_NAMES.has(fn.name)) }] as FunctionDeclarationsTool[]
-            : tools;
-
-          const openaiTools = convertGeminiToolsToOpenAI(providerTools);
+          const openaiTools = convertGeminiToolsToOpenAI(tools);
 
           const buildChatMessages = () => {
             const chatMessages: any[] = [];
@@ -2170,8 +2136,7 @@ Format responses with bullet points. Be concise.` + siteSnapshot;
               let maxIterations = useTools ? 10 : 1;
               let replyText = '';
 
-              // Use lower max_tokens for OpenRouter free tier to stay within credit budget
-              const providerMaxTokens = isOpenRouter ? 2000 : 8192;
+              const providerMaxTokens = 8192;
 
               while (maxIterations-- > 0) {
                 let data: any;
@@ -2183,7 +2148,7 @@ Format responses with bullet points. Be concise.` + siteSnapshot;
                     system: systemPrompt,
                     messages: chatMessages.filter((m: any) => m.role !== 'system'),
                   };
-                  if (useTools) bodyPayload.tools = convertGeminiToolsToAnthropic(providerTools);
+                  if (useTools) bodyPayload.tools = convertGeminiToolsToAnthropic(tools);
                   const res = await fetch(apiUrl, {
                     method: 'POST',
                     headers,
