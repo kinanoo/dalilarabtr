@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
   const { data, error } = await serviceClient
     .from('ai_provider_keys')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('priority', { ascending: true })
+    .order('created_at', { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -61,23 +62,16 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { id, provider, api_key, model_default, model_deep, label, is_active } = body;
+  const { id, provider, api_key, model_default, model_deep, label, priority } = body;
 
   if (!provider || !label) {
     return NextResponse.json({ error: 'provider and label are required' }, { status: 400 });
   }
 
-  // If setting this as active, deactivate all others first
-  if (is_active) {
-    await serviceClient
-      .from('ai_provider_keys')
-      .update({ is_active: false })
-      .neq('id', id || '00000000-0000-0000-0000-000000000000');
-  }
-
   if (id) {
     // Update existing
-    const updateData: any = { provider, model_default, model_deep, label, is_active };
+    const updateData: any = { provider, model_default, model_deep, label };
+    if (typeof priority === 'number') updateData.priority = priority;
     // Only update api_key if a new one is provided (not the masked one)
     if (api_key && !api_key.startsWith('•')) {
       updateData.api_key = api_key;
@@ -96,9 +90,12 @@ export async function POST(request: NextRequest) {
     if (!api_key || api_key.startsWith('•')) {
       return NextResponse.json({ error: 'API key is required for new providers' }, { status: 400 });
     }
+    // Get next priority number
+    const { count } = await serviceClient.from('ai_provider_keys').select('*', { count: 'exact', head: true });
+    const nextPriority = typeof priority === 'number' ? priority : (count || 0);
     const { data, error } = await serviceClient
       .from('ai_provider_keys')
-      .insert({ provider, api_key, model_default, model_deep, label, is_active: is_active ?? false })
+      .insert({ provider, api_key, model_default, model_deep, label, is_active: true, priority: nextPriority })
       .select()
       .single();
 
@@ -137,7 +134,26 @@ export async function PUT(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { provider, api_key, model_default } = body;
+  let { provider, api_key, model_default } = body;
+  const { id } = body;
+
+  // If the key is masked (from the list), fetch the real key from DB
+  if (id && (!api_key || api_key.includes('•'))) {
+    const { data: row } = await serviceClient
+      .from('ai_provider_keys')
+      .select('api_key, provider, model_default')
+      .eq('id', id)
+      .single();
+    if (row) {
+      api_key = row.api_key;
+      if (!provider) provider = row.provider;
+      if (!model_default) model_default = row.model_default;
+    }
+  }
+
+  if (!api_key || api_key.includes('•')) {
+    return NextResponse.json({ error: 'لم يتم العثور على المفتاح' }, { status: 400 });
+  }
 
   try {
     if (provider === 'gemini') {

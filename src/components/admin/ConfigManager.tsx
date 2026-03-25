@@ -293,6 +293,7 @@ type AIProvider = {
     model_deep: string;
     label: string;
     is_active: boolean;
+    priority: number;
     created_at?: string;
 };
 
@@ -317,7 +318,8 @@ function AIProviderManager() {
         model_default: 'gemini-2.5-flash',
         model_deep: 'gemini-2.5-pro',
         label: '',
-        is_active: false,
+        is_active: true,
+        priority: 0,
     });
 
     useEffect(() => { fetchProviders(); }, []);
@@ -336,7 +338,7 @@ function AIProviderManager() {
 
     function openNewForm() {
         setEditingId(null);
-        setForm({ provider: 'gemini', api_key: '', model_default: 'gemini-2.5-flash', model_deep: 'gemini-2.5-pro', label: '', is_active: false });
+        setForm({ provider: 'gemini', api_key: '', model_default: 'gemini-2.5-flash', model_deep: 'gemini-2.5-pro', label: '', is_active: true, priority: providers.length });
         setShowForm(true);
     }
 
@@ -389,7 +391,7 @@ function AIProviderManager() {
             const res = await fetch('/api/admin/ai-settings', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider: p.provider, api_key: p.api_key, model_default: p.model_default }),
+                body: JSON.stringify({ id: p.id, provider: p.provider, api_key: p.api_key, model_default: p.model_default }),
             });
             const data = await res.json();
             setTestResult({ id: p.id!, ok: data.success, msg: data.message || data.error || 'لا استجابة' });
@@ -399,21 +401,30 @@ function AIProviderManager() {
         setTesting(null);
     }
 
-    async function handleActivate(p: AIProvider) {
-        setLoading(true);
+    async function handleMovePriority(id: string, direction: 'up' | 'down') {
+        const idx = providers.findIndex(p => p.id === id);
+        if (idx < 0) return;
+        const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (swapIdx < 0 || swapIdx >= providers.length) return;
+
+        // Swap priorities via API
         try {
-            await fetch('/api/admin/ai-settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...p, is_active: true }),
-            });
-            toast.success(`تم تفعيل "${p.label}" كمزود أساسي`);
+            await Promise.all([
+                fetch('/api/admin/ai-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...providers[idx], id: providers[idx].id, priority: swapIdx }),
+                }),
+                fetch('/api/admin/ai-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...providers[swapIdx], id: providers[swapIdx].id, priority: idx }),
+                }),
+            ]);
             fetchProviders();
-        } catch { toast.error('فشل التفعيل'); }
-        setLoading(false);
+        } catch { toast.error('فشل تغيير الترتيب'); }
     }
 
-    const activeProvider = providers.find(p => p.is_active);
     const getProviderMeta = (val: string) => PROVIDER_OPTIONS.find(o => o.value === val);
 
     if (loading && providers.length === 0) {
@@ -422,50 +433,52 @@ function AIProviderManager() {
 
     return (
         <div className="space-y-6">
-            {/* Current active provider notice */}
-            {activeProvider ? (
+            {/* Status notice */}
+            {providers.length > 0 ? (
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
                     <Zap className="text-emerald-600" size={20} />
                     <div>
-                        <span className="font-bold text-emerald-700 dark:text-emerald-400">المزود النشط: </span>
-                        <span className="font-bold">{activeProvider.label}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold mr-2 ${getProviderMeta(activeProvider.provider)?.color}`}>
-                            {getProviderMeta(activeProvider.provider)?.label}
-                        </span>
-                        <span className="text-xs text-slate-500 mr-2">الموديل: {activeProvider.model_default}</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">{providers.length} مفتاح مُفعّل </span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">— النظام يجرب الأول، لو فشل ينتقل للتالي تلقائياً.</span>
                     </div>
                 </div>
             ) : (
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
                     <AlertTriangle className="text-amber-600" size={20} />
                     <div>
-                        <span className="font-bold text-amber-700 dark:text-amber-400">لا يوجد مزود نشط! </span>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">المساعد الذكي لن يعمل حتى تفعّل مفتاح API.</span>
+                        <span className="font-bold text-amber-700 dark:text-amber-400">لا يوجد مفاتيح! </span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">المساعد الذكي لن يعمل حتى تضيف مفتاح API.</span>
                     </div>
                 </div>
             )}
 
             {/* Provider list */}
             <div className="space-y-3">
-                {providers.map(p => (
-                    <div key={p.id} className={`border rounded-xl p-4 transition-all ${p.is_active ? 'border-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10 dark:border-emerald-700' : 'border-slate-200 dark:border-slate-700'}`}>
+                {providers.map((p, idx) => (
+                    <div key={p.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-all">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="text-lg font-bold text-slate-400 w-6 text-center shrink-0">{idx + 1}</span>
+                                <div className="flex gap-1 flex-col shrink-0">
+                                    <button
+                                        onClick={() => handleMovePriority(p.id!, 'up')}
+                                        disabled={idx === 0}
+                                        className="text-[10px] text-slate-400 hover:text-slate-700 disabled:opacity-20"
+                                        aria-label="رفع الأولوية"
+                                    >▲</button>
+                                    <button
+                                        onClick={() => handleMovePriority(p.id!, 'down')}
+                                        disabled={idx === providers.length - 1}
+                                        className="text-[10px] text-slate-400 hover:text-slate-700 disabled:opacity-20"
+                                        aria-label="خفض الأولوية"
+                                    >▼</button>
+                                </div>
                                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold shrink-0 ${getProviderMeta(p.provider)?.color}`}>
                                     {getProviderMeta(p.provider)?.label || p.provider}
                                 </span>
                                 <span className="font-bold text-slate-700 dark:text-slate-300 truncate">{p.label}</span>
-                                {p.is_active && <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold shrink-0">نشط</span>}
                             </div>
                             <div className="flex gap-1.5 shrink-0">
-                                {!p.is_active && (
-                                    <button
-                                        onClick={() => handleActivate(p)}
-                                        className="px-3 py-1.5 text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg"
-                                    >
-                                        تفعيل
-                                    </button>
-                                )}
                                 <button
                                     onClick={() => handleTest(p)}
                                     disabled={testing === p.id}
@@ -489,7 +502,7 @@ function AIProviderManager() {
                                 </button>
                             </div>
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500 mr-12">
                             <span>الموديل: <strong className="text-slate-700 dark:text-slate-300">{p.model_default}</strong></span>
                             <span>التفكير العميق: <strong className="text-slate-700 dark:text-slate-300">{p.model_deep}</strong></span>
                             <span className="flex items-center gap-1">
@@ -501,7 +514,7 @@ function AIProviderManager() {
                         </div>
                         {/* Test result */}
                         {testResult && testResult.id === p.id && (
-                            <div className={`mt-2 p-2 rounded-lg text-xs ${testResult.ok ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                            <div className={`mt-2 mr-12 p-2 rounded-lg text-xs ${testResult.ok ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                                 {testResult.ok ? '✅' : '❌'} {testResult.msg}
                             </div>
                         )}
@@ -576,17 +589,6 @@ function AIProviderManager() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            id="is_active_check"
-                            checked={form.is_active}
-                            onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))}
-                            className="rounded"
-                        />
-                        <label htmlFor="is_active_check" className="text-sm font-bold">تفعيل كمزود أساسي (يلغي تفعيل المزودات الأخرى)</label>
-                    </div>
-
                     <div className="flex gap-3">
                         <button onClick={handleSave} disabled={loading} className="bg-amber-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-amber-700 flex items-center gap-2 disabled:opacity-50">
                             <Save size={16} /> {loading ? 'جاري الحفظ...' : 'حفظ'}
@@ -600,13 +602,14 @@ function AIProviderManager() {
 
             {/* Info box */}
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-xs text-slate-500 space-y-2">
-                <p className="font-bold text-slate-600 dark:text-slate-400">ملاحظات:</p>
+                <p className="font-bold text-slate-600 dark:text-slate-400">كيف يعمل النظام:</p>
                 <ul className="list-disc list-inside space-y-1">
-                    <li>المزود النشط هو الذي يستخدمه المساعد الذكي. يمكنك تبديله في أي وقت.</li>
-                    <li>استخدم زر "اختبار" للتحقق من صلاحية المفتاح قبل التفعيل.</li>
-                    <li>يدعم النظام: Google Gemini، OpenAI، Anthropic (Claude)، OpenRouter.</li>
-                    <li>عبر OpenRouter يمكنك استخدام أي موديل متاح (Gemini، GPT، Claude، Llama، إلخ).</li>
-                    <li>المفاتيح مخزنة بشكل آمن في قاعدة البيانات ولا تظهر كاملة أبداً.</li>
+                    <li>كل المفاتيح المضافة نشطة تلقائياً — لا تحتاج تفعيل يدوي.</li>
+                    <li>النظام يجرب المفتاح رقم 1 أولاً. لو فشل (ليمت، عطل) ينتقل للتالي تلقائياً.</li>
+                    <li>استخدم الأسهم ▲▼ لتغيير ترتيب الأولوية.</li>
+                    <li>استخدم زر "اختبار" للتحقق من صلاحية المفتاح.</li>
+                    <li>يدعم: Google Gemini، OpenAI، Anthropic (Claude)، OpenRouter.</li>
+                    <li>عبر OpenRouter يمكنك استخدام أي موديل (Gemini، GPT، Claude، Llama، إلخ).</li>
                 </ul>
             </div>
         </div>

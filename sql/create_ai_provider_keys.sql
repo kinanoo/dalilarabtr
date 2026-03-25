@@ -11,13 +11,10 @@ CREATE TABLE IF NOT EXISTS ai_provider_keys (
   model_default TEXT NOT NULL DEFAULT 'gemini-2.5-flash',  -- الموديل الافتراضي (سريع)
   model_deep TEXT NOT NULL DEFAULT 'gemini-2.5-pro',       -- موديل التفكير العميق
   label TEXT NOT NULL DEFAULT '',                     -- تسمية المفتاح (للعرض)
-  is_active BOOLEAN NOT NULL DEFAULT false,           -- هل هذا المزود النشط؟
+  is_active BOOLEAN NOT NULL DEFAULT false,           -- (لم يعد مستخدماً — كل المفاتيح نشطة)
+  priority INTEGER NOT NULL DEFAULT 0,                -- الأولوية: الأصغر يُجرّب أولاً
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
--- فقط مفتاح واحد يكون نشطاً في نفس الوقت
-CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_provider_active
-  ON ai_provider_keys (is_active) WHERE is_active = true;
 
 -- RLS: فقط service role يمكنه الوصول (API routes تستخدم service role key)
 ALTER TABLE ai_provider_keys ENABLE ROW LEVEL SECURITY;

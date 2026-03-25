@@ -1965,215 +1965,221 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ reply: `Deleted "${pendingAction.summary}" successfully.` });
     }
 
-    // ── Resolve AI provider: DB first, then env fallback ──
-    let activeProvider: { provider: string; api_key: string; model_default: string; model_deep: string } | null = null;
+    // ── Resolve AI providers: fetch ALL from DB, sorted by priority ──
+    type ProviderRow = { provider: string; api_key: string; model_default: string; model_deep: string; label: string };
+    let allProviders: ProviderRow[] = [];
     try {
-      const { data: dbProvider } = await serviceClient
+      const { data } = await serviceClient
         .from('ai_provider_keys')
-        .select('provider, api_key, model_default, model_deep')
-        .eq('is_active', true)
-        .limit(1)
-        .single();
-      if (dbProvider?.api_key) activeProvider = dbProvider;
+        .select('provider, api_key, model_default, model_deep, label')
+        .order('priority', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (data?.length) allProviders = data;
     } catch { /* table may not exist yet — fall through */ }
 
     // Fallback to env var (Gemini only)
-    if (!activeProvider) {
+    if (allProviders.length === 0) {
       const envKey = process.env.GOOGLE_GEMINI_API_KEY;
       if (envKey) {
-        activeProvider = { provider: 'gemini', api_key: envKey, model_default: 'gemini-2.5-flash', model_deep: 'gemini-2.5-pro' };
+        allProviders = [{ provider: 'gemini', api_key: envKey, model_default: 'gemini-2.5-flash', model_deep: 'gemini-2.5-pro', label: 'ENV' }];
       }
     }
 
-    if (!activeProvider) {
+    if (allProviders.length === 0) {
       return NextResponse.json({ reply: 'لم يتم تكوين مفتاح API للمساعد الذكي. اذهب إلى الإعدادات ← المساعد الذكي (AI) لإضافة مفتاح.' });
     }
 
     // Fetch live site snapshot for real-time awareness
     const siteSnapshot = await fetchSiteSnapshot(serviceClient);
     const systemPrompt = SYSTEM_PROMPT + siteSnapshot;
-    const modelId = useDeepModel ? activeProvider.model_deep : activeProvider.model_default;
 
-    let actionToReturn: any = null;
-    const toolLog: string[] = [];
+    // ── Try each provider in order — auto-fallback on failure ──
+    let lastError = '';
+    for (const currentProvider of allProviders) {
+      const modelId = useDeepModel ? currentProvider.model_deep : currentProvider.model_default;
+      let actionToReturn: any = null;
+      const toolLog: string[] = [];
 
-    // ── Route to the appropriate provider ──
-    if (activeProvider.provider === 'gemini') {
-      // ── GEMINI PATH (native SDK with tool calling) ──
-      const genAI = new GoogleGenerativeAI(activeProvider.api_key);
-      const model = genAI.getGenerativeModel({
-        model: modelId,
-        systemInstruction: systemPrompt,
-        tools,
-      });
-
-      const history = messages.slice(0, -1).map((m: any) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m._context ? `${m.content}\n\n[Tool context from this turn: ${m._context}]` : m.content }],
-      }));
-
-      const chat = model.startChat({ history });
-      const lastMessage = messages[messages.length - 1].content;
-
-      let response = await chat.sendMessage(lastMessage);
-      let result = response.response;
-
-      let maxIterations = 10;
-      while (maxIterations-- > 0) {
-        const candidate = result.candidates?.[0];
-        const parts = candidate?.content?.parts || [];
-        const functionCalls = parts.filter((p: any) => p.functionCall);
-        if (functionCalls.length === 0) break;
-
-        const functionResponses: any[] = [];
-        for (const fc of functionCalls) {
-          const { name, args } = fc.functionCall!;
-          const { result: fnResult, action } = await executeFunction(name, args || {}, serviceClient);
-          if (action) actionToReturn = action;
-          functionResponses.push({ functionResponse: { name, response: fnResult } });
-          toolLog.push(`${name}(${JSON.stringify(args)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
-        }
-
-        response = await chat.sendMessage(functionResponses);
-        result = response.response;
-      }
-
-      let replyText: string;
-      try { replyText = result.text() || 'Could not process your request.'; }
-      catch { replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.'; }
-      const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
-
-      return NextResponse.json({
-        reply: replyText,
-        ...(actionToReturn && { action: actionToReturn }),
-        ...(toolContext && { _context: toolContext }),
-      });
-
-    } else {
-      // ── OPENAI / ANTHROPIC / OPENROUTER PATH (OpenAI-compatible API with tool calling) ──
-      const isAnthropic = activeProvider.provider === 'anthropic';
-
-      // Convert Gemini tool declarations to OpenAI format
-      const openaiTools = convertGeminiToolsToOpenAI(tools);
-
-      // Build messages array
-      const chatMessages: any[] = [];
-      if (!isAnthropic) {
-        chatMessages.push({ role: 'system', content: systemPrompt });
-      }
-      for (const m of messages.slice(0, -1)) {
-        const content = m._context ? `${m.content}\n\n[Tool context: ${m._context}]` : m.content;
-        chatMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content });
-      }
-      chatMessages.push({ role: 'user', content: messages[messages.length - 1].content });
-
-      // Determine API URL and headers
-      let apiUrl: string;
-      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-      if (isAnthropic) {
-        apiUrl = 'https://api.anthropic.com/v1/messages';
-        headers['x-api-key'] = activeProvider.api_key;
-        headers['anthropic-version'] = '2023-06-01';
-      } else if (activeProvider.provider === 'openrouter') {
-        apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-        headers['Authorization'] = `Bearer ${activeProvider.api_key}`;
-      } else {
-        apiUrl = 'https://api.openai.com/v1/chat/completions';
-        headers['Authorization'] = `Bearer ${activeProvider.api_key}`;
-      }
-
-      let maxIterations = 10;
-      let replyText = '';
-
-      while (maxIterations-- > 0) {
-        let data: any;
-
-        if (isAnthropic) {
-          // Anthropic Messages API
-          const anthropicTools = convertGeminiToolsToAnthropic(tools);
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              model: modelId,
-              max_tokens: 8192,
-              system: systemPrompt,
-              messages: chatMessages.filter((m: any) => m.role !== 'system'),
-              tools: anthropicTools,
-            }),
+      try {
+        if (currentProvider.provider === 'gemini') {
+          // ── GEMINI PATH ──
+          const genAI = new GoogleGenerativeAI(currentProvider.api_key);
+          const model = genAI.getGenerativeModel({
+            model: modelId,
+            systemInstruction: systemPrompt,
+            tools,
           });
-          data = await res.json();
-          if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
-          // Process Anthropic response
-          const contentBlocks = data.content || [];
-          const textBlocks = contentBlocks.filter((b: any) => b.type === 'text');
-          const toolUseBlocks = contentBlocks.filter((b: any) => b.type === 'tool_use');
+          const history = messages.slice(0, -1).map((m: any) => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m._context ? `${m.content}\n\n[Tool context from this turn: ${m._context}]` : m.content }],
+          }));
 
-          if (toolUseBlocks.length === 0) {
-            replyText = textBlocks.map((b: any) => b.text).join('\n') || 'Could not process your request.';
-            break;
+          const chat = model.startChat({ history });
+          const lastMessage = messages[messages.length - 1].content;
+
+          let response = await chat.sendMessage(lastMessage);
+          let result = response.response;
+
+          let maxIterations = 10;
+          while (maxIterations-- > 0) {
+            const candidate = result.candidates?.[0];
+            const parts = candidate?.content?.parts || [];
+            const functionCalls = parts.filter((p: any) => p.functionCall);
+            if (functionCalls.length === 0) break;
+
+            const functionResponses: any[] = [];
+            for (const fc of functionCalls) {
+              const { name, args } = fc.functionCall!;
+              const { result: fnResult, action } = await executeFunction(name, args || {}, serviceClient);
+              if (action) actionToReturn = action;
+              functionResponses.push({ functionResponse: { name, response: fnResult } });
+              toolLog.push(`${name}(${JSON.stringify(args)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
+            }
+
+            response = await chat.sendMessage(functionResponses);
+            result = response.response;
           }
 
-          // Execute tool calls
-          chatMessages.push({ role: 'assistant', content: contentBlocks });
-          const toolResults: any[] = [];
-          for (const tu of toolUseBlocks) {
-            const { result: fnResult, action } = await executeFunction(tu.name, tu.input || {}, serviceClient);
-            if (action) actionToReturn = action;
-            toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(fnResult) });
-            toolLog.push(`${tu.name}(${JSON.stringify(tu.input)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
-          }
-          chatMessages.push({ role: 'user', content: toolResults });
+          let replyText: string;
+          try { replyText = result.text() || 'Could not process your request.'; }
+          catch { replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.'; }
+          const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
+
+          return NextResponse.json({
+            reply: replyText,
+            ...(actionToReturn && { action: actionToReturn }),
+            ...(toolContext && { _context: toolContext }),
+          });
 
         } else {
-          // OpenAI / OpenRouter API
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              model: modelId,
-              messages: chatMessages,
-              tools: openaiTools,
-              max_tokens: 8192,
-            }),
+          // ── OPENAI / ANTHROPIC / OPENROUTER PATH ──
+          const isAnthropic = currentProvider.provider === 'anthropic';
+          const openaiTools = convertGeminiToolsToOpenAI(tools);
+
+          const chatMessages: any[] = [];
+          if (!isAnthropic) {
+            chatMessages.push({ role: 'system', content: systemPrompt });
+          }
+          for (const m of messages.slice(0, -1)) {
+            const content = m._context ? `${m.content}\n\n[Tool context: ${m._context}]` : m.content;
+            chatMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content });
+          }
+          chatMessages.push({ role: 'user', content: messages[messages.length - 1].content });
+
+          let apiUrl: string;
+          let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+          if (isAnthropic) {
+            apiUrl = 'https://api.anthropic.com/v1/messages';
+            headers['x-api-key'] = currentProvider.api_key;
+            headers['anthropic-version'] = '2023-06-01';
+          } else if (currentProvider.provider === 'openrouter') {
+            apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+            headers['Authorization'] = `Bearer ${currentProvider.api_key}`;
+          } else {
+            apiUrl = 'https://api.openai.com/v1/chat/completions';
+            headers['Authorization'] = `Bearer ${currentProvider.api_key}`;
+          }
+
+          let maxIterations = 10;
+          let replyText = '';
+
+          while (maxIterations-- > 0) {
+            let data: any;
+
+            if (isAnthropic) {
+              const anthropicTools = convertGeminiToolsToAnthropic(tools);
+              const res = await fetch(apiUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                  model: modelId,
+                  max_tokens: 8192,
+                  system: systemPrompt,
+                  messages: chatMessages.filter((m: any) => m.role !== 'system'),
+                  tools: anthropicTools,
+                }),
+              });
+              data = await res.json();
+              if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+              const contentBlocks = data.content || [];
+              const textBlocks = contentBlocks.filter((b: any) => b.type === 'text');
+              const toolUseBlocks = contentBlocks.filter((b: any) => b.type === 'tool_use');
+
+              if (toolUseBlocks.length === 0) {
+                replyText = textBlocks.map((b: any) => b.text).join('\n') || 'Could not process your request.';
+                break;
+              }
+
+              chatMessages.push({ role: 'assistant', content: contentBlocks });
+              const toolResults: any[] = [];
+              for (const tu of toolUseBlocks) {
+                const { result: fnResult, action } = await executeFunction(tu.name, tu.input || {}, serviceClient);
+                if (action) actionToReturn = action;
+                toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(fnResult) });
+                toolLog.push(`${tu.name}(${JSON.stringify(tu.input)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
+              }
+              chatMessages.push({ role: 'user', content: toolResults });
+
+            } else {
+              const res = await fetch(apiUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                  model: modelId,
+                  messages: chatMessages,
+                  tools: openaiTools,
+                  max_tokens: 8192,
+                }),
+              });
+              data = await res.json();
+              if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+              const choice = data.choices?.[0];
+              const msg = choice?.message;
+
+              if (!msg?.tool_calls || msg.tool_calls.length === 0) {
+                replyText = msg?.content || 'Could not process your request.';
+                break;
+              }
+
+              chatMessages.push(msg);
+              for (const tc of msg.tool_calls) {
+                const fnName = tc.function.name;
+                const fnArgs = JSON.parse(tc.function.arguments || '{}');
+                const { result: fnResult, action } = await executeFunction(fnName, fnArgs, serviceClient);
+                if (action) actionToReturn = action;
+                chatMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(fnResult) });
+                toolLog.push(`${fnName}(${JSON.stringify(fnArgs)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
+              }
+            }
+          }
+
+          if (!replyText) {
+            replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.';
+          }
+
+          const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
+          return NextResponse.json({
+            reply: replyText,
+            ...(actionToReturn && { action: actionToReturn }),
+            ...(toolContext && { _context: toolContext }),
           });
-          data = await res.json();
-          if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-
-          const choice = data.choices?.[0];
-          const msg = choice?.message;
-
-          if (!msg?.tool_calls || msg.tool_calls.length === 0) {
-            replyText = msg?.content || 'Could not process your request.';
-            break;
-          }
-
-          // Execute tool calls
-          chatMessages.push(msg);
-          for (const tc of msg.tool_calls) {
-            const fnName = tc.function.name;
-            const fnArgs = JSON.parse(tc.function.arguments || '{}');
-            const { result: fnResult, action } = await executeFunction(fnName, fnArgs, serviceClient);
-            if (action) actionToReturn = action;
-            chatMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(fnResult) });
-            toolLog.push(`${fnName}(${JSON.stringify(fnArgs)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
-          }
         }
-      }
 
-      if (!replyText) {
-        replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.';
+      } catch (providerError: any) {
+        lastError = providerError?.message || 'Unknown error';
+        logger.warn(`Provider "${currentProvider.label}" (${currentProvider.provider}) failed: ${lastError} — trying next...`);
+        continue; // ← try next provider
       }
-
-      const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
-      return NextResponse.json({
-        reply: replyText,
-        ...(actionToReturn && { action: actionToReturn }),
-        ...(toolContext && { _context: toolContext }),
-      });
     }
+
+    // All providers failed
+    return NextResponse.json({
+      reply: `فشلت جميع مزودات AI المتاحة. آخر خطأ: ${lastError}. تحقق من صلاحية المفاتيح في الإعدادات.`,
+    });
 
   } catch (error) {
     logger.error('AI Assistant error:', error);
