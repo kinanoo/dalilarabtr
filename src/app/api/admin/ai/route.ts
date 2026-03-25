@@ -2116,13 +2116,16 @@ export async function POST(request: NextRequest) {
               let maxIterations = useTools ? 10 : 1;
               let replyText = '';
 
+              // Use lower max_tokens for OpenRouter free tier
+              const providerMaxTokens = currentProvider.provider === 'openrouter' ? 3000 : 8192;
+
               while (maxIterations-- > 0) {
                 let data: any;
 
                 if (isAnthropic) {
                   const bodyPayload: any = {
                     model: modelId,
-                    max_tokens: 8192,
+                    max_tokens: providerMaxTokens,
                     system: systemPrompt,
                     messages: chatMessages.filter((m: any) => m.role !== 'system'),
                   };
@@ -2158,7 +2161,7 @@ export async function POST(request: NextRequest) {
                   const bodyPayload: any = {
                     model: modelId,
                     messages: chatMessages,
-                    max_tokens: 8192,
+                    max_tokens: providerMaxTokens,
                   };
                   if (useTools) bodyPayload.tools = openaiTools;
                   const res = await fetch(apiUrl, {
