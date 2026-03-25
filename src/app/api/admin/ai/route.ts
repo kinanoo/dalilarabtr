@@ -1965,6 +1965,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ reply: `Deleted "${pendingAction.summary}" successfully.` });
     }
 
+    // ── Log AI usage (fire-and-forget) ──
+    const userQuery = messages[messages.length - 1]?.content || '';
+    const logUsage = async (provider: string, model: string, success: boolean) => {
+      try {
+        await serviceClient.from('ai_usage_logs').insert({
+          user_id: user.id,
+          query: userQuery.slice(0, 500),
+          provider,
+          model,
+          success,
+        });
+      } catch { /* fire-and-forget */ }
+    };
+
     // ── Resolve AI providers: fetch ALL from DB, sorted by priority ──
     type ProviderRow = { provider: string; api_key: string; model_default: string; model_deep: string; label: string };
     let allProviders: ProviderRow[] = [];
@@ -2046,6 +2060,7 @@ export async function POST(request: NextRequest) {
           catch { replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.'; }
           const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
 
+          logUsage(currentProvider.provider, modelId, true);
           return NextResponse.json({
             reply: replyText,
             ...(actionToReturn && { action: actionToReturn }),
@@ -2162,6 +2177,7 @@ export async function POST(request: NextRequest) {
           }
 
           const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
+          logUsage(currentProvider.provider, modelId, true);
           return NextResponse.json({
             reply: replyText,
             ...(actionToReturn && { action: actionToReturn }),
@@ -2170,8 +2186,8 @@ export async function POST(request: NextRequest) {
         }
 
       } catch (providerError: any) {
-        lastError = providerError?.message || 'Unknown error';
-        logger.warn(`Provider "${currentProvider.label}" (${currentProvider.provider}) failed: ${lastError} — trying next...`);
+        lastError = providerError?.message || providerError?.toString() || 'Unknown error';
+        logger.warn(`Provider "${currentProvider.label}" (${currentProvider.provider}/${modelId}) failed: ${lastError} — trying next...`);
         continue; // ← try next provider
       }
     }
@@ -2181,10 +2197,10 @@ export async function POST(request: NextRequest) {
       reply: `فشلت جميع مزودات AI المتاحة. آخر خطأ: ${lastError}. تحقق من صلاحية المفاتيح في الإعدادات.`,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     logger.error('AI Assistant error:', error);
     return NextResponse.json({
-      reply: 'حدث خطأ في معالجة طلبك. حاول مرة أخرى.',
+      reply: `حدث خطأ في معالجة طلبك: ${error?.message || 'خطأ غير معروف'}. حاول مرة أخرى.`,
     });
   }
 }

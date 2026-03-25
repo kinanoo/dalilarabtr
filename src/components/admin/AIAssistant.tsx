@@ -36,9 +36,14 @@ function loadHistory(): Message[] {
 
 function saveHistory(messages: Message[]) {
   try {
-    const trimmed = messages.slice(-50);
+    const trimmed = messages.slice(-200);
     localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(trimmed));
-  } catch { /* quota exceeded */ }
+  } catch { /* quota exceeded — try smaller */
+    try {
+      const smaller = messages.slice(-50);
+      localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(smaller));
+    } catch { /* give up */ }
+  }
 }
 
 // ── Quick commands ──
@@ -53,6 +58,12 @@ const QUICK_COMMANDS = [
   { label: 'الإعدادات', prompt: 'اعرض كل إعدادات الموقع الحالية' },
   { label: 'البانر', prompt: 'هل يوجد بانر نشط حالياً؟ اعرض تفاصيله' },
   { label: 'اقبل الكل', prompt: 'اقبل كل التعليقات المعلقة دفعة واحدة' },
+  { label: 'الأعضاء', prompt: 'اعرض قائمة الأعضاء المسجلين وأدوارهم' },
+  { label: 'الخدمات', prompt: 'اعرض كل الخدمات المتاحة وعددها' },
+  { label: 'الأسئلة الشائعة', prompt: 'كم سؤال شائع موجود؟ اعرض آخر 5 أسئلة مضافة' },
+  { label: 'الأكواد', prompt: 'اعرض عدد الأكواد في كل تصنيف' },
+  { label: 'آخر التقييمات', prompt: 'اعرض آخر 10 تقييمات من المستخدمين' },
+  { label: 'المناطق', prompt: 'كم منطقة مسجلة في النظام؟ اعرض أكثر المناطق مقالات' },
 ];
 
 // ── Markdown-like renderer for AI responses ──

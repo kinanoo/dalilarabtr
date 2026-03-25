@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Settings, Menu, Layers, Save, Loader2, RefreshCw, Trash2, Edit, Check, X, Bot, Plus, Zap, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Settings, Menu, Layers, Save, Loader2, RefreshCw, Trash2, Edit, Check, X, Bot, Plus, Zap, Eye, EyeOff, AlertTriangle, BarChart3, MessageSquare, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import DataMigration from './DataMigration';
 
@@ -273,11 +273,14 @@ export default function ConfigManager() {
 
             {/* === AI PROVIDERS TAB === */}
             {activeTab === 'ai' && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <Bot className="text-amber-500" /> إعدادات المساعد الذكي — مفاتيح API
-                    </h3>
-                    <AIProviderManager />
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                            <Bot className="text-amber-500" /> إعدادات المساعد الذكي — مفاتيح API
+                        </h3>
+                        <AIProviderManager />
+                    </div>
+                    <AIUsageStats />
                 </div>
             )}
         </div>
@@ -701,6 +704,148 @@ function GeneralSettingsForm() {
             <button onClick={saveSettings} className="bg-emerald-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-emerald-700 flex items-center gap-2">
                 <Save size={18} /> حفظ التغييرات
             </button>
+        </div>
+    );
+}
+
+// === AI Usage Stats Dashboard ===
+function AIUsageStats() {
+    const [stats, setStats] = useState<any>(null);
+    const [recentQueries, setRecentQueries] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showRecent, setShowRecent] = useState(false);
+
+    const fetchStats = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/admin/ai-usage');
+            const data = await res.json();
+            if (data.stats) setStats(data.stats);
+            if (data.recentQueries) setRecentQueries(data.recentQueries);
+        } catch { /* ignore */ }
+        setLoading(false);
+    };
+
+    useEffect(() => { fetchStats(); }, []);
+
+    if (loading) {
+        return (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex items-center justify-center gap-2 text-slate-400">
+                <Loader2 size={18} className="animate-spin" /> جاري تحميل الإحصائيات...
+            </div>
+        );
+    }
+
+    if (!stats) {
+        return (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 text-center text-slate-400 text-sm">
+                لا توجد بيانات استخدام بعد. ابدأ باستخدام المساعد الذكي لتظهر الإحصائيات هنا.
+            </div>
+        );
+    }
+
+    const providerLabels: Record<string, string> = {
+        gemini: 'Google Gemini',
+        openrouter: 'OpenRouter',
+        openai: 'OpenAI',
+        anthropic: 'Claude',
+    };
+
+    return (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
+            <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                    <BarChart3 className="text-blue-500" /> سجل استخدام المساعد الذكي
+                </h3>
+                <button onClick={fetchStats} className="text-slate-400 hover:text-blue-500 transition-colors" title="تحديث">
+                    <RefreshCw size={18} />
+                </button>
+            </div>
+
+            {/* Stats cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">{stats.totalQueries}</div>
+                    <div className="text-xs text-blue-500 mt-1">إجمالي الأسئلة</div>
+                </div>
+                <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-emerald-600">{stats.todayQueries}</div>
+                    <div className="text-xs text-emerald-500 mt-1">أسئلة اليوم</div>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-950/30 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-purple-600">{stats.weekQueries}</div>
+                    <div className="text-xs text-purple-500 mt-1">هذا الأسبوع</div>
+                </div>
+                <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-bold text-amber-600">{stats.successRate}%</div>
+                    <div className="text-xs text-amber-500 mt-1">نسبة النجاح</div>
+                </div>
+            </div>
+
+            {/* Provider breakdown */}
+            {Object.keys(stats.providerCounts || {}).length > 0 && (
+                <div>
+                    <h4 className="font-bold text-sm mb-2 flex items-center gap-1.5">
+                        <TrendingUp size={14} /> استخدام المزودات
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                        {Object.entries(stats.providerCounts).map(([provider, count]) => (
+                            <div key={provider} className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm">
+                                <span className="font-bold">{providerLabels[provider] || provider}</span>
+                                <span className="text-slate-500 mr-2">{count as number} طلب</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Top topics */}
+            {stats.topTopics?.length > 0 && (
+                <div>
+                    <h4 className="font-bold text-sm mb-2 flex items-center gap-1.5">
+                        <MessageSquare size={14} /> أكثر المواضيع طلباً
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                        {stats.topTopics.map((t: any) => (
+                            <div key={t.topic} className="bg-slate-100 dark:bg-slate-800 rounded-full px-3 py-1.5 text-xs font-medium">
+                                {t.topic} <span className="text-slate-400 mr-1">({t.count})</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Recent queries toggle */}
+            <div>
+                <button
+                    onClick={() => setShowRecent(!showRecent)}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-bold"
+                >
+                    {showRecent ? 'إخفاء آخر الأسئلة ▲' : 'عرض آخر الأسئلة ▼'}
+                </button>
+
+                {showRecent && recentQueries.length > 0 && (
+                    <div className="mt-3 space-y-2 max-h-80 overflow-y-auto">
+                        {recentQueries.map((q) => (
+                            <div key={q.id} className="flex items-start gap-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 text-sm">
+                                <div className={`shrink-0 w-2 h-2 rounded-full mt-1.5 ${q.success ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-slate-700 dark:text-slate-200 truncate">{q.query}</p>
+                                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                                        <span>{providerLabels[q.provider] || q.provider}</span>
+                                        <span>{q.model}</span>
+                                        <span>{new Date(q.created_at).toLocaleString('ar-SA')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {showRecent && recentQueries.length === 0 && (
+                    <p className="mt-3 text-sm text-slate-400">لا توجد أسئلة مسجلة بعد.</p>
+                )}
+            </div>
         </div>
     );
 }
