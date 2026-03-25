@@ -842,19 +842,24 @@ ${TAGS_TEXT}
 
 ## CRITICAL: NEWS TICKER vs UPDATES PAGE vs BANNERS (3 different things!)
 
-1. **News Ticker** — scrolling carousel on HOMEPAGE
-   - Source: "updates" table WHERE type='news' AND active=true, LIMIT 5
-   - Also auto-merges latest articles (10) and scenarios (5) as cards
-   - ALSO: "news_ticker" table has separate manual ticker items
-   - To add: create_update with type='news' OR add to news_ticker table
+1. **News Ticker (شريط الأخبار المتحرك)** — scrolling horizontal bar at TOP of HOMEPAGE only
+   - Source: ONLY "news_ticker" table (NOT updates table!)
+   - Fields: id, text, link, is_active, priority
+   - To search: use search_content with content_type="ticker"
+   - To add: use create_ticker_item
+   - To manage: search, create, delete ticker items directly
 
-2. **Updates Page** (/updates) — full timeline
-   - Shows ALL updates (any type) + automatic events from admin_activity_log
+2. **Updates Page** (/updates) — full timeline page
+   - Source: "updates" table + automatic events from admin_activity_log
+   - Shows ALL updates (any type)
    - Filter tabs: All, News, Articles, Scenarios, Codes, FAQs
+   - This is COMPLETELY SEPARATE from the news ticker
 
 3. **Site Banner** — colored bar at very top of ALL pages
    - Source: "site_banners" table WHERE is_active=true, LIMIT 1
    - NOT related to updates or news_ticker
+
+IMPORTANT: When the admin asks about "شريط الأخبار" or "الشريط المتحرك" or "التيكر" — they mean the news_ticker table. ALWAYS search with content_type="ticker".
 
 ## IMPORTANT NOTES:
 - Article categories stored in Arabic in DB (auto-mapped from English slugs)
@@ -936,7 +941,7 @@ async function executeFunction(
         try { results.push(...await searches[content_type]()); } catch { /* skip failed search */ }
       } else {
         // Search main content types (not all to keep it fast)
-        const mainTypes = ['article', 'service', 'faq', 'update', 'scenario', 'code'];
+        const mainTypes = ['article', 'service', 'faq', 'update', 'scenario', 'code', 'ticker'];
         const all = await Promise.all(mainTypes.map(t => searches[t]().catch(() => [] as any[])));
         all.forEach(r => results.push(...r));
       }
@@ -2113,6 +2118,19 @@ export async function POST(request: NextRequest) {
 
             try {
               const chatMessages = buildChatMessages();
+              // When retrying without tools, tell the AI not to simulate function calls
+              if (!useTools) {
+                const noToolsNotice = '\n\n[ملاحظة نظام: أنت حالياً في وضع المحادثة فقط بدون أدوات. لا تحاول استدعاء أي دوال أو كتابة أسماء دوال. أجب مباشرة بناءً على معرفتك بالموقع. إذا احتاج المستخدم بيانات حية، اعتذر واطلب منه المحاولة لاحقاً.]';
+                if (isAnthropic) {
+                  // Add to system prompt context
+                  chatMessages.push({ role: 'user', content: noToolsNotice });
+                  chatMessages.push({ role: 'assistant', content: 'فهمت، سأرد مباشرة بدون استدعاء أي دوال.' });
+                } else {
+                  // Append to system message
+                  const sysMsg = chatMessages.find((m: any) => m.role === 'system');
+                  if (sysMsg) sysMsg.content += noToolsNotice;
+                }
+              }
               let maxIterations = useTools ? 10 : 1;
               let replyText = '';
 
