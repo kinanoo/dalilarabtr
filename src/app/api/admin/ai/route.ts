@@ -2010,7 +2010,27 @@ export async function POST(request: NextRequest) {
 
     // Fetch live site snapshot for real-time awareness
     const siteSnapshot = await fetchSiteSnapshot(serviceClient);
-    const systemPrompt = SYSTEM_PROMPT + siteSnapshot;
+    const fullSystemPrompt = SYSTEM_PROMPT + siteSnapshot;
+
+    // Condensed prompt for OpenRouter free tier (saves ~8K tokens)
+    const COMPACT_SYSTEM_PROMPT = `You are the admin assistant for dalilarabtr.com (guide for Arabs in Turkey).
+ALWAYS respond in Arabic. You have FULL database access via tools.
+
+RULES:
+1. ALWAYS call tools to get data. NEVER say you can't access the database.
+2. list_content: show items. search_content: find items. get_dashboard_stats: overview.
+3. count_content: how many. query_table: raw SQL-like queries.
+4. delete_content/update_content: modify data. toggle_status: activate/deactivate.
+5. manage_comments/batch_approve_comments: handle comments.
+6. create_ticker_item: add to news ticker. manage_settings: site settings.
+7. view_activity_log: recent actions.
+
+TABLES: articles, faqs, security_codes, updates, news_ticker, comments, service_providers,
+consultant_scenarios, zones, restricted_zones, site_banners, site_menus, site_testimonials,
+service_reviews, content_suggestions, member_profiles, site_settings, push_subscriptions.
+
+news_ticker = scrolling bar on homepage (fields: text, link, is_active, priority).
+Format responses with bullet points. Be concise.` + siteSnapshot;
 
     // ── Try each provider in order — auto-fallback on failure ──
     let lastError = '';
@@ -2018,6 +2038,9 @@ export async function POST(request: NextRequest) {
       const modelId = useDeepModel ? currentProvider.model_deep : currentProvider.model_default;
       let actionToReturn: any = null;
       const toolLog: string[] = [];
+
+      // Use compact prompt for OpenRouter to save tokens
+      const systemPrompt = currentProvider.provider === 'openrouter' ? COMPACT_SYSTEM_PROMPT : fullSystemPrompt;
 
       try {
         if (currentProvider.provider === 'gemini') {
