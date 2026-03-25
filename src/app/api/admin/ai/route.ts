@@ -2072,15 +2072,18 @@ export async function POST(request: NextRequest) {
           const isAnthropic = currentProvider.provider === 'anthropic';
           const openaiTools = convertGeminiToolsToOpenAI(tools);
 
-          const chatMessages: any[] = [];
-          if (!isAnthropic) {
-            chatMessages.push({ role: 'system', content: systemPrompt });
-          }
-          for (const m of messages.slice(0, -1)) {
-            const content = m._context ? `${m.content}\n\n[Tool context: ${m._context}]` : m.content;
-            chatMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content });
-          }
-          chatMessages.push({ role: 'user', content: messages[messages.length - 1].content });
+          const buildChatMessages = () => {
+            const chatMessages: any[] = [];
+            if (!isAnthropic) {
+              chatMessages.push({ role: 'system', content: systemPrompt });
+            }
+            for (const m of messages.slice(0, -1)) {
+              const content = m._context ? `${m.content}\n\n[Tool context: ${m._context}]` : m.content;
+              chatMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content });
+            }
+            chatMessages.push({ role: 'user', content: messages[messages.length - 1].content });
+            return chatMessages;
+          };
 
           let apiUrl: string;
           let headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -2097,92 +2100,115 @@ export async function POST(request: NextRequest) {
             headers['Authorization'] = `Bearer ${currentProvider.api_key}`;
           }
 
-          let maxIterations = 10;
-          let replyText = '';
+          // Try with tools first, fallback to no-tools if it fails
+          let useTools = true;
+          let toolAttemptFailed = false;
 
-          while (maxIterations-- > 0) {
-            let data: any;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            if (attempt === 1 && !toolAttemptFailed) break; // no need for retry
+            if (attempt === 1) {
+              useTools = false;
+              logger.warn(`Provider "${currentProvider.label}" failed with tools — retrying without tools...`);
+            }
 
-            if (isAnthropic) {
-              const anthropicTools = convertGeminiToolsToAnthropic(tools);
-              const res = await fetch(apiUrl, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                  model: modelId,
-                  max_tokens: 8192,
-                  system: systemPrompt,
-                  messages: chatMessages.filter((m: any) => m.role !== 'system'),
-                  tools: anthropicTools,
-                }),
+            try {
+              const chatMessages = buildChatMessages();
+              let maxIterations = useTools ? 10 : 1;
+              let replyText = '';
+
+              while (maxIterations-- > 0) {
+                let data: any;
+
+                if (isAnthropic) {
+                  const bodyPayload: any = {
+                    model: modelId,
+                    max_tokens: 8192,
+                    system: systemPrompt,
+                    messages: chatMessages.filter((m: any) => m.role !== 'system'),
+                  };
+                  if (useTools) bodyPayload.tools = convertGeminiToolsToAnthropic(tools);
+                  const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(bodyPayload),
+                  });
+                  data = await res.json();
+                  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+                  const contentBlocks = data.content || [];
+                  const textBlocks = contentBlocks.filter((b: any) => b.type === 'text');
+                  const toolUseBlocks = contentBlocks.filter((b: any) => b.type === 'tool_use');
+
+                  if (!useTools || toolUseBlocks.length === 0) {
+                    replyText = textBlocks.map((b: any) => b.text).join('\n') || 'Could not process your request.';
+                    break;
+                  }
+
+                  chatMessages.push({ role: 'assistant', content: contentBlocks });
+                  const toolResults: any[] = [];
+                  for (const tu of toolUseBlocks) {
+                    const { result: fnResult, action } = await executeFunction(tu.name, tu.input || {}, serviceClient);
+                    if (action) actionToReturn = action;
+                    toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(fnResult) });
+                    toolLog.push(`${tu.name}(${JSON.stringify(tu.input)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
+                  }
+                  chatMessages.push({ role: 'user', content: toolResults });
+
+                } else {
+                  const bodyPayload: any = {
+                    model: modelId,
+                    messages: chatMessages,
+                    max_tokens: 8192,
+                  };
+                  if (useTools) bodyPayload.tools = openaiTools;
+                  const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(bodyPayload),
+                  });
+                  data = await res.json();
+                  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+                  const choice = data.choices?.[0];
+                  const msg = choice?.message;
+
+                  if (!useTools || !msg?.tool_calls || msg.tool_calls.length === 0) {
+                    replyText = msg?.content || 'Could not process your request.';
+                    break;
+                  }
+
+                  chatMessages.push(msg);
+                  for (const tc of msg.tool_calls) {
+                    const fnName = tc.function.name;
+                    const fnArgs = JSON.parse(tc.function.arguments || '{}');
+                    const { result: fnResult, action } = await executeFunction(fnName, fnArgs, serviceClient);
+                    if (action) actionToReturn = action;
+                    chatMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(fnResult) });
+                    toolLog.push(`${fnName}(${JSON.stringify(fnArgs)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
+                  }
+                }
+              }
+
+              if (!replyText) {
+                replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.';
+              }
+
+              const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
+              logUsage(currentProvider.provider, modelId, true);
+              return NextResponse.json({
+                reply: replyText,
+                ...(actionToReturn && { action: actionToReturn }),
+                ...(toolContext && { _context: toolContext }),
               });
-              data = await res.json();
-              if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
-              const contentBlocks = data.content || [];
-              const textBlocks = contentBlocks.filter((b: any) => b.type === 'text');
-              const toolUseBlocks = contentBlocks.filter((b: any) => b.type === 'tool_use');
-
-              if (toolUseBlocks.length === 0) {
-                replyText = textBlocks.map((b: any) => b.text).join('\n') || 'Could not process your request.';
-                break;
+            } catch (toolError: any) {
+              if (attempt === 0 && useTools) {
+                toolAttemptFailed = true;
+                continue; // retry without tools
               }
-
-              chatMessages.push({ role: 'assistant', content: contentBlocks });
-              const toolResults: any[] = [];
-              for (const tu of toolUseBlocks) {
-                const { result: fnResult, action } = await executeFunction(tu.name, tu.input || {}, serviceClient);
-                if (action) actionToReturn = action;
-                toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(fnResult) });
-                toolLog.push(`${tu.name}(${JSON.stringify(tu.input)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
-              }
-              chatMessages.push({ role: 'user', content: toolResults });
-
-            } else {
-              const res = await fetch(apiUrl, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                  model: modelId,
-                  messages: chatMessages,
-                  tools: openaiTools,
-                  max_tokens: 8192,
-                }),
-              });
-              data = await res.json();
-              if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-
-              const choice = data.choices?.[0];
-              const msg = choice?.message;
-
-              if (!msg?.tool_calls || msg.tool_calls.length === 0) {
-                replyText = msg?.content || 'Could not process your request.';
-                break;
-              }
-
-              chatMessages.push(msg);
-              for (const tc of msg.tool_calls) {
-                const fnName = tc.function.name;
-                const fnArgs = JSON.parse(tc.function.arguments || '{}');
-                const { result: fnResult, action } = await executeFunction(fnName, fnArgs, serviceClient);
-                if (action) actionToReturn = action;
-                chatMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(fnResult) });
-                toolLog.push(`${fnName}(${JSON.stringify(fnArgs)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
-              }
+              throw toolError; // let outer catch handle it
             }
           }
-
-          if (!replyText) {
-            replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.';
-          }
-
-          const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
-          logUsage(currentProvider.provider, modelId, true);
-          return NextResponse.json({
-            reply: replyText,
-            ...(actionToReturn && { action: actionToReturn }),
-            ...(toolContext && { _context: toolContext }),
-          });
         }
 
       } catch (providerError: any) {
