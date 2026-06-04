@@ -5,6 +5,7 @@ import CategoryArticlesList from './CategoryArticlesList';
 import { supabase } from '@/lib/supabaseClient';
 
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import logger from '@/lib/logger';
 
 // 1. السماح بالباراميترات الديناميكية (Dynamic Params)
@@ -84,16 +85,12 @@ export default async function CategoryPage(props: {
   }
 
   if (!categoryName) {
-    return (
-      <main className="min-h-screen flex flex-col">
-
-        <div className="flex-grow flex flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold text-slate-300">404</h1>
-          <p>القسم غير موجود</p>
-        </div>
-
-      </main>
-    );
+    // Use Next.js built-in notFound() — returns proper 404 status + renders
+    // the styled not-found.tsx page. The previous inline JSX 404 was being
+    // rendered with a 200 status; worse, any non-ASCII slug that slipped past
+    // earlier checks could surface a generic 500 if downstream code touched
+    // an undefined categoryName.
+    notFound();
   }
 
   return (
