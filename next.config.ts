@@ -11,6 +11,14 @@ const cspBase = [
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
+  // Block legacy plug-ins (Flash, Java) outright — closes a class of XSS
+  // pivots that 'unsafe-inline' can't.
+  "object-src 'none'",
+  // Web workers and the service worker only ever come from our own origin
+  // (or a blob created by us). Keeps an attacker from registering a hostile
+  // worker via an injected script string.
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
 ];
 
 // Global: NO unsafe-eval (public pages don't need it)
@@ -70,12 +78,23 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Admin pages: override CSP + prevent browser caching sensitive data
+        // Admin pages: override CSP + prevent browser caching sensitive data,
+        // and tell search engines to stay out (admin URLs should never
+        // appear in Google results even if a link leaks).
         source: '/admin/:path*',
         headers: [
           { key: 'Content-Security-Policy', value: cspAdmin },
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
           { key: 'Pragma', value: 'no-cache' },
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+        ],
+      },
+      {
+        // Admin API endpoints: same no-cache + no-index discipline
+        source: '/api/admin/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
         ],
       },
     ];

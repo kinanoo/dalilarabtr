@@ -49,8 +49,21 @@ export function DataTable({
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState('');
     const [total, setTotal] = useState(0);
+    // Track which row IDs are currently being mutated (delete / toggle in flight).
+    // Used to disable the action buttons + render a spinner so the admin can't
+    // double-click delete and fire the same destructive request twice.
+    const [pendingRows, setPendingRows] = useState<Set<string>>(new Set());
 
     const PAGE_SIZE = 10;
+
+    function markPending(id: string, on: boolean) {
+        setPendingRows((prev) => {
+            const next = new Set(prev);
+            if (on) next.add(id);
+            else next.delete(id);
+            return next;
+        });
+    }
 
     // Reset to page 0 when customFilter changes (e.g., switching filter modes in services page)
     const prevCustomFilter = useRef(customFilter);
@@ -121,8 +134,11 @@ export function DataTable({
     }
 
     async function handleDelete(id: string) {
+        // Bail if another delete/toggle on this row is already in flight.
+        if (pendingRows.has(id)) return;
         if (!confirm('هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.')) return;
 
+        markPending(id, true);
         try {
             const res = await fetch('/api/admin/delete-record', {
                 method: 'POST',
@@ -135,11 +151,16 @@ export function DataTable({
             fetchData();
         } catch (err) {
             toast.error('خطأ في الحذف: ' + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            markPending(id, false);
         }
     }
 
     async function handleToggle(id: string, currentValue: boolean) {
         if (!supabase || !toggleField) return;
+        if (pendingRows.has(id)) return;
+
+        markPending(id, true);
         try {
             const { error } = await supabase
                 .from(tableName)
@@ -150,6 +171,8 @@ export function DataTable({
             fetchData();
         } catch (err) {
             toast.error('خطأ: ' + (err instanceof Error ? err.message : String(err)));
+        } finally {
+            markPending(id, false);
         }
     }
 
@@ -198,8 +221,16 @@ export function DataTable({
                         <p className="font-bold">لا توجد بيانات مطابقة للبحث.</p>
                     </div>
                 ) : (
-                    data.map((row, index) => (
-                        <div key={row[idField] || index} className="relative group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-3 sm:p-4 hover:shadow-lg hover:border-emerald-500/30 transition-all duration-300">
+                    data.map((row, index) => {
+                        const rowId = row[idField];
+                        const isPending = typeof rowId === 'string' && pendingRows.has(rowId);
+                        return (
+                        <div key={rowId || index} className={`relative group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-3 sm:p-4 hover:shadow-lg hover:border-emerald-500/30 transition-all duration-300 ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+                            {isPending && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 rounded-2xl z-10 pointer-events-none">
+                                    <Loader2 className="animate-spin text-emerald-500" size={24} />
+                                </div>
+                            )}
                             <div className="flex items-start gap-3">
                                 {/* Icon / Leading */}
                                 <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center text-base sm:text-lg font-bold shadow-sm
@@ -302,7 +333,8 @@ export function DataTable({
                                 </button>
                             </div>
                         </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
