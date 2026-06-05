@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import logger from '@/lib/logger';
 
@@ -14,6 +15,27 @@ if (vapidPublicKey && vapidPrivateKey) {
         vapidPublicKey,
         vapidPrivateKey
     );
+}
+
+// In-memory per-admin rate limit: max 10 push broadcasts per hour, per admin user.
+// Process-local — fine for a single Vercel function instance; a Redis-backed
+// limiter would be needed for cross-instance coverage, but for now this caps the
+// most common abuse (rapid mass notifications) without external deps.
+const PUSH_RATE_WINDOW_MS = 60 * 60 * 1000;
+const PUSH_RATE_MAX = 10;
+const pushRateLog = new Map<string, number[]>();
+
+function isPushRateLimited(adminId: string): boolean {
+    const now = Date.now();
+    const cutoff = now - PUSH_RATE_WINDOW_MS;
+    const recent = (pushRateLog.get(adminId) || []).filter((t) => t > cutoff);
+    if (recent.length >= PUSH_RATE_MAX) {
+        pushRateLog.set(adminId, recent);
+        return true;
+    }
+    recent.push(now);
+    pushRateLog.set(adminId, recent);
+    return false;
 }
 
 export async function POST(request: Request) {
@@ -47,6 +69,14 @@ export async function POST(request: Request) {
         }
         // ── End Auth check ─────────────────────────────────────────
 
+        // Rate limit: prevent push-notification spam (10 broadcasts/hour/admin)
+        if (isPushRateLimited(user.id)) {
+            return NextResponse.json(
+                { error: 'تم تجاوز الحد المسموح: 10 إشعارات في الساعة. حاول لاحقاً.' },
+                { status: 429 }
+            );
+        }
+
         const body = await request.json();
         const { title, message, url } = body;
 
@@ -57,16 +87,32 @@ export async function POST(request: Request) {
         if (message && (typeof message !== 'string' || message.length > 1000)) {
             return NextResponse.json({ error: 'رسالة طويلة جداً (الحد 1000 حرف)' }, { status: 400 });
         }
-        // URL must be a relative path (no external URLs to prevent phishing)
-        if (url && (typeof url !== 'string' || url.length > 500 || (!url.startsWith('/') && !url.startsWith('http')))) {
-            return NextResponse.json({ error: 'رابط غير صالح' }, { status: 400 });
+        // URL must be a same-origin relative path. The earlier check allowed
+        // any http(s):// URL — tighten to only relative paths to prevent admin
+        // accounts being used to push phishing links to users' devices.
+        if (url) {
+            if (typeof url !== 'string' || url.length > 500 || !/^\/[a-z0-9_\-/?=&#%.]*$/i.test(url)) {
+                return NextResponse.json({ error: 'رابط غير صالح — يجب أن يبدأ بـ / ويكون مساراً داخلياً' }, { status: 400 });
+            }
         }
 
         // Default to /updates if no meaningful URL
         const targetUrl = (url && url !== '/') ? url : '/updates';
 
+        // Service-role client for writes the anon-key client can't make (RLS-safe)
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!serviceRoleKey) {
+            return NextResponse.json({ error: 'server_config' }, { status: 500 });
+        }
+        const serviceClient = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceRoleKey
+        );
+
         // ── 1. Save to in-site notifications (visible in bell icon) ──
-        await supabase
+        // Use the service-role client so the insert is guaranteed regardless
+        // of RLS policies on the notifications table.
+        await serviceClient
             .from('notifications')
             .insert({
                 type: 'announcement',
@@ -79,8 +125,22 @@ export async function POST(request: Request) {
                 is_active: true,
             });
 
+        // Audit-log the broadcast so we always know who pushed what.
+        await serviceClient
+            .from('admin_activity_log')
+            .insert({
+                event_type: 'push_broadcast',
+                title: `Push: ${title.slice(0, 100)}`,
+                detail: (message || '').slice(0, 300),
+                entity_table: 'notifications',
+                entity_id: null,
+                actor_user_id: user.id,
+            })
+            .then(() => {})
+            .catch((err) => logger.error('audit log for push failed:', err));
+
         // ── 2. Send push notifications to subscribed devices ─────────
-        const { data: subscriptions, error: subError } = await supabase
+        const { data: subscriptions, error: subError } = await serviceClient
             .from('push_subscriptions')
             .select('endpoint, p256dh, auth');
 
@@ -117,9 +177,10 @@ export async function POST(request: Request) {
 
             await Promise.all(promises);
 
-            // Clean up expired subscriptions
+            // Clean up expired subscriptions (use service client; anon key
+            // would be blocked by RLS on push_subscriptions writes).
             if (expiredEndpoints.length > 0) {
-                await supabase
+                await serviceClient
                     .from('push_subscriptions')
                     .delete()
                     .in('endpoint', expiredEndpoints);

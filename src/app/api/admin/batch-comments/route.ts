@@ -41,10 +41,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'action must be approve or reject' }, { status: 400 });
         }
 
-        // Use service role to bypass RLS
+        // Use service role to bypass RLS. Guard the env var so a missing key
+        // returns a clean 500 rather than the cryptic 'undefined' crash from
+        // createClient.
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!serviceRoleKey) {
+            return NextResponse.json({ error: 'server_config' }, { status: 500 });
+        }
         const serviceClient = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
+            serviceRoleKey
         );
 
         const newStatus = action === 'approve' ? 'approved' : 'rejected';

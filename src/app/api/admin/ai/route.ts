@@ -2202,7 +2202,15 @@ export async function POST(request: NextRequest) {
                   chatMessages.push(msg);
                   for (const tc of msg.tool_calls) {
                     const fnName = tc.function.name;
-                    const fnArgs = JSON.parse(tc.function.arguments || '{}');
+                    // Guard JSON.parse: a malformed payload from the provider used
+                    // to crash the whole route. Fall back to an empty args object
+                    // so the assistant can still respond instead of 500-ing.
+                    let fnArgs: Record<string, unknown> = {};
+                    try {
+                      fnArgs = JSON.parse(tc.function.arguments || '{}');
+                    } catch (parseErr) {
+                      logger.error(`Tool ${fnName} sent invalid JSON args:`, parseErr);
+                    }
                     const { result: fnResult, action } = await executeFunction(fnName, fnArgs, serviceClient);
                     if (action) actionToReturn = action;
                     chatMessages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(fnResult) });
