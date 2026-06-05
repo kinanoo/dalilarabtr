@@ -68,13 +68,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'provider and label are required' }, { status: 400 });
   }
 
+  // A real, unmasked API key is at least 16 chars and contains no bullet glyph.
+  // The UI shows existing keys as '•••••••••' + last-6, so any payload that
+  // starts with a bullet (or is too short) is either the masked round-trip or
+  // someone trying to set a junk key — refuse it.
+  const looksLikeRealKey =
+    typeof api_key === 'string' &&
+    !api_key.startsWith('•') &&
+    !api_key.includes('•') &&
+    api_key.trim().length >= 16;
+
   if (id) {
     // Update existing
     const updateData: any = { provider, model_default, model_deep, label };
     if (typeof priority === 'number') updateData.priority = priority;
-    // Only update api_key if a new one is provided (not the masked one)
-    if (api_key && !api_key.startsWith('•')) {
-      updateData.api_key = api_key;
+    // Only update api_key when the caller actually sent a fresh, real-looking
+    // key. Masked round-trips and short / bulleted strings are ignored so the
+    // stored key is never silently downgraded to garbage.
+    if (looksLikeRealKey) {
+      updateData.api_key = api_key.trim();
     }
     const { data, error } = await serviceClient
       .from('ai_provider_keys')
@@ -86,16 +98,19 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ provider: { ...data, api_key: '•••••••••' + data.api_key.slice(-6) } });
   } else {
-    // Insert new
-    if (!api_key || api_key.startsWith('•')) {
-      return NextResponse.json({ error: 'API key is required for new providers' }, { status: 400 });
+    // Insert new — a real key is mandatory.
+    if (!looksLikeRealKey) {
+      return NextResponse.json(
+        { error: 'A real API key (≥16 chars, no bullets) is required for new providers' },
+        { status: 400 }
+      );
     }
     // Get next priority number
     const { count } = await serviceClient.from('ai_provider_keys').select('*', { count: 'exact', head: true });
     const nextPriority = typeof priority === 'number' ? priority : (count || 0);
     const { data, error } = await serviceClient
       .from('ai_provider_keys')
-      .insert({ provider, api_key, model_default, model_deep, label, is_active: true, priority: nextPriority })
+      .insert({ provider, api_key: api_key.trim(), model_default, model_deep, label, is_active: true, priority: nextPriority })
       .select()
       .single();
 
