@@ -90,22 +90,32 @@ export async function POST(request: NextRequest) {
         // Only run cleanup if entityId looks like a valid UUID (prevent wildcard injection)
         const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (UUID_RE.test(entityId)) {
-            // Attach .catch() so a cleanup failure is logged instead of becoming
-            // an unhandled rejection that can crash the Node process.
-            serviceClient
-                .from('admin_activity_log')
-                .delete()
-                .eq('entity_table', table)
-                .eq('entity_id', entityId)
-                .then(() => {})
-                .catch((err) => logger.error('activity_log cleanup failed:', err));
-            serviceClient
-                .from('notifications')
-                .delete()
-                .ilike('title', `%${entityId}%`)
-                .is('target_user_id', null)
-                .then(() => {})
-                .catch((err) => logger.error('notifications cleanup failed:', err));
+            // Fire-and-forget cleanups, but wrapped so a failure logs instead of
+            // becoming an unhandled rejection. Supabase builders return
+            // PromiseLike (not Promise) so we can't chain .catch directly —
+            // an async IIFE with try/catch is the type-safe shape.
+            void (async () => {
+                try {
+                    await serviceClient
+                        .from('admin_activity_log')
+                        .delete()
+                        .eq('entity_table', table)
+                        .eq('entity_id', entityId);
+                } catch (err) {
+                    logger.error('activity_log cleanup failed:', err);
+                }
+            })();
+            void (async () => {
+                try {
+                    await serviceClient
+                        .from('notifications')
+                        .delete()
+                        .ilike('title', `%${entityId}%`)
+                        .is('target_user_id', null);
+                } catch (err) {
+                    logger.error('notifications cleanup failed:', err);
+                }
+            })();
         }
 
         return NextResponse.json({ success: true });

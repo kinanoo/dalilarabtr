@@ -126,18 +126,24 @@ export async function POST(request: Request) {
             });
 
         // Audit-log the broadcast so we always know who pushed what.
-        await serviceClient
-            .from('admin_activity_log')
-            .insert({
-                event_type: 'push_broadcast',
-                title: `Push: ${title.slice(0, 100)}`,
-                detail: (message || '').slice(0, 300),
-                entity_table: 'notifications',
-                entity_id: null,
-                actor_user_id: user.id,
-            })
-            .then(() => {})
-            .catch((err) => logger.error('audit log for push failed:', err));
+        // Supabase builders return PromiseLike, not Promise, so we wrap in an
+        // async IIFE to get a real try/catch (avoids the TS2339 .catch error).
+        void (async () => {
+            try {
+                await serviceClient
+                    .from('admin_activity_log')
+                    .insert({
+                        event_type: 'push_broadcast',
+                        title: `Push: ${title.slice(0, 100)}`,
+                        detail: (message || '').slice(0, 300),
+                        entity_table: 'notifications',
+                        entity_id: null,
+                        actor_user_id: user.id,
+                    });
+            } catch (err) {
+                logger.error('audit log for push failed:', err);
+            }
+        })();
 
         // ── 2. Send push notifications to subscribed devices ─────────
         const { data: subscriptions, error: subError } = await serviceClient
