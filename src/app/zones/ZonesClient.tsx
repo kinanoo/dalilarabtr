@@ -6,13 +6,18 @@ import { supabase } from '@/lib/supabaseClient';
 
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
-import { MapPin, ShieldAlert, Building2, ChevronLeft, Sparkles, CheckCircle2, XCircle } from 'lucide-react';
+import { MapPin, ShieldAlert, Building2, ChevronLeft, Sparkles, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import logger from '@/lib/logger';
 
-// Status: 'closed' = still blocked. 'reopened' = lifted on 6 June 2026
-// (or a future update). We carry it on every item so the result list +
-// city grid can color-code without re-querying.
-type ZoneStatus = 'closed' | 'reopened';
+// Status:
+//   'closed'   = still blocked per the latest official list.
+//   'reopened' = lifted on 6 June 2026 (or a future update).
+//   'pending'  = a province where the lift was announced but no
+//                neighborhood-level list has been published yet
+//                (e.g. Kilis as of 6 June 2026). UI shows these
+//                in amber with a "قائمة قيد التحديث" label so the
+//                visitor doesn't mistake an unknown for "still closed".
+type ZoneStatus = 'closed' | 'reopened' | 'pending';
 
 type ClosedAreaItem = {
   c: string; // City
@@ -109,7 +114,7 @@ export default function ZonesPage() {
           const { data: rows, error } = await supabase
             .from('zones')
             .select('city, district, neighborhood, status, updated_at, reopened_at')
-            .in('status', ['closed', 'reopened'])
+            .in('status', ['closed', 'reopened', 'pending'])
             .range(from, from + step - 1);
 
           if (error) throw error;
@@ -131,7 +136,12 @@ export default function ZonesPage() {
           c: r.city,
           d: r.district,
           n: r.neighborhood,
-          s: r.status === 'reopened' ? 'reopened' : 'closed',
+          s:
+            r.status === 'reopened'
+              ? 'reopened'
+              : r.status === 'pending'
+                ? 'pending'
+                : 'closed',
           r: r.reopened_at || null,
         }));
 
@@ -164,9 +174,9 @@ export default function ZonesPage() {
 
   const items = data?.items ?? [];
 
-  // Status filter — "all" shows everything, "closed" / "reopened" narrow.
-  // Default 'all' so the page communicates BOTH facts on first paint.
-  const [statusFilter, setStatusFilter] = useState<'all' | 'closed' | 'reopened'>('all');
+  // Status filter — "all" shows everything; the three narrow filters
+  // mirror the three real-world states the data represents.
+  const [statusFilter, setStatusFilter] = useState<'all' | 'closed' | 'reopened' | 'pending'>('all');
 
   function statusFilterPass(item: ClosedAreaItem): boolean {
     if (statusFilter === 'all') return true;
@@ -216,22 +226,24 @@ export default function ZonesPage() {
   const totals = useMemo(() => {
     let closed = 0;
     let reopened = 0;
+    let pending = 0;
     for (const z of items) {
       if (z.s === 'closed') closed++;
       else if (z.s === 'reopened') reopened++;
+      else if (z.s === 'pending') pending++;
     }
-    return { closed, reopened, all: items.length };
+    return { closed, reopened, pending, all: items.length };
   }, [items]);
 
-  // City statistics for browsing grid — track closed vs reopened per city
-  // so the cards can show "X مغلق · Y فُتح" and color accordingly.
+  // City statistics for browsing grid — track all three states per city.
   const cityStats = useMemo(() => {
     if (!items.length) return [];
-    const map = new Map<string, { closed: number; reopened: number; districts: Set<string> }>();
+    const map = new Map<string, { closed: number; reopened: number; pending: number; districts: Set<string> }>();
     for (const zone of items) {
-      const existing = map.get(zone.c) || { closed: 0, reopened: 0, districts: new Set<string>() };
+      const existing = map.get(zone.c) || { closed: 0, reopened: 0, pending: 0, districts: new Set<string>() };
       if (zone.s === 'closed') existing.closed += 1;
       else if (zone.s === 'reopened') existing.reopened += 1;
+      else if (zone.s === 'pending') existing.pending += 1;
       existing.districts.add(zone.d);
       map.set(zone.c, existing);
     }
@@ -240,12 +252,17 @@ export default function ZonesPage() {
         city,
         count: stats.closed,
         reopenedCount: stats.reopened,
+        pendingCount: stats.pending,
         districtCount: stats.districts.size,
       }))
-      // Sort by remaining-closed count descending — provinces with most
-      // remaining restrictions surface first, matching what the user
-      // visiting "what's still blocked?" expects.
-      .sort((a, b) => b.count - a.count);
+      // Sort: provinces with pending/reopened updates surface first
+      // (something to announce), then by remaining-closed count.
+      .sort((a, b) => {
+        const aHas = a.reopenedCount > 0 || a.pendingCount > 0 ? 1 : 0;
+        const bHas = b.reopenedCount > 0 || b.pendingCount > 0 ? 1 : 0;
+        if (aHas !== bHas) return bHas - aHas;
+        return b.count - a.count;
+      });
   }, [items]);
 
   const showResults = normalizedQuery.length > 0;
@@ -293,7 +310,13 @@ export default function ZonesPage() {
                     رُفع الحظر عن <span className="text-emerald-600 dark:text-emerald-400">{totals.reopened.toLocaleString('ar-EG')}</span> حياً في تركيا
                   </h3>
                   <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                    وفق آخر مراجعة من إدارة الهجرة. تبقّت <strong className="text-rose-600 dark:text-rose-400">{totals.closed.toLocaleString('ar-EG')}</strong> منطقة ضمن قائمة المغلقة. تشمل التحديثات أورفا وقونيا حالياً؛ ولايات أخرى تنتظر قوائمها الرسمية.
+                    وفق آخر مراجعة من إدارة الهجرة. تبقّت <strong className="text-rose-600 dark:text-rose-400">{totals.closed.toLocaleString('ar-EG')}</strong> منطقة ضمن قائمة المغلقة
+                    {totals.pending > 0 && (
+                      <>
+                        ، و<strong className="text-amber-600 dark:text-amber-400">{totals.pending.toLocaleString('ar-EG')}</strong> منطقة <strong>قيد التحديث الرسمي</strong> (بدأ التطبيق ولم تَصدر القائمة بعد — كلس مثلاً)
+                      </>
+                    )}.
+                    قوائم رسمية حالياً: <strong>أورفا (٢٦ مغلق)</strong> و<strong>قونيا (٤ مغلق)</strong>. باقي الولايات تنتظر قوائمها.
                   </p>
                 </div>
               </div>
@@ -347,6 +370,18 @@ export default function ZonesPage() {
                 >
                   <XCircle size={13} /> ما زال مغلقاً ({totals.closed.toLocaleString('ar-EG')})
                 </button>
+                {totals.pending > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter('pending')}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black transition-all ${statusFilter === 'pending'
+                      ? 'bg-amber-500 text-white shadow-md'
+                      : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-900/40'
+                    }`}
+                  >
+                    <Clock size={13} /> قيد المراجعة ({totals.pending.toLocaleString('ar-EG')})
+                  </button>
+                )}
               </div>
 
               {/* شريط الإحصائيات */}
@@ -355,7 +390,13 @@ export default function ZonesPage() {
                   <MapPin size={17} className="text-accent-600 dark:text-accent-400" />
                   المعروض حالياً
                   <strong className="text-accent-600 dark:text-accent-400 text-base font-extrabold">
-                    {statusFilter === 'all' ? totals.all : statusFilter === 'reopened' ? totals.reopened : totals.closed}
+                    {statusFilter === 'all'
+                      ? totals.all
+                      : statusFilter === 'reopened'
+                        ? totals.reopened
+                        : statusFilter === 'pending'
+                          ? totals.pending
+                          : totals.closed}
                   </strong>
                 </span>
                 <span className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-100">
@@ -371,19 +412,43 @@ export default function ZonesPage() {
                     تصفّح حسب الولاية
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {cityStats.map(({ city, count, reopenedCount, districtCount }) => {
-                      // Color the province card by what actually matters
-                      // there: a green-glow border when an update happened
-                      // (signals "something to celebrate here"), rose when
-                      // only closures remain, neutral when there's nothing.
-                      const hasUpdate = reopenedCount > 0;
+                    {cityStats.map(({ city, count, reopenedCount, pendingCount, districtCount }) => {
+                      // Color the province card by its dominant state:
+                      // amber = pending official list (Kilis right now),
+                      // green = a confirmed lift happened here,
+                      // rose = nothing new yet, only closures.
+                      const hasPending = pendingCount > 0;
+                      const hasReopen = reopenedCount > 0;
                       const stillClosed = count > 0;
-                      const borderTone = hasUpdate
-                        ? 'border-emerald-200 dark:border-emerald-900/40 hover:border-emerald-400 dark:hover:border-emerald-700'
-                        : 'border-rose-100 dark:border-rose-900/30 hover:border-rose-300 dark:hover:border-rose-700';
-                      const bgTone = hasUpdate
-                        ? 'bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/20 dark:to-slate-900'
-                        : 'bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-slate-900';
+                      const tone = hasPending
+                        ? 'amber'
+                        : hasReopen
+                          ? 'emerald'
+                          : 'rose';
+                      const borderTone =
+                        tone === 'amber'
+                          ? 'border-amber-200 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-700'
+                          : tone === 'emerald'
+                            ? 'border-emerald-200 dark:border-emerald-900/40 hover:border-emerald-400 dark:hover:border-emerald-700'
+                            : 'border-rose-100 dark:border-rose-900/30 hover:border-rose-300 dark:hover:border-rose-700';
+                      const bgTone =
+                        tone === 'amber'
+                          ? 'bg-gradient-to-br from-amber-50/80 to-white dark:from-amber-950/20 dark:to-slate-900'
+                          : tone === 'emerald'
+                            ? 'bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/20 dark:to-slate-900'
+                            : 'bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-slate-900';
+                      const iconBg =
+                        tone === 'amber'
+                          ? 'bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40'
+                          : tone === 'emerald'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40'
+                            : 'bg-rose-100 dark:bg-rose-900/30 group-hover:bg-rose-200 dark:group-hover:bg-rose-800/40';
+                      const iconColor =
+                        tone === 'amber'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : tone === 'emerald'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400';
                       return (
                         <Link
                           key={city}
@@ -392,11 +457,8 @@ export default function ZonesPage() {
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
-                              <div className={`p-1.5 rounded-lg shrink-0 ${hasUpdate
-                                ? 'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40'
-                                : 'bg-rose-100 dark:bg-rose-900/30 group-hover:bg-rose-200 dark:group-hover:bg-rose-800/40'
-                              } transition-colors`}>
-                                <Building2 size={16} className={hasUpdate ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} />
+                              <div className={`p-1.5 rounded-lg shrink-0 ${iconBg} transition-colors`}>
+                                <Building2 size={16} className={iconColor} />
                               </div>
                               <div className="min-w-0">
                                 <div className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
@@ -408,19 +470,24 @@ export default function ZonesPage() {
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-1 shrink-0">
+                              {hasPending && (
+                                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
+                                  قيد التحديث {pendingCount}
+                                </span>
+                              )}
+                              {hasReopen && (
+                                <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
+                                  فُتح {reopenedCount}
+                                </span>
+                              )}
                               {stillClosed && (
                                 <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
                                   مغلق {count}
                                 </span>
                               )}
-                              {hasUpdate && (
-                                <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
-                                  فُتح {reopenedCount}
-                                </span>
-                              )}
                             </div>
                           </div>
-                          <div className={`flex items-center justify-end mt-2 text-[11px] font-bold ${hasUpdate ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                          <div className={`flex items-center justify-end mt-2 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity ${iconColor}`}>
                             عرض التفاصيل
                             <ChevronLeft size={12} className="mr-0.5" />
                           </div>
@@ -428,8 +495,8 @@ export default function ZonesPage() {
                       );
                     })}
                   </div>
-                  <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4">
-                    🟢 أخضر = حدث فيها تحديث · 🔴 وردي = ما زالت المغلقة فقط
+                  <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4 leading-relaxed">
+                    🟡 أصفر = القائمة قيد التحديث الرسمي · 🟢 أخضر = حدث فيها تحديث · 🔴 وردي = ما زالت كلّها مغلقة
                   </p>
                 </div>
               )}
@@ -461,27 +528,57 @@ export default function ZonesPage() {
                   {totalMatches > 0 ? (
                     <>
                       {matches.map((zone, idx) => {
-                        const isReopened = zone.s === 'reopened';
+                        const tone =
+                          zone.s === 'reopened' ? 'emerald'
+                          : zone.s === 'pending' ? 'amber'
+                          : 'rose';
+                        const styles = {
+                          emerald: {
+                            border: 'border-emerald-200 dark:border-emerald-900/50',
+                            bg: 'bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/50',
+                            text: 'text-emerald-700 dark:text-emerald-300',
+                            icon: 'text-emerald-600 dark:text-emerald-400',
+                            badge: 'bg-emerald-600',
+                            label: 'فُتحت',
+                            Icon: CheckCircle2,
+                          },
+                          rose: {
+                            border: 'border-rose-200 dark:border-rose-900/50',
+                            bg: 'bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50',
+                            text: 'text-rose-700 dark:text-rose-300',
+                            icon: 'text-rose-600 dark:text-rose-400',
+                            badge: 'bg-rose-600',
+                            label: 'مغلقة',
+                            Icon: XCircle,
+                          },
+                          amber: {
+                            border: 'border-amber-200 dark:border-amber-900/50',
+                            bg: 'bg-amber-50/70 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/50',
+                            text: 'text-amber-700 dark:text-amber-300',
+                            icon: 'text-amber-600 dark:text-amber-400',
+                            badge: 'bg-amber-500',
+                            label: 'قيد التحديث',
+                            Icon: Clock,
+                          },
+                        }[tone];
+                        const Icon = styles.Icon;
                         return (
                           <Link
                             key={`${zone.c}-${zone.d}-${zone.n}-${idx}`}
                             href={`/zones/${zone.n}`}
-                            className={`rounded-xl border p-4 flex items-center justify-between gap-3 transition cursor-pointer ${isReopened
-                              ? 'border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/50'
-                              : 'border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50'
-                            }`}
+                            className={`rounded-xl border p-4 flex items-center justify-between gap-3 transition cursor-pointer ${styles.border} ${styles.bg}`}
                           >
                             <div className="text-right min-w-0 flex-1">
                               <div className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                                {isReopened ? <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" /> : <XCircle size={16} className="text-rose-600 dark:text-rose-400 shrink-0" />}
+                                <Icon size={16} className={`${styles.icon} shrink-0`} />
                                 <span className="truncate">{zone.n}</span>
                               </div>
-                              <div className={`text-xs md:text-sm mt-1 ${isReopened ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                              <div className={`text-xs md:text-sm mt-1 ${styles.text}`}>
                                 {zone.c} — {zone.d}
                               </div>
                             </div>
-                            <span className={`shrink-0 rounded-md text-white px-3 py-1 text-xs font-bold ${isReopened ? 'bg-emerald-600' : 'bg-rose-600'}`}>
-                              {isReopened ? 'فُتحت' : 'مغلقة'}
+                            <span className={`shrink-0 rounded-md text-white px-3 py-1 text-xs font-bold ${styles.badge}`}>
+                              {styles.label}
                             </span>
                           </Link>
                         );
