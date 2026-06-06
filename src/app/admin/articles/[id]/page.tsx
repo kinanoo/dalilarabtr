@@ -27,6 +27,11 @@ interface ArticleFormData {
     published_at?: string;
     active?: boolean;
     status?: string;
+    // SEO meta fields — populated separately from body content so editors can
+    // tune the Google / social card preview without touching the article copy.
+    seo_title?: string;
+    seo_description?: string;
+    seo_keywords?: string[];
     [key: string]: string | string[] | boolean | undefined;
 }
 
