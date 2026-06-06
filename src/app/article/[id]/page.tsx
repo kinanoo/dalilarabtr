@@ -150,6 +150,12 @@ function buildJsonLd(args: {
   articleBody?: string;
   keywords?: string[];
   image?: string;
+  // Procedural fields used to emit an additional HowTo schema when the
+  // article has explicit step-by-step content. HowTo is rich-snippet-eligible
+  // (numbered carousel in Google), so articles with 3+ ordered steps benefit
+  // from a separate How-To entity alongside the Article one.
+  steps?: string[];
+  totalTimeIso?: string;
 }) {
   const wordCount = args.articleBody ? calculateWordCount(args.articleBody) : 0;
   const dateModified = args.lastUpdate.includes('T') ? args.lastUpdate : `${args.lastUpdate}T00:00:00Z`;
@@ -207,7 +213,28 @@ function buildJsonLd(args: {
     itemListElement: breadcrumbItems,
   };
 
-  return { article, breadcrumbs };
+  // HowTo schema — only emitted when the article actually has 3+ procedural
+  // steps. Below that threshold the schema looks spammy to Google and can
+  // suppress the rich result entirely.
+  const usableSteps = (args.steps || []).map((s) => s.trim()).filter(Boolean);
+  const howTo = usableSteps.length >= 3 ? {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: args.title,
+    description: args.description,
+    inLanguage: 'ar',
+    image: args.image || `${args.siteUrl}/og-image.jpg`,
+    ...(args.totalTimeIso ? { totalTime: args.totalTimeIso } : {}),
+    step: usableSteps.map((text, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name: text.length > 80 ? text.slice(0, 80) + '…' : text,
+      text,
+      url: `${args.url}#step-${i + 1}`,
+    })),
+  } : null;
+
+  return { article, breadcrumbs, howTo };
 }
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -315,12 +342,16 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     articleBody,
     keywords,
     image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
+    steps: article.steps,
   });
 
   return (
     <main className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }} />
+      {jsonLd.howTo && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.howTo) }} />
+      )}
       <ArticleHydratedView articleData={article} slug={params.id}>
         <UniversalComments entityType="article" entityId={params.id} />
       </ArticleHydratedView>

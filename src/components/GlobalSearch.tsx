@@ -26,6 +26,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
   } = useGlobalSearch();
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isHero = variant === 'hero';
 
@@ -40,6 +41,40 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setIsOpen, setShowSuggestions]);
+
+  // Global keyboard shortcuts:
+  //   "/"            → focus this search (skipped if a text field is already active)
+  //   "Cmd+K / Ctrl+K" → same, but always wins
+  //   "Escape"       → close suggestions / dropdown
+  // Only the non-hero instance owns these shortcuts to avoid double-focus when
+  // both the navbar search and the hero search are on screen at the same time.
+  useEffect(() => {
+    if (isHero) return;
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      const inField = !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      const cmdK = (e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey);
+      if (cmdK) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setShowSuggestions(true);
+        return;
+      }
+      if (e.key === '/' && !inField) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setShowSuggestions(true);
+        return;
+      }
+      if (e.key === 'Escape' && (isOpen || showSuggestions)) {
+        setIsOpen(false);
+        setShowSuggestions(false);
+        inputRef.current?.blur();
+      }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isHero, isOpen, showSuggestions, setIsOpen, setShowSuggestions]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +115,9 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         </div>
 
         <input
+          ref={inputRef}
           type="search"
-          aria-label="بحث عام في الموقع"
+          aria-label="بحث عام في الموقع (اضغط / للتركيز)"
           value={query}
           onChange={(e) => {
             const v = e.target.value;

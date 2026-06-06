@@ -162,14 +162,17 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
 
   // =====================================================
   // أزرار المشاركة
+  // WhatsApp is split out as a featured CTA — it's the dominant share
+  // channel for our MENA / Syrian audience and burying it equal-weight
+  // next to LinkedIn wastes the prime click. Everything else stays in
+  // the secondary grid.
   // =====================================================
+  const featuredWhatsApp = {
+    name: 'مشاركة عبر واتساب',
+    icon: WhatsAppIcon,
+    link: shareLinks.whatsapp,
+  };
   const shareButtons = [
-    {
-      name: 'واتساب',
-      icon: WhatsAppIcon,
-      link: shareLinks.whatsapp,
-      color: 'bg-green-500 hover:bg-green-600',
-    },
     {
       name: 'تيليجرام',
       icon: TelegramIcon,
@@ -239,8 +242,18 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
                   </button>
                 </div>
 
-                {/* أزرار المشاركة */}
-                <div className="grid grid-cols-5 gap-3 mb-6">
+                {/* Featured: WhatsApp (primary share channel for MENA audience) */}
+                <button
+                  type="button"
+                  onClick={() => openShareLink(featuredWhatsApp.link)}
+                  className="w-full flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-4 rounded-2xl mb-3 transition shadow-lg shadow-green-500/30 hover:scale-[1.01]"
+                >
+                  <featuredWhatsApp.icon size={22} />
+                  <span>{featuredWhatsApp.name}</span>
+                </button>
+
+                {/* Secondary share channels */}
+                <div className="grid grid-cols-4 gap-3 mb-6">
                   {shareButtons.map((btn) => (
                     <button
                       key={btn.name}
@@ -357,8 +370,18 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
                   </button>
                 </div>
 
-                {/* أزرار المشاركة */}
-                <div className="grid grid-cols-5 gap-3 mb-6">
+                {/* Featured: WhatsApp (primary share channel for MENA audience) */}
+                <button
+                  type="button"
+                  onClick={() => openShareLink(featuredWhatsApp.link)}
+                  className="w-full flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-4 rounded-2xl mb-3 transition shadow-lg shadow-green-500/30 hover:scale-[1.01]"
+                >
+                  <featuredWhatsApp.icon size={22} />
+                  <span>{featuredWhatsApp.name}</span>
+                </button>
+
+                {/* Secondary share channels */}
+                <div className="grid grid-cols-4 gap-3 mb-6">
                   {shareButtons.map((btn) => (
                     <button
                       key={btn.name}
@@ -489,8 +512,18 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
                 </button>
               </div>
 
-              {/* أزرار المشاركة */}
-              <div className="grid grid-cols-5 gap-3 mb-6">
+              {/* Featured: WhatsApp (primary share channel for MENA audience) */}
+              <button
+                type="button"
+                onClick={() => openShareLink(featuredWhatsApp.link)}
+                className="w-full flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-4 rounded-2xl mb-3 transition shadow-lg shadow-green-500/30 hover:scale-[1.01]"
+              >
+                <featuredWhatsApp.icon size={22} />
+                <span>{featuredWhatsApp.name}</span>
+              </button>
+
+              {/* Secondary share channels */}
+              <div className="grid grid-cols-4 gap-3 mb-6">
                 {shareButtons.map((btn) => (
                   <button
                     key={btn.name}

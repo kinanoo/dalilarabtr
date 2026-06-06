@@ -79,7 +79,14 @@ export default async function ServiceDetailsPage(
         `مرحباً أستاذ ${provider.name}، رأيت خدمتك "${provider.profession}" على منصة دليل العرب في تركيا وأود الاستفسار.`
     )}`;
 
-    // Schema.org: Service + LocalBusiness
+    // Schema.org: Service + LocalBusiness — now with aggregateRating when we
+    // have it (Google shows star carousel) and a fallback priceRange so the
+    // LocalBusiness card renders fully in Knowledge Panels.
+    const numericRating = typeof provider.rating === 'number'
+        ? provider.rating
+        : provider.rating ? Number(provider.rating) : null;
+    const reviewCount = typeof provider.review_count === 'number' ? provider.review_count : 0;
+    const hasUsableRating = numericRating !== null && !Number.isNaN(numericRating) && reviewCount > 0;
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Service',
@@ -91,6 +98,16 @@ export default async function ServiceDetailsPage(
             ...(provider.city && { address: { '@type': 'PostalAddress', addressLocality: provider.city, addressCountry: 'TR' } }),
             ...(cleanPhone && { telephone: cleanPhone }),
             ...(provider.image && { image: provider.image }),
+            ...(hasUsableRating ? {
+                aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: numericRating,
+                    reviewCount,
+                    bestRating: 5,
+                    worstRating: 1,
+                },
+            } : {}),
+            priceRange: provider.price_range || '$$',
         },
         areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
         url: `${SITE_CONFIG.siteUrl}/services/${id}`,
