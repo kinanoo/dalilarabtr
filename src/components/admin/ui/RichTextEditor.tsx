@@ -86,9 +86,20 @@ export default function RichTextEditor({
     const addImage = useCallback(() => {
         if (!editor) return;
         const url = window.prompt('أدخل رابط الصورة:');
-        if (url) {
-            editor.chain().focus().setImage({ src: url }).run();
+        if (!url) return;
+        // Reject data:/blob:/javascript: schemes — TipTap would happily embed
+        // a `data:image/svg+xml,...<script>` URI, and unless every renderer
+        // downstream re-sanitizes with DOMPurify, that's a stored XSS source.
+        // Allow only http(s) URLs and same-origin relative paths.
+        const trimmed = url.trim();
+        const isSafe =
+            /^https?:\/\/[a-z0-9.-]+(:[0-9]+)?(\/[^\s]*)?$/i.test(trimmed)
+            || /^\/[a-z0-9_\-/?=&#%.]*$/i.test(trimmed);
+        if (!isSafe) {
+            window.alert('رابط الصورة غير صالح. استخدم رابطاً يبدأ بـ https:// أو / فقط.');
+            return;
         }
+        editor.chain().focus().setImage({ src: trimmed }).run();
     }, [editor]);
 
     const setColor = useCallback(() => {

@@ -60,9 +60,23 @@ export async function updateProfile(updates: ProfileUpdateData): Promise<{ succe
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return { success: false, error: 'Not authenticated' };
 
+    // Whitelist allowed fields explicitly. Without this, a caller could pass
+    // `{ full_name, role: 'admin' }` (or `id`, `created_at`, anything else on
+    // the row) and the spread would happily write it. RLS is the last line of
+    // defense, but defense-in-depth says: don't trust the input shape.
+    const safe: ProfileUpdateData = {};
+    if (typeof updates.full_name === 'string') safe.full_name = updates.full_name.slice(0, 100).trim();
+    if (typeof updates.avatar_url === 'string') safe.avatar_url = updates.avatar_url.slice(0, 500).trim();
+    if (typeof updates.bio === 'string') safe.bio = updates.bio.slice(0, 500);
+    if (typeof updates.city === 'string') safe.city = updates.city.slice(0, 80).trim();
+
+    if (Object.keys(safe).length === 0) {
+        return { success: false, error: 'No valid fields to update' };
+    }
+
     const { error } = await sb
         .from('member_profiles')
-        .update(updates)
+        .update(safe)
         .eq('id', user.id);
 
     if (error) return { success: false, error };

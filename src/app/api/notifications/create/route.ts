@@ -75,9 +75,33 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Title or message too long' }, { status: 400 });
         }
 
-        // Links must be internal (relative paths only) — prevent open redirect
-        if (link && (typeof link !== 'string' || !link.startsWith('/'))) {
-            return NextResponse.json({ error: 'Link must be a relative path' }, { status: 400 });
+        // Links must be a same-origin path. The previous check accepted any
+        // string starting with '/', which left an open-redirect window:
+        // '//attacker.com/phish' starts with '/' but the browser interprets it
+        // as a protocol-relative URL. Tighten to a strict same-origin path
+        // regex matching what the push endpoint already enforces.
+        if (link !== undefined && link !== null && link !== '') {
+            if (typeof link !== 'string'
+                || link.length > 500
+                || !/^\/[a-z0-9_\-/?=&#%.]*$/i.test(link)
+                || link.startsWith('//')) {
+                return NextResponse.json(
+                    { error: 'Link must be a same-origin path (must start with / and be alphanumeric)' },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // Per-user rate limit on reply notifications to prevent harassment:
+        // even within the 10/min IP cap, a single user shouldn't be able to
+        // ping the same target more than 5 times an hour.
+        if (!isAdmin && target_user_id) {
+            if (isRateLimited(`notif:reply:${user.id}:${target_user_id}`, 5)) {
+                return NextResponse.json(
+                    { error: 'Too many reply notifications to this user — try later' },
+                    { status: 429 }
+                );
+            }
         }
 
         const { error } = await supabaseAdmin

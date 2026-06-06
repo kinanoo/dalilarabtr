@@ -90,6 +90,22 @@ export async function POST(req: NextRequest) {
 
         if (error) {
             logger.error('Review insert error:', error);
+            // Translate well-known PostgREST error codes back to the right HTTP
+            // status so the client can render a useful message instead of a
+            // generic 500. Without this, a bad service_id (FK violation) used
+            // to look like a server outage.
+            // 23503 = foreign_key_violation, 23505 = unique_violation,
+            // 23502 = not_null_violation, 22001 = string_too_long
+            const code = (error as { code?: string }).code || '';
+            if (code === '23503') {
+                return NextResponse.json({ error: 'الخدمة غير موجودة' }, { status: 400 });
+            }
+            if (code === '23505') {
+                return NextResponse.json({ error: 'لقد قمت بتقييم هذه الخدمة مسبقاً' }, { status: 409 });
+            }
+            if (code === '23502' || code === '22001') {
+                return NextResponse.json({ error: 'بيانات غير صالحة' }, { status: 400 });
+            }
             return NextResponse.json({ error: 'فشل حفظ التقييم' }, { status: 500 });
         }
 

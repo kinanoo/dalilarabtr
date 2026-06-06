@@ -49,6 +49,18 @@ export default function DashboardLayoutClient({
     const handleLogout = async () => {
         if (!supabase) return;
         await supabase.auth.signOut();
+        // signOut() only clears the Supabase auth cookies. Anything we wrote
+        // ourselves to localStorage (anon_comment_id, visitor_id, draft
+        // comments, last-visit timestamps, etc.) survives — that lets the
+        // app re-identify the user across logouts. Wipe everything the app
+        // owns so "log out" really means "log out".
+        if (typeof window !== 'undefined') {
+            try {
+                ['anon_comment_id', 'visitor_id', 'admin_last_visit_ts',
+                 'admin_lockout_until', 'admin_login_attempts']
+                    .forEach((k) => localStorage.removeItem(k));
+            } catch { /* localStorage may be disabled — non-fatal */ }
+        }
         router.push('/login');
     };
 
