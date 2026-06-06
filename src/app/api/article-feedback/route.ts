@@ -53,25 +53,40 @@ export async function POST(req: NextRequest) {
             ? visitor_id.trim() || null
             : null;
 
-        // Upsert on (article_id, visitor_id) so a visitor flipping their vote
-        // updates the existing row rather than producing a duplicate.
+        // Save the vote. The previous implementation used .upsert() with
+        // onConflict on (article_id, visitor_id), but the unique index is
+        // partial (WHERE visitor_id IS NOT NULL) and PostgREST's ON CONFLICT
+        // refuses to target a partial index — that's where the 500 came from.
+        //
+        // Manual two-step (try insert, catch unique violation, update) sidesteps
+        // the issue entirely and is the same number of round trips as upsert
+        // when there's no conflict.
+        const ipHash = hashString(clientIp);
         if (trimmedVisitor) {
-            const { error } = await svc
+            const { error: insertErr } = await svc
                 .from('article_feedback')
-                .upsert(
-                    { article_id, helpful, visitor_id: trimmedVisitor, ip_hash: hashString(clientIp) },
-                    { onConflict: 'article_id,visitor_id' }
-                );
-            if (error) {
-                logger.error('article_feedback upsert:', error);
+                .insert({ article_id, helpful, visitor_id: trimmedVisitor, ip_hash: ipHash });
+            if (insertErr && (insertErr as { code?: string }).code === '23505') {
+                // Unique-violation → visitor already voted on this article.
+                // Flip their vote rather than producing a duplicate row.
+                const { error: updateErr } = await svc
+                    .from('article_feedback')
+                    .update({ helpful, ip_hash: ipHash })
+                    .eq('article_id', article_id)
+                    .eq('visitor_id', trimmedVisitor);
+                if (updateErr) {
+                    logger.error('article_feedback update on conflict:', updateErr);
+                    return NextResponse.json({ error: 'Failed to save feedback' }, { status: 500 });
+                }
+            } else if (insertErr) {
+                logger.error('article_feedback insert:', insertErr);
                 return NextResponse.json({ error: 'Failed to save feedback' }, { status: 500 });
             }
         } else {
-            // No visitor id — best effort insert. Vote may dedupe poorly but
-            // still gets counted.
+            // No visitor id — best-effort insert; we accept poorer dedup.
             const { error } = await svc
                 .from('article_feedback')
-                .insert({ article_id, helpful, ip_hash: hashString(clientIp) });
+                .insert({ article_id, helpful, ip_hash: ipHash });
             if (error) {
                 logger.error('article_feedback insert:', error);
                 return NextResponse.json({ error: 'Failed to save feedback' }, { status: 500 });
