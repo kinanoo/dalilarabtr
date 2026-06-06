@@ -7,10 +7,15 @@ import { Send, Loader2 } from 'lucide-react';
 import { newsletterSchema, type NewsletterInputs } from '@/lib/schemas';
 
 interface NewsletterFormProps {
-    onSubmit?: (email: string) => void;
+    /** Custom submit handler. If omitted (default) the form posts to
+        /api/newsletter and persists to the newsletter_subscribers table. */
+    onSubmit?: (email: string) => Promise<void> | void;
+    /** Where this signup came from — surfaces in the admin's subscriber list.
+        Defaults to 'unknown'. */
+    source?: string;
 }
 
-export default function NewsletterForm({ onSubmit }: NewsletterFormProps) {
+export default function NewsletterForm({ onSubmit, source = 'unknown' }: NewsletterFormProps) {
     const [message, setMessage] = useState('');
 
     // 1. Setup Form with Zod Resolver
@@ -30,6 +35,17 @@ export default function NewsletterForm({ onSubmit }: NewsletterFormProps) {
         try {
             if (onSubmit) {
                 await onSubmit(data.email);
+            } else {
+                // Default behaviour — persist via the public newsletter API.
+                const res = await fetch('/api/newsletter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: data.email, source }),
+                });
+                if (!res.ok) {
+                    const payload = await res.json().catch(() => ({} as { error?: string }));
+                    throw new Error(payload?.error || 'Subscribe failed');
+                }
             }
 
             setMessage('شكراً لاشتراكك! ✨');
@@ -38,7 +54,7 @@ export default function NewsletterForm({ onSubmit }: NewsletterFormProps) {
             // Haptic feedback
             if ('vibrate' in navigator) navigator.vibrate([50]);
 
-        } catch (error) {
+        } catch {
             setMessage('حدث خطأ. حاول مرة أخرى.');
         }
     };

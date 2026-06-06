@@ -23,6 +23,7 @@ import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import NewsletterCard from '@/components/NewsletterCard';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -189,6 +190,15 @@ export default async function Home() {
       {/* 4. TOP FAQ — أكثر الأسئلة شيوعاً */}
       <ScrollReveal>
         <HomeFAQ />
+      </ScrollReveal>
+
+      {/* 5. NEWSLETTER — final CTA before footer. Hero tone for the homepage
+          so it commands attention even after the FAQ. The form posts directly
+          to /api/newsletter and persists to newsletter_subscribers. */}
+      <ScrollReveal>
+        <div className="mt-12">
+          <NewsletterCard tone="hero" source="home" />
+        </div>
       </ScrollReveal>
 
     </main>

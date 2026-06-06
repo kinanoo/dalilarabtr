@@ -18,6 +18,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/useAdminData';
 import ArticleTOC from './article/ArticleTOC';
 import ReadingProgressBar from './article/ReadingProgressBar';
+import NewsletterCard from './NewsletterCard';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -406,6 +407,11 @@ export default function ArticleView({ article, slug, initialComments, children }
               {/* Widgets (Comments/Helpful) passed as children */}
               <div className="mt-12 space-y-8">
                 {children}
+                {/* Newsletter card at the end of the article — readers who
+                    finished a long legal/procedural piece are the warmest
+                    candidates for the signup. The source string tells the
+                    admin where this email came from. */}
+                <NewsletterCard tone="compact" source="article-footer" />
               </div>
 
             </div>
