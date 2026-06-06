@@ -20,7 +20,8 @@ import {
     Megaphone,
     Newspaper,
     Users,
-    Bot
+    Bot,
+    ThumbsUp
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -105,6 +106,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/members', label: 'الأعضاء', icon: Users },
                 { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
                 { href: '/admin/reviews', label: 'التقييمات', icon: Star },
+                { href: '/admin/feedback', label: 'آراء القرّاء', icon: ThumbsUp },
                 { href: '/admin/community', label: 'المجتمع', icon: MessageSquare },
                 { href: '/admin/scenarios', label: 'سيناريوهات المستشار', icon: BrainCircuit },
             ]
