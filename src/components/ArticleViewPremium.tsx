@@ -18,6 +18,8 @@ import DOMPurify from 'isomorphic-dompurify';
 import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/useAdminData';
 import ArticleTOC from './article/ArticleTOC';
 import ReadingProgressBar from './article/ReadingProgressBar';
+import EndOfArticleShare from './article/EndOfArticleShare';
+import StickyMobileShareBar from './article/StickyMobileShareBar';
 import NewsletterCard from './NewsletterCard';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
@@ -121,6 +123,14 @@ export default function ArticleView({ article, slug, initialComments, children }
     <>
       {/* Pinned to the top of the viewport, tracks doc scroll progress. */}
       <ReadingProgressBar />
+      {/* Floating mobile-only WhatsApp share — appears after the reader
+          scrolls past the hero. Desktop already has the hero ShareMenu so we
+          hide it there to avoid visual noise. */}
+      <StickyMobileShareBar
+          title={article.title}
+          url={`${SITE_CONFIG.siteUrl}/article/${slug}`}
+          excerpt={article.intro || undefined}
+      />
       <article
         className="w-full max-w-full lg:max-w-6xl mx-auto px-3 sm:px-4 py-8 overflow-hidden"
       >
@@ -407,6 +417,14 @@ export default function ArticleView({ article, slug, initialComments, children }
               {/* Widgets (Comments/Helpful) passed as children */}
               <div className="mt-12 space-y-8">
                 {children}
+                {/* End-of-article share CTA — peak emotional moment for
+                    sharing. WhatsApp-first, pre-filled message with title +
+                    intro excerpt so the receiver sees context not a bare URL. */}
+                <EndOfArticleShare
+                    title={article.title}
+                    url={`${SITE_CONFIG.siteUrl}/article/${slug}`}
+                    excerpt={article.intro || undefined}
+                />
                 {/* Newsletter card at the end of the article — readers who
                     finished a long legal/procedural piece are the warmest
                     candidates for the signup. The source string tells the

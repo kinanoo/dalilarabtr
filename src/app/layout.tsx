@@ -142,6 +142,16 @@ export default function RootLayout({
         {/* Sitemap discovery */}
         <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
+        {/* RSS feed — picked up by feed readers (Feedly, NetNewsWire) and
+            relay/automation tools (IFTTT/Zapier → Telegram, Slack, Discord).
+            This single line opens every RSS-consuming distribution channel. */}
+        <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="دليل العرب والسوريين في تركيا — RSS"
+            href="/feed.xml"
+        />
+
         {/* Preconnect to external services for faster loading */}
         <link rel="preconnect" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
         <link rel="dns-prefetch" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
