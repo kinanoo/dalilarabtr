@@ -2,7 +2,6 @@
 
 import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
-import HeroTrustStrip from './HeroTrustStrip';
 
 const InteractiveParticles = dynamic(() => import('./InteractiveParticles'), {
     ssr: false,
@@ -52,9 +51,14 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         {children}
                     </div>
 
-                    {/* Trust strip — three short, checkable claims right under
-                        the primary CTAs. First-impression conversion booster. */}
-                    <HeroTrustStrip />
+                    {/* NOTE: HeroTrustStrip used to render here, but that
+                        placed it in the same stacking context as the search
+                        dropdown overlay — the dropdown's results visually
+                        appeared underneath the trust chips because the chips
+                        sat in normal flow between the search input and the
+                        dropdown's anchor point. We moved the strip out of the
+                        hero (into the homepage flow below) so the dropdown
+                        can open cleanly without competing for space. */}
 
                 </div>
             </div>

@@ -24,6 +24,7 @@ import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import NewsletterCard from '@/components/NewsletterCard';
+import HeroTrustStrip from '@/components/home/HeroTrustStrip';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -171,6 +172,11 @@ export default async function Home() {
         </div>
         <HomeConsultantBtn />
       </HeroSection>
+
+      {/* Trust strip lives BELOW the hero, in the page surface — keeps it out
+          of the search-dropdown overlay's stacking context so the dropdown
+          opens cleanly without competing with the chips. */}
+      <HeroTrustStrip />
 
       {/* 2. LATEST UPDATES — right after Hero, before Journey */}
       <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>

@@ -41,39 +41,40 @@ const SIGNALS: Array<{
 
 export default function HeroTrustStrip() {
     return (
-        <div
+        <section
             className="
-                relative z-[25] pointer-events-auto
-                mt-5 sm:mt-6
-                flex flex-wrap items-center justify-center
-                gap-2 sm:gap-3
+                w-full bg-white dark:bg-slate-950
+                border-b border-slate-100 dark:border-slate-900
+                py-3 sm:py-4
             "
             aria-label="ما يميّز هذا الدليل"
         >
-            {SIGNALS.map(({ icon: Icon, label, detail }) => (
-                <div
-                    key={label}
-                    className="
-                        flex items-center gap-2
-                        bg-white/[0.04] hover:bg-white/[0.08]
-                        border border-white/10
-                        backdrop-blur-sm
-                        rounded-full
-                        px-3 py-1.5 sm:px-4 sm:py-2
-                        transition-colors
-                        cursor-default
-                    "
-                    title={detail}
-                >
-                    <Icon size={14} className="text-emerald-400 shrink-0" />
-                    <span className="text-[11px] sm:text-xs font-bold text-slate-100 whitespace-nowrap">
-                        {label}
-                    </span>
-                    <span className="hidden sm:inline text-[10px] text-slate-400 whitespace-nowrap">
-                        {detail}
-                    </span>
-                </div>
-            ))}
-        </div>
+            <div className="max-w-5xl mx-auto px-3 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                {SIGNALS.map(({ icon: Icon, label, detail }) => (
+                    <div
+                        key={label}
+                        className="
+                            flex items-center gap-2
+                            bg-slate-50 hover:bg-slate-100
+                            dark:bg-slate-900/60 dark:hover:bg-slate-900
+                            border border-slate-200 dark:border-slate-800
+                            rounded-full
+                            px-3 py-1.5 sm:px-4 sm:py-2
+                            transition-colors
+                            cursor-default
+                        "
+                        title={detail}
+                    >
+                        <Icon size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                            {label}
+                        </span>
+                        <span className="hidden sm:inline text-[10px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            {detail}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </section>
     );
 }
