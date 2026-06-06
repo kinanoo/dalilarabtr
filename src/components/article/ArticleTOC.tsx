@@ -128,14 +128,33 @@ export default function ArticleTOC({ contentSelector }: Props) {
 
     return (
         <>
-            {/* Mobile: collapsible card above article body */}
-            <div className="lg:hidden bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 mb-6 overflow-hidden">
+            {/*
+              Unified collapsible TOC — used on ALL screen sizes.
+
+              Previously we shipped two variants: a collapsible card on
+              mobile + a `sticky top-24` desktop sidebar. The sidebar variant
+              was placed INSIDE the main `max-w-4xl` reading column (no
+              actual side panel existed), so when sticky engaged it occupied
+              the full column width and the article body visually scrolled
+              behind it. Long articles (e.g. visa types — 13 headings)
+              filled the entire viewport and the article footer leaked out
+              from underneath. That's the overlap bug.
+
+              Single collapsible card pattern eliminates the class of bug
+              completely: the TOC takes only its natural height in flow,
+              never sticks, never overlaps. Scroll-spy still updates
+              `activeId` (so when expanded, the user sees the current
+              section highlighted), but the card is closed by default on
+              desktop too — readers click once to skim sections, then
+              continue reading.
+            */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 mb-6 overflow-hidden">
                 <button
                     type="button"
                     onClick={() => setMobileOpen((v) => !v)}
-                    className="w-full flex items-center justify-between p-4 text-right font-bold text-slate-800 dark:text-slate-100"
+                    className="w-full flex items-center justify-between p-4 text-right font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
                     aria-expanded={mobileOpen}
-                    aria-controls="toc-mobile-list"
+                    aria-controls="toc-list"
                 >
                     <span className="flex items-center gap-2">
                         <List size={20} className="text-emerald-600" />
@@ -148,7 +167,7 @@ export default function ArticleTOC({ contentSelector }: Props) {
                 </button>
                 {mobileOpen && (
                     <ul
-                        id="toc-mobile-list"
+                        id="toc-list"
                         className="border-t border-slate-200 dark:border-slate-700 p-2 max-h-[60vh] overflow-y-auto"
                     >
                         {headings.map((h) => (
@@ -158,7 +177,7 @@ export default function ArticleTOC({ contentSelector }: Props) {
                                     onClick={() => jump(h.id)}
                                     className={`block w-full text-right py-2 px-3 rounded-lg text-sm transition-colors ${
                                         h.level === 3 ? 'pr-7 text-slate-500 dark:text-slate-400' : 'font-bold text-slate-700 dark:text-slate-200'
-                                    } ${activeId === h.id ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
+                                    } ${activeId === h.id ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-r-2 border-emerald-500' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
                                 >
                                     {h.text}
                                 </button>
@@ -167,32 +186,6 @@ export default function ArticleTOC({ contentSelector }: Props) {
                     </ul>
                 )}
             </div>
-
-            {/* Desktop: sticky sidebar */}
-            <nav
-                aria-label="جدول محتويات المقال"
-                className="hidden lg:block sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm"
-            >
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">
-                    <List size={16} className="text-emerald-600" />
-                    محتويات المقال
-                </div>
-                <ul className="space-y-1">
-                    {headings.map((h) => (
-                        <li key={h.id}>
-                            <button
-                                type="button"
-                                onClick={() => jump(h.id)}
-                                className={`block w-full text-right py-1.5 px-2 rounded-md text-sm leading-relaxed transition-colors ${
-                                    h.level === 3 ? 'pr-5 text-slate-500 dark:text-slate-400' : 'font-bold text-slate-700 dark:text-slate-200'
-                                } ${activeId === h.id ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-r-2 border-emerald-500' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
-                            >
-                                {h.text}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
 
             <style jsx global>{`
                 @keyframes tocFlash {

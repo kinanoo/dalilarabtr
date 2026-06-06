@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import HeroTrustStrip from './HeroTrustStrip';
 
 const InteractiveParticles = dynamic(() => import('./InteractiveParticles'), {
     ssr: false,
@@ -50,6 +51,10 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                     <div className="mt-6 max-w-xl mx-auto relative z-[25] pointer-events-auto">
                         {children}
                     </div>
+
+                    {/* Trust strip — three short, checkable claims right under
+                        the primary CTAs. First-impression conversion booster. */}
+                    <HeroTrustStrip />
 
                 </div>
             </div>
