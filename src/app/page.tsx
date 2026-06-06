@@ -23,10 +23,9 @@ import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import SectionTitle from '@/components/ui/SectionTitle';
 import NewsletterCard from '@/components/NewsletterCard';
 import HeroTrustStrip from '@/components/home/HeroTrustStrip';
-import HomeStats from '@/components/home/HomeStats';
+import { Radio, Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -143,36 +142,8 @@ export const metadata: Metadata = {
 // 🏠 Page Component
 // ============================================
 
-// Pull live catalog counts for the HomeStats strip. Resilient — falls back
-// to sensible-looking numbers if Supabase is slow/unavailable so the page
-// still renders. Using `head: true` keeps the query cheap (rows are NOT
-// transferred, only the count header).
-async function getStats() {
-  const fallback = { articles: 280, services: 17, faqs: 470 };
-  try {
-    if (!supabase) return fallback;
-    const result = await withTimeout(
-      Promise.all([
-        supabase.from('articles').select('*', { count: 'exact', head: true }).eq('active', true).eq('status', 'approved'),
-        supabase.from('service_providers').select('*', { count: 'exact', head: true }).eq('active', true),
-        supabase.from('faqs').select('*', { count: 'exact', head: true }),
-      ]),
-      6000,
-    );
-    if (!result) return fallback;
-    const [a, s, f] = result;
-    return {
-      articles: a.count ?? fallback.articles,
-      services: s.count ?? fallback.services,
-      faqs: f.count ?? fallback.faqs,
-    };
-  } catch {
-    return fallback;
-  }
-}
-
 export default async function Home() {
-  const [updates, stats] = await Promise.all([getUpdates(), getStats()]);
+  const updates = await getUpdates();
 
   const homeFaqSchema = {
     '@context': 'https://schema.org',
@@ -203,67 +174,127 @@ export default async function Home() {
         <HomeConsultantBtn />
       </HeroSection>
 
-      {/* Trust strip lives BELOW the hero, in the page surface — keeps it out
-          of the search-dropdown overlay's stacking context so the dropdown
-          opens cleanly without competing with the chips. */}
       <HeroTrustStrip />
 
-      {/* Animated catalog stats — turns the site's library size into a
-          glance-able trust signal. Numbers are real counts pulled at render
-          time, animate from 0 on mount via requestAnimationFrame. */}
-      <HomeStats articles={stats.articles} services={stats.services} faqs={stats.faqs} />
-
-      {/* 2. LATEST UPDATES — right after Hero, before Journey */}
-      <section className="max-w-7xl mx-auto px-4 pt-12 pb-2">
-        <SectionTitle
-          eyebrow="جديد"
-          title="آخر"
-          accent="التحديثات"
-          subtitle="أبرز الأخبار والقرارات التي تخصّ السوريين والعرب في تركيا — مرتّبة من الأحدث."
-        />
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION 1 — آخر التحديثات
+          Magazine style on a light surface. The eyebrow uses a wide
+          tracked uppercase Latin word ("LIVE") next to a pulsing dot
+          so it reads like a newsroom badge. The title is huge and
+          tight; the rule line on the right gives it a "broadsheet"
+          edge instead of a generic centered heading.
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="relative bg-white dark:bg-slate-950 pt-14 pb-2" dir="rtl">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-end justify-between gap-6 flex-wrap mb-2">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="relative inline-flex items-center justify-center">
+                  <span className="absolute inline-flex w-2.5 h-2.5 rounded-full bg-red-500 opacity-75 animate-ping" />
+                  <span className="relative inline-flex w-2.5 h-2.5 rounded-full bg-red-500" />
+                </span>
+                <span className="text-[11px] font-black tracking-[0.2em] uppercase text-red-600">LIVE · مباشر</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-none text-slate-900 dark:text-slate-50 tracking-tight">
+                آخر التحديثات
+              </h2>
+              <p className="mt-4 text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
+                أبرز الأخبار والقرارات التي تخصّ السوريين والعرب في تركيا — تحديث مستمرّ من مصادر رسمية.
+              </p>
+            </div>
+            <div className="hidden md:flex items-center gap-3 text-slate-400 dark:text-slate-600">
+              <span aria-hidden="true" className="h-px w-24 bg-current" />
+              <Radio size={20} />
+            </div>
+          </div>
+        </div>
       </section>
       <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>
         <HomeUpdates updates={updates} />
       </Suspense>
 
-      {/* 🧭 Guided Journey (Client) */}
-      <section className="max-w-7xl mx-auto px-4 pt-14 pb-2">
-        <SectionTitle
-          eyebrow="ابدأ من هنا"
-          title="رحلتك"
-          accent="القانونية"
-          subtitle="خطوة بخطوة — حسب وضعك ومرحلتك في تركيا."
-        />
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION 2 — رحلتك القانونية
+          DARK section — flips the page's visual rhythm so this block
+          feels like a deliberate "premium spread". Decorative
+          oversized number (٠٢) sits behind the heading; emerald
+          orange-glow ribbon under the title gives it presence.
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="relative bg-slate-950 text-white py-20 mt-12 overflow-hidden" dir="rtl">
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
+        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">٠٢</div>
+        <div className="relative max-w-7xl mx-auto px-4 mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles size={18} className="text-emerald-400" />
+            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-400">ابدأ من هنا</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight">
+            رحلتك <span className="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">القانونية</span>
+          </h2>
+          <div className="mt-4 inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5">
+            <p className="text-sm text-emerald-100">خطوة بخطوة — حسب وضعك ومرحلتك في تركيا.</p>
+          </div>
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4">
+          <ScrollReveal>
+            <GuidedJourney />
+          </ScrollReveal>
+        </div>
       </section>
-      <ScrollReveal>
-        <GuidedJourney />
-      </ScrollReveal>
 
-      {/* 3. QUICK ACTIONS (Client) */}
-      <section className="max-w-7xl mx-auto px-4 pt-14 pb-2">
-        <SectionTitle
-          eyebrow="أدوات ذكية"
-          title="اختصارات"
-          accent="سريعة"
-          subtitle="حاسبات وأدوات قانونية تُجيبك في ثوانٍ بدلاً من ساعات بحث."
-        />
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION 3 — اختصارات سريعة
+          Light playful surface — sky blue tints, friendly heading
+          framed by parentheses for personality. Tools live in a grid
+          with their own colors so this section feels like a
+          dashboard, not just another article list.
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="relative bg-gradient-to-b from-sky-50 to-white dark:from-slate-900 dark:to-slate-950 py-16" dir="rtl">
+        <div className="max-w-7xl mx-auto px-4 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+              <Wrench size={18} />
+            </span>
+            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-blue-600 dark:text-blue-400">TOOLBOX · صندوق الأدوات</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-50 leading-tight">
+            <span className="text-slate-400 dark:text-slate-600 font-light">«</span>
+            {' '}اختصارات سريعة{' '}
+            <span className="text-slate-400 dark:text-slate-600 font-light">»</span>
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl">
+            حاسبات وأدوات قانونية تُجيبك في ثوانٍ بدلاً من ساعات بحث.
+          </p>
+        </div>
+        <ScrollReveal>
+          <QuickActionsGrid />
+        </ScrollReveal>
       </section>
-      <ScrollReveal>
-        <QuickActionsGrid />
-      </ScrollReveal>
 
-      {/* 4. TOP FAQ — أكثر الأسئلة شيوعاً */}
-      <section className="max-w-7xl mx-auto px-4 pt-14 pb-2">
-        <SectionTitle
-          eyebrow="أسئلة الجمهور"
-          title="الأكثر"
-          accent="سؤالاً"
-          subtitle="الأجوبة الجاهزة على ما يتكرّر يومياً في صندوق الاستشارات."
-        />
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION 4 — الأكثر سؤالاً
+          Centered editorial pacing — a giant decorative quote mark
+          behind the title to telegraph "FAQ / questions". Calm
+          background on slate-50 lets the cards below pop.
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="relative bg-slate-50 dark:bg-slate-900 py-16" dir="rtl">
+        <div aria-hidden="true" className="absolute top-6 left-1/2 -translate-x-1/2 text-[200px] sm:text-[280px] font-black text-slate-200 dark:text-slate-800/40 leading-none select-none pointer-events-none">؟</div>
+        <div className="relative max-w-3xl mx-auto px-4 text-center mb-10">
+          <div className="inline-flex items-center gap-2 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 shadow-sm">
+            <MessageCircleQuestion size={16} className="text-amber-500" />
+            <span className="text-xs font-black tracking-wider text-slate-700 dark:text-slate-200">أسئلة الجمهور الأكثر تكراراً</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight text-slate-900 dark:text-slate-50">
+            الأكثر <span className="text-amber-500">سؤالاً</span>
+          </h2>
+          <p className="mt-4 text-sm sm:text-base text-slate-500 dark:text-slate-400">
+            الأجوبة الجاهزة على ما يتكرّر يومياً في صندوق الاستشارات.
+          </p>
+        </div>
+        <ScrollReveal>
+          <HomeFAQ />
+        </ScrollReveal>
       </section>
-      <ScrollReveal>
-        <HomeFAQ />
-      </ScrollReveal>
 
       {/* 5. NEWSLETTER — final CTA before footer. Hero tone for the homepage
           so it commands attention even after the FAQ. The form posts directly
