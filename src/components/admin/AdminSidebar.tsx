@@ -107,6 +107,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
                 { href: '/admin/reviews', label: 'التقييمات', icon: Star },
                 { href: '/admin/feedback', label: 'آراء القرّاء', icon: ThumbsUp },
+                { href: '/admin/questions', label: 'الأسئلة المُرسَلة', icon: MessageSquare },
                 { href: '/admin/push-broadcast', label: 'بثّ إشعار فوري', icon: Megaphone },
                 { href: '/admin/community', label: 'المجتمع', icon: MessageSquare },
                 { href: '/admin/scenarios', label: 'سيناريوهات المستشار', icon: BrainCircuit },
