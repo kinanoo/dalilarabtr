@@ -23,6 +23,7 @@ import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import SectionTitle from '@/components/ui/SectionTitle';
 import NewsletterCard from '@/components/NewsletterCard';
 import HeroTrustStrip from '@/components/home/HeroTrustStrip';
 import HomeStats from '@/components/home/HomeStats';
@@ -213,21 +214,53 @@ export default async function Home() {
       <HomeStats articles={stats.articles} services={stats.services} faqs={stats.faqs} />
 
       {/* 2. LATEST UPDATES — right after Hero, before Journey */}
+      <section className="max-w-7xl mx-auto px-4 pt-12 pb-2">
+        <SectionTitle
+          eyebrow="جديد"
+          title="آخر"
+          accent="التحديثات"
+          subtitle="أبرز الأخبار والقرارات التي تخصّ السوريين والعرب في تركيا — مرتّبة من الأحدث."
+        />
+      </section>
       <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>
         <HomeUpdates updates={updates} />
       </Suspense>
 
       {/* 🧭 Guided Journey (Client) */}
+      <section className="max-w-7xl mx-auto px-4 pt-14 pb-2">
+        <SectionTitle
+          eyebrow="ابدأ من هنا"
+          title="رحلتك"
+          accent="القانونية"
+          subtitle="خطوة بخطوة — حسب وضعك ومرحلتك في تركيا."
+        />
+      </section>
       <ScrollReveal>
         <GuidedJourney />
       </ScrollReveal>
 
       {/* 3. QUICK ACTIONS (Client) */}
+      <section className="max-w-7xl mx-auto px-4 pt-14 pb-2">
+        <SectionTitle
+          eyebrow="أدوات ذكية"
+          title="اختصارات"
+          accent="سريعة"
+          subtitle="حاسبات وأدوات قانونية تُجيبك في ثوانٍ بدلاً من ساعات بحث."
+        />
+      </section>
       <ScrollReveal>
         <QuickActionsGrid />
       </ScrollReveal>
 
       {/* 4. TOP FAQ — أكثر الأسئلة شيوعاً */}
+      <section className="max-w-7xl mx-auto px-4 pt-14 pb-2">
+        <SectionTitle
+          eyebrow="أسئلة الجمهور"
+          title="الأكثر"
+          accent="سؤالاً"
+          subtitle="الأجوبة الجاهزة على ما يتكرّر يومياً في صندوق الاستشارات."
+        />
+      </section>
       <ScrollReveal>
         <HomeFAQ />
       </ScrollReveal>
