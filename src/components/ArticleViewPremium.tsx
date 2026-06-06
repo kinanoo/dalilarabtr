@@ -9,7 +9,7 @@ import Image from 'next/image';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
 import { Mail } from 'lucide-react';
-import { SITE_CONFIG, CATEGORY_SLUGS } from '@/lib/config';
+import { SITE_CONFIG, CATEGORY_SLUGS, TAG_LABELS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
 import InlineRelatedArticles from './InlineRelatedArticles';
 
@@ -198,6 +198,29 @@ export default function ArticleView({ article, slug, initialComments, children }
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20"></div>
             </div>
 
+            {/* Tag chips — link to the matching /tag/[slug] hubs so the reader
+                can pivot to related articles without going back to search.
+                Also feeds internal-link equity into tag landing pages for SEO. */}
+            {Array.isArray(article.tags) && article.tags.length > 0 && (
+              <div className="px-4 sm:px-6 lg:px-12 pt-4 lg:pt-6">
+                <div className="flex flex-wrap gap-2">
+                  {article.tags.slice(0, 12).map((t: string) => {
+                    const tag = (t || '').trim();
+                    if (!tag) return null;
+                    const label = (CATEGORY_SLUGS as Record<string, string>)[tag] || TAG_LABELS[tag] || tag;
+                    return (
+                      <Link
+                        key={tag}
+                        href={`/tag/${encodeURIComponent(tag)}`}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition"
+                      >
+                        # {label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Content */}
             <div className="p-4 sm:p-6 lg:p-12 space-y-6 lg:space-y-8 break-words overflow-x-hidden w-full max-w-full">

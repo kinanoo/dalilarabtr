@@ -23,6 +23,8 @@ export async function GET() {
     `${baseUrl}/sitemap-static.xml`,
     // Image sitemap — surfaces article + service hero images to Google Images
     `${baseUrl}/sitemap-images.xml`,
+    // Tag sitemap — every distinct tag that >=2 approved articles share
+    `${baseUrl}/sitemap-tags.xml`,
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
