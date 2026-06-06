@@ -66,7 +66,31 @@ export default function ArticleView({ article, slug, initialComments, children }
     return DOMPurify.sanitize(raw);
   }, [article.intro]);
   const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
-  const safeSteps = useMemo(() => (article.steps || []).map((s: string) => isObfuscated(s) ? deobfuscate(s) : s), [article.steps]);
+  // Steps come in two historical shapes:
+  //   - legacy: plain strings (whole step in one line)
+  //   - new:    objects { title, description } — title is the headline,
+  //             description is a one-line elaboration shown underneath
+  // We normalize both to { title, description? } here so the renderer
+  // doesn't have to branch. Strings that look obfuscated still get decoded;
+  // object fields are passed through (security.ts helpers assume strings,
+  // so we only invoke them on strings).
+  type StepObj = { title: string; description?: string };
+  const safeSteps = useMemo<StepObj[]>(() => {
+    return (article.steps || []).map((s: unknown): StepObj => {
+      if (typeof s === 'string') {
+        const decoded = isObfuscated(s) ? deobfuscate(s) : s;
+        return { title: decoded };
+      }
+      if (s && typeof s === 'object') {
+        const obj = s as { title?: unknown; description?: unknown };
+        return {
+          title: typeof obj.title === 'string' ? obj.title : '',
+          description: typeof obj.description === 'string' ? obj.description : undefined,
+        };
+      }
+      return { title: String(s ?? '') };
+    });
+  }, [article.steps]);
   const safeTips = useMemo(() => (article.tips || []).map((t: string) => isObfuscated(t) ? deobfuscate(t) : t), [article.tips]);
   const safeFees = useMemo(() => article.fees && isObfuscated(article.fees) ? deobfuscate(article.fees) : article.fees, [article.fees]);
   const safeWarning = useMemo(() => article.warning && isObfuscated(article.warning) ? deobfuscate(article.warning) : article.warning, [article.warning]);
@@ -313,8 +337,13 @@ export default function ArticleView({ article, slug, initialComments, children }
                       <ol className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
                         {safeSteps.slice(0, 5).map((step, i) => (
                           <li key={i} className="flex gap-3">
-                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-xs font-bold flex-shrink-0">{i + 1}</span>
-                            <span className="leading-relaxed font-medium">{step}</span>
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</span>
+                            <div className="leading-relaxed flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 dark:text-slate-100">{step.title}</div>
+                              {step.description && (
+                                <div className="mt-0.5 text-xs text-gray-600 dark:text-slate-400 leading-relaxed">{step.description}</div>
+                              )}
+                            </div>
                           </li>
                         ))}
                       </ol>
