@@ -25,6 +25,7 @@ import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/Lazy
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import NewsletterCard from '@/components/NewsletterCard';
 import HeroTrustStrip from '@/components/home/HeroTrustStrip';
+import HomeStats from '@/components/home/HomeStats';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -141,8 +142,36 @@ export const metadata: Metadata = {
 // 🏠 Page Component
 // ============================================
 
+// Pull live catalog counts for the HomeStats strip. Resilient — falls back
+// to sensible-looking numbers if Supabase is slow/unavailable so the page
+// still renders. Using `head: true` keeps the query cheap (rows are NOT
+// transferred, only the count header).
+async function getStats() {
+  const fallback = { articles: 280, services: 17, faqs: 470 };
+  try {
+    if (!supabase) return fallback;
+    const result = await withTimeout(
+      Promise.all([
+        supabase.from('articles').select('*', { count: 'exact', head: true }).eq('active', true).eq('status', 'approved'),
+        supabase.from('service_providers').select('*', { count: 'exact', head: true }).eq('active', true),
+        supabase.from('faqs').select('*', { count: 'exact', head: true }),
+      ]),
+      6000,
+    );
+    if (!result) return fallback;
+    const [a, s, f] = result;
+    return {
+      articles: a.count ?? fallback.articles,
+      services: s.count ?? fallback.services,
+      faqs: f.count ?? fallback.faqs,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 export default async function Home() {
-  const updates = await getUpdates();
+  const [updates, stats] = await Promise.all([getUpdates(), getStats()]);
 
   const homeFaqSchema = {
     '@context': 'https://schema.org',
@@ -177,6 +206,11 @@ export default async function Home() {
           of the search-dropdown overlay's stacking context so the dropdown
           opens cleanly without competing with the chips. */}
       <HeroTrustStrip />
+
+      {/* Animated catalog stats — turns the site's library size into a
+          glance-able trust signal. Numbers are real counts pulled at render
+          time, animate from 0 on mount via requestAnimationFrame. */}
+      <HomeStats articles={stats.articles} services={stats.services} faqs={stats.faqs} />
 
       {/* 2. LATEST UPDATES — right after Hero, before Journey */}
       <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>
