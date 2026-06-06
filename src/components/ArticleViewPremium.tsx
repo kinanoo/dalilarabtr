@@ -16,6 +16,7 @@ import InlineRelatedArticles from './InlineRelatedArticles';
 import { deobfuscate, isObfuscated } from '@/lib/security';
 import DOMPurify from 'isomorphic-dompurify';
 import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/useAdminData';
+import ArticleTOC from './article/ArticleTOC';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -240,8 +241,14 @@ export default function ArticleView({ article, slug, initialComments, children }
                   { /* علامة مائية مخفية للمطاردة القانونية */}
                   <span className="opacity-0 pointer-events-none absolute text-[1px]">حقوق النشر محفوظة لـ {SITE_CONFIG.name}</span>
 
+                  {/* Auto-generated table of contents — renders nothing for
+                      short articles (<3 headings). Sticky sidebar on desktop,
+                      collapsible card on mobile. */}
+                  <ArticleTOC contentSelector="[data-article-body]" />
+
                   {/* التفاصيل */}
                   <div
+                    data-article-body
                     className="prose-content text-slate-600 dark:text-slate-200 mb-6 text-base sm:text-lg"
                     dangerouslySetInnerHTML={{ __html: safeDetails }}
                   />
