@@ -21,6 +21,8 @@ export async function GET() {
     `${baseUrl}/sitemap-services.xml`,
     `${baseUrl}/sitemap-updates.xml`,
     `${baseUrl}/sitemap-static.xml`,
+    // Image sitemap — surfaces article + service hero images to Google Images
+    `${baseUrl}/sitemap-images.xml`,
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

@@ -11,6 +11,7 @@ import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
 import RelatedArticles from '@/components/RelatedArticles';
+import ArticleFeedback from '@/components/article/ArticleFeedback';
 import { stripHtml } from '@/lib/stripHtml';
 
 
@@ -279,6 +280,17 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     keywords,
     authors: [{ name: SITE_CONFIG.name }],
     alternates: { canonical: canonicalUrl },
+    // article:* meta tags (OpenGraph spec) — Facebook / LinkedIn / Google News
+    // use these to attribute the author + section + dates separately from the
+    // generic Article schema. The og:type=article block below already covers
+    // some of this, but a few crawlers only read the meta name="article:*"
+    // form, so we emit both.
+    other: {
+      'article:author': SITE_CONFIG.name,
+      'article:published_time': dateModified,
+      'article:modified_time': dateModified,
+      ...(article.category ? { 'article:section': article.category } : {}),
+    },
     openGraph: {
       title: article.title,
       description,
@@ -345,14 +357,28 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     steps: article.steps,
   });
 
+  // Preload the article hero image — it's almost always the LCP element.
+  // Next will hoist this <link> into <head>, so the browser starts the image
+  // fetch in parallel with the rest of the document parse. Only emit for
+  // images we actually host (http/https); skip the /api/og fallbacks since
+  // those generate on demand and don't benefit from preload.
+  const lcpPreload = article.image && /^https?:\/\//i.test(article.image)
+    ? <link rel="preload" as="image" href={article.image} fetchPriority="high" />
+    : null;
+
   return (
     <main className="min-h-screen flex flex-col">
+      {lcpPreload}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.article) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.breadcrumbs) }} />
       {jsonLd.howTo && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.howTo) }} />
       )}
       <ArticleHydratedView articleData={article} slug={params.id}>
+        {/* "Was this article helpful?" — collects voluntary feedback at the
+            article footer. Renders above comments so the user sees the prompt
+            before they navigate away. */}
+        <ArticleFeedback articleId={params.id} />
         <UniversalComments entityType="article" entityId={params.id} />
       </ArticleHydratedView>
       {/* Related Articles — internal linking helps SEO + keeps users on site */}

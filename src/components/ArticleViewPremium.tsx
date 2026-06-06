@@ -17,6 +17,7 @@ import { deobfuscate, isObfuscated } from '@/lib/security';
 import DOMPurify from 'isomorphic-dompurify';
 import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/useAdminData';
 import ArticleTOC from './article/ArticleTOC';
+import ReadingProgressBar from './article/ReadingProgressBar';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -117,6 +118,8 @@ export default function ArticleView({ article, slug, initialComments, children }
 
   return (
     <>
+      {/* Pinned to the top of the viewport, tracks doc scroll progress. */}
+      <ReadingProgressBar />
       <article
         className="w-full max-w-full lg:max-w-6xl mx-auto px-3 sm:px-4 py-8 overflow-hidden"
       >
