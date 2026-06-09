@@ -5,7 +5,6 @@ import type { Article } from '@/lib/types'; // Only Type
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
 import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, BrainCircuit, ChevronDown, Clock, Eye, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
 import { Mail } from 'lucide-react';
@@ -21,6 +20,7 @@ import ReadingProgressBar from './article/ReadingProgressBar';
 import EndOfArticleShare from './article/EndOfArticleShare';
 import StickyMobileShareBar from './article/StickyMobileShareBar';
 import NewsletterCard from './NewsletterCard';
+import ArticleHeroImage from './article/ArticleHeroImage';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -260,24 +260,16 @@ export default function ArticleView({ article, slug, initialComments, children }
             {/* Content */}
             <div className="p-4 sm:p-6 lg:p-12 space-y-6 lg:space-y-8 break-words overflow-x-hidden w-full max-w-full">
 
-              {/* Featured Image */}
+              {/* Featured Image — natural aspect ratio + click-to-zoom
+                  lightbox. Replaces the old 16:9 object-cover crop which
+                  mangled tall portrait documents (official letters,
+                  decree screenshots) by chopping off the top and bottom. */}
               {article.image && article.image.startsWith('http') && (
-                <div data-image-wrapper className="relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-800">
-                  <div className="relative w-full aspect-video">
-                    <Image
-                      src={article.image}
-                      alt={article.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
-                      priority
-                      onError={(e) => {
-                        const wrapper = e.currentTarget.closest('[data-image-wrapper]') as HTMLElement;
-                        if (wrapper) wrapper.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                </div>
+                <ArticleHeroImage
+                  src={article.image}
+                  alt={article.title}
+                  priority
+                />
               )}
 
               {/* ✅ ملخص الإجراء - Notion Style Callout (High Contrast) */}
