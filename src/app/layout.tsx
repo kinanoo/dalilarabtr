@@ -15,6 +15,7 @@ const cairo = Cairo({
 });
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import LatinDigits from "@/components/LatinDigits";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -171,6 +172,11 @@ export default function RootLayout({
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-600 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
           تخطي إلى المحتوى الرئيسي
         </a>
+        {/* Eastern-Arabic → Latin digit normalizer. Walks every text node
+            on mount and via MutationObserver after, so any ٠-٩ that slips
+            in from articles, DB content, or hardcoded JSX strings becomes
+            0-9 in the rendered DOM. Site-wide guarantee. */}
+        <LatinDigits />
         <ThemeProviderWrapper>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
