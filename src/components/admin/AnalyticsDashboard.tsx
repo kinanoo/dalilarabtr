@@ -79,6 +79,15 @@ interface SpikeMetrics {
     active_now: number;
     spike_pct: number;
     avg_hourly_30d: number;
+    // New fields from sql/2026-06-09_analytics_honesty.sql — optional
+    // because dashboards reading from a not-yet-migrated DB shouldn't
+    // crash; they just fall back to active_now*12 as before.
+    projected_hourly?: number;
+    rules?: {
+        min_active_floor: number;
+        multiplier: number;
+        hourly_floor: number;
+    };
 }
 
 /** Format seconds into Arabic readable duration */
@@ -279,22 +288,32 @@ export function AnalyticsDashboard() {
 
     return (
         <div className="space-y-8">
-            {/* ── 0. Spike Alert Banner ────────────────────────────── */}
+            {/* ── 0. Spike Alert Banner ──────────────────────────────
+                Triggered server-side only when BOTH:
+                  (a) at least 5 concurrent visitors RIGHT NOW
+                  (b) projected hourly rate > max(3 × 30-day avg, 15/hr)
+                The two-gate rule kills the false-alarm "spike on 2
+                visitors" that the old single-gate version produced on
+                small-traffic days. Both rule values come back in
+                spikeMetrics.rules — exposed in the tooltip below so the
+                criteria are never opaque.
+            */}
             {spikeMetrics?.is_spiking && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-gradient-to-l from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-400/30 dark:border-amber-600/30 rounded-2xl p-4 flex items-center gap-4"
+                    title={`القاعدة: زوار نشطون ≥ ${spikeMetrics.rules?.min_active_floor ?? 5} + معدّل ساعي مُتوقّع > MAX(${spikeMetrics.rules?.multiplier ?? 3}× المتوسط، ${spikeMetrics.rules?.hourly_floor ?? 15})`}
                 >
                     <div className="p-2.5 bg-amber-100 dark:bg-amber-900/40 rounded-xl shrink-0">
                         <Zap size={22} className="text-amber-600 dark:text-amber-400 animate-pulse" />
                     </div>
                     <div className="flex-1">
                         <p className="font-bold text-slate-800 dark:text-white text-sm">
-                            ارتفاع مفاجئ في الزيارات!
+                            ارتفاع حقيقي في الزيارات
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            الزوار النشطون الآن ({spikeMetrics.active_now}) أعلى بـ <span className="font-bold text-amber-600 dark:text-amber-400">{spikeMetrics.spike_pct}٪</span> من المعتاد (متوسط الساعة: {spikeMetrics.avg_hourly_30d})
+                            الزوار النشطون الآن ({spikeMetrics.active_now}) — المعدّل المتوقّع ({spikeMetrics.projected_hourly ?? spikeMetrics.active_now * 12}/ساعة) أعلى بـ <span className="font-bold text-amber-600 dark:text-amber-400">{spikeMetrics.spike_pct}٪</span> من متوسط الـ 30 يوم ({spikeMetrics.avg_hourly_30d}/ساعة)
                         </p>
                     </div>
                 </motion.div>
@@ -354,25 +373,41 @@ export function AnalyticsDashboard() {
             </div>
 
             {/* ── 2. Period Overview ─────────────────────────────── */}
+            {/*
+              Labels updated 2026-06-09 to match the honest-stats SQL
+              migration (sql/2026-06-09_analytics_honesty.sql):
+
+              - The comparison is now SAME-ELAPSED-WINDOW vs prior week,
+                not partial-week vs full prior week. So the previous-period
+                label is "نفس الفترة" (same window), not "الأسبوع الماضي
+                كاملاً". Without this label change, the user reads the
+                negative percentage as a real drop when in fact both
+                windows were identical durations and the math was honest.
+
+              - "الإجمالي" was overcounted because the IP salt rotates
+                daily — labelled now as "زائر مميّز" (distinct browsers,
+                from stable localStorage UUID) to make the methodology
+                obvious.
+            */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <PeriodCard
-                    label="هذا الأسبوع"
+                    label="هذا الأسبوع حتى الآن"
                     count={stats.week_visitors ?? 0}
                     icon={TrendingUp}
                     color="blue"
                     change={comparison?.visitors_change_pct}
-                    prevLabel={comparison ? `الأسبوع الماضي: ${comparison.last_week_visitors?.toLocaleString('ar')}` : undefined}
+                    prevLabel={comparison ? `نفس الفترة الأسبوع الماضي: ${comparison.last_week_visitors?.toLocaleString('ar')}` : undefined}
                 />
                 <PeriodCard
-                    label="مشاهدات الأسبوع"
+                    label="مشاهدات الأسبوع حتى الآن"
                     count={comparison?.this_week_views ?? stats.month_visitors ?? 0}
                     icon={Eye}
                     color="violet"
                     change={comparison?.views_change_pct}
-                    prevLabel={comparison ? `الأسبوع الماضي: ${comparison.last_week_views?.toLocaleString('ar')}` : undefined}
+                    prevLabel={comparison ? `نفس الفترة الأسبوع الماضي: ${comparison.last_week_views?.toLocaleString('ar')}` : undefined}
                     unit="مشاهدة"
                 />
-                <PeriodCard label="الإجمالي" count={stats.total_visitors_all_time ?? 0} icon={Globe} color="emerald" />
+                <PeriodCard label="زوار مميّزون" count={stats.total_visitors_all_time ?? 0} icon={Globe} color="emerald" />
             </div>
 
             {/* ── 3. Top Pages ─────────────────────────────── */}
