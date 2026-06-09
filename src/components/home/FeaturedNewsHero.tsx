@@ -143,9 +143,12 @@ export default async function FeaturedNewsHero() {
                             needs more line-height than English at bold
                             weights: descenders + diacritics on lines below
                             collide with ascenders on lines above when
-                            leading is tight. 1.6 gives breathing room
-                            without losing the "compact headline" feel. */}
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-[1.6] text-white drop-shadow-lg group-hover:text-rose-100 transition-colors">
+                            leading is tight. The user reviewed 1.6 and
+                            asked for more separation — 1.75 is the Arabic
+                            typographic standard for bold display copy.
+                            Stays tight enough to read as "one headline"
+                            but each line has full breathing room. */}
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-[1.75] text-white drop-shadow-lg group-hover:text-rose-100 transition-colors">
                             {article.title}
                         </h2>
 

@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { CheckCircle2, Users, Loader2 } from 'lucide-react';
+import { CheckCircle2, Users, Loader2, AlertTriangle, X } from 'lucide-react';
 
 interface Props {
     zoneId: string;
@@ -35,6 +35,17 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
     const [count, setCount] = useState(initialCount);
     const [reported, setReported] = useState(false);
     const [sending, setSending] = useState(false);
+    // Two-step confirmation: the first click on the CTA only opens the
+    // confirm panel; the actual POST to /api/zone-report fires only when
+    // the user clicks the green "نعم، أؤكد" button. Prevents:
+    //   - Accidental fat-finger clicks while scrolling on mobile
+    //   - Multi-click spam where someone hammers the same zone (the IP
+    //     unique constraint already blocks the dupes, but this is the
+    //     UX layer that tells the user "this is a real action")
+    //   - Drive-by fake-attack attempts where N IPs click before reading
+    //     the prompt — the confirm step adds friction without blocking
+    //     legitimate reporters
+    const [confirming, setConfirming] = useState(false);
 
     // Check localStorage on mount — prevents the button from resetting
     // across page navigations. The key includes the zoneId so reporting
@@ -54,9 +65,20 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
     // need community verification.
     if (status !== 'closed') return null;
 
-    async function handleReport() {
+    // The CTA button only OPENS the confirm panel — does not submit.
+    // Resending the same handler when the panel is already open just
+    // closes it (acts as a toggle / "cancel" on the same target).
+    function handleOpenConfirm() {
+        if (reported || sending) return;
+        setConfirming((v) => !v);
+    }
+
+    // The actual submission — wired to the green "نعم، أؤكد" button
+    // inside the confirm panel. This is the only path that POSTs.
+    async function handleConfirmedReport() {
         if (reported || sending) return;
         setSending(true);
+        setConfirming(false);
         try {
             const res = await fetch('/api/zone-report', {
                 method: 'POST',
@@ -93,12 +115,14 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
                 "سجّلت هنا بنجاح؟" which read as a quiz, not a request. */}
             <button
                 type="button"
-                onClick={handleReport}
+                onClick={handleOpenConfirm}
                 disabled={reported || sending}
                 className={`w-full text-right p-2.5 rounded-xl border transition-all ${
                     reported
                         ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 cursor-default'
-                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 active:scale-[0.99]'
+                        : confirming
+                            ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 active:scale-[0.99]'
                 }`}
                 title={reported
                     ? 'أبلغت سابقاً — شكراً لمساهمتك'
@@ -136,6 +160,53 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
                     </div>
                 </div>
             </button>
+
+            {/* Inline confirmation panel — appears between the CTA and the
+                community count when the user taps the CTA. Two-step click
+                is the simplest defense against accidental taps, double-
+                taps, and "click before reading" behavior. We deliberately
+                avoid a modal popup: modals on mobile are jarring, hide
+                the underlying neighborhood name, and add a layer of
+                "what was I about to do?" confusion. An inline expanding
+                panel keeps the context (the neighborhood card) visible
+                while the user reads the warning. */}
+            {confirming && !reported && (
+                <div className="rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-2.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="flex items-start gap-2 mb-2">
+                        <AlertTriangle size={14} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                        <div className="text-[11px] leading-snug text-amber-900 dark:text-amber-100">
+                            <div className="font-bold mb-0.5">تأكّد قبل المتابعة</div>
+                            <div className="text-amber-800/90 dark:text-amber-200/90">
+                                مشاركتك تساعد غيرك من السوريين والعرب — يجب أن تكون صحيحة. أكّد فقط إن كنت قد ثبّتّ نفوسك في هذا الحيّ فعلاً خلال الأيام الأخيرة.
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={handleConfirmedReport}
+                            disabled={sending}
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                            {sending ? (
+                                <Loader2 size={12} className="animate-spin" />
+                            ) : (
+                                <CheckCircle2 size={12} />
+                            )}
+                            <span>نعم، أؤكّد</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setConfirming(false)}
+                            disabled={sending}
+                            className="inline-flex items-center justify-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                            <X size={12} />
+                            <span>إلغاء</span>
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Community count badge — separate row so it doesn't compete
                 with the CTA. Only renders when ≥1 report exists. */}
