@@ -85,46 +85,74 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
     const nearThreshold = count >= THRESHOLD;
 
     return (
-        <div className="mt-2 flex items-center gap-2 flex-wrap">
-            {/* Report button */}
+        <div className="mt-2.5 space-y-1.5">
+            {/* Two-line CTA — the headline ("هل ثبّتّ النفوس...") sells the
+                ask in plain Arabic, the supporting line ("مشاركتك تساعد
+                غيرك") removes the embarrassment of being the first
+                reporter. Far better conversion than the previous one-liner
+                "سجّلت هنا بنجاح؟" which read as a quiz, not a request. */}
             <button
                 type="button"
                 onClick={handleReport}
                 disabled={reported || sending}
-                className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full transition-all ${
+                className={`w-full text-right p-2.5 rounded-xl border transition-all ${
                     reported
-                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 cursor-default'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-300 active:scale-95'
+                        ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 cursor-default'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 active:scale-[0.99]'
                 }`}
-                title={reported ? 'أبلغت سابقاً — شكراً لمساهمتك' : 'اضغط إن سجّلت عنوانك هنا بنجاح — يساعد الآخرين'}
+                title={reported
+                    ? 'أبلغت سابقاً — شكراً لمساهمتك'
+                    : 'انقر إن ثبّتّ نفوسك مؤخّراً في هذا الحيّ'}
             >
-                {sending ? (
-                    <Loader2 size={12} className="animate-spin" />
-                ) : reported ? (
-                    <CheckCircle2 size={12} />
-                ) : (
-                    <Users size={12} />
-                )}
-                {reported ? 'أبلغت — شكراً' : 'سجّلت هنا بنجاح؟'}
+                <div className="flex items-start gap-2">
+                    <span className={`shrink-0 mt-0.5 ${reported ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {sending ? (
+                            <Loader2 size={14} className="animate-spin" />
+                        ) : reported ? (
+                            <CheckCircle2 size={14} />
+                        ) : (
+                            <Users size={14} />
+                        )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <div className={`text-[12px] font-bold leading-snug ${
+                            reported
+                                ? 'text-emerald-800 dark:text-emerald-200'
+                                : 'text-slate-700 dark:text-slate-200'
+                        }`}>
+                            {reported
+                                ? 'تمّ تسجيل مشاركتك — شكراً لك'
+                                : 'هل ثبّتّ النفوس مؤخّراً في هذا الحيّ؟'}
+                        </div>
+                        <div className={`text-[10px] mt-0.5 leading-snug ${
+                            reported
+                                ? 'text-emerald-700/80 dark:text-emerald-300/80'
+                                : 'text-slate-500 dark:text-slate-400'
+                        }`}>
+                            {reported
+                                ? 'سيراها الأدمن لتحديث القائمة الرسمية'
+                                : 'انقر هنا — مشاركتك تساعد غيرك'}
+                        </div>
+                    </div>
+                </div>
             </button>
 
-            {/* Community count badge — only shows when ≥1 report exists */}
+            {/* Community count badge — separate row so it doesn't compete
+                with the CTA. Only renders when ≥1 report exists. */}
             {hasReports && (
-                <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        nearThreshold
-                            ? 'bg-emerald-500 text-white animate-pulse'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                    }`}
-                    title={nearThreshold
-                        ? `${count} أشخاص أبلّغوا — يُراجع الأدمن قريباً`
-                        : `${count} شخص أبلّغ`
-                    }
-                >
+                <div className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 ${
+                    nearThreshold
+                        ? 'bg-emerald-500 text-white animate-pulse'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                }`}>
                     <Users size={10} />
-                    {count}
-                    {nearThreshold && ' ← قيد المراجعة'}
-                </span>
+                    <span className="tabular-nums">{count}</span>
+                    <span>
+                        {nearThreshold
+                            ? 'شارك ← قيد المراجعة'
+                            : count === 1 ? 'شخص شارك تجربته' : 'أشخاص شاركوا تجربتهم'}
+                    </span>
+                </div>
             )}
         </div>
     );
