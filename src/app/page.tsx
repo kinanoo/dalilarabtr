@@ -25,6 +25,7 @@ import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/Lazy
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import NewsletterCard from '@/components/NewsletterCard';
 import HeroTrustStrip from '@/components/home/HeroTrustStrip';
+import FeaturedNewsHero from '@/components/home/FeaturedNewsHero';
 import { Radio, Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
@@ -175,6 +176,11 @@ export default async function Home() {
       </HeroSection>
 
       <HeroTrustStrip />
+
+      {/* Featured news hero — server-rendered breaking-news slot. Renders
+          nothing when no article carries the `خبر_رئيسي` tag, so it stays
+          invisible on quiet days. */}
+      <FeaturedNewsHero />
 
       {/* ═══════════════════════════════════════════════════════════
           SECTION 1 — آخر التحديثات
