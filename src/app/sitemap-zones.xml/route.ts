@@ -42,19 +42,30 @@ export async function GET() {
 
   const now = new Date().toISOString();
 
+  // City pages are the highest-value entry points: visitors search
+  // "أحياء أورفا المغلقة" → land directly on /zones/Şanlıurfa. Bumped to
+  // 0.9 priority + daily changefreq since the data shifts now that we have
+  // community reports + admin flips. Districts get 0.7. The main hub
+  // /zones is implicit (covered by the root sitemap).
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/zones</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
 ${[...citySet].map(city => `  <url>
     <loc>${baseUrl}/zones/${encodeURIComponent(city)}</loc>
     <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>`).join('\n')}
 ${[...districtSet].map(district => `  <url>
     <loc>${baseUrl}/zones/${encodeURIComponent(district)}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>`).join('\n')}
 </urlset>`;
 

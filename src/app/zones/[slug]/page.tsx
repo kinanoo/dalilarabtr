@@ -5,6 +5,7 @@ import PageHero from '@/components/PageHero';
 import { MapPin, ArrowRight, AlertTriangle, CheckCircle2, XCircle, Clock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
+import ZoneReportButton from '@/components/zones/ZoneReportButton';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 600;
@@ -21,6 +22,8 @@ type Zone = {
     status: 'closed' | 'reopened' | 'pending' | string | null;
     is_banned: boolean | null;
     reopened_at: string | null;
+    community_reopened_count?: number;
+    community_closed_count?: number;
 };
 
 // 1. Metadata Generation
@@ -154,6 +157,7 @@ function ZoneTile({ z }: { z: Zone }) {
                 ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/30 text-amber-900 dark:text-amber-100'
                 : 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-900 dark:text-rose-100';
     const iconColor = tone === 'emerald' ? 'text-emerald-600' : tone === 'amber' ? 'text-amber-600' : 'text-rose-600';
+    const reportCount = z.community_reopened_count || 0;
     return (
         <div className={`p-3 rounded-xl border flex items-start gap-2.5 ${styles}`}>
             <Icon size={16} className={`shrink-0 mt-0.5 ${iconColor}`} />
@@ -161,6 +165,14 @@ function ZoneTile({ z }: { z: Zone }) {
                 <div className="font-bold text-sm leading-snug text-slate-900 dark:text-slate-100 break-words">
                     {z.neighborhood}
                 </div>
+                {/* Community report widget — only renders on 'closed' zones.
+                    The button + badge let visitors who successfully registered
+                    their address here flag it so the admin can verify and flip. */}
+                <ZoneReportButton
+                    zoneId={z.id}
+                    initialCount={reportCount}
+                    status={(z.status as 'closed' | 'reopened' | 'pending') || 'closed'}
+                />
             </div>
         </div>
     );
@@ -248,7 +260,7 @@ export default async function ZoneDetailPage({ params }: Props) {
     let groupItems: Zone[] = [];
     let title = '';
 
-    const ZONE_COLS = 'id, neighborhood, city, district, status, is_banned, reopened_at';
+    const ZONE_COLS = 'id, neighborhood, city, district, status, is_banned, reopened_at, community_reopened_count, community_closed_count';
 
     // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ")
     {
@@ -351,6 +363,54 @@ export default async function ZoneDetailPage({ params }: Props) {
             else closed.push(z);
         }
 
+        // Structured data: Schema.org Dataset describing the closed-neighborhood
+        // list for this province. Google picks this up for richer SERP cards
+        // and surfaces it in Dataset Search. Updated/dateModified comes from
+        // the most recent reopened_at among rows.
+        const lastUpdate = (() => {
+            const dates = groupItems
+                .map((z) => z.reopened_at)
+                .filter((d): d is string => !!d);
+            if (dates.length === 0) return new Date().toISOString();
+            return new Date(Math.max(...dates.map((d) => new Date(d).getTime()))).toISOString();
+        })();
+        const datasetJsonLd = {
+            '@context': 'https://schema.org',
+            '@type': 'Dataset',
+            name: `الأحياء المغلقة والمفتوحة في ${title} — تحديث ٢٠٢٦`,
+            description: `قائمة محدّثة لحالة الأحياء أمام تسجيل عناوين الأجانب في ${title}: ${closed.length} مغلق، ${reopened.length} مفتوح حديثاً، ${pending.length} قيد التحديث الرسمي.`,
+            url: `${SITE_CONFIG.siteUrl}/zones/${encodeURIComponent(title)}`,
+            keywords: [
+                `أحياء ${title} المغلقة`,
+                `أحياء ${title} المفتوحة`,
+                `${title} kapalı mahalleler`,
+                'تسجيل نفوس تركيا',
+                'إقامة سوريين تركيا',
+            ].join(', '),
+            dateModified: lastUpdate,
+            creator: { '@type': 'Organization', name: SITE_CONFIG.name, url: SITE_CONFIG.siteUrl },
+            spatialCoverage: { '@type': 'Place', name: title, address: { '@type': 'PostalAddress', addressCountry: 'TR', addressRegion: title } },
+            license: 'https://creativecommons.org/licenses/by-sa/4.0/',
+            isAccessibleForFree: true,
+            includedInDataCatalog: { '@type': 'DataCatalog', name: SITE_CONFIG.name },
+            variableMeasured: [
+                { '@type': 'PropertyValue', name: 'مغلق', value: closed.length },
+                { '@type': 'PropertyValue', name: 'مفتوح حديثاً', value: reopened.length },
+                { '@type': 'PropertyValue', name: 'قيد التحديث', value: pending.length },
+            ],
+        };
+
+        // BreadcrumbList — helps Google show breadcrumbs in the SERP.
+        const breadcrumbJsonLd = {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_CONFIG.siteUrl },
+                { '@type': 'ListItem', position: 2, name: 'المناطق المحظورة', item: `${SITE_CONFIG.siteUrl}/zones` },
+                { '@type': 'ListItem', position: 3, name: title, item: `${SITE_CONFIG.siteUrl}/zones/${encodeURIComponent(title)}` },
+            ],
+        };
+
         const heroTitle = viewType === 'district'
             ? `أحياء ${title}`
             : `أحياء ${title}`;
@@ -358,6 +418,17 @@ export default async function ZoneDetailPage({ params }: Props) {
 
         return (
             <main className="min-h-screen bg-white dark:bg-slate-950 font-cairo">
+                {/* JSON-LD for Google: Dataset + BreadcrumbList. Both surface
+                    rich SERP features (Dataset Search inclusion + breadcrumb
+                    trail on the result card). */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJsonLd) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+                />
                 <PageHero
                     title={heroTitle}
                     description={heroDescription}
