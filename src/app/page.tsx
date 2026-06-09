@@ -24,7 +24,6 @@ import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import NewsletterCard from '@/components/NewsletterCard';
-import HeroTrustStrip from '@/components/home/HeroTrustStrip';
 import FeaturedNewsHero from '@/components/home/FeaturedNewsHero';
 import { Radio, Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
 import { TOP_FAQS } from '@/lib/home-faq-data';
@@ -172,10 +171,20 @@ export default async function Home() {
         <div id="search" className="w-full relative z-30 mb-1.5">
           <LazyGlobalSearch />
         </div>
+        {/* HomeConsultantBtn now ALSO carries the three trust badges
+            (مصادر رسمية / تحديث مباشر / بالعربية للسوريين والعرب) as
+            small faint-gold chips beneath the CTA. The standalone
+            HeroTrustStrip section that used to sit here was removed —
+            it created a hard visual seam between the dark hero and the
+            content below it. A thin slate divider does the same job
+            without claiming attention. */}
         <HomeConsultantBtn />
       </HeroSection>
 
-      <HeroTrustStrip />
+      {/* Minimal divider replacing the old HeroTrustStrip section.
+          A single 1px slate line is all that's needed to mark the
+          hero → content transition; the chips are now in the hero. */}
+      <div className="w-full h-px bg-slate-900/40 dark:bg-slate-800" aria-hidden="true" />
 
       {/* Featured news hero — server-rendered breaking-news slot. Renders
           nothing when no article carries the `خبر_رئيسي` tag, so it stays
