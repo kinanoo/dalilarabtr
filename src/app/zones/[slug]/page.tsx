@@ -262,6 +262,25 @@ export default async function ZoneDetailPage({ params }: Props) {
 
     const ZONE_COLS = 'id, neighborhood, city, district, status, is_banned, reopened_at, community_reopened_count, community_closed_count';
 
+    // Turkish-character-tolerant normalizer. Without this, /zones/Istanbul
+    // misses /zones/İstanbul (the DB stores Turkish letters), /zones/Sanliurfa
+    // misses Şanlıurfa, etc. We map Turkish-specific letters to their ASCII
+    // equivalents so `Istanbul` and `İstanbul` collapse to the same key.
+    function tnorm(s: string): string {
+        return (s || '')
+            .toLocaleLowerCase('tr')
+            .replace(/ı/g, 'i')
+            .replace(/ş/g, 's')
+            .replace(/ç/g, 'c')
+            .replace(/ğ/g, 'g')
+            .replace(/ü/g, 'u')
+            .replace(/ö/g, 'o')
+            .replace(/i̇/g, 'i')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+    const slugNorm = tnorm(decodedSlug);
+
     // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ")
     {
         const { data } = await supabase
@@ -299,7 +318,59 @@ export default async function ZoneDetailPage({ params }: Props) {
         }
     }
 
-    // 4. Fallback: ID check
+    // 4. Turkish-tolerant fallback. Postgres's ILIKE folds ASCII case but
+    //    NOT İ→i, Ş→s, etc., so /zones/Istanbul wasn't matching İstanbul.
+    //    We pull the distinct city + district names and resolve through the
+    //    same tnorm() the slug went through.
+    if (!singleItem && groupItems.length === 0) {
+        const { data: pool } = await supabase
+            .from('zones')
+            .select('city, district');
+        if (pool && pool.length > 0) {
+            const cityNames = new Set<string>();
+            const districtNames = new Set<string>();
+            for (const r of pool) {
+                if (r.city) cityNames.add(r.city as string);
+                if (r.district) districtNames.add(r.district as string);
+            }
+
+            // Try city match first — broader scope, more useful landing page.
+            let resolvedCity: string | null = null;
+            for (const c of cityNames) {
+                if (tnorm(c) === slugNorm) { resolvedCity = c; break; }
+            }
+            if (resolvedCity) {
+                const { data } = await supabase
+                    .from('zones')
+                    .select(ZONE_COLS)
+                    .eq('city', resolvedCity);
+                if (data && data.length > 0) {
+                    viewType = 'city';
+                    groupItems = data as Zone[];
+                    title = (data[0] as Zone).city;
+                }
+            } else {
+                // Fall back to district match
+                let resolvedDist: string | null = null;
+                for (const d of districtNames) {
+                    if (tnorm(d) === slugNorm) { resolvedDist = d; break; }
+                }
+                if (resolvedDist) {
+                    const { data } = await supabase
+                        .from('zones')
+                        .select(ZONE_COLS)
+                        .eq('district', resolvedDist);
+                    if (data && data.length > 0) {
+                        viewType = 'district';
+                        groupItems = data as Zone[];
+                        title = (data[0] as Zone).district;
+                    }
+                }
+            }
+        }
+    }
+
+    // 5. Fallback: ID check
     if (!singleItem && groupItems.length === 0) {
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
         if (isUUID) {
@@ -524,41 +595,114 @@ export default async function ZoneDetailPage({ params }: Props) {
     }
 
     // ─── C. NOT FOUND ──────────────────────────────────────────────────
+    // Smart "did you mean?" — search across cities, districts, and
+    // neighborhoods for prefix or substring matches under the normalized
+    // form. Most "not found" cases are typos or near-misses (Istanbul vs
+    // İstanbul, Esenyurt vs ESENYURT) so suggesting matches is more helpful
+    // than the generic "غير موجود" message.
+    type Suggestion = { kind: 'city' | 'district' | 'neighborhood'; name: string; city?: string; district?: string };
+    const suggestions: Suggestion[] = [];
+    try {
+        const { data: pool } = await supabase
+            .from('zones')
+            .select('city, district, neighborhood, status');
+        if (pool && slugNorm.length > 1) {
+            const cityHits = new Set<string>();
+            const districtHits: Suggestion[] = [];
+            const neighborhoodHits: Suggestion[] = [];
+            for (const r of pool) {
+                const cn = tnorm(r.city || '');
+                const dn = tnorm(r.district || '');
+                const nn = tnorm(r.neighborhood || '');
+                // Strong match: contains the slug as a substring.
+                if (cn.includes(slugNorm) && r.city) cityHits.add(r.city as string);
+                if (dn.includes(slugNorm) && r.district && !districtHits.find((s) => s.name === r.district)) {
+                    districtHits.push({ kind: 'district', name: r.district as string, city: r.city as string });
+                }
+                if (nn.includes(slugNorm) && r.neighborhood && neighborhoodHits.length < 5) {
+                    neighborhoodHits.push({ kind: 'neighborhood', name: r.neighborhood as string, city: r.city as string, district: r.district as string });
+                }
+            }
+            [...cityHits].slice(0, 5).forEach((name) => suggestions.push({ kind: 'city', name }));
+            districtHits.slice(0, 5).forEach((s) => suggestions.push(s));
+            neighborhoodHits.slice(0, 3).forEach((s) => suggestions.push(s));
+        }
+    } catch {
+        // ignore — suggestions are best-effort
+    }
+
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center p-4 text-center font-cairo bg-white dark:bg-slate-950">
-            <div className="bg-slate-50 dark:bg-slate-900 p-8 sm:p-12 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl max-w-2xl w-full">
-                <div className="mb-6 flex justify-center">
-                    <div className="bg-emerald-100 text-emerald-600 p-4 rounded-full animate-bounce-slow">
-                        <MapPin size={64} />
+        <main className="min-h-screen flex flex-col items-center justify-center p-4 font-cairo bg-white dark:bg-slate-950">
+            <div className="bg-slate-50 dark:bg-slate-900 p-6 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl max-w-2xl w-full">
+                <div className="mb-5 flex justify-center">
+                    <div className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 p-4 rounded-full">
+                        <MapPin size={56} />
                     </div>
                 </div>
 
-                <h1 className="text-3xl sm:text-5xl font-black text-slate-800 dark:text-slate-100 mb-4 leading-tight">
-                    لم يتم العثور على المنطقة في قائمة الحظر
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 mb-3 leading-tight text-center">
+                    لم نجد <span className="font-mono bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded text-xl sm:text-2xl select-all">&quot;{decodedSlug}&quot;</span> ضمن سجلّات الحظر
                 </h1>
 
-                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-6 my-6">
-                    <p className="text-xl sm:text-2xl font-bold text-emerald-700 dark:text-emerald-400 mb-2">
-                        مما يعني أن المنطقة غالباً <span className="underline decoration-wavy decoration-emerald-400">غير محظورة</span> (مفتوحة)
-                    </p>
-                    <p className="text-sm sm:text-base text-emerald-600/80 dark:text-emerald-500/80">
-                        لم نجد أي سجل حظر لهذا الاسم في قاعدة البيانات الرسمية.
-                    </p>
-                </div>
-
-                <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl text-right mb-8">
-                    <AlertTriangle className="text-amber-500 shrink-0 mt-1" size={24} />
-                    <div className="text-amber-800 dark:text-amber-200 text-sm sm:text-base font-medium">
-                        <strong>تنبيه هام:</strong> تأكد أنك قمت بكتابة اسم الحي أو المنطقة (بالتركي) بشكل <b>صحيح تماماً</b> ومطابق للفاتورة أو عقد الإيجار. حرف واحد خطأ قد يغير النتيجة!
-                        <div className="mt-2 text-xs font-mono bg-white/50 dark:bg-black/20 p-2 rounded dir-ltr text-center">
-                            بحثك الحالي: <span className="select-all font-bold">&quot;{decodedSlug}&quot;</span>
+                {suggestions.length > 0 ? (
+                    <>
+                        <p className="text-center text-sm sm:text-base text-slate-600 dark:text-slate-400 mb-5 leading-relaxed">
+                            هل قصدت إحدى هذه؟
+                        </p>
+                        <div className="grid grid-cols-1 gap-2 mb-6">
+                            {suggestions.map((s, i) => (
+                                <Link
+                                    key={`${s.kind}-${s.name}-${i}`}
+                                    href={`/zones/${encodeURIComponent(s.name)}`}
+                                    className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-800 rounded-xl transition-all group"
+                                    dir="rtl"
+                                >
+                                    <span className={`shrink-0 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded ${
+                                        s.kind === 'city'
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                            : s.kind === 'district'
+                                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+                                    }`}>
+                                        {s.kind === 'city' ? 'ولاية' : s.kind === 'district' ? 'قضاء' : 'حي'}
+                                    </span>
+                                    <div className="flex-1 min-w-0 text-right">
+                                        <div className="font-bold text-slate-900 dark:text-slate-100 truncate">{s.name}</div>
+                                        {(s.city || s.district) && (
+                                            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                                {[s.district, s.city].filter(Boolean).join(' · ')}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <ArrowRight size={16} className="text-slate-400 group-hover:text-emerald-600 transition-colors" />
+                                </Link>
+                            ))}
                         </div>
+                    </>
+                ) : (
+                    <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-5 my-5">
+                        <p className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-1 text-center">
+                            مما يعني أنّ المنطقة غالباً <span className="underline decoration-wavy decoration-emerald-400">غير محظورة</span>
+                        </p>
+                        <p className="text-xs sm:text-sm text-emerald-600/80 dark:text-emerald-500/80 text-center">
+                            لم نجد أي سجلّ مطابق لهذا الاسم في القاعدة الرسمية.
+                        </p>
+                    </div>
+                )}
+
+                <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl text-right mb-6 border border-amber-200 dark:border-amber-900/40">
+                    <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
+                    <div className="text-amber-800 dark:text-amber-200 text-sm leading-relaxed">
+                        <strong>تنبيه:</strong> أسماء الأحياء التركية تكون بالحروف التركية (İ، Ş، Ç، Ğ، Ü، Ö). إن لم تجد حيّك، جرّب كتابته كما يظهر في عقد الإيجار أو الفاتورة بالضبط.
                     </div>
                 </div>
 
-                <Link href="/zones" className="inline-flex items-center gap-2 bg-slate-800 text-white px-8 py-4 rounded-xl font-bold hover:bg-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all text-lg">
-                    <ArrowRight size={20} />
-                    جرب البحث مرة أخرى
+                <Link
+                    href="/zones"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-all"
+                >
+                    <ArrowRight size={18} />
+                    العودة لأداة فاحص المناطق
                 </Link>
             </div>
         </main>
