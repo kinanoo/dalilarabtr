@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tags, FileText, Link as LinkIcon, AlertCircle, Clock, Search, Settings2, ExternalLink, Sparkles } from 'lucide-react';
+import { Tags, FileText, Link as LinkIcon, AlertCircle, Clock, Search, Settings2, ExternalLink, Sparkles, Flame } from 'lucide-react';
 import { Field } from '../ui/Field';
 import { inputStyles, ltrInputStyles } from '../ui/styles';
 import { ArrayInput } from '../ui/ArrayInput';
@@ -310,6 +310,104 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                     </div>
                 )}
             </div>
+
+            {/* ── Featured-news toggle ──────────────────────────────────
+                The dark/rose "BREAKING" banner on the homepage queries
+                articles whose `tags` array contains the sentinel string
+                `خبر_رئيسي`. The user kept asking how to make/unmake one
+                — without a labelled control they had to remember the
+                exact Arabic tag text and add it manually via the Tags
+                array input above. This dedicated toggle reads/writes the
+                same field with one click.
+
+                Adding the tag here also keeps the underlying schema
+                untouched (no DB migration, no new column) — articles
+                that are already tagged or tagged elsewhere stay live
+                through the same path. */}
+            {(() => {
+                const FEATURED_TAG = 'خبر_رئيسي';
+                const isFeatured = (form.tags || []).includes(FEATURED_TAG);
+                const toggleFeatured = () => {
+                    const tags = form.tags || [];
+                    if (isFeatured) {
+                        setForm({ ...form, tags: tags.filter((t) => t !== FEATURED_TAG) });
+                    } else {
+                        setForm({ ...form, tags: [...tags, FEATURED_TAG] });
+                    }
+                };
+                return (
+                    <div
+                        className={`border-t pt-6 ${
+                            isFeatured
+                                ? 'border-rose-200 dark:border-rose-900/50'
+                                : 'border-slate-200 dark:border-slate-800'
+                        }`}
+                    >
+                        <button
+                            type="button"
+                            onClick={toggleFeatured}
+                            className={`w-full text-right rounded-2xl p-4 sm:p-5 transition-all flex items-start gap-4 ${
+                                isFeatured
+                                    ? 'bg-gradient-to-l from-rose-50 via-rose-100 to-rose-50 dark:from-rose-950/40 dark:via-rose-900/30 dark:to-rose-950/40 border-2 border-rose-300 dark:border-rose-700 shadow-md shadow-rose-200/40 dark:shadow-rose-900/30'
+                                    : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/70 border-2 border-dashed border-slate-300 dark:border-slate-700'
+                            }`}
+                        >
+                            <div
+                                className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+                                    isFeatured
+                                        ? 'bg-rose-600 text-white animate-pulse shadow-lg shadow-rose-400/40'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                                }`}
+                            >
+                                <Flame size={22} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span
+                                        className={`font-bold ${
+                                            isFeatured
+                                                ? 'text-rose-700 dark:text-rose-300 text-base'
+                                                : 'text-slate-800 dark:text-slate-100 text-sm'
+                                        }`}
+                                    >
+                                        {isFeatured
+                                            ? 'خبر عاجل — يظهر بشكل بارز بالصفحة الرئيسية'
+                                            : 'اعرض هذا المقال كخبر عاجل بالصفحة الرئيسية'}
+                                    </span>
+                                    {isFeatured && (
+                                        <span className="inline-flex items-center gap-1 bg-rose-600 text-white text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full">
+                                            <span className="relative flex w-1.5 h-1.5">
+                                                <span className="absolute inline-flex w-full h-full rounded-full bg-white opacity-75 animate-ping" />
+                                                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-white" />
+                                            </span>
+                                            Breaking
+                                        </span>
+                                    )}
+                                </div>
+                                <p className={`text-xs mt-1 ${isFeatured ? 'text-rose-600 dark:text-rose-300/80' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    {isFeatured
+                                        ? 'سيُعرض هذا الخبر في الكرت الأحمر العاجل أعلى الصفحة الرئيسية. اضغط مرة أخرى لإلغاء التمييز.'
+                                        : 'يُظهره في كرت الخبر العاجل المتحرّك (الأحمر) أعلى الصفحة الرئيسية. إن وُجد أكثر من خبر مميّز، يُعرض الأحدث منها.'}
+                                </p>
+                            </div>
+                            <div className="shrink-0 self-center">
+                                {/* Visual toggle pill */}
+                                <div
+                                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                                        isFeatured ? 'bg-rose-600' : 'bg-slate-300 dark:bg-slate-600'
+                                    }`}
+                                >
+                                    <span
+                                        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${
+                                            isFeatured ? 'right-0.5' : 'right-[26px]'
+                                        }`}
+                                    />
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                );
+            })()}
 
             {/* Workflow — status + last update date. Status changes are common
                 enough (pending → approved) that putting them in the same form
