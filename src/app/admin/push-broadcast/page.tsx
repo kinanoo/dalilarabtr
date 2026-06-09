@@ -176,7 +176,7 @@ export default function PushBroadcastPage() {
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     {subscriberCount === null
                         ? '… جاري عدّ المشتركين'
-                        : `${subscriberCount.toLocaleString('ar-EG')} مشترك سيستلم الإشعار`}
+                        : `${subscriberCount.toLocaleString('en-US')} مشترك سيستلم الإشعار`}
                 </div>
                 {lastArticle && (
                     <button

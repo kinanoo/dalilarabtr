@@ -271,7 +271,7 @@ export default function AdminZonesPage() {
             ) : (
                 <div className="space-y-2">
                     <p className="text-xs text-slate-400 mb-3 tabular-nums">
-                        عرض {Math.min(visible.length, 200).toLocaleString('ar-EG')} من أصل {visible.length.toLocaleString('ar-EG')} نتيجة (من {zones.length.toLocaleString('ar-EG')} منطقة كلّياً)
+                        عرض {Math.min(visible.length, 200).toLocaleString('en-US')} من أصل {visible.length.toLocaleString('en-US')} نتيجة (من {zones.length.toLocaleString('en-US')} منطقة كلّياً)
                     </p>
                     {visible.slice(0, 200).map((z) => (
                         <ZoneRowItem
@@ -283,7 +283,7 @@ export default function AdminZonesPage() {
                     ))}
                     {visible.length > 200 && (
                         <div className="text-center text-xs text-slate-400 py-4">
-                            ... و{(visible.length - 200).toLocaleString('ar-EG')} منطقة أخرى. ضيّق البحث.
+                            ... و{(visible.length - 200).toLocaleString('en-US')} منطقة أخرى. ضيّق البحث.
                         </div>
                     )}
                 </div>
@@ -320,7 +320,7 @@ function StatCard({
         <div className={`rounded-xl p-3 flex items-center gap-2.5 ${pulse ? 'animate-pulse' : ''} ${accentClasses}`}>
             {Icon && <Icon size={20} className="shrink-0" />}
             <div className="min-w-0">
-                <div className="text-xl font-black tabular-nums leading-none">{value.toLocaleString('ar-EG')}</div>
+                <div className="text-xl font-black tabular-nums leading-none">{value.toLocaleString('en-US')}</div>
                 <div className="text-[10px] font-bold mt-1 leading-none">{label}</div>
             </div>
         </div>

@@ -216,7 +216,7 @@ function StatusSection({
                     <h2 className={`text-xl sm:text-2xl font-black ${accent}`}>{title}</h2>
                 </div>
                 <span className={`${pillBg} text-white text-xs font-black px-3 py-1 rounded-full tabular-nums`}>
-                    {items.length.toLocaleString('ar-EG')} حي
+                    {items.length.toLocaleString('en-US')} حي
                 </span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -446,21 +446,21 @@ export default async function ZoneDetailPage({ params }: Props) {
                         <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-900/10 p-3 flex items-center gap-2.5">
                             <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
                             <div>
-                                <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular-nums">{reopened.length.toLocaleString('ar-EG')}</div>
+                                <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 tabular-nums">{reopened.length.toLocaleString('en-US')}</div>
                                 <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">فُتح حديثاً</div>
                             </div>
                         </div>
                         <div className="rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-900/10 p-3 flex items-center gap-2.5">
                             <XCircle size={20} className="text-rose-600 shrink-0" />
                             <div>
-                                <div className="text-xl font-black text-rose-700 dark:text-rose-300 tabular-nums">{closed.length.toLocaleString('ar-EG')}</div>
+                                <div className="text-xl font-black text-rose-700 dark:text-rose-300 tabular-nums">{closed.length.toLocaleString('en-US')}</div>
                                 <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400">ما زال مغلقاً</div>
                             </div>
                         </div>
                         <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 p-3 flex items-center gap-2.5">
                             <Clock size={20} className="text-amber-600 shrink-0" />
                             <div>
-                                <div className="text-xl font-black text-amber-700 dark:text-amber-300 tabular-nums">{pending.length.toLocaleString('ar-EG')}</div>
+                                <div className="text-xl font-black text-amber-700 dark:text-amber-300 tabular-nums">{pending.length.toLocaleString('en-US')}</div>
                                 <div className="text-[11px] font-bold text-amber-600 dark:text-amber-400">قيد التحديث</div>
                             </div>
                         </div>
@@ -480,7 +480,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                                         تحديث ٦ يونيو ٢٠٢٦
                                     </div>
                                     <h2 className="text-lg font-black text-slate-900 dark:text-slate-50 leading-snug">
-                                        رُفع الحظر عن {reopened.length.toLocaleString('ar-EG')} حياً في {title}
+                                        رُفع الحظر عن {reopened.length.toLocaleString('en-US')} حياً في {title}
                                     </h2>
                                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
                                         ضمن مراجعة وزارة الداخلية للأحياء التي انخفضت فيها نسبة الأجانب دون عتبة ٢٠٪.

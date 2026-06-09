@@ -318,7 +318,7 @@ function SummaryCard({ label, value, accent }: { label: string; value: number; a
     return (
         <div className={`${accents[accent]} rounded-2xl p-4 border border-slate-100 dark:border-slate-800`}>
             <div className="text-xs font-bold opacity-70">{label}</div>
-            <div className="text-3xl font-black mt-1 leading-none">{value.toLocaleString('ar-EG')}</div>
+            <div className="text-3xl font-black mt-1 leading-none">{value.toLocaleString('en-US')}</div>
         </div>
     );
 }

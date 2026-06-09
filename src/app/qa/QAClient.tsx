@@ -90,7 +90,7 @@ export default function QAClient() {
                     منصّة سؤال وجواب للسوريين والعرب في تركيا. اطرح سؤالك وسيُجيبك فريقنا بمصادر رسمية.
                     {total > 0 && (
                         <>
-                            {' '}جاهز للاطّلاع: <strong>{total.toLocaleString('ar-EG')}</strong> سؤالاً مُجاباً.
+                            {' '}جاهز للاطّلاع: <strong>{total.toLocaleString('en-US')}</strong> سؤالاً مُجاباً.
                         </>
                     )}
                 </p>

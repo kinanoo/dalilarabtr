@@ -307,13 +307,13 @@ export default function ZonesPage() {
                     <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">تحديث ٦ يونيو ٢٠٢٦</span>
                   </div>
                   <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-50 leading-tight">
-                    رُفع الحظر عن <span className="text-emerald-600 dark:text-emerald-400">{totals.reopened.toLocaleString('ar-EG')}</span> حياً في تركيا
+                    رُفع الحظر عن <span className="text-emerald-600 dark:text-emerald-400">{totals.reopened.toLocaleString('en-US')}</span> حياً في تركيا
                   </h3>
                   <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                    وفق آخر مراجعة من إدارة الهجرة. تبقّت <strong className="text-rose-600 dark:text-rose-400">{totals.closed.toLocaleString('ar-EG')}</strong> منطقة ضمن قائمة المغلقة
+                    وفق آخر مراجعة من إدارة الهجرة. تبقّت <strong className="text-rose-600 dark:text-rose-400">{totals.closed.toLocaleString('en-US')}</strong> منطقة ضمن قائمة المغلقة
                     {totals.pending > 0 && (
                       <>
-                        ، و<strong className="text-amber-600 dark:text-amber-400">{totals.pending.toLocaleString('ar-EG')}</strong> منطقة <strong>قيد التحديث الرسمي</strong> (بدأ التطبيق ولم تَصدر القائمة بعد — كلس مثلاً)
+                        ، و<strong className="text-amber-600 dark:text-amber-400">{totals.pending.toLocaleString('en-US')}</strong> منطقة <strong>قيد التحديث الرسمي</strong> (بدأ التطبيق ولم تَصدر القائمة بعد — كلس مثلاً)
                       </>
                     )}.
                     قوائم رسمية حالياً: <strong>أورفا (٢٦ مغلق)</strong> و<strong>قونيا (٤ مغلق)</strong>. باقي الولايات تنتظر قوائمها.
@@ -348,7 +348,7 @@ export default function ZonesPage() {
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
-                  الكلّ ({totals.all.toLocaleString('ar-EG')})
+                  الكلّ ({totals.all.toLocaleString('en-US')})
                 </button>
                 <button
                   type="button"
@@ -358,7 +358,7 @@ export default function ZonesPage() {
                     : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-900/40'
                   }`}
                 >
-                  <CheckCircle2 size={13} /> فُتح حديثاً ({totals.reopened.toLocaleString('ar-EG')})
+                  <CheckCircle2 size={13} /> فُتح حديثاً ({totals.reopened.toLocaleString('en-US')})
                 </button>
                 <button
                   type="button"
@@ -368,7 +368,7 @@ export default function ZonesPage() {
                     : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/40'
                   }`}
                 >
-                  <XCircle size={13} /> ما زال مغلقاً ({totals.closed.toLocaleString('ar-EG')})
+                  <XCircle size={13} /> ما زال مغلقاً ({totals.closed.toLocaleString('en-US')})
                 </button>
                 {totals.pending > 0 && (
                   <button
@@ -379,7 +379,7 @@ export default function ZonesPage() {
                       : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-900/40'
                     }`}
                   >
-                    <Clock size={13} /> قيد المراجعة ({totals.pending.toLocaleString('ar-EG')})
+                    <Clock size={13} /> قيد المراجعة ({totals.pending.toLocaleString('en-US')})
                   </button>
                 )}
               </div>
@@ -453,41 +453,48 @@ export default function ZonesPage() {
                         <Link
                           key={city}
                           href={`/zones/${encodeURIComponent(city)}`}
-                          className={`group relative rounded-xl border ${borderTone} ${bgTone} p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all`}
+                          className={`group relative rounded-xl border ${borderTone} ${bgTone} p-3 sm:p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all`}
                         >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div className={`p-1.5 rounded-lg shrink-0 ${iconBg} transition-colors`}>
-                                <Building2 size={16} className={iconColor} />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
-                                  {city}
-                                </div>
-                                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                  {districtCount} قضاء
-                                </div>
-                              </div>
+                          {/* Row 1: icon + city name (full width, can wrap)
+                              Previously the badges were side-by-side with the
+                              name on mobile, which left only ~28px for the
+                              name and truncated "İstanbul" to "İ...". The
+                              stack-vertical layout gives the name the whole
+                              card width. */}
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className={`p-1.5 rounded-lg shrink-0 ${iconBg} transition-colors`}>
+                              <Building2 size={16} className={iconColor} />
                             </div>
-                            <div className="flex flex-col items-end gap-1 shrink-0">
-                              {hasPending && (
-                                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
-                                  قيد التحديث {pendingCount}
-                                </span>
-                              )}
-                              {hasReopen && (
-                                <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
-                                  فُتح {reopenedCount}
-                                </span>
-                              )}
-                              {stillClosed && (
-                                <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums">
-                                  مغلق {count}
-                                </span>
-                              )}
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors break-words">
+                                {city}
+                              </div>
+                              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                {districtCount} قضاء
+                              </div>
                             </div>
                           </div>
-                          <div className={`flex items-center justify-end mt-2 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity ${iconColor}`}>
+                          {/* Row 2: badge stack — compact, wraps on narrow
+                              cards. Each badge shows the count only with a
+                              small word so the badge stays short. */}
+                          <div className="flex flex-wrap items-center gap-1">
+                            {hasPending && (
+                              <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums whitespace-nowrap">
+                                {pendingCount} قيد التحديث
+                              </span>
+                            )}
+                            {hasReopen && (
+                              <span className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums whitespace-nowrap">
+                                {reopenedCount} فُتح
+                              </span>
+                            )}
+                            {stillClosed && (
+                              <span className="bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums whitespace-nowrap">
+                                {count} مغلق
+                              </span>
+                            )}
+                          </div>
+                          <div className={`hidden sm:flex items-center justify-end mt-2 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity ${iconColor}`}>
                             عرض التفاصيل
                             <ChevronLeft size={12} className="mr-0.5" />
                           </div>

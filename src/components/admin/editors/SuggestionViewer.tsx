@@ -9,7 +9,7 @@ export const SuggestionViewer = ({ form }: any) => (
             </div>
             <div>
                 <label className="text-xs font-bold text-slate-500 uppercase">التاريخ</label>
-                <p className="text-lg font-bold text-slate-800 dark:text-slate-100">{new Date(form.created_at).toLocaleString('ar-EG')}</p>
+                <p className="text-lg font-bold text-slate-800 dark:text-slate-100">{new Date(form.created_at).toLocaleString('en-US')}</p>
             </div>
         </div>
 
