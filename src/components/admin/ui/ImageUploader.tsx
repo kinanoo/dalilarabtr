@@ -5,6 +5,7 @@ import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { getAuthClient } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
+import { watermarkImage } from '@/lib/watermark';
 
 // Compress image client-side before upload (target: small KB sizes)
 async function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<File> {
@@ -88,11 +89,21 @@ export const ImageUploader = ({
 
         try {
             // 1. Compress image
-            const file = await compressImage(rawFile, maxWidth, quality);
+            const compressed = await compressImage(rawFile, maxWidth, quality);
+
+            // 2. Apply diagonal site-attribution watermark in-canvas
+            //    BEFORE the bytes leave the browser. This baked-in
+            //    watermark travels with the file — survives screenshots,
+            //    right-click-save, and the lightbox download button on
+            //    article pages. Soft failure: if watermarking throws,
+            //    the helper returns the compressed file unchanged so
+            //    publishing never blocks on a cosmetic step.
+            const file = await watermarkImage(compressed);
+
             const fileExt = file.name.split('.').pop();
             const filePath = `${path}/${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-            // 2. Upload
+            // 3. Upload
             const { error: uploadError } = await sb.storage
                 .from(bucket)
                 .upload(filePath, file, { contentType: file.type });
