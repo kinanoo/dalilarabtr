@@ -304,7 +304,7 @@ export default function ZonesPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">تحديث ٦ يونيو ٢٠٢٦</span>
+                    <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">تحديث 6 يونيو 2026</span>
                   </div>
                   <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-50 leading-tight">
                     رُفع الحظر عن <span className="text-emerald-600 dark:text-emerald-400">{totals.reopened.toLocaleString('en-US')}</span> حياً في تركيا
@@ -316,7 +316,7 @@ export default function ZonesPage() {
                         ، و<strong className="text-amber-600 dark:text-amber-400">{totals.pending.toLocaleString('en-US')}</strong> منطقة <strong>قيد التحديث الرسمي</strong> (بدأ التطبيق ولم تَصدر القائمة بعد — كلس مثلاً)
                       </>
                     )}.
-                    قوائم رسمية حالياً: <strong>أورفا (٢٦ مغلق)</strong> و<strong>قونيا (٤ مغلق)</strong>. باقي الولايات تنتظر قوائمها.
+                    قوائم رسمية حالياً: <strong>أورفا (26 مغلق)</strong> و<strong>قونيا (4 مغلق)</strong>. باقي الولايات تنتظر قوائمها.
                   </p>
                 </div>
               </div>

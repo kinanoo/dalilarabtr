@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (districtZones && districtZones.length > 0) {
         const districtTitle = `الأحياء المغلقة والمفتوحة في ${decodedSlug}`;
         return {
-            title: `${districtTitle} | تحديث ٢٠٢٦`,
+            title: `${districtTitle} | تحديث 2026`,
             description: `قائمة محدّثة بحالة الأحياء في منطقة ${decodedSlug} — ما فُتح، ما زال مغلقاً، وما هو قيد التحديث.`,
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
@@ -93,7 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (cityZones && cityZones.length > 0) {
         const cityTitle = `أحياء ${decodedSlug} — حالة التسجيل الرسمية`;
         return {
-            title: `${cityTitle} | تحديث ٢٠٢٦`,
+            title: `${cityTitle} | تحديث 2026`,
             description: `حالة الأحياء في ولاية ${decodedSlug} وفق آخر مراجعة لقائمة الأحياء المغلقة — ما فُتح حديثاً وما زال مغلقاً.`,
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
@@ -140,7 +140,7 @@ function statusBadge(status: string | null | undefined) {
         Icon: XCircle,
         label: '⛔ حي مغلق (لا يُسمح بتسجيل عنوان جديد)',
         blurb: (n: string) =>
-            `حي ${n} ضمن قائمة الأحياء المغلقة الصادرة بعد مراجعة ٢٠٢٦. لا يُسمح حالياً بتسجيل عنوان نفوس جديد فيه.`,
+            `حي ${n} ضمن قائمة الأحياء المغلقة الصادرة بعد مراجعة 2026. لا يُسمح حالياً بتسجيل عنوان نفوس جديد فيه.`,
     };
 }
 
@@ -448,7 +448,7 @@ export default async function ZoneDetailPage({ params }: Props) {
         const datasetJsonLd = {
             '@context': 'https://schema.org',
             '@type': 'Dataset',
-            name: `الأحياء المغلقة والمفتوحة في ${title} — تحديث ٢٠٢٦`,
+            name: `الأحياء المغلقة والمفتوحة في ${title} — تحديث 2026`,
             description: `قائمة محدّثة لحالة الأحياء أمام تسجيل عناوين الأجانب في ${title}: ${closed.length} مغلق، ${reopened.length} مفتوح حديثاً، ${pending.length} قيد التحديث الرسمي.`,
             url: `${SITE_CONFIG.siteUrl}/zones/${encodeURIComponent(title)}`,
             keywords: [
@@ -548,13 +548,13 @@ export default async function ZoneDetailPage({ params }: Props) {
                                 </div>
                                 <div>
                                     <div className="text-xs font-black tracking-[0.15em] uppercase text-emerald-700 dark:text-emerald-400 mb-1">
-                                        تحديث ٦ يونيو ٢٠٢٦
+                                        تحديث 6 يونيو 2026
                                     </div>
                                     <h2 className="text-lg font-black text-slate-900 dark:text-slate-50 leading-snug">
                                         رُفع الحظر عن {reopened.length.toLocaleString('en-US')} حياً في {title}
                                     </h2>
                                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
-                                        ضمن مراجعة وزارة الداخلية للأحياء التي انخفضت فيها نسبة الأجانب دون عتبة ٢٠٪.
+                                        ضمن مراجعة وزارة الداخلية للأحياء التي انخفضت فيها نسبة الأجانب دون عتبة 20٪.
                                     </p>
                                 </div>
                             </div>
@@ -572,7 +572,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                         />
                         <StatusSection
                             title="الأحياء التي فُتحت حديثاً"
-                            description="رُفع الحظر عن هذه الأحياء في مراجعة ٦ يونيو ٢٠٢٦. يُسمح فيها الآن بتسجيل عناوين الأجانب."
+                            description="رُفع الحظر عن هذه الأحياء في مراجعة 6 يونيو 2026. يُسمح فيها الآن بتسجيل عناوين الأجانب."
                             items={reopened}
                             tone="emerald"
                             Icon={CheckCircle2}
