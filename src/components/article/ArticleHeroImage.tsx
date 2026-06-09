@@ -53,9 +53,28 @@ interface Props {
     /** When true, set <Image priority />. Used for the article hero
         (above-the-fold), false for body inline images. */
     priority?: boolean;
+    /**
+     * Which part of the image to keep visible when cropping the
+     * preview. Default 'top' — best for document scans (the heading
+     * is at the top). Use 'center' for general photos and 'bottom'
+     * for landscapes where the foreground is the subject.
+     *
+     * The full image is always shown in the lightbox on click;
+     * focalPoint only affects the inline preview.
+     */
+    focalPoint?: 'top' | 'center' | 'bottom';
 }
 
-export default function ArticleHeroImage({ src, alt, priority = true }: Props) {
+export default function ArticleHeroImage({ src, alt, priority = true, focalPoint = 'top' }: Props) {
+    // Map the focalPoint prop to a Tailwind object-position class for
+    // the cropped preview. Top is the default because the user's
+    // primary content is Turkish official documents — the meaningful
+    // info (decree number, date, signing authority) lives at the top
+    // of those scans.
+    const objectPosClass =
+        focalPoint === 'center' ? 'object-center'
+        : focalPoint === 'bottom' ? 'object-bottom'
+        : 'object-top';
     const [open, setOpen] = useState(false);
     const [errored, setErrored] = useState(false);
     const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -90,50 +109,51 @@ export default function ArticleHeroImage({ src, alt, priority = true }: Props) {
 
     return (
         <>
-            {/* ── Inline thumbnail ──────────────────────────────────────
-                Natural aspect ratio (the image fills width, height
-                derives from its intrinsic ratio via Image's auto-sizing
-                with width/height props). max-h caps the absolute giants.
-                The wrapper is the click target so the entire frame is
-                tappable, not just the pixels of the image itself. */}
+            {/* ── Inline preview ────────────────────────────────────────
+                Fixed-banner display: aspect-[16/9] keeps the card a
+                predictable portion of the article height so a tall
+                portrait document doesn't push the body text 3 screens
+                down. object-cover crops what doesn't fit; object-top
+                (or focalPoint-driven class) keeps the meaningful part
+                of the image visible (heading / decree number on
+                official documents).
+
+                The reader sees the most important slice of the image
+                in-page, and clicks once to see the FULL image with no
+                cropping in the lightbox. Best of both worlds:
+                article stays readable, no information is hidden. */}
             <div
                 data-image-wrapper
                 role="button"
                 tabIndex={0}
-                aria-label={`عرض الصورة بحجم كامل: ${alt}`}
+                aria-label={`عرض الصورة كاملة: ${alt}`}
                 onClick={handleOpen}
                 onKeyDown={handleKeyOpen}
-                className="group relative w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-800 cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                className="group relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-800 cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
             >
-                {/* Image — width/height let Next.js compute aspect ratio
-                    automatically. object-contain ensures NO cropping; if
-                    the image is taller than wide, the container grows
-                    vertically up to max-h, otherwise it stays compact. */}
                 <Image
                     src={src}
                     alt={alt}
-                    width={1200}
-                    height={800}
+                    fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
                     priority={priority}
-                    className="w-full h-auto max-h-[80vh] object-contain"
+                    className={`object-cover ${objectPosClass} transition-transform duration-300 group-hover:scale-[1.02]`}
                     onError={() => setErrored(true)}
                 />
 
-                {/* Hover affordance — small badge in the top-left that
-                    says "click to zoom" on desktop hover */}
-                <div className="hidden md:flex absolute top-3 left-3 items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <ZoomIn size={14} />
-                    <span>اضغط للتكبير</span>
-                </div>
+                {/* Subtle gradient at the bottom — gives the badge below
+                    a readable base regardless of image content */}
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
-                {/* Persistent zoom badge on touch devices — desktop users
-                    discover via hover, mobile users see a permanent hint
-                    in the bottom-left so they know the image is tappable.
-                    Hidden on md+ to keep desktop clean. */}
-                <div className="md:hidden flex absolute bottom-3 left-3 items-center gap-1 bg-black/55 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-1 rounded-md pointer-events-none">
-                    <ZoomIn size={12} />
-                    <span>تكبير</span>
+                {/* Persistent "view full image" badge — shows on every
+                    device, not just touch. The cropped preview is
+                    intentional, but readers need to know the full image
+                    is one tap away. Visible because we framed the
+                    article like a news site, and news sites teach
+                    readers that hero images are tappable. */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/65 backdrop-blur-sm text-white text-[11px] sm:text-xs font-bold px-2.5 py-1.5 rounded-lg pointer-events-none">
+                    <ZoomIn size={14} />
+                    <span>اضغط لعرض الصورة كاملة</span>
                 </div>
             </div>
 
