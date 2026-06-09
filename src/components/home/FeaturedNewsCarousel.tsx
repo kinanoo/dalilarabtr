@@ -240,7 +240,16 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                     </span>
                                 )}
                                 {articles.length > 1 && (
-                                    <span className="text-[10px] text-rose-300/60 tabular-nums font-bold ms-auto">
+                                    // dir="ltr" forces "1 / 2" to render
+                                    // left-to-right even inside the parent
+                                    // RTL flow. Without this, the rose-coloured
+                                    // counter rendered as "2 / 1" (browser
+                                    // ran the slash + numbers through the
+                                    // bidi algorithm in RTL context).
+                                    <span
+                                        dir="ltr"
+                                        className="text-[10px] text-rose-300/60 tabular-nums font-bold ms-auto"
+                                    >
                                         {index + 1} / {articles.length}
                                     </span>
                                 )}

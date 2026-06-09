@@ -413,7 +413,30 @@ function ArticleEditor({ articleId, categoryContext, onBack }: { articleId: stri
         if (!supabase) return;
         const payload = { ...form, id: form.id || normalizeId(form.title) };
         const { error } = await supabase.from('articles').upsert(payload);
-        if (!error) { showToast('تم حفظ المقال', 'success'); onBack(); }
+        if (!error) {
+            // Trigger ISR revalidation so the homepage carousel +
+            // article page pick up the change immediately instead of
+            // waiting up to 5 minutes for the next ISR tick. See
+            // /api/admin/revalidate for details.
+            try {
+                // This file's local form type doesn't include `slug` so
+                // we narrow via `unknown` instead of relying on it
+                // statically. If a slug ends up populated on the row it
+                // will be used; otherwise the id-based article URL is
+                // revalidated.
+                const slugOrId =
+                    (payload as unknown as { slug?: string }).slug || payload.id;
+                fetch('/api/admin/revalidate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paths: ['/', `/article/${slugOrId}`, '/articles'],
+                    }),
+                }).catch(() => {/* silent */});
+            } catch {/* non-blocking */}
+            showToast('تم حفظ المقال', 'success');
+            onBack();
+        }
         else showToast(error.message, 'error');
     }
 

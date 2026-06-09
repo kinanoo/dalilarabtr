@@ -95,6 +95,27 @@ export default function ArticleManager() {
             .upsert(payload);
 
         if (!error) {
+            // Purge ISR cache for the homepage + this article + any
+            // common list pages. Without this the homepage carousel
+            // serves the previous article snapshot for up to 5 minutes
+            // (the homepage uses `export const revalidate = 300`).
+            // Fire-and-forget — we don't block the toast/UI on it.
+            // The /api/admin/revalidate endpoint checks admin auth and
+            // an allowlist; if it fails we just fall back to ISR
+            // ticking out naturally.
+            try {
+                const pathsToRevalidate = [
+                    '/',
+                    `/article/${payload.slug || payload.id}`,
+                    '/articles',
+                ];
+                fetch('/api/admin/revalidate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paths: pathsToRevalidate }),
+                }).catch(() => {/* silent — non-blocking */});
+            } catch {/* never block on revalidate failure */}
+
             toast.success('تم الحفظ بنجاح');
             setEditingId(null);
             fetchArticles();
