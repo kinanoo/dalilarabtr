@@ -193,7 +193,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                     </span>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 lg:mb-6 leading-tight">{article.title}</h1>
+                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 lg:mb-6 leading-[1.5]">{article.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-slate-400 text-sm font-medium">
                   <span className="flex items-center gap-2"><Sparkles size={16} className="text-emerald-400" /> آخر تحديث: {article.lastUpdate}</span>
                   <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>

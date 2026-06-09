@@ -37,7 +37,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
             {/* Center Content */}
             <div className="max-w-4xl mx-auto text-center relative z-[25] pointer-events-none">
                 <div className="animate-hero-entrance pointer-events-none">
-                    <h1 className="text-4xl md:text-6xl font-black mb-0 leading-tight drop-shadow-2xl">
+                    <h1 className="text-4xl md:text-6xl font-black mb-0 leading-[1.4] drop-shadow-2xl">
                         دليلك القانوني{' '}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400" style={{ fontSize: 'calc(1em + 2px)' }}>الشامل</span>
                     </h1>

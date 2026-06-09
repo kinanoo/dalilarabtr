@@ -34,6 +34,26 @@ h1, h2, h3, h4, h5, h6,
   letter-spacing: -0.01em;
 }
 
+/*
+   Arabic-aware default line-height for headings + bold display text.
+   Arabic letters carry diacritics (شدّة، ضمّة، فتحة، كسرة) above the
+   baseline and dots (ج ، ح ، خ ، ز ، ذ) below — so any multi-line
+   headline needs more breathing room than Latin. Tailwind defaults to
+   `leading-tight` (1.25) on its size classes, which collides Arabic
+   diacritics with the line above and dots with the line below.
+
+   This rule sets 1.6 as the FLOOR — any explicit `leading-*` utility
+   in a component still wins (lower specificity here keeps it
+   overridable). The user's only published Featured-News headline at
+   `leading-[1.15]` is also lifted to 1.6 by its own component fix.
+*/
+h1, h2, h3, h4, h5, h6,
+.font-black,
+.font-display,
+.font-extrabold {
+  line-height: 1.6;
+}
+
 /* ============================================
    TipTap Editor Styles (admin editor only)
    ============================================ */

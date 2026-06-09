@@ -146,7 +146,7 @@ export default async function UpdateDetailPage(
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black leading-tight">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.5]">
                         {update.title}
                     </h1>
                 </div>
