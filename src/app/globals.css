@@ -3,6 +3,38 @@
 @tailwind utilities;
 
 /* ============================================
+   Heading typography — Tajawal for the bold load
+   ============================================
+   User feedback: Cairo Black (weight 900) had cramped letterforms on
+   bold news headlines — letters touched each other in titles like
+   "إسطنبول ترفع الحظر". Tajawal at 800/900 has cleaner kerning + more
+   breathing room between Arabic letters, closer to the official-
+   government feel on mofaex.gov.sy.
+
+   Routing:
+     - Every <h1>..<h6> uses Tajawal as primary, Cairo as fallback.
+     - The `font-black` utility (Tailwind, weight 900) also routes to
+       Tajawal so the bold news widgets that don't use semantic headings
+       still benefit.
+     - Body text (paragraphs, captions, buttons, form fields) keeps
+       Cairo — its lighter weights are better for long-form Arabic
+       reading.
+*/
+h1, h2, h3, h4, h5, h6,
+.font-black,
+.font-display,
+.font-extrabold,
+.prose-content h1,
+.prose-content h2,
+.prose-content h3,
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  font-family: var(--font-tajawal), var(--font-cairo), 'Segoe UI', Tahoma, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================
    TipTap Editor Styles (admin editor only)
    ============================================ */
 .tiptap p.is-editor-empty:first-child::before {

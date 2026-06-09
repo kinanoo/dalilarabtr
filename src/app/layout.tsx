@@ -4,13 +4,30 @@ import dynamic from 'next/dynamic';
 import "./globals.css";
 import "../styles/animations.css";
 import "../styles/dark-mode.css";
-import { Cairo } from 'next/font/google';
+import { Cairo, Tajawal } from 'next/font/google';
 
+// Cairo stays for body text — its lighter weights (400/600/700) render
+// well in long-form Arabic paragraphs.
 const cairo = Cairo({
   subsets: ['arabic'],
   weight: ['400', '600', '700'],
   display: 'swap',
   variable: '--font-cairo',
+  preload: true,
+});
+
+// Tajawal is loaded ONLY for headings. The user reported Cairo Black
+// (font-black, weight 900) had cramped letterforms where Arabic letters
+// touched each other on bold news headlines. Tajawal's 800/900 weights
+// have cleaner kerning + better letter separation — closer to the
+// official-government look on sites like mofaex.gov.sy. Exposed as a CSS
+// custom property `--font-tajawal` and routed via globals.css to every
+// heading element (h1-h6) + `.font-black` utility.
+const tajawal = Tajawal({
+  subsets: ['arabic'],
+  weight: ['700', '800', '900'],
+  display: 'swap',
+  variable: '--font-tajawal',
   preload: true,
 });
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
@@ -125,7 +142,7 @@ export default function RootLayout({
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className={cairo.variable}>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={`${cairo.variable} ${tajawal.variable}`}>
       <head>
         {/* Anti-scraping hints */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
