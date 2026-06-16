@@ -13,65 +13,66 @@
  *   gone. The site's content can be lifted with one click.
  *
  *   Baking the watermark into the PNG/WEBP file means it travels
- *   with the image. Screenshots? Watermarked. Save-as? Watermarked.
- *   Google indexed copy? Watermarked. Cropped in half? STILL
- *   watermarked because we tile the text diagonally across the
- *   entire image, so any reasonable crop preserves it.
+ *   with the bytes. Screenshots? Watermarked. Save-as? Watermarked.
+ *   Google indexed copy? Watermarked.
  *
- * What gets watermarked:
+ * v2 rewrite (2026-06-16) — fixes a real complaint:
  *
- *   - All raster images uploaded through ImageUploader (articles,
- *     updates, service tiles, anything that uses the shared widget)
- *   - The first hero image on every published article
- *   - Service-provider photos uploaded via ServiceForm
+ *   The previous version tiled THIN white text + soft black drop
+ *   shadow across the entire image with ~280 px spacing and 18 %
+ *   opacity. On the Gaziantep article hero image the result looked
+ *   like scratches and smudges — the user said the watermark
+ *   was "مشوهة جدا وغير واضحة". Two compounding causes:
  *
- * What does NOT get watermarked:
+ *     1. Drop shadow (shadowBlur) on small Arabic text smeared the
+ *        letters into illegible blobs at low opacity.
+ *     2. Dense tiling at 45° = overlapping letterforms = visual
+ *        noise rather than legible attribution.
  *
- *   - SVG (logos, icons — vectorizing a tiled raster watermark would
- *     ruin them anyway)
- *   - Images smaller than 200 × 200 (icons, favicons, avatars; the
- *     watermark would dominate the picture)
- *   - GIF, AVIF — we keep them as-is (Canvas can't preserve GIF
- *     animation, and we don't want to upgrade their format silently)
+ *   This version flips both choices:
  *
- * Tiling strategy:
+ *     - Sparse stamps: 1–4 large diagonal stamps depending on the
+ *       image dimensions. Not dozens of small ones.
+ *     - Each STAMP is a single visual unit composed of the SITE
+ *       LOGO + the site name beside it, drawn together at the same
+ *       rotation. The stamp reads as "this is from <brand>", not as
+ *       random text floating on top.
+ *     - Stroke + fill instead of drop shadow. Black 2px stroke under
+ *       white fill gives crisp readable letters at 28 % alpha over
+ *       any background colour (light document scan, dark photo,
+ *       anything).
+ *     - Each stamp is drawn ONCE at higher opacity (~0.28). No
+ *       overlap, no smear.
  *
- *   The site name renders at 45° rotation, tiled across the image
- *   in a regular grid with ~280px spacing. White fill + black soft
- *   shadow gives readability over both light and dark backgrounds.
- *   Opacity 0.18 keeps it as legible attribution, not visual noise.
- *
- *   Why 45°: cropping out the watermark requires removing diagonal
- *   bands, which always sacrifices a significant portion of the
- *   real content. Horizontal-only watermarks fail this test — a
- *   reader can clip the bottom strip and have a clean image.
+ *   Cropping protection is preserved by placing stamps at the centre
+ *   AND in one or more corners depending on image size — a reader
+ *   who crops away the centre still finds a corner stamp, and vice
+ *   versa.
  */
 
 const WATERMARK_TEXT = 'دليل العرب والسوريين في تركيا';
+const LOGO_URL = '/logo.png';
 
 interface Options {
-    /** Minimum dimension (px) below which we skip — these are too small
-        to read the watermark anyway. Default 200. */
+    /** Minimum dimension (px) below which we skip — these are too
+        small to read the watermark anyway. Default 200. */
     minSize?: number;
-    /** 0–1. Opacity of the watermark text. Default 0.18. */
+    /** 0–1. Opacity of the watermark stamp. Default 0.28. */
     opacity?: number;
-    /** Approximate spacing (px) between watermark tiles on the diagonal.
-        Smaller = denser. Default 280. */
-    tileSpacing?: number;
-    /** Font size in px relative to the smaller image dimension; the
-        actual rendered size scales so small images get small text and
-        big images get big text. Default 0.045 (4.5% of short side). */
+    /** Font size as a fraction of the short side. Default 0.055
+        (5.5 % of short side, e.g. 55 px on a 1000 px short side). */
     fontSizeRatio?: number;
 }
 
 /**
  * Watermark `file` and return a new File. Returns the original File
- * unchanged when watermarking should be skipped (SVG, tiny, etc.).
+ * unchanged when watermarking should be skipped (SVG, tiny, GIF, etc.).
  *
  * Failure mode: if anything throws (Canvas blocked, image decode
- * fails, blob conversion fails) we return the ORIGINAL file. The
- * upload still succeeds; we simply have an unwatermarked image. We
- * never block a content upload over a cosmetic enhancement.
+ * fails, logo fails to load, blob conversion fails) we return the
+ * ORIGINAL file. The upload still succeeds; we simply have an
+ * unwatermarked image. Watermarking is a nice-to-have on top of
+ * upload — never block a content upload over a cosmetic step.
  */
 export async function watermarkImage(
     file: File,
@@ -79,16 +80,14 @@ export async function watermarkImage(
 ): Promise<File> {
     const {
         minSize = 200,
-        opacity = 0.18,
-        tileSpacing = 280,
-        fontSizeRatio = 0.045,
+        opacity = 0.28,
+        fontSizeRatio = 0.055,
     } = options;
 
-    // Bail-out conditions — return the file unchanged.
     if (!file.type.startsWith('image/')) return file;
     if (file.type === 'image/svg+xml') return file;
-    if (file.type === 'image/gif') return file; // preserve animation
-    if (file.type === 'image/avif') return file; // canvas decode is spotty
+    if (file.type === 'image/gif') return file;
+    if (file.type === 'image/avif') return file;
 
     try {
         const dataUrl = await fileToDataURL(file);
@@ -96,87 +95,159 @@ export async function watermarkImage(
 
         if (img.width < minSize || img.height < minSize) return file;
 
+        // Logo is loaded once and cached; if it fails to load we fall
+        // through to text-only stamps.
+        const logo = await loadLogoOnce().catch(() => null);
+
+        // Wait for the page's web fonts so the canvas can render
+        // Cairo/Tajawal instead of falling back to Times/system serif.
+        if (typeof document !== 'undefined' && document.fonts?.ready) {
+            await document.fonts.ready.catch(() => {/* fine */});
+        }
+
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext('2d');
         if (!ctx) return file;
 
-        // 1. Draw the original image
         ctx.drawImage(img, 0, 0);
 
-        // 2. Compute watermark text dimensions
         const shortSide = Math.min(img.width, img.height);
-        const fontSize = Math.max(14, Math.round(shortSide * fontSizeRatio));
+        const fontSize = Math.max(18, Math.round(shortSide * fontSizeRatio));
+        const logoSize = Math.round(fontSize * 1.8);  // logo a touch larger than text caps
+        const gap = Math.round(fontSize * 0.4);
+        const padding = Math.round(fontSize * 0.5);
+
+        // Pre-measure the stamp UNIT (logo + gap + text) so we can
+        // size the canvas-stroke and centre it cleanly per stamp.
         ctx.font = `bold ${fontSize}px Cairo, Tajawal, "Segoe UI", Tahoma, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.direction = 'rtl';
+        const textMetrics = ctx.measureText(WATERMARK_TEXT);
+        const textWidth = textMetrics.width;
+        const stampWidth = (logo ? logoSize + gap : 0) + textWidth;
+        const stampHeight = Math.max(logoSize, fontSize) + padding * 2;
 
-        // 3. White text with soft dark shadow for readability over any
-        //    background — works equally well on light document scans
-        //    and dark photos.
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.shadowColor = `rgba(0, 0, 0, ${Math.min(opacity * 1.5, 0.4)})`;
-        ctx.shadowBlur = Math.max(2, fontSize * 0.08);
-        ctx.shadowOffsetX = 1;
-        ctx.shadowOffsetY = 1;
-
-        // 4. Tile watermark on a 45° rotated grid. Spacing scales with
-        //    image dimension so a 4000px hero photo gets several tiles
-        //    while a 400px thumbnail gets just one or two.
-        const spacing = Math.max(
-            fontSize * 6,
-            Math.min(tileSpacing, shortSide * 0.55),
-        );
-
-        ctx.save();
-        // Translate to center, rotate -30° (visually pleasing on RTL —
-        // text slants UP toward the reading direction).
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-Math.PI / 6); // -30°
-
-        // Compute tile grid — make it slightly larger than the image
-        // so rotation doesn't leave bare corners.
-        const diagonal = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
-        const tilesX = Math.ceil(diagonal / spacing) + 1;
-        const tilesY = Math.ceil(diagonal / spacing) + 1;
-        const startX = -tilesX * spacing / 2;
-        const startY = -tilesY * spacing / 2;
-
-        for (let y = 0; y <= tilesY; y++) {
-            for (let x = 0; x <= tilesX; x++) {
-                const px = startX + x * spacing;
-                const py = startY + y * spacing;
-                ctx.fillText(WATERMARK_TEXT, px, py);
-            }
+        // Stamp positions — sparse, not tiled. The image's diagonal
+        // is divided into ~stampSpacing-long segments; placing 1 - 4
+        // stamps along that line guarantees centre coverage plus
+        // some corner protection without overlap.
+        const positions: Array<{ x: number; y: number }> = [];
+        positions.push({ x: img.width / 2, y: img.height / 2 });
+        if (shortSide >= 500) {
+            // Add two more stamps offset toward opposite corners. NW + SE
+            // axis chosen because the rotation we apply (-20°) makes
+            // those corners visually furthest from the centre.
+            positions.push({ x: img.width * 0.22, y: img.height * 0.22 });
+            positions.push({ x: img.width * 0.78, y: img.height * 0.78 });
         }
-        ctx.restore();
+        if (shortSide >= 1200) {
+            // Big hero images get a fourth stamp on the opposite
+            // diagonal — guarantees coverage if cropped in HALF
+            // along either axis.
+            positions.push({ x: img.width * 0.22, y: img.height * 0.78 });
+        }
 
-        // 5. Convert canvas → blob → File. Match the original MIME
-        //    type when possible; fall back to webp for everything else
-        //    (better compression for photo-like content).
+        // Draw each stamp as a single unit at the same rotation.
+        for (const pos of positions) {
+            drawStamp({
+                ctx,
+                cx: pos.x,
+                cy: pos.y,
+                rotation: -20 * Math.PI / 180,
+                logo,
+                logoSize,
+                fontSize,
+                gap,
+                stampWidth,
+                stampHeight,
+                opacity,
+            });
+        }
+
         const outType =
             file.type === 'image/png' || file.type === 'image/webp'
                 ? file.type
                 : 'image/webp';
         const outQuality = file.type === 'image/png' ? undefined : 0.92;
-
         const blob = await canvasToBlob(canvas, outType, outQuality);
         if (!blob) return file;
-
         const ext = outType.split('/')[1];
         const newName = file.name.replace(/\.[^.]+$/, `.wm.${ext}`);
         return new File([blob], newName, { type: outType });
     } catch {
-        // Any failure → return the original file. Watermarking is a
-        // nice-to-have on top of upload; failing it must not block
-        // content publishing.
         return file;
     }
 }
 
-// ─── helpers ────────────────────────────────────────────────────────
+// ─── stamp renderer ────────────────────────────────────────────────
+
+interface StampArgs {
+    ctx: CanvasRenderingContext2D;
+    cx: number;
+    cy: number;
+    rotation: number;
+    logo: HTMLImageElement | null;
+    logoSize: number;
+    fontSize: number;
+    gap: number;
+    stampWidth: number;
+    stampHeight: number;
+    opacity: number;
+}
+
+function drawStamp({
+    ctx, cx, cy, rotation, logo, logoSize, fontSize, gap, stampWidth, opacity,
+}: StampArgs) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+    ctx.globalAlpha = opacity;
+
+    // Optional subtle dark rounded plaque behind the stamp for
+    // legibility on busy backgrounds. Very transparent so the image
+    // still shows through cleanly.
+    // const plaqueW = stampWidth + fontSize;
+    // const plaqueH = Math.max(logoSize, fontSize) + fontSize * 0.6;
+    // ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    // roundRect(ctx, -plaqueW / 2, -plaqueH / 2, plaqueW, plaqueH, fontSize * 0.4);
+    // ctx.fill();
+
+    // Compose horizontally with the logo at the RIGHT edge (RTL
+    // reading direction: logo precedes the text). x coordinates use
+    // the LEFT edge of the stamp because canvas rotation centres at
+    // (0,0); we shift -stampWidth/2 so the unit is centred.
+    const startX = -stampWidth / 2;
+    let cursorX = startX;
+
+    if (logo) {
+        const yLogo = -logoSize / 2;
+        // Draw logo with the same opacity (already set via globalAlpha)
+        ctx.drawImage(logo, cursorX, yLogo, logoSize, logoSize);
+        cursorX += logoSize + gap;
+    }
+
+    // Text — stroke under fill for legibility on any background. The
+    // stroke is a thin dark outline; the fill is white. Together they
+    // read clearly over both light document scans and dark photos
+    // without depending on drop shadow.
+    ctx.font = `bold ${fontSize}px Cairo, Tajawal, "Segoe UI", Tahoma, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.direction = 'rtl';
+    ctx.lineWidth = Math.max(2, fontSize * 0.06);
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillStyle = 'rgba(255,255,255,0.98)';
+    // RTL text positions to the LEFT of the start point with
+    // textAlign='left' actually starts at cursorX. To draw at the
+    // correct horizontal range with the inline logo above, we keep
+    // textAlign='left' and place the text right after the logo.
+    ctx.strokeText(WATERMARK_TEXT, cursorX, 0);
+    ctx.fillText(WATERMARK_TEXT, cursorX, 0);
+
+    ctx.restore();
+}
+
+// ─── helpers ───────────────────────────────────────────────────────
 
 function fileToDataURL(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -195,6 +266,15 @@ function loadImage(src: string): Promise<HTMLImageElement> {
         img.onerror = reject;
         img.src = src;
     });
+}
+
+// Logo lives at a fixed same-origin URL and never changes per upload;
+// cache the loaded bitmap so repeated uploads in a session don't
+// re-fetch it.
+let _logoPromise: Promise<HTMLImageElement> | null = null;
+function loadLogoOnce(): Promise<HTMLImageElement> {
+    if (!_logoPromise) _logoPromise = loadImage(LOGO_URL);
+    return _logoPromise;
 }
 
 function canvasToBlob(
