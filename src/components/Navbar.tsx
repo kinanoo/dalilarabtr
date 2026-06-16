@@ -82,18 +82,48 @@ export default function Navbar() {
   useEffect(() => { setMounted(true); }, []);
   const portalTarget = mounted ? document.body : null;
 
-  // Hide navbar on scroll down, show on scroll up
+  // Hide navbar on scroll-DOWN, show immediately on scroll-UP.
+  //
+  // Two design choices that matter:
+  //
+  //   1. requestAnimationFrame throttle. The scroll event fires
+  //      dozens of times per second on a modern trackpad; running
+  //      setState every fire dropped frames. rAF caps work to one
+  //      paint per frame and is cheaper than setTimeout throttling.
+  //
+  //   2. Asymmetric tolerance:
+  //        - need 8 px of CONTINUOUS DOWN scroll before hiding
+  //          (filters trackpad jitter + iOS rubber-band bounce)
+  //        - only 2 px of UP scroll re-shows the bar
+  //      Result: hiding feels deliberate, showing feels instant —
+  //      which is what the user asked for ("بمجرد اني اطلع لأعلى
+  //      بدي يطلع هذا الشريط فورا").
+  //
+  //   3. ALWAYS visible in the first 80 px of the page. Reader at
+  //      the top should never see a hidden header.
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y <= 60) {
+    let ticking = false;
+
+    const handle = () => {
+      const y = Math.max(0, window.scrollY);
+      const prev = lastScrollY.current;
+
+      if (y < 80) {
         setNavHidden(false);
-      } else if (y > lastScrollY.current + 5) {
+      } else if (y > prev + 8) {
         setNavHidden(true);
-      } else if (y < lastScrollY.current - 5) {
+      } else if (y < prev - 2) {
         setNavHidden(false);
       }
+
       lastScrollY.current = y;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(handle);
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -346,7 +376,7 @@ export default function Navbar() {
     <>
       <header
         ref={navRef}
-        className={`sticky ${navHidden ? '-top-16' : 'top-0'} z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] transition-[top] duration-300 ease-out`}
+        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
