@@ -288,20 +288,31 @@ const PALETTE: Theme[] = [
 ];
 
 /**
- * djb2 string hash — fast, no-deps, well-distributed for short keys
- * like article slugs. Returns a 32-bit unsigned integer; we mod by
- * PALETTE.length to pick the theme.
+ * Theme picker by carousel POSITION, not slug hash.
+ *
+ * Why position instead of hash:
+ *   The first attempt hashed each slug to a palette index, but real
+ *   slugs (gaziantep-…, turkey-…, istanbul-…) hashed close together
+ *   and landed on visually adjacent palette entries (blue / sky /
+ *   indigo) — the user saw "blue with shades" instead of variety.
+ *
+ * Position-based fixes that:
+ *   - Article #0 (newest) → PALETTE[0] = rose (always RED — the
+ *     user explicitly asked for red to be in the rotation)
+ *   - Subsequent indices step by 3 mod 10 → jumps across the colour
+ *     wheel, never two adjacent palette entries in a row
+ *
+ * Stride 3 is coprime to 10 so 10 articles cycle through all 10
+ * themes before repeating: rose → violet → fuchsia → orange → blue
+ * → teal → sky → emerald → amber → indigo → rose…
+ *
+ * When the admin tags a new article as breaking, it becomes index 0
+ * and inherits rose; the others shift up one slot (each gets a new
+ * theme). The carousel feels fresh on every news cycle without any
+ * config work.
  */
-function hashSlug(slug: string): number {
-    let h = 5381;
-    for (let i = 0; i < slug.length; i++) {
-        h = ((h << 5) + h + slug.charCodeAt(i)) | 0;
-    }
-    return Math.abs(h);
-}
-
-function themeForSlug(slug: string): Theme {
-    return PALETTE[hashSlug(slug) % PALETTE.length];
+function themeAt(index: number): Theme {
+    return PALETTE[(index * 3) % PALETTE.length];
 }
 
 export interface CarouselArticle {
@@ -372,13 +383,15 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
     const summary = stripHtml(article.intro, 160);
     const href = `/article/${article.slug}`;
     const showSegments = articles.length > 1;
-    // Per-article color theme. Picked by hashing the article slug
-    // so each story gets a stable, distinct color from a 10-palette
-    // set. Adjacent articles in the carousel are practically
-    // guaranteed to look different — the reader's eye registers
-    // "this is a NEW story" the instant the gradient swaps, before
-    // they even read the headline.
-    const theme = themeForSlug(article.slug);
+    // Per-article color theme. Picked by carousel POSITION (with a
+    // stride of 3 so adjacent indices land on far-apart palette
+    // entries — see themeAt for the rationale). The previous hash-
+    // based approach happened to map all current slugs to neighbouring
+    // blues; the user saw "blue with shades" and asked specifically
+    // for red to be in the rotation. Index-based assignment
+    // guarantees index 0 = rose (red), index 1 = violet, index 2 =
+    // fuchsia, etc. — every article gets a visually distinct theme.
+    const theme = themeAt(index);
 
     return (
         <section
