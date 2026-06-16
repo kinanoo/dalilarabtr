@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Phone, Briefcase, Star, X, Loader2 } from 'lucide-react';
+import { Search, MapPin, Phone, Briefcase, Star, X, Loader2, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
@@ -238,22 +238,41 @@ export default function ServicesClient() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {services.map((provider) => (
+            {services.map((provider) => {
+              const hasReviews = !!(provider.review_count && provider.review_count > 0);
+              return (
               <div
                 key={provider.id}
-                className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:border-emerald-400 transition-all duration-300 flex flex-col relative"
+                className="group relative bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-400 hover:-translate-y-1 transition-all duration-300 flex flex-col"
               >
-                {/* Verified Badge if any */}
+                {/* Top accent stripe — verified providers get a blue-to-
+                    emerald gradient marking their trust status at a
+                    glance; everyone else gets a faint slate strip so
+                    the card still has the framing without claiming
+                    verification. Same accent-stripe pattern as
+                    UpdateCard, ToolCard, CategoryTile, article hero. */}
+                <div
+                  aria-hidden="true"
+                  className={`absolute top-0 inset-x-0 h-1 ${
+                    provider.is_verified
+                      ? 'bg-gradient-to-l from-blue-400 via-emerald-400 to-teal-400'
+                      : 'bg-slate-200/70 dark:bg-slate-800/40'
+                  }`}
+                />
+
+                {/* Verified badge — Lucide icon instead of the previous
+                    typo'd "موتق ✅". Stays in the top-left corner so it
+                    aligns with the accent stripe above. */}
                 {provider.is_verified && (
-                  <div className="absolute top-3 left-3 bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-500/20 z-10">
-                    موتق ✅
+                  <div className="absolute top-3 left-3 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase border border-blue-500/30 z-10 flex items-center gap-1 backdrop-blur-sm shadow-sm">
+                    <CheckCircle size={10} /> موثّق
                   </div>
                 )}
 
                 {/* Header */}
                 <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-slate-700 relative">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shrink-0 overflow-hidden border border-emerald-100/60 dark:border-slate-700 relative shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300">
                       {provider.image ? (
                         <Image
                           src={provider.image}
@@ -268,24 +287,24 @@ export default function ServicesClient() {
                         />
                       ) : null}
                       {/* Fallback icon always present underneath or toggled on error */}
-                      <Briefcase size={24} className="text-slate-400 absolute z-[-1] [.fallback-shown_&]:z-10" />
+                      <Briefcase size={22} className="text-emerald-500/70 dark:text-emerald-400/60 absolute z-[-1] [.fallback-shown_&]:z-10" />
                     </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base leading-tight group-hover:text-emerald-600 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-black text-slate-900 dark:text-slate-100 text-base leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
                         <Link href={`/services/${provider.id}`} className="hover:underline">
                           {provider.name}
                         </Link>
                       </h3>
-                      <p className="text-xs font-bold text-emerald-600 mt-1">{provider.profession}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        {provider.review_count && provider.review_count > 0 ? (
-                          <>
+                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 line-clamp-1">{provider.profession}</p>
+                      <div className="flex items-center gap-1 mt-1.5">
+                        {hasReviews ? (
+                          <div className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 px-1.5 py-0.5 rounded-full">
                             <Star size={10} className="fill-amber-400 text-amber-400" />
-                            <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
-                            <span className="text-[10px] text-slate-400">({provider.review_count})</span>
-                          </>
+                            <span className="text-[11px] text-amber-700 dark:text-amber-300 font-black tabular-nums">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
+                            <span className="text-[10px] text-amber-600/70 dark:text-amber-400/70 tabular-nums">({provider.review_count})</span>
+                          </div>
                         ) : (
-                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50/50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">جديد</span>
+                          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full uppercase tracking-wide">جديد</span>
                         )}
                       </div>
                     </div>
@@ -294,8 +313,8 @@ export default function ServicesClient() {
 
                 {/* Body */}
                 <div className="p-5 flex-grow">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
-                    <MapPin size={14} />
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3 font-medium">
+                    <MapPin size={14} className="text-emerald-500/70 dark:text-emerald-400/60" />
                     <span>{provider.city} {provider.district && `، ${provider.district}`}</span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed h-[40px]">
@@ -303,26 +322,28 @@ export default function ServicesClient() {
                   </p>
                 </div>
 
-                {/* Footer Buttons */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/50 mt-auto grid grid-cols-2 gap-2">
+                {/* Footer Buttons — primary (WhatsApp) gets gradient +
+                    emerald glow; secondary (details) is ghost so the
+                    eye lands on the contact action first */}
+                <div className="p-3 bg-slate-50/80 dark:bg-slate-900/50 mt-auto grid grid-cols-5 gap-2 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     href={`/services/${provider.id}`}
-                    className="flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                    className="col-span-2 flex items-center justify-center gap-1 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 py-2.5 rounded-xl font-black text-xs border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
                   >
-                    عرض التفاصيل
+                    التفاصيل
                   </Link>
                   <a
                     href={buildWhatsAppHref(provider.phone, `مرحباً، رأيت خدمتك "${provider.profession}" على موقع دليل العرب.`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-xs"
+                    className="col-span-3 flex items-center justify-center gap-1.5 bg-gradient-to-l from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl font-black transition-all shadow-md shadow-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/40 active:scale-95 text-xs"
                   >
-                    <Phone size={16} />
+                    <Phone size={14} />
                     تواصل واتساب
                   </a>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         )}
       </section>
