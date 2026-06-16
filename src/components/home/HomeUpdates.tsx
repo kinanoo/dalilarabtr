@@ -274,31 +274,43 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
     return (
         <Link
             href={href}
-            className={`block h-full rounded-xl p-3 sm:p-4 border hover:-translate-y-1 transition-all duration-300 group/card relative overflow-hidden ${
+            className={`block h-full rounded-2xl p-4 sm:p-5 border hover:-translate-y-1 transition-all duration-300 group/card relative overflow-hidden ${
                 isUrgent
-                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50 hover:border-red-400 hover:shadow-lg hover:shadow-red-500/15'
-                    : 'bg-white dark:bg-white/[0.04] dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/40 hover:shadow-lg hover:shadow-emerald-500/10'
+                    ? 'bg-gradient-to-br from-red-50 to-white dark:from-red-950/30 dark:to-slate-900 border-red-200 dark:border-red-800/50 hover:border-red-400 hover:shadow-xl hover:shadow-red-500/20'
+                    : 'bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900/80 dark:to-slate-900/40 dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/50 hover:shadow-xl hover:shadow-emerald-500/15'
             }`}
             dir="rtl"
         >
-            {/* Urgent accent bar */}
-            {isUrgent && (
-                <div className="absolute top-0 right-0 w-1 h-full bg-red-500 rounded-r-full" />
-            )}
+            {/* TOP ACCENT BAR — colored stripe along the top edge of the
+                card. Reads as a "category marker" at a glance, even
+                before the eye reaches the title. Urgent = solid red,
+                NEW (last week) = emerald gradient, default = thin slate.
+                Makes the grid of cards scannable: red strips =
+                breaking news to read first. */}
+            <div
+                aria-hidden="true"
+                className={`absolute top-0 inset-x-0 h-1 ${
+                    isUrgent
+                        ? 'bg-gradient-to-l from-red-500 via-red-400 to-red-600'
+                        : isNew
+                            ? 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500'
+                            : 'bg-slate-200/70 dark:bg-slate-700/40'
+                }`}
+            />
 
             <div className="flex items-start gap-3 h-full relative">
                 {/* Icon/Image — hidden on mobile for more title space */}
                 <div className="hidden sm:block flex-shrink-0">
                     {isUrgent ? (
-                        <div className="w-11 h-11 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl shadow-sm bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
                             <Flame size={20} className="text-red-500" />
                         </div>
                     ) : isAuto && iconConfig ? (
-                        <div className={`w-11 h-11 rounded-lg ${iconConfig.bgLight} ${iconConfig.bgDark} flex items-center justify-center`}>
+                        <div className={`w-12 h-12 rounded-xl shadow-sm ${iconConfig.bgLight} ${iconConfig.bgDark} flex items-center justify-center`}>
                             <iconConfig.icon size={20} className={`text-${iconConfig.color}-600`} />
                         </div>
                     ) : update.image ? (
-                        <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+                        <div className="relative w-12 h-12 rounded-xl shadow-sm overflow-hidden bg-slate-100 dark:bg-slate-800">
                             <Image
                                 src={update.image}
                                 alt={update.title || "صورة التحديث"}
@@ -309,45 +321,45 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
                             />
                         </div>
                     ) : (
-                        <div className="w-11 h-11 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl shadow-sm bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
                             <Newspaper size={20} className="text-amber-600" />
                         </div>
                     )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                    <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                        <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wide ${
                             isUrgent
-                                ? 'bg-red-500 text-white'
+                                ? 'bg-red-500 text-white shadow-sm shadow-red-500/40'
                                 : isAuto
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
                                     : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                         }`}>
                             {update.type}
                         </span>
                         {isNew && !isUrgent && (
-                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
-                                <Sparkles size={8} /> جديد
+                            <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200/60 dark:border-emerald-800/40">
+                                <Sparkles size={9} /> جديد
                             </span>
                         )}
                     </div>
 
-                    <h3 className={`font-bold text-sm leading-snug line-clamp-2 transition-colors ${
+                    <h3 className={`font-black text-[15px] sm:text-base leading-snug line-clamp-2 transition-colors ${
                         isUrgent
                             ? 'text-red-800 dark:text-red-200 group-hover/card:text-red-600'
-                            : 'text-slate-800 dark:text-slate-100 group-hover/card:text-emerald-600'
+                            : 'text-slate-800 dark:text-slate-100 group-hover/card:text-emerald-600 dark:group-hover/card:text-emerald-300'
                     }`}>
                         {update.title}
                     </h3>
 
-                    <div className="flex items-center justify-between mt-2">
-                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                            <Clock size={10} />
+                    <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 dark:border-white/5">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium">
+                            <Clock size={12} />
                             {getRelativeDate(update.date, update.sortDate)}
                         </span>
-                        <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                            <Eye size={10} />
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 opacity-60 group-hover/card:opacity-100 group-hover/card:translate-x-[-2px] transition-all">
+                            <Eye size={12} />
                             اقرأ
                         </span>
                     </div>
