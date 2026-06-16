@@ -116,30 +116,48 @@ export default function CategoryArticlesList({
       </PageHero>
 
       <div className="max-w-screen-2xl mx-auto px-4 py-16 w-full">
-        {/* شريط الفلتر النشط */}
+        {/* Active filter pill — premium chip with icon + clear button */}
         {activeTag && (
-          <div className="mb-8 flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3">
-            <span className="text-emerald-700 dark:text-emerald-300 font-bold text-sm">
-              تصفية: {TAG_LABELS[activeTag] || activeTag}
+          <div className="mb-8 inline-flex items-center gap-3 bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/60 rounded-full pl-2 pr-4 py-1.5 shadow-sm">
+            <Sparkles size={14} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="text-emerald-700 dark:text-emerald-200 font-black text-sm tracking-wide">
+              {TAG_LABELS[activeTag] || activeTag}
             </span>
             <Link
               href={`/category/${categorySlug}`}
-              className="mr-auto flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 transition-colors font-medium"
+              className="flex items-center justify-center w-6 h-6 rounded-full bg-white/70 dark:bg-slate-800 text-slate-500 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-300 transition-colors"
+              aria-label="إزالة الفلتر"
             >
-              <X size={14} />
-              إزالة الفلتر
+              <X size={12} />
             </Link>
           </div>
         )}
 
         {categoryArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categoryArticles.map((article) => (
+            {categoryArticles.map((article) => {
+              const isNew = article.createdAt && isNewContent(article.createdAt);
+              const isUpdated = article.lastUpdate && isRecentlyUpdated(article.lastUpdate) && !isNew;
+              return (
               <Link
                 key={article.slug}
                 href={`/article/${article.slug}`}
-                className="group bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden"
+                className="group relative bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden"
               >
+                {/* Top accent stripe — emerald gradient by default,
+                    or amber for "updated recently" so the eye spots
+                    fresh content first while scanning the grid */}
+                <div
+                  aria-hidden="true"
+                  className={`absolute top-0 inset-x-0 h-1 z-10 ${
+                    isNew
+                      ? 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500'
+                      : isUpdated
+                        ? 'bg-gradient-to-l from-blue-400 via-cyan-400 to-blue-500'
+                        : 'bg-slate-200/70 dark:bg-slate-800/40'
+                  }`}
+                />
+
                 {article.image && article.image.startsWith('http') && (
                   <div className="relative w-full h-40 overflow-hidden">
                     <Image
@@ -152,52 +170,65 @@ export default function CategoryArticlesList({
                         (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
                       }}
                     />
+                    {/* Subtle bottom gradient over image so the corner
+                        badges stay legible regardless of image content */}
+                    <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
                   </div>
                 )}
 
-                <div className="p-6 flex flex-col flex-grow">
+                <div className="p-6 flex flex-col flex-grow relative">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 group-hover:text-primary-600 transition-colors">
-                      <FileText size={24} />
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 text-emerald-600 dark:text-emerald-300 group-hover:from-emerald-100 group-hover:to-teal-100 dark:group-hover:from-emerald-900/30 dark:group-hover:to-teal-900/20 group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-300 shadow-sm">
+                      <FileText size={22} />
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {article.createdAt && isNewContent(article.createdAt) && (
-                        <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      {isNew && (
+                        <span className="bg-gradient-to-l from-emerald-500 to-teal-500 text-white text-[10px] font-black tracking-wide uppercase px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1 shadow-sm shadow-emerald-500/40">
                           <Sparkles size={10} /> جديد
                         </span>
                       )}
-                      {article.lastUpdate && isRecentlyUpdated(article.lastUpdate) && !(article.createdAt && isNewContent(article.createdAt)) && (
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      {isUpdated && (
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 text-[10px] font-black tracking-wide uppercase px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-200/60 dark:border-blue-800/40">
                           <RefreshCw size={9} /> محدّث
                         </span>
                       )}
-                      <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center gap-1">
+                      <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full flex items-center gap-1 tabular-nums">
                         <Clock size={10} />
                         {estimateReadingTime(article)} د
                       </span>
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-primary-700 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-50 mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-snug line-clamp-2">
                     {article.title}
                   </h3>
 
-                  <p className="text-sm text-slate-500 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed">
                     {article.intro?.replace(/<[^>]*>/g, '')}
                   </p>
 
-                  <div className="flex items-center text-accent-600 font-bold text-sm mt-auto group-hover:gap-2 transition-all">
-                    قراءة الدليل <ArrowLeft size={16} className="mr-1" />
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+                    <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                      قراءة الدليل
+                      <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                    </span>
                   </div>
                 </div>
               </Link>
-            ))}
+            );})}
           </div>
         ) : (
-          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
-            <AlertCircle size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-            <p className="text-xl text-slate-500 dark:text-slate-300">جاري إضافة مقالات لهذا القسم قريباً...</p>
+          <div className="text-center py-20 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/20 mb-4 shadow-sm">
+              <AlertCircle size={32} className="text-emerald-500/70 dark:text-emerald-400/60" />
+            </div>
+            <p className="text-xl font-black text-slate-700 dark:text-slate-200 mb-1">
+              قريباً
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+              نعمل على إضافة مقالات لهذا القسم. تابعنا للحصول على آخر التحديثات أولاً بأول.
+            </p>
           </div>
         )}
       </div>
