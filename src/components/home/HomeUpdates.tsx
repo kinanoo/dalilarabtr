@@ -50,6 +50,11 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
     const [isHovered, setIsHovered] = useState(false);
     const touchStartRef = useRef(0);
     const autoplayRef = useRef<ReturnType<typeof setInterval>>();
+    // Timestamp (ms) after which autoplay is allowed to resume. Any
+    // manual click bumps this forward so the carousel doesn't yank the
+    // page out from under the reader's hand. 12 s gives them time to
+    // actually READ what they navigated to.
+    const [pausedUntil, setPausedUntil] = useState(0);
 
     const newCount = updates.filter(u => isNewContent(u.sortDate || u.date)).length;
 
@@ -70,25 +75,49 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
     useEffect(() => {
         if (isHovered || totalPages <= 1 || !isVisible) return;
         autoplayRef.current = setInterval(() => {
+            if (Date.now() < pausedUntil) return;     // user interacted recently — skip this tick
             setCurrentPage(prev => (prev + 1) % totalPages);
-        }, 6000);
+        }, 10000);                                    // was 6 s — too fast to read
         return () => clearInterval(autoplayRef.current);
-    }, [isHovered, totalPages, isVisible]);
+    }, [isHovered, totalPages, isVisible, pausedUntil]);
 
-    const goTo = useCallback((page: number) => setCurrentPage(page), []);
-    const goNext = useCallback(() => setCurrentPage(prev => (prev + 1) % totalPages), [totalPages]);
-    const goPrev = useCallback(() => setCurrentPage(prev => (prev - 1 + totalPages) % totalPages), [totalPages]);
+    // Anyone calls these (button, dot, swipe, keyboard) → pause autoplay
+    // for 12 s. Stops the "I clicked and it jumped two pages" surprise.
+    const pauseAutoplayBriefly = useCallback(() => {
+        setPausedUntil(Date.now() + 12000);
+    }, []);
+
+    const goTo = useCallback((page: number) => {
+        pauseAutoplayBriefly();
+        setCurrentPage(page);
+    }, [pauseAutoplayBriefly]);
+    const goNext = useCallback(() => {
+        pauseAutoplayBriefly();
+        setCurrentPage(prev => (prev + 1) % totalPages);
+    }, [pauseAutoplayBriefly, totalPages]);
+    const goPrev = useCallback(() => {
+        pauseAutoplayBriefly();
+        setCurrentPage(prev => (prev - 1 + totalPages) % totalPages);
+    }, [pauseAutoplayBriefly, totalPages]);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         touchStartRef.current = e.changedTouches[0].clientX;
     }, []);
     const handleTouchEnd = useCallback((e: React.TouchEvent) => {
         const diff = e.changedTouches[0].clientX - touchStartRef.current;
-        if (Math.abs(diff) > 50) { diff < 0 ? goNext() : goPrev(); }
+        if (Math.abs(diff) > 50) {
+            // RTL swipe semantics: swipe LEFT (diff < 0) = forward in
+            // reading direction = goNext. Same as LTR mathematically;
+            // we keep this as-is because mobile swipe gestures match
+            // the visual content direction (CSS handles direction).
+            diff < 0 ? goNext() : goPrev();
+        }
     }, [goNext, goPrev]);
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === 'ArrowLeft') goPrev();
-        else if (e.key === 'ArrowRight') goNext();
+        // RTL keyboard: ArrowLeft = forward (reading direction),
+        // ArrowRight = backward.
+        if (e.key === 'ArrowLeft') goNext();
+        else if (e.key === 'ArrowRight') goPrev();
     }, [goNext, goPrev]);
 
     const cardWidthPercent = 100 / cardsPerPage;
@@ -124,14 +153,21 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                 <div className="flex items-center gap-2">
                     {totalPages > 1 && (
                         <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
+                            {/* RTL nav: forward = LEFT arrow because the
+                                reader's eye moves right→left. ChevronLeft
+                                = next, ChevronRight = previous. The
+                                previous version had these inverted. */}
                             <button
                                 onClick={goNext}
                                 className="p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 transition-all"
                                 aria-label="التالي"
                             >
-                                <ChevronRight size={16} />
+                                <ChevronLeft size={16} />
                             </button>
-                            <span className="text-[11px] text-slate-400 font-bold tabular-nums px-1">
+                            <span
+                                dir="ltr"
+                                className="text-[11px] text-slate-400 font-bold tabular-nums px-1"
+                            >
                                 {currentPage + 1}/{totalPages}
                             </span>
                             <button
@@ -139,7 +175,7 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                                 className="p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 transition-all"
                                 aria-label="السابق"
                             >
-                                <ChevronLeft size={16} />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     )}
@@ -166,12 +202,20 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                 aria-label="آخر التحديثات"
             >
                 <div className="overflow-hidden rounded-xl">
+                    {/* dir="rtl" makes flex children flow right-to-left,
+                        so updates[0] (newest) sits at the RIGHT edge as
+                        Arabic readers expect. The transform SIGN flips
+                        to positive — in RTL, advancing the page means
+                        sliding content rightward so off-screen-left
+                        items come into view from the left side. The
+                        old code was dir="ltr" + negative translate
+                        which put updates[0] on the LEFT (wrong). */}
                     <div
                         className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]"
-                        dir="ltr"
+                        dir="rtl"
                         style={{
                             gap: `${gapPx}px`,
-                            transform: `translateX(calc(-${currentPage * 100}% - ${currentPage * gapPx}px))`,
+                            transform: `translateX(calc(${currentPage * 100}% + ${currentPage * gapPx}px))`,
                         }}
                     >
                         {updates.map((update, index) => {
@@ -194,10 +238,11 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                 </div>
             </div>
 
-            {/* Progress dots */}
+            {/* Progress dots — dir="rtl" so dot #1 (page 0, newest) is
+                the RIGHTMOST dot, matching reading direction. */}
             {totalPages > 1 && (
                 <div className="max-w-7xl mx-auto px-4 mt-3">
-                    <div className="flex items-center justify-center gap-1" dir="ltr">
+                    <div className="flex items-center justify-center gap-1" dir="rtl">
                         {totalPages <= 8 && Array.from({ length: totalPages }).map((_, i) => (
                             <button
                                 key={i}
