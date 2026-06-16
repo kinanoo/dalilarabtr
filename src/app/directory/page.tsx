@@ -13,6 +13,7 @@ import { minTokenMatches, normalizeArabic, tokenizeArabicQuery } from '@/lib/ara
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
+import SectionDivider from '@/components/ui/SectionDivider';
 import { getFAQData, type FAQCategory } from '@/lib/faq';
 import { SERVICES_LIST, OFFICIAL_SOURCES } from '@/lib/constants';
 import logger from '@/lib/logger';
@@ -275,9 +276,12 @@ export default function DirectoryPage() {
             {/* 🔧 الأدوات الذكية والحصرية */}
             {!filter && (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 border-b pb-2 border-slate-200 dark:border-slate-700">
-                  <Zap className="text-amber-500" size={28} /> الأدوات والخدمات الذكية
-                </h2>
+                <SectionDivider
+                    label={<><Zap size={16} /> الأدوات والخدمات الذكية</>}
+                    tone="amber"
+                    className="mb-6"
+                />
+                <h2 className="sr-only">الأدوات والخدمات الذكية</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
                   <Link href="/consultant" className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-2 text-center group">
                     <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><BrainCircuit size={32} /></div>
@@ -515,9 +519,12 @@ export default function DirectoryPage() {
       {!filter && (
         <div className="max-w-screen-2xl mx-auto px-4 py-12">
           <section>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 border-b pb-2 border-slate-200 dark:border-slate-700">
-              <Building2 className="text-slate-500" size={28} /> روابط حكومية مباشرة
-            </h2>
+            <SectionDivider
+                label={<><Building2 size={16} /> روابط حكومية مباشرة</>}
+                tone="slate"
+                className="mb-6"
+            />
+            <h2 className="sr-only">روابط حكومية مباشرة</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {OFFICIAL_SOURCES.map((source, idx) => (
                 <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">

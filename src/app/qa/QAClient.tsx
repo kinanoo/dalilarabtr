@@ -19,6 +19,7 @@ import {
     X,
     Search,
     Sparkles,
+    ChevronLeft,
 } from 'lucide-react';
 
 interface QAItem {
@@ -178,45 +179,67 @@ function QACard({
 
     return (
         <li
-            className={`bg-white dark:bg-slate-900 rounded-2xl border transition-colors ${
+            className={`group relative bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-2xl border transition-all duration-300 overflow-hidden ${
                 isOpen
-                    ? 'border-emerald-400 dark:border-emerald-600 shadow-lg shadow-emerald-500/10'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                    ? 'border-emerald-400 dark:border-emerald-600 shadow-xl shadow-emerald-500/15 -translate-y-0.5'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-0.5'
             }`}
         >
+            {/* Top accent stripe — same family pattern. Stronger when
+                the answer is expanded; faint when collapsed. */}
+            <div
+                aria-hidden="true"
+                className={`absolute top-0 inset-x-0 h-1 transition-opacity duration-300 ${
+                    isOpen
+                        ? 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500 opacity-100'
+                        : 'bg-gradient-to-l from-emerald-300 via-teal-300 to-emerald-400 opacity-40 group-hover:opacity-80'
+                }`}
+            />
+
             <button
                 type="button"
                 onClick={onToggle}
-                className="w-full text-right p-4 sm:p-5 flex items-start gap-3"
+                className="relative w-full text-right p-4 sm:p-5 flex items-start gap-3"
                 aria-expanded={isOpen}
             >
-                <span className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-black text-sm">
+                <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-200 font-black text-sm shadow-sm group-hover:scale-105 transition-transform duration-300">
                     س
                 </span>
                 <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-900 dark:text-slate-100 leading-relaxed">
+                    <p className="font-black text-slate-900 dark:text-slate-50 leading-relaxed group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
                         {item.question}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                         {item.category && (
-                            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold">
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/40 font-black uppercase tracking-wide">
                                 {item.category}
                             </span>
                         )}
                         {item.is_featured && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 font-black uppercase tracking-wide">
                                 <Sparkles size={10} /> مميّز
                             </span>
                         )}
-                        <span>{date}</span>
+                        {date && (
+                            <span className="font-medium tabular-nums">{date}</span>
+                        )}
                     </div>
                 </div>
+                {/* Toggle chevron — rotates when expanded */}
+                <span
+                    aria-hidden="true"
+                    className={`shrink-0 mt-1 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 transition-all duration-300 ${
+                        isOpen ? 'rotate-180 text-emerald-500' : ''
+                    }`}
+                >
+                    <ChevronLeft size={18} className="-rotate-90" />
+                </span>
             </button>
             {isOpen && (
-                <div className="px-4 sm:px-5 pb-5 pt-1">
-                    <div className="rounded-xl bg-emerald-50/60 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 p-4">
-                        <div className="flex items-start gap-2">
-                            <span className="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-600 text-white font-black text-xs">
+                <div className="relative px-4 sm:px-5 pb-5 pt-1 animate-in fade-in slide-in-from-top-1 duration-300">
+                    <div className="rounded-xl bg-gradient-to-br from-emerald-50/80 to-teal-50/40 dark:from-emerald-900/15 dark:to-teal-900/10 border border-emerald-100 dark:border-emerald-900/30 p-4 shadow-inner">
+                        <div className="flex items-start gap-2.5">
+                            <span className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 text-white font-black text-xs shadow-md shadow-emerald-500/30">
                                 ج
                             </span>
                             <div
@@ -228,8 +251,9 @@ function QACard({
                         </div>
                     </div>
                     {item.context && (
-                        <p className="mt-3 text-xs text-slate-400 italic">
-                            <strong>سياق السؤال:</strong> {item.context}
+                        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 italic flex items-start gap-1.5">
+                            <strong className="text-slate-600 dark:text-slate-300 not-italic">سياق السؤال:</strong>
+                            <span>{item.context}</span>
                         </p>
                     )}
                 </div>
