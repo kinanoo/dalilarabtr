@@ -85,39 +85,206 @@ import { Flame, ArrowLeft, Calendar, Tag } from 'lucide-react';
  */
 
 interface Theme {
-    bg: string;          // section gradient
-    border: string;      // bottom border
-    orb: string;         // pulsing orb tint
-    badge: string;       // BREAKING pill bg
-    subText: string;     // meta-row text color
-    ctaText: string;     // "اقرأ التفاصيل" text on white pill
-    ctaHoverBg: string;  // CTA hover state
-    ctaShadow: string;   // CTA + badge shadow tint
-    titleHover: string;  // headline hover color
-    counter: string;     // "X / Y" counter color
+    /** Bold tri-stop gradient — dominant color across the whole strip,
+     * NOT slate-base. Each theme has a unmistakable hue identity. */
+    bg: string;
+    /** CSS background-image string for the decorative pattern overlay.
+     * Inline style instead of a class because patterns are unique per
+     * theme and Tailwind has no built-in support for them. */
+    pattern: string;
+    /** Pattern tiling size, applied via inline backgroundSize. Pairs
+     * with `pattern` to make a repeatable surface. */
+    patternSize: string;
+    /** Pattern opacity tailwind class — kept low so the pattern reads
+     * as texture, not noise. */
+    patternOpacity: string;
+    border: string;
+    orb: string;
+    orb2: string;        // second corner orb in a different tint
+    badge: string;
+    subText: string;
+    ctaText: string;
+    ctaHoverBg: string;
+    ctaShadow: string;
+    titleHover: string;
+    counter: string;
 }
 
+// White overlay alpha used inside CSS pattern strings — kept identical
+// across themes so the perceived pattern density stays consistent.
+const W = 'rgba(255,255,255,0.45)';
+
 const PALETTE: Theme[] = [
-    // rose
-    { bg: 'from-slate-950 via-rose-950 to-slate-950', border: 'border-rose-900/40', orb: 'bg-rose-500/15', badge: 'bg-rose-600', subText: 'text-rose-200/80', ctaText: 'text-rose-700', ctaHoverBg: 'hover:bg-rose-50', ctaShadow: 'shadow-rose-900/20', titleHover: 'group-hover:text-rose-100', counter: 'text-rose-300/60' },
-    // emerald
-    { bg: 'from-slate-950 via-emerald-950 to-slate-950', border: 'border-emerald-900/40', orb: 'bg-emerald-500/15', badge: 'bg-emerald-600', subText: 'text-emerald-200/80', ctaText: 'text-emerald-700', ctaHoverBg: 'hover:bg-emerald-50', ctaShadow: 'shadow-emerald-900/20', titleHover: 'group-hover:text-emerald-100', counter: 'text-emerald-300/60' },
-    // blue
-    { bg: 'from-slate-950 via-blue-950 to-slate-950', border: 'border-blue-900/40', orb: 'bg-blue-500/15', badge: 'bg-blue-600', subText: 'text-blue-200/80', ctaText: 'text-blue-700', ctaHoverBg: 'hover:bg-blue-50', ctaShadow: 'shadow-blue-900/20', titleHover: 'group-hover:text-blue-100', counter: 'text-blue-300/60' },
-    // violet
-    { bg: 'from-slate-950 via-violet-950 to-slate-950', border: 'border-violet-900/40', orb: 'bg-violet-500/15', badge: 'bg-violet-600', subText: 'text-violet-200/80', ctaText: 'text-violet-700', ctaHoverBg: 'hover:bg-violet-50', ctaShadow: 'shadow-violet-900/20', titleHover: 'group-hover:text-violet-100', counter: 'text-violet-300/60' },
-    // amber
-    { bg: 'from-slate-950 via-amber-950 to-slate-950', border: 'border-amber-900/40', orb: 'bg-amber-500/15', badge: 'bg-amber-600', subText: 'text-amber-200/80', ctaText: 'text-amber-700', ctaHoverBg: 'hover:bg-amber-50', ctaShadow: 'shadow-amber-900/20', titleHover: 'group-hover:text-amber-100', counter: 'text-amber-300/60' },
-    // teal
-    { bg: 'from-slate-950 via-teal-950 to-slate-950', border: 'border-teal-900/40', orb: 'bg-teal-500/15', badge: 'bg-teal-600', subText: 'text-teal-200/80', ctaText: 'text-teal-700', ctaHoverBg: 'hover:bg-teal-50', ctaShadow: 'shadow-teal-900/20', titleHover: 'group-hover:text-teal-100', counter: 'text-teal-300/60' },
-    // fuchsia
-    { bg: 'from-slate-950 via-fuchsia-950 to-slate-950', border: 'border-fuchsia-900/40', orb: 'bg-fuchsia-500/15', badge: 'bg-fuchsia-600', subText: 'text-fuchsia-200/80', ctaText: 'text-fuchsia-700', ctaHoverBg: 'hover:bg-fuchsia-50', ctaShadow: 'shadow-fuchsia-900/20', titleHover: 'group-hover:text-fuchsia-100', counter: 'text-fuchsia-300/60' },
-    // indigo
-    { bg: 'from-slate-950 via-indigo-950 to-slate-950', border: 'border-indigo-900/40', orb: 'bg-indigo-500/15', badge: 'bg-indigo-600', subText: 'text-indigo-200/80', ctaText: 'text-indigo-700', ctaHoverBg: 'hover:bg-indigo-50', ctaShadow: 'shadow-indigo-900/20', titleHover: 'group-hover:text-indigo-100', counter: 'text-indigo-300/60' },
-    // sky
-    { bg: 'from-slate-950 via-sky-950 to-slate-950', border: 'border-sky-900/40', orb: 'bg-sky-500/15', badge: 'bg-sky-600', subText: 'text-sky-200/80', ctaText: 'text-sky-700', ctaHoverBg: 'hover:bg-sky-50', ctaShadow: 'shadow-sky-900/20', titleHover: 'group-hover:text-sky-100', counter: 'text-sky-300/60' },
-    // orange
-    { bg: 'from-slate-950 via-orange-950 to-slate-950', border: 'border-orange-900/40', orb: 'bg-orange-500/15', badge: 'bg-orange-600', subText: 'text-orange-200/80', ctaText: 'text-orange-700', ctaHoverBg: 'hover:bg-orange-50', ctaShadow: 'shadow-orange-900/20', titleHover: 'group-hover:text-orange-100', counter: 'text-orange-300/60' },
+    // 1. ROSE — diagonal newspaper stripes
+    {
+        bg: 'from-rose-900 via-rose-700 to-rose-950',
+        pattern: `repeating-linear-gradient(45deg, transparent 0 22px, ${W} 22px 23px)`,
+        patternSize: 'auto',
+        patternOpacity: 'opacity-[0.10]',
+        border: 'border-rose-900/40',
+        orb: 'bg-rose-300/25',
+        orb2: 'bg-amber-400/15',
+        badge: 'bg-rose-600',
+        subText: 'text-rose-100/85',
+        ctaText: 'text-rose-700',
+        ctaHoverBg: 'hover:bg-rose-50',
+        ctaShadow: 'shadow-rose-950/40',
+        titleHover: 'group-hover:text-rose-100',
+        counter: 'text-rose-200/70',
+    },
+    // 2. EMERALD — hexagonal mesh (offset radial dots)
+    {
+        bg: 'from-emerald-900 via-emerald-700 to-emerald-950',
+        pattern: `radial-gradient(${W} 1.2px, transparent 1.6px), radial-gradient(${W} 1.2px, transparent 1.6px)`,
+        patternSize: '32px 32px, 32px 32px',
+        patternOpacity: 'opacity-[0.18]',
+        border: 'border-emerald-900/40',
+        orb: 'bg-emerald-300/25',
+        orb2: 'bg-lime-400/15',
+        badge: 'bg-emerald-600',
+        subText: 'text-emerald-100/85',
+        ctaText: 'text-emerald-700',
+        ctaHoverBg: 'hover:bg-emerald-50',
+        ctaShadow: 'shadow-emerald-950/40',
+        titleHover: 'group-hover:text-emerald-100',
+        counter: 'text-emerald-200/70',
+    },
+    // 3. BLUE — wave/ripple lines
+    {
+        bg: 'from-blue-900 via-blue-700 to-blue-950',
+        pattern: `repeating-radial-gradient(circle at 50% 0%, transparent 0 38px, ${W} 38px 39px)`,
+        patternSize: 'auto',
+        patternOpacity: 'opacity-[0.12]',
+        border: 'border-blue-900/40',
+        orb: 'bg-cyan-300/25',
+        orb2: 'bg-blue-400/15',
+        badge: 'bg-blue-600',
+        subText: 'text-blue-100/85',
+        ctaText: 'text-blue-700',
+        ctaHoverBg: 'hover:bg-blue-50',
+        ctaShadow: 'shadow-blue-950/40',
+        titleHover: 'group-hover:text-blue-100',
+        counter: 'text-blue-200/70',
+    },
+    // 4. VIOLET — dotted halftone
+    {
+        bg: 'from-violet-900 via-violet-700 to-violet-950',
+        pattern: `radial-gradient(circle, ${W} 1.8px, transparent 2.4px)`,
+        patternSize: '20px 20px',
+        patternOpacity: 'opacity-[0.18]',
+        border: 'border-violet-900/40',
+        orb: 'bg-violet-300/25',
+        orb2: 'bg-fuchsia-400/15',
+        badge: 'bg-violet-600',
+        subText: 'text-violet-100/85',
+        ctaText: 'text-violet-700',
+        ctaHoverBg: 'hover:bg-violet-50',
+        ctaShadow: 'shadow-violet-950/40',
+        titleHover: 'group-hover:text-violet-100',
+        counter: 'text-violet-200/70',
+    },
+    // 5. AMBER — sunburst rays from corner
+    {
+        bg: 'from-amber-700 via-amber-600 to-orange-900',
+        pattern: `repeating-conic-gradient(from 0deg at 100% 0%, transparent 0deg 6deg, ${W} 6deg 7deg)`,
+        patternSize: 'auto',
+        patternOpacity: 'opacity-[0.12]',
+        border: 'border-amber-900/40',
+        orb: 'bg-yellow-300/25',
+        orb2: 'bg-orange-400/15',
+        badge: 'bg-amber-700',
+        subText: 'text-amber-50/85',
+        ctaText: 'text-amber-800',
+        ctaHoverBg: 'hover:bg-amber-50',
+        ctaShadow: 'shadow-amber-950/40',
+        titleHover: 'group-hover:text-amber-50',
+        counter: 'text-amber-100/70',
+    },
+    // 6. TEAL — square grid
+    {
+        bg: 'from-teal-900 via-teal-700 to-teal-950',
+        pattern: `linear-gradient(${W} 1px, transparent 1px), linear-gradient(90deg, ${W} 1px, transparent 1px)`,
+        patternSize: '28px 28px, 28px 28px',
+        patternOpacity: 'opacity-[0.12]',
+        border: 'border-teal-900/40',
+        orb: 'bg-cyan-300/25',
+        orb2: 'bg-emerald-400/15',
+        badge: 'bg-teal-600',
+        subText: 'text-teal-100/85',
+        ctaText: 'text-teal-700',
+        ctaHoverBg: 'hover:bg-teal-50',
+        ctaShadow: 'shadow-teal-950/40',
+        titleHover: 'group-hover:text-teal-100',
+        counter: 'text-teal-200/70',
+    },
+    // 7. FUCHSIA — crosshatch
+    {
+        bg: 'from-fuchsia-900 via-fuchsia-700 to-fuchsia-950',
+        pattern: `repeating-linear-gradient(45deg, ${W} 0 1px, transparent 1px 14px), repeating-linear-gradient(-45deg, ${W} 0 1px, transparent 1px 14px)`,
+        patternSize: 'auto',
+        patternOpacity: 'opacity-[0.12]',
+        border: 'border-fuchsia-900/40',
+        orb: 'bg-pink-300/25',
+        orb2: 'bg-fuchsia-400/15',
+        badge: 'bg-fuchsia-600',
+        subText: 'text-fuchsia-100/85',
+        ctaText: 'text-fuchsia-700',
+        ctaHoverBg: 'hover:bg-fuchsia-50',
+        ctaShadow: 'shadow-fuchsia-950/40',
+        titleHover: 'group-hover:text-fuchsia-100',
+        counter: 'text-fuchsia-200/70',
+    },
+    // 8. INDIGO — stars / scattered dots
+    {
+        bg: 'from-indigo-900 via-indigo-700 to-slate-950',
+        pattern: `radial-gradient(circle at 20% 30%, ${W} 1.5px, transparent 2px), radial-gradient(circle at 70% 40%, ${W} 1px, transparent 1.5px), radial-gradient(circle at 40% 80%, ${W} 1.5px, transparent 2px), radial-gradient(circle at 85% 75%, ${W} 1px, transparent 1.5px)`,
+        patternSize: '180px 180px, 180px 180px, 180px 180px, 180px 180px',
+        patternOpacity: 'opacity-[0.35]',
+        border: 'border-indigo-900/40',
+        orb: 'bg-violet-300/25',
+        orb2: 'bg-indigo-400/15',
+        badge: 'bg-indigo-600',
+        subText: 'text-indigo-100/85',
+        ctaText: 'text-indigo-700',
+        ctaHoverBg: 'hover:bg-indigo-50',
+        ctaShadow: 'shadow-indigo-950/40',
+        titleHover: 'group-hover:text-indigo-100',
+        counter: 'text-indigo-200/70',
+    },
+    // 9. SKY — concentric circles (ripple)
+    {
+        bg: 'from-sky-700 via-sky-500 to-cyan-900',
+        pattern: `repeating-radial-gradient(circle, transparent 0 26px, ${W} 26px 27px)`,
+        patternSize: 'auto',
+        patternOpacity: 'opacity-[0.10]',
+        border: 'border-sky-900/40',
+        orb: 'bg-sky-300/25',
+        orb2: 'bg-cyan-400/15',
+        badge: 'bg-sky-600',
+        subText: 'text-sky-50/85',
+        ctaText: 'text-sky-700',
+        ctaHoverBg: 'hover:bg-sky-50',
+        ctaShadow: 'shadow-sky-950/40',
+        titleHover: 'group-hover:text-sky-50',
+        counter: 'text-sky-100/70',
+    },
+    // 10. ORANGE — diamond/checker
+    {
+        bg: 'from-orange-700 via-red-600 to-orange-950',
+        pattern: `linear-gradient(45deg, ${W} 25%, transparent 25% 75%, ${W} 75%)`,
+        patternSize: '24px 24px',
+        patternOpacity: 'opacity-[0.10]',
+        border: 'border-orange-900/40',
+        orb: 'bg-yellow-300/25',
+        orb2: 'bg-red-400/15',
+        badge: 'bg-orange-600',
+        subText: 'text-orange-50/85',
+        ctaText: 'text-orange-700',
+        ctaHoverBg: 'hover:bg-orange-50',
+        ctaShadow: 'shadow-orange-950/40',
+        titleHover: 'group-hover:text-orange-50',
+        counter: 'text-orange-100/70',
+    },
 ];
 
 /**
@@ -223,22 +390,42 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
             onFocus={() => setPaused(true)}
             onBlur={() => setPaused(false)}
         >
-            {/* Themed orb top-right — color shifts with the article so
-                even peripheral vision sees the change between stories */}
+            {/* Themed orb #1 top-right — primary highlight */}
             <div
                 aria-hidden="true"
-                className={`absolute -top-24 -right-24 w-64 h-64 ${theme.orb} rounded-full blur-3xl pointer-events-none animate-pulse transition-colors duration-500`}
+                className={`absolute -top-24 -right-24 w-72 h-72 ${theme.orb} rounded-full blur-3xl pointer-events-none animate-pulse transition-colors duration-500`}
                 style={{ animationDuration: '5s' }}
             />
 
-            {/* Newsroom texture — kept at very low opacity */}
+            {/* Themed orb #2 bottom-left — secondary accent in a related
+                hue gives the gradient a richer two-tone glow without
+                additional DOM work. */}
             <div
                 aria-hidden="true"
-                className="absolute inset-0 opacity-[0.035] pointer-events-none"
+                className={`absolute -bottom-32 -left-32 w-80 h-80 ${theme.orb2} rounded-full blur-3xl pointer-events-none transition-colors duration-500`}
+            />
+
+            {/* Pattern overlay — unique surface texture per theme.
+                Each theme owns its own pattern (stripes / dots / grid /
+                hex / sunburst / stars / diamonds / waves / crosshatch /
+                concentric circles) defined via CSS inline. Tiled at
+                theme.patternSize, dimmed via theme.patternOpacity. */}
+            <div
+                aria-hidden="true"
+                className={`absolute inset-0 pointer-events-none ${theme.patternOpacity} transition-opacity duration-500`}
                 style={{
-                    backgroundImage:
-                        'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.5) 35px, rgba(255,255,255,0.5) 36px)',
+                    backgroundImage: theme.pattern,
+                    backgroundSize: theme.patternSize,
                 }}
+            />
+
+            {/* Top sheen — a subtle highlight bleeds from the top edge
+                so the dark gradient doesn't feel flat. Helps the
+                background read as "lit from above" instead of "painted
+                wall." */}
+            <div
+                aria-hidden="true"
+                className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"
             />
 
             <div className="relative max-w-5xl mx-auto px-4">
