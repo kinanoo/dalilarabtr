@@ -84,23 +84,18 @@ export default function Navbar() {
 
   // Hide navbar on scroll-DOWN, show immediately on scroll-UP.
   //
-  // Two design choices that matter:
+  // Design choices that matter:
   //
   //   1. requestAnimationFrame throttle. The scroll event fires
   //      dozens of times per second on a modern trackpad; running
-  //      setState every fire dropped frames. rAF caps work to one
-  //      paint per frame and is cheaper than setTimeout throttling.
+  //      setState every fire dropped frames.
   //
-  //   2. Asymmetric tolerance:
-  //        - need 8 px of CONTINUOUS DOWN scroll before hiding
-  //          (filters trackpad jitter + iOS rubber-band bounce)
-  //        - only 2 px of UP scroll re-shows the bar
-  //      Result: hiding feels deliberate, showing feels instant —
-  //      which is what the user asked for ("بمجرد اني اطلع لأعلى
-  //      بدي يطلع هذا الشريط فورا").
+  //   2. Asymmetric tolerance: hide needs 8 px down, show needs
+  //      only 2 px up. Hiding feels deliberate, showing feels
+  //      instant — exactly the user's request.
   //
-  //   3. ALWAYS visible in the first 80 px of the page. Reader at
-  //      the top should never see a hidden header.
+  //   3. Always visible in the first 80 px of the page so the
+  //      reader at the top never sees a hidden header.
   useEffect(() => {
     let ticking = false;
 
@@ -128,6 +123,23 @@ export default function Navbar() {
 
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Measure the navbar's rendered height so the spacer below it
+  // (which keeps page content from jumping under the now-fixed
+  // header) is always exactly the right size. Resize observer so
+  // the spacer follows the navbar even when nav reflows on
+  // breakpoint changes (mobile/desktop, dark/light theme switch).
+  const [navHeight, setNavHeight] = useState(56);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect?.height;
+      if (h && h > 0) setNavHeight(Math.ceil(h));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   // Shared site config (menus + tools) — deduplicated with Footer via SWR
@@ -374,9 +386,23 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Spacer keeps page content from jumping under the now-fixed
+          header. Height tracks the navbar via ResizeObserver above so
+          it always matches the rendered height across breakpoints,
+          theme switches, and locale changes. */}
+      <div style={{ height: navHeight }} aria-hidden="true" />
+
       <header
         ref={navRef}
-        className={`sticky top-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+        // position: fixed instead of sticky. Reason: globals.css sets
+        // `html, body { overflow-x: hidden }` which breaks position:
+        // sticky in Safari iOS and some Chrome versions — the navbar
+        // would scroll out with the page instead of pinning, so the
+        // hide/show logic had nothing to act on. Fixed positioning
+        // bypasses the sticky containing-block / overflow ancestor
+        // rules entirely and works in every browser regardless of
+        // body overflow settings.
+        className={`fixed top-0 left-0 right-0 z-[100] w-full bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-emerald-50/90 dark:from-[#020617]/95 dark:via-[#0f172a]/95 dark:to-[#020617]/95 backdrop-blur-md backdrop-saturate-150 border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
       >
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
