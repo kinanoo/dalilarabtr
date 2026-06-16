@@ -350,9 +350,23 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               {/* Step 1 */}
               {step === 1 && (
                 <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4 sm:space-y-6">
-                  <div className="text-center space-y-1">
-                    <span className="text-emerald-600 font-bold text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 1 من 3</span>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">من أنت؟ (الصفة القانونية)</h2>
+                  {/* Step header — magazine-style eyebrow + title +
+                      progress pill. Matches the section-header pattern
+                      used across the site (HomeUpdates, QuickActionsGrid,
+                      zones list). Replaces the flat centered text. */}
+                  <div className="text-center space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-full">
+                      <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
+                        <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                        <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      </span>
+                      <span className="text-emerald-700 dark:text-emerald-300 font-black text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 1 من 3</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
+                      من أنت؟
+                      <span className="text-slate-400 dark:text-slate-500 font-medium"> · </span>
+                      <span className="text-emerald-600 dark:text-emerald-400">الصفة القانونية</span>
+                    </h2>
                   </div>
 
                   {/* Search Bar */}
@@ -401,8 +415,22 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                    {[
+                  {(() => {
+                    // Per-accent style map so every scenario button gets a
+                    // matching top stripe + hover glow tint. All class
+                    // strings are LITERAL so Tailwind JIT picks them up at
+                    // build time — no dynamic interpolation that would purge.
+                    const ACCENT_STYLES: Record<string, { stripe: string; glow: string; hoverBorder: string }> = {
+                      emerald: { stripe: 'from-emerald-400 to-teal-500', glow: 'bg-emerald-400/20', hoverBorder: 'hover:border-emerald-400 dark:hover:border-emerald-600' },
+                      blue:    { stripe: 'from-blue-400 to-indigo-500',  glow: 'bg-blue-400/20',    hoverBorder: 'hover:border-blue-400 dark:hover:border-blue-600' },
+                      amber:   { stripe: 'from-amber-400 to-orange-500', glow: 'bg-amber-400/20',   hoverBorder: 'hover:border-amber-400 dark:hover:border-amber-600' },
+                      violet:  { stripe: 'from-violet-400 to-purple-500', glow: 'bg-violet-400/20', hoverBorder: 'hover:border-violet-400 dark:hover:border-violet-600' },
+                      cyan:    { stripe: 'from-cyan-400 to-sky-500',     glow: 'bg-cyan-400/20',    hoverBorder: 'hover:border-cyan-400 dark:hover:border-cyan-600' },
+                      orange:  { stripe: 'from-orange-400 to-red-500',   glow: 'bg-orange-400/20',  hoverBorder: 'hover:border-orange-400 dark:hover:border-orange-600' },
+                      rose:    { stripe: 'from-rose-400 to-pink-500',    glow: 'bg-rose-400/20',    hoverBorder: 'hover:border-rose-400 dark:hover:border-rose-600' },
+                      pink:    { stripe: 'from-pink-400 to-fuchsia-500', glow: 'bg-pink-400/20',    hoverBorder: 'hover:border-pink-400 dark:hover:border-pink-600' },
+                    };
+                    const BUTTONS = [
                       { id: 'syrian', icon: '🪪', t: 'سوري (كملك)', d: 'حماية مؤقتة', accent: 'emerald' },
                       { id: 'tourist', icon: '✈️', t: 'سائح / إقامة', d: 'إقامات قصيرة', accent: 'blue' },
                       { id: 'investor', icon: '🏢', t: 'مستثمر', d: 'عقار / جنسية', accent: 'amber' },
@@ -411,33 +439,63 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       { id: 'daily', icon: '⚡', t: 'خدمات يومية', d: 'نوتير / بنك', accent: 'orange' },
                       { id: 'emergency', icon: '🚨', t: 'مشكلة طارئة', d: 'ترحيل / احتجاز', accent: 'rose' },
                       { id: 'family', icon: '👨‍👩‍👧', t: 'عائلة مقيمة', d: 'زواج / أطفال', accent: 'pink' },
-                    ].map((b) => (
-                      <button
-                        key={b.id}
-                        onClick={() => {
-                          setAnswers({ ...answers, q1: b.id });
-                          setStep(2);
-                        }}
-                        className="group relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col items-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-950 text-center"
-                      >
-                        <div className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform duration-200">{b.icon}</div>
-                        <div>
-                          <span className="block font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-tight">{b.t}</span>
-                          <span className="block text-[10px] sm:text-[11px] text-slate-400 mt-0.5">{b.d}</span>
-                        </div>
-                        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-t from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                      </button>
-                    ))}
-                  </div>
+                    ];
+                    return (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                        {BUTTONS.map((b) => {
+                          const style = ACCENT_STYLES[b.accent] ?? ACCENT_STYLES.emerald;
+                          return (
+                            <button
+                              key={b.id}
+                              onClick={() => {
+                                setAnswers({ ...answers, q1: b.id });
+                                setStep(2);
+                              }}
+                              className={`group relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 ${style.hoverBorder} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center gap-1.5 sm:gap-2 bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 text-center overflow-hidden`}
+                            >
+                              {/* Top accent stripe — per accent, matches
+                                  the family pattern used everywhere else
+                                  on the site. */}
+                              <div
+                                aria-hidden="true"
+                                className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-l ${style.stripe}`}
+                              />
+
+                              {/* Soft tinted glow in the top-right corner,
+                                  only visible on hover */}
+                              <div
+                                aria-hidden="true"
+                                className={`absolute -top-8 -right-8 w-20 h-20 ${style.glow} rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}
+                              />
+
+                              <div className="relative text-2xl sm:text-3xl group-hover:scale-110 group-hover:rotate-[-4deg] transition-all duration-300">{b.icon}</div>
+                              <div className="relative">
+                                <span className="block font-black text-xs sm:text-sm text-slate-900 dark:text-slate-50 leading-tight">{b.t}</span>
+                                <span className="block text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{b.d}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               )}
 
               {/* Step 2 */}
               {step === 2 && (
                 <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
-                  <div className="text-center space-y-1">
-                    <span className="text-emerald-600 font-bold text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 2 من 3</span>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">ما هو المجال؟</h2>
+                  <div className="text-center space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-full">
+                      <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
+                        <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                        <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      </span>
+                      <span className="text-emerald-700 dark:text-emerald-300 font-black text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 2 من 3</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
+                      ما هو <span className="text-emerald-600 dark:text-emerald-400">المجال؟</span>
+                    </h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-full sm:max-w-2xl mx-auto">
