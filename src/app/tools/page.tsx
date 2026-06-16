@@ -178,38 +178,65 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
       )}
 
       {isComingSoon ? (
-        <div className={`h-full ${tool.bgLight} border ${tool.borderColor} rounded-2xl p-6 cursor-not-allowed`}>
+        <div className={`relative h-full ${tool.bgLight} border ${tool.borderColor} rounded-2xl p-6 cursor-not-allowed overflow-hidden`}>
+          {/* Top accent stripe — soft slate for the "coming soon"
+              variant so it reads as muted/inactive */}
+          <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-slate-300/60 dark:bg-slate-700/40" />
           <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 opacity-50`}>
             <Icon size={28} className="text-white" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">{tool.title}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{tool.description}</p>
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{tool.title}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">{tool.description}</p>
         </div>
       ) : (
         <Link
           href={tool.href}
-          className={`block h-full ${tool.bgLight} border ${tool.borderColor} rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}
+          className={`relative block h-full bg-gradient-to-br from-white to-slate-50/70 dark:from-slate-900 dark:to-slate-950 border ${tool.borderColor} rounded-2xl p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden`}
         >
-          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+          {/* Top accent stripe — matches the tool's gradient (emerald,
+              blue, rose, etc.) so each card reads as "branded" with
+              its function. Bottom-most border of the strip is heavier
+              than the rest of the card border. */}
+          <div
+            aria-hidden="true"
+            className={`absolute top-0 inset-x-0 h-1.5 bg-gradient-to-l ${tool.color}`}
+          />
+
+          {/* Subtle decorative orb in the top-left corner that takes
+              the tool's color — gives each card a unique atmosphere */}
+          <div
+            aria-hidden="true"
+            className={`absolute -top-16 -left-16 w-40 h-40 rounded-full bg-gradient-to-br ${tool.color} opacity-[0.08] blur-3xl pointer-events-none`}
+          />
+
+          <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 shadow-lg shadow-black/20 group-hover:scale-110 group-hover:rotate-[-4deg] transition-all duration-300`}>
             <Icon size={28} className="text-white" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-emerald-600 transition-colors">
+          <h3 className="relative text-xl font-black text-slate-800 dark:text-slate-100 mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
             {tool.title}
           </h3>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">{tool.description}</p>
+          <p className="relative text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">{tool.description}</p>
 
-          {/* المميزات */}
-          <ul className="space-y-1 mb-4">
+          {/* Features pills — bullet list → small pill chips so the
+              "what this tool gives you" reads as concrete capabilities,
+              not random bullets */}
+          <ul className="relative flex flex-wrap gap-1.5 mb-4">
             {tool.features.map((feature, i) => (
-              <li key={i} className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <CheckCircle size={12} className="text-emerald-500" />
+              <li
+                key={i}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/10 px-2 py-0.5 rounded-full"
+              >
+                <CheckCircle size={10} className="text-emerald-500 dark:text-emerald-400" />
                 {feature}
               </li>
             ))}
           </ul>
 
-          <div className="flex items-center text-sm font-bold text-emerald-600 group-hover:gap-3 gap-2 transition-all">
-            استخدم الأداة <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          <div className="relative flex items-center justify-between pt-3 border-t border-slate-200/60 dark:border-white/10">
+            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-2 group-hover:gap-3 transition-all">
+              استخدم الأداة
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            </span>
           </div>
         </Link>
       )}

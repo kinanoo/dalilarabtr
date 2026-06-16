@@ -175,25 +175,55 @@ export default function ArticleView({ article, slug, initialComments, children }
         <div className="w-full max-w-4xl mx-auto space-y-8">
           <div className="w-full bg-white dark:bg-slate-900 rounded-2xl lg:rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
 
-            {/* Header */}
-            <div className="bg-primary-900 text-white p-4 sm:p-6 lg:p-12 relative overflow-hidden rounded-2xl lg:rounded-[2.5rem] w-full">
+            {/* Header — premium editorial spread.
+                Tri-stop gradient bg + diagonal newsroom stripes + two
+                corner orbs in complementary hues give the article header
+                a "magazine cover" feel instead of the flat dark slab. */}
+            <div className="bg-gradient-to-br from-slate-950 via-primary-900 to-emerald-950 text-white p-4 sm:p-6 lg:p-12 relative overflow-hidden rounded-2xl lg:rounded-[2.5rem] w-full">
+              {/* Top accent stripe — matches the site-wide UpdateCard
+                  pattern so an article hero feels family-related to the
+                  homepage cards. */}
+              <div
+                aria-hidden="true"
+                className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400"
+              />
+
+              {/* Diagonal newsroom stripes — very faint, just enough to
+                  signal "this is editorial content" without competing
+                  with the headline */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none opacity-[0.04]"
+                style={{
+                  backgroundImage:
+                    'repeating-linear-gradient(45deg, transparent 0 28px, rgba(255,255,255,0.6) 28px 29px)',
+                }}
+              />
+
+              {/* Top sheen — subtle highlight bleeding from the top
+                  edge so the dark gradient doesn't read as a flat slab */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none"
+              />
+
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4 lg:mb-6 flex-wrap">
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-emerald-500/25 text-emerald-200 border border-emerald-400/40 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wide shadow-sm shadow-emerald-900/30">
                     {article.category}
                   </span>
                   {recentlyUpdated && (
-                    <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                    <span className="bg-blue-500/25 text-blue-200 border border-blue-400/40 text-xs font-black px-3 py-1 rounded-full flex items-center gap-1 uppercase tracking-wide">
                       <RefreshCw size={11} /> محدّث
                     </span>
                   )}
                   {progress === 100 && (
-                    <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 animate-in fade-in zoom-in">
+                    <span className="bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full flex items-center gap-1 animate-in fade-in zoom-in uppercase tracking-wide shadow-md shadow-green-900/40">
                       <CheckCircle size={12} /> مكتمل
                     </span>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 lg:mb-6 leading-[1.5]">{article.title}</h1>
+                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black mb-4 lg:mb-6 leading-[1.5] drop-shadow-lg">{article.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-slate-400 text-sm font-medium">
                   <span className="flex items-center gap-2"><Sparkles size={16} className="text-emerald-400" /> آخر تحديث: {article.lastUpdate}</span>
                   <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>
@@ -230,7 +260,11 @@ export default function ArticleView({ article, slug, initialComments, children }
 
 
               </div>
-              <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20"></div>
+              {/* Primary orb — emerald glow bottom-left */}
+              <div aria-hidden="true" className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+              {/* Secondary orb — cyan glow top-right, completes the
+                  two-tone glow that gives the gradient depth */}
+              <div aria-hidden="true" className="absolute -top-32 -right-32 w-80 h-80 bg-cyan-500 rounded-full blur-[110px] opacity-[0.12] pointer-events-none"></div>
             </div>
 
             {/* Tag chips — link to the matching /tag/[slug] hubs so the reader
