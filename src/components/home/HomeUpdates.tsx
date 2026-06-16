@@ -274,10 +274,10 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
     return (
         <Link
             href={href}
-            className={`block h-full rounded-xl p-3 sm:p-4 border hover:-translate-y-0.5 transition-all duration-300 group/card relative overflow-hidden ${
+            className={`block h-full rounded-xl p-3 sm:p-4 border hover:-translate-y-1 transition-all duration-300 group/card relative overflow-hidden ${
                 isUrgent
-                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50 hover:border-red-400 hover:shadow-lg hover:shadow-red-500/10'
-                    : 'bg-white dark:bg-white/[0.04] dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/30 hover:shadow-md'
+                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800/50 hover:border-red-400 hover:shadow-lg hover:shadow-red-500/15'
+                    : 'bg-white dark:bg-white/[0.04] dark:backdrop-blur-md border-slate-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-400/40 hover:shadow-lg hover:shadow-emerald-500/10'
             }`}
             dir="rtl"
         >

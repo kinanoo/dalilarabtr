@@ -6,6 +6,7 @@ import SocialLinks from './SocialLinks';
 import { SITE_CONFIG } from '@/lib/config';
 import { usePathname } from 'next/navigation';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
+import { Wrench, Lightbulb, Shield, Scale } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -65,7 +66,8 @@ export default function Footer() {
             {/* القسم 3: أدوات ذكية (Dynamic) */}
             <div>
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-cyan-400 before:rounded-full">
-                🚀 أدوات ذكية
+                <Wrench size={18} className="text-cyan-400" />
+                أدوات ذكية
               </h3>
               <ul className="space-y-2.5 text-sm">
                 {footerMenus.section2.length > 0 ? footerMenus.section2.map((item) => (
@@ -90,7 +92,7 @@ export default function Footer() {
               <div aria-hidden="true" className="absolute -top-10 -left-10 w-32 h-32 bg-emerald-500/[0.12] rounded-full blur-2xl pointer-events-none" />
               <div className="relative">
                 <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
-                  <span className="text-xl">💡</span>
+                  <Lightbulb size={20} className="text-amber-300" />
                   تحتاج مساعدة خاصة؟
                 </h3>
                 <p className="text-sm text-slate-300 mb-4 leading-relaxed">
@@ -110,14 +112,14 @@ export default function Footer() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 py-8 border-t border-slate-800/60">
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="font-bold text-sm text-slate-200">آخر مراجعة: يونيو ٢٠٢٦</span>
+              <span className="font-bold text-sm text-slate-200">آخر مراجعة: يونيو 2026</span>
             </div>
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
-              <span className="text-emerald-400 text-lg shrink-0">🛡️</span>
-              <span className="font-bold text-sm text-slate-200">خصوصية مشفّرة ١٠٠٪</span>
+              <Shield size={18} className="text-emerald-400 shrink-0" />
+              <span className="font-bold text-sm text-slate-200">خصوصية مشفّرة 100٪</span>
             </div>
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
-              <span className="text-emerald-400 text-lg shrink-0">⚖️</span>
+              <Scale size={18} className="text-emerald-400 shrink-0" />
               <span className="font-bold text-sm text-slate-200">مراجع قانونية رسمية</span>
             </div>
           </div>

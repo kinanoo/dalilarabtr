@@ -10,15 +10,19 @@ const IconMap: Record<string, LucideIcon> = {
     UserCheck, ShieldCheck, Sparkles, BrainCircuit
 };
 
+// Tile colors — dark-mode variants bumped from -600 to -700 so the
+// fully-saturated tile doesn't blow out against a slate-950 background.
+// Audit found cyan-600 and pink-600 on dark mode washed out the icon
+// stroke; -700 sits cleanly on the dark surface.
 const TILE_COLORS = [
-    'bg-cyan-500 dark:bg-cyan-600',
-    'bg-blue-500 dark:bg-blue-600',
-    'bg-purple-500 dark:bg-purple-600',
-    'bg-amber-500 dark:bg-amber-600',
-    'bg-rose-500 dark:bg-rose-600',
-    'bg-indigo-500 dark:bg-indigo-600',
-    'bg-teal-500 dark:bg-teal-600',
-    'bg-pink-500 dark:bg-pink-600',
+    'bg-cyan-500 dark:bg-cyan-700',
+    'bg-blue-500 dark:bg-blue-700',
+    'bg-purple-500 dark:bg-purple-700',
+    'bg-amber-500 dark:bg-amber-700',
+    'bg-rose-500 dark:bg-rose-700',
+    'bg-indigo-500 dark:bg-indigo-700',
+    'bg-teal-500 dark:bg-teal-700',
+    'bg-pink-500 dark:bg-pink-700',
 ];
 
 interface Category {

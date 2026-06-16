@@ -35,6 +35,21 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /*
+   Site-wide font-weight floor for heading hierarchy.
+
+   Audit found inconsistent weights across pages — h1s sometimes
+   font-black, sometimes font-bold; h2s mixed font-extrabold and
+   font-semibold. Eye sees no consistent "level 1 / level 2 / level 3"
+   pattern. These floors enforce h1 = 900 (the heaviest weight),
+   h2/h3 = 700, h4 = 600. Specificity is low (one element selector)
+   so any explicit utility (`font-extrabold`, `font-medium`) still
+   wins per-component.
+*/
+h1 { font-weight: 900; }
+h2, h3 { font-weight: 700; }
+h4 { font-weight: 600; }
+
+/*
    Arabic-aware default line-height for headings + bold display text.
    Arabic letters carry diacritics (شدّة، ضمّة، فتحة، كسرة) above the
    baseline and dots (ج ، ح ، خ ، ز ، ذ) below — so any multi-line
@@ -200,8 +215,15 @@ html.dark .tiptap hr, html.dark .prose-content hr {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 html.dark .tiptap code, html.dark .prose-content code {
-  background: #1e293b;
+  background: rgba(30, 41, 59, 0.8);
   color: #5eead4;
+}
+
+/* Dark-mode blockquote tint — audit found bare blockquotes on dark
+   slate disappeared visually. Subtle slate-800 tint with the existing
+   teal border now floats the quote off the page. */
+html.dark .tiptap blockquote, html.dark .prose-content blockquote {
+  background: rgba(30, 41, 59, 0.4);
 }
 
 /* Underline */
