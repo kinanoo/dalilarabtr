@@ -288,7 +288,8 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                     {menuGroups.map((group, idx) => (
                         <div key={idx} className={collapsed ? 'px-0 text-center' : ''}>
                             {!collapsed && (
-                                <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3 px-2 fade-in">
+                                <h3 className="text-[10px] font-black text-emerald-400/80 uppercase tracking-[0.2em] mb-3 px-2 fade-in flex items-center gap-1.5">
+                                    <span className="w-1 h-1 rounded-full bg-emerald-400/70" />
                                     {group.title}
                                 </h3>
                             )}
@@ -320,10 +321,10 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                                                 }
                                             }}
                                             className={`
-                                                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
+                                                flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden
                                                 ${isActive
-                                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 font-bold'
-                                                    : 'hover:bg-white/5 text-slate-400 hover:text-white'
+                                                    ? 'bg-gradient-to-l from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 font-black'
+                                                    : 'hover:bg-white/[0.08] text-slate-400 hover:text-white hover:translate-x-[-2px]'
                                                 }
                                                 ${collapsed ? 'justify-center w-full px-0' : 'w-full'}
                                             `}

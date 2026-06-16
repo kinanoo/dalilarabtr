@@ -228,6 +228,13 @@ export default async function Home() {
         <HomeUpdates updates={updates} />
       </Suspense>
 
+      {/* Transition — light → dark. 64-px gradient bar with a hairline
+          emerald accent line so the boundary feels intentional, not
+          abrupt. Picked up the family pattern's gradient + accent. */}
+      <div className="relative h-16 bg-gradient-to-b from-white to-slate-950 dark:from-slate-950 dark:to-slate-950" aria-hidden="true">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-500/40 to-transparent" />
+      </div>
+
       {/* ═══════════════════════════════════════════════════════════
           SECTION 2 — رحلتك القانونية
           DARK section — flips the page's visual rhythm so this block
@@ -256,6 +263,12 @@ export default async function Home() {
           </ScrollReveal>
         </div>
       </section>
+
+      {/* Transition — dark → light. Cyan accent line because the
+          incoming section uses sky-blue tints. */}
+      <div className="relative h-16 bg-gradient-to-b from-slate-950 to-sky-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-cyan-500/40 to-transparent" />
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════
           SECTION 3 — اختصارات سريعة
