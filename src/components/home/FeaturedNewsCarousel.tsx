@@ -61,6 +61,107 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, ArrowLeft, Calendar, Tag } from 'lucide-react';
 
+/**
+ * Theme = the per-article color palette. The carousel cycles between
+ * red (breaking/general), emerald (positive news — ban lifts, work
+ * permits), and blue (officialdom — consulates, documents).
+ *
+ * Mapping is by article CATEGORY. A new category just falls through
+ * to the red default. This makes the carousel visually distinguish
+ * "good news about residency" from "consulate opening" from "general
+ * breaking" without any data-model change.
+ */
+type ThemeName = 'rose' | 'emerald' | 'blue';
+
+interface Theme {
+    /** Full-bleed section background gradient classes. */
+    bg: string;
+    /** Border-bottom color. */
+    border: string;
+    /** Decorative orb tint. */
+    orb: string;
+    /** BREAKING pill background. */
+    badge: string;
+    /** Body / sub-meta text color. */
+    subText: string;
+    /** "اقرأ التفاصيل" CTA text color (chip background stays white). */
+    ctaText: string;
+    /** CTA hover background tint. */
+    ctaHoverBg: string;
+    /** CTA shadow tint. */
+    ctaShadow: string;
+    /** Progress segments active fill color. */
+    progressFill: string;
+    /** Headline hover color. */
+    titleHover: string;
+    /** Counter (X / Y) color. */
+    counter: string;
+}
+
+const THEMES: Record<ThemeName, Theme> = {
+    rose: {
+        bg: 'from-slate-950 via-rose-950 to-slate-950',
+        border: 'border-rose-900/40',
+        orb: 'bg-rose-500/15',
+        badge: 'bg-rose-600',
+        subText: 'text-rose-200/80',
+        ctaText: 'text-rose-700',
+        ctaHoverBg: 'hover:bg-rose-50',
+        ctaShadow: 'shadow-rose-900/20',
+        progressFill: 'bg-white',
+        titleHover: 'group-hover:text-rose-100',
+        counter: 'text-rose-300/60',
+    },
+    emerald: {
+        bg: 'from-slate-950 via-emerald-950 to-slate-950',
+        border: 'border-emerald-900/40',
+        orb: 'bg-emerald-500/15',
+        badge: 'bg-emerald-600',
+        subText: 'text-emerald-200/80',
+        ctaText: 'text-emerald-700',
+        ctaHoverBg: 'hover:bg-emerald-50',
+        ctaShadow: 'shadow-emerald-900/20',
+        progressFill: 'bg-white',
+        titleHover: 'group-hover:text-emerald-100',
+        counter: 'text-emerald-300/60',
+    },
+    blue: {
+        bg: 'from-slate-950 via-blue-950 to-slate-950',
+        border: 'border-blue-900/40',
+        orb: 'bg-blue-500/15',
+        badge: 'bg-blue-600',
+        subText: 'text-blue-200/80',
+        ctaText: 'text-blue-700',
+        ctaHoverBg: 'hover:bg-blue-50',
+        ctaShadow: 'shadow-blue-900/20',
+        progressFill: 'bg-white',
+        titleHover: 'group-hover:text-blue-100',
+        counter: 'text-blue-300/60',
+    },
+};
+
+/**
+ * Category → theme mapping. Anything not listed falls through to rose
+ * (the original "breaking news" look) so new categories don't crash;
+ * they just look like generic breaking news.
+ */
+function themeForCategory(category: string | null): ThemeName {
+    if (!category) return 'rose';
+    // Residency/work/zone news = good news for residents = emerald.
+    if (
+        category.includes('الإقامة') ||
+        category.includes('كيمليك') ||
+        category.includes('العمل')
+    ) return 'emerald';
+    // Consulate / official document news = officialdom = blue.
+    if (
+        category.includes('قنصلي') ||
+        category.includes('وثائق') ||
+        category.includes('سفارة')
+    ) return 'blue';
+    return 'rose';
+}
+
 export interface CarouselArticle {
     slug: string;
     title: string;
@@ -129,10 +230,14 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
     const summary = stripHtml(article.intro, 160);
     const href = `/article/${article.slug}`;
     const showSegments = articles.length > 1;
+    // Per-article color theme. Picked from category so two adjacent
+    // articles with different topics LOOK different — reader gets a
+    // visual cue that the story has changed, beyond just the headline.
+    const theme = THEMES[themeForCategory(article.category)];
 
     return (
         <section
-            className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-rose-950 to-slate-950 py-4 sm:py-6 border-b border-rose-900/40"
+            className={`relative overflow-hidden bg-gradient-to-br ${theme.bg} py-4 sm:py-6 border-b ${theme.border} transition-colors duration-500`}
             dir="rtl"
             aria-label="خبر عاجل"
             onMouseEnter={() => setPaused(true)}
@@ -140,11 +245,11 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
             onFocus={() => setPaused(true)}
             onBlur={() => setPaused(false)}
         >
-            {/* Subtle red orb top-right — kept smaller than the previous
-                version so it doesn't dominate the now-compact layout */}
+            {/* Themed orb top-right — color shifts with the article so
+                even peripheral vision sees the change between stories */}
             <div
                 aria-hidden="true"
-                className="absolute -top-24 -right-24 w-64 h-64 bg-rose-500/15 rounded-full blur-3xl pointer-events-none animate-pulse"
+                className={`absolute -top-24 -right-24 w-64 h-64 ${theme.orb} rounded-full blur-3xl pointer-events-none animate-pulse transition-colors duration-500`}
                 style={{ animationDuration: '5s' }}
             />
 
@@ -219,7 +324,7 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                 category. Single line on desktop, wraps to two
                                 only on very narrow phones. */}
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2">
-                                <span className="inline-flex items-center gap-1.5 bg-rose-600 text-white px-2.5 py-1 rounded-full text-[10px] font-black tracking-[0.15em] uppercase shadow-md shadow-rose-900/40">
+                                <span className={`inline-flex items-center gap-1.5 ${theme.badge} text-white px-2.5 py-1 rounded-full text-[10px] font-black tracking-[0.15em] uppercase shadow-md ${theme.ctaShadow}`}>
                                     <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
                                         <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-white opacity-75 animate-ping" />
                                         <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-white" />
@@ -228,13 +333,13 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                     <span>خبر عاجل</span>
                                 </span>
                                 {date && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-rose-200/80 font-bold">
+                                    <span className={`inline-flex items-center gap-1 text-[11px] sm:text-xs ${theme.subText} font-bold`}>
                                         <Calendar size={11} />
                                         {date}
                                     </span>
                                 )}
                                 {article.category && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-rose-200/80 font-bold">
+                                    <span className={`inline-flex items-center gap-1 text-[11px] sm:text-xs ${theme.subText} font-bold`}>
                                         <Tag size={11} />
                                         {article.category}
                                     </span>
@@ -242,38 +347,36 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                 {articles.length > 1 && (
                                     // dir="ltr" forces "1 / 2" to render
                                     // left-to-right even inside the parent
-                                    // RTL flow. Without this, the rose-coloured
-                                    // counter rendered as "2 / 1" (browser
-                                    // ran the slash + numbers through the
-                                    // bidi algorithm in RTL context).
+                                    // RTL flow. Without this, the counter
+                                    // rendered as "2 / 1" (browser ran the
+                                    // slash + numbers through the bidi
+                                    // algorithm in RTL context).
                                     <span
                                         dir="ltr"
-                                        className="text-[10px] text-rose-300/60 tabular-nums font-bold ms-auto"
+                                        className={`text-[10px] ${theme.counter} tabular-nums font-bold ms-auto`}
                                     >
                                         {index + 1} / {articles.length}
                                     </span>
                                 )}
                             </div>
 
-                            {/* Headline — much smaller than before. Clamped
-                                to 2 lines so the height stays predictable. */}
-                            <h2 className="text-lg sm:text-xl md:text-2xl font-black leading-[1.5] text-white drop-shadow-md group-hover:text-rose-100 transition-colors line-clamp-2">
+                            {/* Headline — clamped to 2 lines so the height
+                                stays predictable across all articles. */}
+                            <h2 className={`text-lg sm:text-xl md:text-2xl font-black leading-[1.5] text-white drop-shadow-md ${theme.titleHover} transition-colors line-clamp-2`}>
                                 {article.title}
                             </h2>
 
                             {/* Summary — clamped to 2 lines on phones to keep
                                 strip compact; allowed up to 3 on desktop. */}
                             {summary && (
-                                <p className="mt-2 text-xs sm:text-sm text-rose-100/75 leading-relaxed line-clamp-2 sm:line-clamp-3">
+                                <p className="mt-2 text-xs sm:text-sm text-white/75 leading-relaxed line-clamp-2 sm:line-clamp-3">
                                     {summary}
                                 </p>
                             )}
 
-                            {/* CTA — small inline pill (was a giant white
-                                button before). The "اقرأ التفاصيل" text +
-                                arrow communicate the action without taking
-                                another 80 px of vertical space. */}
-                            <div className="mt-3 inline-flex items-center gap-1.5 bg-white text-rose-700 hover:bg-rose-50 font-bold px-3.5 py-1.5 rounded-lg text-xs sm:text-sm shadow-md shadow-rose-900/20 group-hover:scale-[1.02] transition-all">
+                            {/* CTA — small inline pill, themed text color so
+                                the reader's eye links it back to the badge. */}
+                            <div className={`mt-3 inline-flex items-center gap-1.5 bg-white ${theme.ctaText} ${theme.ctaHoverBg} font-bold px-3.5 py-1.5 rounded-lg text-xs sm:text-sm shadow-md ${theme.ctaShadow} group-hover:scale-[1.02] transition-all`}>
                                 <span>اقرأ التفاصيل</span>
                                 <ArrowLeft size={14} />
                             </div>
