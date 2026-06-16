@@ -212,31 +212,52 @@ export function DataTable({
             {/* List / Grid */}
             <div className="space-y-3">
                 {loading && data.length === 0 ? (
-                    <div className="p-12 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                        <Loader2 className="animate-spin mx-auto mb-3 text-emerald-500" size={32} />
-                        <p className="font-bold">جاري تحميل البيانات...</p>
+                    <div className="p-12 text-center bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/20 mb-3 shadow-sm">
+                            <Loader2 className="animate-spin text-emerald-500" size={28} />
+                        </div>
+                        <p className="font-black text-slate-700 dark:text-slate-200">جاري تحميل البيانات...</p>
                     </div>
                 ) : data.length === 0 ? (
-                    <div className="p-12 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                        <p className="font-bold">لا توجد بيانات مطابقة للبحث.</p>
+                    <div className="p-12 text-center bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-3">
+                            <Search className="text-slate-400" size={26} />
+                        </div>
+                        <p className="font-black text-slate-700 dark:text-slate-200">لا توجد بيانات مطابقة للبحث</p>
                     </div>
                 ) : (
                     data.map((row, index) => {
                         const rowId = row[idField];
                         const isPending = typeof rowId === 'string' && pendingRows.has(rowId);
+                        // Top accent stripe per row type — matches the
+                        // family pattern used across the public site
+                        // (UpdateCard, ToolCard, CategoryTile, etc.).
+                        // Code rows = rose, service rows = blue,
+                        // article/default = emerald.
+                        const stripeCls =
+                            type === 'code'
+                                ? 'bg-gradient-to-l from-rose-400 via-red-400 to-rose-500'
+                                : type === 'service'
+                                    ? 'bg-gradient-to-l from-blue-400 via-cyan-400 to-blue-500'
+                                    : 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500';
                         return (
-                        <div key={rowId || index} className={`relative group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-3 sm:p-4 hover:shadow-lg hover:border-emerald-500/30 transition-all duration-300 ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+                        <div key={rowId || index} className={`relative group bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 sm:p-4 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-400/60 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+                            {/* Top accent stripe per type */}
+                            <div
+                                aria-hidden="true"
+                                className={`absolute top-0 inset-x-0 h-1 ${stripeCls}`}
+                            />
                             {isPending && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 rounded-2xl z-10 pointer-events-none">
+                                <div className="absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-2xl z-10 pointer-events-none">
                                     <Loader2 className="animate-spin text-emerald-500" size={24} />
                                 </div>
                             )}
-                            <div className="flex items-start gap-3">
+                            <div className="relative flex items-start gap-3">
                                 {/* Icon / Leading */}
-                                <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center text-base sm:text-lg font-bold shadow-sm
-                                    ${type === 'code' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                                        type === 'service' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                                            'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center text-base sm:text-lg font-black shadow-sm group-hover:scale-105 transition-transform duration-300
+                                    ${type === 'code' ? 'bg-gradient-to-br from-rose-100 to-red-100 text-rose-700 dark:from-rose-900/30 dark:to-red-900/20 dark:text-rose-300' :
+                                        type === 'service' ? 'bg-gradient-to-br from-blue-100 to-cyan-100 text-blue-700 dark:from-blue-900/30 dark:to-cyan-900/20 dark:text-blue-300' :
+                                            'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-700 dark:from-emerald-900/30 dark:to-teal-900/20 dark:text-emerald-300'}`}>
                                     {type === 'code' ? (row.code || 'C') : type === 'service' ? (row.name?.charAt(0) || 'S') : (row.title?.charAt(0) || 'A')}
                                 </div>
 
@@ -244,11 +265,11 @@ export function DataTable({
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2">
+                                            <h3 className="font-black text-slate-900 dark:text-slate-50 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
                                                 {row.title || row.name || row.question || row.code}
                                             </h3>
                                             {(row.category || row.profession || row.severity) && (
-                                                <span className="inline-flex mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                                <span className="inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase border bg-slate-100 text-slate-600 border-slate-200/60 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700/40">
                                                     {row.category || row.profession || row.severity}
                                                 </span>
                                             )}
@@ -338,25 +359,27 @@ export function DataTable({
                 )}
             </div>
 
-            {/* Pagination */}
+            {/* Pagination — premium pill with bg + shadow */}
             {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-4 mt-6">
+                <div className="flex justify-center items-center gap-1 mt-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full p-1 shadow-sm w-fit mx-auto">
                     <button
                         onClick={() => setPage(p => Math.max(0, p - 1))}
                         disabled={page === 0 || loading}
-                        className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-50 hover:border-emerald-500 transition-all text-slate-500"
+                        className="p-2 rounded-full disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 transition-all text-slate-500"
+                        aria-label="السابق"
                     >
-                        <ChevronRight size={20} />
+                        <ChevronRight size={18} />
                     </button>
-                    <span className="text-sm font-bold text-slate-500">
+                    <span dir="ltr" className="text-xs font-black text-slate-700 dark:text-slate-200 tabular-nums px-3">
                         {page + 1} / {totalPages}
                     </span>
                     <button
                         onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                         disabled={page >= totalPages - 1 || loading}
-                        className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-50 hover:border-emerald-500 transition-all text-slate-500"
+                        className="p-2 rounded-full disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 transition-all text-slate-500"
+                        aria-label="التالي"
                     >
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={18} />
                     </button>
                 </div>
             )}

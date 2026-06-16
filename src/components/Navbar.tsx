@@ -225,16 +225,46 @@ export default function Navbar() {
               aria-label="القائمة الرئيسية"
               className={`fixed top-0 right-0 z-[120] h-full w-[85vw] max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 dark:from-emerald-950/30 dark:via-cyan-950/30 dark:to-blue-950/30">
-                <span className="font-bold text-lg text-slate-800 dark:text-slate-100">القائمة</span>
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-white dark:bg-slate-900 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <X size={20} />
-                </button>
+              {/* Header — magazine-style eyebrow + title + close
+                  button. Replaces the flat single-line "القائمة" so
+                  the drawer feels like a real navigation surface, not
+                  a popover. Matches the eyebrow pattern used across
+                  the site (HomeUpdates, QuickActionsGrid, etc.). */}
+              <div className="relative p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 dark:from-emerald-950/40 dark:via-cyan-950/40 dark:to-blue-950/40 overflow-hidden">
+                {/* Top accent stripe — same family as the site nav */}
+                <div
+                  aria-hidden="true"
+                  className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400"
+                />
+                {/* Soft top sheen */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/30 to-transparent dark:from-white/[0.04] pointer-events-none"
+                />
+                <div className="relative flex items-center justify-between gap-3">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 mb-1">
+                      <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
+                        <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                        <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      </span>
+                      <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">
+                        MENU · القائمة
+                      </span>
+                    </div>
+                    <span className="block font-black text-lg sm:text-xl text-slate-900 dark:text-slate-50 leading-tight">
+                      تصفّح الموقع
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-white dark:bg-slate-900 rounded-full text-slate-600 dark:text-slate-300 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-300 transition-all duration-200 shadow-sm border border-slate-200 dark:border-slate-700 group"
+                    aria-label="إغلاق القائمة"
+                  >
+                    <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+                  </button>
+                </div>
               </div>
 
               {/* Items */}
