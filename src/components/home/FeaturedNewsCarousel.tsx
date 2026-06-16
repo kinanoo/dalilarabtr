@@ -62,104 +62,79 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, ArrowLeft, Calendar, Tag } from 'lucide-react';
 
 /**
- * Theme = the per-article color palette. The carousel cycles between
- * red (breaking/general), emerald (positive news — ban lifts, work
- * permits), and blue (officialdom — consulates, documents).
+ * Theme = the per-article color palette.
  *
- * Mapping is by article CATEGORY. A new category just falls through
- * to the red default. This makes the carousel visually distinguish
- * "good news about residency" from "consulate opening" from "general
- * breaking" without any data-model change.
+ * Picked by HASH OF SLUG, not category. Two reasons:
+ *
+ *   1. The reader's eye registers "this story is different from the
+ *      previous one" by color shift, regardless of category. Two
+ *      consecutive residency articles in the same green felt like one
+ *      story repeating; two consecutive articles in different vivid
+ *      colors immediately read as separate stories.
+ *
+ *   2. Adding a new article picks a fresh color automatically —
+ *      no admin work, no category-to-color lookup to maintain.
+ *
+ * Stable hash means the SAME slug always gets the SAME color, so a
+ * reader who returns to the homepage sees consistent branding per
+ * story (article X is "the purple one"), not random flicker.
+ *
+ * 10 vivid palettes chosen to be MAXIMALLY DISTINCT from each other
+ * — adjacent colors on the wheel deliberately spaced so any two
+ * featured articles look unmistakably different.
  */
-type ThemeName = 'rose' | 'emerald' | 'blue';
 
 interface Theme {
-    /** Full-bleed section background gradient classes. */
-    bg: string;
-    /** Border-bottom color. */
-    border: string;
-    /** Decorative orb tint. */
-    orb: string;
-    /** BREAKING pill background. */
-    badge: string;
-    /** Body / sub-meta text color. */
-    subText: string;
-    /** "اقرأ التفاصيل" CTA text color (chip background stays white). */
-    ctaText: string;
-    /** CTA hover background tint. */
-    ctaHoverBg: string;
-    /** CTA shadow tint. */
-    ctaShadow: string;
-    /** Progress segments active fill color. */
-    progressFill: string;
-    /** Headline hover color. */
-    titleHover: string;
-    /** Counter (X / Y) color. */
-    counter: string;
+    bg: string;          // section gradient
+    border: string;      // bottom border
+    orb: string;         // pulsing orb tint
+    badge: string;       // BREAKING pill bg
+    subText: string;     // meta-row text color
+    ctaText: string;     // "اقرأ التفاصيل" text on white pill
+    ctaHoverBg: string;  // CTA hover state
+    ctaShadow: string;   // CTA + badge shadow tint
+    titleHover: string;  // headline hover color
+    counter: string;     // "X / Y" counter color
 }
 
-const THEMES: Record<ThemeName, Theme> = {
-    rose: {
-        bg: 'from-slate-950 via-rose-950 to-slate-950',
-        border: 'border-rose-900/40',
-        orb: 'bg-rose-500/15',
-        badge: 'bg-rose-600',
-        subText: 'text-rose-200/80',
-        ctaText: 'text-rose-700',
-        ctaHoverBg: 'hover:bg-rose-50',
-        ctaShadow: 'shadow-rose-900/20',
-        progressFill: 'bg-white',
-        titleHover: 'group-hover:text-rose-100',
-        counter: 'text-rose-300/60',
-    },
-    emerald: {
-        bg: 'from-slate-950 via-emerald-950 to-slate-950',
-        border: 'border-emerald-900/40',
-        orb: 'bg-emerald-500/15',
-        badge: 'bg-emerald-600',
-        subText: 'text-emerald-200/80',
-        ctaText: 'text-emerald-700',
-        ctaHoverBg: 'hover:bg-emerald-50',
-        ctaShadow: 'shadow-emerald-900/20',
-        progressFill: 'bg-white',
-        titleHover: 'group-hover:text-emerald-100',
-        counter: 'text-emerald-300/60',
-    },
-    blue: {
-        bg: 'from-slate-950 via-blue-950 to-slate-950',
-        border: 'border-blue-900/40',
-        orb: 'bg-blue-500/15',
-        badge: 'bg-blue-600',
-        subText: 'text-blue-200/80',
-        ctaText: 'text-blue-700',
-        ctaHoverBg: 'hover:bg-blue-50',
-        ctaShadow: 'shadow-blue-900/20',
-        progressFill: 'bg-white',
-        titleHover: 'group-hover:text-blue-100',
-        counter: 'text-blue-300/60',
-    },
-};
+const PALETTE: Theme[] = [
+    // rose
+    { bg: 'from-slate-950 via-rose-950 to-slate-950', border: 'border-rose-900/40', orb: 'bg-rose-500/15', badge: 'bg-rose-600', subText: 'text-rose-200/80', ctaText: 'text-rose-700', ctaHoverBg: 'hover:bg-rose-50', ctaShadow: 'shadow-rose-900/20', titleHover: 'group-hover:text-rose-100', counter: 'text-rose-300/60' },
+    // emerald
+    { bg: 'from-slate-950 via-emerald-950 to-slate-950', border: 'border-emerald-900/40', orb: 'bg-emerald-500/15', badge: 'bg-emerald-600', subText: 'text-emerald-200/80', ctaText: 'text-emerald-700', ctaHoverBg: 'hover:bg-emerald-50', ctaShadow: 'shadow-emerald-900/20', titleHover: 'group-hover:text-emerald-100', counter: 'text-emerald-300/60' },
+    // blue
+    { bg: 'from-slate-950 via-blue-950 to-slate-950', border: 'border-blue-900/40', orb: 'bg-blue-500/15', badge: 'bg-blue-600', subText: 'text-blue-200/80', ctaText: 'text-blue-700', ctaHoverBg: 'hover:bg-blue-50', ctaShadow: 'shadow-blue-900/20', titleHover: 'group-hover:text-blue-100', counter: 'text-blue-300/60' },
+    // violet
+    { bg: 'from-slate-950 via-violet-950 to-slate-950', border: 'border-violet-900/40', orb: 'bg-violet-500/15', badge: 'bg-violet-600', subText: 'text-violet-200/80', ctaText: 'text-violet-700', ctaHoverBg: 'hover:bg-violet-50', ctaShadow: 'shadow-violet-900/20', titleHover: 'group-hover:text-violet-100', counter: 'text-violet-300/60' },
+    // amber
+    { bg: 'from-slate-950 via-amber-950 to-slate-950', border: 'border-amber-900/40', orb: 'bg-amber-500/15', badge: 'bg-amber-600', subText: 'text-amber-200/80', ctaText: 'text-amber-700', ctaHoverBg: 'hover:bg-amber-50', ctaShadow: 'shadow-amber-900/20', titleHover: 'group-hover:text-amber-100', counter: 'text-amber-300/60' },
+    // teal
+    { bg: 'from-slate-950 via-teal-950 to-slate-950', border: 'border-teal-900/40', orb: 'bg-teal-500/15', badge: 'bg-teal-600', subText: 'text-teal-200/80', ctaText: 'text-teal-700', ctaHoverBg: 'hover:bg-teal-50', ctaShadow: 'shadow-teal-900/20', titleHover: 'group-hover:text-teal-100', counter: 'text-teal-300/60' },
+    // fuchsia
+    { bg: 'from-slate-950 via-fuchsia-950 to-slate-950', border: 'border-fuchsia-900/40', orb: 'bg-fuchsia-500/15', badge: 'bg-fuchsia-600', subText: 'text-fuchsia-200/80', ctaText: 'text-fuchsia-700', ctaHoverBg: 'hover:bg-fuchsia-50', ctaShadow: 'shadow-fuchsia-900/20', titleHover: 'group-hover:text-fuchsia-100', counter: 'text-fuchsia-300/60' },
+    // indigo
+    { bg: 'from-slate-950 via-indigo-950 to-slate-950', border: 'border-indigo-900/40', orb: 'bg-indigo-500/15', badge: 'bg-indigo-600', subText: 'text-indigo-200/80', ctaText: 'text-indigo-700', ctaHoverBg: 'hover:bg-indigo-50', ctaShadow: 'shadow-indigo-900/20', titleHover: 'group-hover:text-indigo-100', counter: 'text-indigo-300/60' },
+    // sky
+    { bg: 'from-slate-950 via-sky-950 to-slate-950', border: 'border-sky-900/40', orb: 'bg-sky-500/15', badge: 'bg-sky-600', subText: 'text-sky-200/80', ctaText: 'text-sky-700', ctaHoverBg: 'hover:bg-sky-50', ctaShadow: 'shadow-sky-900/20', titleHover: 'group-hover:text-sky-100', counter: 'text-sky-300/60' },
+    // orange
+    { bg: 'from-slate-950 via-orange-950 to-slate-950', border: 'border-orange-900/40', orb: 'bg-orange-500/15', badge: 'bg-orange-600', subText: 'text-orange-200/80', ctaText: 'text-orange-700', ctaHoverBg: 'hover:bg-orange-50', ctaShadow: 'shadow-orange-900/20', titleHover: 'group-hover:text-orange-100', counter: 'text-orange-300/60' },
+];
 
 /**
- * Category → theme mapping. Anything not listed falls through to rose
- * (the original "breaking news" look) so new categories don't crash;
- * they just look like generic breaking news.
+ * djb2 string hash — fast, no-deps, well-distributed for short keys
+ * like article slugs. Returns a 32-bit unsigned integer; we mod by
+ * PALETTE.length to pick the theme.
  */
-function themeForCategory(category: string | null): ThemeName {
-    if (!category) return 'rose';
-    // Residency/work/zone news = good news for residents = emerald.
-    if (
-        category.includes('الإقامة') ||
-        category.includes('كيمليك') ||
-        category.includes('العمل')
-    ) return 'emerald';
-    // Consulate / official document news = officialdom = blue.
-    if (
-        category.includes('قنصلي') ||
-        category.includes('وثائق') ||
-        category.includes('سفارة')
-    ) return 'blue';
-    return 'rose';
+function hashSlug(slug: string): number {
+    let h = 5381;
+    for (let i = 0; i < slug.length; i++) {
+        h = ((h << 5) + h + slug.charCodeAt(i)) | 0;
+    }
+    return Math.abs(h);
+}
+
+function themeForSlug(slug: string): Theme {
+    return PALETTE[hashSlug(slug) % PALETTE.length];
 }
 
 export interface CarouselArticle {
@@ -230,10 +205,13 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
     const summary = stripHtml(article.intro, 160);
     const href = `/article/${article.slug}`;
     const showSegments = articles.length > 1;
-    // Per-article color theme. Picked from category so two adjacent
-    // articles with different topics LOOK different — reader gets a
-    // visual cue that the story has changed, beyond just the headline.
-    const theme = THEMES[themeForCategory(article.category)];
+    // Per-article color theme. Picked by hashing the article slug
+    // so each story gets a stable, distinct color from a 10-palette
+    // set. Adjacent articles in the carousel are practically
+    // guaranteed to look different — the reader's eye registers
+    // "this is a NEW story" the instant the gradient swaps, before
+    // they even read the headline.
+    const theme = themeForSlug(article.slug);
 
     return (
         <section

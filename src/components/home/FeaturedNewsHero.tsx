@@ -30,12 +30,15 @@ async function getFeaturedArticles(): Promise<CarouselArticle[]> {
                 .eq('status', 'approved')
                 .order('published_at', { ascending: false })
                 // Tiebreaker for same-day publishes — most recently
-                // saved article wins. Without this, three articles all
-                // dated "2026-06-09" would fall back to Postgres's
-                // natural insertion order, which doesn't match the
-                // admin's mental model of "I just published X, why is
-                // it not first?"
-                .order('updated_at', { ascending: false })
+                // INSERTED row wins. articles table has no updated_at
+                // column (using it 500'd the query and emptied the
+                // carousel — bug reported by user), so created_at is
+                // the closest stable approximation. Re-upserting an
+                // existing article keeps its original created_at,
+                // which is fine for our use case (the admin who
+                // re-edits should set published_at if they want it
+                // first).
+                .order('created_at', { ascending: false })
                 // Cap at 10 — if the admin keeps stacking featured
                 // articles without un-featuring old ones, we don't want
                 // the carousel to take a literal minute to cycle through.
