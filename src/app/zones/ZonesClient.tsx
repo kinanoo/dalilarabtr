@@ -407,10 +407,26 @@ export default function ZonesPage() {
 
               {/* City browsing grid when no search */}
               {!showResults && !loading && hasData && cityStats.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-base font-bold text-slate-700 dark:text-slate-200 mb-4 text-center">
-                    تصفّح حسب الولاية
-                  </h3>
+                <div className="mt-6">
+                  {/* Section header — magazine-style with eyebrow,
+                      matches the rest of the site's section headings
+                      (HomeUpdates, QuickActionsGrid, etc.). The
+                      previous text-base centered h3 was easy to miss
+                      between the dense stats above and the city grid
+                      below. */}
+                  <div className="text-center mb-5">
+                    <div className="inline-flex items-center gap-1.5 mb-2">
+                      <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400">
+                        BROWSE · تصفّح
+                      </span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-50 leading-tight">
+                      الولايات والأقضية
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      اضغط على ولاية لرؤية أحيائها وأقضيتها بالتفصيل
+                    </p>
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {cityStats.map(({ city, count, reopenedCount, pendingCount, districtCount }) => {
                       // Color the province card by its dominant state:
@@ -437,6 +453,17 @@ export default function ZonesPage() {
                           : tone === 'emerald'
                             ? 'bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/20 dark:to-slate-900'
                             : 'bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-slate-900';
+                      // Top-edge accent stripe (matches UpdateCard / ToolCard
+                      // / CategoryTile family). Reader scans the grid and
+                      // sees a row of coloured strips before reading text —
+                      // amber means "list still updating," emerald means
+                      // "lift happened here," rose means "all still closed."
+                      const stripeTone =
+                        tone === 'amber'
+                          ? 'bg-gradient-to-l from-amber-400 via-amber-500 to-orange-500'
+                          : tone === 'emerald'
+                            ? 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500'
+                            : 'bg-gradient-to-l from-rose-400 via-rose-500 to-red-500';
                       const iconBg =
                         tone === 'amber'
                           ? 'bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40'
@@ -453,48 +480,51 @@ export default function ZonesPage() {
                         <Link
                           key={city}
                           href={`/zones/${encodeURIComponent(city)}`}
-                          className={`group relative rounded-xl border ${borderTone} ${bgTone} p-3 sm:p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all`}
+                          className={`group relative rounded-xl border ${borderTone} ${bgTone} p-3 sm:p-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden`}
                         >
-                          {/* Row 1: icon + city name (full width, can wrap)
-                              Previously the badges were side-by-side with the
-                              name on mobile, which left only ~28px for the
-                              name and truncated "İstanbul" to "İ...". The
-                              stack-vertical layout gives the name the whole
-                              card width. */}
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className={`p-1.5 rounded-lg shrink-0 ${iconBg} transition-colors`}>
+                          {/* Top accent stripe — tone-coloured */}
+                          <div
+                            aria-hidden="true"
+                            className={`absolute top-0 inset-x-0 h-1 ${stripeTone}`}
+                          />
+
+                          {/* Row 1: icon + city name */}
+                          <div className="relative flex items-center gap-2 mb-3">
+                            <div className={`p-1.5 rounded-lg shrink-0 ${iconBg} transition-colors shadow-sm`}>
                               <Building2 size={16} className={iconColor} />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors break-words">
+                              <div className="font-black text-sm sm:text-base text-slate-900 dark:text-slate-50 leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors break-words">
                                 {city}
                               </div>
-                              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium tabular-nums">
                                 {districtCount} قضاء
                               </div>
                             </div>
                           </div>
-                          {/* Row 2: badge stack — compact, wraps on narrow
-                              cards. Each badge shows the count only with a
-                              small word so the badge stays short. */}
-                          <div className="flex flex-wrap items-center gap-1">
+
+                          {/* Row 2: status pills — pending pulses to draw
+                              the eye (these provinces are mid-update); the
+                              other two stay static so the carousel doesn't
+                              feel busy. */}
+                          <div className="relative flex flex-wrap items-center gap-1">
                             {hasPending && (
-                              <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums whitespace-nowrap">
-                                {pendingCount} قيد التحديث
+                              <span className="inline-flex items-center gap-0.5 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums whitespace-nowrap shadow-sm shadow-amber-500/40 animate-pulse">
+                                <span className="tabular-nums">{pendingCount}</span> قيد التحديث
                               </span>
                             )}
                             {hasReopen && (
-                              <span className="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums whitespace-nowrap">
-                                {reopenedCount} فُتح
+                              <span className="inline-flex items-center gap-0.5 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums whitespace-nowrap shadow-sm shadow-emerald-600/30">
+                                <span className="tabular-nums">{reopenedCount}</span> فُتح
                               </span>
                             )}
                             {stillClosed && (
-                              <span className="bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums whitespace-nowrap">
-                                {count} مغلق
+                              <span className="inline-flex items-center gap-0.5 bg-rose-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums whitespace-nowrap shadow-sm shadow-rose-600/30">
+                                <span className="tabular-nums">{count}</span> مغلق
                               </span>
                             )}
                           </div>
-                          <div className={`hidden sm:flex items-center justify-end mt-2 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity ${iconColor}`}>
+                          <div className={`relative hidden sm:flex items-center justify-end mt-2 text-[11px] font-black opacity-0 group-hover:opacity-100 group-hover:translate-x-[-2px] transition-all ${iconColor}`}>
                             عرض التفاصيل
                             <ChevronLeft size={12} className="mr-0.5" />
                           </div>
@@ -502,9 +532,24 @@ export default function ZonesPage() {
                       );
                     })}
                   </div>
-                  <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-4 leading-relaxed">
-                    🟡 أصفر = القائمة قيد التحديث الرسمي · 🟢 أخضر = حدث فيها تحديث · 🔴 وردي = ما زالت كلّها مغلقة
-                  </p>
+                  {/* Legend — chip pills instead of emojis. Each chip
+                      uses the same accent colour as the stripe on the
+                      corresponding city card so the reader can match
+                      "amber stripe = this status" without reading text. */}
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 mt-5">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/70 dark:border-amber-800/40 px-2 py-1 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      قيد التحديث
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/70 dark:border-emerald-800/40 px-2 py-1 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      حدث فيها فتح
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/20 border border-rose-200/70 dark:border-rose-800/40 px-2 py-1 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                      كلّها مغلقة
+                    </span>
+                  </div>
                 </div>
               )}
 
