@@ -6,6 +6,7 @@ import { MapPin, ArrowRight, AlertTriangle, CheckCircle2, XCircle, Clock, Sparkl
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import ZoneReportButton from '@/components/zones/ZoneReportButton';
+import SectionDivider from '@/components/ui/SectionDivider';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 600;
@@ -224,15 +225,22 @@ function StatusSection({
             </p>
 
             {districts.length > 1 ? (
-                <div className="space-y-5">
+                <div className="space-y-6">
                     {districts.map(([district, zones]) => (
                         <div key={district}>
-                            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-2.5 flex items-center gap-2">
-                                <span className={`${pillBg} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full tabular-nums`}>
-                                    {zones.length}
-                                </span>
-                                {district}
-                            </h3>
+                            {/* SectionDivider — replaces the inline h3 + small
+                                count pill. The divider draws a horizontal rule
+                                across the section with the district name +
+                                count badge floating on top. Reader scanning a
+                                long zones list sees clear "punctuation"
+                                between districts instead of one continuous
+                                wall of grid items. */}
+                            <SectionDivider
+                                label={district}
+                                count={zones.length}
+                                tone={tone}
+                                className="mt-0 mb-3"
+                            />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 {zones.map((z) => <ZoneTile key={z.id} z={z} />)}
                             </div>
