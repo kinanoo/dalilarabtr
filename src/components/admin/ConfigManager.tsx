@@ -94,48 +94,61 @@ export default function ConfigManager() {
         fetchCategories();
     }
 
+    // Centralised tab metadata — keeps the pill row consistent with the
+    // rest of the admin (HomeManager uses the same pattern). Each tab
+    // carries an icon + theme; the active tab gets a coloured pill +
+    // small accent bar, inactive tabs sit in slate.
+    type CMTabId = 'menus' | 'categories' | 'migration' | 'settings' | 'ai';
+    const TABS: Array<{ id: CMTabId; label: string; icon: typeof Menu; theme: { bg: string; text: string; accent: string } }> = [
+        { id: 'menus',      label: 'القوائم',         icon: Menu,      theme: { bg: 'bg-blue-100 dark:bg-blue-900/30',     text: 'text-blue-700 dark:text-blue-300',     accent: 'bg-blue-500' } },
+        { id: 'categories', label: 'التصنيفات',       icon: Layers,    theme: { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-700 dark:text-violet-300', accent: 'bg-violet-500' } },
+        { id: 'settings',   label: 'إعدادات الموقع',  icon: Settings,  theme: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', accent: 'bg-emerald-500' } },
+        { id: 'migration',  label: 'أدوات متقدمة',    icon: RefreshCw, theme: { bg: 'bg-slate-200 dark:bg-slate-700',      text: 'text-slate-800 dark:text-slate-100',   accent: 'bg-slate-500' } },
+        { id: 'ai',         label: 'المساعد الذكي (AI)', icon: Bot,     theme: { bg: 'bg-amber-100 dark:bg-amber-900/30',   text: 'text-amber-700 dark:text-amber-300',   accent: 'bg-amber-500' } },
+    ];
+
     return (
         <div className="space-y-6">
-            {/* Sub-Tabs */}
-            <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
-                <button
-                    onClick={() => setActiveTab('menus')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${activeTab === 'menus' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                >
-                    <Menu size={16} /> القوائم (Menus)
-                </button>
-                <button
-                    onClick={() => setActiveTab('categories')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${activeTab === 'categories' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                >
-                    <Layers size={16} /> التصنيفات
-                </button>
-                <button
-                    onClick={() => setActiveTab('settings')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${activeTab === 'settings' ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                >
-                    <Settings size={16} /> إعدادات الموقع
-                </button>
-                <button
-                    onClick={() => setActiveTab('migration')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${activeTab === 'migration' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                >
-                    <RefreshCw size={16} /> أدوات متقدمة
-                </button>
-                <button
-                    onClick={() => setActiveTab('ai')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${activeTab === 'ai' ? 'bg-amber-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                >
-                    <Bot size={16} /> المساعد الذكي (AI)
-                </button>
+            {/* Sub-Tabs — pill row */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-800/40 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+                <div className="flex gap-1.5 min-w-max">
+                    {TABS.map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`group/tab relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm transition-all ${
+                                    isActive
+                                        ? `${tab.theme.bg} ${tab.theme.text} shadow-sm`
+                                        : 'text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <Icon size={16} className={isActive ? 'group-hover/tab:rotate-3 transition-transform' : ''} />
+                                {tab.label}
+                                {isActive && (
+                                    <span className={`absolute -bottom-0.5 right-3 left-3 h-0.5 ${tab.theme.accent} rounded-full opacity-80`} />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* === MENUS TAB === */}
             {activeTab === 'menus' && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800 font-bold border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                        <span>إدارة القوائم</span>
-                        <button onClick={fetchMenus} className="text-slate-400 hover:text-blue-500" aria-label="تحديث"><RefreshCw size={16} /></button>
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70 z-10" />
+                    <div className="relative p-4 bg-white/70 dark:bg-slate-900/70 backdrop-blur font-black border-b border-slate-200 dark:border-slate-700 flex justify-between items-center text-slate-800 dark:text-slate-100">
+                        <span className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                <Menu size={14} />
+                            </span>
+                            إدارة القوائم
+                        </span>
+                        <button onClick={fetchMenus} className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/15 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:rotate-180 transition-all duration-500" aria-label="تحديث"><RefreshCw size={14} /></button>
                     </div>
                     {loading ? (
                         <div className="p-8 text-center text-slate-400 flex justify-center"><Loader2 className="animate-spin" /></div>
@@ -195,10 +208,16 @@ export default function ConfigManager() {
 
             {/* === CATEGORIES TAB === */}
             {activeTab === 'categories' && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800 font-bold border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                        <span>إدارة التصنيفات</span>
-                        <button onClick={fetchCategories} className="text-slate-400 hover:text-blue-500" aria-label="تحديث"><RefreshCw size={16} /></button>
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-violet-50/30 dark:from-slate-900 dark:to-violet-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-violet-500 opacity-70 z-10" />
+                    <div className="relative p-4 bg-white/70 dark:bg-slate-900/70 backdrop-blur font-black border-b border-slate-200 dark:border-slate-700 flex justify-between items-center text-slate-800 dark:text-slate-100">
+                        <span className="flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                                <Layers size={14} />
+                            </span>
+                            إدارة التصنيفات
+                        </span>
+                        <button onClick={fetchCategories} className="p-2 rounded-xl bg-violet-50 dark:bg-violet-900/15 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:rotate-180 transition-all duration-500" aria-label="تحديث"><RefreshCw size={14} /></button>
                     </div>
                     {loading ? (
                         <div className="p-8 text-center text-slate-400 flex justify-center"><Loader2 className="animate-spin" /></div>
@@ -256,11 +275,17 @@ export default function ConfigManager() {
 
             {/* === SETTINGS TAB === */}
             {activeTab === 'settings' && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <Settings className="text-emerald-500" /> إعدادات الموقع العامة
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-900 dark:to-emerald-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-70" />
+                    <h3 className="font-black text-lg mb-5 flex items-center gap-2 text-slate-800 dark:text-slate-100 relative">
+                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shadow-sm">
+                            <Settings size={16} />
+                        </span>
+                        إعدادات الموقع العامة
                     </h3>
-                    <GeneralSettingsForm />
+                    <div className="relative">
+                        <GeneralSettingsForm />
+                    </div>
                 </div>
             )}
 
@@ -274,11 +299,17 @@ export default function ConfigManager() {
             {/* === AI PROVIDERS TAB === */}
             {activeTab === 'ai' && (
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                            <Bot className="text-amber-500" /> إعدادات المساعد الذكي — مفاتيح API
+                    <div className="relative overflow-hidden bg-gradient-to-br from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                        <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
+                        <h3 className="font-black text-lg mb-5 flex items-center gap-2 text-slate-800 dark:text-slate-100 relative">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shadow-sm">
+                                <Bot size={16} />
+                            </span>
+                            إعدادات المساعد الذكي — مفاتيح API
                         </h3>
-                        <AIProviderManager />
+                        <div className="relative">
+                            <AIProviderManager />
+                        </div>
                     </div>
                     <AIUsageStats />
                 </div>
@@ -752,10 +783,14 @@ function AIUsageStats() {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5">
-            <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg flex items-center gap-2">
-                    <BarChart3 className="text-blue-500" /> سجل استخدام المساعد الذكي
+        <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 shadow-sm">
+            <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
+            <div className="flex items-center justify-between relative">
+                <h3 className="font-black text-lg flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm">
+                        <BarChart3 size={16} />
+                    </span>
+                    سجل استخدام المساعد الذكي
                 </h3>
                 <button onClick={fetchStats} className="text-slate-400 hover:text-blue-500 transition-colors" title="تحديث">
                     <RefreshCw size={18} />
