@@ -47,20 +47,25 @@ export default function AdminPushPanel() {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+        <div className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/15 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-70" />
+
             <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                    <Bell className="text-emerald-600 dark:text-emerald-400" size={24} />
+                <div className="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200/60 dark:from-emerald-900/40 dark:to-emerald-800/30 text-emerald-600 dark:text-emerald-400 rounded-2xl shadow-sm">
+                    <Bell size={24} />
                 </div>
                 <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">إرسال إشعار عام</h2>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
+                        مباشر
+                    </span>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">إرسال إشعار عام</h2>
                     <p className="text-sm text-slate-500">إرسال تنبيه لجميع المشتركين</p>
                 </div>
             </div>
 
             <form onSubmit={handleSend} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-black text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider">
                         عنوان الإشعار
                     </label>
                     <input
@@ -68,26 +73,26 @@ export default function AdminPushPanel() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="مثال: تحديث هام بخصوص الإقامة"
-                        className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-black text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider">
                         نص الرسالة
                     </label>
                     <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="اكتب تفاصيل الإشعار هنا..."
-                        className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none transition-all h-24 resize-none"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all h-24 resize-none"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-black text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider">
                         رابط التوجيه عند النقر
                     </label>
                     <input
@@ -95,7 +100,7 @@ export default function AdminPushPanel() {
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         placeholder="/article/residence-1 أو /updates أو /faq"
-                        className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all"
                         dir="ltr"
                     />
                     <p className="text-xs text-slate-400 mt-1">
@@ -106,7 +111,7 @@ export default function AdminPushPanel() {
                 <button
                     type="submit"
                     disabled={isSending}
-                    className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="group/btn w-full flex items-center justify-center gap-2 bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black py-3.5 rounded-xl transition-all shadow-md shadow-emerald-600/30 hover:shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
                 >
                     {isSending ? (
                         <>
@@ -115,7 +120,7 @@ export default function AdminPushPanel() {
                         </>
                     ) : (
                         <>
-                            <Send size={18} />
+                            <Send size={18} className="group-hover/btn:rotate-12 transition-transform" />
                             إرسال الآن
                         </>
                     )}
