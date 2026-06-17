@@ -97,18 +97,27 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
             // (lastUpdate) while the DB column is `last_update`. Sending
             // the camelCase key trips PostgREST schema-cache validation
             // with PGRST204 "Could not find the 'lastUpdate' column".
-            // Translate at the boundary so the form code stays as-is.
+            // Always drop the camelCase key — even if value is undefined,
+            // the property still appears in `{ ...form }` and the upsert
+            // serializer can still ship it as null which trips PGRST204.
             const KEY_REMAP: Record<string, string> = {
                 lastUpdate: 'last_update',
             };
             for (const [from, to] of Object.entries(KEY_REMAP)) {
-                if (payload[from] !== undefined) {
-                    if (payload[to] === undefined || payload[to] === null || payload[to] === '') {
-                        payload[to] = payload[from];
+                if (Object.prototype.hasOwnProperty.call(payload, from)) {
+                    const fromVal = payload[from];
+                    if (fromVal !== undefined && fromVal !== null && fromVal !== '') {
+                        if (payload[to] === undefined || payload[to] === null || payload[to] === '') {
+                            payload[to] = fromVal;
+                        }
                     }
                     delete payload[from];
                 }
             }
+
+            // Also strip any other known non-DB keys the form may carry
+            // (interface flex-fields that shouldn't reach the DB).
+            ['active'].forEach(k => { delete payload[k]; });
 
             // Generate ID if new
             if (isNew && !payload.id) {
