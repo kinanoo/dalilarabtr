@@ -306,12 +306,17 @@ export default function ArticleView({ article, slug, initialComments, children }
                 />
               )}
 
-              {/* ✅ ملخص الإجراء - Notion Style Callout (High Contrast) */}
+              {/* ✅ ملخص الإجراء — accent stripe on right (RTL) + gradient surface */}
               <div
                 ref={summaryRef}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 border-l-4 border-l-emerald-500 shadow-sm scroll-mt-20"
+                className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm scroll-mt-20"
               >
-                <h3 className="flex items-center text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 gap-2">
+                <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-80" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
+                  <Sparkles size={12} />
+                  نظرة سريعة
+                </span>
+                <h3 className="flex items-center text-lg lg:text-xl font-black text-gray-900 dark:text-white mb-4 gap-2">
                   <Info className="text-emerald-500 flex-shrink-0" size={22} /> ملخص الإجراء
                 </h3>
 
@@ -340,11 +345,15 @@ export default function ArticleView({ article, slug, initialComments, children }
                     dangerouslySetInnerHTML={{ __html: safeDetails }}
                   />
 
-                  {/* أهم الأوراق + الخطة السريعة (High Contrast UI) */}
+                  {/* أهم الأوراق + الخطة السريعة — accent stripes per type */}
                   <div className="grid grid-cols-1 gap-6">
-                    <div className="bg-white border border-gray-200 shadow-sm dark:bg-slate-800 dark:border-slate-700 rounded-xl p-5">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <FileText size={16} className="text-slate-500 dark:text-slate-400" /> أهم الأوراق
+                    <div className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5 hover:shadow-md hover:shadow-emerald-500/10 transition-shadow">
+                      <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-70" />
+                      <div className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:rotate-3 transition-transform">
+                          <FileText size={16} />
+                        </span>
+                        أهم الأوراق
                       </div>
                       <ul className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
                         {safeDocuments.slice(0, 5).map((doc, i) => (
@@ -356,16 +365,20 @@ export default function ArticleView({ article, slug, initialComments, children }
                       </ul>
                     </div>
 
-                    <div className="bg-white border border-gray-200 shadow-sm dark:bg-slate-800 dark:border-slate-700 rounded-xl p-5">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <ListOrdered size={16} className="text-slate-500 dark:text-slate-400" /> الخطة السريعة
+                    <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/40 dark:from-slate-800 dark:to-blue-950/20 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5 hover:shadow-md hover:shadow-blue-500/10 transition-shadow">
+                      <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
+                      <div className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:rotate-3 transition-transform">
+                          <ListOrdered size={16} />
+                        </span>
+                        الخطة السريعة
                       </div>
                       <ol className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
                         {safeSteps.slice(0, 5).map((step, i) => (
                           <li key={i} className="flex gap-3">
-                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</span>
+                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-black flex-shrink-0 mt-0.5 shadow-sm shadow-blue-500/30 tabular-nums" dir="ltr">{i + 1}</span>
                             <div className="leading-relaxed flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 dark:text-slate-100">{step.title}</div>
+                              <div className="font-bold text-gray-900 dark:text-slate-100">{step.title}</div>
                               {step.description && (
                                 <div className="mt-0.5 text-xs text-gray-600 dark:text-slate-400 leading-relaxed">{step.description}</div>
                               )}
@@ -376,11 +389,14 @@ export default function ArticleView({ article, slug, initialComments, children }
                     </div>
                   </div>
 
-                  {/* التنبيه المهم */}
+                  {/* التنبيه المهم — accent stripe + gradient */}
                   {article.warning && (
-                    <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/10 rounded-xl text-sm font-medium text-red-700 dark:text-red-300 flex gap-2">
-                      <AlertTriangle size={18} className="shrink-0" />
-                      <p>{safeWarning}</p>
+                    <div className="relative overflow-hidden mt-6 p-5 bg-gradient-to-br from-red-50 to-rose-50/50 dark:from-red-900/15 dark:to-rose-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl text-sm font-medium text-red-700 dark:text-red-300 flex gap-3 items-start">
+                      <span className="absolute top-0 right-0 h-full w-1 bg-red-500 opacity-70" />
+                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 shrink-0">
+                        <AlertTriangle size={18} />
+                      </span>
+                      <p className="leading-relaxed pt-1.5">{safeWarning}</p>
                     </div>
                   )}
                 </div>
@@ -401,34 +417,47 @@ export default function ArticleView({ article, slug, initialComments, children }
               {/* قد يهمك أيضاً — Mid-article related articles */}
               <InlineRelatedArticles currentArticleId={slug} category={article.category} />
 
-              {/* التكلفة */}
+              {/* التكلفة — accent stripe + light orb */}
               {article.fees && (
-                <div className="bg-gradient-to-br from-primary-800 to-primary-900 text-white p-4 lg:p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                <div className="bg-gradient-to-br from-primary-800 via-primary-800 to-emerald-900 text-white p-5 lg:p-7 rounded-2xl shadow-xl shadow-primary-900/30 relative overflow-hidden">
+                  <span className="absolute top-0 right-0 h-full w-1.5 bg-white/25" />
+                  <span className="absolute -left-10 -top-10 w-40 h-40 bg-yellow-400/10 rounded-full blur-2xl pointer-events-none" />
                   <div className="relative z-10 flex items-start gap-4">
-                    <div className="p-3 bg-white/10 rounded-full backdrop-blur-sm flex-shrink-0">
+                    <div className="p-3 bg-white/15 backdrop-blur-sm rounded-2xl flex-shrink-0">
                       <Coins size={28} className="text-yellow-400" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-primary-100/80 text-sm mb-1 font-bold">التكلفة التقديرية</h3>
-                      <p className="text-xl lg:text-2xl font-bold tracking-wide break-words">{safeFees}</p>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 backdrop-blur text-white/95 rounded-full text-[10px] font-black tracking-wider uppercase mb-1.5">
+                        رسوم رسمية
+                      </span>
+                      <h3 className="text-primary-100/85 text-sm mb-1 font-bold">التكلفة التقديرية</h3>
+                      <p className="text-xl lg:text-2xl font-black tracking-wide break-words">{safeFees}</p>
                     </div>
                   </div>
-                  <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-4 translate-y-4">
+                  <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-4 translate-y-4 pointer-events-none">
                     <Coins size={120} />
                   </div>
                 </div>
               )}
 
-              {/* النصائح الذهبية */}
+              {/* النصائح الذهبية — RTL right accent + gradient */}
               {safeTips.length > 0 && (
-                <div className="bg-amber-50 dark:bg-amber-900/10 border-l-4 border-amber-400 p-6 rounded-r-xl">
-                  <h3 className="font-bold text-amber-900 dark:text-amber-100 text-base lg:text-lg mb-4 flex items-center gap-2">
-                    <Lightbulb className="fill-amber-400 text-amber-500 flex-shrink-0" size={24} /> نصائح ذهبية
+                <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/15 dark:to-amber-900/5 border border-amber-200 dark:border-amber-900/30 p-6 rounded-2xl">
+                  <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-amber-400 to-amber-500 opacity-80" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-200/60 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
+                    <Sparkles size={12} />
+                    خبراتنا
+                  </span>
+                  <h3 className="font-black text-amber-900 dark:text-amber-100 text-base lg:text-lg mb-4 flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-200/70 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                      <Lightbulb className="fill-amber-400 text-amber-500 flex-shrink-0" size={20} />
+                    </span>
+                    نصائح ذهبية
                   </h3>
                   <ul className="space-y-3">
                     {safeTips.map((tip, i) => (
                       <li key={i} className="flex gap-3 text-amber-800 dark:text-amber-200 font-medium text-sm">
-                        <span className="text-amber-500 mt-1.5 flex-shrink-0">•</span>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-200/70 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-[10px] font-black flex-shrink-0 mt-0.5 tabular-nums" dir="ltr">{i + 1}</span>
                         <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}
@@ -436,19 +465,20 @@ export default function ArticleView({ article, slug, initialComments, children }
                 </div>
               )}
 
-              {/* 🧠 Contextual Help Widget (Relocated Here) */}
-              <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
+              {/* 🧠 Contextual Help Widget — accent stripe + gradient */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50/60 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200 dark:border-blue-900/40 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
+                <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-sm">
                     <BrainCircuit size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100">هل الإجراء يبدو معقداً؟</h4>
+                    <h4 className="font-black text-slate-800 dark:text-slate-100">هل الإجراء يبدو معقداً؟</h4>
                     <p className="text-sm text-slate-500 dark:text-slate-400">تحدث مع مستشار مختص لإنهاء معاملتك قانونياً.</p>
                   </div>
                 </div>
-                <a href={emailHref} className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-600/20 whitespace-nowrap text-center inline-flex items-center justify-center gap-2">
-                  <Mail size={16} />
+                <a href={emailHref} className="group/cta w-full sm:w-auto bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-black text-sm transition-all shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:-translate-y-0.5 whitespace-nowrap text-center inline-flex items-center justify-center gap-2">
+                  <Mail size={16} className="group-hover/cta:rotate-12 transition-transform" />
                   تواصل عبر البريد
                 </a>
               </div>
