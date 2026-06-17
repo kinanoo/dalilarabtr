@@ -413,7 +413,7 @@ export function AnalyticsDashboard() {
             {/* ── 3. Top Pages ─────────────────────────────── */}
             <div>
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+                    <h3 className="font-black text-slate-900 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <ArrowUpRight className="text-emerald-500" size={18} />
                         الأكثر زيارة
                     </h3>
@@ -448,7 +448,7 @@ export function AnalyticsDashboard() {
             {/* ── 3.5. Content Performance ────────────────────────── */}
             {contentPerf.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+                    <h3 className="font-black text-slate-900 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <BarChart3 className="text-violet-500" size={18} />
                         أداء المحتوى
                         <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">آخر 30 يوم</span>
@@ -499,7 +499,7 @@ export function AnalyticsDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Device Breakdown */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+                    <h3 className="font-black text-slate-900 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <Smartphone className="text-blue-500" size={18} />
                         الأجهزة
                     </h3>
@@ -551,7 +551,7 @@ export function AnalyticsDashboard() {
 
                 {/* Country Breakdown */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+                    <h3 className="font-black text-slate-900 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <Globe className="text-violet-500" size={18} />
                         الدول
                     </h3>
@@ -602,7 +602,7 @@ export function AnalyticsDashboard() {
 
                 {/* Traffic Sources */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-2xl">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+                    <h3 className="font-black text-slate-900 dark:text-white mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
                         <Share2 className="text-amber-500" size={18} />
                         مصادر الزيارات
                     </h3>

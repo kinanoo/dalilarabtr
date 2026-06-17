@@ -68,14 +68,22 @@ export default function DashboardLayoutClient({
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo text-slate-900 dark:text-slate-100" dir="rtl">
-            {/* Header */}
-            <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
+            {/* Header — accent stripe + premium logo + nav */}
+            <header className="relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm">
+                {/* Top accent stripe — same family pattern as the public site */}
+                <div
+                    aria-hidden="true"
+                    className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400"
+                />
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                        <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">
+                    <Link href="/dashboard" className="group flex items-center gap-2.5 hover:opacity-95 transition-opacity">
+                        <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-500/30 group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-300">
                             د
                         </div>
-                        <span className="font-bold text-lg hidden sm:inline">لوحة الأعضاء</span>
+                        <div className="hidden sm:flex flex-col">
+                            <span className="text-[9px] font-black tracking-[0.18em] uppercase text-emerald-600 dark:text-emerald-400 leading-none">DASHBOARD</span>
+                            <span className="font-black text-base sm:text-lg text-slate-900 dark:text-white leading-tight">لوحة الأعضاء</span>
+                        </div>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -91,10 +99,10 @@ export default function DashboardLayoutClient({
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-black transition-all duration-300 ${
                                         isActive
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            ? 'bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm'
+                                            : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                                 >
                                     <Icon size={16} />

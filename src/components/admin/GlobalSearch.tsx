@@ -44,7 +44,7 @@ const SearchInput = ({ query, setQuery, setIsResultsOpen, loading, isModal = fal
             onFocus={() => { if (query) setIsResultsOpen(true); }}
             autoFocus={isModal}
             placeholder="ابحث شامل (مقالات، خدمات، أكواد، مناطق، ذكاء اصطناعي...)"
-            className={`w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl py-4 pr-12 pl-4 text-lg font-bold shadow-sm focus:outline-none focus:border-emerald-500 focus:shadow-emerald-500/20 transition-all text-slate-800 dark:text-white placeholder:text-slate-400 ${isModal ? 'bg-slate-100 dark:bg-slate-950 border-0 shadow-none' : ''}`}
+            className={`w-full bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 border-2 border-slate-200 dark:border-slate-800 rounded-2xl py-4 pr-12 pl-4 text-lg font-bold shadow-sm focus:outline-none focus:border-emerald-500 focus:shadow-lg focus:shadow-emerald-500/20 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all text-slate-800 dark:text-white placeholder:text-slate-400 ${isModal ? 'bg-slate-100 dark:bg-slate-950 border-0 shadow-none' : ''}`}
         />
         {query && (
             <button

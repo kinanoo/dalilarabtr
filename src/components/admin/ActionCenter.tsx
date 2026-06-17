@@ -157,8 +157,19 @@ export function ActionCenter() {
         <div className="space-y-4">
             {/* Since Last Visit Summary */}
             {hasSinceLastUpdates && (
-                <div className="bg-gradient-to-l from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 border border-slate-700 shadow-lg">
-                    <p className="text-slate-400 text-xs font-bold mb-3 uppercase tracking-wider">منذ آخر زيارة لك</p>
+                <div className="relative bg-gradient-to-l from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 border border-slate-700 shadow-lg overflow-hidden">
+                    {/* Top accent stripe — emerald gradient, brand mark */}
+                    <div
+                        aria-hidden="true"
+                        className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400"
+                    />
+                    <div className="inline-flex items-center gap-1.5 mb-3">
+                        <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
+                            <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                            <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        </span>
+                        <p className="text-emerald-300 text-[10px] font-black uppercase tracking-[0.2em]">منذ آخر زيارة لك</p>
+                    </div>
                     <div className="grid grid-cols-3 gap-3">
                         {sinceLast.newMembers > 0 && (
                             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-center">
@@ -188,11 +199,20 @@ export function ActionCenter() {
             {/* Pending Tasks */}
             {visibleCount > 0 ? (
                 <>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <BellRing className="text-red-500" />
-                        مهام معلقة
-                        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{visibleCount}</span>
-                    </h2>
+                    <div>
+                        <div className="inline-flex items-center gap-1.5 mb-2">
+                            <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
+                                <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-red-500 opacity-75 animate-ping" />
+                                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-red-500" />
+                            </span>
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-red-600 dark:text-red-400">PENDING · معلّقة</span>
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2 leading-tight">
+                            <BellRing className="text-red-500" size={22} />
+                            مهام معلقة
+                            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-black tabular-nums shadow-sm shadow-red-500/40">{visibleCount}</span>
+                        </h2>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {showFeedback && (

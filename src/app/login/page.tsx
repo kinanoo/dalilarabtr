@@ -104,9 +104,24 @@ export default function LoginPage() {
 
                 {/* Form Section - Right Side on Desktop */}
                 <div className="p-8 md:p-12 order-1 md:order-2 flex flex-col justify-center">
+                    {/* Magazine-style header — eyebrow + title + subtitle.
+                        Matches the pattern used across the site so the
+                        login screen feels family-related to the public
+                        site, not a separate utility. */}
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">تسجيل الدخول</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">أهلاً بك مجدداً في عائلة دليل العرب</p>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-full mb-3">
+                            <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
+                                <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
+                                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            </span>
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">
+                                LOGIN · تسجيل الدخول
+                            </span>
+                        </div>
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-2 leading-tight">
+                            أهلاً <span className="bg-gradient-to-l from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">بعودتك</span>
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">سجّل دخولك للوصول لاستشاراتك ومعاملاتك الخاصّة</p>
                     </div>
 
                     {/* Google Login */}
@@ -137,9 +152,9 @@ export default function LoginPage() {
                     </button>
 
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
-                        <span className="text-xs text-slate-400 font-bold">أو بالطريقة التقليدية</span>
-                        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
+                        <div className="flex-1 h-px bg-gradient-to-l from-transparent via-slate-300 to-transparent dark:via-slate-700"></div>
+                        <span className="text-[10px] font-black tracking-[0.18em] uppercase text-slate-400 dark:text-slate-500">أو بالبريد</span>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-700"></div>
                     </div>
 
                     {infoMessage && (
@@ -184,7 +199,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-emerald-600/30 active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg"
+                            className="w-full bg-gradient-to-l from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-600 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-emerald-500/40 hover:shadow-2xl hover:shadow-emerald-500/50 active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="animate-spin" /> : <LogIn size={24} />}
                             {loading ? 'جاري التحقق...' : 'دخول'}
