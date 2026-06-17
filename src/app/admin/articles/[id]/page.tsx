@@ -8,6 +8,7 @@ import { Loader2, ArrowRight, Save, Send } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
+import { extractErrorMessage } from '@/lib/errors';
 
 interface ArticleFormData {
     id?: string;
@@ -132,7 +133,16 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
             router.refresh();
             router.push('/admin/articles');
         } catch (err) {
-            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
+            // Supabase PostgrestError is a plain object, not an Error instance.
+            // The old `err instanceof Error ? err.message : String(err)` check
+            // fell through to String(err) and rendered "[object Object]" — the
+            // admin couldn't tell whether it was an RLS denial, a unique-key
+            // violation, or a missing column. extractErrorMessage pulls the
+            // readable bits (message + details + hint + code) so the toast
+            // actually points at the cause.
+            toast.error('خطأ في الحفظ: ' + extractErrorMessage(err));
+            // eslint-disable-next-line no-console
+            console.error('[articles save] raw error:', err);
         } finally {
             setSaving(false);
         }

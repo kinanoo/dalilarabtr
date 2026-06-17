@@ -10,6 +10,7 @@ import { ServiceEditor } from '@/components/admin/editors/ServiceEditor';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
 import logger from '@/lib/logger';
+import { extractErrorMessage } from '@/lib/errors';
 
 interface ServiceFormData {
     [key: string]: string | boolean | undefined;
@@ -163,7 +164,7 @@ export default function AdminServicesPage() {
             setSelectedItem(null);
             setRefreshKey(k => k + 1);
         } catch (err) {
-            toast.error('❌ خطأ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('❌ خطأ: ' + (extractErrorMessage(err)));
         } finally {
             setSaving(false);
         }

@@ -7,6 +7,7 @@ import { FaqEditor } from '@/components/admin/editors/FaqEditor';
 import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { extractErrorMessage } from '@/lib/errors';
 
 interface FaqFormData {
     id?: string;
@@ -72,7 +73,7 @@ export default function FaqEditPage({ params }: { params: Promise<{ id: string }
             router.refresh();
             router.push('/admin/faqs');
         } catch (err) {
-            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('خطأ في الحفظ: ' + (extractErrorMessage(err)));
         } finally {
             setSaving(false);
         }

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
 import logger from '@/lib/logger';
+import { extractErrorMessage } from '@/lib/errors';
 
 interface ScenarioFormData {
     id?: string;
@@ -108,7 +109,7 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
             router.refresh();
             router.push('/admin/scenarios');
         } catch (err) {
-            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('خطأ في الحفظ: ' + (extractErrorMessage(err)));
         } finally {
             setSaving(false);
         }

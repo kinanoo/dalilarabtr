@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2, MessageCircle, Send } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import { extractErrorMessage } from '@/lib/errors';
 import { toast } from 'sonner';
 import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
@@ -102,7 +103,7 @@ export default function AdminCommunityPage() {
             toast.success('✅ تم إنشاء التحديث ونشره مباشرة');
             fetchComments();
         } catch (err) {
-            toast.error('خطأ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('خطأ: ' + (extractErrorMessage(err)));
         } finally {
             setConverting(null);
         }

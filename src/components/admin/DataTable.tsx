@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
+import { extractErrorMessage } from '@/lib/errors';
 
 interface Column {
     key: string;
@@ -127,7 +128,7 @@ export function DataTable({
 
         } catch (err) {
             logger.error('Error fetching data:', err);
-            toast.error('فشل تحميل البيانات: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('فشل تحميل البيانات: ' + (extractErrorMessage(err)));
         } finally {
             setLoading(false);
         }
@@ -150,7 +151,7 @@ export function DataTable({
             toast.success('تم الحذف بنجاح');
             fetchData();
         } catch (err) {
-            toast.error('خطأ في الحذف: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('خطأ في الحذف: ' + (extractErrorMessage(err)));
         } finally {
             markPending(id, false);
         }
@@ -170,7 +171,7 @@ export function DataTable({
             toast.success(currentValue ? 'تم التعطيل' : 'تم التفعيل');
             fetchData();
         } catch (err) {
-            toast.error('خطأ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('خطأ: ' + (extractErrorMessage(err)));
         } finally {
             markPending(id, false);
         }

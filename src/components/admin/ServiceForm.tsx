@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Upload, Plus, Save, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import logger from '@/lib/logger';
 import { watermarkImage } from '@/lib/watermark';
+import { extractErrorMessage } from '@/lib/errors';
 
 export default function ServiceForm() {
     const [loading, setLoading] = useState(false);
@@ -92,7 +93,7 @@ export default function ServiceForm() {
 
         } catch (err) {
             logger.error(err);
-            setError((err instanceof Error ? err.message : String(err)) || 'حدث خطأ غير متوقع');
+            setError((extractErrorMessage(err)) || 'حدث خطأ غير متوقع');
         } finally {
             setLoading(false);
         }

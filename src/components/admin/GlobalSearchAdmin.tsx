@@ -13,6 +13,7 @@ import { ArticleEditor } from './editors/ArticleEditor';
 import { ServiceEditor } from './editors/ServiceEditor';
 import { StaticPageEditor } from './editors/StaticPageEditor';
 import { GenericEditor } from './editors/GenericEditor';
+import { extractErrorMessage } from '@/lib/errors';
 import { CodeEditor } from './editors/CodeEditor';
 import { ZoneEditor } from './editors/ZoneEditor';
 import { SourceEditor } from './editors/SourceEditor';
@@ -286,7 +287,7 @@ export default function AdminDashboard() {
 
         } catch (err) {
             logger.error("💥 [AdminSave] Error:", err);
-            toast.error('❌ حدث خطأ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('❌ حدث خطأ: ' + (extractErrorMessage(err)));
         } finally {
             setSaving(false);
         }
@@ -324,7 +325,7 @@ export default function AdminDashboard() {
             toast.success('🗑️ تم الحذف');
             setSelectedItem(null);
         } catch (err) {
-            toast.error('❌ خطأ في الحذف: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('❌ خطأ في الحذف: ' + (extractErrorMessage(err)));
         } finally {
             setSaving(false);
         }

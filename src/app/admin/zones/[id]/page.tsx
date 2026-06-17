@@ -7,6 +7,7 @@ import { ZoneEditor } from '@/components/admin/editors/ZoneEditor';
 import { Loader2, ArrowRight, Save } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { extractErrorMessage } from '@/lib/errors';
 
 interface ZoneFormData {
     id?: string;
@@ -76,7 +77,7 @@ export default function ZoneEditPage({ params }: { params: Promise<{ id: string 
             router.refresh();
             router.push('/admin/zones');
         } catch (err) {
-            toast.error('خطأ في الحفظ: ' + (err instanceof Error ? err.message : String(err)));
+            toast.error('خطأ في الحفظ: ' + (extractErrorMessage(err)));
         } finally {
             setSaving(false);
         }
