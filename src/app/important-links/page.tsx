@@ -108,16 +108,19 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col h-full"
+      className="group relative bg-gradient-to-br from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-700 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
     >
+      {/* Accent stripe — right edge in RTL */}
+      <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity z-10" />
+
       {/* الجزء العلوي - الأيقونة والعنوان */}
       <div className="p-4 sm:p-5 flex-grow">
         <div className="flex items-start gap-3 mb-3">
-          <div className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl group-hover:bg-blue-600 transition-colors flex-shrink-0">
+          <div className="p-2.5 sm:p-3 bg-blue-100 dark:bg-blue-950/40 rounded-2xl group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-blue-600 transition-all flex-shrink-0 group-hover:rotate-3 shadow-sm">
             <Globe size={20} className="text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
               {source.name}
             </h3>
           </div>
@@ -167,20 +170,23 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
       href={resource.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 p-4 sm:p-5 hover:shadow-lg transition-all flex flex-col h-full"
+      className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50/60 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 p-4 sm:p-5 hover:shadow-xl hover:shadow-emerald-500/15 hover:border-emerald-400 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
     >
+      {/* Accent stripe — right edge in RTL */}
+      <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+
       <div className="flex items-start gap-3 mb-2">
-        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex-shrink-0">
+        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex-shrink-0 group-hover:rotate-3 transition-transform shadow-sm">
           <Globe size={18} className="text-emerald-600 dark:text-emerald-400" />
         </div>
-        <h3 className="font-bold text-emerald-900 dark:text-emerald-100 text-sm sm:text-base leading-tight">
+        <h3 className="font-black text-emerald-900 dark:text-emerald-100 text-sm sm:text-base leading-tight">
           {resource.name}
         </h3>
       </div>
-      <p className="text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm flex-grow">
+      <p className="text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm flex-grow leading-relaxed">
         {resource.desc}
       </p>
-      <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold mt-3">
+      <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs font-black mt-3">
         زيارة الموقع
         <ExternalLink size={12} className="group-hover:translate-x-1 transition-transform" />
       </div>
@@ -241,11 +247,14 @@ export default function ImportantLinksPage() {
         {filteredSources.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2.5 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
+              <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200/50 dark:from-blue-900/50 dark:to-blue-800/30 rounded-2xl shadow-sm">
                 <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
+                  رسمي
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
                   المصادر الحكومية الرسمية
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -272,11 +281,14 @@ export default function ImportantLinksPage() {
         {filteredResources.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-8">
-              <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
+              <div className="p-3 bg-gradient-to-br from-emerald-100 to-emerald-200/50 dark:from-emerald-900/50 dark:to-emerald-800/30 rounded-2xl shadow-sm">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
+                  منظمات
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
                   منظمات وموارد مفيدة
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">

@@ -1,10 +1,9 @@
 import { Metadata } from 'next';
 import PageHero from '@/components/PageHero';
-import Link from 'next/link';
-import { Briefcase, ArrowLeft, Sparkles, Calendar } from 'lucide-react';
-import Image from 'next/image';
+import { Briefcase, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import ShareMenu from '@/components/ShareMenu';
+import CategoryHubCard from '@/components/CategoryHubCard';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const revalidate = 3600;
@@ -17,12 +16,6 @@ export const metadata: Metadata = {
     images: [{ url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: 'العمل والاستثمار في تركيا', category: 'دليل شامل' })}`, width: 1200, height: 630 }],
   },
 };
-
-function isNewContent(dateStr: string): boolean {
-  if (!dateStr) return false;
-  const diffDays = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
-  return diffDays <= 7;
-}
 
 export default async function WorkPage() {
   let articles: any[] = [];
@@ -56,42 +49,20 @@ export default async function WorkPage() {
       />
 
       <div className="max-w-screen-2xl mx-auto px-4 py-12">
+        <div className="flex items-center justify-center mb-8">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-black tracking-wider uppercase">
+            <Sparkles size={12} />
+            دليل القسم
+          </span>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.length > 0 ? (
             articles.map((article) => (
-              <Link
-                key={article.id}
-                href={`/article/${article.slug || article.id}`}
-                className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-accent-500 hover:shadow-md transition group h-full flex flex-col overflow-hidden"
-              >
-                {article.image && (
-                  <div className="h-40 overflow-hidden relative">
-                    <Image
-                      src={article.image}
-                      alt={article.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </div>
-                )}
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    {isNewContent(article.created_at || '') && (
-                      <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1">
-                        <Sparkles size={10} /> جديد
-                      </span>
-                    )}
-                    <span className="text-xs text-slate-400 flex items-center gap-1 mr-auto"><Calendar size={12} />{article.lastUpdate}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-3 group-hover:text-primary-600 transition">{article.title}</h3>
-                  <p className="text-slate-500 dark:text-slate-300 text-sm mb-6 flex-grow line-clamp-3">{article.intro?.replace(/<[^>]*>/g, '')}</p>
-                  <div className="flex items-center text-accent-600 font-bold text-sm mt-auto">اقرأ الدليل الكامل <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" /></div>
-                </div>
-              </Link>
+              <CategoryHubCard key={article.id} article={article} theme="emerald" />
             ))
           ) : (
-            <div className="col-span-3 text-center py-12 text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+            <div className="col-span-3 text-center py-12 text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
               لا توجد مقالات مضافة في هذا القسم حالياً.
             </div>
           )}
