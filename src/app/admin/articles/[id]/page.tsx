@@ -144,6 +144,41 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
 
             if (error) throw error;
 
+            // Bust ISR cache so the homepage carousel, articles list, tag
+            // pages, and the article URL itself pick up the change on the
+            // VERY NEXT request — not after the 5-minute revalidate window.
+            // User complaint: edited article title in admin, carousel kept
+            // showing the old title for minutes. The carousel reads from a
+            // server component (FeaturedNewsHero) cached by `export const
+            // revalidate = 300` on the homepage. revalidatePath('/') flips
+            // that to "stale" so the next visitor triggers a fresh fetch.
+            //
+            // Fire-and-forget — the toast + redirect should not wait. If
+            // the call fails (401 in non-admin context, network blip, etc.)
+            // the worst case is the old 5-min cache window — same as
+            // before this fix.
+            try {
+                const slugForPath = (payload.slug as string) || (payload.id as string);
+                const tagPaths: string[] = Array.isArray(payload.tags)
+                    ? (payload.tags as string[])
+                          .filter(t => typeof t === 'string' && t.length < 60)
+                          .slice(0, 6)
+                          .map(t => `/tag/${encodeURIComponent(t)}`)
+                    : [];
+                const paths = [
+                    '/',
+                    '/articles',
+                    '/updates',
+                    slugForPath ? `/article/${slugForPath}` : '',
+                    ...tagPaths,
+                ].filter(Boolean);
+                void fetch('/api/admin/revalidate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paths }),
+                }).catch(() => { /* non-critical */ });
+            } catch { /* non-critical */ }
+
             // Send push notification for new articles
             if (isNew && sendPush && payload.title) {
                 try {
