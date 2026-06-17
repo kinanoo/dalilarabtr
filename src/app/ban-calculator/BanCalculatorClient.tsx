@@ -5,7 +5,7 @@ import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import { useState } from 'react';
-import { Calculator, AlertTriangle, CheckCircle, Info, Plane, ArrowRight } from 'lucide-react';
+import { Calculator, AlertTriangle, CheckCircle, Info, Plane, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RelatedArticles from '@/components/RelatedArticles';
 
@@ -86,8 +86,18 @@ export default function BanCalculator() {
       {/* Main Container - Widened for horizontal layout */}
       <div className="max-w-5xl mx-auto px-4 py-8 mt-10 relative z-10">
 
-        {/* Compact Card - Taller & Square-like */}
-        <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-300 dark:border-slate-800 min-h-[550px] flex flex-col">
+        {/* Eyebrow */}
+        <div className="flex items-center justify-center mb-4">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-[11px] font-black tracking-wider uppercase">
+            <Sparkles size={12} />
+            أداة قانونية مجانية
+          </span>
+        </div>
+
+        {/* Compact Card — accent stripe + gradient surface */}
+        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-indigo-50/40 dark:from-slate-900 dark:to-indigo-950/20 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-indigo-500/5 border border-slate-300 dark:border-slate-800 min-h-[550px] flex flex-col">
+          {/* Accent stripe — right edge in RTL */}
+          <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-indigo-500 to-violet-500 opacity-80" />
 
           {/* Grid Layout for Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -152,14 +162,14 @@ export default function BanCalculator() {
 
           </div>
 
-          {/* Calculate Button - Pushed to Bottom */}
+          {/* Calculate Button — premium gradient */}
           <div className="mt-auto pt-8 flex justify-center pb-4">
             <button
               type="button"
               onClick={calculateBan}
-              className="w-full md:w-1/3 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="group/btn relative w-full md:w-1/3 bg-gradient-to-l from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-3.5 px-8 rounded-xl font-black text-lg shadow-lg shadow-indigo-600/30 hover:shadow-xl hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
-              <Calculator size={20} />
+              <Calculator size={20} className="group-hover/btn:rotate-12 transition-transform" />
               احسب النتيجة
             </button>
           </div>
@@ -176,17 +186,19 @@ export default function BanCalculator() {
               >
                 <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800 grid md:grid-cols-[auto_1fr] gap-6 items-center animate-in fade-in slide-in-from-bottom-4">
 
-                  {/* Badge */}
-                  <div className={`shrink-0 ${result.color} text-white py-4 px-8 rounded-2xl shadow-md text-center md:text-right min-w-[240px]`}>
-                    <p className="text-white/80 text-xs font-bold mb-1 uppercase tracking-wider">قرار المنع المتوقع</p>
-                    <h2 className="text-2xl font-black">{result.text}</h2>
+                  {/* Badge — accent stripe + premium shadow */}
+                  <div className={`relative overflow-hidden shrink-0 ${result.color} text-white py-5 px-8 rounded-2xl shadow-xl text-center md:text-right min-w-[240px]`}>
+                    <span className="absolute top-0 right-0 h-full w-1.5 bg-white/30" />
+                    <p className="text-white/85 text-[10px] font-black mb-1 uppercase tracking-[0.2em]">قرار المنع المتوقع</p>
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">{result.text}</h2>
                   </div>
 
-                  {/* Description */}
-                  <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-start gap-3">
+                  {/* Description — gradient surface + accent */}
+                  <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-amber-50/40 dark:from-slate-950 dark:to-amber-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-start gap-3">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
                     <AlertTriangle className="text-amber-500 flex-shrink-0 mt-1" size={24} />
                     <div>
-                      <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">تفاصيل القانون:</h4>
+                      <h4 className="font-black text-slate-800 dark:text-slate-200 text-sm mb-1">تفاصيل القانون:</h4>
                       <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
                         {result.desc}
                       </p>

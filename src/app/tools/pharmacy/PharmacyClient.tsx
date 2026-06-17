@@ -38,14 +38,25 @@ export default function PharmacyPage() {
             <main className="flex-grow pt-10 pb-16 px-4 -mt-10 relative z-20">
                 <div className="container mx-auto max-w-2xl">
 
-                    {/* Main Action Card */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 text-center relative overflow-hidden group">
+                    {/* Eyebrow */}
+                    <div className="flex items-center justify-center mb-4">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-[11px] font-black tracking-wider uppercase">
+                            <span className="relative inline-flex items-center justify-center">
+                                <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-red-500 opacity-75 animate-ping" />
+                                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-red-500" />
+                            </span>
+                            متاح الآن 24/7
+                        </span>
+                    </div>
+
+                    {/* Main Action Card — accent stripe + gradient */}
+                    <div className="bg-gradient-to-br from-white to-red-50/40 dark:from-slate-900 dark:to-red-950/20 rounded-3xl shadow-xl shadow-red-500/5 border border-slate-200 dark:border-slate-800 p-8 text-center relative overflow-hidden group">
 
                         {/* Background Decoration */}
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 via-red-600 to-red-500" />
+                        <span className="absolute top-0 right-0 h-full w-1.5 bg-gradient-to-b from-red-500 via-red-600 to-red-500 opacity-80" />
                         <div className="absolute -right-20 -top-20 w-64 h-64 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
 
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 relative z-10">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 relative z-10">
                             اضغط أدناه للبحث عن الصيدلية المناوبة في منطقتك
                         </h2>
 
@@ -53,41 +64,47 @@ export default function PharmacyPage() {
                             href="https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="relative z-10 inline-flex items-center justify-center gap-3 w-full py-5 px-6 bg-red-600 hover:bg-red-700 text-white text-xl font-bold rounded-2xl shadow-lg shadow-red-600/30 hover:scale-[1.02] hover:shadow-xl hover:shadow-red-600/40 transition-all duration-300"
+                            className="group/cta relative z-10 inline-flex items-center justify-center gap-3 w-full py-5 px-6 bg-gradient-to-l from-red-600 via-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white text-xl font-black rounded-2xl shadow-xl shadow-red-600/40 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-red-600/50 transition-all duration-300"
                         >
                             <span>الانتقال لبحث e-Devlet الرسمي</span>
-                            <ExternalLink className="w-6 h-6" />
+                            <ExternalLink className="w-6 h-6 group-hover/cta:rotate-12 transition-transform" />
                         </a>
 
-                        <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400 relative z-10">
-                            <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                                مصدر حكومي موثوق 100%
+                        <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm text-slate-500 dark:text-slate-400 relative z-10">
+                            <span className="flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-3 py-1.5 rounded-full text-xs font-black">
+                                <ShieldCheck className="w-4 h-4" />
+                                مصدر حكومي 100٪
                             </span>
-                            <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-                                <MapPin className="w-4 h-4 text-blue-500" />
-                                يغطي كل الولايات
+                            <span className="flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-black">
+                                <MapPin className="w-4 h-4" />
+                                81 ولاية
                             </span>
                         </div>
                     </div>
 
-                    {/* How to use */}
-                    <div className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <Info size={18} className="text-blue-500" />
+                    {/* How to use — accent stripe */}
+                    <div className="group/how relative overflow-hidden mt-6 bg-gradient-to-br from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 transition-all">
+                        <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
+                        <h3 className="font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover/how:rotate-3 transition-transform">
+                                <Info size={16} />
+                            </span>
                             كيف تستخدم الخدمة؟
                         </h3>
-                        <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside">
+                        <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed">
                             <li>اضغط الزر أعلاه للانتقال لبوابة e-Devlet</li>
                             <li>اختر الولاية (İl) ثم المنطقة (İlçe)</li>
                             <li>ستظهر قائمة الصيدليات المناوبة مع العناوين وأرقام الهاتف</li>
                         </ol>
                     </div>
 
-                    {/* Emergency Numbers */}
-                    <div className="mt-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <Phone size={18} className="text-red-500" />
+                    {/* Emergency Numbers — accent stripe */}
+                    <div className="group/emg relative overflow-hidden mt-4 bg-gradient-to-br from-white to-rose-50/40 dark:from-slate-900 dark:to-rose-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <span className="absolute top-0 right-0 h-full w-1 bg-rose-500 opacity-70" />
+                        <h3 className="font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 group-hover/emg:rotate-3 transition-transform">
+                                <Phone size={16} />
+                            </span>
                             أرقام الطوارئ في تركيا
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
@@ -100,10 +117,11 @@ export default function PharmacyPage() {
                                 <a
                                     key={item.number}
                                     href={`tel:${item.number}`}
-                                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-red-50 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                                    className="group/num relative overflow-hidden flex items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-800/50 hover:bg-red-50 dark:hover:bg-red-950/30 border border-slate-200 dark:border-slate-700 hover:border-red-400 hover:shadow-md hover:shadow-red-500/10 hover:-translate-y-0.5 transition-all"
                                 >
-                                    <span className="text-lg font-black text-red-600 dark:text-red-400 font-mono">{item.number}</span>
-                                    <span className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-tight">{item.label}</span>
+                                    <span className="absolute top-0 right-0 h-full w-0.5 bg-red-500 opacity-0 group-hover/num:opacity-70 transition-opacity" />
+                                    <span className="text-lg font-black text-red-600 dark:text-red-400 font-mono tabular-nums" dir="ltr">{item.number}</span>
+                                    <span className="text-xs text-slate-600 dark:text-slate-300 font-bold leading-tight">{item.label}</span>
                                 </a>
                             ))}
                         </div>
