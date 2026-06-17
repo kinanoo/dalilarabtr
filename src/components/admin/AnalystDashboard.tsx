@@ -133,18 +133,29 @@ export function AnalystDashboard() {
     }
 
     return (
-        <div className="space-y-8">
-            {/* Control Panel */}
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                    <h3 className="text-lg font-bold">بدء التحليل الشامل</h3>
-                    <p className="text-sm text-slate-500">سيقوم المحلل بفحص 3 طبقات: الفجوات، المنطق، والتناقضات.</p>
+        <div className="space-y-6">
+            {/* Control Panel — accent stripe + gradient + premium CTA */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-violet-50/40 dark:from-slate-900 dark:to-violet-950/15 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <span className="absolute top-0 right-0 h-full w-1.5 bg-gradient-to-b from-violet-500 to-purple-500 opacity-80 pointer-events-none" />
+                {/* Soft glow blob to give the panel some editorial depth */}
+                <span className="absolute -left-12 -bottom-12 w-56 h-56 bg-violet-300/20 dark:bg-violet-700/15 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-2">
+                        <BrainCircuit size={12} />
+                        تحليل ذكي
+                    </span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white">بدء التحليل الشامل</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        سيقوم المحلل بفحص 3 طبقات: الفجوات، المنطق، والتناقضات.
+                    </p>
                 </div>
-                <div className="flex flex-col gap-3">
+
+                <div className="relative flex flex-col gap-3 items-center md:items-end">
                     <button
                         onClick={runAnalysis}
                         disabled={analyzing}
-                        className="relative overflow-hidden bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
+                        className="group/run relative overflow-hidden bg-gradient-to-l from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-violet-600/30 hover:shadow-xl hover:shadow-violet-600/40 hover:-translate-y-0.5 active:scale-95"
                     >
                         {analyzing ? (
                             <>
@@ -153,22 +164,23 @@ export function AnalystDashboard() {
                             </>
                         ) : (
                             <>
-                                <Sparkles className="group-hover:rotate-12 transition-transform" />
+                                <Sparkles className="group-hover/run:rotate-12 transition-transform" />
                                 تشغيل المحلل الآن
                             </>
                         )}
                     </button>
                     {analyzing && (
-                        <div className="text-xs font-mono text-slate-500 animate-pulse">
+                        <div className="text-xs font-mono text-violet-500 dark:text-violet-300 animate-pulse">
                             جاري فحص البيانات... يرجى الانتظار
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Live Analysis Log */}
+            {/* Live Analysis Log — terminal style w/ accent stripe */}
             {logs.length > 0 && (
-                <div className="bg-slate-950 font-mono text-sm p-4 rounded-xl border border-slate-800 shadow-inner h-96 overflow-y-auto custom-scrollbar flex flex-col-reverse" dir="ltr">
+                <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 to-slate-900 font-mono text-sm p-4 rounded-2xl border border-slate-800 shadow-inner h-96 overflow-y-auto custom-scrollbar flex flex-col-reverse" dir="ltr">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-violet-500 to-purple-500 opacity-70 pointer-events-none z-10" />
                     <div ref={messagesEndRef} />
                     {logs.slice().reverse().map((log, i) => {
                         const msg = log.message;
@@ -195,58 +207,73 @@ export function AnalystDashboard() {
             {/* Results Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <AnimatePresence>
-                    {insights.map((insight, idx) => (
-                        <motion.div
-                            key={insight.id || idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden"
-                        >
-                            {/* Decorative side bar */}
-                            <div className={`absolute top-0 right-0 bottom-0 w-1 ${insight.type === 'gap' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                    {insights.map((insight, idx) => {
+                        // Per-type theme: gap (missing service) = amber, everything
+                        // else (logic/conflict/quality) reads blue. Surfaces +
+                        // chip + icon tile + accent stripe all share the colour
+                        // so the admin can scan the wall at a glance.
+                        const isGap = insight.type === 'gap';
+                        const theme = isGap
+                            ? { accent: 'bg-amber-500', surface: 'from-white to-amber-50/40 dark:from-slate-900 dark:to-amber-950/15', chip: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', icon: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400', shadow: 'hover:shadow-amber-500/10', border: 'hover:border-amber-300' }
+                            : { accent: 'bg-blue-500',  surface: 'from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/15',   chip: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',         icon: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',         shadow: 'hover:shadow-blue-500/10',  border: 'hover:border-blue-300' };
 
-                            <div className="flex items-start justify-between mb-3">
-                                <div className={`p-2 rounded-lg ${insight.type === 'gap' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
-                                    {insight.type === 'gap' ? <MapPin size={20} /> : <AlertTriangle size={20} />}
+                        return (
+                            <motion.div
+                                key={insight.id || idx}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className={`group relative overflow-hidden bg-gradient-to-br ${theme.surface} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 ${theme.border} shadow-sm hover:shadow-md ${theme.shadow} hover:-translate-y-0.5 transition-all`}
+                            >
+                                <span className={`absolute top-0 right-0 h-full w-1 ${theme.accent} opacity-70 group-hover:opacity-100 transition-opacity`} />
+
+                                <div className="flex items-start justify-between mb-3 relative">
+                                    <div className={`p-2.5 rounded-2xl ${theme.icon} shadow-sm group-hover:rotate-3 group-hover:scale-110 transition-transform`}>
+                                        {isGap ? <MapPin size={20} /> : <AlertTriangle size={20} />}
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase tracking-wider ${theme.chip} px-2 py-0.5 rounded-lg`}>
+                                        {insight.type}
+                                    </span>
                                 </div>
-                                <span className="text-xs font-bold uppercase text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                                    {insight.type}
-                                </span>
-                            </div>
 
-                            <h4 className="font-bold text-lg text-slate-800 dark:text-white mb-2 line-clamp-2">
-                                {insight.title}
-                            </h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-3">
-                                {insight.description}
-                            </p>
+                                <h4 className="font-black text-lg text-slate-800 dark:text-white mb-2 line-clamp-2 leading-snug relative">
+                                    {insight.title}
+                                </h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-3 leading-relaxed relative">
+                                    {insight.description}
+                                </p>
 
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleAction(insight)}
-                                    className="flex-1 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
-                                >
-                                    اتخاذ إجراء <ArrowRight size={14} className="rotate-180" />
-                                </button>
-                                <button
-                                    onClick={() => handleIgnore(insight.id)}
-                                    className="px-3 py-2 bg-transparent border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                                    title="تجاهل هذه الملاحظة (لن تظهر مرة أخرى)"
-                                >
-                                    <EyeOff size={18} />
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
+                                <div className="flex gap-2 relative">
+                                    <button
+                                        onClick={() => handleAction(insight)}
+                                        className="group/act flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm font-black text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-95"
+                                    >
+                                        اتخاذ إجراء
+                                        <ArrowRight size={14} className="rotate-180 group-hover/act:-translate-x-0.5 transition-transform" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleIgnore(insight.id)}
+                                        className="px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 hover:text-red-500 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/15 transition-all hover:scale-110 active:scale-95"
+                                        title="تجاهل هذه الملاحظة (لن تظهر مرة أخرى)"
+                                    >
+                                        <EyeOff size={18} />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </AnimatePresence>
             </div>
 
             {!loading && insights.length === 0 && (
-                <div className="text-center py-20 opacity-50">
-                    <BrainCircuit size={64} className="mx-auto text-slate-300 mb-4" />
-                    <p className="text-xl font-medium text-slate-500">لا توجد ملاحظات حالياً. النظام يبدو بحالة ممتازة! أو لم تقم بالتحليل بعد.</p>
+                <div className="relative overflow-hidden text-center py-20 bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-900 dark:to-emerald-950/15 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-900/40">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-50" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200/60 dark:from-emerald-900/40 dark:to-emerald-800/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <CheckCircle size={36} />
+                    </div>
+                    <h4 className="text-xl font-black text-slate-800 dark:text-white">لا توجد ملاحظات حالياً</h4>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-bold">النظام يبدو بحالة ممتازة! أو لم تقم بالتحليل بعد.</p>
                 </div>
             )}
         </div>
