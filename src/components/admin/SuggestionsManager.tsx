@@ -58,62 +58,110 @@ export default function SuggestionsManager() {
         }
     };
 
+    // Visual mapping per status — chip + accent stripe + gradient surface
+    const statusStyle = (s: string) => s === 'pending'
+        ? { chip: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', label: 'انتظار', accent: 'bg-amber-500', surface: 'from-white to-amber-50/40 dark:from-slate-900 dark:to-amber-950/15' }
+        : s === 'approved'
+        ? { chip: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', label: 'مُعتمَد', accent: 'bg-emerald-500', surface: 'from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/15' }
+        : { chip: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400', label: s, accent: 'bg-slate-400', surface: 'from-white to-slate-50/40 dark:from-slate-900 dark:to-slate-800/30' };
+
+    const pendingCount = suggestions.filter(s => s.status === 'pending').length;
+
     return (
         <div className="space-y-6">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-                <MessageSquare className="text-blue-500" />
-                اقتراحات المجتمع (Wiki-Style)
-            </h2>
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+                <h2 className="text-xl font-black flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm">
+                        <MessageSquare size={18} />
+                    </span>
+                    اقتراحات المجتمع
+                </h2>
+                {pendingCount > 0 && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-[11px] font-black tracking-wider uppercase">
+                        <Clock size={12} />
+                        <span className="tabular-nums" dir="ltr">{pendingCount}</span>
+                        قيد المراجعة
+                    </span>
+                )}
+            </div>
 
             <div className="grid grid-cols-1 gap-4">
-                {suggestions.map(suggestion => (
-                    <div key={suggestion.id} className={`bg-white dark:bg-slate-900 p-4 rounded-xl border ${suggestion.status === 'pending' ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200'}`}>
-                        <div className="flex justify-between items-start mb-3">
-                            <div className="flex items-center gap-2">
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${suggestion.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                        suggestion.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                            'bg-slate-100 text-slate-500'
-                                    }`}>
-                                    {suggestion.status === 'pending' ? 'انتظار' : suggestion.status === 'approved' ? 'تم الاعتماد' : suggestion.status}
-                                </span>
-                                <span className="text-xs text-slate-400 font-mono flex items-center gap-1">
-                                    <Clock size={12} />
-                                    {new Date(suggestion.created_at).toLocaleDateString('ar-TR')}
-                                </span>
+                {suggestions.map(suggestion => {
+                    const meta = statusStyle(suggestion.status);
+                    return (
+                        <div
+                            key={suggestion.id}
+                            className={`group relative overflow-hidden bg-gradient-to-br ${meta.surface} p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all`}
+                        >
+                            <span className={`absolute top-0 right-0 h-full w-1 ${meta.accent} opacity-70 group-hover:opacity-100 transition-opacity`} />
+
+                            <div className="flex justify-between items-start mb-3 gap-2 flex-wrap">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${meta.chip}`}>
+                                        {meta.label}
+                                    </span>
+                                    <span className="text-xs text-slate-400 font-mono flex items-center gap-1 tabular-nums" dir="ltr">
+                                        <Clock size={12} />
+                                        {new Date(suggestion.created_at).toLocaleDateString('ar-TR')}
+                                    </span>
+                                </div>
+                                <div className="flex gap-1.5">
+                                    <button
+                                        onClick={() => updateStatus(suggestion.id, 'approved')}
+                                        className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:scale-110 active:scale-95 transition-all"
+                                        title="اعتماد"
+                                        aria-label="اعتماد"
+                                    >
+                                        <CheckCircle size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => updateStatus(suggestion.id, 'rejected')}
+                                        className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-110 active:scale-95 transition-all"
+                                        title="تجاهل"
+                                        aria-label="تجاهل"
+                                    >
+                                        <XCircle size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(suggestion.id)}
+                                        className="p-2 rounded-xl bg-red-50 dark:bg-red-900/15 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:scale-110 active:scale-95 transition-all"
+                                        title="حذف"
+                                        aria-label="حذف"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex gap-2">
-                                <button onClick={() => updateStatus(suggestion.id, 'approved')} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="اعتماد" aria-label="اعتماد">
-                                    <CheckCircle size={18} />
-                                </button>
-                                <button onClick={() => updateStatus(suggestion.id, 'rejected')} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg" title="تجاهل" aria-label="تجاهل">
-                                    <XCircle size={18} />
-                                </button>
-                                <button onClick={() => handleDelete(suggestion.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="حذف" aria-label="حذف">
-                                    <Trash2 size={18} />
-                                </button>
+
+                            <p className="text-slate-800 dark:text-slate-100 font-medium mb-3 whitespace-pre-wrap leading-relaxed">
+                                {suggestion.suggestion_text}
+                            </p>
+
+                            <div className="flex flex-wrap items-center gap-3 text-xs border-t border-slate-200 dark:border-slate-700/60 pt-3">
+                                <span className="text-slate-600 dark:text-slate-300 font-bold">
+                                    بواسطة: {suggestion.user_name || 'زائر'}
+                                </span>
+                                {suggestion.contact_info && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg font-black">
+                                        <Mail size={11} />
+                                        {suggestion.contact_info}
+                                    </span>
+                                )}
+                                {suggestion.article_id && (
+                                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-lg font-mono" dir="ltr">
+                                        Article: {suggestion.article_id.substring(0, 8)}…
+                                    </span>
+                                )}
                             </div>
                         </div>
-
-                        <p className="text-slate-800 dark:text-slate-200 font-medium mb-3 whitespace-pre-wrap">
-                            {suggestion.suggestion_text}
-                        </p>
-
-                        <div className="flex flex-wrap gap-4 text-xs text-slate-500 border-t border-slate-100 pt-3">
-                            <span>بواسطة: {suggestion.user_name || 'زائر'}</span>
-                            {suggestion.contact_info && (
-                                <span className="flex items-center gap-1 text-blue-600">
-                                    <Mail size={12} />
-                                    {suggestion.contact_info}
-                                </span>
-                            )}
-                            {suggestion.article_id && <span className="bg-slate-100 px-2 rounded">Article ID: {suggestion.article_id.substring(0, 8)}...</span>}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {suggestions.length === 0 && !loading && (
-                    <div className="text-center py-10 text-slate-400">
-                        لا توجد اقتراحات جديدة حتى الآن.
+                    <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                        <MessageSquare size={36} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                        <p className="text-slate-500 dark:text-slate-400 font-bold">لا توجد اقتراحات جديدة حتى الآن.</p>
                     </div>
                 )}
             </div>

@@ -111,11 +111,20 @@ export default function DataMigration() {
     };
 
     return (
-        <div className="bg-slate-900 text-slate-300 p-6 rounded-2xl border border-slate-800 font-mono text-sm" dir="ltr">
-            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-                <Database className="text-emerald-500" />
-                System Data Migration
-            </h3>
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-950 text-slate-300 p-6 rounded-2xl border border-slate-800 font-mono text-sm shadow-xl shadow-slate-950/50" dir="ltr">
+            <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-70 pointer-events-none" />
+
+            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap" dir="rtl">
+                <h3 className="text-white font-black text-lg flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-900/60 to-emerald-800/40 text-emerald-400 shadow-sm">
+                        <Database size={18} />
+                    </span>
+                    System Data Migration
+                </h3>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-900/30 text-red-300 rounded-full text-[10px] font-black tracking-wider uppercase border border-red-900/50">
+                    خطر
+                </span>
+            </div>
 
             <div className="mb-6 p-4 bg-slate-950 rounded-xl border border-dashed border-slate-800">
                 <p className="mb-4 text-slate-400">
@@ -130,9 +139,9 @@ export default function DataMigration() {
                     <button
                         onClick={() => setShowConfirm(true)}
                         disabled={loading}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                        className="group/btn bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2.5 rounded-xl font-black flex items-center gap-2 shadow-md shadow-emerald-600/30 hover:shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     >
-                        <Upload size={18} />
+                        <Upload size={18} className="group-hover/btn:translate-y-0.5 transition-transform" />
                         Start Full Migration (Including Articles)
                     </button>
                 ) : (
