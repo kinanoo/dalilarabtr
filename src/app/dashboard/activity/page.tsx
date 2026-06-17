@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
-import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, Award } from 'lucide-react';
+import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, Award, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -121,10 +121,10 @@ export default function ActivityPage() {
     if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>;
 
     const statCards = [
-        { label: 'تقييمات', count: stats.reviews_count, icon: Star, iconClasses: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' },
-        { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, iconClasses: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' },
-        { label: 'خدمات', count: stats.services_count, icon: Briefcase, iconClasses: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600' },
-        { label: 'مقالات', count: stats.articles_count, icon: FileText, iconClasses: 'bg-violet-50 dark:bg-violet-900/20 text-violet-600' },
+        { label: 'تقييمات', count: stats.reviews_count, icon: Star, iconClasses: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400', accent: 'bg-amber-500', surface: 'from-white to-amber-50/40 dark:from-slate-800 dark:to-amber-950/20', shadowHover: 'hover:shadow-amber-500/15' },
+        { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, iconClasses: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400', accent: 'bg-blue-500', surface: 'from-white to-blue-50/40 dark:from-slate-800 dark:to-blue-950/20', shadowHover: 'hover:shadow-blue-500/15' },
+        { label: 'خدمات', count: stats.services_count, icon: Briefcase, iconClasses: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400', accent: 'bg-emerald-500', surface: 'from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20', shadowHover: 'hover:shadow-emerald-500/15' },
+        { label: 'مقالات', count: stats.articles_count, icon: FileText, iconClasses: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400', accent: 'bg-violet-500', surface: 'from-white to-violet-50/40 dark:from-slate-800 dark:to-violet-950/20', shadowHover: 'hover:shadow-violet-500/15' },
     ];
 
     const tabs = [
@@ -252,35 +252,47 @@ export default function ActivityPage() {
                     <ArrowRight size={16} />
                     العودة للوحة
                 </Link>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-2">
+                    <Sparkles size={10} />
+                    نشاطك
+                </span>
                 <h1 className="text-2xl font-black text-slate-800 dark:text-white">نشاطي</h1>
                 <p className="text-sm text-slate-500 mt-1">تقييماتك، تعليقاتك، خدماتك، ومقالاتك في مكان واحد</p>
             </div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid — accent stripes per theme */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
                 {statCards.map((s) => {
                     const Icon = s.icon;
                     return (
-                        <div key={s.label} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 text-center">
-                            <div className={`w-10 h-10 mx-auto mb-2 rounded-xl ${s.iconClasses} flex items-center justify-center`}>
+                        <div
+                            key={s.label}
+                            className={`group relative overflow-hidden bg-gradient-to-br ${s.surface} rounded-2xl border border-slate-200 dark:border-slate-700 p-4 text-center hover:shadow-lg ${s.shadowHover} hover:-translate-y-1 transition-all`}
+                        >
+                            <span className={`absolute top-0 right-0 h-full w-0.5 ${s.accent} opacity-60 group-hover:opacity-100 transition-opacity`} />
+                            <div className={`w-10 h-10 mx-auto mb-2 rounded-xl ${s.iconClasses} flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm`}>
                                 <Icon size={20} />
                             </div>
-                            <div className="text-2xl font-black text-slate-800 dark:text-white">{s.count}</div>
-                            <div className="text-xs text-slate-500">{s.label}</div>
+                            <div className="text-2xl font-black text-slate-800 dark:text-white tabular-nums" dir="ltr">{s.count}</div>
+                            <div className="text-xs text-slate-500 font-bold">{s.label}</div>
                         </div>
                     );
                 })}
             </div>
 
-            {/* Badges / Achievements */}
+            {/* Badges / Achievements — accent stripe */}
             {badges.length > 0 && (
-                <div className="mb-8 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-5">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2 text-sm">
-                        <Award size={16} className="text-amber-500" /> إنجازاتي
+                <div className="relative overflow-hidden mb-8 bg-gradient-to-br from-white to-amber-50/40 dark:from-slate-800 dark:to-amber-950/20 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
+                    <h3 className="font-black text-slate-800 dark:text-white mb-3 flex items-center gap-2 text-sm">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shadow-sm">
+                            <Award size={16} />
+                        </span>
+                        إنجازاتي
                     </h3>
                     <div className="flex flex-wrap gap-2">
                         {badges.map((b) => (
-                            <span key={b.type} className={`text-xs font-bold px-3 py-1.5 rounded-full ${b.color}`}>
+                            <span key={b.type} className={`text-xs font-black px-3 py-1.5 rounded-full ${b.color}`}>
                                 {b.icon} {b.label}
                             </span>
                         ))}

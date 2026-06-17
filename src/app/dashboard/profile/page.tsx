@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
-import { ArrowRight, Save, Loader2, Mail, Calendar, Shield, UserCircle } from 'lucide-react';
+import { ArrowRight, Save, Loader2, Mail, Calendar, Shield, UserCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -84,18 +84,23 @@ export default function ProfilePage() {
                     العودة للوحة
                 </Link>
                 <div className="flex items-center gap-3">
-                    <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-2xl">
+                    <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200/60 dark:from-amber-900/40 dark:to-amber-800/30 text-amber-600 dark:text-amber-400 rounded-2xl shadow-sm">
                         <UserCircle size={28} />
                     </div>
                     <div>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
+                            <Sparkles size={10} />
+                            ملفّك
+                        </span>
                         <h1 className="text-2xl font-black text-slate-800 dark:text-white">الملف الشخصي</h1>
                         <p className="text-sm text-slate-500">عدّل معلوماتك الشخصية</p>
                     </div>
                 </div>
             </div>
 
-            {/* Form Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 md:p-8 shadow-sm space-y-6">
+            {/* Form Card — accent stripe + gradient */}
+            <div className="group relative overflow-hidden bg-gradient-to-br from-white to-amber-50/30 dark:from-slate-800 dark:to-amber-950/20 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 md:p-8 shadow-sm space-y-6">
+                <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-amber-400 to-amber-500 opacity-70" />
                 {/* Avatar */}
                 <div>
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">الصورة الشخصية</label>
@@ -164,20 +169,21 @@ export default function ProfilePage() {
                     />
                 </div>
 
-                {/* Save Button */}
+                {/* Save Button — premium gradient */}
                 <button
                     onClick={handleSave}
                     disabled={saving || !fullName.trim()}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-lg shadow-emerald-600/20"
+                    className="group/btn w-full bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:bg-none text-white font-black py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] hover:-translate-y-0.5 shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 disabled:shadow-none disabled:hover:translate-y-0"
                 >
-                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} className="group-hover/btn:rotate-12 transition-transform" />}
                     {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
                 </button>
             </div>
 
-            {/* Account Info (Read-Only) */}
-            <div className="mt-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 space-y-4">
-                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-3">معلومات الحساب</h3>
+            {/* Account Info — accent stripe */}
+            <div className="relative overflow-hidden mt-6 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-900 dark:to-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
+                <span className="absolute top-0 right-0 h-full w-1 bg-slate-300 dark:bg-slate-600 opacity-70" />
+                <h3 className="text-sm font-black text-slate-600 dark:text-slate-300 mb-3 uppercase tracking-wider">معلومات الحساب</h3>
                 <div className="flex items-center gap-3 text-sm">
                     <Mail size={16} className="text-slate-400 shrink-0" />
                     <span className="text-slate-600 dark:text-slate-300">{email || '—'}</span>

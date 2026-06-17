@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
-import { Loader2, Save, ArrowRight, Info, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, ArrowRight, Info, AlertTriangle, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -105,22 +105,31 @@ export default function AddServicePage() {
         <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <Link href="/dashboard" className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 transition-colors">
+                <Link href="/dashboard" className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 hover:scale-110 transition-all">
                     <ArrowRight size={20} />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">إضافة خدمة جديدة</h1>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
+                        <Sparkles size={10} />
+                        خدمة جديدة
+                    </span>
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-white">إضافة خدمة جديدة</h1>
                     <p className="text-slate-500 text-sm">أدخل بيانات خدمتك بدقة ليتمكن العملاء من الوصول إليك</p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm">
+            {/* Form card — accent stripe + gradient */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-900 dark:to-emerald-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm">
+                <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-70" />
 
-                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl p-4 mb-8 flex items-start gap-3">
-                    <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+                <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/15 dark:to-amber-900/5 border border-amber-200 dark:border-amber-900/30 rounded-xl p-4 mb-8 flex items-start gap-3">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shrink-0 shadow-sm">
+                        <AlertTriangle size={18} />
+                    </span>
                     <div className="text-sm text-amber-800 dark:text-amber-200">
-                        <p className="font-bold mb-1">تنبيه هام</p>
-                        <p>سيتم مراجعة طلبك من قبل فريق الإدارة قبل نشره. تأكد من صحة البيانات وأرقام التواصل.</p>
+                        <p className="font-black mb-1">تنبيه هام</p>
+                        <p className="leading-relaxed">سيتم مراجعة طلبك من قبل فريق الإدارة قبل نشره. تأكد من صحة البيانات وأرقام التواصل.</p>
                     </div>
                 </div>
 
@@ -246,9 +255,9 @@ export default function AddServicePage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center gap-2"
+                            className="group/btn bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-60 text-white font-black py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : <Save size={20} />}
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} className="group-hover/btn:rotate-12 transition-transform" />}
                             إرسال الطلب
                         </button>
                     </div>

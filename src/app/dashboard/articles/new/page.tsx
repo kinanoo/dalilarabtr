@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { getAuthClient } from '@/lib/supabaseClient';
-import { Loader2, Save, ArrowRight, Info, AlertTriangle, FileText } from 'lucide-react';
+import { Loader2, Save, ArrowRight, Info, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -88,22 +88,31 @@ export default function AddArticlePage() {
         <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <Link href="/dashboard" className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 transition-colors">
+                <Link href="/dashboard" className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 hover:scale-110 transition-all">
                     <ArrowRight size={20} />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white">إضافة خبر أو مقال</h1>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
+                        <Sparkles size={10} />
+                        مقال جديد
+                    </span>
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-white">إضافة خبر أو مقال</h1>
                     <p className="text-slate-500 text-sm">شارك المعرفة والأخبار مع مجتمع دليل العرب</p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm">
+            {/* Form card — accent stripe + gradient */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm">
+                <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-blue-500 to-blue-600 opacity-70" />
 
-                <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl p-4 mb-8 flex items-start gap-3">
-                    <Info className="text-blue-600 shrink-0 mt-0.5" size={20} />
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100/40 dark:from-blue-900/15 dark:to-blue-900/5 border border-blue-200 dark:border-blue-900/30 rounded-xl p-4 mb-8 flex items-start gap-3">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0 shadow-sm">
+                        <Info size={18} />
+                    </span>
                     <div className="text-sm text-blue-800 dark:text-blue-200">
-                        <p className="font-bold mb-1">تعليمات النشر</p>
-                        <p>تأكد من مصداقية الخبر، واكتب بلغة عربية سليمة. المقالات المفيدة تزيد من نقاطك في المجتمع.</p>
+                        <p className="font-black mb-1">تعليمات النشر</p>
+                        <p className="leading-relaxed">تأكد من مصداقية الخبر، واكتب بلغة عربية سليمة. المقالات المفيدة تزيد من نقاطك في المجتمع.</p>
                     </div>
                 </div>
 
@@ -188,9 +197,9 @@ export default function AddArticlePage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+                            className="group/btn bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white font-black py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2"
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : <Save size={20} />}
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} className="group-hover/btn:rotate-12 transition-transform" />}
                             نشر المقال
                         </button>
                     </div>
