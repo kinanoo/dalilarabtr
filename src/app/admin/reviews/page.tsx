@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, ExternalLink, CheckCircle2, ArrowRight, Eye } from 'lucide-react';
+import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, CheckCircle2, ArrowRight, Eye } from 'lucide-react';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { toast } from 'sonner';
 import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
@@ -196,36 +197,40 @@ export default function AdminReviewsPage() {
     if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>;
 
     return (
-        <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-amber-100 text-amber-600 rounded-xl">
-                    <Star size={32} fill="currentColor" />
-                </div>
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">إدارة التفاعل</h1>
-                    <p className="text-slate-500 mt-1">التقييمات والملاحظات من الزوار</p>
-                </div>
-            </div>
+        <div className="p-6 max-w-6xl mx-auto space-y-6">
+            <AdminPageHeader
+                icon={Star}
+                theme="amber"
+                title="إدارة التفاعل"
+                subtitle="التقييمات والملاحظات من الزوار"
+                eyebrow="تفاعل"
+            />
 
-            {/* Tabs */}
+            {/* Tabs — magazine pill style */}
             <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 mb-6">
                 <button
                     onClick={() => setActiveTab('feedback')}
-                    className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'feedback'
+                    className={`pb-3 px-4 text-sm font-black border-b-2 transition-all flex items-center gap-2 ${activeTab === 'feedback'
                         ? 'border-amber-500 text-amber-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
                     <FileWarning size={16} />
-                    الملاحظات ({feedbackItems.length})
+                    الملاحظات
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-black tabular-nums" dir="ltr">
+                        {feedbackItems.length}
+                    </span>
                 </button>
                 <button
                     onClick={() => setActiveTab('reviews')}
-                    className={`pb-3 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'reviews'
+                    className={`pb-3 px-4 text-sm font-black border-b-2 transition-all flex items-center gap-2 ${activeTab === 'reviews'
                         ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
                     <Star size={16} />
-                    التقييمات ({reviews.length})
+                    التقييمات
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-black tabular-nums" dir="ltr">
+                        {reviews.length}
+                    </span>
                 </button>
             </div>
 

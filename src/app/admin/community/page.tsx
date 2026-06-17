@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2, MessageCircle, Send } from 'lucide-react';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { toast } from 'sonner';
 import { createNotification } from '@/lib/api/notifications';
 import Link from 'next/link';
@@ -153,18 +154,22 @@ export default function AdminCommunityPage() {
     if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>;
 
     return (
-        <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6 pb-20 sm:pb-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                        <MessageSquare size={28} className="sm:w-8 sm:h-8" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">إدارة المجتمع</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base mt-1">التعليقات والمشاركات</p>
-                    </div>
-                </div>
-            </div>
+        <div className="p-6 max-w-6xl mx-auto space-y-6 pb-20 sm:pb-6">
+            <AdminPageHeader
+                icon={MessageSquare}
+                theme="indigo"
+                title="إدارة المجتمع"
+                subtitle="التعليقات والمشاركات"
+                eyebrow="مجتمع"
+                actions={
+                    comments.length > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-l from-indigo-100 to-indigo-200/60 dark:from-indigo-900/40 dark:to-indigo-800/30 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-black tabular-nums shadow-sm" dir="ltr">
+                            {comments.length}
+                            <span dir="rtl">تعليق</span>
+                        </span>
+                    ) : null
+                }
+            />
 
             {comments.length === 0 ? (
                 <div className="text-center py-20 text-slate-400">

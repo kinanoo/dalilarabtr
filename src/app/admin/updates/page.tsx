@@ -1,24 +1,24 @@
 'use client';
 
 import { UpdatesManager } from '@/components/admin/ContentParsers';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminCard from '@/components/admin/AdminCard';
 import { Bell } from 'lucide-react';
 
 export default function UpdatesAdminPage() {
     return (
-        <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg text-amber-600">
-                        <Bell size={24} />
-                    </div>
-                    إدارة التحديثات والأخبار
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2">
-                    أضف آخر الأخبار، القوانين الجديدة، والتنبيهات العاجلة للمستخدمين.
-                </p>
-            </div>
+        <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+            <AdminPageHeader
+                icon={Bell}
+                theme="amber"
+                title="إدارة التحديثات والأخبار"
+                subtitle="أضف آخر الأخبار، القوانين الجديدة، والتنبيهات العاجلة للمستخدمين."
+                eyebrow="أخبار"
+            />
 
-            <UpdatesManager />
+            <AdminCard theme="amber">
+                <UpdatesManager />
+            </AdminCard>
         </div>
     );
 }

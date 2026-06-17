@@ -17,11 +17,9 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import {
     MapPin,
-    ArrowRight,
     Loader2,
     Search,
     CheckCircle2,
@@ -32,6 +30,7 @@ import {
     Filter,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 type ZoneStatus = 'closed' | 'reopened' | 'pending';
 
@@ -170,28 +169,23 @@ export default function AdminZonesPage() {
     }
 
     return (
-        <div className="p-6 max-w-7xl mx-auto pb-32">
-            <Link
-                href="/admin"
-                className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 mb-4 w-fit"
-            >
-                <ArrowRight size={20} />
-                <span className="font-bold">العودة للرئيسية</span>
-            </Link>
-
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
-                    <MapPin size={28} />
-                </div>
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">
-                        إدارة المناطق
-                    </h1>
-                    <p className="text-sm text-slate-500 mt-1">
-                        ابحث، فلتر، وحدّث حالة الأحياء المغلقة والمفتوحة بنقرة. البلاغات المجتمعية تظهر أعلى القائمة.
-                    </p>
-                </div>
-            </div>
+        <div className="p-6 max-w-7xl mx-auto pb-32 space-y-6">
+            <AdminPageHeader
+                icon={MapPin}
+                theme="emerald"
+                title="إدارة المناطق"
+                subtitle="ابحث، فلتر، وحدّث حالة الأحياء المغلقة والمفتوحة بنقرة. البلاغات المجتمعية تظهر أعلى القائمة."
+                eyebrow="خرائط"
+                actions={
+                    stats.flagged > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-l from-orange-500 to-amber-500 text-white rounded-full text-xs font-black shadow-md shadow-orange-500/30 animate-pulse">
+                            <Flame size={12} />
+                            <span className="tabular-nums" dir="ltr">{stats.flagged}</span>
+                            <span>للمراجعة</span>
+                        </span>
+                    ) : null
+                }
+            />
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
                 <StatCard label="الإجمالي" value={stats.total} accent="slate" />

@@ -1,8 +1,9 @@
 'use client';
 
 import { DataTable } from '@/components/admin/DataTable';
-import { FileText, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminCard from '@/components/admin/AdminCard';
+import { FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 
@@ -11,24 +12,15 @@ export default function AdminArticlesPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors w-fit">
-                <Link href="/admin" className="flex items-center gap-2">
-                    <ArrowRight size={20} />
-                    <span className="font-bold">العودة للرئيسية</span>
-                </Link>
-            </div>
+            <AdminPageHeader
+                icon={FileText}
+                theme="emerald"
+                title="إدارة المقالات"
+                subtitle="عرض وإدارة جميع المقالات في النظام"
+                eyebrow="محتوى"
+            />
 
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
-                    <FileText size={32} />
-                </div>
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">إدارة المقالات</h1>
-                    <p className="text-slate-500 mt-1">عرض وإدارة جميع المقالات في النظام</p>
-                </div>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <AdminCard theme="emerald">
                 <DataTable
                     tableName="articles"
                     title="قائمة المقالات"
@@ -41,7 +33,7 @@ export default function AdminArticlesPage() {
                     onEdit={(item) => router.push(`/admin/articles/${item.id}`)}
                     onCreate={() => router.push('/admin/articles/new')}
                 />
-            </div>
+            </AdminCard>
         </div>
     );
 }

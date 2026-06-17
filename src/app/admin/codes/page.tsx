@@ -1,8 +1,9 @@
 'use client';
 
 import { DataTable } from '@/components/admin/DataTable';
-import { ShieldAlert, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminCard from '@/components/admin/AdminCard';
+import { ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function AdminCodesPage() {
@@ -10,24 +11,15 @@ export default function AdminCodesPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors w-fit">
-                <Link href="/admin" className="flex items-center gap-2">
-                    <ArrowRight size={20} />
-                    <span className="font-bold">العودة للرئيسية</span>
-                </Link>
-            </div>
+            <AdminPageHeader
+                icon={ShieldAlert}
+                theme="red"
+                title="الأكواد الأمنية"
+                subtitle="إدارة رموز المنع (V-Codes / G-Codes)"
+                eyebrow="أمن"
+            />
 
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-red-100 text-red-600 rounded-xl">
-                    <ShieldAlert size={32} />
-                </div>
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">الأكواد الأمنية</h1>
-                    <p className="text-slate-500 mt-1">إدارة رموز المنع (V-Codes / G-Codes)</p>
-                </div>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <AdminCard theme="red">
                 <DataTable
                     tableName="security_codes"
                     title="قائمة الأكواد"
@@ -42,7 +34,7 @@ export default function AdminCodesPage() {
                     onEdit={(item) => router.push(`/admin/codes/${item.code}`)}
                     onCreate={() => router.push('/admin/codes/new')}
                 />
-            </div>
+            </AdminCard>
         </div>
     );
 }

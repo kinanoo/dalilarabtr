@@ -1,24 +1,24 @@
 'use client';
 
 import NewsTickerManager from '@/components/admin/NewsTickerManager';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminCard from '@/components/admin/AdminCard';
 import { Newspaper } from 'lucide-react';
 
 export default function NewsTickerAdminPage() {
     return (
-        <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg text-blue-600">
-                        <Newspaper size={24} />
-                    </div>
-                    إدارة شريط الأخبار
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2">
-                    أضف وتحكم في الأخبار المتحركة التي تظهر أسفل شريط التنقل.
-                </p>
-            </div>
+        <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+            <AdminPageHeader
+                icon={Newspaper}
+                theme="blue"
+                title="إدارة شريط الأخبار"
+                subtitle="أضف وتحكم في الأخبار المتحركة التي تظهر أسفل شريط التنقل."
+                eyebrow="مباشر"
+            />
 
-            <NewsTickerManager />
+            <AdminCard theme="blue">
+                <NewsTickerManager />
+            </AdminCard>
         </div>
     );
 }

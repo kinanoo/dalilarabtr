@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { CheckCircle, XCircle, Clock, User, Phone, MapPin, FileText, Briefcase } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Phone, MapPin, FileText, Briefcase, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import logger from '@/lib/logger';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 type RequestType = 'service' | 'article';
 
@@ -136,32 +137,40 @@ export default function RequestsPage() {
     if (loading) return <div className="p-8 text-center text-slate-500">جاري تحميل الطلبات...</div>;
 
     return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-800 dark:text-white">طلبات الانضمام</h1>
-                    <p className="text-slate-500">مراجعة الخدمات والمقالات المقدمة من الأعضاء</p>
-                </div>
-                <div className="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl font-bold flex items-center gap-2">
-                    <Clock size={20} />
-                    <span>{requests.length} طلب معلق</span>
-                </div>
-            </div>
+        <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in">
+            <AdminPageHeader
+                icon={Inbox}
+                theme="amber"
+                title="طلبات الانضمام"
+                subtitle="مراجعة الخدمات والمقالات المقدمة من الأعضاء"
+                eyebrow="معلق"
+                actions={
+                    <div className="bg-gradient-to-l from-amber-100 to-amber-200/60 dark:from-amber-900/40 dark:to-amber-800/30 text-amber-700 dark:text-amber-300 px-4 py-2 rounded-xl font-black flex items-center gap-2 shadow-sm">
+                        <Clock size={18} />
+                        <span className="tabular-nums" dir="ltr">{requests.length}</span>
+                        <span>طلب معلق</span>
+                    </div>
+                }
+            />
 
             {requests.length === 0 ? (
-                <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800">
-                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20 rounded-3xl p-12 text-center border-2 border-dashed border-emerald-200 dark:border-emerald-900/40">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-50" />
+                    <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-200/60 dark:from-emerald-900/40 dark:to-emerald-800/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                         <CheckCircle size={40} />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white">لا توجد طلبات معلقة</h2>
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white">لا توجد طلبات معلقة</h2>
                     <p className="text-slate-500 mt-2">كل شيء تحت السيطرة! استمتع بقهوتك ☕</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {requests.map((req) => (
-                        <div key={req.id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row gap-6 relative overflow-hidden">
+                        <div key={req.id} className={`group relative overflow-hidden bg-gradient-to-br ${req.type === 'service' ? 'from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20' : 'from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20'} rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col lg:flex-row gap-6`}>
+                            {/* Accent stripe — right edge in RTL */}
+                            <span className={`absolute top-0 right-0 h-full w-1 ${req.type === 'service' ? 'bg-emerald-500' : 'bg-blue-500'} opacity-70`} />
+
                             {/* Type Badge */}
-                            <div className={`absolute top-0 right-0 px-3 py-1 text-xs font-bold rounded-bl-xl ${req.type === 'service' ? 'bg-emerald-500 text-white' : 'bg-blue-500 text-white'}`}>
+                            <div className={`absolute top-3 left-3 px-3 py-1 text-[10px] font-black tracking-wider uppercase rounded-lg shadow-sm ${req.type === 'service' ? 'bg-emerald-500 text-white' : 'bg-blue-500 text-white'}`}>
                                 {req.type === 'service' ? 'خدمة' : 'مقال'}
                             </div>
 
@@ -214,14 +223,14 @@ export default function RequestsPage() {
                                 <div className="flex items-center gap-4 pt-2">
                                     <button
                                         onClick={() => handleAction(req, 'approve')}
-                                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20"
+                                        className="group/btn flex-1 bg-gradient-to-l from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:scale-95"
                                     >
-                                        <CheckCircle size={20} />
+                                        <CheckCircle size={20} className="group-hover/btn:rotate-12 transition-transform" />
                                         قبول ونشر
                                     </button>
                                     <button
                                         onClick={() => handleAction(req, 'reject')}
-                                        className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                                        className="flex-1 bg-red-50 hover:bg-red-100 dark:bg-red-900/15 dark:hover:bg-red-900/25 text-red-600 dark:text-red-400 font-black py-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-red-200 dark:border-red-900/30"
                                     >
                                         <XCircle size={20} />
                                         رفض

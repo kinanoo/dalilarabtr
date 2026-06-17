@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { DataTable } from '@/components/admin/DataTable';
 import { Briefcase, ArrowRight, Loader2, Save, Trash2, X, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { ServiceEditor } from '@/components/admin/editors/ServiceEditor';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -170,24 +171,13 @@ export default function AdminServicesPage() {
 
     return (
         <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
-            {/* Headers ... */}
-            <div className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors w-fit">
-                <Link href="/admin" className="flex items-center gap-2">
-                    <ArrowRight size={20} />
-                    <span className="font-bold">العودة للرئيسية</span>
-                </Link>
-            </div>
-
-            <div className="flex items-center gap-3 mb-4 sm:mb-8">
-                <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-xl">
-                    <Briefcase size={24} className="sm:hidden" />
-                    <Briefcase size={32} className="hidden sm:block" />
-                </div>
-                <div>
-                    <h1 className="text-xl sm:text-3xl font-bold text-slate-800 dark:text-white">الخدمات والمهن</h1>
-                    <p className="text-xs sm:text-base text-slate-500 mt-0.5 sm:mt-1">إدارة مقدمي الخدمات والأطباء والمحامين</p>
-                </div>
-            </div>
+            <AdminPageHeader
+                icon={Briefcase}
+                theme="blue"
+                title="الخدمات والمهن"
+                subtitle="إدارة مقدمي الخدمات والأطباء والمحامين"
+                eyebrow="دليل"
+            />
 
             {issueType && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2">

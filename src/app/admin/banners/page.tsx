@@ -1,24 +1,24 @@
 'use client';
 
 import BannersManager from '@/components/admin/BannersManager';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminCard from '@/components/admin/AdminCard';
 import { ShieldAlert } from 'lucide-react';
 
 export default function BannersAdminPage() {
     return (
-        <div className="p-8 max-w-7xl mx-auto animate-in fade-in duration-500">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                    <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg text-red-600">
-                        <ShieldAlert size={24} />
-                    </div>
-                    إدارة البنرات والتنبيهات
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2">
-                    تحكم في الشرائط الاعلانية والتنبيهات التي تظهر في أعلى الموقع.
-                </p>
-            </div>
+        <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+            <AdminPageHeader
+                icon={ShieldAlert}
+                theme="red"
+                title="إدارة البنرات والتنبيهات"
+                subtitle="تحكم في الشرائط الإعلانية والتنبيهات التي تظهر في أعلى الموقع."
+                eyebrow="تنبيهات"
+            />
 
-            <BannersManager />
+            <AdminCard theme="red">
+                <BannersManager />
+            </AdminCard>
         </div>
     );
 }

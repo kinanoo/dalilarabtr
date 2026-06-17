@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Users, Mail, Calendar, Search, Shield, UserCheck, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 interface Member {
     id: string;
@@ -59,31 +60,26 @@ export default function AdminMembersPage() {
     const adminCount = members.filter((m) => m.role === 'admin').length;
 
     return (
-        <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-8" dir="rtl">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-                        <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl">
-                            <Users size={28} className="text-emerald-600" />
+        <div className="p-6 max-w-6xl mx-auto space-y-6" dir="rtl">
+            <AdminPageHeader
+                icon={Users}
+                theme="cyan"
+                title="الأعضاء المسجلون"
+                subtitle="جميع المستخدمين المسجلين في المنصة"
+                eyebrow="أعضاء"
+                actions={
+                    <div className="flex items-center gap-2">
+                        <div className="bg-gradient-to-br from-emerald-100 to-emerald-200/60 dark:from-emerald-900/40 dark:to-emerald-800/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl px-4 py-2 text-center shadow-sm">
+                            <div className="text-2xl font-black text-emerald-600 tabular-nums" dir="ltr">{totalMembers}</div>
+                            <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-wider">إجمالي</div>
                         </div>
-                        الأعضاء المسجلون
-                    </h1>
-                    <p className="text-slate-500 mt-2 text-sm">
-                        جميع المستخدمين المسجلين في المنصة
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl px-4 py-2 text-center">
-                        <div className="text-2xl font-black text-emerald-600">{totalMembers}</div>
-                        <div className="text-[10px] text-emerald-500 font-bold">إجمالي الأعضاء</div>
+                        <div className="bg-gradient-to-br from-blue-100 to-blue-200/60 dark:from-blue-900/40 dark:to-blue-800/30 border border-blue-200 dark:border-blue-900/50 rounded-xl px-4 py-2 text-center shadow-sm">
+                            <div className="text-2xl font-black text-blue-600 tabular-nums" dir="ltr">{adminCount}</div>
+                            <div className="text-[10px] text-blue-700 dark:text-blue-400 font-black uppercase tracking-wider">مديرون</div>
+                        </div>
                     </div>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-2 text-center">
-                        <div className="text-2xl font-black text-blue-600">{adminCount}</div>
-                        <div className="text-[10px] text-blue-500 font-bold">مديرون</div>
-                    </div>
-                </div>
-            </div>
+                }
+            />
 
             {/* Search */}
             <div className="relative max-w-md">
