@@ -24,7 +24,11 @@ async function getFeaturedArticles(): Promise<CarouselArticle[]> {
         const result = await withTimeout(
             supabase
                 .from('articles')
-                .select('slug, title, intro, category, published_at, image')
+                // Include `id` so the carousel can fall back to it for the
+                // article link when `slug` is null. Older rows + admin-
+                // authored rows that skipped the slug field would otherwise
+                // produce /article/null and 404. See FeaturedNewsCarousel.
+                .select('id, slug, title, intro, category, published_at, image')
                 .contains('tags', [FEATURED_TAG])
                 .eq('active', true)
                 .eq('status', 'approved')

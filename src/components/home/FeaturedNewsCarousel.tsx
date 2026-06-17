@@ -316,7 +316,11 @@ function themeAt(index: number): Theme {
 }
 
 export interface CarouselArticle {
-    slug: string;
+    // `slug` is the canonical URL key, but rows authored before the slug
+    // field was populated can ship null here. Fall back to `id` (the
+    // Arabic-kebab primary key) so the carousel link is never /article/null.
+    slug: string | null;
+    id?: string | null;
     title: string;
     intro: string | null;
     category: string | null;
@@ -381,7 +385,12 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
     const article = articles[index];
     const date = formatDate(article.published_at);
     const summary = stripHtml(article.intro, 160);
-    const href = `/article/${article.slug}`;
+    // Fallback chain — newer rows populate `slug`, older rows only have
+    // `id`. Without this guard the link ended up as /article/null and
+    // 404'd (user-reported when they clicked "اقرأ التفاصيل" on a
+    // freshly-published article whose slug column was empty).
+    const articleKey = article.slug || article.id;
+    const href = articleKey ? `/article/${articleKey}` : '/';
     const showSegments = articles.length > 1;
     // Per-article color theme. Picked by carousel POSITION (with a
     // stride of 3 so adjacent indices land on far-apart palette
@@ -491,7 +500,7 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                     fade+slight-rise transition keyed on slug ───────── */}
                 <AnimatePresence mode="wait" initial={false}>
                     <motion.div
-                        key={article.slug}
+                        key={articleKey || index}
                         initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}

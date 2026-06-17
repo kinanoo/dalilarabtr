@@ -126,6 +126,18 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 payload.id = normalizeId(titleVal);
             }
 
+            // Mirror id into slug when slug is empty. The carousel + tag
+            // pages + RelatedArticles all build their links from `slug`
+            // and fall back to `id`. Populating `slug` here keeps the
+            // canonical URL stable even if the title is edited later,
+            // and stops fresh rows from rendering /article/null when
+            // older code paths read only `slug`. Keep an existing slug
+            // untouched — admins sometimes set a short English slug
+            // for SEO that we must not overwrite with the Arabic id.
+            if (!payload.slug && payload.id) {
+                payload.slug = payload.id;
+            }
+
             const { error } = await supabase
                 .from('articles')
                 .upsert(payload);
