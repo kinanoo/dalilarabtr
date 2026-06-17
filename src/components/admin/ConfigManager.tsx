@@ -465,90 +465,102 @@ function AIProviderManager() {
         return <div className="p-8 text-center"><Loader2 className="animate-spin inline" /> جاري التحميل...</div>;
     }
 
+    const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all';
+    const labelCls = 'text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200 uppercase tracking-wider';
+
     return (
-        <div className="space-y-6">
-            {/* Status notice */}
+        <div className="space-y-5">
+            {/* Status notice — accent stripe + gradient */}
             {providers.length > 0 ? (
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
-                    <Zap className="text-emerald-600" size={20} />
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50/50 dark:from-emerald-900/15 dark:to-teal-900/10 border border-emerald-200 dark:border-emerald-900/40 rounded-xl p-4 flex items-center gap-3">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-80" />
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 shrink-0">
+                        <Zap size={18} />
+                    </span>
                     <div>
-                        <span className="font-bold text-emerald-700 dark:text-emerald-400">{providers.length} مفتاح مُفعّل </span>
+                        <span className="font-black text-emerald-700 dark:text-emerald-300 tabular-nums" dir="ltr">{providers.length}</span>
+                        <span className="font-black text-emerald-700 dark:text-emerald-300"> مفتاح مُفعّل </span>
                         <span className="text-sm text-slate-600 dark:text-slate-400">— النظام يجرب الأول، لو فشل ينتقل للتالي تلقائياً.</span>
                     </div>
                 </div>
             ) : (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
-                    <AlertTriangle className="text-amber-600" size={20} />
+                <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/15 dark:to-amber-900/10 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4 flex items-center gap-3">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-80" />
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 shrink-0">
+                        <AlertTriangle size={18} />
+                    </span>
                     <div>
-                        <span className="font-bold text-amber-700 dark:text-amber-400">لا يوجد مفاتيح! </span>
+                        <span className="font-black text-amber-700 dark:text-amber-300">لا يوجد مفاتيح! </span>
                         <span className="text-sm text-slate-600 dark:text-slate-400">المساعد الذكي لن يعمل حتى تضيف مفتاح API.</span>
                     </div>
                 </div>
             )}
 
-            {/* Provider list */}
+            {/* Provider list — accent stripes per priority */}
             <div className="space-y-3">
                 {providers.map((p, idx) => (
-                    <div key={p.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-all">
+                    <div key={p.id} className="group relative overflow-hidden border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white to-amber-50/20 dark:from-slate-900 dark:to-amber-950/10 rounded-2xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <span className="absolute top-0 right-0 h-full w-0.5 bg-amber-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <span className="text-lg font-bold text-slate-400 w-6 text-center shrink-0">{idx + 1}</span>
-                                <div className="flex gap-1 flex-col shrink-0">
+                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-black text-sm tabular-nums shrink-0" dir="ltr">{idx + 1}</span>
+                                <div className="flex gap-0.5 flex-col shrink-0">
                                     <button
                                         onClick={() => handleMovePriority(p.id!, 'up')}
                                         disabled={idx === 0}
-                                        className="text-[10px] text-slate-400 hover:text-slate-700 disabled:opacity-20"
+                                        className="text-[10px] text-slate-400 hover:text-amber-600 disabled:opacity-20 transition-colors p-0.5"
                                         aria-label="رفع الأولوية"
                                     >▲</button>
                                     <button
                                         onClick={() => handleMovePriority(p.id!, 'down')}
                                         disabled={idx === providers.length - 1}
-                                        className="text-[10px] text-slate-400 hover:text-slate-700 disabled:opacity-20"
+                                        className="text-[10px] text-slate-400 hover:text-amber-600 disabled:opacity-20 transition-colors p-0.5"
                                         aria-label="خفض الأولوية"
                                     >▼</button>
                                 </div>
-                                <span className={`text-[10px] px-2 py-0.5 rounded font-bold shrink-0 ${getProviderMeta(p.provider)?.color}`}>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 uppercase tracking-wider ${getProviderMeta(p.provider)?.color}`}>
                                     {getProviderMeta(p.provider)?.label || p.provider}
                                 </span>
-                                <span className="font-bold text-slate-700 dark:text-slate-300 truncate">{p.label}</span>
+                                <span className="font-black text-slate-800 dark:text-slate-100 truncate">{p.label}</span>
                             </div>
                             <div className="flex gap-1.5 shrink-0">
                                 <button
                                     onClick={() => handleTest(p)}
                                     disabled={testing === p.id}
-                                    className="px-3 py-1.5 text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg disabled:opacity-50"
+                                    className="px-3 py-1.5 text-xs font-black bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/40 rounded-xl disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
                                 >
                                     {testing === p.id ? <Loader2 size={14} className="animate-spin" /> : 'اختبار'}
                                 </button>
                                 <button
                                     onClick={() => openEditForm(p)}
-                                    className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"
+                                    className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/15 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all hover:scale-110 active:scale-95"
                                     aria-label="تعديل"
                                 >
                                     <Edit size={16} />
                                 </button>
                                 <button
                                     onClick={() => handleDelete(p.id!)}
-                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                                    className="p-1.5 rounded-xl bg-red-50 dark:bg-red-900/15 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all hover:scale-110 active:scale-95"
                                     aria-label="حذف"
                                 >
                                     <Trash2 size={16} />
                                 </button>
                             </div>
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500 mr-12">
-                            <span>الموديل: <strong className="text-slate-700 dark:text-slate-300">{p.model_default}</strong></span>
-                            <span>التفكير العميق: <strong className="text-slate-700 dark:text-slate-300">{p.model_deep}</strong></span>
+                        <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500 mr-12">
+                            <span>الموديل: <strong className="text-slate-700 dark:text-slate-300 font-mono" dir="ltr">{p.model_default}</strong></span>
+                            <span>التفكير العميق: <strong className="text-slate-700 dark:text-slate-300 font-mono" dir="ltr">{p.model_deep}</strong></span>
                             <span className="flex items-center gap-1">
-                                المفتاح: <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded text-[11px]">{showKey[p.id!] ? p.api_key : '•••••••••'}</code>
-                                <button onClick={() => setShowKey(s => ({ ...s, [p.id!]: !s[p.id!] }))} className="text-slate-400 hover:text-slate-600">
+                                المفتاح: <code className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-[11px] font-mono" dir="ltr">{showKey[p.id!] ? p.api_key : '•••••••••'}</code>
+                                <button onClick={() => setShowKey(s => ({ ...s, [p.id!]: !s[p.id!] }))} className="text-slate-400 hover:text-amber-600 transition-colors">
                                     {showKey[p.id!] ? <EyeOff size={12} /> : <Eye size={12} />}
                                 </button>
                             </span>
                         </div>
                         {/* Test result */}
                         {testResult && testResult.id === p.id && (
-                            <div className={`mt-2 mr-12 p-2 rounded-lg text-xs ${testResult.ok ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                            <div className={`mt-2 mr-12 p-2.5 rounded-xl text-xs font-bold ${testResult.ok ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800'}`}>
                                 {testResult.ok ? '✅' : '❌'} {testResult.msg}
                             </div>
                         )}
@@ -559,24 +571,28 @@ function AIProviderManager() {
             {/* Add new button */}
             <button
                 onClick={openNewForm}
-                className="w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-slate-500 hover:border-amber-400 hover:text-amber-600 transition-colors flex items-center justify-center gap-2 font-bold"
+                className="group/add w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-4 text-slate-500 hover:border-amber-400 hover:bg-amber-50/40 dark:hover:bg-amber-950/15 hover:text-amber-600 transition-colors flex items-center justify-center gap-2 font-black"
             >
-                <Plus size={18} /> إضافة مفتاح API جديد
+                <Plus size={18} className="group-hover/add:rotate-90 transition-transform" />
+                إضافة مفتاح API جديد
             </button>
 
-            {/* Add/Edit form */}
+            {/* Add/Edit form — gradient surface + amber accent */}
             {showForm && (
-                <div className="border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl p-5 space-y-4">
-                    <h4 className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                        {editingId ? <Edit size={16} /> : <Plus size={16} />}
+                <div className="relative overflow-hidden border border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50/80 to-amber-100/40 dark:from-amber-900/15 dark:to-amber-900/5 rounded-2xl p-5 space-y-4">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-80" />
+                    <h4 className="font-black text-amber-800 dark:text-amber-300 flex items-center gap-2 relative">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-200/60 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                            {editingId ? <Edit size={14} /> : <Plus size={14} />}
+                        </span>
                         {editingId ? 'تعديل مفتاح API' : 'إضافة مفتاح API جديد'}
                     </h4>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
                         <div>
-                            <label className="text-xs block mb-1 font-bold">المزود</label>
+                            <label className={labelCls}>المزود</label>
                             <select
-                                className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700"
+                                className={inputCls}
                                 value={form.provider}
                                 onChange={e => onProviderChange(e.target.value)}
                             >
@@ -586,18 +602,19 @@ function AIProviderManager() {
                             </select>
                         </div>
                         <div>
-                            <label className="text-xs block mb-1 font-bold">اسم المفتاح (تسمية)</label>
+                            <label className={labelCls}>اسم المفتاح (تسمية)</label>
                             <input
-                                className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700"
+                                className={inputCls}
                                 placeholder="مثال: مفتاح جيميناي الأساسي"
                                 value={form.label}
                                 onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                             />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="text-xs block mb-1 font-bold">مفتاح API</label>
+                            <label className={labelCls}>مفتاح API</label>
                             <input
-                                className="w-full border p-2 rounded font-mono text-sm dir-ltr bg-white dark:bg-slate-900 dark:border-slate-700"
+                                className={`${inputCls} font-mono text-sm`}
+                                dir="ltr"
                                 placeholder={editingId ? 'اتركه فارغاً لإبقاء المفتاح الحالي' : 'الصق مفتاح API هنا...'}
                                 value={form.api_key.startsWith('•') ? '' : form.api_key}
                                 onChange={e => setForm(f => ({ ...f, api_key: e.target.value }))}
@@ -606,38 +623,47 @@ function AIProviderManager() {
                             {editingId && <p className="text-[10px] text-slate-400 mt-1">اتركه فارغاً إذا لا تريد تغيير المفتاح</p>}
                         </div>
                         <div>
-                            <label className="text-xs block mb-1 font-bold">الموديل الافتراضي (سريع)</label>
+                            <label className={labelCls}>الموديل الافتراضي (سريع)</label>
                             <input
-                                className="w-full border p-2 rounded font-mono text-sm dir-ltr bg-white dark:bg-slate-900 dark:border-slate-700"
+                                className={`${inputCls} font-mono text-sm`}
+                                dir="ltr"
                                 value={form.model_default}
                                 onChange={e => setForm(f => ({ ...f, model_default: e.target.value }))}
                             />
                         </div>
                         <div>
-                            <label className="text-xs block mb-1 font-bold">موديل التفكير العميق</label>
+                            <label className={labelCls}>موديل التفكير العميق</label>
                             <input
-                                className="w-full border p-2 rounded font-mono text-sm dir-ltr bg-white dark:bg-slate-900 dark:border-slate-700"
+                                className={`${inputCls} font-mono text-sm`}
+                                dir="ltr"
                                 value={form.model_deep}
                                 onChange={e => setForm(f => ({ ...f, model_deep: e.target.value }))}
                             />
                         </div>
                     </div>
 
-                    <div className="flex gap-3">
-                        <button onClick={handleSave} disabled={loading} className="bg-amber-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-amber-700 flex items-center gap-2 disabled:opacity-50">
-                            <Save size={16} /> {loading ? 'جاري الحفظ...' : 'حفظ'}
+                    <div className="flex gap-3 relative">
+                        <button onClick={handleSave} disabled={loading} className="group/save bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-6 py-2.5 rounded-xl font-black hover:-translate-y-0.5 shadow-md shadow-amber-500/30 hover:shadow-lg hover:shadow-amber-500/40 active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:hover:translate-y-0 transition-all">
+                            <Save size={16} className="group-hover/save:rotate-12 transition-transform" />
+                            {loading ? 'جاري الحفظ...' : 'حفظ'}
                         </button>
-                        <button onClick={() => setShowForm(false)} className="px-6 py-2 rounded-lg font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <button onClick={() => setShowForm(false)} className="px-6 py-2.5 rounded-xl font-black text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                             إلغاء
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Info box */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-xs text-slate-500 space-y-2">
-                <p className="font-bold text-slate-600 dark:text-slate-400">كيف يعمل النظام:</p>
-                <ul className="list-disc list-inside space-y-1">
+            {/* Info box — accent stripe + gradient */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100/60 dark:from-slate-800/50 dark:to-slate-800/30 rounded-2xl p-4 text-xs text-slate-500 dark:text-slate-400 space-y-2 border border-slate-200 dark:border-slate-700">
+                <span className="absolute top-0 right-0 h-full w-0.5 bg-slate-400 opacity-60" />
+                <p className="font-black text-slate-700 dark:text-slate-300 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                        <Zap size={12} />
+                    </span>
+                    كيف يعمل النظام
+                </p>
+                <ul className="list-disc list-inside space-y-1 leading-relaxed">
                     <li>كل المفاتيح المضافة نشطة تلقائياً — لا تحتاج تفعيل يدوي.</li>
                     <li>النظام يجرب المفتاح رقم 1 أولاً. لو فشل (ليمت، عطل) ينتقل للتالي تلقائياً.</li>
                     <li>استخدم الأسهم ▲▼ لتغيير ترتيب الأولوية.</li>
@@ -677,63 +703,81 @@ function GeneralSettingsForm() {
 
     if (loading) return <div className="p-8 text-center"><Loader2 className="animate-spin inline" /> جاري التحميل...</div>;
 
+    // Shared input styles — keeps every field consistent without copying
+    // 5 long class strings per input.
+    const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all';
+    const labelCls = 'text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200 uppercase tracking-wider';
+
     return (
         <div className="space-y-6 max-w-2xl">
             {/* Hero Section */}
-            <div className="space-y-4 border-b pb-6 dark:border-slate-700">
-                <h4 className="font-bold text-slate-500 text-sm">واجهة الموقع (Hero Section)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3 border-b pb-6 border-slate-200 dark:border-slate-700">
+                <h4 className="font-black text-slate-600 dark:text-slate-300 text-sm flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    واجهة الموقع (Hero Section)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label className="text-xs block mb-1">العنوان الرئيسي</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.hero_title || ''} onChange={e => setSettings({ ...settings, hero_title: e.target.value })} />
+                        <label className={labelCls}>العنوان الرئيسي</label>
+                        <input className={inputCls} value={settings.hero_title || ''} onChange={e => setSettings({ ...settings, hero_title: e.target.value })} />
                     </div>
                     <div>
-                        <label className="text-xs block mb-1">العنوان الفرعي</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.hero_subtitle || ''} onChange={e => setSettings({ ...settings, hero_subtitle: e.target.value })} />
+                        <label className={labelCls}>العنوان الفرعي</label>
+                        <input className={inputCls} value={settings.hero_subtitle || ''} onChange={e => setSettings({ ...settings, hero_subtitle: e.target.value })} />
                     </div>
                     <div>
-                        <label className="text-xs block mb-1">نص الزر الأساسي</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.hero_cta_primary || ''} onChange={e => setSettings({ ...settings, hero_cta_primary: e.target.value })} />
+                        <label className={labelCls}>نص الزر الأساسي</label>
+                        <input className={inputCls} value={settings.hero_cta_primary || ''} onChange={e => setSettings({ ...settings, hero_cta_primary: e.target.value })} />
                     </div>
                 </div>
             </div>
 
             {/* Stats */}
-            <div className="space-y-4 border-b pb-6 dark:border-slate-700">
-                <h4 className="font-bold text-slate-500 text-sm">أرقام وإحصائيات</h4>
-                <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-3 border-b pb-6 border-slate-200 dark:border-slate-700">
+                <h4 className="font-black text-slate-600 dark:text-slate-300 text-sm flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    أرقام وإحصائيات
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
                     <div>
-                        <label className="text-xs block mb-1">عدد المقالات</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.stats_articles || ''} onChange={e => setSettings({ ...settings, stats_articles: e.target.value })} />
+                        <label className={labelCls}>عدد المقالات</label>
+                        <input className={`${inputCls} tabular-nums`} dir="ltr" value={settings.stats_articles || ''} onChange={e => setSettings({ ...settings, stats_articles: e.target.value })} />
                     </div>
                     <div>
-                        <label className="text-xs block mb-1">عدد المستخدمين</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.stats_users || ''} onChange={e => setSettings({ ...settings, stats_users: e.target.value })} />
+                        <label className={labelCls}>عدد المستخدمين</label>
+                        <input className={`${inputCls} tabular-nums`} dir="ltr" value={settings.stats_users || ''} onChange={e => setSettings({ ...settings, stats_users: e.target.value })} />
                     </div>
                     <div>
-                        <label className="text-xs block mb-1">وقت العمل</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.stats_uptime || ''} onChange={e => setSettings({ ...settings, stats_uptime: e.target.value })} />
+                        <label className={labelCls}>وقت العمل</label>
+                        <input className={`${inputCls} tabular-nums`} dir="ltr" value={settings.stats_uptime || ''} onChange={e => setSettings({ ...settings, stats_uptime: e.target.value })} />
                     </div>
                 </div>
             </div>
 
             {/* Contact & Social */}
-            <div className="space-y-4 border-b pb-6 dark:border-slate-700">
-                <h4 className="font-bold text-slate-500 text-sm">التواصل والخبراء</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3 border-b pb-6 border-slate-200 dark:border-slate-700">
+                <h4 className="font-black text-slate-600 dark:text-slate-300 text-sm flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    التواصل والخبراء
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label className="text-xs block mb-1">رقم التواصل (واتساب)</label>
-                        <input className="w-full border p-2 rounded dir-ltr bg-white dark:bg-slate-900 dark:border-slate-700" placeholder="+90..." value={settings.whatsapp_number || ''} onChange={e => setSettings({ ...settings, whatsapp_number: e.target.value })} />
+                        <label className={labelCls}>رقم التواصل (واتساب)</label>
+                        <input className={`${inputCls} font-mono`} dir="ltr" placeholder="+90..." value={settings.whatsapp_number || ''} onChange={e => setSettings({ ...settings, whatsapp_number: e.target.value })} />
                     </div>
                     <div>
-                        <label className="text-xs block mb-1">البريد الإلكتروني</label>
-                        <input className="w-full border p-2 rounded bg-white dark:bg-slate-900 dark:border-slate-700" value={settings.email_address || ''} onChange={e => setSettings({ ...settings, email_address: e.target.value })} />
+                        <label className={labelCls}>البريد الإلكتروني</label>
+                        <input className={`${inputCls} font-mono`} dir="ltr" value={settings.email_address || ''} onChange={e => setSettings({ ...settings, email_address: e.target.value })} />
                     </div>
                 </div>
             </div>
 
-            <button onClick={saveSettings} className="bg-emerald-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-emerald-700 flex items-center gap-2">
-                <Save size={18} /> حفظ التغييرات
+            <button
+                onClick={saveSettings}
+                className="group/save bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-xl font-black flex items-center gap-2 shadow-md shadow-emerald-600/30 hover:shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:scale-95 transition-all"
+            >
+                <Save size={18} className="group-hover/save:rotate-12 transition-transform" />
+                حفظ التغييرات
             </button>
         </div>
     );
