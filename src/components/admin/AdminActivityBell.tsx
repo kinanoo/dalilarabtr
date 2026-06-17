@@ -79,8 +79,16 @@ export function AdminActivityBell() {
         fetchEvents(lastVisit);
 
         if (!supabase) return;
+        // Bug fix (audit pass): if the component remounts (admin logs out
+        // and back in, navigates away and back) the original channel name
+        // could collide and fire duplicate events. Tag the channel name
+        // with a per-mount random suffix so each subscription is unique;
+        // remove the specific channel on cleanup.
+        // Avoid Math.random / Date.now in render — generate once per
+        // mount via a ref pattern inside useEffect.
+        const channelName = `admin-activity-bell-${Math.random().toString(36).slice(2, 10)}`;
         const channel = supabase
-            .channel('admin-activity-bell')
+            .channel(channelName)
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',

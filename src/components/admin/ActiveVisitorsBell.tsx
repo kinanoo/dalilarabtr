@@ -190,12 +190,19 @@ export function ActiveVisitorsBell() {
         }
     }, [expandedId, fetchJourney]);
 
-    // Auto-refresh every 30 seconds
+    // Bug fix (audit pass): poll only when the dropdown is open. The
+    // previous version ran a 30-s setInterval for the entire session,
+    // burning admin laptops' battery and refetching data nobody was
+    // looking at. First fetch on mount stays (for the unread badge);
+    // the polling cadence resumes when the admin opens the panel.
     useEffect(() => {
         fetchVisitors();
+    }, [fetchVisitors]);
+    useEffect(() => {
+        if (!isOpen) return;
         intervalRef.current = setInterval(fetchVisitors, 30000);
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }, [fetchVisitors]);
+    }, [isOpen, fetchVisitors]);
 
     // Close expanded when tab changes
     useEffect(() => {

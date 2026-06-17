@@ -75,6 +75,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Title or message too long' }, { status: 400 });
         }
 
+        // Defense-in-depth XSS guard. Currently the bell renders title +
+        // message as plain text nodes (React escapes them), so an HTML
+        // tag in the input is harmless. But this API is the entry point;
+        // if any future render path switches to dangerouslySetInnerHTML
+        // or a CMS proxies the content, the attacker payload is already
+        // stored. Strip tags + < / > characters at write time so the
+        // stored payload is text-only by contract.
+        body.title = title.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').slice(0, 200);
+        body.message = message.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').slice(0, 1000);
+
         // Links must be a same-origin path. The previous check accepted any
         // string starting with '/', which left an open-redirect window:
         // '//attacker.com/phish' starts with '/' but the browser interprets it

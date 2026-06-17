@@ -44,23 +44,37 @@ export default function NotificationBell() {
         }
     }, [userId]);
 
-    // Initialize last-seen timestamp on first visit
-    useEffect(() => {
-        initLastSeen();
-        loadNotifications();
+    // Bug fix (audit pass): inflight guard so the open-trigger refetch
+    // and the 60-s poll can't fire concurrently and stomp each other.
+    // Was producing a flicker on the unread badge when the user opened
+    // the panel right before a poll tick.
+    const isRefreshing = useRef(false);
+    const safeRefresh = useCallback(() => {
+        if (isRefreshing.current) return;
+        isRefreshing.current = true;
+        loadNotifications().finally(() => { isRefreshing.current = false; });
     }, [loadNotifications]);
 
-    // Poll every 60 seconds — only while panel is open
+    // Initialize last-seen timestamp on first visit. SSR-guarded so
+    // server passes never touch localStorage / window.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        initLastSeen();
+        safeRefresh();
+    }, [safeRefresh]);
+
+    // Poll every 60 seconds — only while panel is open. Guarded by
+    // safeRefresh so a slow request doesn't fire a duplicate.
     useEffect(() => {
         if (!isOpen) return;
-        const interval = setInterval(loadNotifications, 60000);
+        const interval = setInterval(safeRefresh, 60000);
         return () => clearInterval(interval);
-    }, [isOpen, loadNotifications]);
+    }, [isOpen, safeRefresh]);
 
     // Refresh when dropdown opens
     useEffect(() => {
-        if (isOpen) loadNotifications();
-    }, [isOpen, loadNotifications]);
+        if (isOpen) safeRefresh();
+    }, [isOpen, safeRefresh]);
 
     // Click outside to close
     useEffect(() => {
@@ -258,19 +272,33 @@ export default function NotificationBell() {
                     type="button"
                     ref={bellBtnRef}
                     onClick={() => setIsOpen(!isOpen)}
-                    className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 hover:text-emerald-700"
-                    aria-label="الإشعارات"
+                    className={`group relative p-2.5 rounded-full transition-all duration-300 ${
+                        totalUnread > 0
+                            ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-700'
+                    } ${isOpen ? 'ring-2 ring-emerald-400/40' : ''}`}
+                    aria-label={totalUnread > 0 ? `${totalUnread} إشعار جديد` : 'الإشعارات'}
                     aria-expanded={isOpen ? 'true' : 'false'}
                     aria-haspopup="true"
                 >
-                    <Bell size={18} />
+                    <Bell
+                        size={18}
+                        className={totalUnread > 0 ? 'group-hover:rotate-12 transition-transform duration-300' : ''}
+                    />
 
                     {totalUnread > 0 && (
+                        <>
+                            {/* Pulse ring — draws the eye without being noisy */}
                             <span
-                                className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-white dark:ring-slate-950 animate-in zoom-in duration-200"
+                                aria-hidden="true"
+                                className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping pointer-events-none"
+                            />
+                            <span
+                                className="absolute -top-1 -right-1 bg-gradient-to-br from-rose-500 to-red-500 text-white text-[10px] font-black tabular-nums rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-white dark:ring-slate-950 shadow-md shadow-rose-500/40 animate-in zoom-in duration-200"
                             >
                                 {totalUnread > 9 ? '9+' : totalUnread}
                             </span>
+                        </>
                     )}
                 </button>
             </div>
