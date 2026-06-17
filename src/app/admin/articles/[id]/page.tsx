@@ -84,7 +84,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
         if (!supabase) return;
         setSaving(true);
         try {
-            const payload = { ...form };
+            const payload: Record<string, unknown> = { ...form };
 
             // Sanitization
             delete payload.active; // Hard remove just in case
@@ -92,10 +92,29 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 if (!Array.isArray(payload[k])) payload[k] = [];
             });
 
+            // Map camelCase form fields to the actual snake_case columns.
+            // The form state historically used camelCase for date fields
+            // (lastUpdate) while the DB column is `last_update`. Sending
+            // the camelCase key trips PostgREST schema-cache validation
+            // with PGRST204 "Could not find the 'lastUpdate' column".
+            // Translate at the boundary so the form code stays as-is.
+            const KEY_REMAP: Record<string, string> = {
+                lastUpdate: 'last_update',
+            };
+            for (const [from, to] of Object.entries(KEY_REMAP)) {
+                if (payload[from] !== undefined) {
+                    if (payload[to] === undefined || payload[to] === null || payload[to] === '') {
+                        payload[to] = payload[from];
+                    }
+                    delete payload[from];
+                }
+            }
+
             // Generate ID if new
             if (isNew && !payload.id) {
-                if (!payload.title?.trim()) throw new Error('عنوان المقال مطلوب قبل الحفظ');
-                payload.id = normalizeId(payload.title);
+                const titleVal = typeof payload.title === 'string' ? payload.title : '';
+                if (!titleVal.trim()) throw new Error('عنوان المقال مطلوب قبل الحفظ');
+                payload.id = normalizeId(titleVal);
             }
 
             const { error } = await supabase

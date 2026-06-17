@@ -21,6 +21,11 @@ interface ExtendedArticleForm extends Partial<ArticleForm> {
     seo_title?: string;
     seo_description?: string;
     seo_keywords?: string[];
+    // Date column in DB is snake_case. The form may also carry the
+    // legacy camelCase `lastUpdate` from older callers — both are
+    // accepted; the editor prefers `last_update` on read and writes
+    // to that key so upsert() can pass it through unchanged.
+    last_update?: string;
 }
 
 interface ArticleEditorProps {
@@ -444,8 +449,13 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                             <input
                                 type="date"
                                 className={ltrInputStyles}
-                                value={(form.lastUpdate || '').split('T')[0]}
-                                onChange={e => setForm({ ...form, lastUpdate: e.target.value })}
+                                // Read from either key — old form state used
+                                // camelCase `lastUpdate`; rows fetched from
+                                // Supabase land as snake_case `last_update`.
+                                // Write back to the snake_case column name
+                                // so upsert() matches the DB schema directly.
+                                value={(form.last_update || form.lastUpdate || '').split('T')[0]}
+                                onChange={e => setForm({ ...form, last_update: e.target.value, lastUpdate: undefined })}
                             />
                         </Field>
                     </div>
