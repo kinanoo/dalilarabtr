@@ -129,26 +129,33 @@ export function UpdatesManager() {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Form */}
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-fit">
-                <h3 className="font-bold mb-4 flex items-center gap-2"><Bell className="text-yellow-500" /> {editingId ? 'تعديل تحديث' : 'نشر تحديث جديد'}</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Form — amber accent stripe + gradient */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-amber-50/40 dark:from-slate-900 dark:to-amber-950/15 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-fit shadow-sm">
+                <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
+
+                <h3 className="font-black mb-5 flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-lg ${editingId ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'} shadow-sm`}>
+                        <Bell size={16} />
+                    </span>
+                    {editingId ? 'تعديل تحديث' : 'نشر تحديث جديد'}
+                </h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-sm font-bold block mb-1">العنوان</label>
-                        <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" />
+                        <label className="text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200 uppercase tracking-wider">العنوان</label>
+                        <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all" />
                     </div>
                     <div>
-                        <label className="text-sm font-bold block mb-1">النوع</label>
-                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as DBUpdate['type'] })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+                        <label className="text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200 uppercase tracking-wider">النوع</label>
+                        <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value as DBUpdate['type'] })} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all">
                             <option value="news">خبر (News)</option>
                             <option value="alert">تنبيه (Alert)</option>
                             <option value="feature">ميزة جديدة (Feature)</option>
                         </select>
                     </div>
                     <div>
-                        <label className="text-sm font-bold block mb-1">رابط التوجيه (اختياري)</label>
-                        <input type="url" placeholder="مثلاً: /article/123 أو https://example.com" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full px-4 py-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700" dir="ltr" />
+                        <label className="text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200 uppercase tracking-wider">رابط التوجيه (اختياري)</label>
+                        <input type="url" placeholder="مثلاً: /article/123 أو https://example.com" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all" dir="ltr" />
                     </div>
                     <ImageUploader
                         label="صورة التحديث (اختياري)"
@@ -169,7 +176,7 @@ export function UpdatesManager() {
 
                     {/* Push notification toggle — only for new updates */}
                     {!editingId && (
-                        <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <label className="flex items-center gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-900/10 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
                             <input
                                 type="checkbox"
                                 checked={sendPush}
@@ -177,38 +184,77 @@ export function UpdatesManager() {
                                 className="w-4 h-4 rounded accent-emerald-600"
                             />
                             <Send size={16} className="text-emerald-600" />
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">إرسال إشعار push للمشتركين</span>
+                            <span className="text-sm font-black text-slate-700 dark:text-slate-300">إرسال إشعار push للمشتركين</span>
                         </label>
                     )}
 
-                    <button type="submit" disabled={submitting} className={`w-full py-2 rounded-lg font-bold text-white flex items-center justify-center gap-2 ${editingId ? 'bg-blue-500 hover:bg-blue-600' : sendPush ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-yellow-500 hover:bg-yellow-600'}`}>
-                        {submitting ? <Loader2 size={18} className="animate-spin" /> : editingId ? 'حفظ التعديل' : sendPush ? <><Send size={16} /> نشر وإرسال إشعار</> : 'نشر التحديث'}
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        className={`group/btn w-full py-3 rounded-xl font-black text-white flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-60 disabled:hover:translate-y-0 ${
+                            editingId
+                                ? 'bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-600/30 hover:shadow-blue-600/40'
+                                : sendPush
+                                    ? 'bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/30 hover:shadow-emerald-600/40'
+                                    : 'bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-amber-500/30 hover:shadow-amber-500/40'
+                        }`}
+                    >
+                        {submitting ? <Loader2 size={18} className="animate-spin" /> : editingId ? 'حفظ التعديل' : sendPush ? <><Send size={16} className="group-hover/btn:rotate-12 transition-transform" /> نشر وإرسال إشعار</> : 'نشر التحديث'}
                     </button>
                 </form>
             </div>
 
-            {/* List */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold">سجل التحديثات</div>
+            {/* List — sticky header + accent stripe + per-type chip */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/40 dark:from-slate-900 dark:to-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="absolute top-0 right-0 h-full w-1 bg-slate-300 dark:bg-slate-700 opacity-70 z-10" />
+
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 backdrop-blur font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 relative">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        <Bell size={14} />
+                    </span>
+                    سجل التحديثات
+                    <span className="mr-auto inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-black tabular-nums" dir="ltr">
+                        {updates.length}
+                    </span>
+                </div>
+
                 <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[500px] overflow-y-auto">
-                    {updates.map((u) => (
-                        <div key={u.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex justify-between group">
-                            <div className="flex items-start gap-3">
-                                {u.image && <img src={u.image} alt={u.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${u.type === 'alert' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{u.type}</span>
-                                        <span className="text-xs text-slate-400">{u.date}</span>
+                    {updates.map((u) => {
+                        const typeChip = u.type === 'alert'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                            : u.type === 'feature'
+                                ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
+                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+                        return (
+                            <div key={u.id} className="group relative p-4 hover:bg-amber-50/40 dark:hover:bg-amber-950/15 flex justify-between gap-3 transition-colors">
+                                <span className="absolute top-0 right-0 h-full w-0.5 bg-amber-500 opacity-0 group-hover:opacity-70 transition-opacity" />
+
+                                <div className="flex items-start gap-3 min-w-0">
+                                    {u.image && (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={u.image} alt={u.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0 shadow-sm" />
+                                    )}
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${typeChip}`}>{u.type}</span>
+                                            <span className="text-xs text-slate-400 tabular-nums" dir="ltr">{u.date}</span>
+                                        </div>
+                                        <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 truncate">{u.title}</h4>
                                     </div>
-                                    <h4 className="font-bold text-sm">{u.title}</h4>
+                                </div>
+                                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                    <button onClick={() => { setEditingId(u.id); setFormData(u); setSendPush(false); }} className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/15 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-110 active:scale-95 transition-all" aria-label="تعديل"><Edit size={16} /></button>
+                                    <button onClick={() => handleDelete(u.id, u.title)} className="p-2 rounded-xl bg-red-50 dark:bg-red-900/15 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:scale-110 active:scale-95 transition-all" title="حذف" aria-label="حذف"><Trash2 size={16} /></button>
                                 </div>
                             </div>
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => { setEditingId(u.id); setFormData(u); setSendPush(false); }} className="text-blue-500" aria-label="تعديل"><Edit size={16} /></button>
-                                <button onClick={() => handleDelete(u.id, u.title)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors" title="حذف" aria-label="حذف"><Trash2 size={16} /></button>
-                            </div>
+                        );
+                    })}
+                    {updates.length === 0 && (
+                        <div className="text-center py-12">
+                            <Bell size={32} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                            <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">لا توجد تحديثات مضافة.</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </div>

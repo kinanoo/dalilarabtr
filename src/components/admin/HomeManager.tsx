@@ -129,57 +129,71 @@ export default function HomeManager() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // Tab metadata centralised — same shape (id/label/icon/colour theme)
+    // so the render loop stays terse and adding a new tab only touches
+    // one array. The colour theme drives the tab pill bg/text + a small
+    // pulse indicator under the active tab.
+    type TabId = 'journey' | 'quick' | 'menus' | 'updates' | 'banners' | 'hero';
+    const TABS: Array<{ id: TabId; label: string; icon: typeof Plane; theme: { bg: string; text: string; accent: string }; disabled?: boolean }> = [
+        { id: 'journey', label: 'رحلة المستخدم', icon: Plane,       theme: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', accent: 'bg-emerald-500' } },
+        { id: 'quick',   label: 'الاختصارات',     icon: Sparkles,    theme: { bg: 'bg-blue-100 dark:bg-blue-900/30',       text: 'text-blue-700 dark:text-blue-300',       accent: 'bg-blue-500' } },
+        { id: 'menus',   label: 'القوائم',         icon: Menu,        theme: { bg: 'bg-violet-100 dark:bg-violet-900/30',   text: 'text-violet-700 dark:text-violet-300',   accent: 'bg-violet-500' } },
+        { id: 'updates', label: 'الأخبار',         icon: Bell,        theme: { bg: 'bg-amber-100 dark:bg-amber-900/30',     text: 'text-amber-700 dark:text-amber-300',     accent: 'bg-amber-500' } },
+        { id: 'banners', label: 'البنرات',         icon: ShieldAlert, theme: { bg: 'bg-red-100 dark:bg-red-900/30',         text: 'text-red-700 dark:text-red-300',         accent: 'bg-red-500' } },
+    ];
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <LayoutDashboard className="text-emerald-500" />
-                    إدارة الواجهة الرئيسية
-                </h2>
-                <p className="text-slate-500 text-sm mt-1">تحكم كامل في كل قسم من أقسام الصفحة الرئيسية</p>
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-2">
+                        <LayoutDashboard size={12} />
+                        واجهة
+                    </span>
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200/60 dark:from-emerald-900/40 dark:to-emerald-800/30 text-emerald-600 dark:text-emerald-400 shadow-sm">
+                            <LayoutDashboard size={22} />
+                        </span>
+                        إدارة الواجهة الرئيسية
+                    </h2>
+                    <p className="text-slate-500 text-sm mt-1.5">تحكم كامل في كل قسم من أقسام الصفحة الرئيسية</p>
+                </div>
             </div>
 
-            {/* Main Tabs Navigation */}
-            <div className="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
-                <div className="flex gap-2 min-w-max">
+            {/* Main Tabs Navigation — pill row w/ active accent */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-800/40 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+                <div className="flex gap-1.5 min-w-max">
+                    {TABS.map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`group/tab relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm transition-all ${
+                                    isActive
+                                        ? `${tab.theme.bg} ${tab.theme.text} shadow-sm`
+                                        : 'text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <Icon size={16} className={isActive ? 'group-hover/tab:rotate-3 transition-transform' : ''} />
+                                {tab.label}
+                                {isActive && (
+                                    <span className={`absolute -bottom-0.5 right-3 left-3 h-0.5 ${tab.theme.accent} rounded-full opacity-80`} />
+                                )}
+                            </button>
+                        );
+                    })}
+
                     <button
-                        onClick={() => setActiveTab('journey')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'journey' ? 'bg-emerald-100 text-emerald-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
-                    >
-                        <Plane size={18} /> رحلة المستخدم
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('quick')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'quick' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
-                    >
-                        <Sparkles size={18} /> الاختصارات السريعة
-                    </button>
-                    <button
+                        type="button"
                         disabled
-                        className="opacity-50 cursor-not-allowed flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-slate-400"
+                        className="opacity-40 cursor-not-allowed flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm text-slate-400"
                         title="قريباً"
                     >
-                        <FileText size={18} /> المقالات المميزة
-                    </button>
-                    <div className="w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                    <button
-                        onClick={() => setActiveTab('menus')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'menus' ? 'bg-purple-100 text-purple-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
-                    >
-                        <Menu size={18} /> القوائم
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('updates')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'updates' ? 'bg-amber-100 text-amber-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
-                    >
-                        <Bell size={18} /> الأخبار
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('banners')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'banners' ? 'bg-red-100 text-red-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
-                    >
-                        <ShieldAlert size={18} /> البنرات
+                        <FileText size={16} /> المقالات المميزة
                     </button>
                 </div>
             </div>
@@ -188,11 +202,15 @@ export default function HomeManager() {
 
             {/* 1. Journey & Quick Actions Manager */}
             {(activeTab === 'journey' || activeTab === 'quick') && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Form Side */}
-                    <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-fit sticky top-6">
-                        <h3 className="font-bold mb-6 flex items-center gap-2 border-b pb-4 border-slate-100 dark:border-slate-800">
-                            {editingId ? <Edit className="text-blue-500" /> : <Plus className="text-emerald-500" />}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Form Side — accent stripe + gradient */}
+                    <div className={`lg:col-span-1 relative overflow-hidden bg-gradient-to-br ${activeTab === 'journey' ? 'from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/15' : 'from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/15'} p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-fit sticky top-6 shadow-sm`}>
+                        <span className={`absolute top-0 right-0 h-full w-1 ${activeTab === 'journey' ? 'bg-emerald-500' : 'bg-blue-500'} opacity-70`} />
+
+                        <h3 className="font-black mb-5 flex items-center gap-2 border-b pb-4 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
+                            <span className={`inline-flex items-center justify-center w-9 h-9 rounded-lg ${editingId ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'} shadow-sm`}>
+                                {editingId ? <Edit size={16} /> : <Plus size={16} />}
+                            </span>
                             {editingId ? 'تعديل البطاقة' : 'إضافة بطاقة جديدة'}
                         </h3>
 
@@ -236,11 +254,12 @@ export default function HomeManager() {
                             )}
 
                             <div className="flex gap-2 pt-4">
-                                <button type="submit" className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-bold hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/10">
-                                    <Save size={18} /> حفظ
+                                <button type="submit" className="group/btn flex-1 bg-gradient-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-black flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 hover:shadow-lg hover:shadow-emerald-600/40 hover:-translate-y-0.5 active:scale-95 transition-all">
+                                    <Save size={18} className="group-hover/btn:rotate-12 transition-transform" />
+                                    حفظ
                                 </button>
                                 {editingId && (
-                                    <button type="button" onClick={() => { setEditingId(null); setForm({ ...form, title: '' }); }} className="px-4 bg-slate-100 text-slate-500 rounded-xl font-bold hover:bg-slate-200">
+                                    <button type="button" onClick={() => { setEditingId(null); setForm({ ...form, title: '' }); }} className="px-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-black hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                                         إلغاء
                                     </button>
                                 )}
@@ -254,28 +273,30 @@ export default function HomeManager() {
                             {cards.map(card => {
                                 const Icon = ICONS[card.icon_name] || FileText;
                                 return (
-                                    <div key={card.id} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col group relative hover:shadow-md transition-all">
+                                    <div key={card.id} className={`group relative overflow-hidden bg-gradient-to-br ${activeTab === 'journey' ? 'from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/15' : 'from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/15'} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col hover:shadow-md hover:-translate-y-0.5 transition-all`}>
+                                        <span className={`absolute top-0 right-0 h-full w-0.5 ${activeTab === 'journey' ? 'bg-emerald-500' : 'bg-blue-500'} opacity-60 group-hover:opacity-100 transition-opacity`} />
+
                                         <div className="flex items-start gap-4 mb-3">
-                                            <div className={`p-3 rounded-xl shrink-0 ${activeTab === 'journey' ? `bg-gradient-to-br ${card.color_class} text-white` : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}>
-                                                <Icon size={24} />
+                                            <div className={`p-3 rounded-2xl shrink-0 shadow-sm group-hover:rotate-3 transition-transform ${activeTab === 'journey' ? `bg-gradient-to-br ${card.color_class} text-white` : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                                                <Icon size={22} />
                                             </div>
-                                            <div>
-                                                <h4 className="font-bold text-slate-800 dark:text-slate-100">{card.title}</h4>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dir-ltr">{card.href}</span>
-                                                    <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">#{card.sort_order}</span>
+                                            <div className="min-w-0">
+                                                <h4 className="font-black text-slate-800 dark:text-slate-100">{card.title}</h4>
+                                                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                                    <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg text-slate-500 dark:text-slate-400" dir="ltr">{card.href}</span>
+                                                    <span className="text-[10px] font-black bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-lg tabular-nums" dir="ltr">#{card.sort_order}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed pl-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg mb-4 h-full">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg mb-4 h-full">
                                             {card.description || 'لا يوجد وصف'}
                                         </p>
 
                                         <div className="mt-auto flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                                            <button onClick={() => startEdit(card)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                                            <button onClick={() => startEdit(card)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/15 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-all hover:scale-105 active:scale-95">
                                                 <Edit size={14} /> تعديل
                                             </button>
-                                            <button onClick={() => handleDelete(card.id)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                                            <button onClick={() => handleDelete(card.id)} className="flex items-center gap-1 px-3 py-1.5 text-xs font-black text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/15 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all hover:scale-105 active:scale-95">
                                                 <Trash2 size={14} /> حذف
                                             </button>
                                         </div>
@@ -289,22 +310,31 @@ export default function HomeManager() {
 
             {/* 2. Menus Manager (Imported) */}
             {activeTab === 'menus' && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-1">
-                    {/* We reuse ConfigManager but force it to look like part of this dashboard if possible, 
-                         or just render it. Since ConfigManager spans full width, we just render it. */}
-                    <ConfigManager />
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-violet-50/30 dark:from-slate-900 dark:to-violet-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-violet-500 opacity-70" />
+                    <div className="relative">
+                        <ConfigManager />
+                    </div>
                 </div>
             )}
 
             {/* 3. Updates & News */}
             {activeTab === 'updates' && (
-                <UpdatesManager />
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
+                    <div className="relative">
+                        <UpdatesManager />
+                    </div>
+                </div>
             )}
 
             {/* 4. Banners */}
             {activeTab === 'banners' && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                    <BannersManager />
+                <div className="relative overflow-hidden bg-gradient-to-br from-white to-red-50/30 dark:from-slate-900 dark:to-red-950/15 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                    <span className="absolute top-0 right-0 h-full w-1 bg-red-500 opacity-70" />
+                    <div className="relative">
+                        <BannersManager />
+                    </div>
                 </div>
             )}
 
