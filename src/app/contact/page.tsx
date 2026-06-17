@@ -71,38 +71,41 @@ export default function ContactPage() {
 
       <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-12 -mt-4 relative z-10 space-y-8">
 
-        {/* Quick Action Cards */}
+        {/* Quick Action Cards — family treatment with accent stripes */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <a
             href={`mailto:${SITE_CONFIG.email}`}
-            className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-emerald-500 hover:shadow-lg transition-all duration-300"
+            className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300"
           >
-            <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">
-              <Mail className="w-8 h-8 mx-auto text-emerald-500" />
+            <span className="absolute top-0 right-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+              <Mail className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">البريد الإلكتروني</h3>
-            <p className="text-xs text-slate-400">{SITE_CONFIG.email}</p>
+            <h3 className="font-black text-slate-800 dark:text-slate-100 mb-1 group-hover:text-emerald-600 transition-colors">البريد الإلكتروني</h3>
+            <p className="text-xs text-slate-400 truncate" dir="ltr">{SITE_CONFIG.email}</p>
           </a>
 
           <Link
             href="/consultant"
-            className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-emerald-500 hover:shadow-lg transition-all duration-300"
+            className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300"
           >
-            <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">
-              <Scale className="w-8 h-8 mx-auto text-emerald-500" />
+            <span className="absolute top-0 right-0 w-1 h-full bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+              <Scale className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">المستشار القانوني</h3>
+            <h3 className="font-black text-slate-800 dark:text-slate-100 mb-1 group-hover:text-blue-600 transition-colors">المستشار القانوني</h3>
             <p className="text-xs text-slate-400">78 سيناريو جاهز للتشخيص</p>
           </Link>
 
           <Link
             href="/faq"
-            className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-cyan-500 hover:shadow-lg transition-all duration-300"
+            className="group relative overflow-hidden bg-gradient-to-br from-white to-cyan-50/50 dark:from-slate-900 dark:to-cyan-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-cyan-400 hover:shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-1 transition-all duration-300"
           >
-            <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">
-              <HelpCircle className="w-8 h-8 mx-auto text-cyan-500" />
+            <span className="absolute top-0 right-0 w-1 h-full bg-cyan-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+              <HelpCircle className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1">الأسئلة الشائعة</h3>
+            <h3 className="font-black text-slate-800 dark:text-slate-100 mb-1 group-hover:text-cyan-600 transition-colors">الأسئلة الشائعة</h3>
             <p className="text-xs text-slate-400">إجابات سريعة على أكثر الأسئلة</p>
           </Link>
         </div>

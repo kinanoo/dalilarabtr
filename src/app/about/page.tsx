@@ -1,5 +1,5 @@
 import PageHero from '@/components/PageHero';
-import { Users, Scale, BadgeCheck, ShieldCheck } from 'lucide-react';
+import { Users, Scale, BadgeCheck, ShieldCheck, Sparkles, BookOpen, Shield, Clock, Heart } from 'lucide-react';
 import { Metadata } from 'next';
 import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
@@ -50,70 +50,129 @@ export default async function AboutPage() {
             />
 
             {/* Mission Section */}
-            <section className="py-16 px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl font-bold mb-6 text-slate-800 dark:text-slate-100">
-                        لماذا أسسنا <span className="text-emerald-600">دليل العرب في تركيا</span>؟
+            <section className="py-16 px-4 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.08),transparent_60%)]" aria-hidden />
+                <div className="max-w-4xl mx-auto text-center relative">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-4">
+                        <Sparkles size={12} />
+                        قصتنا
+                    </span>
+                    <h2 className="text-3xl sm:text-4xl font-black mb-6 text-slate-800 dark:text-slate-100 leading-tight">
+                        لماذا أسسنا <span className="bg-gradient-to-l from-emerald-600 to-emerald-500 bg-clip-text text-transparent">دليل العرب في تركيا</span>؟
                     </h2>
                     <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8">
                         في عام 2025، لاحظنا الفجوة الكبيرة في المعلومات القانونية المتاحة للعرب في تركيا. شائعات كثيرة، قوانين متغيرة، ومعلومات غير دقيقة تؤدي لمشاكل قانونية (منع، ترحيل، غرامات).
                         <br /><br />
-                        لذا قررنا إنشاء منصة تكون <strong>المرجع الموثوق</strong> الذي يجمع بين الخبرة القانونية والتقنية الحديثة.
+                        لذا قررنا إنشاء منصة تكون <strong className="text-emerald-700 dark:text-emerald-400">المرجع الموثوق</strong> الذي يجمع بين الخبرة القانونية والتقنية الحديثة.
                     </p>
                 </div>
             </section>
 
-            {/* Trust Grid */}
-            <section className="py-10 px-4 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
-                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="text-center p-6">
-                        <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600">
-                            <Scale size={32} />
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">دقة قانونية</h3>
-                        <p className="text-slate-500 text-sm">
-                            معلوماتنا مستمدة مباشرة من الجريدة الرسمية التركية ومواقع الدوائر الحكومية (Göç İdaresi, Nüfus).
-                        </p>
+            {/* Section divider */}
+            <div className="relative h-12 -my-6">
+                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 bg-slate-50 dark:bg-slate-950 rounded-full border border-slate-200 dark:border-slate-800">
+                    <Heart size={16} className="text-emerald-500" />
+                </div>
+            </div>
+
+            {/* Trust Grid — magazine cards with accent stripes */}
+            <section className="py-16 px-4 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-12">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
+                            مبادئنا
+                        </span>
+                        <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100">
+                            ثلاث ركائز لا نحيد عنها
+                        </h2>
                     </div>
-                    <div className="text-center p-6">
-                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
-                            <BadgeCheck size={32} />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300">
+                            <span className="absolute top-0 right-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+                                <Scale size={32} />
+                            </div>
+                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">دقة قانونية</h3>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                معلوماتنا مستمدة مباشرة من الجريدة الرسمية التركية ومواقع الدوائر الحكومية (Göç İdaresi, Nüfus).
+                            </p>
                         </div>
-                        <h3 className="text-xl font-bold mb-2">تحديث يومي</h3>
-                        <p className="text-slate-500 text-sm">
-                            فريقنا يراقب التعديلات القانونية يومياً ويحدث المقالات والأدوات لضمان دقة المعلومات 100%.
-                        </p>
-                    </div>
-                    <div className="text-center p-6">
-                        <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-purple-600">
-                            <ShieldCheck size={32} />
+
+                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-300 hover:-translate-y-1 transition-all duration-300">
+                            <span className="absolute top-0 right-0 w-1 h-full bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+                                <BadgeCheck size={32} />
+                            </div>
+                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">تحديث يومي</h3>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                فريقنا يراقب التعديلات القانونية يومياً ويحدث المقالات والأدوات لضمان دقة المعلومات 100%.
+                            </p>
                         </div>
-                        <h3 className="text-xl font-bold mb-2">خصوصية تامة</h3>
-                        <p className="text-slate-500 text-sm">
-                            نحترم خصوصيتك. أدواتنا (مثل فحص الكود) لا تخزن بياناتك الشخصية أبداً.
-                        </p>
+
+                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-violet-50/50 dark:from-slate-900 dark:to-violet-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-violet-500/10 hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
+                            <span className="absolute top-0 right-0 w-1 h-full bg-violet-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+                                <ShieldCheck size={32} />
+                            </div>
+                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">خصوصية تامة</h3>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                نحترم خصوصيتك. أدواتنا (مثل فحص الكود) لا تخزن بياناتك الشخصية أبداً.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* Stats */}
+            {/* Stats — premium counters with accent stripes */}
             <section className="py-16 px-4">
-                <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-slate-200 dark:divide-slate-800 divide-x-reverse">
-                    <div>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">+{stats.articles}</div>
-                        <div className="text-sm text-slate-500">مقال ودليل</div>
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-10">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
+                            بالأرقام
+                        </span>
+                        <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100">
+                            ما حققناه حتى الآن
+                        </h2>
                     </div>
-                    <div>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">+{stats.codes}</div>
-                        <div className="text-sm text-slate-500">كود أمني</div>
-                    </div>
-                    <div>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">24/7</div>
-                        <div className="text-sm text-slate-500">مستشار ذكي</div>
-                    </div>
-                    <div>
-                        <div className="text-4xl font-bold text-emerald-600 mb-2">100%</div>
-                        <div className="text-sm text-slate-500">مجاني</div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:border-emerald-300 transition-all">
+                            <span className="absolute top-0 right-0 w-0.5 h-full bg-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <BookOpen size={22} />
+                            </div>
+                            <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 mb-1 tabular-nums" dir="ltr">+{stats.articles}</div>
+                            <div className="text-xs sm:text-sm text-slate-500 font-bold">مقال ودليل</div>
+                        </div>
+
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1 hover:border-blue-300 transition-all">
+                            <span className="absolute top-0 right-0 w-0.5 h-full bg-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Shield size={22} />
+                            </div>
+                            <div className="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-400 mb-1 tabular-nums" dir="ltr">+{stats.codes}</div>
+                            <div className="text-xs sm:text-sm text-slate-500 font-bold">كود أمني</div>
+                        </div>
+
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-violet-500/10 hover:-translate-y-1 hover:border-violet-300 transition-all">
+                            <span className="absolute top-0 right-0 w-0.5 h-full bg-violet-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Clock size={22} />
+                            </div>
+                            <div className="text-3xl sm:text-4xl font-black text-violet-600 dark:text-violet-400 mb-1 tabular-nums" dir="ltr">24/7</div>
+                            <div className="text-xs sm:text-sm text-slate-500 font-bold">مستشار ذكي</div>
+                        </div>
+
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-rose-500/10 hover:-translate-y-1 hover:border-rose-300 transition-all">
+                            <span className="absolute top-0 right-0 w-0.5 h-full bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Heart size={22} />
+                            </div>
+                            <div className="text-3xl sm:text-4xl font-black text-rose-600 dark:text-rose-400 mb-1 tabular-nums" dir="ltr">100%</div>
+                            <div className="text-xs sm:text-sm text-slate-500 font-bold">مجاني</div>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -23,8 +23,6 @@ import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import NewsletterCard from '@/components/NewsletterCard';
-import FeaturedNewsHero from '@/components/home/FeaturedNewsHero';
 import { Radio, Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
@@ -186,11 +184,6 @@ export default async function Home() {
           hero → content transition; the chips are now in the hero. */}
       <div className="w-full h-px bg-slate-900/40 dark:bg-slate-800" aria-hidden="true" />
 
-      {/* Featured news hero — server-rendered breaking-news slot. Renders
-          nothing when no article carries the `خبر_رئيسي` tag, so it stays
-          invisible on quiet days. */}
-      <FeaturedNewsHero />
-
       {/* ═══════════════════════════════════════════════════════════
           SECTION 1 — آخر التحديثات
           Magazine style on a light surface. The eyebrow uses a wide
@@ -323,15 +316,6 @@ export default async function Home() {
           <HomeFAQ />
         </ScrollReveal>
       </section>
-
-      {/* 5. NEWSLETTER — final CTA before footer. Hero tone for the homepage
-          so it commands attention even after the FAQ. The form posts directly
-          to /api/newsletter and persists to newsletter_subscribers. */}
-      <ScrollReveal>
-        <div className="mt-12">
-          <NewsletterCard tone="hero" source="home" />
-        </div>
-      </ScrollReveal>
 
     </main>
   );

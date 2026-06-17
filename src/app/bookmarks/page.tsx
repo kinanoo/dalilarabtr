@@ -72,23 +72,31 @@ export default function BookmarksPage() {
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
                         {savedArticles.map((article) => (
-                            <div key={article.id} className="group bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition flex gap-4 items-start relative card-hover">
-                                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0">
+                            <div
+                                key={article.id}
+                                className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-400 hover:-translate-y-1 transition-all duration-300 flex gap-4 items-start"
+                            >
+                                {/* Accent stripe — right edge in RTL */}
+                                <span className="absolute top-0 right-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+
+                                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                     <FileText size={24} />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start gap-2 mb-2">
                                         <Link href={`/article/${article.slug || article.id}`}>
-                                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition mb-1">
+                                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-snug">
                                                 {article.title}
                                             </h3>
                                         </Link>
                                         <BookmarkButton id={article.id} mini className="shrink-0 relative z-10" />
                                     </div>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">{article.intro?.replace(/<[^>]*>/g, '')}</p>
-                                    <div className="flex items-center gap-3 text-xs text-slate-400">
-                                        <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">{article.category}</span>
-                                        <span>{article.lastUpdate}</span>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">{article.intro?.replace(/<[^>]*>/g, '')}</p>
+                                    <div className="flex items-center gap-3 text-xs">
+                                        <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg font-black uppercase tracking-wider text-[10px]">
+                                            {article.category}
+                                        </span>
+                                        <span className="text-slate-400 tabular-nums" dir="ltr">{article.lastUpdate}</span>
                                     </div>
                                 </div>
                                 <Link href={`/article/${article.slug || article.id}`} className="absolute inset-0 z-0" aria-label={article.title}></Link>
