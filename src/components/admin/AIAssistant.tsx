@@ -583,33 +583,41 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             </motion.div>
           )}
 
-          {/* Pending action */}
+          {/* Pending action — confirm card with accent stripe + gradient */}
           {pendingAction && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`mx-auto max-w-sm border rounded-2xl p-4 space-y-3 ${
+              className={`relative overflow-hidden mx-auto max-w-sm border rounded-2xl p-4 space-y-3 bg-gradient-to-br ${
                 pendingAction.type === 'delete'
-                  ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-                  : 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+                  ? 'from-red-50 to-rose-50/50 dark:from-red-950/25 dark:to-rose-950/15 border-red-300 dark:border-red-900/50 shadow-md shadow-red-500/10'
+                  : 'from-amber-50 to-amber-100/50 dark:from-amber-950/25 dark:to-amber-900/15 border-amber-300 dark:border-amber-900/50 shadow-md shadow-amber-500/10'
               }`}
             >
-              <div className={`flex items-center gap-2 font-bold text-sm ${
-                pendingAction.type === 'delete' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
-              }`}>
-                <Trash2 size={16} />
-                <span>{pendingAction.type === 'delete' ? 'تأكيد الحذف' : 'تأكيد التعديل'}</span>
-              </div>
-              <p className={`text-sm ${
+              <span className={`absolute top-0 right-0 h-full w-1 ${pendingAction.type === 'delete' ? 'bg-red-500' : 'bg-amber-500'} opacity-80`} />
+
+              <div className={`flex items-center gap-2 font-black text-sm relative ${
                 pendingAction.type === 'delete' ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'
+              }`}>
+                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${
+                  pendingAction.type === 'delete' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                } shadow-sm`}>
+                  <Trash2 size={14} />
+                </span>
+                <span className="uppercase tracking-wider">{pendingAction.type === 'delete' ? 'تأكيد الحذف' : 'تأكيد التعديل'}</span>
+              </div>
+              <p className={`text-sm leading-relaxed relative ${
+                pendingAction.type === 'delete' ? 'text-red-800 dark:text-red-200' : 'text-amber-800 dark:text-amber-200'
               }`}>{pendingAction.summary}</p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 relative">
                 <button
                   type="button"
                   onClick={confirmAction}
                   disabled={loading}
-                  className={`flex-1 min-h-[44px] px-4 py-2 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 active:scale-95 ${
-                    pendingAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'
+                  className={`flex-1 min-h-[44px] px-4 py-2 text-white text-sm font-black rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0 active:scale-95 ${
+                    pendingAction.type === 'delete'
+                      ? 'bg-gradient-to-l from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-red-600/30 hover:shadow-red-600/40'
+                      : 'bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-amber-500/30 hover:shadow-amber-500/40'
                   }`}
                 >
                   {loading ? 'جاري التنفيذ...' : pendingAction.type === 'delete' ? 'نعم، احذف' : 'نعم، عدّل'}
@@ -619,7 +627,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                   onClick={cancelAction}
                   disabled={loading}
                   title="إلغاء"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors active:scale-95"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 hover:scale-105"
                 >
                   <X size={18} />
                 </button>
@@ -691,9 +699,9 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
               onClick={() => sendMessage()}
               disabled={!input.trim() || loading}
               title="إرسال"
-              className="shrink-0 w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+              className="group/send shrink-0 w-11 h-11 rounded-xl bg-gradient-to-l from-blue-600 to-indigo-700 text-white flex items-center justify-center hover:from-blue-700 hover:to-indigo-800 shadow-md shadow-blue-600/30 hover:shadow-lg hover:shadow-blue-600/40 hover:-translate-y-0.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-md active:scale-95"
             >
-              <Send size={18} className="rotate-180" />
+              <Send size={18} className="rotate-180 group-hover/send:rotate-[170deg] transition-transform" />
             </button>
           </div>
         </div>
