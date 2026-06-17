@@ -19,6 +19,7 @@ const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 // Components
 import HeroSection from '@/components/home/HeroSection';
 import HomeUpdates from '@/components/home/HomeUpdates';
+import FeaturedNewsHero from '@/components/home/FeaturedNewsHero';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
@@ -183,6 +184,14 @@ export default async function Home() {
           A single 1px slate line is all that's needed to mark the
           hero → content transition; the chips are now in the hero. */}
       <div className="w-full h-px bg-slate-900/40 dark:bg-slate-800" aria-hidden="true" />
+
+      {/* Featured news carousel — server-rendered breaking-news slot.
+          Renders nothing when no article carries the `خبر_رئيسي` tag,
+          so it stays invisible on quiet days. NOTE: this import MUST
+          stay even when local dev preview can't resolve it on a stale
+          branch — production main has the file and Vercel builds fine.
+          Do not delete to silence a worktree dev error. */}
+      <FeaturedNewsHero />
 
       {/* ═══════════════════════════════════════════════════════════
           SECTION 1 — آخر التحديثات
