@@ -19,7 +19,6 @@ import ArticleTOC from './article/ArticleTOC';
 import ReadingProgressBar from './article/ReadingProgressBar';
 import EndOfArticleShare from './article/EndOfArticleShare';
 import StickyMobileShareBar from './article/StickyMobileShareBar';
-import NewsletterCard from './NewsletterCard';
 import ArticleHeroImage from './article/ArticleHeroImage';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
@@ -510,11 +509,6 @@ export default function ArticleView({ article, slug, initialComments, children }
                     url={`${SITE_CONFIG.siteUrl}/article/${slug}`}
                     excerpt={article.intro || undefined}
                 />
-                {/* Newsletter card at the end of the article — readers who
-                    finished a long legal/procedural piece are the warmest
-                    candidates for the signup. The source string tells the
-                    admin where this email came from. */}
-                <NewsletterCard tone="compact" source="article-footer" />
               </div>
 
             </div>
