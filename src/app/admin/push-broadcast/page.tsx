@@ -104,11 +104,11 @@ export default function PushBroadcastPage() {
             return;
         }
         if (title.length > 200) {
-            setResult({ error: 'العنوان طويل جداً (الحد ٢٠٠ حرف)' });
+            setResult({ error: 'العنوان طويل جداً (الحد 200 حرف)' });
             return;
         }
         if (message.length > 1000) {
-            setResult({ error: 'الرسالة طويلة جداً (الحد ١٠٠٠ حرف)' });
+            setResult({ error: 'الرسالة طويلة جداً (الحد 1000 حرف)' });
             return;
         }
         if (url && !/^\/[a-z0-9_\-/?=&#%.]*$/i.test(url)) {
@@ -203,7 +203,7 @@ export default function PushBroadcastPage() {
                         onChange={(e) => setTitle(e.target.value)}
                         maxLength={200}
                         required
-                        placeholder="مثال: 🚨 عاجل: تخفيض ٨٠٪ من الأحياء المغلقة"
+                        placeholder="مثال: 🚨 عاجل: تخفيض 80٪ من الأحياء المغلقة"
                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <div className="mt-1 text-[11px] text-slate-400 text-left tabular-nums">
@@ -291,9 +291,9 @@ export default function PushBroadcastPage() {
 
             {/* Quick tips below — not legalese, just practical reminders */}
             <div className="mt-6 text-xs text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-                <p>💡 <strong>أفضل وقت للبثّ:</strong> الصباح المبكر (٨-١٠) أو المساء (٧-٩) — هنا يتفاعل المشتركون أكثر.</p>
+                <p>💡 <strong>أفضل وقت للبثّ:</strong> الصباح المبكر (8-10) أو المساء (7-9) — هنا يتفاعل المشتركون أكثر.</p>
                 <p>💡 <strong>إيموجي في البداية</strong> يرفع نسبة الفتح بشكل ملحوظ (🚨 للعاجل، 📢 للإعلان، 🟢 للتفاؤل).</p>
-                <p>💡 <strong>أنت محدود بـ١٠ بثّات في الساعة</strong> — للحماية من الإفراط. استخدمها بحكمة.</p>
+                <p>💡 <strong>أنت محدود بـ10 بثّات في الساعة</strong> — للحماية من الإفراط. استخدمها بحكمة.</p>
             </div>
         </div>
     );

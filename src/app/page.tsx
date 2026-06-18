@@ -246,7 +246,7 @@ export default async function Home() {
           ═══════════════════════════════════════════════════════════ */}
       <section className="relative bg-slate-950 text-white py-20 mt-12 overflow-hidden" dir="rtl">
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
-        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">٠٢</div>
+        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">02</div>
         <div className="relative max-w-7xl mx-auto px-4 mb-10">
           <div className="flex items-center gap-3 mb-4">
             <Sparkles size={18} className="text-emerald-400" />

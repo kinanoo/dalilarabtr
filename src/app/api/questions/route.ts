@@ -99,10 +99,10 @@ export async function POST(req: NextRequest) {
 
         // Validation
         if (question.length < 8) {
-            return NextResponse.json({ error: 'السؤال قصير جداً (٨ أحرف على الأقل)' }, { status: 400 });
+            return NextResponse.json({ error: 'السؤال قصير جداً (8 أحرف على الأقل)' }, { status: 400 });
         }
         if (question.length > 1000) {
-            return NextResponse.json({ error: 'السؤال طويل جداً (١٠٠٠ حرف كحدّ أقصى)' }, { status: 400 });
+            return NextResponse.json({ error: 'السؤال طويل جداً (1000 حرف كحدّ أقصى)' }, { status: 400 });
         }
         if (context.length > 2000) {
             return NextResponse.json({ error: 'السياق طويل جداً' }, { status: 400 });
