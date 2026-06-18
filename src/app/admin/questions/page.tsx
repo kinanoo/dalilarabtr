@@ -21,6 +21,7 @@ import {
     Star,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { toast } from 'sonner';
 
 type Status = 'pending' | 'answered' | 'rejected' | 'spam';
 
@@ -84,7 +85,7 @@ export default function AdminQuestionsPage() {
         if (!supabase) return;
         const text = (draftAnswers[id] || '').trim();
         if (text.length < 5) {
-            alert('الإجابة قصيرة جداً.');
+            toast.error('الإجابة قصيرة جداً.');
             return;
         }
         setBusy(id);
@@ -100,7 +101,7 @@ export default function AdminQuestionsPage() {
                 })
                 .eq('id', id);
             if (error) {
-                alert('فشل النشر: ' + error.message);
+                toast.error('فشل النشر: ' + error.message);
             } else {
                 setDraftAnswers((d) => {
                     const next = { ...d };

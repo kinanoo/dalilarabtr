@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Star, X, Loader2, Send } from 'lucide-react';
 import StarRating from './StarRating';
 import logger from '@/lib/logger';
+import { toast } from 'sonner';
 
 interface RatingModalProps {
     isOpen: boolean;
@@ -23,7 +24,10 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (rating === 0) return alert('يرجى اختيار عدد النجوم');
+        if (rating === 0) {
+            toast.error('يرجى اختيار عدد النجوم');
+            return;
+        }
 
         setLoading(true);
 
@@ -55,7 +59,7 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
 
         } catch (err) {
             logger.error(err);
-            alert('حدث خطأ أثناء الإرسال');
+            toast.error('حدث خطأ أثناء الإرسال');
         } finally {
             setLoading(false);
         }

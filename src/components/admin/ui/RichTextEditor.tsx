@@ -10,6 +10,7 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import {
     Bold, Italic, Underline as UnderlineIcon, Strikethrough,
     Heading1, Heading2, Heading3,
@@ -96,7 +97,7 @@ export default function RichTextEditor({
             /^https?:\/\/[a-z0-9.-]+(:[0-9]+)?(\/[^\s]*)?$/i.test(trimmed)
             || /^\/[a-z0-9_\-/?=&#%.]*$/i.test(trimmed);
         if (!isSafe) {
-            window.alert('رابط الصورة غير صالح. استخدم رابطاً يبدأ بـ https:// أو / فقط.');
+            toast.error('رابط الصورة غير صالح. استخدم رابطاً يبدأ بـ https:// أو / فقط.');
             return;
         }
         editor.chain().focus().setImage({ src: trimmed }).run();

@@ -2,6 +2,7 @@
 
 import { CheckCircle2, MapPin, Share2, Star } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 // === Type Definitions ===
 interface Service {
@@ -21,16 +22,25 @@ interface HeaderProps {
 }
 
 export default function ServiceProfileHeader({ service }: HeaderProps) {
-    const handleShare = () => {
+    const handleShare = async () => {
+        const url = window.location.href;
         if (navigator.share) {
-            navigator.share({
-                title: service.name,
-                text: `تحقق من بروفايل ${service.name} على دليل العرب في تركيا`,
-                url: window.location.href,
-            });
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert('تم نسخ الرابط!');
+            try {
+                await navigator.share({
+                    title: service.name,
+                    text: `تحقق من بروفايل ${service.name} على دليل العرب في تركيا`,
+                    url,
+                });
+            } catch {
+                // User cancelled — no toast, no error.
+            }
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(url);
+            toast.success('تم نسخ الرابط');
+        } catch {
+            toast.error('تعذّر نسخ الرابط');
         }
     };
 
