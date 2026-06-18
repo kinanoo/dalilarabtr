@@ -24,6 +24,7 @@
 
 import { useEffect, useState } from 'react';
 import { Send, Share2 } from 'lucide-react';
+import { stripHtml } from '@/lib/stripHtml';
 
 // Inline WhatsApp icon (same SVG used in ShareMenu) — duplicated to keep this
 // component self-contained and avoid circular dependencies on ShareMenu.
@@ -62,18 +63,23 @@ export default function EndOfArticleShare({ title, url, excerpt }: Props) {
         setCanNativeShare(isMobile && typeof navigator.share === 'function');
     }, []);
 
-    // Build the pre-filled share message. Encoded once, reused for both
+    // Build the pre-filled share message. Strip HTML from both title and
+    // excerpt — article.intro arrives as raw HTML (`<strong>...</strong>`,
+    // `<br/>`) and WhatsApp/Telegram render the tags literally, so the
+    // receiver sees the markup not the prose. Encoded once, reused for both
     // WhatsApp and Telegram which accept the same query-string text format.
-    const summary = excerpt ? excerpt.slice(0, 140).trim() + (excerpt.length > 140 ? '…' : '') : '';
-    const messageBody = summary ? `${title}\n\n${summary}\n\n${url}` : `${title}\n\n${url}`;
+    const cleanTitle = stripHtml(title);
+    const cleanExcerpt = stripHtml(excerpt);
+    const summary = cleanExcerpt ? cleanExcerpt.slice(0, 140).trim() + (cleanExcerpt.length > 140 ? '…' : '') : '';
+    const messageBody = summary ? `${cleanTitle}\n\n${summary}\n\n${url}` : `${cleanTitle}\n\n${url}`;
     const encoded = encodeURIComponent(messageBody);
     const whatsappLink = `https://wa.me/?text=${encoded}`;
-    const telegramLink = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+    const telegramLink = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(cleanTitle)}`;
 
     const handleNativeShare = async () => {
         if (canNativeShare && navigator.share) {
             try {
-                await navigator.share({ title, text: summary || title, url });
+                await navigator.share({ title: cleanTitle, text: summary || cleanTitle, url });
             } catch {
                 // user cancelled
             }

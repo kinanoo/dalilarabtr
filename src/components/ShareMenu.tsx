@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Share2, Copy, X, Check, Facebook, Linkedin, Send } from 'lucide-react';
+import { stripHtml } from '@/lib/stripHtml';
 
 // =====================================================
 // أيقونة X (تويتر سابقاً)
@@ -87,9 +88,18 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
     return url || window.location.href;
   }, [url]);
 
-  const shareText = useMemo(() => (text ? `${title}\n\n${text}` : title), [title, text]);
+  // Strip HTML at the boundary. Callers pass article.title / article.intro
+  // verbatim — both can carry <strong>/<br> markup that WhatsApp + Telegram
+  // render literally, exposing tags to the receiver (user-reported as
+  // "نصوص برمجية ورموز غريبة" in shared messages). One cleanup here covers
+  // every downstream sink (whatsapp, telegram, x, facebook, linkedin,
+  // navigator.share, copy-to-clipboard).
+  const cleanTitle = useMemo(() => stripHtml(title), [title]);
+  const cleanText = useMemo(() => stripHtml(text), [text]);
 
-  const shareLinks = useMemo(() => getShareLinks(shareUrl, title, text), [shareUrl, title, text]);
+  const shareText = useMemo(() => (cleanText ? `${cleanTitle}\n\n${cleanText}` : cleanTitle), [cleanTitle, cleanText]);
+
+  const shareLinks = useMemo(() => getShareLinks(shareUrl, cleanTitle, cleanText), [shareUrl, cleanTitle, cleanText]);
 
   // ... (handleCopy, handleNativeShare, openShareLink, useEffect handleKeyDown remain unchanged) ...
   // =====================================================
@@ -125,8 +135,8 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
     if (canNativeShare && navigator.share) {
       try {
         await navigator.share({
-          title: title,
-          text: text || title,
+          title: cleanTitle,
+          text: cleanText || cleanTitle,
           url: shareUrl,
         });
         setIsOpen(false);

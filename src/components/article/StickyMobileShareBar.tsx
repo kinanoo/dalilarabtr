@@ -23,6 +23,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { stripHtml } from '@/lib/stripHtml';
 
 function WhatsAppIcon({ size = 22 }: { size?: number }) {
     return (
@@ -70,8 +71,16 @@ export default function StickyMobileShareBar({ title, url, excerpt }: Props) {
         };
     }, []);
 
-    const summary = excerpt ? excerpt.slice(0, 140).trim() + (excerpt.length > 140 ? '…' : '') : '';
-    const messageBody = summary ? `${title}\n\n${summary}\n\n${url}` : `${title}\n\n${url}`;
+    // Strip HTML from both title + excerpt BEFORE slicing.
+    // article.intro arrives as raw HTML ("<strong>...</strong>"); WhatsApp
+    // does not render tags, so the receiver sees the literal markup
+    // (user reported "نصوص برمجية ورموز غريبة" in shared messages).
+    // stripHtml also collapses entities (&nbsp; etc) so the shared text
+    // is plain readable Arabic.
+    const cleanTitle = stripHtml(title);
+    const cleanExcerpt = stripHtml(excerpt);
+    const summary = cleanExcerpt ? cleanExcerpt.slice(0, 140).trim() + (cleanExcerpt.length > 140 ? '…' : '') : '';
+    const messageBody = summary ? `${cleanTitle}\n\n${summary}\n\n${url}` : `${cleanTitle}\n\n${url}`;
     const whatsappLink = `https://wa.me/?text=${encodeURIComponent(messageBody)}`;
 
     return (
