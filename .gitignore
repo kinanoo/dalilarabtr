@@ -38,6 +38,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# DB backup dumps — contain PII (member emails, push subs, etc).
+# Backup script (scripts/_backup-db-*.ts) is committed; outputs are not.
+/scripts/_backups/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
