@@ -2,9 +2,37 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { GoogleGenerativeAI, SchemaType, type FunctionDeclarationsTool } from '@google/generative-ai';
 import { isRateLimited } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
+
+// Edge runtime — required for Cloudflare Pages compatibility. The route only
+// uses Supabase (HTTP) + outbound fetch to AI providers; no Node-only APIs.
+export const runtime = 'edge';
+
+/**
+ * Local SchemaType + FunctionDeclarationsTool defs (replaces
+ * @google/generative-ai SDK during Vercel → Cloudflare migration).
+ *
+ * The Gemini REST API accepts these uppercase strings verbatim, so the
+ * SDK's enum was always just a thin type-level alias. Keeping the same
+ * `SchemaType.STRING` call-sites across the file means we don't have to
+ * rewrite hundreds of tool definitions.
+ *
+ * FunctionDeclarationsTool is widened to `any[]` — the only consumer is
+ * convertGeminiToolsToOpenAI / convertGeminiToolsToAnthropic, which
+ * already iterate with `.functionDeclarations` accessors and don't rely
+ * on the strict SDK type. We pay a small loss of type safety in those
+ * two converters to remove a 4MB Node-only SDK from the Workers bundle.
+ */
+const SchemaType = {
+    STRING: 'STRING',
+    NUMBER: 'NUMBER',
+    INTEGER: 'INTEGER',
+    BOOLEAN: 'BOOLEAN',
+    ARRAY: 'ARRAY',
+    OBJECT: 'OBJECT',
+} as const;
+type FunctionDeclarationsTool = { functionDeclarations: Array<{ name: string; description?: string; parameters?: Record<string, unknown> }> };
 
 // ── All table mappings (every DB table the AI can access) ──
 const TABLE_MAP: Record<string, string> = {
@@ -2023,48 +2051,105 @@ export async function POST(request: NextRequest) {
 
       try {
         if (currentProvider.provider === 'gemini') {
-          // ── GEMINI PATH ──
-          const genAI = new GoogleGenerativeAI(currentProvider.api_key);
-          const model = genAI.getGenerativeModel({
-            model: modelId,
-            systemInstruction: systemPrompt,
-            tools,
+          // ── GEMINI PATH (direct REST API — Cloudflare Workers-compatible) ──
+          //
+          // We used to call this via @google/generative-ai's GoogleGenerativeAI
+          // class. That SDK pulled in Node-only transitive deps (proto-plus,
+          // gax, the works) which the Workers runtime can't load. Cloudflare
+          // Pages would either fail the build or 500 on every Gemini request.
+          //
+          // The REST API is what the SDK was wrapping anyway. We hit it with
+          // fetch() in the same multi-turn function-calling loop:
+          //   1. POST conversation + tools to :generateContent
+          //   2. If response has functionCall parts, run them locally
+          //   3. POST tool results back as functionResponse parts
+          //   4. Loop until model returns text-only response (or 10 turns)
+          //
+          // OpenAI/Anthropic/OpenRouter paths below are unchanged — those
+          // were already using fetch.
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${currentProvider.api_key}`;
+
+          // Build conversation history in Gemini REST format. The SDK accepted
+          // an array of {role, parts} — REST wants the exact same shape.
+          const contents: any[] = [];
+          for (const m of messages.slice(0, -1)) {
+            contents.push({
+              role: m.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: m._context ? `${m.content}\n\n[Tool context from this turn: ${m._context}]` : m.content }],
+            });
+          }
+          contents.push({
+            role: 'user',
+            parts: [{ text: messages[messages.length - 1].content }],
           });
 
-          const history = messages.slice(0, -1).map((m: any) => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m._context ? `${m.content}\n\n[Tool context from this turn: ${m._context}]` : m.content }],
-          }));
+          // The `tools` array (declared at module level) uses the same shape
+          // the REST API expects: [{ functionDeclarations: [{...}] }]. No
+          // conversion needed for the Gemini path — the local SchemaType
+          // constant emits the same uppercase strings the API accepts.
 
-          const chat = model.startChat({ history });
-          const lastMessage = messages[messages.length - 1].content;
-
-          let response = await chat.sendMessage(lastMessage);
-          let result = response.response;
-
+          let replyText = '';
           let maxIterations = 10;
           while (maxIterations-- > 0) {
-            const candidate = result.candidates?.[0];
-            const parts = candidate?.content?.parts || [];
-            const functionCalls = parts.filter((p: any) => p.functionCall);
-            if (functionCalls.length === 0) break;
+            const res = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                system_instruction: { parts: [{ text: systemPrompt }] },
+                contents,
+                tools,
+              }),
+            });
 
+            if (!res.ok) {
+              // Gemini returns errors as JSON with an `error` field, so we
+              // surface that to the outer try/catch which logs + tries next
+              // provider in the fallback chain.
+              const errBody = await res.json().catch(() => ({}));
+              throw new Error((errBody as any)?.error?.message || `Gemini ${res.status}`);
+            }
+
+            const data: any = await res.json();
+            if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+            const candidate = data.candidates?.[0];
+            const parts: any[] = candidate?.content?.parts || [];
+            const functionCalls = parts.filter((p: any) => p.functionCall);
+
+            if (functionCalls.length === 0) {
+              // Terminal: model returned text only.
+              const textParts = parts.filter((p: any) => typeof p.text === 'string');
+              replyText = textParts.map((p: any) => p.text).join('\n') || 'Could not process your request.';
+              break;
+            }
+
+            // Echo the model's response (which includes the function calls)
+            // back into the conversation so the next round has full context.
+            contents.push({
+              role: 'model',
+              parts,
+            });
+
+            // Execute each requested function locally and accumulate the
+            // results into a single user turn with multiple functionResponse
+            // parts — Gemini expects them batched, not as separate turns.
             const functionResponses: any[] = [];
             for (const fc of functionCalls) {
-              const { name, args } = fc.functionCall!;
+              const { name, args } = fc.functionCall;
               const { result: fnResult, action } = await executeFunction(name, args || {}, serviceClient);
               if (action) actionToReturn = action;
               functionResponses.push({ functionResponse: { name, response: fnResult } });
               toolLog.push(`${name}(${JSON.stringify(args)}) => ${JSON.stringify(fnResult).slice(0, 500)}`);
             }
-
-            response = await chat.sendMessage(functionResponses);
-            result = response.response;
+            contents.push({
+              role: 'user',
+              parts: functionResponses,
+            });
           }
 
-          let replyText: string;
-          try { replyText = result.text() || 'Could not process your request.'; }
-          catch { replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.'; }
+          if (!replyText) {
+            replyText = 'Could not generate a text response. The operation may have completed — check with a follow-up question.';
+          }
           const toolContext = toolLog.length > 0 ? toolLog.join(' | ') : undefined;
 
           logUsage(currentProvider.provider, modelId, true);

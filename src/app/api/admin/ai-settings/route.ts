@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
+// Edge runtime — required for Cloudflare Pages compat. Route only does
+// HTTP (Supabase + outbound AI test calls), no Node-only APIs.
+export const runtime = 'edge';
+
 // Helper: verify admin session
 async function verifyAdmin(request: NextRequest) {
   const cookieStore = await cookies();
@@ -172,11 +176,23 @@ export async function PUT(request: NextRequest) {
 
   try {
     if (provider === 'gemini') {
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(api_key);
-      const model = genAI.getGenerativeModel({ model: model_default || 'gemini-2.5-flash' });
-      const result = await model.generateContent('قل: مرحبا، المفتاح يعمل!');
-      const text = result.response.text();
+      // Direct Gemini REST call — see /api/admin/ai for the rationale (the
+      // @google/generative-ai SDK pulls in Node-only deps that break the
+      // Cloudflare Workers runtime).
+      const m = model_default || 'gemini-2.5-flash';
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${api_key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: 'قل: مرحبا، المفتاح يعمل!' }] }],
+          }),
+        }
+      );
+      const data: any = await res.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '(empty response)';
       return NextResponse.json({ success: true, message: text });
     } else if (provider === 'openai') {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {

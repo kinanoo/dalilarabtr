@@ -5,6 +5,25 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import logger from '@/lib/logger';
 
+/**
+ * Runtime: Node.js (default — explicit declaration for clarity).
+ *
+ * The `web-push` library does VAPID JWT signing with `crypto.createSign`
+ * and AES-128-GCM payload encryption — both Node-only. Reimplementing
+ * the full RFC 8291 + RFC 8292 stack against Web Crypto is ~250 lines
+ * of carefully-tested cryptographic code that this codebase doesn't
+ * need to maintain.
+ *
+ * Cloudflare strategy: deploy via @opennextjs/cloudflare adapter (Phase
+ * 5) with `compatibility_flags = ["nodejs_compat"]` in wrangler.toml.
+ * That exposes `node:crypto` and `node:buffer` to the Worker — both of
+ * which `web-push` depends on transitively. Confirmed compatible.
+ *
+ * Traffic note: only admin calls this route (rate-limited to 10/hour),
+ * so the cold-start cost of a Node-compat Worker is a non-issue here.
+ */
+export const runtime = 'nodejs';
+
 // Configure Web Push with VAPID keys
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
