@@ -2,9 +2,29 @@
  * Simple in-memory rate limiter for serverless API routes.
  * Uses a sliding window approach with automatic cleanup.
  *
- * Note: On Vercel serverless, each cold start resets the map.
- * This is acceptable for basic abuse prevention (not strict enforcement).
+ * Note: each cold start / new Worker isolate resets the map, and isolates
+ * don't share state — so this is best-effort abuse prevention, not strict
+ * enforcement. For hard limits, layer Cloudflare's native Rate Limiting Rules
+ * on top (dashboard-configured, enforced at the edge before the Worker runs).
  */
+
+/**
+ * Resolve the real client IP for rate-limit keys and IP hashing.
+ *
+ * IMPORTANT: on Cloudflare, `cf-connecting-ip` is set by the edge and CANNOT
+ * be forged by the caller. `x-forwarded-for` IS caller-controllable — a script
+ * can send a different value on every request and sail past any per-IP limit.
+ * Trust cf-connecting-ip first; fall back to x-forwarded-for only for local
+ * dev / non-Cloudflare environments.
+ */
+export function getClientIp(req: { headers: { get(name: string): string | null } }): string {
+    return (
+        req.headers.get('cf-connecting-ip')?.trim() ||
+        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        req.headers.get('x-real-ip')?.trim() ||
+        'unknown'
+    );
+}
 
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 

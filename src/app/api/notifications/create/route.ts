@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { isRateLimited } from '@/lib/rate-limit';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
 
 // Use service role for server-side notification inserts (bypasses RLS safely)
@@ -15,7 +15,7 @@ const ALLOWED_TYPES = ['reply', 'review', 'comment', 'article', 'law', 'service'
 
 export async function POST(request: NextRequest) {
     try {
-        const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        const clientIp = getClientIp(request);
         if (isRateLimited(`notif:${clientIp}`, 10)) {
             return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
         }

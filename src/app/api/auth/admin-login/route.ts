@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
 
 const MAX_ATTEMPTS = 5;
@@ -19,10 +20,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'missing_fields' }, { status: 400 });
     }
 
-    const ip =
-        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+    // Use the Cloudflare-trusted client IP. Reading x-forwarded-for here would
+    // let an attacker rotate the header to dodge the 5-attempt lockout below.
+    const ip = getClientIp(request);
 
     // Service-role client for rate-limit tracking (bypasses RLS)
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

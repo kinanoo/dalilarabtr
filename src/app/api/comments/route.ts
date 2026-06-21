@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { isRateLimited } from '@/lib/rate-limit';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 /**
  * DELETE /api/comments?id=<uuid>
@@ -11,7 +11,7 @@ import { isRateLimited } from '@/lib/rate-limit';
  * Uses service-role client to bypass RLS.
  */
 export async function DELETE(request: NextRequest) {
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const clientIp = getClientIp(request);
     if (isRateLimited(`comments:${clientIp}`, 20)) {
         return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
@@ -60,7 +60,7 @@ export async function DELETE(request: NextRequest) {
  * Uses service-role client to bypass RLS.
  */
 export async function PATCH(request: NextRequest) {
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const clientIp = getClientIp(request);
     if (isRateLimited(`comments:${clientIp}`, 20)) {
         return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }

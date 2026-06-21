@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isRateLimited } from '@/lib/rate-limit';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
     // Rate limit: 30 requests per minute per IP
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const clientIp = getClientIp(request);
     if (isRateLimited(`prayer:${clientIp}`, 30)) {
         return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }

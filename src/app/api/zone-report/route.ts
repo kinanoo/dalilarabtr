@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { isRateLimited } from '@/lib/rate-limit';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
 
 /**
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     try {
         if (!svc) return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
 
-        const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        const clientIp = getClientIp(req);
         if (isRateLimited(`zone-report:${clientIp}`, 5)) {
             return NextResponse.json({ error: 'محاولات كثيرة. حاول بعد دقيقة.' }, { status: 429 });
         }

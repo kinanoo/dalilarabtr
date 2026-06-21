@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
-import { isRateLimited } from '@/lib/rate-limit';
+import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
 
 // Use service role key on server to bypass RLS
@@ -55,7 +55,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 export async function POST(req: NextRequest) {
   try {
     // Rate limit: 60 requests per minute per IP
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const clientIp = getClientIp(req);
     if (isRateLimited(`track:${clientIp}`, 60)) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
@@ -77,10 +77,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, filtered: 'admin' });
     }
 
-    // ─── Extract real IP ────────────────────────────────────────────
-    const forwarded = req.headers.get('x-forwarded-for');
-    const realIp = req.headers.get('x-real-ip');
-    const ip = forwarded?.split(',')[0]?.trim() || realIp || 'unknown';
+    // ─── Extract real IP (Cloudflare-trusted, not the spoofable XFF) ──
+    const ip = getClientIp(req);
     const ip_hash = ip !== 'unknown' ? hashIP(ip) : null;
 
     // ─── Bot filter ─────────────────────────────────────────────────
