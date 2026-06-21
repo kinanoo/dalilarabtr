@@ -26,24 +26,32 @@ export default function AdminMembersPage() {
     }, []);
 
     async function fetchMembers() {
-        if (!supabase) return;
         setLoading(true);
 
-        // Fetch member profiles
-        const { data: profiles } = await supabase
-            .from('member_profiles')
-            .select('*')
-            .order('created_at', { ascending: false });
+        // Fetch from the admin endpoint, which joins member_profiles with the
+        // emails from auth.users (only reachable server-side via the service
+        // role). Falls back to a direct profiles query (no emails) if the
+        // endpoint is unavailable, so the page never shows blank.
+        try {
+            const res = await fetch('/api/admin/members', { cache: 'no-store' });
+            if (res.ok) {
+                const json = await res.json();
+                setMembers(json.members || []);
+                setLoading(false);
+                return;
+            }
+        } catch {
+            /* fall through to the direct-query fallback below */
+        }
 
-        if (profiles) {
-            // Note: admin_activity_log is blocked by RLS from client-side.
-            // Email data is not available here — member_profiles.email is used if present.
-            setMembers(
-                profiles.map((p) => ({
-                    ...p,
-                    email: p.email || '',
-                }))
-            );
+        if (supabase) {
+            const { data: profiles } = await supabase
+                .from('member_profiles')
+                .select('id, full_name, role, avatar_url, created_at')
+                .order('created_at', { ascending: false });
+            if (profiles) {
+                setMembers(profiles.map((p) => ({ ...p, email: '' })));
+            }
         }
         setLoading(false);
     }
