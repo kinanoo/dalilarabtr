@@ -5,9 +5,18 @@ import { cookies } from 'next/headers';
 import { isRateLimited } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
 
-// Edge runtime — required for Cloudflare Pages compatibility. The route only
-// uses Supabase (HTTP) + outbound fetch to AI providers; no Node-only APIs.
-export const runtime = 'edge';
+// Node.js runtime. Phase 4 of the Cloudflare migration set this to 'edge'
+// on the assumption that an HTTP-only route (Supabase + fetch to AI
+// providers) should run on the lighter Edge runtime. That was WRONG for
+// the OpenNext Cloudflare adapter: it bundles every route into the single
+// workerd Worker, and routes flagged `runtime = 'edge'` get a different
+// (stricter) bundling path that crashed this route at request time —
+// /api/admin/ai returned a bare 500 "Internal Server Error" for every
+// call, breaking the admin AI assistant entirely. The nodejs runtime
+// (with the nodejs_compat flag in wrangler.toml) is the correct choice on
+// OpenNext and matches the working admin routes (push, revalidate). Do not
+// set this back to 'edge'.
+export const runtime = 'nodejs';
 
 /**
  * Local SchemaType + FunctionDeclarationsTool defs (replaces

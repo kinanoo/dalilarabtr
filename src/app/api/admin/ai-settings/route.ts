@@ -3,9 +3,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
-// Edge runtime — required for Cloudflare Pages compat. Route only does
-// HTTP (Supabase + outbound AI test calls), no Node-only APIs.
-export const runtime = 'edge';
+// Node.js runtime — see the long note in /api/admin/ai/route.ts. The 'edge'
+// runtime declaration crashed this route (500) on the OpenNext Cloudflare
+// adapter; nodejs (with nodejs_compat) is correct. Do not set back to 'edge'.
+export const runtime = 'nodejs';
 
 // Helper: verify admin session
 async function verifyAdmin(request: NextRequest) {
