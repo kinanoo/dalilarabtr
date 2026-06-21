@@ -42,6 +42,12 @@ yarn-error.log*
 # Backup script (scripts/_backup-db-*.ts) is committed; outputs are not.
 /scripts/_backups/
 
+# OpenNext Cloudflare build output — regenerated on every `cf:build` and
+# on every Cloudflare Workers Build CI run. Committing it would bloat the
+# repo with thousands of bundled files and conflict on every deploy.
+/.open-next/
+/.wrangler/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

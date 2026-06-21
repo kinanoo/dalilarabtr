@@ -1,0 +1,45 @@
+# Cloudflare Workers / Pages config for dalilarabtr.com (Vercel → Cloudflare migration).
+#
+# Why this file exists: @opennextjs/cloudflare takes the Next.js build output
+# and wraps it as a Worker. wrangler reads THIS file to know how to bundle and
+# deploy that Worker — what flags it needs, which assets to ship, which bindings
+# to attach.
+#
+# Why @opennextjs/cloudflare and not @cloudflare/next-on-pages:
+#   - The older next-on-pages adapter ONLY supports `export const runtime = 'edge'`
+#     routes and silently skips Node.js routes. /api/admin/push uses web-push
+#     which depends on node:crypto + node:buffer — would be skipped entirely.
+#   - @opennextjs/cloudflare deploys BOTH edge and nodejs routes, the latter
+#     via the nodejs_compat flag below. One adapter, both runtimes.
+
+name = "dalilarabtr"
+main = ".open-next/worker.js"
+compatibility_date = "2025-03-25"
+
+# nodejs_compat exposes node:crypto, node:buffer, node:util, node:stream, etc.
+# Required for:
+#   - /api/admin/push     (web-push library — VAPID JWT signing + AES-128-GCM)
+# Edge routes don't need this flag but it's a no-op on them — leaving on is safe.
+compatibility_flags = ["nodejs_compat"]
+
+# Static assets from public/ + the Next.js .open-next/assets bundle.
+# directory = the folder of files to ship; binding = how the Worker code
+# references them. The OpenNext adapter generates both at build time.
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# R2 bucket for Next.js incremental cache (ISR pages, fetch cache, server
+# component results). Not strictly required to deploy — without it ISR works
+# but cache resets every cold start. Worth creating later for performance:
+#   wrangler r2 bucket create dalilarabtr-cache
+# then uncomment the block below.
+#
+# [[r2_buckets]]
+# binding = "NEXT_INC_CACHE_R2_BUCKET"
+# bucket_name = "dalilarabtr-cache"
+
+# Logging — sends Worker stdout/stderr to Cloudflare Logpush. Useful for
+# debugging during cutover, can be removed once stable.
+[observability]
+enabled = true
