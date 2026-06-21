@@ -144,6 +144,39 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning className={`${cairo.variable} ${tajawal.variable}`}>
       <head>
+        {/*
+         * esbuild `--keep-names` polyfill.
+         *
+         * OpenNext bundles the Cloudflare Worker with esbuild's keepNames
+         * option on, which emits inline `__name(target, "name")` calls in
+         * the SSR/RSC output. The helper that defines `__name` should be
+         * injected at the top of the bundle but currently isn't — so the
+         * browser hits `ReferenceError: __name is not defined` on the
+         * very first inline <script> in the HTML response.
+         *
+         * Visually the page still renders (HTML is server-streamed
+         * before the script runs) but hydration aborts: forms don't
+         * submit, buttons don't react, client-only components stay
+         * dead. That's a deal-breaker for /admin login, push
+         * subscribe, bookmarks, the AI assistant, and every other
+         * interactive surface.
+         *
+         * Fix: define a no-op-compatible polyfill on `globalThis` in
+         * <head> BEFORE Next's chunks land. The shape matches what
+         * esbuild emits — assign the function's display name via
+         * defineProperty and return the target. Safe to run twice
+         * (idempotent), safe with SSR (no DOM access).
+         *
+         * Remove this once OpenNext ships a fix for the missing
+         * helper preamble (tracked in their issues).
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'if(typeof globalThis.__name!=="function"){globalThis.__name=function(t,v){try{Object.defineProperty(t,"name",{value:v,configurable:true})}catch(e){}return t}}',
+          }}
+        />
+
         {/* Anti-scraping hints */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
