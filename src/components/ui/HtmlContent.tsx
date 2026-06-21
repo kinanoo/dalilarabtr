@@ -1,6 +1,6 @@
 'use client';
 
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from '@/lib/sanitize';
 import { useMemo } from 'react';
 
 interface HtmlContentProps {

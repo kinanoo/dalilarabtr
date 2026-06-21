@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from '@/lib/sanitize';
 import { Globe, Edit, FileText, Smartphone, Monitor, Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
