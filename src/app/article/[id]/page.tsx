@@ -7,6 +7,7 @@
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleHydratedView from '@/components/ArticleHydratedView';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
@@ -243,9 +244,15 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const article = await fetchArticleData(params.id);
 
   if (!article) {
+    // SEO: a missing/deleted/mistyped article URL must NOT be indexable.
+    // Without robots:noindex Google was being invited to index a 404 body
+    // across the site's largest URL space (300+ articles) — a top cause of
+    // "Crawled – currently not indexed". The page itself calls notFound()
+    // (renders the noindex not-found.tsx).
     return {
       title: '404 - المقالة غير موجودة',
       description: 'عذراً، هذه المقالة لم تعد موجودة',
+      robots: { index: false, follow: false },
     };
   }
 
@@ -316,15 +323,10 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
   const article = await fetchArticleData(params.id);
 
   if (!article) {
-    return (
-      <main className="min-h-screen flex flex-col">
-        <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
-          <h1 className="text-4xl font-bold text-slate-300 mb-4">404</h1>
-          <p className="text-xl text-slate-600 mb-8">عذراً، هذا الدليل غير متوفر حالياً.</p>
-          <Link href="/" className="bg-primary-600 text-white px-6 py-3 rounded-lg font-bold">العودة للرئيسية</Link>
-        </div>
-      </main>
-    );
+    // Render the shared noindex not-found page instead of an indexable 404
+    // body. This stops Google from crawling/indexing endless missing-article
+    // URLs and poisoning trust in the /article pattern.
+    notFound();
   }
 
   const canonicalSlug = article.slug || params.id;

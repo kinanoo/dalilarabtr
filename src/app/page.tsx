@@ -123,12 +123,16 @@ async function getUpdates() {
 const HOME_DESCRIPTION = "الدليل الشامل للعرب في تركيا. خدمات قانونية، إقامات، أكواد أمنية، ودليل شامل لكل ما تحتاجه.";
 
 export const metadata: Metadata = {
-  title: SITE_CONFIG.name,
+  // Keyword-front-loaded homepage title. `absolute` bypasses the
+  // "%s | brand" template so the brand isn't repeated twice. The homepage
+  // is the site's most authoritative page; its title was brand-only and
+  // ranked for nothing — now it carries the core query clusters.
+  title: { absolute: 'دليل العرب والسوريين في تركيا 2026 — إقامات، أكواد أمنية، خدمات الكملك' },
   description: HOME_DESCRIPTION,
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
-    locale: 'ar_SA',
+    locale: 'ar_TR',
     url: SITE_CONFIG.siteUrl,
     siteName: SITE_CONFIG.name,
     title: SITE_CONFIG.name,

@@ -23,24 +23,34 @@ export async function GET() {
     }
   }
 
-  // Generate URLs for unique districts and cities (how users actually access zones)
-  const districtSet = new Set<string>();
-  const citySet = new Set<string>();
-  const neighborhoodUrls: Array<{ slug: string; updated_at?: string }> = [];
+  // Aggregate the REAL last-updated date per city and per district. Using the
+  // request time (new Date()) for <lastmod> — as this did before — makes the
+  // value change on every crawl, so Google stops trusting the freshness signal
+  // entirely. We instead stamp each hub with MAX(updated_at) of its rows, which
+  // only moves when that area's data actually changes.
+  // (Individual neighbourhood pages are intentionally NOT listed here — they're
+  // thin/near-duplicate and now noindex; the city/district hubs are the
+  // valuable, indexable entry points.)
+  const cityMax = new Map<string, string>();
+  const districtMax = new Map<string, string>();
+  let overallMax = '';
+
+  const bumpMax = (map: Map<string, string>, key: string, ts?: string) => {
+    if (!ts) return;
+    const cur = map.get(key);
+    if (!cur || ts > cur) map.set(key, ts);
+  };
 
   for (const z of zones) {
-    // Individual neighborhoods
-    if (z.neighborhood) {
-      neighborhoodUrls.push({
-        slug: encodeURIComponent(z.neighborhood),
-        updated_at: z.updated_at,
-      });
-    }
-    if (z.district) districtSet.add(z.district);
-    if (z.city) citySet.add(z.city);
+    if (z.updated_at && z.updated_at > overallMax) overallMax = z.updated_at;
+    if (z.city) bumpMax(cityMax, z.city, z.updated_at);
+    if (z.district) bumpMax(districtMax, z.district, z.updated_at);
   }
 
-  const now = new Date().toISOString();
+  const citySet = cityMax;
+  const districtSet = districtMax;
+  // Fallback only if the table has no updated_at anywhere (shouldn't happen).
+  const now = overallMax || new Date().toISOString();
 
   // City pages are the highest-value entry points: visitors search
   // "أحياء أورفا المغلقة" → land directly on /zones/Şanlıurfa. Bumped to
@@ -55,15 +65,15 @@ export async function GET() {
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
-${[...citySet].map(city => `  <url>
+${[...citySet.entries()].map(([city, lastmod]) => `  <url>
     <loc>${baseUrl}/zones/${encodeURIComponent(city)}</loc>
-    <lastmod>${now}</lastmod>
+    <lastmod>${lastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>`).join('\n')}
-${[...districtSet].map(district => `  <url>
+${[...districtSet.entries()].map(([district, lastmod]) => `  <url>
     <loc>${baseUrl}/zones/${encodeURIComponent(district)}</loc>
-    <lastmod>${now}</lastmod>
+    <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`).join('\n')}

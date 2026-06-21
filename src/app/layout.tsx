@@ -70,6 +70,16 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: SEO_KEYWORDS,
+  // Default crawl policy for the whole site. Individual pages override this
+  // with `robots: { index: false }` (article/zones 404s, individual
+  // neighbourhood pages, admin) and the override wins cleanly.
+  robots: {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+    'max-video-preview': -1,
+  },
   alternates: {
     languages: {
       'ar': SITE_URL,
@@ -83,7 +93,7 @@ export const metadata: Metadata = {
   // ✅ Open Graph (للمشاركة على فيسبوك وغيره)
   openGraph: {
     type: "website",
-    locale: "ar_SA",
+    locale: "ar_TR",
     url: SITE_URL,
     siteName: SITE_NAME,
     title: SITE_NAME,
@@ -177,10 +187,13 @@ export default function RootLayout({
           }}
         />
 
-        {/* Anti-scraping hints */}
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <meta name="googlebot" content="index, follow" />
-        <meta name="description-scrape" content="unauthorized" />
+        {/* NOTE: the global robots/googlebot policy is set via the Metadata
+            API `robots` field below (export const metadata), NOT a hardcoded
+            <meta> here. A static index,follow tag in <head> collided with
+            per-page `robots: { index: false }` (e.g. the article/zones 404s,
+            admin pages): two robots tags on one page, which is a fragile
+            signal. Letting the Metadata API own it means a page that opts out
+            cleanly emits a single noindex tag. */}
 
         {/* Google Search Console verification */}
         {process.env.NEXT_PUBLIC_GSC_VERIFICATION && (

@@ -1,0 +1,12 @@
+# Cloudflare Workers Static Assets header rules.
+# OpenNext copies public/ into .open-next/assets, and Cloudflare's static-asset
+# layer applies these rules.
+#
+# Next.js fingerprints every file under /_next/static/ with a content hash in
+# the filename, so the bytes at a given URL never change — caching them for a
+# year (immutable) is safe and means returning visitors don't pay a revalidation
+# round-trip per chunk on each navigation. Big LCP/FCP win for repeat traffic,
+# zero cost on Cloudflare. (A new build emits new hashed filenames, so there's
+# no stale-asset risk.)
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

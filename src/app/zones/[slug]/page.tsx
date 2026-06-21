@@ -51,6 +51,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: `${zoneTitle} | ${exactZone.city}`,
             description: `تحقّق من حالة حي ${exactZone.neighborhood} في ${exactZone.district} / ${exactZone.city} وفق آخر تحديث رسمي.`,
             alternates: { canonical: `/zones/${decodedSlug}` },
+            // SEO: the ~1166 individual-neighborhood pages are thin and
+            // near-duplicate (one status pill + a templated line). Keep them
+            // OUT of the index so they don't compete with — and dilute — the
+            // rich district/city hub pages that actually drive the +1007%
+            // growth. They stay reachable for users who land on them directly.
+            robots: { index: false, follow: true },
             openGraph: {
                 title: zoneTitle,
                 images: [{ url: getOgImage(), width: 1200, height: 630, alt: zoneTitle }],
@@ -98,7 +104,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
     }
 
-    return { title: 'المنطقة غير موجودة' };
+    return { title: 'المنطقة غير موجودة', robots: { index: false, follow: false } };
 }
 
 // Helper — pretty status pill on the SINGLE zone view.

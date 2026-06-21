@@ -20,7 +20,10 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     return { title: 'قسم غير موجود', robots: { index: false } };
   }
 
-  const title = `${categoryName} — ${SITE_CONFIG.name}`;
+  // Just the category name — the root layout's title template appends
+  // "| <brand>" once. Including the brand here produced "name — brand | brand"
+  // (doubled), which Google truncates/rewrites and costs CTR.
+  const title = categoryName;
   const description = `جميع المقالات والمعلومات المتعلقة بـ ${categoryName} في تركيا. أدلة شاملة ومحدّثة باللغة العربية.`;
 
   return {
