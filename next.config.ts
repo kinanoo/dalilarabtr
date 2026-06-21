@@ -124,7 +124,30 @@ const nextConfig: NextConfig = {
   },
 
   // 🖼️ Image optimization
+  //
+  // unoptimized: true — required for Cloudflare Pages migration.
+  // Vercel's image optimizer is a Vercel-only runtime (a managed image
+  // CDN at /_next/image). Cloudflare Pages has no equivalent; if we leave
+  // optimization on, every <Image> renders a /_next/image URL that 404s.
+  //
+  // What changes for users:
+  //   - Images load directly from Supabase Storage at their original
+  //     dimensions. No on-the-fly WebP/AVIF conversion or resize.
+  //   - This is fine for us because Supabase Storage already serves
+  //     reasonably-sized images uploaded by admin (we watermark + size
+  //     them at upload time — see lib/watermark.ts).
+  //   - `priority`, `fill`, `sizes`, `onError`, and `placeholder` still
+  //     work. Only the URL rewriting through /_next/image is disabled.
+  //   - No `placeholder="blur"` is used anywhere in src/ (grep confirms),
+  //     so we don't need to ship a static blurDataURL fallback.
+  //
+  // remotePatterns + formats + deviceSizes + imageSizes are retained as
+  // documentation of what URLs we expect and what sizes Supabase serves —
+  // they're ignored when unoptimized=true but useful if we ever flip
+  // back to a host that does image optimization (Vercel, self-hosted
+  // with an image service, etc).
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
