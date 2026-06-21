@@ -4,7 +4,7 @@ import { HeartPulse, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import ShareMenu from '@/components/ShareMenu';
 import CategoryHubCard from '@/components/CategoryHubCard';
-import { SITE_CONFIG } from '@/lib/config';
+import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const revalidate = 3600;
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'دليلك الشامل للتأمين الصحي والمستشفيات والخدمات الطبية في تركيا.',
   openGraph: {
     title: 'الصحة والتأمين في تركيا',
-    images: [{ url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: 'الصحة والتأمين في تركيا', category: 'دليل شامل' })}`, width: 1200, height: 630 }],
+    images: [{ url: getOgImage(), width: 1200, height: 630 }],
   },
 };
 

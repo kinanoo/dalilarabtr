@@ -4,7 +4,7 @@
 //   generateBreadcrumbSchema,
 // } from '@/lib/schemaOrg';
 
-import { CATEGORY_SLUGS, SITE_CONFIG } from '@/lib/config';
+import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleHydratedView from '@/components/ArticleHydratedView';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -296,7 +296,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description,
       type: 'article',
       url: canonicalUrl,
-      images: [{ url: article.image || `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: article.title, ...(article.category ? { category: article.category } : {}) })}`, width: 1200, height: 630, alt: article.title }],
+      images: [{ url: getOgImage(article.image), width: 1200, height: 630, alt: article.title }],
       publishedTime: dateModified,
       modifiedTime: dateModified,
       section: article.category,
@@ -306,7 +306,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: [article.image || `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: article.title, ...(article.category ? { category: article.category } : {}) })}`],
+      images: [getOgImage(article.image)],
     },
   };
 }
@@ -360,8 +360,9 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
   // Preload the article hero image — it's almost always the LCP element.
   // Next will hoist this <link> into <head>, so the browser starts the image
   // fetch in parallel with the rest of the document parse. Only emit for
-  // images we actually host (http/https); skip the /api/og fallbacks since
-  // those generate on demand and don't benefit from preload.
+  // images we actually host (http/https); skip the static fallback since
+  // every page would emit the same preload (wasted bandwidth) and the
+  // image is cached aggressively anyway.
   const lcpPreload = article.image && /^https?:\/\//i.test(article.image)
     ? <link rel="preload" as="image" href={article.image} fetchPriority="high" />
     : null;

@@ -21,7 +21,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { TAG_LABELS, SITE_CONFIG } from '@/lib/config';
+import { TAG_LABELS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import { ArrowLeft, Calendar, Tag as TagIcon } from 'lucide-react';
 
@@ -76,10 +76,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
             description,
             url,
             type: 'website',
-            images: [{
-                url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: label, category: 'وسم' })}`,
-                width: 1200, height: 630, alt: label,
-            }],
+            images: [{ url: getOgImage(), width: 1200, height: 630, alt: label }],
         },
     };
 }

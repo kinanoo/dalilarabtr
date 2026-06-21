@@ -22,6 +22,33 @@ export function getArticleHref(article: { slug?: string | null; id: string }): s
     return `/article/${article.slug || article.id}`;
 }
 
+/**
+ * OpenGraph image URL for any page that exposes one via generateMetadata().
+ *
+ * Prefers a real image when the page has its own (article hero photo,
+ * service profile image) — that's a better preview than a generated
+ * text card anyway. Falls back to the site-wide /og-image.jpg when no
+ * page-level image exists.
+ *
+ * Why the static fallback: this used to dispatch to /api/og for a Satori-
+ * rendered Arabic title card per page, but that endpoint relied on
+ * @vercel/og which is bound to the Vercel runtime. Cloudflare Pages
+ * doesn't ship the underlying ImageResponse / Satori chain in a way the
+ * Workers runtime can execute without significant porting. Static OG
+ * image covers the social-share use case (WhatsApp/FB/Twitter all show
+ * it the same way), and saves the cold-start cost of generating a 1200x630
+ * PNG on every uncached share.
+ *
+ * Accepts an absolute http(s) URL; relative paths get rejected (they
+ * 404 in social previews because crawlers can't resolve them).
+ */
+export function getOgImage(preferredImage?: string | null): string {
+    if (preferredImage && /^https?:\/\//i.test(preferredImage)) {
+        return preferredImage;
+    }
+    return `${SITE_CONFIG.siteUrl}/og-image.jpg`;
+}
+
 export const CATEGORY_SLUGS: Record<string, string> = {
     'residence': 'أنواع الإقامات',
     'kimlik': 'الكملك والحماية المؤقتة',

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
 import UniversalComments from '@/components/community/UniversalComments';
-import { SITE_CONFIG } from '@/lib/config';
+import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 import RelatedArticles from '@/components/RelatedArticles';
 
@@ -40,10 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
             title: ogTitle,
             description: item.description?.slice(0, 200),
-            images: [{
-                url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: ogTitle, category: 'أكواد أمنية' })}`,
-                width: 1200, height: 630, alt: ogTitle,
-            }],
+            images: [{ url: getOgImage(), width: 1200, height: 630, alt: ogTitle }],
         },
     };
 }

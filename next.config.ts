@@ -60,15 +60,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // OG image endpoint: allow cross-origin access so WhatsApp/Facebook/Twitter crawlers can fetch it
-        source: '/api/og',
-        headers: [
-          { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
-          { key: 'Cross-Origin-Opener-Policy', value: 'unsafe-none' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-        ],
-      },
-      {
         // Static OG fallback image
         source: '/og-image.jpg',
         headers: [

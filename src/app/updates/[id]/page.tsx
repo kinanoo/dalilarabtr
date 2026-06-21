@@ -9,7 +9,7 @@ import UniversalComments from '@/components/community/UniversalComments';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
 import { stripHtml } from '@/lib/stripHtml';
-import { SITE_CONFIG } from '@/lib/config';
+import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const revalidate = 60;
 
@@ -44,10 +44,7 @@ export async function generateMetadata(
         openGraph: {
             title: data.title,
             description: stripHtml(data.content).substring(0, 200),
-            images: [{
-                url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: data.title, category: data.type === 'alert' ? 'تنبيه' : 'تحديث' })}`,
-                width: 1200, height: 630, alt: data.title,
-            }],
+            images: [{ url: getOgImage(), width: 1200, height: 630, alt: data.title }],
         },
     };
 }

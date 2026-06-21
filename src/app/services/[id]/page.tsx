@@ -9,7 +9,7 @@ import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalComments';
 
 import ShareMenu from '@/components/ShareMenu';
-import { SITE_CONFIG } from '@/lib/config';
+import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const revalidate = 60;
 
@@ -42,7 +42,7 @@ export async function generateMetadata(
     const title = `${data.name} - ${data.profession} في ${data.city} | دليل العرب`;
     const description = data.description?.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
-    const ogImage = data.image || `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: `${data.name} — ${data.profession}`, category: data.category || 'خدمات' })}`;
+    const ogImage = getOgImage(data.image);
 
     return {
         title,

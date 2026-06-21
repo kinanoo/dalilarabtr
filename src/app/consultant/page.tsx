@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import ConsultantClient from './ConsultantClient';
-import { SITE_CONFIG } from '@/lib/config';
+import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'المستشار الشامل | دليل العرب في تركيا',
@@ -10,10 +10,7 @@ export const metadata: Metadata = {
     title: 'المستشار الشامل | دليل العرب في تركيا',
     description: 'نظام تشخيص قانوني ذكي يساعدك في تحديد الإجراءات المطلوبة.',
     url: `${SITE_CONFIG.siteUrl}/consultant`,
-    images: [{
-      url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: 'المستشار القانوني الشامل', category: 'أداة ذكية' })}`,
-      width: 1200, height: 630, alt: 'المستشار الشامل',
-    }],
+    images: [{ url: getOgImage(), width: 1200, height: 630, alt: 'المستشار الشامل' }],
   },
   alternates: { canonical: '/consultant' },
 };

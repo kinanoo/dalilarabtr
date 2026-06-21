@@ -7,7 +7,7 @@ import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import ZoneReportButton from '@/components/zones/ZoneReportButton';
 import SectionDivider from '@/components/ui/SectionDivider';
-import { SITE_CONFIG } from '@/lib/config';
+import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const revalidate = 600;
 
@@ -53,10 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
                 title: zoneTitle,
-                images: [{
-                    url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: zoneTitle, category: 'حالة الأحياء' })}`,
-                    width: 1200, height: 630, alt: zoneTitle,
-                }],
+                images: [{ url: getOgImage(), width: 1200, height: 630, alt: zoneTitle }],
             },
         };
     }
@@ -76,10 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
                 title: districtTitle,
-                images: [{
-                    url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: districtTitle, category: 'حالة الأحياء' })}`,
-                    width: 1200, height: 630, alt: districtTitle,
-                }],
+                images: [{ url: getOgImage(), width: 1200, height: 630, alt: districtTitle }],
             },
         };
     }
@@ -99,10 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
                 title: cityTitle,
-                images: [{
-                    url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: cityTitle, category: 'حالة الأحياء' })}`,
-                    width: 1200, height: 630, alt: cityTitle,
-                }],
+                images: [{ url: getOgImage(), width: 1200, height: 630, alt: cityTitle }],
             },
         };
     }

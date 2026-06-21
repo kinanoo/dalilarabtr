@@ -1,5 +1,5 @@
 // import PageHero from '@/components/PageHero';
-import { CATEGORY_SLUGS, SITE_CONFIG } from '@/lib/config';
+import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 // import { FolderOpen } from 'lucide-react';
 import CategoryArticlesList from './CategoryArticlesList';
 import { supabase } from '@/lib/supabaseClient';
@@ -32,12 +32,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
       description,
       url,
       type: 'website',
-      images: [{
-        url: `${SITE_CONFIG.siteUrl}/api/og?${new URLSearchParams({ title: categoryName })}`,
-        width: 1200,
-        height: 630,
-        alt: categoryName,
-      }],
+      images: [{ url: getOgImage(), width: 1200, height: 630, alt: categoryName }],
     },
   };
 }
