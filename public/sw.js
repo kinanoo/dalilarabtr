@@ -1,84 +1,37 @@
-const CACHE_NAME = 'daleel-arab-v3';
-const OFFLINE_URL = '/offline.html';
+// Service worker — push notifications ONLY. No page/RSC/asset caching.
+//
+// WHY NO FETCH/CACHE HANDLER:
+// A previous version cached navigations/assets. On a frequently-redeployed
+// Cloudflare Worker that made the SW serve a STALE page or RSC payload during a
+// soft (client-side) navigation — which is invisible to curl (curl bypasses the
+// SW) and produced the "click a link → stuck on the loading skeleton, refresh
+// fixes it" bug, with NO JavaScript error (so a ChunkLoadError guard never
+// fired). Removing the caching layer means the browser always goes to the
+// network (Cloudflare's own edge cache still serves fast), so the SW can never
+// hand back stale content. Push notifications are unaffected.
+//
+// The version below force-activates and DELETES every old cache so any browser
+// still running the old caching SW is healed on its next load.
 
-// ─── Install: pre-cache offline page & app icon only ──────────────────────
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll([OFFLINE_URL, '/android-chrome-192x192.png']))
-            .then(() => self.skipWaiting())
-    );
+const CACHE_NAME = 'daleel-arab-v4-push-only';
+
+// Install: take over as soon as possible, no pre-caching.
+self.addEventListener('install', () => {
+    self.skipWaiting();
 });
 
-// ─── Activate: delete OLD cache versions, take control ────────────────────
+// Activate: wipe EVERY cache the old SW created (no exceptions), then claim all
+// open tabs so the stale-serving SW stops controlling them immediately.
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
-            .then((names) =>
-                Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
-            )
+            .then((names) => Promise.all(names.map((n) => caches.delete(n))))
             .then(() => self.clients.claim())
     );
 });
 
-// ─── Fetch: smart caching strategy ────────────────────────────────────────
-self.addEventListener('fetch', (event) => {
-    const { request } = event;
-
-    // Only handle GET requests
-    if (request.method !== 'GET') return;
-
-    const url = new URL(request.url);
-
-    // Skip cross-origin requests (Supabase, Google Analytics, etc.)
-    if (url.origin !== self.location.origin) return;
-
-    // Skip API calls — always fresh
-    if (url.pathname.startsWith('/api/')) return;
-
-    // ── Cache-first for Next.js static assets (hashed filenames never go stale)
-    if (url.pathname.startsWith('/_next/static/')) {
-        event.respondWith(
-            caches.match(request).then((cached) => {
-                if (cached) return cached;
-                return fetch(request).then((response) => {
-                    if (response.ok) {
-                        const cloned = response.clone();
-                        caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
-                    }
-                    return response;
-                });
-            })
-        );
-        return;
-    }
-
-    // ── Cache-first for images & fonts ────────────────────────────────────
-    if (request.destination === 'image' || request.destination === 'font') {
-        event.respondWith(
-            caches.match(request).then((cached) => {
-                if (cached) return cached;
-                return fetch(request).then((response) => {
-                    if (response.ok) {
-                        const cloned = response.clone();
-                        caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
-                    }
-                    return response;
-                }).catch(() => cached);
-            })
-        );
-        return;
-    }
-
-    // ── Network-first for page navigation (offline page as fallback) ───────
-    if (request.mode === 'navigate') {
-        event.respondWith(
-            fetch(request).catch(() =>
-                caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL))
-            )
-        );
-    }
-});
+// NOTE: intentionally NO 'fetch' listener. The browser handles every request
+// directly against the network/edge — nothing is intercepted or cached here.
 
 // ─── Push Notifications ───────────────────────────────────────────────────
 self.addEventListener('push', function (event) {
