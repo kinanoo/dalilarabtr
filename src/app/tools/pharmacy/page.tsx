@@ -12,6 +12,7 @@ export const metadata: Metadata = {
         title: 'الصيدلية المناوبة الآن — اعرف أقرب صيدلية مفتوحة',
         description: 'رابط رسمي مباشر لمعرفة الصيدلية المناوبة في منطقتك الآن. يغطي كل الولايات التركية الـ 81.',
         url: `${SITE_CONFIG.siteUrl}/tools/pharmacy`,
+        images: ['/og-image.jpg'],
     },
 };
 

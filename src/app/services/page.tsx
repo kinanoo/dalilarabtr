@@ -11,6 +11,7 @@ export const metadata: Metadata = {
         description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات عرب موثوقين في كل مدن تركيا.',
         url: `${SITE_CONFIG.siteUrl}/services`,
         type: 'website',
+        images: ['/og-image.jpg'],
     },
 };
 

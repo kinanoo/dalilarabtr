@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     description: 'روابط مباشرة للمواقع الحكومية التركية والخدمات الإلكترونية الأساسية.',
     url: `${SITE_CONFIG.siteUrl}/important-links`,
     type: 'website',
+    images: ['/og-image.jpg'],
   },
 };
 

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
         title: 'فحص الكملك التركي — تأكد من صلاحية قيدك فوراً',
         description: 'أداة مجانية للتحقق من رقم الكملك + رابط مباشر لموقع النفوس الرسمي. اعرف إذا الكملك شغال أو موقوف.',
         url: `${SITE_CONFIG.siteUrl}/tools/kimlik-check`,
+        images: ['/og-image.jpg'],
     },
 };
 

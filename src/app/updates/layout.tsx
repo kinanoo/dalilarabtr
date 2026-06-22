@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     description: 'أحدث الأخبار والتغييرات المتعلقة بالإقامات والقوانين والخدمات في تركيا.',
     url: `${SITE_CONFIG.siteUrl}/updates`,
     type: 'website',
+    images: ['/og-image.jpg'],
   },
 };
 
