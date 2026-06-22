@@ -138,6 +138,12 @@ export default function CategoryArticlesList({
           </div>
         )}
 
+        {categoryArticles.length > 0 && (
+          <p className="mb-6 text-sm font-bold text-slate-500 dark:text-slate-400">
+            عدد الأدلة: <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">{categoryArticles.length}</span>
+          </p>
+        )}
+
         {categoryArticles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categoryArticles.map((article) => {
@@ -214,6 +220,12 @@ export default function CategoryArticlesList({
                   </p>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+                    {article.lastUpdate && (
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1" title="آخر تحديث">
+                        <Calendar size={11} />
+                        {article.lastUpdate}
+                      </span>
+                    )}
                     <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
                       قراءة الدليل
                       <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />

@@ -21,7 +21,9 @@ import {
   ArrowLeft,
   Sparkles,
   CheckCircle,
-  Wrench
+  Wrench,
+  Pill,
+  Smartphone
 } from 'lucide-react';
 
 // =====================================================
@@ -116,6 +118,30 @@ const TOOLS = [
     borderColor: 'border-cyan-200 dark:border-cyan-800',
     badge: null,
     features: ['مصطلحات قانونية', 'شرح مفصل', 'أمثلة']
+  },
+  {
+    id: 'pharmacy',
+    title: 'الصيدليات المناوبة',
+    description: 'اعثر على أقرب صيدلية مناوبة (nöbetçi eczane) في مدينتك الآن',
+    icon: Pill,
+    href: '/tools/pharmacy',
+    color: 'from-green-500 to-emerald-600',
+    bgLight: 'bg-green-50 dark:bg-green-950/30',
+    borderColor: 'border-green-200 dark:border-green-800',
+    badge: null,
+    features: ['كل الولايات', 'تحديث مباشر', 'أقرب صيدلية']
+  },
+  {
+    id: 'edevlet',
+    title: 'خدمات e-Devlet',
+    description: 'روابط مباشرة لأهم خدمات الحكومة الإلكترونية التركية',
+    icon: Smartphone,
+    href: '/e-devlet-services',
+    color: 'from-sky-500 to-blue-600',
+    bgLight: 'bg-sky-50 dark:bg-sky-950/30',
+    borderColor: 'border-sky-200 dark:border-sky-800',
+    badge: null,
+    features: ['روابط رسمية', 'وصول سريع', 'مصنّفة']
   },
 ];
 
