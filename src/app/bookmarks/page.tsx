@@ -6,7 +6,7 @@ import { useBookmarks } from '@/hooks/useBookmarks';
 // import { ARTICLES } from '@/lib/articles'; // REMOVED
 import { Bookmark, FileText } from 'lucide-react';
 import BookmarkButton from '@/components/BookmarkButton';
-import PageHeader from '@/components/ui/PageHeader';
+import PageHero from '@/components/PageHero';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -51,12 +51,10 @@ export default function BookmarksPage() {
 
     return (
         <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
-            <PageHeader
+            <PageHero
                 title="مفضلاتي"
                 description="المقالات التي قمت بحفظها للعودة إليها لاحقاً"
-                icon={<Bookmark size={48} />}
-                breadcrumbs={[{ label: 'المفضلة', href: '/bookmarks' }]}
-                gradient={true}
+                icon={<Bookmark className="w-9 h-9 text-emerald-300" />}
             />
 
             <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 pb-20">
