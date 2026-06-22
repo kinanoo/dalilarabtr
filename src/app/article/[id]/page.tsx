@@ -61,6 +61,10 @@ async function fetchArticleData(slug: string) {
         fees: data.fees || '',
         source: data.source || '',
         image: data.image || '',
+        // Original publish date — kept SEPARATE from lastUpdate so the Article
+        // schema can emit an accurate datePublished (was wrongly equal to
+        // dateModified, making every edited article look freshly published).
+        createdAt: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : '',
         lastUpdate: (data.last_update || data.created_at) ? new Date(data.last_update || data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
       };
     }
@@ -143,6 +147,7 @@ function buildJsonLd(args: {
   title: string;
   description: string;
   lastUpdate: string;
+  datePublished?: string;
   categoryName: string;
   categorySlug?: string;
   url: string;
@@ -160,6 +165,10 @@ function buildJsonLd(args: {
 }) {
   const wordCount = args.articleBody ? calculateWordCount(args.articleBody) : 0;
   const dateModified = args.lastUpdate.includes('T') ? args.lastUpdate : `${args.lastUpdate}T00:00:00Z`;
+  // Fall back to dateModified only when we genuinely have no original date.
+  const datePublished = args.datePublished
+    ? (args.datePublished.includes('T') ? args.datePublished : `${args.datePublished}T00:00:00Z`)
+    : dateModified;
 
   const article = {
     '@context': 'https://schema.org',
@@ -167,7 +176,7 @@ function buildJsonLd(args: {
     headline: args.title,
     description: args.description,
     inLanguage: 'ar',
-    datePublished: dateModified,
+    datePublished,
     dateModified,
     mainEntityOfPage: {
       '@type': 'WebPage',
@@ -193,7 +202,14 @@ function buildJsonLd(args: {
     ...(args.articleBody && { articleBody: args.articleBody }),
     ...(wordCount > 0 && { wordCount }),
     ...(args.keywords && args.keywords.length > 0 && { keywords: args.keywords.join(', ') }),
-    image: args.image || `${args.siteUrl}/og-image.jpg`,
+    // ImageObject (not a bare URL) is Google's preferred shape for Article
+    // rich results — it can carry a caption and lets Google treat the image as
+    // a first-class entity. Large image previews still require the source file
+    // itself to be ≥1200px wide (handled at upload, not here).
+    image: {
+      '@type': 'ImageObject',
+      url: args.image || `${args.siteUrl}/og-image.jpg`,
+    },
     reviewedBy: {
       '@type': 'Organization',
       name: 'فريق دليل العرب القانوني',
@@ -347,6 +363,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     title: article.seoTitle?.trim() || article.title,
     description: (() => { let d = article.seoDescription?.trim() || stripHtml(article.intro); if (d.length < 120) { const extra = stripHtml(article.details); if (extra) d = (d + ' ' + extra).trim(); } return d.length > 155 ? d.substring(0, 155).trim() + '…' : d; })(),
     lastUpdate: article.lastUpdate,
+    datePublished: article.createdAt,
     categoryName: article.category,
     categorySlug,
     url,

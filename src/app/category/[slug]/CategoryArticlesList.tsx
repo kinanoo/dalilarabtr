@@ -73,7 +73,12 @@ export default function CategoryArticlesList({
     return list;
   }, [articles, categoryName, initialArticles, searchQuery, activeTag]);
 
-  if (loading) {
+  // Only block the whole page on the spinner when we have NOTHING to show.
+  // When the server passed `initialArticles`, render them immediately so the
+  // <h1> (PageHero), the intro, and every article link are in the initial
+  // server HTML — crawlable by Google instead of hidden behind a client-side
+  // loading spinner. Remote data merges in silently once it arrives.
+  if (loading && initialArticles.length === 0) {
     return (
       <div className="max-w-screen-2xl mx-auto px-4 py-16">
         <div className="flex items-center justify-center py-20">

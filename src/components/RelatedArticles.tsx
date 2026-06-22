@@ -1,40 +1,60 @@
 // src/components/RelatedArticles.tsx
-'use client';
+//
+// Server Component. Previously this was a client component that fetched the
+// related articles in a useEffect — which meant the initial HTML Google sees
+// had NO article-to-article links, hurting deep-page discovery and the flow of
+// internal link equity. Now it fetches on the server and emits real <a href>
+// links in the first response, so crawlers (and users on slow JS) get the
+// links immediately.
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function RelatedArticles({ currentArticleId, category }: { currentArticleId: string; category: string }) {
-    // Dynamic State
-    const [related, setRelated] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+interface RelatedArticle {
+    id: string;
+    slug: string | null;
+    title: string;
+    intro: string | null;
+    created_at: string | null;
+}
 
-    useEffect(() => {
-        async function fetchRelated() {
-            if (!supabase) return;
-            // Fetch items in same category, exclude current, limit 3
-            const { data } = await supabase
-                .from('articles')
-                .select('id, slug, title, intro, created_at, category')
-                .eq('category', category)
-                .neq('id', currentArticleId)
-                .limit(3);
+// Latin-digit date (the site never renders Eastern-Arabic digits). Manual
+// formatting avoids toLocaleDateString('ar-EG'), which emits ٠-٩.
+function formatDate(value: string | null): string {
+    const d = value ? new Date(value) : null;
+    if (!d || isNaN(d.getTime())) return '';
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+}
 
-            if (data) setRelated(data);
-            setLoading(false);
-        }
+export default async function RelatedArticles({
+    currentArticleId,
+    category,
+}: {
+    currentArticleId: string;
+    category: string;
+}) {
+    if (!supabase || !category) return null;
 
-        if (category) {
-            fetchRelated();
-        } else {
-            setLoading(false);
-        }
-    }, [category, currentArticleId]);
+    let related: RelatedArticle[] = [];
+    try {
+        let q = supabase
+            .from('articles')
+            .select('id, slug, title, intro, created_at')
+            .eq('category', category)
+            .eq('status', 'approved')
+            .order('last_update', { ascending: false })
+            .limit(3);
+        // currentArticleId can be "" (e.g. when shown on the /codes page) —
+        // only exclude when we actually have an id to exclude.
+        if (currentArticleId) q = q.neq('id', currentArticleId);
+        const { data } = await q;
+        related = (data as RelatedArticle[]) || [];
+    } catch {
+        return null;
+    }
 
-
-    if (loading || related.length === 0) return null;
+    if (related.length === 0) return null;
 
     return (
         <section className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12">
@@ -70,7 +90,7 @@ export default function RelatedArticles({ currentArticleId, category }: { curren
                             <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-200 dark:border-slate-700/50">
                                 <div className="flex items-center gap-1 text-slate-400 text-xs tabular-nums" dir="ltr">
                                     <Clock size={14} />
-                                    <span>{new Date(article.created_at || Date.now()).toLocaleDateString('ar-EG')}</span>
+                                    <span>{formatDate(article.created_at)}</span>
                                 </div>
                                 <span className="text-emerald-600 text-sm font-black flex items-center gap-1 group-hover:translate-x-[-4px] transition-transform">
                                     اقرأ المزيد <ArrowLeft size={16} />
