@@ -184,10 +184,45 @@ export default async function Home() {
         <HomeConsultantBtn />
       </HeroSection>
 
-      {/* Minimal divider replacing the old HeroTrustStrip section.
-          A single 1px slate line is all that's needed to mark the
-          hero → content transition; the chips are now in the hero. */}
-      <div className="w-full h-px bg-slate-900/40 dark:bg-slate-800" aria-hidden="true" />
+      {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
+          emerald hairline marks it without a heavy divider. */}
+      <div className="relative h-px bg-slate-800" aria-hidden="true">
+        <div className="absolute inset-x-0 h-px bg-gradient-to-l from-transparent via-emerald-500/40 to-transparent" />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION 1 — رحلتك القانونية (دليل المواقف)
+          MOVED ABOVE the news feed: an anxious newcomer needs the
+          "ما وضعك؟" situation picker FIRST, not a wall of headlines.
+          The dark surface continues the hero's orientation zone before
+          the page flips to the light content below.
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="relative bg-slate-950 text-white py-16 overflow-hidden" dir="rtl">
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
+        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">01</div>
+        <div className="relative max-w-7xl mx-auto px-4 mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles size={18} className="text-emerald-400" />
+            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-400">ابدأ من هنا</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight">
+            رحلتك <span className="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">القانونية</span>
+          </h2>
+          <div className="mt-4 inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5">
+            <p className="text-sm text-emerald-100">اختر وضعك ومرحلتك في تركيا، ونعرض لك خطواتك المناسبة.</p>
+          </div>
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4">
+          <ScrollReveal>
+            <GuidedJourney />
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Transition — dark (guide) → light (news feed). */}
+      <div className="relative h-16 bg-gradient-to-b from-slate-950 to-white dark:to-slate-950" aria-hidden="true">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-500/30 to-transparent" />
+      </div>
 
       {/* Featured news carousel — server-rendered breaking-news slot.
           Renders nothing when no article carries the `خبر_رئيسي` tag,
@@ -234,46 +269,9 @@ export default async function Home() {
         <HomeUpdates updates={updates} />
       </Suspense>
 
-      {/* Transition — light → dark. 64-px gradient bar with a hairline
-          emerald accent line so the boundary feels intentional, not
-          abrupt. Picked up the family pattern's gradient + accent. */}
-      <div className="relative h-16 bg-gradient-to-b from-white to-slate-950 dark:from-slate-950 dark:to-slate-950" aria-hidden="true">
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-500/40 to-transparent" />
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════
-          SECTION 2 — رحلتك القانونية
-          DARK section — flips the page's visual rhythm so this block
-          feels like a deliberate "premium spread". Decorative
-          oversized number (٠٢) sits behind the heading; emerald
-          orange-glow ribbon under the title gives it presence.
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-slate-950 text-white py-20 mt-12 overflow-hidden" dir="rtl">
-        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
-        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">02</div>
-        <div className="relative max-w-7xl mx-auto px-4 mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <Sparkles size={18} className="text-emerald-400" />
-            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-400">ابدأ من هنا</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight">
-            رحلتك <span className="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">القانونية</span>
-          </h2>
-          <div className="mt-4 inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5">
-            <p className="text-sm text-emerald-100">خطوة بخطوة — حسب وضعك ومرحلتك في تركيا.</p>
-          </div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <ScrollReveal>
-            <GuidedJourney />
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Transition — dark → light. Cyan accent line because the
-          incoming section uses sky-blue tints. */}
-      <div className="relative h-16 bg-gradient-to-b from-slate-950 to-sky-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-cyan-500/40 to-transparent" />
+      {/* Transition — light (news feed) → sky (tools). */}
+      <div className="relative h-12 bg-gradient-to-b from-white to-sky-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-cyan-500/30 to-transparent" />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
