@@ -118,10 +118,13 @@ html.dark .tiptap h1, html.dark .prose-content h1 { color: #f1f5f9; }
 html.dark .tiptap h2, html.dark .prose-content h2 { color: #5eead4; }
 html.dark .tiptap h3, html.dark .prose-content h3 { color: #e2e8f0; }
 
-/* Paragraphs */
+/* Paragraphs — generous bottom spacing + a tall line-height tuned for
+   Arabic body text (diacritics + tall letterforms need the breathing
+   room). The previous 0.5rem gap packed paragraphs into a dense wall;
+   ~1.15rem gives long legal/guide articles a calmer reading rhythm. */
 .tiptap p, .prose-content p {
-  margin: 0.5rem 0;
-  line-height: 1.85;
+  margin: 0 0 1.15rem;
+  line-height: 1.95;
 }
 
 /* Links */

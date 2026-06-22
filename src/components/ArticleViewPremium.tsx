@@ -361,7 +361,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                   {/* التفاصيل */}
                   <div
                     data-article-body
-                    className="prose-content text-slate-600 dark:text-slate-200 mb-6 text-base sm:text-lg"
+                    className="prose-content text-slate-600 dark:text-slate-200 mb-6 text-[17px] sm:text-lg"
                     dangerouslySetInnerHTML={{ __html: safeDetails }}
                   />
 
