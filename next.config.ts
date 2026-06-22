@@ -4,9 +4,9 @@ import type { NextConfig } from "next";
 const cspBase = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://vercel.live",
-  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com https://vercel.live https://vercel.com https://*.vercel.com",
+  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com https://vercel.live https://vercel.com https://*.vercel.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "font-src 'self' data: https://vercel.live",
-  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com",
+  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "frame-src 'self' https://tckimlik.nvi.gov.tr https://vercel.live",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -24,13 +24,13 @@ const cspBase = [
 // Global: NO unsafe-eval (public pages don't need it)
 const cspGlobal = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
 ].join('; ');
 
 // Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
 const cspAdmin = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
 ].join('; ');
 
 // Shared security headers (applied to all routes)
