@@ -27,6 +27,10 @@ export default function AdminLayout({
 
     // ─── Auth Guard State ───────────────────────────────────────────────
     const [authState, setAuthState] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
+    // Read-only ('viewer') role: authorized to VIEW but blocked from every
+    // write at the DB (RLS) and API (role==='admin') layers. We surface it here
+    // only as UX/defense-in-depth (banner + hide the in-panel AI assistant).
+    const [readOnly, setReadOnly] = useState(false);
 
     // ─── Auth Guard: verify admin role on mount ─────────────────────────
     useEffect(() => {
@@ -44,6 +48,8 @@ export default function AdminLayout({
                 if (cancelled) return;
 
                 if (res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    setReadOnly(!!data.readOnly);
                     setAuthState('authorized');
                 } else {
                     // Not admin or not authenticated → redirect to login
@@ -162,16 +168,22 @@ export default function AdminLayout({
                         </div>
                     </div>
 
+                    {readOnly && (
+                        <div className="bg-amber-500 text-slate-900 text-xs font-bold px-4 py-2 text-center flex items-center justify-center gap-2">
+                            <ShieldAlert size={14} />
+                            وضع القراءة فقط — هذا الحساب يُراجِع ويُشخّص فقط، ولا يمكنه التعديل أو النشر أو الحذف.
+                        </div>
+                    )}
                     <div className="flex-1 overflow-y-auto p-4 md:p-0">
                         {children}
                     </div>
                 </main>
 
                 {/* AI Assistant — FAB + Overlay (hidden on /admin/ai-assistant page) */}
-                {pathname !== '/admin/ai-assistant' && !aiOpen && (
+                {!readOnly && pathname !== '/admin/ai-assistant' && !aiOpen && (
                     <AIFab onClick={() => setAiOpen(true)} />
                 )}
-                <AIAssistant isOpen={aiOpen} onClose={() => setAiOpen(false)} />
+                {!readOnly && <AIAssistant isOpen={aiOpen} onClose={() => setAiOpen(false)} />}
             </div>
         </ToastProvider>
     );

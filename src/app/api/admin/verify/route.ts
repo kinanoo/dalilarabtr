@@ -48,9 +48,15 @@ export async function GET() {
         .eq('id', user.id)
         .single();
 
-    if (profile?.role !== 'admin') {
+    const role = profile?.role;
+    // 'viewer' is a READ-ONLY role: it may VIEW the admin panel, but every
+    // write path denies it — RLS on the DB and the role==='admin' checks in the
+    // mutation API routes both key strictly on role==='admin' (is_admin() =
+    // role='admin'). We add 'viewer' ONLY here, at the view gate, and NOWHERE
+    // in any write check, so a viewer can read admin pages but cannot mutate.
+    if (role !== 'admin' && role !== 'viewer') {
         return NextResponse.json({ admin: false }, { status: 403 });
     }
 
-    return NextResponse.json({ admin: true });
+    return NextResponse.json({ admin: true, role, readOnly: role === 'viewer' });
 }
