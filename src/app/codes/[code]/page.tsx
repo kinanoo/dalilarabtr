@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         .eq('code', decodedCode)
         .single();
 
-    if (!item) return { title: 'الكود غير موجود' };
+    if (!item) return { title: 'الكود غير موجود', robots: { index: false, follow: false } };
 
     const ogTitle = `شرح الكود ${item.code} - ${item.title}`;
     return {

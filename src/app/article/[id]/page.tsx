@@ -6,7 +6,6 @@
 
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleHydratedView from '@/components/ArticleHydratedView';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';

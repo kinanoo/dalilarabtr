@@ -37,9 +37,11 @@ export async function generateMetadata(
         .eq('status', 'approved')
         .single();
 
-    if (!data) return { title: 'الخدمة غير موجودة' };
+    if (!data) return { title: 'الخدمة غير موجودة', robots: { index: false, follow: false } };
 
-    const title = `${data.name} - ${data.profession} في ${data.city} | دليل العرب`;
+    // No manual brand suffix — the root layout's title template appends
+    // "| <brand>" once. Adding "| دليل العرب" here produced a doubled brand.
+    const title = `${data.name} - ${data.profession} في ${data.city}`;
     const description = data.description?.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
     const ogImage = getOgImage(data.image);

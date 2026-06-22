@@ -35,10 +35,10 @@ export async function generateMetadata(
         .eq('active', true)
         .single();
 
-    if (!data) return { title: 'التحديث غير موجود' };
+    if (!data) return { title: 'التحديث غير موجود', robots: { index: false, follow: false } };
 
     return {
-        title: `${data.title} | دليل العرب`,
+        title: data.title,
         description: stripHtml(data.content).substring(0, 160) || data.title,
         alternates: { canonical: `/updates/${id}` },
         openGraph: {
