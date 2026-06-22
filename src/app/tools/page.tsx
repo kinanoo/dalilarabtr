@@ -25,6 +25,7 @@ import {
   Pill,
   Smartphone
 } from 'lucide-react';
+import Badge from '@/components/ui/Badge';
 
 // =====================================================
 // 📊 Metadata للصفحة
@@ -190,17 +191,16 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
 
   return (
     <div className={`relative group ${isComingSoon ? 'opacity-70' : ''}`}>
-      {/* البادج */}
+      {/* البادج — مكوّن Badge الموحّد بألوان دلالية (نفس المعنى = نفس اللون
+          عبر كل الموقع: "محدّث" أزرق دائماً، "الأكثر استخداماً" أخضر العلامة) */}
       {tool.badge && (
-        <div className={`absolute -top-3 right-4 z-10 px-3 py-1 rounded-full text-xs font-bold ${tool.badge === 'قريباً'
-          ? 'bg-slate-500 text-white'
-          : tool.badge === 'الأكثر استخداماً'
-            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
-            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-          }`}>
-          {tool.badge === 'الأكثر استخداماً' && <Sparkles size={12} className="inline ml-1" />}
+        <Badge
+          tone={tool.badge === 'قريباً' ? 'neutral' : tool.badge === 'الأكثر استخداماً' ? 'brand' : 'updated'}
+          icon={tool.badge === 'الأكثر استخداماً' ? <Sparkles size={12} /> : undefined}
+          className="absolute -top-3 right-4 z-10 shadow-sm"
+        >
           {tool.badge}
-        </div>
+        </Badge>
       )}
 
       {isComingSoon ? (
