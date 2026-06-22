@@ -197,6 +197,14 @@ export default async function CodeDetailPage({ params }: Props) {
                     />
                 </div>
 
+                <div className="mt-8 flex items-start gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                    <p>
+                        هذه المعلومات استرشادية فقط وقد تتغيّر؛ المرجع النهائي هو الجهة الرسمية.
+                        لسنا محامين ولا تابعين لأي جهة حكومية، ولا نطلب مالاً ولا نَعِد بنتيجة.
+                    </p>
+                </div>
+
                 <div className="mt-8">
                     <UniversalComments entityType="scenario" entityId={`code-${item.code}`} />
                 </div>

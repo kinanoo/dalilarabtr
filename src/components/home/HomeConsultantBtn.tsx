@@ -45,7 +45,7 @@ export default function HomeConsultantBtn() {
                     whileTap={{ scale: 0.96 }}
                     className="group relative px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-2xl hover:shadow-emerald-400/50 transition-all duration-300 flex items-center gap-2"
                 >
-                    <span>ابدأ مع المستشار الذكي</span>
+                    <span>ابدأ مع دليل المواقف</span>
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                 </motion.button>
             </Link>

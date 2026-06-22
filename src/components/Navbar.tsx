@@ -279,7 +279,9 @@ export default function Navbar() {
                 <nav className="space-y-2">
                   {[
                     { name: 'الرئيسية', href: '/', icon: Home },
-                    { name: 'المستشار الذكي', href: '/consultant', icon: BrainCircuit },
+                    { name: 'دليل المواقف', href: '/consultant', icon: BrainCircuit },
+                    { name: 'الأكواد الأمنية', href: '/codes', icon: ShieldAlert },
+                    { name: 'روابط حكومية رسمية', href: '/important-links', icon: LinkIcon },
                   ].map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -450,7 +452,7 @@ export default function Navbar() {
                 <div className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {SITE_CONFIG.name}
                 </div>
-                <p className="text-[9px] text-slate-500 font-bold">دليلك الموثوق في تركيا</p>
+                <p className="text-[9px] text-slate-500 font-bold">دليلك الشامل والموثوق</p>
               </div>
             </Link>
           </div>

@@ -10,7 +10,7 @@ export default function ConsultantLoading() {
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                        جاري تحميل المستشار الذكي
+                        جاري تحميل دليل المواقف
                     </h2>
                     <p className="text-slate-500 dark:text-slate-400">
                         يتم تحضير النظام الخبير...

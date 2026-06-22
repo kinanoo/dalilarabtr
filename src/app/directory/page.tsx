@@ -47,7 +47,7 @@ const PRIMARY_SECTIONS: Array<{ key: string; title: string; icon: any; color: st
 
 // أقسام إضافية لصفحات الموقع
 const ADDITIONAL_SECTIONS: Array<{ key: string; title: string; description: string; href: string; icon: any; color: string }> = [
-  { key: 'consultant', title: 'المستشار الذكي', description: 'حلل وضعك القانوني واحصل على توصيات مخصصة', href: '/consultant', icon: BrainCircuit, color: 'bg-emerald-500 dark:bg-emerald-600' },
+  { key: 'consultant', title: 'دليل المواقف', description: 'حدّد إجراءاتك القانونية خطوة بخطوة حسب حالتك', href: '/consultant', icon: BrainCircuit, color: 'bg-emerald-500 dark:bg-emerald-600' },
   { key: 'codes', title: 'دليل الأكواد', description: 'معرفة معنى الكود الأمني وسبب الرفض أو المنع', href: '/codes', icon: ShieldAlert, color: 'bg-red-500 dark:bg-red-600' },
   { key: 'ban-calculator', title: 'حاسبة مدة المنع', description: 'احسب المدة القانونية لمنع الدخول إلى تركيا', href: '/ban-calculator', icon: Calculator, color: 'bg-orange-500 dark:bg-orange-600' },
   { key: 'zones', title: 'المناطق المحظورة', description: 'التحقق من المناطق المفتوحة لتسجيل الأجانب', href: '/zones', icon: MapPin, color: 'bg-pink-500 dark:bg-pink-600' },
@@ -286,7 +286,7 @@ export default function DirectoryPage() {
                   <Link href="/consultant" className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-2 text-center group">
                     <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><BrainCircuit size={32} /></div>
                     <div>
-                      <h3 className="font-bold text-base md:text-lg">المستشار الذكي</h3>
+                      <h3 className="font-bold text-base md:text-lg">دليل المواقف</h3>
                       <p className="text-emerald-100 text-xs md:text-sm mt-1">تشخيص قانوني آلي</p>
                     </div>
                   </Link>

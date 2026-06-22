@@ -19,7 +19,7 @@ export const SERVICE_CATEGORIES = [
 
 export const NAVIGATION = [
     { name: "الرئيسية", href: "/", icon: Home },
-    { name: "المستشار الذكي", href: "/consultant", icon: BrainCircuit },
+    { name: "دليل المواقف", href: "/consultant", icon: BrainCircuit },
     { name: "اطلب خدمة", href: "/services", icon: Briefcase },
     { name: "خدمات السوريين", href: "/category/syrians", icon: Building2 },
     { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone },
@@ -34,6 +34,8 @@ export const NAVIGATION = [
 export const PRIMARY_NAV = [
     { name: "الرئيسية", href: "/", icon: Home },
     { name: "خدمات", href: "/services", icon: Briefcase, isNew: true },
+    { name: "الأكواد الأمنية", href: "/codes", icon: ShieldAlert },
+    { name: "روابط حكومية رسمية", href: "/important-links", icon: Link },
 ];
 
 export const GUIDES_MENU = [
@@ -112,7 +114,7 @@ export const OFFICIAL_SOURCES = [
 ];
 
 export const QUICK_ACTIONS = [
-    { title: "المستشار الذكي", desc: "أداة التشخيص القانوني الشامل", icon: BrainCircuit, href: "/consultant" },
+    { title: "دليل المواقف", desc: "أداة التشخيص القانوني الشامل", icon: BrainCircuit, href: "/consultant" },
     { title: "الدليل الشامل", desc: "دليل الخدمات والمواقع الهامة", icon: FolderOpen, href: "/directory" },
     { title: "فحص الكملك", desc: "تأكد من صلاحية القيد (TC)", icon: UserCheck, href: "/tools/kimlik-check" },
     { title: "الأكواد الأمنية", desc: "افحص رموز المنع (V-87, G-87...)", icon: ShieldAlert, href: "/codes" },

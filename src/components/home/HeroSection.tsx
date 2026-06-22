@@ -71,12 +71,12 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                     </div>
 
                     <h1 className="text-4xl md:text-6xl font-black mb-0 leading-[1.4] drop-shadow-2xl">
-                        دليلك القانوني{' '}
+                        دليلك{' '}
                         <span className="relative inline-block">
                             <span
                                 className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-300 via-teal-300 to-cyan-300 drop-shadow-[0_0_30px_rgba(45,212,191,0.45)]"
                                 style={{ fontSize: 'calc(1em + 2px)' }}
-                            >الشامل</span>
+                            >الشامل والموثوق</span>
                             {/* Soft glow ring behind the gradient word so
                                 it feels like a beacon, not just coloured text */}
                             <span aria-hidden="true" className="absolute inset-0 -z-10 blur-2xl bg-gradient-to-l from-emerald-400/30 via-teal-400/30 to-cyan-400/30 rounded-full" />
@@ -89,7 +89,11 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         <span className="text-emerald-300 font-bold">إقامات</span>،{' '}
                         <span className="text-cyan-300 font-bold">قانون</span>،{' '}
                         <span className="text-amber-300 font-bold">أكواد أمنية</span>،{' '}
-                        و<span className="text-violet-300 font-bold">خدمات ذكية</span>.
+                        و<span className="text-violet-300 font-bold">خدمات موثوقة</span>.
+                    </p>
+
+                    <p className="text-sm md:text-base text-emerald-200/90 max-w-2xl mx-auto mb-2 font-bold">
+                        المعلومة الرسمية الأحدث — لا الإشاعات.
                     </p>
 
                     <div className="mt-6 max-w-xl mx-auto relative z-[25] pointer-events-auto">

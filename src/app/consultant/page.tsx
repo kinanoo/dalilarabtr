@@ -4,13 +4,13 @@ import ConsultantClient from './ConsultantClient';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'المستشار الشامل | دليل العرب في تركيا',
-  description: 'نظام تشخيص قانوني ذكي يساعدك في تحديد الإجراءات المطلوبة لأكثر من 80 حالة (إقامة، جنسية، عمل، تعليم) بدقة.',
+  title: 'دليل المواقف | تحديد إجراءاتك القانونية في تركيا',
+  description: 'دليل تفاعلي يساعدك في تحديد الإجراءات المطلوبة لأكثر من 80 حالة (إقامة، جنسية، عمل، تعليم) خطوة بخطوة.',
   openGraph: {
-    title: 'المستشار الشامل | دليل العرب في تركيا',
-    description: 'نظام تشخيص قانوني ذكي يساعدك في تحديد الإجراءات المطلوبة.',
+    title: 'دليل المواقف | دليل العرب في تركيا',
+    description: 'دليل تفاعلي يساعدك في تحديد الإجراءات المطلوبة لحالتك.',
     url: `${SITE_CONFIG.siteUrl}/consultant`,
-    images: [{ url: getOgImage(), width: 1200, height: 630, alt: 'المستشار الشامل' }],
+    images: [{ url: getOgImage(), width: 1200, height: 630, alt: 'دليل المواقف' }],
   },
   alternates: { canonical: '/consultant' },
 };

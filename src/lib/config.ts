@@ -1,6 +1,6 @@
 export const SITE_CONFIG = {
     name: "دليل العرب والسوريين في تركيا",
-    slogan: "مستشارك القانوني الذكي - متاح 24/7 بالعربية",
+    slogan: "دليلك الشامل والموثوق",
     lang: "ar",
     country: "تركيا",
     email: "dalilarabtr@gmail.com",

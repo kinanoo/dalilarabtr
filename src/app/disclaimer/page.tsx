@@ -29,6 +29,13 @@ export default function DisclaimerPage() {
             لا نتحمل مسؤولية أي خسائر أو أضرار تنتج عن استخدام المعلومات المنشورة. استخدامك للموقع يعني قبولك بهذا التنويه.
           </p>
         </section>
+
+        <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-3">لسنا جهة رسمية</h2>
+          <p>
+            لسنا محامين ولا تابعين لأي جهة حكومية، ولا نطلب مالاً ولا نَعِد بنتيجة. خدمتنا معلوماتية مجانية فقط، والقرار النهائي دائماً للجهات الرسمية المختصة.
+          </p>
+        </section>
       </div>
 </main>
   );

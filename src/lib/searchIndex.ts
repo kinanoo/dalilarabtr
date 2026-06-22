@@ -144,13 +144,13 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
   // --- TOOLS ---
   {
     id: 'tool-consultant',
-    title: 'المستشار القانوني الذكي',
-    desc: 'نظام خبير يجيب عن أسئلتك القانونية.',
+    title: 'دليل المواقف',
+    desc: 'دليل تفاعلي يحدّد إجراءاتك القانونية خطوة بخطوة.',
     url: '/consultant',
     type: 'أداة',
     typeKey: 'tool',
     icon: BrainCircuit,
-    haystack: normalizeArabic('مستشار قانوني محامي ذكي استشارة مجانية سؤال وجواب اقامة لجوء كملك استثمار سفر عمل تحويل نقل')
+    haystack: normalizeArabic('دليل المواقف مستشار قانوني محامي استشارة مجانية سؤال وجواب اقامة لجوء كملك استثمار سفر عمل تحويل نقل')
   },
   {
     id: 'tool-zones',

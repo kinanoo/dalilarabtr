@@ -63,7 +63,7 @@ export default async function AboutPage() {
                     <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8">
                         في عام 2025، لاحظنا الفجوة الكبيرة في المعلومات القانونية المتاحة للعرب في تركيا. شائعات كثيرة، قوانين متغيرة، ومعلومات غير دقيقة تؤدي لمشاكل قانونية (منع، ترحيل، غرامات).
                         <br /><br />
-                        لذا قررنا إنشاء منصة تكون <strong className="text-emerald-700 dark:text-emerald-400">المرجع الموثوق</strong> الذي يجمع بين الخبرة القانونية والتقنية الحديثة.
+                        لذا قررنا إنشاء منصة تكون <strong className="text-emerald-700 dark:text-emerald-400">المرجع الموثوق</strong> الذي يجمع بين الخبرة القانونية والتقنية الحديثة. هدفنا أن نوصل لك المعلومة الرسمية الأحدث في وجه الإشاعة.
                     </p>
                 </div>
             </section>
@@ -162,7 +162,7 @@ export default async function AboutPage() {
                                 <Clock size={22} />
                             </div>
                             <div className="text-3xl sm:text-4xl font-black text-violet-600 dark:text-violet-400 mb-1 tabular-nums" dir="ltr">24/7</div>
-                            <div className="text-xs sm:text-sm text-slate-500 font-bold">مستشار ذكي</div>
+                            <div className="text-xs sm:text-sm text-slate-500 font-bold">دليل المواقف</div>
                         </div>
 
                         <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-rose-500/10 hover:-translate-y-1 hover:border-rose-300 transition-all">

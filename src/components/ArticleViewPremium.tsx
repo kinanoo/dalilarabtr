@@ -293,6 +293,27 @@ export default function ArticleView({ article, slug, initialComments, children }
             {/* Content */}
             <div className="p-4 sm:p-6 lg:p-12 space-y-6 lg:space-y-8 break-words overflow-x-hidden w-full max-w-full">
 
+              {/* Trust badge — real last-updated date + official source link on
+                  the light content surface, where a scam-wary reader verifies
+                  credibility by checking recency + source. Reuses the values
+                  already computed for the dark hero (no new data/imports). */}
+              {(article.lastUpdate || officialSources.length > 0) && (
+                <div className="flex flex-wrap items-center gap-2 -mt-1">
+                  {article.lastUpdate && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+                      <Clock size={13} />
+                      آخر تحديث: {article.lastUpdate}
+                    </span>
+                  )}
+                  {officialSources.length > 0 && (
+                    <a href={officialSources[0]} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 text-blue-800 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/40 transition">
+                      <ExternalLink size={13} />
+                      مصدر رسمي
+                    </a>
+                  )}
+                </div>
+              )}
+
               {/* Featured Image — natural aspect ratio + click-to-zoom
                   lightbox. Replaces the old 16:9 object-cover crop which
                   mangled tall portrait documents (official letters,
@@ -493,6 +514,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                   <div className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 p-4 rounded-xl">
                     <p className="mb-2"><strong>تنبيه هام:</strong> {safeWarning || 'المعلومات الواردة في هذا الدليل هي لأغراض استرشادية فقط وقد تتغير القوانين في أي وقت.'}</p>
                     <p>نحن نبذل قصارى جهدنا لضمان دقة المعلومات، ولكننا لا نتحمل مسؤولية أي إجراءات يتم اتخاذها بناءً على هذا المحتوى دون استشارة قانونية مختصة. يرجى دائماً مراجعة المصادر الرسمية.</p>
+                    <p className="mt-2 font-semibold text-slate-600 dark:text-slate-300">لسنا محامين ولا تابعين لأي جهة حكومية، ولا نطلب مالاً ولا نَعِد بنتيجة.</p>
                   </div>
                 </details>
               </div>

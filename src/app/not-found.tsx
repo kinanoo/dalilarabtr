@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const quickLinks = [
-    { name: 'المستشار الذكي', href: '/consultant', icon: BrainCircuit, desc: 'اسأل أي سؤال قانوني' },
+    { name: 'دليل المواقف', href: '/consultant', icon: BrainCircuit, desc: 'اعرف إجراءاتك خطوة بخطوة' },
     { name: 'الدليل الشامل', href: '/directory', icon: BookOpen, desc: 'كل المواضيع والأقسام' },
     { name: 'الأسئلة الشائعة', href: '/faq', icon: MessageCircleQuestion, desc: 'أكثر من 600 سؤال وجواب' },
     { name: 'دليل الأكواد', href: '/codes', icon: Shield, desc: 'أكواد الأمنيات التركية' },

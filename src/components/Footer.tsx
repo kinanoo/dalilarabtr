@@ -75,7 +75,7 @@ export default function Footer() {
                 )) : (
                   // Default Fallback
                   <>
-                    <li key="f1"><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🤖 المستشار الذكي</Link></li>
+                    <li key="f1"><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🧭 دليل المواقف</Link></li>
                     <li key="f2"><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🧮 حاسبة منع الدخول</Link></li>
                     <li key="f3"><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🛡️ فحص الأكواد الأمنية</Link></li>
                     <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🆔 فحص قيد الكملك</Link></li>
@@ -96,7 +96,7 @@ export default function Footer() {
                   تحتاج مساعدة خاصة؟
                 </h3>
                 <p className="text-sm text-slate-300 mb-4 leading-relaxed">
-                  المستشار الذكي يحلّل وضعك القانوني ويعطيك الحلّ فوراً — مجاناً.
+                  دليل المواقف يساعدك على تحديد إجراءاتك القانونية خطوة بخطوة — مجاناً.
                 </p>
                 <Link
                   href="/consultant"

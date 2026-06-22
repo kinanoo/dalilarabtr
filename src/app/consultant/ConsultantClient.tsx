@@ -13,7 +13,6 @@ import ToolSchema from '@/components/ToolSchema';
 import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import BookmarkButton from '@/components/BookmarkButton';
-import CommentsClient from '@/components/comments/CommentsClient';
 import UniversalComments from '@/components/community/UniversalComments';
 
 
@@ -315,8 +314,8 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
         <PageHero
           title={
             <>
-              المستشار{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الشامل</span>
+              دليل{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">المواقف</span>
             </>
           }
           description="تشخيص دقيق لأكثر من 80 حالة قانونية وخدمية"
@@ -1171,7 +1170,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       />
                       <ShareMenu
                         title={shownResult.title}
-                        text={`تشخيص المستشار القانوني: ${shownResult.title}`}
+                        text={`نتيجة دليل المواقف: ${shownResult.title}`}
                         url={`${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id || ''}`}
                         variant="subtle"
                       />
