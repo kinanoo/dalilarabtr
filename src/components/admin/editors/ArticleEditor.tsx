@@ -163,6 +163,8 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                         value={form.image || undefined}
                         onChange={(url) => setForm({ ...form, image: url })}
                         bucket="images"
+                        maxWidth={1280}
+                        quality={0.72}
                     />
                 </div>
 

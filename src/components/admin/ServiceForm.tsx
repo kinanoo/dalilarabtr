@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Upload, Plus, Save, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import logger from '@/lib/logger';
 import { watermarkImage } from '@/lib/watermark';
+import { compressImage } from '@/lib/imageOptimize';
 import { extractErrorMessage } from '@/lib/errors';
 
 export default function ServiceForm() {
@@ -38,12 +39,14 @@ export default function ServiceForm() {
             if (imageFile) {
                 if (!supabase) throw new Error('Supabase client not initialized');
 
-                // Bake the site-attribution watermark into the file
-                // before upload. Service-provider photos are the most
-                // copy-paste-friendly content on the site (small images,
-                // simple compositions), so the protection matters even
-                // more here than for article hero images.
-                const watermarked = await watermarkImage(imageFile);
+                // Downscale + WebP first (this path used to upload the raw
+                // file — a multi-MB phone photo went to Storage as-is, heavy
+                // for the low-end-Android audience). Then bake the
+                // site-attribution watermark in. Service-provider photos are
+                // the most copy-paste-friendly content on the site, so the
+                // protection matters even more here than for article heroes.
+                const compressed = await compressImage(imageFile, 1024, 0.72);
+                const watermarked = await watermarkImage(compressed);
 
                 const fileExt = watermarked.name.split('.').pop();
                 const fileName = `${Date.now()}.${fileExt}`;

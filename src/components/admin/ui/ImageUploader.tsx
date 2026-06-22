@@ -6,45 +6,7 @@ import { getAuthClient } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
 import { watermarkImage } from '@/lib/watermark';
-
-// Compress image client-side before upload (target: small KB sizes)
-async function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<File> {
-    // Skip non-image or SVG files
-    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
-
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let { width, height } = img;
-
-            // Scale down if larger than maxWidth
-            if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d')!;
-            ctx.drawImage(img, 0, 0, width, height);
-
-            canvas.toBlob(
-                (blob) => {
-                    if (blob) {
-                        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
-                    } else {
-                        resolve(file);
-                    }
-                },
-                'image/webp',
-                quality
-            );
-        };
-        img.onerror = () => resolve(file);
-        img.src = URL.createObjectURL(file);
-    });
-}
+import { compressImage } from '@/lib/imageOptimize';
 
 interface ImageUploaderProps {
     value?: string;

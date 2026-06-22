@@ -162,6 +162,8 @@ export default function AddArticlePage() {
                             onChange={(url) => setFormData({ ...formData, image: url })}
                             bucket="public"
                             path="articles"
+                            maxWidth={1280}
+                            quality={0.72}
                         />
                     </div>
 
