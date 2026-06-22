@@ -685,12 +685,12 @@ export default async function ZoneDetailPage({ params }: Props) {
                         </div>
                     </>
                 ) : (
-                    <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-5 my-5">
-                        <p className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-1 text-center">
-                            مما يعني أنّ المنطقة غالباً <span className="underline decoration-wavy decoration-emerald-400">غير محظورة</span>
+                    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 rounded-2xl p-5 my-5">
+                        <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-200 mb-1 text-center">
+                            لم نجد سجلّ حظر مطابقاً لهذا الاسم
                         </p>
-                        <p className="text-xs sm:text-sm text-emerald-600/80 dark:text-emerald-500/80 text-center">
-                            لم نجد أي سجلّ مطابق لهذا الاسم في القاعدة الرسمية.
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 text-center leading-relaxed">
+                            قد تكون المنطقة مفتوحة، لكن قد يكون الاسم مكتوباً بشكل مختلف أو أنّ البيانات لم تُحدَّث بعد — تأكّد من الجهة الرسمية قبل أي قرار.
                         </p>
                     </div>
                 )}

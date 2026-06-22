@@ -1,5 +1,6 @@
 import { supabase, getAnonClient } from '../supabaseClient';
 import logger from '@/lib/logger';
+import { containsProfanity } from '@/lib/profanity-filter';
 
 // Reserved names that only the admin/system should use
 const RESERVED_PATTERNS = [
@@ -118,6 +119,11 @@ export async function postComment(payload: {
         return { data: null, error: { message: 'هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.' } };
     }
 
+    // Basic content moderation gate: reject obvious profanity before queuing.
+    if (containsProfanity(payload.content) || containsProfanity(payload.author_name)) {
+        return { data: null, error: { message: 'يحتوي النص على كلمات غير لائقة. يرجى تعديل التعليق.' } };
+    }
+
     // Destructure user_id out so it's not spread into insert when absent
     const { user_id, ...rest } = payload;
     // Normalize entity_id: always decode so IDs are stored consistently
@@ -126,7 +132,10 @@ export async function postComment(payload: {
         ...rest,
         entity_id: normalizedId,
         page_slug: normalizedId, // backward compat
-        status: 'approved',
+        // Enter the moderation queue. Public reads (fetchComments) only return
+        // status='approved' OR is_official, so new posts stay hidden until an
+        // admin approves them in /admin/community.
+        status: 'pending',
     };
     // Only include user_id if provided (column may not exist yet)
     if (user_id) {

@@ -237,42 +237,12 @@ export function generateWebSiteSchema() {
 // 📍 LocalBusiness Schema (اختياري)
 // ============================================
 
-/**
- * Schema للنشاط التجاري المحلي
- * مفيد إذا كان لديك مكتب فعلي
- */
-export function generateLocalBusinessSchema(options?: {
-  address?: string;
-  city?: string;
-  phone?: string;
-  openingHours?: string[];
-}) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'LegalService',
-    name: SITE_CONFIG.name,
-    description: SITE_CONFIG.slogan,
-    url: SITE_CONFIG.siteUrl,
-    telephone: options?.phone || `+${SITE_CONFIG.whatsapp}`,
-    address: options?.address ? {
-      '@type': 'PostalAddress',
-      addressLocality: options.city || 'Istanbul',
-      addressCountry: 'TR',
-      streetAddress: options.address,
-    } : undefined,
-    openingHoursSpecification: options?.openingHours?.map(hours => ({
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-      opens: '09:00',
-      closes: '18:00',
-    })),
-    priceRange: '$$',
-    areaServed: {
-      '@type': 'Country',
-      name: 'Turkey',
-    },
-  };
-}
+// NOTE: a generateLocalBusinessSchema() helper used to live here. It emitted
+// @type 'LegalService' + priceRange '$$', which would misrepresent this
+// non-profit informational guide as a paid legal-services business — a
+// factual and structured-data policy problem. It had ZERO call sites (dead
+// code), so it was removed. If a real entity schema is ever needed, use
+// generateOrganizationSchema() above (no price, correct @type).
 
 // ============================================
 // 🎯 مكون React للـ Schema

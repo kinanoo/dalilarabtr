@@ -643,16 +643,23 @@ export default function ZonesPage() {
                       )}
                     </>
                   ) : (
-                    <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-5 text-center">
-                      <div className="text-2xl mb-2">✅</div>
+                    <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-5 text-center">
+                      <div className="text-2xl mb-2">🔎</div>
                       <div className="font-bold text-slate-900 dark:text-slate-100">
-                        المحلة المطلوبة غير مضافة في قائمة المحلات المحظورة
+                        لم نجد سجلّ حظر بهذا الاسم
                       </div>
-                      <p className="mt-2 text-xs md:text-sm text-slate-600 dark:text-slate-300">
-                        بالتالي تكون متاحة ويمكنك تثبيت النفوس فيها.
+                      <p className="mt-2 text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        قد تكون المنطقة مفتوحة، لكن غياب السجل قد يعني أيضاً أنّ الاسم مكتوب بشكل مختلف
+                        (بالحروف التركية İ Ş Ç Ğ Ü Ö) أو أنّ البيانات لم تُحدَّث بعد. تأكّد من الجهة الرسمية
+                        (المختار أو إدارة الهجرة) قبل توقيع أي عقد إيجار.
                       </p>
-                      <button onClick={() => router.push(`/zones/${query}`)} className="mt-4 text-xs bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
-                        عرض الشهادة الرسمية (اضغط هنا)
+                      {data?.updatedAt && (
+                        <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                          آخر تحديث للبيانات: {data.updatedAt}
+                        </p>
+                      )}
+                      <button onClick={() => router.push(`/zones/${query}`)} className="mt-4 text-xs bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition">
+                        عرض التفاصيل والتحقق
                       </button>
                     </div>
                   )}

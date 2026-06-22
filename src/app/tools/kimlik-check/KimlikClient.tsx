@@ -22,8 +22,11 @@ export default function KimlikCheckPage() {
         if (value[0] === '0') { setResult('invalid'); return; }
 
         const digits = value.split('').map(Number);
-        const d10 = ((digits[0] + digits[2] + digits[4] + digits[6] + digits[8]) * 7 -
-            (digits[1] + digits[3] + digits[5] + digits[7])) % 10;
+        // JS `%` keeps the sign of the dividend, so (odd*7 - even) can be
+        // negative and yield a negative remainder, wrongly rejecting valid
+        // numbers. Normalise to a true non-negative modulo: ((x % 10) + 10) % 10.
+        const d10 = ((((digits[0] + digits[2] + digits[4] + digits[6] + digits[8]) * 7 -
+            (digits[1] + digits[3] + digits[5] + digits[7])) % 10) + 10) % 10;
         const d11 = (digits.slice(0, 10).reduce((a, b) => a + b, 0)) % 10;
 
         setResult(digits[9] === d10 && digits[10] === d11 ? 'valid' : 'invalid');

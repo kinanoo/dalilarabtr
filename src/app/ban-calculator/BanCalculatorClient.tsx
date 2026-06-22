@@ -94,6 +94,18 @@ export default function BanCalculator() {
           </span>
         </div>
 
+        {/* Honest disclaimer — this is an estimate, NOT a legal ruling. Ban
+            rules and codes change and depend on the individual case. */}
+        <div className="max-w-3xl mx-auto mb-6 flex items-start gap-3 rounded-2xl border border-amber-300 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-4">
+          <AlertTriangle size={20} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+            هذه الأداة تعطي <strong>تقديراً مبدئياً للاسترشاد فقط</strong>، وليست قراراً قانونياً.
+            قواعد المنع وأكوادها قد تتغيّر أو تختلف حسب الحالة، والمعلومة قد تكون قديمة؛
+            المرجع النهائي هو الجهة الرسمية. تحقّق من{' '}
+            <a href="https://www.goc.gov.tr" target="_blank" rel="noopener noreferrer" className="font-bold underline hover:text-amber-700 dark:hover:text-amber-300">دائرة الهجرة (Göç İdaresi)</a>.
+          </p>
+        </div>
+
         {/* Compact Card — accent stripe + gradient surface */}
         <div className="group relative overflow-hidden bg-gradient-to-br from-white to-indigo-50/40 dark:from-slate-900 dark:to-indigo-950/20 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-indigo-500/5 border border-slate-300 dark:border-slate-800 min-h-[550px] flex flex-col">
           {/* Accent stripe — right edge in RTL */}
@@ -189,7 +201,7 @@ export default function BanCalculator() {
                   {/* Badge — accent stripe + premium shadow */}
                   <div className={`relative overflow-hidden shrink-0 ${result.color} text-white py-5 px-8 rounded-2xl shadow-xl text-center md:text-right min-w-[240px]`}>
                     <span className="absolute top-0 right-0 h-full w-1.5 bg-white/30" />
-                    <p className="text-white/85 text-[10px] font-black mb-1 uppercase tracking-[0.2em]">قرار المنع المتوقع</p>
+                    <p className="text-white/85 text-[10px] font-black mb-1 uppercase tracking-[0.2em]">تقدير مبدئي (غير رسمي)</p>
                     <h2 className="text-2xl md:text-3xl font-black tracking-tight">{result.text}</h2>
                   </div>
 
@@ -198,7 +210,7 @@ export default function BanCalculator() {
                     <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
                     <AlertTriangle className="text-amber-500 flex-shrink-0 mt-1" size={24} />
                     <div>
-                      <h4 className="font-black text-slate-800 dark:text-slate-200 text-sm mb-1">تفاصيل القانون:</h4>
+                      <h4 className="font-black text-slate-800 dark:text-slate-200 text-sm mb-1">ملاحظات تقديرية:</h4>
                       <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
                         {result.desc}
                       </p>

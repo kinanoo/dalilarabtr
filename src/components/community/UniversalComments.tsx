@@ -458,7 +458,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
 
     const handleSubmitReply = async (parentId: string, replyContent: string) => {
         setSubmittingReply(true);
-        const { data: newReply, error } = await postComment({
+        const { error } = await postComment({
             entity_type: entityType,
             entity_id: entityId,
             author_name: name.trim() || 'مجهول',
@@ -473,30 +473,12 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             return;
         }
 
-        toast.success('تم نشر ردك!');
+        // New replies enter the moderation queue (status: 'pending') and stay
+        // hidden until an admin approves them, so we do NOT optimistically
+        // splice the reply into the visible tree. Notification handled by the
+        // DB trigger (notify_on_new_comment).
+        toast.success('تم إرسال ردك وسيظهر بعد مراجعته.');
         setActiveReplyId(null);
-
-        // Reply notification now handled by DB trigger (notify_on_new_comment)
-
-        const replyObj: Comment = {
-            id: newReply?.id || crypto.randomUUID(),
-            entity_type: entityType,
-            entity_id: entityId,
-            author_name: name.trim() || 'مجهول',
-            content: replyContent,
-            is_correction: false,
-            is_official: false,
-            status: 'approved',
-            created_at: new Date().toISOString(),
-            parent_id: parentId,
-            user_id: currentUserId,
-            likes_count: 0,
-            replies: [],
-        };
-
-        setComments((prev) =>
-            prev.map((c) => c.id === parentId ? { ...c, replies: [...(c.replies || []), replyObj] } : c)
-        );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -509,7 +491,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         }
 
         setSubmitting(true);
-        const { data: newData, error } = await postComment({
+        const { error } = await postComment({
             entity_type: entityType,
             entity_id: entityId,
             author_name: name.trim() || 'مجهول',
@@ -524,22 +506,10 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             return;
         }
 
-        toast.success('تم نشر تعليقك بنجاح!');
-        const newComment: Comment = {
-            id: newData?.id || crypto.randomUUID(),
-            entity_type: entityType,
-            entity_id: entityId,
-            author_name: name.trim() || 'مجهول',
-            content: content,
-            is_correction: isCorrection,
-            is_official: false,
-            status: 'approved',
-            created_at: new Date().toISOString(),
-            user_id: currentUserId,
-            likes_count: 0,
-            replies: [],
-        };
-        setComments((prev) => [newComment, ...prev]);
+        // Comment is queued for moderation (status: 'pending') and stays hidden
+        // until an admin approves it in /admin/community, so we do NOT
+        // optimistically prepend it to the visible list.
+        toast.success('تم إرسال تعليقك وسيظهر بعد مراجعته.');
         setContent('');
         setIsCorrection(false);
     };

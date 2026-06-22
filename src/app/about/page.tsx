@@ -45,7 +45,7 @@ export default async function AboutPage() {
 
             <PageHero
                 title="من نحن؟"
-                description="قصتنا، رسالتنا، ولماذا نحن دليلك القانوني الأول في تركيا"
+                description="قصتنا، رسالتنا، ولماذا نسعى أن نكون دليلك القانوني الموثوق في تركيا"
                 icon={<Users className="w-12 h-12 text-emerald-400" />}
             />
 
@@ -105,9 +105,9 @@ export default async function AboutPage() {
                             <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                 <BadgeCheck size={32} />
                             </div>
-                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">تحديث يومي</h3>
+                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">تحديث دوري</h3>
                             <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                                فريقنا يراقب التعديلات القانونية يومياً ويحدث المقالات والأدوات لضمان دقة المعلومات 100%.
+                                نتابع التعديلات القانونية ونحدّث المقالات والأدوات بشكل دوري، ونقارن معلوماتنا بالمصادر الرسمية (الجريدة الرسمية والدوائر الحكومية).
                             </p>
                         </div>
 
@@ -116,7 +116,7 @@ export default async function AboutPage() {
                             <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                 <ShieldCheck size={32} />
                             </div>
-                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">خصوصية تامة</h3>
+                            <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">خصوصية بدون تخزين</h3>
                             <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                                 نحترم خصوصيتك. أدواتنا (مثل فحص الكود) لا تخزن بياناتك الشخصية أبداً.
                             </p>

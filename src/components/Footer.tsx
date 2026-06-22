@@ -39,7 +39,7 @@ export default function Footer() {
                 </Link>
               </h3>
               <p className="text-sm leading-relaxed mb-6 text-slate-400">
-                {SITE_CONFIG.slogan}. منصتك الأولى للمعلومات القانونية والخدمية في تركيا.
+                {SITE_CONFIG.slogan}. منصتك الموثوقة للمعلومات القانونية والخدمية في تركيا.
               </p>
               <SocialLinks />
             </div>
@@ -112,11 +112,11 @@ export default function Footer() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 py-8 border-t border-slate-800/60">
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span className="font-bold text-sm text-slate-200">آخر مراجعة: يونيو 2026</span>
+              <span className="font-bold text-sm text-slate-200">مراجعة دورية للمحتوى</span>
             </div>
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
               <Shield size={18} className="text-emerald-400 shrink-0" />
-              <span className="font-bold text-sm text-slate-200">خصوصية مشفّرة 100٪</span>
+              <span className="font-bold text-sm text-slate-200">اتصال مشفّر (HTTPS)</span>
             </div>
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
               <Scale size={18} className="text-emerald-400 shrink-0" />

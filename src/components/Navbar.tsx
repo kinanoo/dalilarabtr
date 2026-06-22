@@ -450,7 +450,7 @@ export default function Navbar() {
                 <div className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {SITE_CONFIG.name}
                 </div>
-                <p className="text-[9px] text-slate-500 font-bold">دليلك الأول في تركيا</p>
+                <p className="text-[9px] text-slate-500 font-bold">دليلك الموثوق في تركيا</p>
               </div>
             </Link>
           </div>
