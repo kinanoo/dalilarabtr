@@ -17,11 +17,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
   return [
-    // Sitemap index entries pointing to sub-sitemaps
-    {
-      url: `${baseUrl}/server-sitemap-index.xml`,
-      lastModified: now,
-    },
+    // NOTE: do NOT list /server-sitemap-index.xml here. This file is a
+    // <urlset> of real pages; the index is a <sitemapindex>. Listing the
+    // index as a page URL created a circular reference
+    // (index → sitemap.xml → index), which confuses crawlers. The index
+    // already references THIS sitemap as one of its children.
     // Main pages with highest priority
     {
       url: baseUrl,
