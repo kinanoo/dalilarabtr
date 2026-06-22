@@ -33,6 +33,7 @@ const tajawal = Tajawal({
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import LatinDigits from "@/components/LatinDigits";
+import ChunkReloadGuard from "@/components/ChunkReloadGuard";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -240,6 +241,9 @@ export default function RootLayout({
             in from articles, DB content, or hardcoded JSX strings becomes
             0-9 in the rendered DOM. Site-wide guarantee. */}
         <LatinDigits />
+        {/* Self-heals the "click → stuck on loading skeleton" symptom after a
+            deploy: hard-reloads once when a stale chunk fails to load. */}
+        <ChunkReloadGuard />
         <ThemeProviderWrapper>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
