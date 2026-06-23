@@ -11,15 +11,20 @@ import type { NextConfig } from "next";
 // static and stays here.
 
 // Shared security headers (applied to all routes)
+//
+// NOTE: X-Frame-Options / Cross-Origin-Opener-Policy / Cross-Origin-Resource-Policy
+// were intentionally REMOVED from the global set. Those three tell the browser
+// "no other origin may frame, share a browsing context with, or load this
+// resource" — which also blocks legitimate external readers (e.g. the Claude
+// browser extension trying to access the page). They were added during the
+// Cloudflare migration and are the most likely cause of "Can't access this page".
+// Clickjacking protection is re-applied ONLY to /admin below, where it matters.
 const securityHeaders = [
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()' },
   { key: 'X-XSS-Protection', value: '1; mode=block' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
 ];
 
 const nextConfig: NextConfig = {
@@ -52,6 +57,10 @@ const nextConfig: NextConfig = {
         source: '/admin/:path*',
         headers: [
           // CSP (incl. 'unsafe-eval' for Monaco) is emitted per-request in middleware.ts.
+          // Clickjacking protection lives HERE (not globally) so public pages stay
+          // embeddable by external tools while the sensitive admin area is locked down.
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },

@@ -54,7 +54,9 @@ function buildCsp(nonce: string, isAdmin: boolean): string {
         "font-src 'self' data: https://vercel.live",
         "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
         "frame-src 'self' https://tckimlik.nvi.gov.tr https://vercel.live",
-        "frame-ancestors 'self'",
+        // Public pages stay framable by external tools (e.g. the Claude browser
+        // extension); the admin area forbids framing to prevent clickjacking.
+        isAdmin ? "frame-ancestors 'self'" : "frame-ancestors *",
         "base-uri 'self'",
         "form-action 'self'",
         // Block legacy plug-ins (Flash, Java) outright.
