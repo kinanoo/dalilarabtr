@@ -216,8 +216,12 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
             // readable bits (message + details + hint + code) so the toast
             // actually points at the cause.
             toast.error('خطأ في الحفظ: ' + extractErrorMessage(err));
-            // eslint-disable-next-line no-console
-            console.error('[articles save] raw error:', err);
+            // Dev-only raw dump to help debug save failures locally; the admin
+            // toast above is the production-facing message.
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.error('[articles save] raw error:', err);
+            }
         } finally {
             setSaving(false);
         }

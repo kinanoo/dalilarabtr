@@ -28,12 +28,23 @@ export const runtime = 'nodejs';
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
+// Track whether push is actually usable. setVapidDetails throws on malformed
+// keys (its error never echoes the key value), so guard it and treat any
+// failure as "push not configured" rather than crashing module load.
+let vapidConfigured = false;
 if (vapidPublicKey && vapidPrivateKey) {
-    webpush.setVapidDetails(
-        `mailto:${process.env.ADMIN_EMAIL || 'support@dalilarab.com'}`,
-        vapidPublicKey,
-        vapidPrivateKey
-    );
+    try {
+        webpush.setVapidDetails(
+            `mailto:${process.env.ADMIN_EMAIL || 'support@dalilarab.com'}`,
+            vapidPublicKey,
+            vapidPrivateKey
+        );
+        vapidConfigured = true;
+    } catch {
+        // Do NOT log the error object — it can contain key material. A bare
+        // marker is enough; the broadcast endpoint reports this cleanly below.
+        logger.error('VAPID configuration failed — push sending disabled');
+    }
 }
 
 // In-memory per-admin rate limit: max 10 push broadcasts per hour, per admin user.
@@ -165,6 +176,22 @@ export async function POST(request: Request) {
         })();
 
         // ── 2. Send push notifications to subscribed devices ─────────
+        // If VAPID isn't configured, skip the send entirely. The in-site
+        // notification above is already saved, so the bell still updates; we
+        // just report honestly that no device pushes went out instead of
+        // returning success while every send silently fails.
+        if (!vapidConfigured) {
+            return NextResponse.json({
+                success: true,
+                pushSent: false,
+                reason: 'push_not_configured',
+                successCount: 0,
+                failCount: 0,
+                cleaned: 0,
+                totalSubscribers: 0,
+            });
+        }
+
         const { data: subscriptions, error: subError } = await serviceClient
             .from('push_subscriptions')
             .select('endpoint, p256dh, auth');
