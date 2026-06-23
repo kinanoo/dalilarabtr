@@ -1,37 +1,14 @@
 import type { NextConfig } from "next";
 
-// Shared CSP directives (reused for global + admin)
-const cspBase = [
-  "default-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://vercel.live",
-  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com https://vercel.live https://vercel.com https://*.vercel.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
-  "font-src 'self' data: https://vercel.live",
-  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
-  "frame-src 'self' https://tckimlik.nvi.gov.tr https://vercel.live",
-  "frame-ancestors 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  // Block legacy plug-ins (Flash, Java) outright — closes a class of XSS
-  // pivots that 'unsafe-inline' can't.
-  "object-src 'none'",
-  // Web workers and the service worker only ever come from our own origin
-  // (or a blob created by us). Keeps an attacker from registering a hostile
-  // worker via an injected script string.
-  "worker-src 'self' blob:",
-  "manifest-src 'self'",
-];
-
-// Global: NO unsafe-eval (public pages don't need it)
-const cspGlobal = [
-  ...cspBase,
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
-].join('; ');
-
-// Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
-const cspAdmin = [
-  ...cspBase,
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
-].join('; ');
+// NOTE: Content-Security-Policy is NOT defined here anymore.
+//
+// It moved to middleware.ts so each request gets a fresh per-request nonce
+// ('nonce-…' + 'strict-dynamic') instead of the blanket 'unsafe-inline' that
+// used to live in this file. A static header can't carry a per-request nonce,
+// so the policy must be emitted at request time. See middleware.ts.
+//
+// Everything below (X-Frame-Options, HSTS, no-cache on /admin, etc.) is still
+// static and stays here.
 
 // Shared security headers (applied to all routes)
 const securityHeaders = [
@@ -52,11 +29,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Global security headers (catch-all — applied first, overridden by specific rules below)
+        // Global security headers (catch-all — applied first, overridden by specific rules below).
+        // CSP is intentionally absent here — middleware.ts emits a per-request nonce policy.
         source: '/(.*)',
         headers: [
           ...securityHeaders,
-          { key: 'Content-Security-Policy', value: cspGlobal },
         ],
       },
       {
@@ -74,7 +51,7 @@ const nextConfig: NextConfig = {
         // appear in Google results even if a link leaks).
         source: '/admin/:path*',
         headers: [
-          { key: 'Content-Security-Policy', value: cspAdmin },
+          // CSP (incl. 'unsafe-eval' for Monaco) is emitted per-request in middleware.ts.
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },

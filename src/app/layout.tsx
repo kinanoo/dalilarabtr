@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from 'react';
+import { headers } from 'next/headers';
 import dynamic from 'next/dynamic';
 import "./globals.css";
 import "../styles/animations.css";
@@ -144,13 +145,17 @@ export const metadata: Metadata = {
 // ============================================
 // 🏠 Layout الرئيسي
 // ============================================
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // Google Analytics ID from environment variable
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
+  // Per-request CSP nonce set by middleware.ts. Stamped onto every inline
+  // <script> we render so it passes the strict (no 'unsafe-inline') policy.
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning className={`${cairo.variable} ${tajawal.variable}`}>
@@ -182,6 +187,7 @@ export default function RootLayout({
          * helper preamble (tracked in their issues).
          */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html:
               'if(typeof globalThis.__name!=="function"){globalThis.__name=function(t,v){try{Object.defineProperty(t,"name",{value:v,configurable:true})}catch(e){}return t}}',
@@ -224,14 +230,16 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://api.aladhan.com" />
 
         {/* Google Analytics */}
-        {GA_ID && <GoogleAnalytics />}
+        {GA_ID && <GoogleAnalytics nonce={nonce} />}
       </head>
       <body suppressHydrationWarning className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
         {/* Web Vitals — reports LCP, CLS, INP to Google Analytics */}
         {GA_ID && <WebVitals />}
-        {/* Structured Data — in body to prevent Next.js head duplication */}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
+        {/* Structured Data — in body to prevent Next.js head duplication.
+            type="application/ld+json" is a data block (not executed), so it
+            isn't governed by script-src; the nonce is added for consistency. */}
+        <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
+        <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
         {/* Skip to main content for keyboard/screen reader users */}
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-600 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
           تخطي إلى المحتوى الرئيسي
@@ -244,7 +252,7 @@ export default function RootLayout({
         {/* Self-heals the "click → stuck on loading skeleton" symptom after a
             deploy: hard-reloads once when a stale chunk fails to load. */}
         <ChunkReloadGuard />
-        <ThemeProviderWrapper>
+        <ThemeProviderWrapper nonce={nonce}>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
             <div className="relative z-10">

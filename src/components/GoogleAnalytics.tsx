@@ -6,7 +6,7 @@ import Script from 'next/script';
  * مكون Google Analytics
  * يتتبع الزيارات والاستخدام بدون التأثير على الأداء
  */
-export function GoogleAnalytics() {
+export function GoogleAnalytics({ nonce }: { nonce?: string }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   // إذا لم يتم تعيين الـ ID، لا نحمّل Analytics
@@ -20,10 +20,12 @@ export function GoogleAnalytics() {
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
         strategy="lazyOnload"
+        nonce={nonce}
       />
       <Script
         id="google-analytics"
         strategy="lazyOnload"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
