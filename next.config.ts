@@ -8,8 +8,7 @@ const cspBase = [
   "font-src 'self' data: https://vercel.live",
   "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "frame-src 'self' https://tckimlik.nvi.gov.tr https://vercel.live",
-  // NOTE: frame-ancestors is intentionally NOT in the shared base — it differs
-  // per scope (permissive on public pages, strict on /admin). See cspGlobal/cspAdmin.
+  "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   // Block legacy plug-ins (Flash, Java) outright — closes a class of XSS
@@ -22,38 +21,28 @@ const cspBase = [
   "manifest-src 'self'",
 ];
 
-// Global: NO unsafe-eval (public pages don't need it).
-// frame-ancestors * — public pages may be framed/read by external tools
-// (e.g. the Claude browser extension). No sensitive actions live on public
-// pages; the admin area below stays locked to 'self'.
+// Global: NO unsafe-eval (public pages don't need it)
 const cspGlobal = [
   ...cspBase,
-  "frame-ancestors *",
   "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
 ].join('; ');
 
-// Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor).
-// frame-ancestors 'self' — the sensitive admin area must never be framed.
+// Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
 const cspAdmin = [
   ...cspBase,
-  "frame-ancestors 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
 ].join('; ');
 
-// Shared security headers (applied to all routes).
-//
-// X-Frame-Options / Cross-Origin-Opener-Policy / Cross-Origin-Resource-Policy
-// are intentionally NOT global. Together they tell the browser "no other origin
-// may frame, share a browsing context with, or load this page" — which also
-// blocks legitimate external readers (e.g. the Claude browser extension) and is
-// the most likely cause of "Can't access this page" after the Cloudflare move.
-// Clickjacking/isolation protection is re-applied to /admin only, below.
+// Shared security headers (applied to all routes)
 const securityHeaders = [
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()' },
   { key: 'X-XSS-Protection', value: '1; mode=block' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
 ];
 
 const nextConfig: NextConfig = {
@@ -86,10 +75,6 @@ const nextConfig: NextConfig = {
         source: '/admin/:path*',
         headers: [
           { key: 'Content-Security-Policy', value: cspAdmin },
-          // Clickjacking + browsing-context isolation live HERE (not globally),
-          // so public pages stay embeddable while the admin area is locked down.
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
