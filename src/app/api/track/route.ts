@@ -87,13 +87,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, filtered: 'bot' });
     }
 
-    // ─── Vercel geolocation headers ─────────────────────────────────
-    const countryCode = req.headers.get('x-vercel-ip-country') || '';
-    const city = req.headers.get('x-vercel-ip-city') || '';
-    const region = req.headers.get('x-vercel-ip-country-region') || '';
+    // ─── Geolocation headers (Cloudflare) ───────────────────────────
+    // The site runs on Cloudflare Workers now, so the old x-vercel-ip-* headers
+    // are never present and server-side geo silently broke. cf-ipcountry is
+    // always available on Cloudflare. City/region require the "Add visitor
+    // location headers" Managed Transform to be enabled once in the dashboard
+    // (Rules → Transform Rules → Managed Transforms → cf-ipcity / cf-region).
+    // The x-vercel-ip-* names are kept as a harmless fallback for other hosts.
+    const countryCode =
+      req.headers.get('cf-ipcountry') ||
+      req.headers.get('x-vercel-ip-country') ||
+      '';
+    const city =
+      req.headers.get('cf-ipcity') ||
+      req.headers.get('x-vercel-ip-city') ||
+      '';
+    const region =
+      req.headers.get('cf-region') ||
+      req.headers.get('cf-region-code') ||
+      req.headers.get('x-vercel-ip-country-region') ||
+      '';
 
     const ip_country = COUNTRY_NAMES[countryCode] || countryCode || null;
-    const ip_city = city ? decodeURIComponent(city) : null;
+    // Cloudflare sends plain text; Vercel sent URL-encoded. Decode defensively.
+    let ip_city: string | null = null;
+    if (city) {
+      try { ip_city = decodeURIComponent(city); } catch { ip_city = city; }
+    }
 
     // ─── Merge server geo into client meta ──────────────────────────
     const enrichedMeta = {

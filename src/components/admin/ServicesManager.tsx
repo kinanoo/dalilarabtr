@@ -6,6 +6,8 @@ import { Plus, Search, Trash2, Edit, Save, X, Loader2, MapPin, Phone, Briefcase,
 import { toast } from 'sonner';
 import Image from 'next/image';
 import logger from '@/lib/logger';
+import { watermarkImage } from '@/lib/watermark';
+import { compressImage } from '@/lib/imageOptimize';
 
 // Types
 type ServiceProvider = {
@@ -128,13 +130,17 @@ export default function ServicesManager() {
         try {
             let imageUrl = formData.image;
 
-            // Upload Image if changed
+            // Upload Image if changed.
+            // Compress + watermark BEFORE upload — same pipeline as ServiceForm,
+            // so this edit path no longer ships raw multi-MB phone photos to the
+            // low-end-mobile audience (next.config has unoptimized images).
             if (imageFile) {
-                const fileExt = imageFile.name.split('.').pop();
-                const fileName = `${Date.now()}.${fileExt}`;
+                const compressed = await compressImage(imageFile, 1024, 0.72);
+                const watermarked = await watermarkImage(compressed);
+                const fileName = `${Date.now()}.webp`;
                 const { error: uploadError } = await supabase.storage
                     .from('providers')
-                    .upload(fileName, imageFile);
+                    .upload(fileName, watermarked);
 
                 if (uploadError) throw uploadError;
 

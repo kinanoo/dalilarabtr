@@ -46,8 +46,9 @@ export class ErrorBoundary extends React.Component<Props, State> {
             </div>
             
             <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-3">حدث خطأ</h1>
-            <p className="text-slate-600 dark:text-slate-300 mb-2">عذراً، حدثت مشكلة غير متوقعة</p>
-            {this.state.error && (
+            <p className="text-slate-600 dark:text-slate-300 mb-6">عذراً، حدثت مشكلة غير متوقعة. حاول تحديث الصفحة بعد قليل.</p>
+            {/* Raw error text is for developers only — never shown to visitors in production. */}
+            {process.env.NODE_ENV !== 'production' && this.state.error && (
               <p className="text-xs text-slate-500 dark:text-slate-300 mb-6 bg-slate-100 dark:bg-slate-800 p-3 rounded-lg overflow-auto max-h-20">
                 {this.state.error.message}
               </p>
@@ -109,8 +110,13 @@ export function ErrorBoundaryWrapper({ children }: { children: ReactNode }) {
           </div>
           
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-3">حدث خطأ</h1>
-          <p className="text-slate-600 dark:text-slate-300 mb-6">{error.message}</p>
-          
+          {/* Friendly message for visitors; raw error text only in development. */}
+          <p className="text-slate-600 dark:text-slate-300 mb-6">
+            {process.env.NODE_ENV !== 'production'
+              ? error.message
+              : 'عذراً، حدثت مشكلة غير متوقعة. حاول تحديث الصفحة بعد قليل.'}
+          </p>
+
           <button
             onClick={() => {
               setHasError(false);
