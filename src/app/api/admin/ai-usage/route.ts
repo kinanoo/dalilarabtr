@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import logger from '@/lib/logger';
 
 async function verifyAdmin(request: NextRequest) {
   const cookieStore = await cookies();
@@ -128,7 +129,10 @@ export async function GET(request: NextRequest) {
       },
       recentQueries: recentQueries || [],
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    // Log the real error server-side; return a generic message so internal
+    // details (SQL errors, "service role key required", etc.) never reach the client.
+    logger.error('ai-usage stats failed:', err);
+    return NextResponse.json({ error: 'حدث خطأ أثناء جلب الإحصائيات' }, { status: 500 });
   }
 }
