@@ -6,6 +6,7 @@ import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight, Clock, Link2
 import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
+import CopyAnswerButton from '@/components/CopyAnswerButton';
 import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
@@ -94,6 +95,18 @@ export default async function CodeDetailPage({ params }: Props) {
         }
     };
 
+    const codeUrl = `${SITE_CONFIG.siteUrl}/codes/${encodeURIComponent(item.code)}`;
+    // Pre-formatted, attributed answer block users paste into WhatsApp groups.
+    const answerText = [
+        `🔒 الكود ${item.code} — ${item.title}`,
+        '',
+        item.description,
+        ...(item.how_to_remove ? ['', '✅ كيف ترفعه؟', item.how_to_remove] : []),
+        '',
+        '📋 المصدر: دليل العرب والسوريين في تركيا',
+        `🔗 ${codeUrl}`,
+    ].join('\n');
+
     return (
         <main className="min-h-screen bg-white dark:bg-slate-950">
             <ToolSchema tool="security-codes" />
@@ -140,6 +153,12 @@ export default async function CodeDetailPage({ params }: Props) {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* انسخ الإجابة — WhatsApp growth CTA */}
+                <div className="mt-6 flex flex-col items-center gap-2">
+                    <CopyAnswerButton text={answerText} className="w-full sm:w-auto" />
+                    <span className="text-xs text-slate-400 dark:text-slate-500">جاوب أصدقاءك في مجموعات واتساب فوراً — انسخ والصق</span>
                 </div>
 
                 {/* How to Remove Section */}
