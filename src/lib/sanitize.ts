@@ -246,6 +246,40 @@ export function sanitizeSearchQuery(query: string): string {
  */
 import sanitizeHtmlLib from 'sanitize-html';
 
+// A permissive-but-safe CSS value matcher. Allows the characters real layout +
+// colour values use (digits, units, %, #hex, rgb()/rgba()/linear-gradient(),
+// spaces, commas, dots, hyphens) while a negative look-ahead rejects the only
+// values that are actually dangerous inside a style attribute: url(...) (data
+// exfiltration / legacy `javascript:` backgrounds), expression(...) (old IE
+// script), javascript:, @import, behaviour:, and stray angle brackets.
+const SAFE_CSS_VALUE = /^(?!.*(?:url\(|expression|javascript:|@import|behaviou?r:|<|>))[#0-9a-z%.,()/\s_+-]+$/i;
+
+// Layout / visual CSS properties that article + page bodies legitimately use:
+// designed info-boxes (padding / border / background gradients), tables, and the
+// step-by-step image carousel (flex + scroll-snap). Without these whitelisted,
+// sanitize-html silently strips them and every styled box renders as bare text —
+// a site-wide visual regression. Each maps to SAFE_CSS_VALUE.
+const SAFE_LAYOUT_PROPS = [
+    'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+    'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+    'width', 'max-width', 'min-width', 'height', 'max-height', 'min-height', 'box-sizing',
+    'display', 'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-basis', 'flex-grow', 'flex-shrink',
+    'gap', 'row-gap', 'column-gap', 'align-items', 'align-self', 'justify-content', 'justify-items', 'order',
+    'border', 'border-top', 'border-right', 'border-bottom', 'border-left',
+    'border-width', 'border-style', 'border-color',
+    'border-radius', 'border-top-left-radius', 'border-top-right-radius',
+    'border-bottom-left-radius', 'border-bottom-right-radius',
+    'background', 'background-image', 'background-position', 'background-size', 'background-repeat',
+    'overflow', 'overflow-x', 'overflow-y', 'scroll-snap-type', 'scroll-snap-align', '-webkit-overflow-scrolling',
+    'position', 'top', 'right', 'bottom', 'left', 'inset', 'inset-inline-start', 'inset-inline-end', 'z-index',
+    'box-shadow', 'opacity', 'line-height', 'font-size', 'font-style', 'letter-spacing',
+    'white-space', 'word-break', 'overflow-wrap', 'text-overflow', 'list-style', 'list-style-type',
+    'border-collapse', 'border-spacing', 'vertical-align', 'table-layout', 'caption-side',
+];
+const SAFE_LAYOUT_STYLES: Record<string, RegExp[]> = Object.fromEntries(
+    SAFE_LAYOUT_PROPS.map((p) => [p, [SAFE_CSS_VALUE]]),
+);
+
 const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
     allowedTags: [
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -289,6 +323,9 @@ const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
             'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*\d+%?(\s*,\s*\d+%?){2}\s*\)$/, /^[a-z]+$/i],
             'font-weight': [/^(normal|bold|bolder|lighter|\d{3})$/],
             'text-decoration': [/^(underline|line-through|none|overline)$/],
+            // Safe layout + visual properties (designed boxes, tables, the
+            // image carousel) — values constrained by SAFE_CSS_VALUE.
+            ...SAFE_LAYOUT_STYLES,
         },
     },
     transformTags: {
