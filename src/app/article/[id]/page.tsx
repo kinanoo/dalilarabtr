@@ -161,6 +161,9 @@ function buildJsonLd(args: {
   // (numbered carousel in Google), so articles with 3+ ordered steps benefit
   // from a separate How-To entity alongside the Article one.
   steps?: string[];
+  /** Optional per-step image URLs (zipped by index with `steps`). Google's
+      HowTo rich result shows a step image carousel when present. */
+  stepImages?: string[];
   totalTimeIso?: string;
 }) {
   const wordCount = args.articleBody ? calculateWordCount(args.articleBody) : 0;
@@ -248,6 +251,7 @@ function buildJsonLd(args: {
       name: text.length > 80 ? text.slice(0, 80) + '…' : text,
       text,
       url: `${args.url}#step-${i + 1}`,
+      ...(args.stepImages?.[i] ? { image: args.stepImages[i] } : {}),
     })),
   } : null;
 
@@ -358,6 +362,12 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     explicit: article.seoKeywords,
   });
 
+  // Per-step images for the HowTo rich result: the in-order <img> URLs from
+  // the body (illustrated step guides put one screenshot per step).
+  const stepImages = (article.details.match(/<img[^>]+src=["']([^"']+)["']/gi) || [])
+    .map((m: string) => (m.match(/src=["']([^"']+)["']/i) || [])[1])
+    .filter((s: string | undefined): s is string => Boolean(s));
+
   const jsonLd = buildJsonLd({
     slug: params.id,
     title: article.seoTitle?.trim() || article.title,
@@ -373,6 +383,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     keywords,
     image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
     steps: article.steps,
+    stepImages,
   });
 
   // Preload the article hero image — it's almost always the LCP element.
