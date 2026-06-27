@@ -207,6 +207,10 @@ html.dark .tiptap hr, html.dark .prose-content hr {
   display: block;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+/* Content images open a full-screen swipeable gallery on click
+   (BodyImageGallery, mounted site-wide in the root layout). */
+.prose-content img { cursor: zoom-in; transition: filter 0.2s, transform 0.2s; }
+.prose-content img:hover { filter: brightness(1.04); }
 
 /* Code */
 .tiptap code, .prose-content code {

@@ -1,27 +1,22 @@
 'use client';
 
 /**
- * BodyImageGallery — turns every image inside the article body into a
- * world-class, swipeable photo gallery.
+ * BodyImageGallery — a single, site-wide, world-class image lightbox.
  *
- * The article body is sanitized HTML injected via dangerouslySetInnerHTML,
- * so we can't render React per-image. Instead this component mounts once,
- * finds all <img> inside the body container, makes them clickable
- * (cursor: zoom-in), and on click opens a single full-screen lightbox that
- * holds the WHOLE set — the reader flips between images with:
+ * Mounted ONCE in the root layout. It listens (event-delegation) for clicks
+ * on any content image — every <img> inside a `.prose-content` container
+ * (article bodies, service descriptions, static pages, anything rendered
+ * through HtmlContent). On click it gathers all sibling images in that same
+ * content block and opens a full-screen lightbox holding the whole set.
  *
- *   - arrows (on-screen, RTL-aware: right = previous, left = next)
- *   - keyboard (← → and Esc)
- *   - touch swipe (mobile)
- *   - a thumbnail strip at the bottom (jump to any image)
+ * Navigation: on-screen arrows · touch swipe · ← → keys · thumbnail strip.
+ * Plus a live LTR counter (never reversed on the RTL page), the caption
+ * (from <figcaption> or alt), a download button, Esc / backdrop to close,
+ * body-scroll lock, and portal mounting above every stacking context.
  *
- * Plus a live counter (1 / N, LTR-isolated so it never renders reversed in
- * the RTL page), the image caption (pulled from <figcaption> or alt), a
- * download button, and backdrop / Esc to close. Body scroll locks while open
- * and the lightbox is portal-mounted to <body> so it sits above everything.
- *
- * Site-wide: drop <BodyImageGallery /> after any sanitized-HTML body that
- * carries the matching `bodySelector` (defaults to [data-article-body]).
+ * Images that are links (<a><img>) or tiny icons (<80px) are left alone.
+ * The article hero image keeps its own dedicated zoom (it lives outside
+ * .prose-content), so there is no double-handling.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -36,54 +31,46 @@ interface Slide {
 
 function captionFor(img: HTMLImageElement): string {
     const cap = img.closest('figure')?.querySelector('figcaption');
-    const text = cap?.textContent?.trim();
-    if (text) return text;
-    return img.getAttribute('alt')?.trim() || '';
+    return cap?.textContent?.trim() || img.getAttribute('alt')?.trim() || '';
 }
 
-export default function BodyImageGallery({
-    bodySelector = '[data-article-body]',
-}: {
-    bodySelector?: string;
-}) {
+function isGalleryImage(img: HTMLImageElement): boolean {
+    if (img.closest('a') || img.closest('button')) return false;
+    const w = img.naturalWidth || img.width || 0;
+    return w === 0 || w >= 80;
+}
+
+export default function BodyImageGallery() {
     const [slides, setSlides] = useState<Slide[]>([]);
     const [index, setIndex] = useState<number | null>(null);
     const closeBtnRef = useRef<HTMLButtonElement>(null);
     const touchStart = useRef<{ x: number; y: number } | null>(null);
 
-    // Discover body images and wire each to open the lightbox at its index.
+    // Site-wide delegated opener.
     useEffect(() => {
-        const root = document.querySelector(bodySelector);
-        if (!root) return;
+        const onClick = (e: MouseEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (!t || t.tagName !== 'IMG') return;
+            const img = t as HTMLImageElement;
+            const scope = img.closest('.prose-content');
+            if (!scope || !isGalleryImage(img)) return;
 
-        const imgs = (Array.from(root.querySelectorAll('img')) as HTMLImageElement[])
-            // Skip tiny decorative / tracking images. naturalWidth is 0 until
-            // the image loads — keep those (they're real content loading in).
-            .filter((im) => {
-                const w = im.naturalWidth || im.width || 0;
-                return w === 0 || w >= 80;
-            });
-        if (!imgs.length) return;
+            const imgs = (Array.from(scope.querySelectorAll('img')) as HTMLImageElement[])
+                .filter(isGalleryImage);
+            if (!imgs.length) return;
 
-        setSlides(imgs.map((im) => ({
-            src: im.currentSrc || im.src,
-            alt: im.getAttribute('alt') || '',
-            caption: captionFor(im),
-        })));
-
-        const cleanups: Array<() => void> = [];
-        imgs.forEach((im, i) => {
-            im.style.cursor = 'zoom-in';
-            const onClick = (e: Event) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIndex(i);
-            };
-            im.addEventListener('click', onClick);
-            cleanups.push(() => im.removeEventListener('click', onClick));
-        });
-        return () => cleanups.forEach((fn) => fn());
-    }, [bodySelector]);
+            e.preventDefault();
+            const i = imgs.indexOf(img);
+            setSlides(imgs.map((im) => ({
+                src: im.currentSrc || im.src,
+                alt: im.getAttribute('alt') || '',
+                caption: captionFor(im),
+            })));
+            setIndex(i < 0 ? 0 : i);
+        };
+        document.addEventListener('click', onClick);
+        return () => document.removeEventListener('click', onClick);
+    }, []);
 
     const open = index !== null;
     const close = useCallback(() => setIndex(null), []);
@@ -103,11 +90,11 @@ export default function BodyImageGallery({
         document.addEventListener('keydown', onKey);
         const prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
-        const t = setTimeout(() => closeBtnRef.current?.focus(), 50);
+        const tm = setTimeout(() => closeBtnRef.current?.focus(), 50);
         return () => {
             document.removeEventListener('keydown', onKey);
             document.body.style.overflow = prevOverflow;
-            clearTimeout(t);
+            clearTimeout(tm);
         };
     }, [open, close, go]);
 
@@ -148,10 +135,7 @@ export default function BodyImageGallery({
                 </button>
 
                 {many && (
-                    <span
-                        dir="ltr"
-                        className="text-white/90 text-sm font-bold bg-white/10 px-3 py-1.5 rounded-full tabular-nums"
-                    >
+                    <span dir="ltr" className="text-white/90 text-sm font-bold bg-white/10 px-3 py-1.5 rounded-full tabular-nums">
                         {index + 1} / {slides.length}
                     </span>
                 )}
@@ -177,7 +161,6 @@ export default function BodyImageGallery({
             >
                 {many && (
                     <>
-                        {/* Previous — right side in RTL */}
                         <button
                             type="button"
                             onClick={() => go(-1)}
@@ -186,7 +169,6 @@ export default function BodyImageGallery({
                         >
                             <ChevronRight size={28} />
                         </button>
-                        {/* Next — left side in RTL */}
                         <button
                             type="button"
                             onClick={() => go(1)}
@@ -209,7 +191,7 @@ export default function BodyImageGallery({
                 />
             </div>
 
-            {/* Caption + thumbnail strip */}
+            {/* Caption + thumbnails + hint */}
             <div className="shrink-0 p-3 sm:p-5 space-y-3">
                 {cur.caption && (
                     <p className="text-center text-white/90 text-sm sm:text-base font-semibold leading-relaxed max-w-2xl mx-auto px-3">

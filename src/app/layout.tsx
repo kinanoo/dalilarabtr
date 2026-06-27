@@ -34,6 +34,7 @@ import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import LatinDigits from "@/components/LatinDigits";
 import ChunkReloadGuard from "@/components/ChunkReloadGuard";
+import BodyImageGallery from "@/components/article/BodyImageGallery";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -245,6 +246,9 @@ export default function RootLayout({
         {/* Self-heals the "click → stuck on loading skeleton" symptom after a
             deploy: hard-reloads once when a stale chunk fails to load. */}
         <ChunkReloadGuard />
+        {/* Site-wide image lightbox: click any content image (articles,
+            services, static pages) to open a swipeable full-screen gallery. */}
+        <BodyImageGallery />
         <ThemeProviderWrapper>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">

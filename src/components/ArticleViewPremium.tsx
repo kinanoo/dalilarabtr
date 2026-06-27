@@ -20,7 +20,6 @@ import ReadingProgressBar from './article/ReadingProgressBar';
 import EndOfArticleShare from './article/EndOfArticleShare';
 import StickyMobileShareBar from './article/StickyMobileShareBar';
 import ArticleHeroImage from './article/ArticleHeroImage';
-import BodyImageGallery from './article/BodyImageGallery';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -365,10 +364,6 @@ export default function ArticleView({ article, slug, initialComments, children }
                     className="prose-content text-slate-600 dark:text-slate-200 mb-6 text-[17px] sm:text-lg"
                     dangerouslySetInnerHTML={{ __html: safeDetails }}
                   />
-
-                  {/* Turns every body image into a swipeable full-screen
-                      gallery (arrows / swipe / keyboard / thumbnails). */}
-                  <BodyImageGallery bodySelector="[data-article-body]" />
 
 
                   {/* أهم الأوراق + الخطة السريعة — accent stripes per type */}

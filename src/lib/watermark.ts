@@ -80,7 +80,11 @@ export async function watermarkImage(
 ): Promise<File> {
     const {
         minSize = 200,
-        opacity = 0.28,
+        // Unified light watermark (kept in sync with scripts/_wm.js): the
+        // previous 0.28 read as heavy/cluttered and obscured the image. A
+        // lighter stamp stays legible as attribution without blocking the
+        // reader from studying the screenshot.
+        opacity = 0.16,
         fontSizeRatio = 0.055,
     } = options;
 
