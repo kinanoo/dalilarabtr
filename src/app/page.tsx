@@ -190,40 +190,6 @@ export default async function Home() {
         <div className="absolute inset-x-0 h-px bg-gradient-to-l from-transparent via-emerald-500/40 to-transparent" />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════
-          SECTION 1 — رحلتك القانونية (دليل المواقف)
-          MOVED ABOVE the news feed: an anxious newcomer needs the
-          "ما وضعك؟" situation picker FIRST, not a wall of headlines.
-          The dark surface continues the hero's orientation zone before
-          the page flips to the light content below.
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-slate-950 text-white py-16 overflow-hidden" dir="rtl">
-        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
-        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">01</div>
-        <div className="relative max-w-7xl mx-auto px-4 mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <Sparkles size={18} className="text-emerald-400" />
-            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-400">ابدأ من هنا</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight">
-            رحلتك <span className="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">القانونية</span>
-          </h2>
-          <div className="mt-4 inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5">
-            <p className="text-sm text-emerald-100">اختر وضعك ومرحلتك في تركيا، ونعرض لك خطواتك المناسبة.</p>
-          </div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <ScrollReveal>
-            <GuidedJourney />
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Transition — dark (guide) → light (news feed). */}
-      <div className="relative h-16 bg-gradient-to-b from-slate-950 to-white dark:to-slate-950" aria-hidden="true">
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-500/30 to-transparent" />
-      </div>
-
       {/* Featured news carousel — server-rendered breaking-news slot.
           Renders nothing when no article carries the `خبر_رئيسي` tag,
           so it stays invisible on quiet days. NOTE: this import MUST
@@ -269,8 +235,41 @@ export default async function Home() {
         <HomeUpdates updates={updates} />
       </Suspense>
 
-      {/* Transition — light (news feed) → sky (tools). */}
-      <div className="relative h-12 bg-gradient-to-b from-white to-sky-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
+      {/* Transition — light (news) → dark (journey). */}
+      <div className="relative h-16 bg-gradient-to-b from-white to-slate-950 dark:from-slate-950 dark:to-slate-950" aria-hidden="true">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-500/30 to-transparent" />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION — رحلتك القانونية (دليل المواقف)
+          Placed BELOW the news feed, per the owner's request: the
+          breaking-news carousel + "آخر التحديثات" lead the page, then
+          the situation picker follows on its dark orientation surface.
+          ═══════════════════════════════════════════════════════════ */}
+      <section className="relative bg-slate-950 text-white py-16 overflow-hidden" dir="rtl">
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
+        <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-white/[0.04] leading-none select-none pointer-events-none">01</div>
+        <div className="relative max-w-7xl mx-auto px-4 mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles size={18} className="text-emerald-400" />
+            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-400">ابدأ من هنا</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight">
+            رحلتك <span className="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">القانونية</span>
+          </h2>
+          <div className="mt-4 inline-block bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5">
+            <p className="text-sm text-emerald-100">اختر وضعك ومرحلتك في تركيا، ونعرض لك خطواتك المناسبة.</p>
+          </div>
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4">
+          <ScrollReveal>
+            <GuidedJourney />
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Transition — dark (journey) → sky (tools). */}
+      <div className="relative h-12 bg-gradient-to-b from-slate-950 to-sky-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-cyan-500/30 to-transparent" />
       </div>
 
