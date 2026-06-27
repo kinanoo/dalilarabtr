@@ -21,10 +21,17 @@ const cspBase = [
   "manifest-src 'self'",
 ];
 
-// Global: NO unsafe-eval (public pages don't need it)
+// In DEV ONLY, React Fast Refresh / dev tooling needs eval(); production never
+// does. Gate 'unsafe-eval' on NODE_ENV so it's present only under `next dev`,
+// keeping the DEPLOYED CSP strict. (next build sets NODE_ENV=production, so the
+// shipped CSP has no unsafe-eval — verified post-deploy.) Without this, the dev
+// CSP blocked eval and broke the local preview renderer (screenshots timed out).
+const DEV_EVAL = process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : '';
+
+// Global: unsafe-eval ONLY in dev (see DEV_EVAL); public prod pages don't need it.
 const cspGlobal = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
 ].join('; ');
 
 // Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
