@@ -19,6 +19,7 @@ const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 // Components
 import HeroSection from '@/components/home/HeroSection';
 import HomeUpdates from '@/components/home/HomeUpdates';
+import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
 import FeaturedNewsHero from '@/components/home/FeaturedNewsHero';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
@@ -120,6 +121,40 @@ async function getUpdates() {
   }
 }
 
+// Illustrated step-by-step guides for the homepage "أدلّة عملية" row. These
+// are approved articles carrying a HowTo `steps` array (>=3). Image is
+// optional — the card falls back to a branded placeholder.
+async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
+  try {
+    if (!supabase) return [];
+    const res = await withTimeout(
+      supabase
+        .from('articles')
+        .select('id, title, slug, category, image, steps')
+        .eq('status', 'approved')
+        .not('steps', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(12),
+      8000,
+    );
+    if (!res || !res.data) return [];
+    return res.data
+      .filter((a) => Array.isArray(a.steps) && a.steps.length >= 3)
+      .slice(0, 6)
+      .map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug || a.id,
+        category: a.category || 'دليل',
+        image: a.image || null,
+        stepCount: a.steps.length,
+      }));
+  } catch (error) {
+    logger.error('Error fetching featured guides:', error);
+    return [];
+  }
+}
+
 const HOME_DESCRIPTION = "الدليل الشامل للعرب في تركيا. خدمات قانونية، إقامات، أكواد أمنية، ودليل شامل لكل ما تحتاجه.";
 
 export const metadata: Metadata = {
@@ -146,7 +181,7 @@ export const metadata: Metadata = {
 // ============================================
 
 export default async function Home() {
-  const updates = await getUpdates();
+  const [updates, guides] = await Promise.all([getUpdates(), getFeaturedGuides()]);
 
   const homeFaqSchema = {
     '@context': 'https://schema.org',
@@ -234,6 +269,11 @@ export default async function Home() {
       <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>
         <HomeUpdates updates={updates} />
       </Suspense>
+
+      {/* أدلّة عملية بالصور — illustrated step-by-step guides (HowTo). Hidden
+          automatically when there are none. Sits in the light zone with the
+          news feed, before the dark "رحلتك القانونية" transition. */}
+      <FeaturedGuides guides={guides} />
 
       {/* Transition — light (news) → dark (journey). */}
       <div className="relative h-16 bg-gradient-to-b from-white to-slate-950 dark:from-slate-950 dark:to-slate-950" aria-hidden="true">
