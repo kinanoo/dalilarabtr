@@ -121,9 +121,11 @@ async function getUpdates() {
   }
 }
 
-// Illustrated step-by-step guides for the homepage "أدلّة عملية" row. These
-// are approved articles carrying a HowTo `steps` array (>=3). Image is
-// optional — the card falls back to a branded placeholder.
+// Curated illustrated guides for the homepage "أدلّة عملية" row. The `steps`
+// field exists on almost every article (it drives the HowTo schema), so it is
+// NOT a guide marker on its own — we curate explicitly via the `دليل` tag and
+// keep only entries that still have 3+ steps. Image is optional (the card
+// falls back to a branded placeholder).
 async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
   try {
     if (!supabase) return [];
@@ -132,7 +134,7 @@ async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
         .from('articles')
         .select('id, title, slug, category, image, steps')
         .eq('status', 'approved')
-        .not('steps', 'is', null)
+        .contains('tags', ['دليل'])
         .order('created_at', { ascending: false })
         .limit(12),
       8000,
