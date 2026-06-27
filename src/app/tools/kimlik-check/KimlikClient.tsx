@@ -8,7 +8,7 @@ import {
 import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
-import RelatedArticles from '@/components/RelatedArticles';
+import InlineRelatedArticles from '@/components/InlineRelatedArticles';
 
 export default function KimlikCheckPage() {
     const [tcNumber, setTcNumber] = useState('');
@@ -370,7 +370,7 @@ export default function KimlikCheckPage() {
                         />
                     </div>
 
-                    <RelatedArticles currentArticleId="" category="الكملك والحماية المؤقتة" />
+                    <InlineRelatedArticles currentArticleId="" category="الكملك والحماية المؤقتة" />
 
                     <div className="text-center">
                         <Link
