@@ -11,7 +11,7 @@ const GlobalSearch = dynamic(() => import('@/components/GlobalSearch'), {
         <input
           disabled
           placeholder="ماذا تريد أن تعرف اليوم؟ (إقامة، قانون...)"
-          className="w-full py-4 ps-12 pe-24 rounded-full bg-slate-900/80 backdrop-blur-2xl text-white placeholder:text-slate-500 text-lg shadow-2xl ring-1 ring-white/10 relative z-10 border-0 outline-none"
+          className="w-full py-4 ps-12 pe-24 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl text-slate-800 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500 text-lg shadow-2xl ring-1 ring-slate-200 dark:ring-white/10 relative z-10 border-0 outline-none"
         />
       </div>
     </div>

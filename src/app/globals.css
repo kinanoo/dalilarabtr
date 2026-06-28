@@ -244,6 +244,32 @@ html.dark .tiptap blockquote, html.dark .prose-content blockquote {
   --background-rgb: 241, 245, 249;
 }
 
+/* ============================================
+   Text selection — guaranteed contrast in both themes
+   ============================================
+   On the new light/warm theme the browser-default selection tint can
+   wash out against the soft surfaces, and on the dark theme a light
+   selection on light text loses legibility. Pin an explicit
+   high-contrast pair: emerald tint + dark text in light mode, deep
+   emerald + light text in dark mode, so selected text is never
+   invisible. */
+::selection {
+  background-color: rgba(16, 185, 129, 0.28);
+  color: #0f172a;
+}
+::-moz-selection {
+  background-color: rgba(16, 185, 129, 0.28);
+  color: #0f172a;
+}
+html.dark ::selection {
+  background-color: rgba(16, 185, 129, 0.45);
+  color: #f8fafc;
+}
+html.dark ::-moz-selection {
+  background-color: rgba(16, 185, 129, 0.45);
+  color: #f8fafc;
+}
+
 html, body {
   overflow-x: hidden;
   max-width: 100vw;

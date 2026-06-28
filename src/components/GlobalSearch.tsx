@@ -111,7 +111,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
         )}
 
         <div className="absolute inset-y-0 start-4 flex items-center pointer-events-none z-10">
-          <Search className={isHero ? 'text-slate-400 group-hover:text-emerald-400 transition-colors' : 'text-slate-400'} size={isHero ? 22 : 18} />
+          <Search className={isHero ? 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors' : 'text-slate-400'} size={isHero ? 22 : 18} />
         </div>
 
         <input
@@ -131,7 +131,7 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
           className={`
             w-full transition-all outline-none border-0
             ${isHero
-              ? 'py-4 ps-12 pe-24 rounded-full bg-slate-900/80 backdrop-blur-2xl text-white placeholder:text-slate-500 text-lg shadow-2xl ring-1 ring-white/10 focus:ring-2 focus:ring-emerald-500/60 focus:shadow-[0_0_20px_4px_rgba(16,185,129,0.15)] relative z-10'
+              ? 'py-4 ps-12 pe-24 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl text-slate-800 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500 text-lg shadow-2xl ring-1 ring-slate-200 dark:ring-white/10 focus:ring-2 focus:ring-emerald-500/60 focus:shadow-[0_0_20px_4px_rgba(16,185,129,0.15)] relative z-10'
               : 'py-4 md:py-5 ps-11 md:ps-12 pe-16 rounded-2xl text-sm md:text-base shadow-sm focus:ring-4 focus:ring-accent-500/50 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-xs md:placeholder:text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400'
             }
           `}

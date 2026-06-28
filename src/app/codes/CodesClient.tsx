@@ -172,14 +172,14 @@ export default function CodesClient({ initialCodes }: { initialCodes: AdminCode[
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-base sm:text-lg font-black tracking-wide">{item.code}</span>
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/60 dark:bg-white/10">
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-black/5 ring-1 ring-black/5 dark:bg-white/10 dark:ring-0">
                               {item.category}
                             </span>
                           </div>
                           <h3 className="font-bold text-sm sm:text-base mt-1 truncate">{item.title}</h3>
                         </div>
                         <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                          <span className="text-xs font-bold px-2 py-1 rounded-full bg-white/60 dark:bg-white/10">
+                          <span className="text-xs font-bold px-2 py-1 rounded-full bg-black/5 ring-1 ring-black/5 dark:bg-white/10 dark:ring-0">
                             {getSeverityLabel(item.severity)}
                           </span>
                           <ShareMenu
