@@ -30,8 +30,9 @@
  *   - Confirmation dialog before send — a push is irreversible.
  */
 
-import { useEffect, useState } from 'react';
-import { Send, Loader2, AlertTriangle, CheckCircle2, Megaphone, Sparkles } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
+import { Send, Loader2, AlertTriangle, CheckCircle2, Megaphone, Sparkles, Radio, History, Bell, ExternalLink, Newspaper } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 interface LastArticle {
@@ -46,6 +47,39 @@ interface PushResult {
     error?: string;
 }
 
+// A row from the `notifications` table — what every past broadcast/push
+// was saved as. This is the history the owner couldn't see before.
+interface SentNotification {
+    id: string;
+    type: string | null;
+    title: string | null;
+    message: string | null;
+    link: string | null;
+    icon: string | null;
+    created_at: string | null;
+    target_audience: string | null;
+    is_active: boolean | null;
+}
+
+function timeAgo(iso: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return 'الآن';
+    if (mins < 60) return `منذ ${mins} د`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `منذ ${hrs} س`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `منذ ${days} يوم`;
+    return d.toLocaleDateString('en-GB');
+}
+
+function isRowActive(r: Record<string, unknown>): boolean {
+    const v = (r.is_active ?? r.active);
+    return v === true || v === 'active' || v === 1 || v === '1';
+}
+
 export default function PushBroadcastPage() {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
@@ -54,6 +88,42 @@ export default function PushBroadcastPage() {
     const [result, setResult] = useState<PushResult | null>(null);
     const [lastArticle, setLastArticle] = useState<LastArticle | null>(null);
     const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+
+    // Broadcast overview — what's live right now + the full history of what
+    // was sent. This is the fix for "notifications get lost": everything the
+    // owner broadcasts is now visible in one place.
+    const [history, setHistory] = useState<SentNotification[]>([]);
+    const [liveBanner, setLiveBanner] = useState<Record<string, unknown> | null>(null);
+    const [tickerActive, setTickerActive] = useState(0);
+    const [recentUpdates, setRecentUpdates] = useState<{ id: string; title: string }[]>([]);
+    const [overviewLoading, setOverviewLoading] = useState(true);
+
+    const loadOverview = useCallback(async () => {
+        if (!supabase) { setOverviewLoading(false); return; }
+        // allSettled so one table with an unexpected column never blanks the
+        // whole panel — each section degrades independently.
+        const [notifs, banners, ticker, updates] = await Promise.allSettled([
+            supabase.from('notifications')
+                .select('id, type, title, message, link, icon, created_at, target_audience, is_active')
+                .order('created_at', { ascending: false }).limit(40),
+            supabase.from('site_banners').select('*').limit(25),
+            supabase.from('news_ticker').select('*').limit(60),
+            supabase.from('updates').select('id, title').order('created_at', { ascending: false }).limit(5),
+        ]);
+        if (notifs.status === 'fulfilled' && notifs.value.data) setHistory(notifs.value.data as SentNotification[]);
+        if (banners.status === 'fulfilled' && banners.value.data) {
+            setLiveBanner((banners.value.data as Record<string, unknown>[]).find(isRowActive) || null);
+        }
+        if (ticker.status === 'fulfilled' && ticker.value.data) {
+            setTickerActive((ticker.value.data as Record<string, unknown>[]).filter(isRowActive).length);
+        }
+        if (updates.status === 'fulfilled' && updates.value.data) {
+            setRecentUpdates(updates.value.data as { id: string; title: string }[]);
+        }
+        setOverviewLoading(false);
+    }, []);
+
+    useEffect(() => { void loadOverview(); }, [loadOverview]);
 
     // Best-effort load: latest published article (for quick-fill) +
     // current subscriber count (so the admin sees who they're reaching
@@ -146,6 +216,7 @@ export default function PushBroadcastPage() {
                 setTitle('');
                 setMessage('');
                 setUrl('/updates');
+                void loadOverview(); // refresh the history with the just-sent push
             }
         } catch {
             setResult({ error: 'خطأ في الشبكة. حاول مرة أخرى.' });
@@ -294,6 +365,78 @@ export default function PushBroadcastPage() {
                 <p>💡 <strong>أفضل وقت للبثّ:</strong> الصباح المبكر (8-10) أو المساء (7-9) — هنا يتفاعل المشتركون أكثر.</p>
                 <p>💡 <strong>إيموجي في البداية</strong> يرفع نسبة الفتح بشكل ملحوظ (🚨 للعاجل، 📢 للإعلان، 🟢 للتفاؤل).</p>
                 <p>💡 <strong>أنت محدود بـ10 بثّات في الساعة</strong> — للحماية من الإفراط. استخدمها بحكمة.</p>
+            </div>
+
+            {/* ───────── ما هو حيّ الآن — current live state of every channel ───────── */}
+            <div className="mt-10">
+                <h2 className="flex items-center gap-2 text-lg font-black text-slate-800 dark:text-slate-100 mb-3">
+                    <Radio size={18} className="text-emerald-600 dark:text-emerald-400" /> ما هو حيّ الآن
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">البنر العلوي</span>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${liveBanner ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>{liveBanner ? 'فعّال' : 'لا يوجد'}</span>
+                        </div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 min-h-[2.5rem]">{liveBanner ? String(liveBanner.title || liveBanner.text || liveBanner.message || 'بنر فعّال') : '—'}</p>
+                        <Link href="/admin/banners" className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">إدارة البنرات <ExternalLink size={12} /></Link>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">شريط الأخبار</span>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${tickerActive > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>{tickerActive > 0 ? `${tickerActive} فعّال` : 'لا يوجد'}</span>
+                        </div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 min-h-[2.5rem] flex items-center"><Radio size={16} className="text-slate-400 ml-1.5" /> {tickerActive} عنوان يجري الآن</p>
+                        <Link href="/admin/news-ticker" className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">إدارة الشريط <ExternalLink size={12} /></Link>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">آخر تحديث</span>
+                            <Newspaper size={14} className="text-slate-400" />
+                        </div>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 min-h-[2.5rem]">{recentUpdates[0]?.title || '—'}</p>
+                        <Link href="/admin/updates" className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">إدارة التحديثات <ExternalLink size={12} /></Link>
+                    </div>
+                </div>
+            </div>
+
+            {/* ───────── سجلّ الإشعارات — the history the owner could never see ───────── */}
+            <div className="mt-8">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                    <h2 className="flex items-center gap-2 text-lg font-black text-slate-800 dark:text-slate-100">
+                        <History size={18} className="text-emerald-600 dark:text-emerald-400" /> سجلّ الإشعارات المُرسلة
+                        <span className="text-xs font-bold text-slate-400">({history.length})</span>
+                    </h2>
+                    <button onClick={() => { setOverviewLoading(true); void loadOverview(); }} className="text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors">تحديث</button>
+                </div>
+                {overviewLoading ? (
+                    <div className="text-sm text-slate-400 py-8 text-center">… جاري التحميل</div>
+                ) : history.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 text-sm text-slate-400 py-10 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                        <Bell size={28} className="text-slate-300" />
+                        لم يُرسل أي إشعار بعد — سيظهر هنا كلّ ما تبثّه.
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {history.map((n) => (
+                            <div key={n.id} className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+                                <span className="text-lg shrink-0 leading-none mt-0.5">{n.icon || '🔔'}</span>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{n.title || '—'}</p>
+                                        <span className="text-[11px] text-slate-400 shrink-0 tabular-nums">{timeAgo(n.created_at)}</span>
+                                    </div>
+                                    {n.message && <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">{n.message}</p>}
+                                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        {n.type && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{n.type}</span>}
+                                        {n.target_audience && <span className="text-[10px] text-slate-400">→ {n.target_audience}</span>}
+                                        {n.link && <Link href={n.link} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5 truncate max-w-[180px]" dir="ltr">{n.link}</Link>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
