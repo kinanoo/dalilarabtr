@@ -36,7 +36,26 @@ const config: Config = {
           500: '#f59e0b',
           600: '#d97706',
           700: '#b45309',
-        }
+        },
+        // 🎨 Government-site-inspired palette (e-ikamet / goc.gov.tr / randevu).
+        // Purely additive tokens — applied gradually, light-mode only. Emerald
+        // `primary` stays the brand anchor; these add the official red + the
+        // vivid category quartet + warm/clean surfaces.
+        gov: {
+          red: '#C8102E',
+          'red-dark': '#A4123F',
+        },
+        brand: {
+          magenta: '#D6006C',
+          lime: '#7CB518',
+          orange: '#F7941D',
+          blue: '#2E9BD6',
+          warm: '#E8540F',
+        },
+        surface: {
+          light: '#F4F5F3',
+          warm: '#FAF7F2',
+        },
       },
       fontFamily: {
         cairo: ['var(--font-cairo)', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Arial', 'Noto Sans Arabic', 'sans-serif'],

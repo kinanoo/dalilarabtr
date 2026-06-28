@@ -228,7 +228,7 @@ export default function RootLayout({
         {/* Google Analytics */}
         {GA_ID && <GoogleAnalytics />}
       </head>
-      <body suppressHydrationWarning className={`font-cairo bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
+      <body suppressHydrationWarning className={`font-cairo bg-surface-light dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
         {/* Web Vitals — reports LCP, CLS, INP to Google Analytics */}
         {GA_ID && <WebVitals />}
         {/* Structured Data — in body to prevent Next.js head duplication */}
