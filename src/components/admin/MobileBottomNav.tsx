@@ -12,8 +12,10 @@
  * where you are.
  */
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import { LayoutDashboard, FileText, Megaphone, Radio, Menu } from 'lucide-react';
 
 const ITEMS = [
@@ -27,6 +29,25 @@ export function MobileBottomNav({ onMore }: { onMore: () => void }) {
     const pathname = usePathname();
     const isActive = (href: string, exact?: boolean) =>
         exact ? pathname === href : pathname === href || pathname.startsWith(href + '/');
+
+    // Pending-work badge on the home tab: total of the queues that need the
+    // admin to act — pending services, member-submitted articles, comments
+    // awaiting moderation, and unanswered questions. allSettled so a missing
+    // table/column contributes 0 instead of breaking the whole count. 60s poll.
+    const [pending, setPending] = useState(0);
+    useEffect(() => {
+        let alive = true;
+        const load = async () => {
+            if (!supabase) return;
+            const q = (t: string) => supabase!.from(t).select('id', { count: 'exact', head: true }).eq('status', 'pending');
+            const res = await Promise.allSettled([q('service_providers'), q('articles'), q('comments'), q('questions')]);
+            if (!alive) return;
+            setPending(res.reduce((s, r) => s + (r.status === 'fulfilled' ? (r.value.count || 0) : 0), 0));
+        };
+        void load();
+        const id = setInterval(load, 60000);
+        return () => { alive = false; clearInterval(id); };
+    }, []);
 
     return (
         <nav
@@ -46,10 +67,17 @@ export function MobileBottomNav({ onMore }: { onMore: () => void }) {
                             {active && (
                                 <span className="absolute top-0 w-8 h-0.5 rounded-full bg-gradient-to-l from-emerald-500 to-teal-500" />
                             )}
-                            <Icon
-                                size={20}
-                                className={active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}
-                            />
+                            <span className="relative">
+                                <Icon
+                                    size={20}
+                                    className={active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}
+                                />
+                                {it.exact && pending > 0 && (
+                                    <span className="absolute -top-2 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-sm shadow-red-500/40 tabular-nums">
+                                        {pending > 99 ? '99+' : pending}
+                                    </span>
+                                )}
+                            </span>
                             <span className={`text-[10px] font-bold ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
                                 {it.label}
                             </span>
