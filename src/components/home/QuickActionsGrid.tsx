@@ -98,36 +98,9 @@ export default function QuickActionsGrid() {
     return (
         <section className="px-4 py-12">
             <div className="max-w-7xl mx-auto">
-                {/* Section header — eyebrow ("SHORTCUTS") + accent dot
-                    + title + small horizontal rule on the trailing edge.
-                    Matches the magazine-style headers used on the
-                    homepage's other sections (آخر التحديثات, رحلتك
-                    القانونية). Replaces the flat icon + h2 row that
-                    competed with body content for visual weight. */}
-                <div className="flex items-end justify-between gap-4 mb-6 flex-wrap">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="relative inline-flex items-center justify-center w-2 h-2">
-                                <span className="absolute inline-flex w-2 h-2 rounded-full bg-amber-500 opacity-75 animate-ping" />
-                                <span className="relative inline-flex w-2 h-2 rounded-full bg-amber-500" />
-                            </span>
-                            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                                <Sparkles size={12} />
-                                SHORTCUTS · اختصارات
-                            </span>
-                        </div>
-                        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
-                            اختصارات سريعة
-                        </h2>
-                        <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                            وصول مباشر للأدوات والصفحات الأكثر استخداماً
-                        </p>
-                    </div>
-                    <div className="hidden md:flex items-center gap-2 text-slate-300 dark:text-slate-700">
-                        <span aria-hidden="true" className="h-px w-20 bg-current" />
-                    </div>
-                </div>
-
+                {/* Header is provided by the homepage section wrapper around
+                    this grid (page.tsx «اختصارات سريعة»); the component renders
+                    the grid only, to avoid a duplicate title. */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
                     {sortedQuickActions.map((action, index) => {
                         const IconComponent = action.icon || ICONS[action.icon_name] || FolderOpen;
