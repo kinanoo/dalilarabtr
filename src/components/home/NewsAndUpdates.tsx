@@ -16,7 +16,7 @@
  * Cloudflare/OpenNext build safe).
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Flame } from 'lucide-react';
 
@@ -37,28 +37,28 @@ function stripHtml(s?: string): string {
   return (s || '').replace(/<[^>]*>/g, '').trim();
 }
 
-const VISIBLE = 2; // cards fanned on each side of centre
+// How many cards fan out on each side scales with the stage width (see the
+// `visible` computation in the component) so wide screens fill with more
+// cards instead of empty side margins.
 
 export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   const n = items.length;
   const [active, setActive] = useState(0);
   const [dragFrac, setDragFrac] = useState(0); // live fractional shift while dragging
   const [dragging, setDragging] = useState(false);
-  const [stageW, setStageW] = useState(960);
-  const stageRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ startX: 0, frac: 0, on: false, moved: false, captured: false, pid: -1 });
 
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setStageW(el.clientWidth));
-    ro.observe(el);
-    setStageW(el.clientWidth);
-    return () => ro.disconnect();
-  }, []);
-
-  const cardW = Math.max(220, Math.min(300, Math.round(stageW * 0.66)));
-  const step = Math.round(cardW * 0.52);
+  // Card size + how many cards fan out each side scale with the stage so big
+  // screens fill with more cards (3 per side on desktop, 4 on very wide)
+  // instead of empty margins; mobile keeps 2 with heavier overlap.
+  // Fixed coverflow geometry — runtime width measurement (effects / RO / ref)
+  // proved unreliable on this ISR-cached page, so we use constants tuned to
+  // fill a wide desktop: 4 cards fan each side with a spread that fills ~1500px.
+  // On narrower screens the outer cards simply clip under the section's
+  // overflow-hidden, leaving the centre + nearest neighbours peeking.
+  const cardW = 280;
+  const visible = 4;
+  const step = 182;
 
   const go = useCallback((dir: number) => {
     setActive((a) => ((a + dir) % n + n) % n);
@@ -126,7 +126,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
       <SkylineDecor />
 
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
+      <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-end justify-between gap-4 mb-6 sm:mb-10">
           <div>
@@ -158,7 +158,6 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
         {/* 3D coverflow stage */}
         <div
-          ref={stageRef}
           className="relative h-[290px] sm:h-[310px] select-none cursor-grab active:cursor-grabbing"
           style={{ perspective: '1500px', touchAction: 'pan-y' }}
           onPointerDown={onDown}
@@ -174,7 +173,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
             {items.map((it, i) => {
               const eo = wrap(i - active + dragFrac); // live effective offset
               const abs = Math.abs(eo);
-              const hidden = abs > VISIBLE + 0.5;
+              const hidden = abs > visible + 0.5;
               const isCenter = abs < 0.5;
               const scale = Math.max(0.72, 1 - abs * 0.14);
               const scrim = Math.min(0.55, abs * 0.26); // hides text behind
@@ -185,7 +184,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
                   style={{
                     width: cardW,
                     marginLeft: -cardW / 2,
-                    transform: `translateX(${eo * step}px) translateZ(${-abs * 180}px) scale(${scale})`,
+                    transform: `translateX(${eo * step}px) translateZ(${-abs * 150}px) scale(${scale})`,
                     zIndex: 100 - Math.round(abs * 10),
                     opacity: hidden ? 0 : 1,
                     pointerEvents: hidden ? 'none' : 'auto',
