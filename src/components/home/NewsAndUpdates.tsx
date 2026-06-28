@@ -16,7 +16,7 @@
  * Cloudflare/OpenNext build safe).
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Flame } from 'lucide-react';
 
@@ -47,6 +47,11 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   const [dragFrac, setDragFrac] = useState(0); // live fractional shift while dragging
   const [dragging, setDragging] = useState(false);
   const drag = useRef({ startX: 0, frac: 0, on: false, moved: false, captured: false, pid: -1 });
+  const pausedUntil = useRef(0);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  // Pause autoplay for 20s after any manual move so the rail never yanks out
+  // from under the reader's hand.
+  const bump = useCallback(() => { pausedUntil.current = Date.now() + 20000; }, []);
 
   // Card size + how many cards fan out each side scale with the stage so big
   // screens fill with more cards (3 per side on desktop, 4 on very wide)
@@ -61,8 +66,22 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   const step = 182;
 
   const go = useCallback((dir: number) => {
+    bump();
     setActive((a) => ((a + dir) % n + n) % n);
-  }, [n]);
+  }, [n, bump]);
+
+  // Auto-advance newest -> oldest every 15s — a quiet "the site is live"
+  // heartbeat. Skips while hovered, just after a manual move, or when the
+  // visitor prefers reduced motion.
+  useEffect(() => {
+    if (n <= 1) return;
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+    const id = setInterval(() => {
+      if (hoverPaused || Date.now() < pausedUntil.current) return;
+      setActive((a) => (a + 1) % n);
+    }, 15000);
+    return () => clearInterval(id);
+  }, [n, hoverPaused]);
 
   // shortest signed distance, wrapped — works with fractional values too
   const wrap = (x: number) => {
@@ -95,6 +114,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   };
   const onUp = (e: React.PointerEvent) => {
     if (!drag.current.on) return;
+    bump();
     const f = drag.current.frac;
     const moved = drag.current.moved;
     drag.current.on = false;
@@ -165,6 +185,8 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
           onPointerUp={onUp}
           onPointerCancel={onUp}
           onKeyDown={onKey}
+          onMouseEnter={() => setHoverPaused(true)}
+          onMouseLeave={() => setHoverPaused(false)}
           tabIndex={0}
           role="region"
           aria-label="بطاقات الأخبار والإعلانات — اسحب للتنقّل"
@@ -204,6 +226,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
                     if (!isCenter) {
                       e.preventDefault();
                       e.stopPropagation();
+                      bump();
                       setActive(i);
                     }
                   }}
@@ -233,7 +256,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
             {items.slice(0, Math.min(n, 9)).map((_, i) => (
               <button
                 key={i}
-                onClick={() => setActive(i)}
+                onClick={() => { bump(); setActive(i); }}
                 aria-label={`بطاقة ${i + 1}`}
                 className={`rounded-full transition-all ${i === active ? 'w-6 h-2 bg-emerald-500' : 'w-2 h-2 bg-emerald-200 dark:bg-slate-700 hover:bg-emerald-300'}`}
               />
