@@ -46,7 +46,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   const [dragging, setDragging] = useState(false);
   const [stageW, setStageW] = useState(960);
   const stageRef = useRef<HTMLDivElement>(null);
-  const drag = useRef({ startX: 0, frac: 0, on: false });
+  const drag = useRef({ startX: 0, frac: 0, on: false, moved: false });
 
   useEffect(() => {
     const el = stageRef.current;
@@ -74,7 +74,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
   // --- continuous drag ---
   const onDown = (e: React.PointerEvent) => {
-    drag.current = { startX: e.clientX, frac: 0, on: true };
+    drag.current = { startX: e.clientX, frac: 0, on: true, moved: false };
     setDragging(true);
     try { (e.currentTarget as Element).setPointerCapture?.(e.pointerId); } catch { /* noop */ }
   };
@@ -83,12 +83,14 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
     // clamp so one gesture moves at most ~2.2 cards, keeps it controllable
     const f = Math.max(-2.2, Math.min(2.2, (e.clientX - drag.current.startX) / step));
     drag.current.frac = f;
+    if (Math.abs(f) > 0.06) drag.current.moved = true;
     setDragFrac(f);
   };
   const onUp = () => {
     if (!drag.current.on) return;
     const f = drag.current.frac;
     drag.current.on = false;
+    drag.current.frac = 0;
     setDragging(false);
     setDragFrac(0);
     if (Math.abs(f) >= 0.3) setActive((a) => ((a - Math.round(f)) % n + n) % n);
@@ -178,12 +180,20 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
                     transition: dragging ? 'none' : 'transform 0.5s cubic-bezier(0.22,0.8,0.3,1), opacity 0.5s',
                   }}
                   onClickCapture={(e) => {
+                    // A real drag just happened — swallow the trailing click
+                    // so it doesn't navigate.
+                    if (drag.current.moved) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      drag.current.moved = false;
+                      return;
+                    }
+                    // Tapping a side card brings it to centre; the centred
+                    // card's click falls through to its <Link> and navigates.
                     if (!isCenter) {
                       e.preventDefault();
                       e.stopPropagation();
                       setActive(i);
-                    } else if (Math.abs(drag.current.frac) > 0.06) {
-                      e.preventDefault(); // was a drag, not a tap
                     }
                   }}
                 >
