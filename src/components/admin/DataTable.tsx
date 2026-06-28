@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight, List, LayoutGrid, Table2 } from 'lucide-react';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
 import { extractErrorMessage } from '@/lib/errors';
@@ -177,6 +177,37 @@ export function DataTable({
         }
     }
 
+    // View mode — rows (default) | grid | table. Persisted per browser so the
+    // owner's preferred layout sticks across every content section.
+    const [view, setView] = useState<'rows' | 'grid' | 'table'>('rows');
+    useEffect(() => {
+        try {
+            const v = localStorage.getItem('admin_dt_view');
+            if (v === 'grid' || v === 'table' || v === 'rows') setView(v);
+        } catch { /* ignore */ }
+    }, []);
+    const changeView = (v: 'rows' | 'grid' | 'table') => {
+        setView(v);
+        try { localStorage.setItem('admin_dt_view', v); } catch { /* ignore */ }
+    };
+
+    // Compact action cluster reused by the grid + table layouts.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function compactActions(row: Record<string, any>) {
+        const id = row[idField];
+        return (
+            <div className="flex items-center gap-1 shrink-0">
+                {toggleField && (
+                    <button onClick={() => handleToggle(id, !!row[toggleField])} className={`p-1.5 rounded-lg transition-all ${row[toggleField] ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title={row[toggleField] ? 'تعطيل' : 'تفعيل'} aria-label="toggle">
+                        {row[toggleField] ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                    </button>
+                )}
+                <button onClick={() => onEdit(row)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" title="تعديل" aria-label="تعديل"><Edit size={16} /></button>
+                <button onClick={() => handleDelete(id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" title="حذف" aria-label="حذف"><Trash2 size={16} /></button>
+            </div>
+        );
+    }
+
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
     return (
@@ -198,6 +229,13 @@ export function DataTable({
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 shrink-0">
+                        {([['rows', List], ['grid', LayoutGrid], ['table', Table2]] as const).map(([v, Icon]) => (
+                            <button key={v} onClick={() => changeView(v)} aria-label={v} title={v === 'rows' ? 'صفوف' : v === 'grid' ? 'شبكة' : 'جدول'} className={`p-2 rounded-lg transition-all ${view === v ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
+                                <Icon size={16} />
+                            </button>
+                        ))}
+                    </div>
                     <div className="relative flex-1 md:w-80 group">
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
                         <input
@@ -210,8 +248,8 @@ export function DataTable({
                 </div>
             </div>
 
-            {/* List / Grid */}
-            <div className="space-y-3">
+            {/* List / Grid / Table */}
+            <div>
                 {loading && data.length === 0 ? (
                     <div className="p-12 text-center bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
                         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/20 mb-3 shadow-sm">
@@ -226,8 +264,61 @@ export function DataTable({
                         </div>
                         <p className="font-black text-slate-700 dark:text-slate-200">لا توجد بيانات مطابقة للبحث</p>
                     </div>
+                ) : view === 'table' ? (
+                    <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
+                                <tr>
+                                    <th className="text-right font-black px-3 py-2.5">العنوان</th>
+                                    {columns.filter((c) => !['title', 'name', 'question'].includes(c.key)).map((col) => (
+                                        <th key={col.key} className="text-right font-black px-3 py-2.5 hidden md:table-cell">{col.label}</th>
+                                    ))}
+                                    <th className="px-3 py-2.5 w-px" />
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {data.map((row, index) => {
+                                    const id = row[idField];
+                                    const isPending = typeof id === 'string' && pendingRows.has(id);
+                                    return (
+                                        <tr key={id || index} className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+                                            <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-100 max-w-[280px]"><span className="line-clamp-1">{row.title || row.name || row.question || row.code}</span></td>
+                                            {columns.filter((c) => !['title', 'name', 'question'].includes(c.key)).map((col) => (
+                                                <td key={col.key} className="px-3 py-2.5 text-slate-500 dark:text-slate-400 hidden md:table-cell"><span className="line-clamp-1">{col.render ? col.render(row[col.key], row) : String(row[col.key] ?? '-')}</span></td>
+                                            ))}
+                                            <td className="px-3 py-2.5">{compactActions(row)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : view === 'grid' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {data.map((row, index) => {
+                            const id = row[idField];
+                            const isPending = typeof id === 'string' && pendingRows.has(id);
+                            return (
+                                <div key={id || index} className={`relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-400/60 transition-all duration-300 ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                        <h3 className="font-black text-slate-900 dark:text-slate-50 text-sm leading-tight line-clamp-2">{row.title || row.name || row.question || row.code}</h3>
+                                        {compactActions(row)}
+                                    </div>
+                                    {(row.category || row.profession || row.severity) && (
+                                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300">{row.category || row.profession || row.severity}</span>
+                                    )}
+                                    <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-slate-400">
+                                        {columns.filter((c) => !['title', 'name', 'question'].includes(c.key)).slice(0, 3).map((col) => (
+                                            <span key={col.key} className="truncate max-w-full"><span className="opacity-50">{col.label}: </span><span className="text-slate-600 dark:text-slate-300">{col.render ? col.render(row[col.key], row) : String(row[col.key] ?? '-')}</span></span>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 ) : (
-                    data.map((row, index) => {
+                    <div className="space-y-3">
+                    {data.map((row, index) => {
                         const rowId = row[idField];
                         const isPending = typeof rowId === 'string' && pendingRows.has(rowId);
                         // Top accent stripe per row type — matches the
@@ -356,7 +447,8 @@ export function DataTable({
                             </div>
                         </div>
                         );
-                    })
+                    })}
+                    </div>
                 )}
             </div>
 
