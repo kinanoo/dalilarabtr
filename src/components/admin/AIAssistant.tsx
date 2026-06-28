@@ -721,8 +721,7 @@ export function AIFab({ onClick }: { onClick: () => void }) {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', delay: 0.5 }}
       onClick={onClick}
-      className="fixed z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all"
-      style={{ bottom: 'max(24px, calc(24px + env(safe-area-inset-bottom)))', left: '24px' }}
+      className="fixed z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all left-6 bottom-[calc(88px_+_env(safe-area-inset-bottom))] xl:bottom-[calc(24px_+_env(safe-area-inset-bottom))]"
       title="المساعد الذكي"
     >
       <Bot size={24} />

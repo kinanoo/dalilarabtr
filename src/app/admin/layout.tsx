@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { MobileBottomNav } from '@/components/admin/MobileBottomNav';
 import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
 import { AIAssistant, AIFab } from '@/components/admin/AIAssistant';
@@ -174,10 +175,13 @@ export default function AdminLayout({
                             وضع القراءة فقط — هذا الحساب يُراجِع ويُشخّص فقط، ولا يمكنه التعديل أو النشر أو الحذف.
                         </div>
                     )}
-                    <div className="flex-1 overflow-y-auto p-4 md:p-0">
+                    <div className="flex-1 overflow-y-auto p-4 pb-24 md:px-0 md:pt-0 xl:pb-0">
                         {children}
                     </div>
                 </main>
+
+                {/* Mobile app-style bottom nav — one-tap section switching on phones */}
+                <MobileBottomNav onMore={() => setIsMobileOpen(true)} />
 
                 {/* AI Assistant — FAB + Overlay (hidden on /admin/ai-assistant page) */}
                 {!readOnly && pathname !== '/admin/ai-assistant' && !aiOpen && (
