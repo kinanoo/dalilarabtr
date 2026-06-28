@@ -46,7 +46,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   const [dragging, setDragging] = useState(false);
   const [stageW, setStageW] = useState(960);
   const stageRef = useRef<HTMLDivElement>(null);
-  const drag = useRef({ startX: 0, frac: 0, on: false, moved: false });
+  const drag = useRef({ startX: 0, frac: 0, on: false, moved: false, captured: false, pid: -1 });
 
   useEffect(() => {
     const el = stageRef.current;
@@ -74,26 +74,38 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
   // --- continuous drag ---
   const onDown = (e: React.PointerEvent) => {
-    drag.current = { startX: e.clientX, frac: 0, on: true, moved: false };
-    setDragging(true);
-    try { (e.currentTarget as Element).setPointerCapture?.(e.pointerId); } catch { /* noop */ }
+    // Do NOT capture the pointer or enter "dragging" on mouse-down — wait for
+    // real movement (onMove). A clean click therefore never captures the
+    // pointer, so the centred card's <Link> receives the click + navigates.
+    drag.current = { startX: e.clientX, frac: 0, on: true, moved: false, captured: false, pid: e.pointerId };
   };
   const onMove = (e: React.PointerEvent) => {
     if (!drag.current.on) return;
+    const dx = e.clientX - drag.current.startX;
+    if (!drag.current.moved && Math.abs(dx) < 6) return; // ignore click jitter
+    if (!drag.current.moved) {
+      drag.current.moved = true;
+      setDragging(true);
+      try { (e.currentTarget as Element).setPointerCapture?.(e.pointerId); drag.current.captured = true; } catch { /* noop */ }
+    }
     // clamp so one gesture moves at most ~2.2 cards, keeps it controllable
-    const f = Math.max(-2.2, Math.min(2.2, (e.clientX - drag.current.startX) / step));
+    const f = Math.max(-2.2, Math.min(2.2, dx / step));
     drag.current.frac = f;
-    if (Math.abs(f) > 0.06) drag.current.moved = true;
     setDragFrac(f);
   };
-  const onUp = () => {
+  const onUp = (e: React.PointerEvent) => {
     if (!drag.current.on) return;
     const f = drag.current.frac;
+    const moved = drag.current.moved;
     drag.current.on = false;
     drag.current.frac = 0;
+    if (drag.current.captured) {
+      try { (e.currentTarget as Element).releasePointerCapture?.(drag.current.pid); } catch { /* noop */ }
+      drag.current.captured = false;
+    }
     setDragging(false);
     setDragFrac(0);
-    if (Math.abs(f) >= 0.3) setActive((a) => ((a - Math.round(f)) % n + n) % n);
+    if (moved && Math.abs(f) >= 0.3) setActive((a) => ((a - Math.round(f)) % n + n) % n);
   };
 
   const onKey = (e: React.KeyboardEvent) => {
