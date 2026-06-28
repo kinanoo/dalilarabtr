@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import LiveActivityFeed from '@/components/admin/LiveActivityFeed';
+import SitePulse from '@/components/admin/SitePulse';
 
 const QUICK_LINKS = [
   { title: 'المقالات', icon: FileText, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400', href: '/admin/articles' },
@@ -39,6 +39,9 @@ export default function AdminDashboard() {
         </div>
         <GlobalSearch />
       </div>
+
+      {/* Site pulse — live traffic + growth, leads the page */}
+      <SitePulse />
 
       {/* 2. Quick Actions — premium grid with accent stripes */}
       <div>
@@ -70,10 +73,7 @@ export default function AdminDashboard() {
       {/* 3. Pending Tasks */}
       <ActionCenter />
 
-      {/* 4. Live activity feed — lead from what's happening now */}
-      <LiveActivityFeed />
-
-      {/* 5. Analytics */}
+      {/* 4. Analytics */}
       <div>
         <h2 className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-1.5 tracking-[0.2em] uppercase">
           <BarChart3 size={12} />
