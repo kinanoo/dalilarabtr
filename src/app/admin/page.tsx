@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   FileText,
   ShieldAlert,
@@ -9,6 +10,7 @@ import {
   BarChart3,
   MessageCircle,
   Settings,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
@@ -26,8 +28,9 @@ const QUICK_LINKS = [
 ];
 
 export default function AdminDashboard() {
+  const [showFull, setShowFull] = useState(false);
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 pb-20">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5">
 
       {/* Greeting + Search — slim header (compact, no decorative eyebrow) */}
       <div className="space-y-3 pt-1">
@@ -73,13 +76,26 @@ export default function AdminDashboard() {
       {/* 3. Pending Tasks */}
       <ActionCenter />
 
-      {/* 4. Analytics */}
+      {/* 4. Full analytics — collapsed by default. SitePulse above already
+          covers the daily "what's happening"; this only mounts (and starts
+          polling) when the admin opens it, so the default home stays fast. */}
       <div>
-        <h2 className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-1.5 tracking-[0.2em] uppercase">
-          <BarChart3 size={12} />
-          التحليلات
-        </h2>
-        <AnalyticsDashboard />
+        <button
+          type="button"
+          onClick={() => setShowFull((v) => !v)}
+          className="w-full flex items-center justify-between gap-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-3 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700 active:scale-[0.99] transition-all"
+        >
+          <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 tracking-[0.2em] uppercase">
+            <BarChart3 size={12} />
+            كل التفاصيل والتحليلات
+          </span>
+          <ChevronDown size={16} className={`text-slate-400 transition-transform ${showFull ? 'rotate-180' : ''}`} />
+        </button>
+        {showFull && (
+          <div className="pt-4">
+            <AnalyticsDashboard />
+          </div>
+        )}
       </div>
 
     </div>
