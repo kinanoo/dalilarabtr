@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tags, FileText, Link as LinkIcon, AlertCircle, Clock, Search, Settings2, ExternalLink, Sparkles, Flame } from 'lucide-react';
+import { Tags, FileText, Link as LinkIcon, AlertCircle, Clock, Search, Settings2, ExternalLink, Sparkles, Flame, ListChecks } from 'lucide-react';
 import { Field } from '../ui/Field';
 import { inputStyles, ltrInputStyles } from '../ui/styles';
 import { ArrayInput } from '../ui/ArrayInput';
@@ -407,6 +407,110 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                                     <span
                                         className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${
                                             isFeatured ? 'right-0.5' : 'right-[26px]'
+                                        }`}
+                                    />
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                );
+            })()}
+
+            {/* ── Step-by-step guide toggle ─────────────────────────────
+                The homepage "شروحات مصوّرة خطوة بخطوة" grid curates articles
+                whose `tags` contain `دليل` AND that carry ≥3 steps. Mirrors
+                the breaking-news toggle above: a one-click control for the
+                sentinel tag so admins never have to remember/type the exact
+                Arabic string. The 3-step requirement is surfaced inline so a
+                toggled-on guide that won't actually render is never a silent
+                surprise. */}
+            {(() => {
+                const GUIDE_TAG = 'دليل';
+                const isGuide = (form.tags || []).includes(GUIDE_TAG);
+                const stepCount = Array.isArray(form.steps) ? form.steps.length : 0;
+                const enoughSteps = stepCount >= 3;
+                const toggleGuide = () => {
+                    const tags = form.tags || [];
+                    if (isGuide) {
+                        setForm({ ...form, tags: tags.filter((t) => t !== GUIDE_TAG) });
+                    } else {
+                        setForm({ ...form, tags: [...tags, GUIDE_TAG] });
+                    }
+                };
+                return (
+                    <div
+                        className={`border-t pt-6 ${
+                            isGuide
+                                ? 'border-emerald-200 dark:border-emerald-900/50'
+                                : 'border-slate-200 dark:border-slate-800'
+                        }`}
+                    >
+                        <button
+                            type="button"
+                            onClick={toggleGuide}
+                            className={`w-full text-right rounded-2xl p-4 sm:p-5 transition-all flex items-start gap-4 ${
+                                isGuide
+                                    ? 'bg-gradient-to-l from-emerald-50 via-emerald-100 to-emerald-50 dark:from-emerald-950/40 dark:via-emerald-900/30 dark:to-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-700 shadow-md shadow-emerald-200/40 dark:shadow-emerald-900/30'
+                                    : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/70 border-2 border-dashed border-slate-300 dark:border-slate-700'
+                            }`}
+                        >
+                            <div
+                                className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+                                    isGuide
+                                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-400/40'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                                }`}
+                            >
+                                <ListChecks size={22} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span
+                                        className={`font-bold ${
+                                            isGuide
+                                                ? 'text-emerald-700 dark:text-emerald-300 text-base'
+                                                : 'text-slate-800 dark:text-slate-100 text-sm'
+                                        }`}
+                                    >
+                                        {isGuide
+                                            ? 'شرح مصوّر — يظهر في «شروحات مصوّرة خطوة بخطوة»'
+                                            : 'اعرض هذا المقال كشرح مصوّر خطوة بخطوة بالرئيسية'}
+                                    </span>
+                                    {isGuide && enoughSteps && (
+                                        <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full">
+                                            <ListChecks size={11} />
+                                            دليل
+                                        </span>
+                                    )}
+                                    {isGuide && !enoughSteps && (
+                                        <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                                            <AlertCircle size={11} />
+                                            يحتاج خطوات
+                                        </span>
+                                    )}
+                                </div>
+                                <p className={`text-xs mt-1 ${
+                                    isGuide
+                                        ? (enoughSteps ? 'text-emerald-600 dark:text-emerald-300/80' : 'text-amber-600 dark:text-amber-400')
+                                        : 'text-slate-500 dark:text-slate-400'
+                                }`}>
+                                    {isGuide
+                                        ? (enoughSteps
+                                            ? `سيظهر في شبكة «شروحات مصوّرة» بالصفحة الرئيسية (${stepCount} خطوات). اضغط مرة أخرى لإزالته.`
+                                            : `مفعّل، لكنه لن يظهر حتى تضيف 3 خطوات على الأقل في حقل الخطوات (لديك الآن ${stepCount}).`)
+                                        : 'يُدرجه في شبكة «شروحات مصوّرة خطوة بخطوة» بالرئيسية. يتطلّب 3 خطوات أو أكثر في حقل الخطوات.'}
+                                </p>
+                            </div>
+                            <div className="shrink-0 self-center">
+                                {/* Visual toggle pill */}
+                                <div
+                                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                                        isGuide ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'
+                                    }`}
+                                >
+                                    <span
+                                        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${
+                                            isGuide ? 'right-0.5' : 'right-[26px]'
                                         }`}
                                     />
                                 </div>
