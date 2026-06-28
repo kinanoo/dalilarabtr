@@ -1,32 +1,31 @@
 'use client';
 
 /**
- * SitePulse — the admin's "what's happening on my site, right now" view.
+ * SitePulse — the single, merged "what's happening on my site" panel.
  *
- * The owner wanted ONE place that's easy, fast and comprehensive: live
- * visitors + growth + where people are and where they came from — without
- * scrolling a long analytics page. So this leads the dashboard with:
- *   1) a KPI strip (visitors now, today's visits + views, weekly growth,
- *      all-time reach), and
- *   2) three live mini-panels — top pages, traffic sources, countries —
- *      each a tight top-5 with a proportion bar.
- * Everything refreshes every 30s. The deeper breakdowns (devices, browsers,
- * cities, content performance) stay in the full analytics block, collapsed
- * below. Read-only; reuses existing RPCs with graceful fallbacks.
+ * This replaces the old split (a KPI strip here + a long AnalyticsDashboard
+ * below that repeated the same visitors/views/pages numbers). Everything the
+ * owner needs to read the site at a glance now lives in ONE place at the top:
+ *   • KPI strip: visitors now, today's visits + views, avg time on site,
+ *     weekly growth, all-time reach.
+ *   • Live mini-panels (top-5 + proportion bars): top pages, traffic sources,
+ *     countries, devices.
+ * Refreshes every 30s. Read-only; reuses existing RPCs with allSettled
+ * fallbacks so a missing function degrades that one tile to "no data".
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users, Eye, TrendingUp, TrendingDown, Activity, Globe, RefreshCw,
-    FileText, Share2, MapPin,
+    FileText, Share2, MapPin, Clock, Smartphone,
 } from 'lucide-react';
 
 interface Stats {
     active_users_now?: number;
     today_unique_visitors?: number;
     today_page_views?: number;
-    week_visitors?: number;
+    avg_session_duration?: number;
     total_visitors_all_time?: number;
 }
 interface Comparison { visitors_change_pct?: number }
@@ -35,6 +34,13 @@ interface Row { label: string; value: number }
 function fmt(n: number | undefined): string {
     if (n == null) return '—';
     return Number(n).toLocaleString('en-US');
+}
+function fmtDur(s?: number): string {
+    if (!s || s <= 0) return '—';
+    const m = Math.floor(s / 60);
+    const sec = Math.round(s % 60);
+    if (m === 0) return `${sec}ث`;
+    return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
 // Small readable maps — fall back to the raw value when unknown.
@@ -48,12 +54,16 @@ const SOURCE_LABELS: Record<string, string> = {
     telegram: 'تليجرام', twitter: 'تويتر/X', youtube: 'يوتيوب', bing: 'بينج', yandex: 'يانديكس',
     tiktok: 'تيك توك', reddit: 'ريديت', other: 'أخرى',
 };
+const DEVICE_LABELS: Record<string, string> = {
+    mobile: 'جوال', tablet: 'تابلت', desktop: 'حاسب', unknown: 'غير محدد',
+};
 const FLAGS: Record<string, string> = {
     Turkey: '🇹🇷', Syria: '🇸🇾', Germany: '🇩🇪', 'Saudi Arabia': '🇸🇦', Egypt: '🇪🇬', Iraq: '🇮🇶',
     Jordan: '🇯🇴', Lebanon: '🇱🇧', UAE: '🇦🇪', USA: '🇺🇸', France: '🇫🇷', UK: '🇬🇧', Netherlands: '🇳🇱',
 };
 const pageLabel = (p: string) => PAGE_LABELS[p] || p;
 const sourceLabel = (s: string) => SOURCE_LABELS[s] || s;
+const deviceLabel = (d: string) => DEVICE_LABELS[d] || d;
 const flag = (c: string) => FLAGS[c] || '🌐';
 
 function MiniPanel({ title, icon: Icon, accent, rows, prefix }: {
@@ -101,6 +111,7 @@ export default function SitePulse() {
     const [pages, setPages] = useState<Row[]>([]);
     const [sources, setSources] = useState<Row[]>([]);
     const [countries, setCountries] = useState<Row[]>([]);
+    const [devices, setDevices] = useState<Row[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -108,9 +119,10 @@ export default function SitePulse() {
         if (!supabase) { setLoading(false); return; }
         if (silent) setRefreshing(true); else setLoading(true);
         const rpc = (name: string) => supabase!.rpc(name);
-        const [s, c, p, r, co] = await Promise.allSettled([
+        const [s, c, p, r, co, dv] = await Promise.allSettled([
             rpc('get_dashboard_stats'), rpc('get_period_comparison'),
-            rpc('get_top_pages'), rpc('get_referrer_stats'), rpc('get_country_stats'),
+            rpc('get_top_pages'), rpc('get_referrer_stats'),
+            rpc('get_country_stats'), rpc('get_device_stats'),
         ]);
         if (s.status === 'fulfilled' && s.value.data) setStats(s.value.data as Stats);
         if (c.status === 'fulfilled' && c.value.data) setCmp(c.value.data as Comparison);
@@ -120,6 +132,8 @@ export default function SitePulse() {
             setSources(r.value.data.map((x: { source: string; count: number | string }) => ({ label: sourceLabel(x.source), value: Number(x.count) })));
         if (co.status === 'fulfilled' && Array.isArray(co.value.data))
             setCountries(co.value.data.map((x: { country: string; count: number | string }) => ({ label: x.country, value: Number(x.count) })));
+        if (dv.status === 'fulfilled' && Array.isArray(dv.value.data))
+            setDevices(dv.value.data.map((x: { device: string; count: number | string }) => ({ label: deviceLabel(x.device), value: Number(x.count) })));
         setLoading(false);
         setRefreshing(false);
     }, []);
@@ -137,6 +151,7 @@ export default function SitePulse() {
         { key: 'now', label: 'الزوار الآن', value: fmt(stats?.active_users_now), sub: 'نشط آخر 5 دقائق', icon: Activity, cls: 'from-emerald-500 to-teal-600', live: true },
         { key: 'today', label: 'زيارات اليوم', value: fmt(stats?.today_unique_visitors ?? stats?.today_page_views), sub: 'زائر فريد', icon: Users, cls: 'from-blue-500 to-cyan-600' },
         { key: 'views', label: 'مشاهدات اليوم', value: fmt(stats?.today_page_views), sub: 'صفحة', icon: Eye, cls: 'from-violet-500 to-purple-600' },
+        { key: 'dwell', label: 'متوسط البقاء', value: fmtDur(stats?.avg_session_duration), sub: 'لكل جلسة', icon: Clock, cls: 'from-indigo-500 to-blue-600' },
         { key: 'growth', label: 'نموّ الزيارات', value: growth == null ? '—' : `${growthUp ? '+' : ''}${Math.round(growth)}%`, sub: 'مقابل الأسبوع الماضي', icon: growthUp ? TrendingUp : TrendingDown, cls: growthUp ? 'from-emerald-500 to-green-600' : 'from-rose-500 to-red-600' },
         { key: 'all', label: 'إجمالي الزوار', value: fmt(stats?.total_visitors_all_time), sub: 'منذ الإطلاق', icon: Globe, cls: 'from-amber-500 to-orange-600' },
     ];
@@ -158,11 +173,11 @@ export default function SitePulse() {
 
             {/* KPI strip */}
             {loading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-                    {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />)}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+                    {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />)}
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                     {cards.map((c) => {
                         const Icon = c.icon;
                         return (
@@ -188,12 +203,13 @@ export default function SitePulse() {
                 </div>
             )}
 
-            {/* Live mini-panels — what they're reading, where they came from, who they are */}
+            {/* Live mini-panels — what they read, where they came from, who they are */}
             {!loading && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                     <MiniPanel title="أكثر الصفحات زيارة" icon={FileText} accent="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" rows={pages} />
                     <MiniPanel title="من أين أتى الزوار" icon={Share2} accent="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" rows={sources} />
                     <MiniPanel title="الدول" icon={MapPin} accent="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" rows={countries} prefix={(c) => flag(c)} />
+                    <MiniPanel title="الأجهزة" icon={Smartphone} accent="bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" rows={devices} />
                 </div>
             )}
         </div>
