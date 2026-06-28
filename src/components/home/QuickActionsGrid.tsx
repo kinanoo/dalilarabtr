@@ -10,6 +10,16 @@ const ICONS: Record<string, any> = {
     Plane, FileText, ShieldAlert, Smartphone, BrainCircuit, FolderOpen, UserCheck, MapPin, Calculator, HeartPulse, LinkIcon, Sparkles
 };
 
+// e-ikamet-style colourful icon tints — the four official-site accent colours
+// rotate across the shortcut cards so the row reads as a vivid toolbox, not a
+// monochrome list. Light-mode tints + dark-mode equivalents.
+const ICON_TINTS = [
+    'bg-pink-50 text-brand-magenta dark:bg-pink-950/40 dark:text-pink-300',
+    'bg-lime-50 text-brand-lime dark:bg-lime-950/40 dark:text-lime-300',
+    'bg-orange-50 text-brand-orange dark:bg-orange-950/40 dark:text-orange-300',
+    'bg-sky-50 text-brand-blue dark:bg-sky-950/40 dark:text-sky-300',
+];
+
 export default function QuickActionsGrid() {
     const storageKey = 'quickActions.clickCounts.v1';
     const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
@@ -119,8 +129,9 @@ export default function QuickActionsGrid() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-                    {sortedQuickActions.map((action) => {
+                    {sortedQuickActions.map((action, index) => {
                         const IconComponent = action.icon || ICONS[action.icon_name] || FolderOpen;
+                        const tint = ICON_TINTS[index % ICON_TINTS.length];
                         const clickCount = clickCounts[action.href] ?? 0;
                         const isPopular = hasMounted && clickCount >= 3;
 
@@ -139,7 +150,7 @@ export default function QuickActionsGrid() {
                                     className="absolute -top-6 -right-6 w-16 h-16 bg-emerald-400/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                                 />
 
-                                <div className="relative p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400 group-hover:bg-gradient-to-br group-hover:from-emerald-500 group-hover:to-teal-500 group-hover:text-white group-hover:shadow-md group-hover:shadow-emerald-500/30 transition-all duration-300 shrink-0">
+                                <div className={`relative p-2 rounded-lg ${tint} group-hover:scale-110 transition-transform duration-300 shrink-0`}>
                                     <IconComponent size={18} />
                                 </div>
                                 <span className="relative flex-1 font-black text-sm text-slate-700 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
