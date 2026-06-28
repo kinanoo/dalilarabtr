@@ -26,11 +26,14 @@ export default function PageHeader({
         <div
             className={`
         relative overflow-hidden
-        ${gradient ? 'bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800' : 'bg-white dark:bg-slate-900'}
+        ${gradient ? 'bg-gradient-to-br from-emerald-50 via-surface-light to-sky-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800' : 'bg-surface-light dark:bg-slate-900'}
         border-b border-slate-200 dark:border-slate-800
         ${className}
       `}
         >
+            {/* Official colour stripe — a hint of government red */}
+            <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
+
             {/* Background Pattern */}
             {gradient && (
                 <div className="absolute inset-0 opacity-30">
