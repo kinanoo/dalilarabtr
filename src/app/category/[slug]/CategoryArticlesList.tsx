@@ -100,22 +100,22 @@ export default function CategoryArticlesList({
         title={categoryName}
         description={`دليل شامل لكل ما يتعلق بـ ${categoryName} في تركيا لعام 2026.`}
         icon={
-          <div className="inline-flex p-3 bg-white/10 rounded-2xl backdrop-blur-sm">
-            <FolderOpen size={32} className="text-accent-400" />
+          <div className="inline-flex p-3 bg-emerald-500/10 dark:bg-white/10 rounded-2xl backdrop-blur-sm">
+            <FolderOpen size={32} className="text-accent-600 dark:text-accent-400" />
           </div>
         }
       >
         {/* Search Input In Hero */}
         <div className="relative max-w-xl mx-auto mt-6">
           <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-            <Search className="text-slate-400" size={20} />
+            <Search className="text-slate-500 dark:text-slate-400" size={20} />
           </div>
           <input
             type="text"
             placeholder={`بحث في ${categoryName}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pr-10 pl-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-accent-400/50 transition-all font-medium"
+            className="w-full pr-10 pl-4 py-3 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-md border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-accent-400/50 transition-all font-medium"
           />
         </div>
       </PageHero>

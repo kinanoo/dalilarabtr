@@ -315,14 +315,14 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
           title={
             <>
               دليل{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">المواقف</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">المواقف</span>
             </>
           }
           description="تشخيص دقيق لأكثر من 80 حالة قانونية وخدمية"
-          icon={<Briefcase className="w-8 h-8 md:w-10 md:h-10 text-emerald-400" />}
+          icon={<Briefcase className="w-8 h-8 md:w-10 md:h-10 text-emerald-600 dark:text-emerald-400" />}
           className="!py-8 sm:!py-10 !pb-14 sm:!pb-16"
           titleClassName="text-2xl sm:text-3xl md:text-4xl tracking-tight leading-snug"
-          descriptionClassName="text-primary-100/70 text-sm md:text-base leading-relaxed"
+          descriptionClassName="text-sm md:text-base leading-relaxed"
         />
       </div>
 
