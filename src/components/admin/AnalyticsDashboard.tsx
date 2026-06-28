@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     BarChart3, Users, Clock, MessageCircle, Eye, FileText,
     Briefcase, BrainCircuit, MapPin, Activity, CalendarDays,
     Smartphone, Monitor, Tablet, Globe, ArrowUpRight, TrendingUp,
-    Share2, ArrowUp, ArrowDown, Minus, Zap, Timer,
+    Share2, ArrowUp, ArrowDown, Minus, Zap, Timer, RefreshCw,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -188,12 +188,13 @@ export function AnalyticsDashboard() {
     const [contentPerf, setContentPerf] = useState<ContentPerf[]>([]);
     const [loading, setLoading] = useState(true);
     const [rpcError, setRpcError] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
+    const fetchData = useCallback(async (silent = false) => {
             if (!supabase) return;
-            setLoading(true);
-            setRpcError(false);
+            if (silent) setRefreshing(true); else setLoading(true);
+            if (!silent) setRpcError(false);
 
             try {
                 const [
@@ -265,14 +266,21 @@ export function AnalyticsDashboard() {
                 setSpikeMetrics(spikeRes);
                 setContentPerf(perfRes);
             } catch {
-                setRpcError(true);
+                if (!silent) setRpcError(true);
             } finally {
                 setLoading(false);
+                setRefreshing(false);
+                setLastUpdated(new Date());
             }
-        };
-
-        fetchData();
     }, []);
+
+    useEffect(() => {
+        fetchData();
+        // Keep the "live" cards honest — refetch quietly every 45s so الزوار
+        // الآن / spike numbers actually move instead of freezing at page-load.
+        const id = setInterval(() => fetchData(true), 45000);
+        return () => clearInterval(id);
+    }, [fetchData]);
 
     if (loading) return <div className="animate-pulse h-64 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full" />;
 
@@ -288,6 +296,18 @@ export function AnalyticsDashboard() {
 
     return (
         <div className="space-y-8">
+            {/* Refresh bar — last-updated + manual refresh. The cards below now
+                auto-refresh every 45s, so "live" / "spike" actually mean live. */}
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${refreshing ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`} />
+                    {lastUpdated ? `آخر تحديث ${lastUpdated.toLocaleTimeString('en-GB')}` : '…'} · يحدّث تلقائياً كل 45 ثانية
+                </span>
+                <button onClick={() => fetchData(true)} disabled={refreshing} className="text-xs font-bold text-slate-500 hover:text-emerald-600 flex items-center gap-1 disabled:opacity-50 transition-colors">
+                    <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} /> تحديث
+                </button>
+            </div>
+
             {/* ── 0. Spike Alert Banner ──────────────────────────────
                 Triggered server-side only when BOTH:
                   (a) at least 5 concurrent visitors RIGHT NOW
