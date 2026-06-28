@@ -243,7 +243,7 @@ export default async function Home() {
           tight; the rule line on the right gives it a "broadsheet"
           edge instead of a generic centered heading.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-white dark:bg-slate-950 pt-14 pb-2" dir="rtl">
+      <section className="relative bg-surface-light dark:bg-slate-950 pt-14 pb-2" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-end justify-between gap-6 flex-wrap mb-2">
             <div>
@@ -322,7 +322,7 @@ export default async function Home() {
           with their own colors so this section feels like a
           dashboard, not just another article list.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-b from-sky-50 to-white dark:from-slate-900 dark:to-slate-950 py-16" dir="rtl">
+      <section className="relative bg-gradient-to-b from-emerald-50/60 to-surface-light dark:from-slate-900 dark:to-slate-950 py-16" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 mb-8">
           <div className="flex items-center gap-3 mb-3">
             <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
@@ -350,7 +350,7 @@ export default async function Home() {
           behind the title to telegraph "FAQ / questions". Calm
           background on slate-50 lets the cards below pop.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-slate-50 dark:bg-slate-900 py-16" dir="rtl">
+      <section className="relative bg-surface-light dark:bg-slate-900 py-16" dir="rtl">
         <div aria-hidden="true" className="absolute top-6 left-1/2 -translate-x-1/2 text-[200px] sm:text-[280px] font-black text-slate-200 dark:text-slate-800/40 leading-none select-none pointer-events-none">؟</div>
         <div className="relative max-w-3xl mx-auto px-4 text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 shadow-sm">
