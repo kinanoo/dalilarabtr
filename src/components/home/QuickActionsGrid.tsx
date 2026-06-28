@@ -14,10 +14,10 @@ const ICONS: Record<string, any> = {
 // rotate across the shortcut cards so the row reads as a vivid toolbox, not a
 // monochrome list. Light-mode tints + dark-mode equivalents.
 const ICON_TINTS = [
-    'bg-pink-50 text-brand-magenta dark:bg-pink-950/40 dark:text-pink-300',
-    'bg-lime-50 text-brand-lime dark:bg-lime-950/40 dark:text-lime-300',
-    'bg-orange-50 text-brand-orange dark:bg-orange-950/40 dark:text-orange-300',
-    'bg-sky-50 text-brand-blue dark:bg-sky-950/40 dark:text-sky-300',
+    'bg-brand-magenta text-white shadow-sm',
+    'bg-brand-lime text-white shadow-sm',
+    'bg-brand-orange text-white shadow-sm',
+    'bg-brand-blue text-white shadow-sm',
 ];
 
 export default function QuickActionsGrid() {

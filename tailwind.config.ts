@@ -53,7 +53,7 @@ const config: Config = {
           warm: '#E8540F',
         },
         surface: {
-          light: '#F4F5F3',
+          light: '#FAF6EE',
           warm: '#FAF7F2',
         },
       },
