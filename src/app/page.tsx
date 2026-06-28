@@ -8,7 +8,6 @@
 
 export const revalidate = 300; // Cache for 5 minutes (ISR)
 
-import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { supabase, withTimeout } from '@/lib/supabaseClient';
@@ -18,14 +17,13 @@ const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
 
 // Components
 import HeroSection from '@/components/home/HeroSection';
-import HomeUpdates from '@/components/home/HomeUpdates';
+import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
-import FeaturedNewsHero from '@/components/home/FeaturedNewsHero';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import { Radio, Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
+import { Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -223,54 +221,18 @@ export default async function Home() {
 
       {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
           emerald hairline marks it without a heavy divider. */}
-      <div className="relative h-px bg-slate-800" aria-hidden="true">
+      <div className="relative h-px bg-transparent dark:bg-slate-800" aria-hidden="true">
         <div className="absolute inset-x-0 h-px bg-gradient-to-l from-transparent via-emerald-500/40 to-transparent" />
       </div>
 
-      {/* Featured news carousel — server-rendered breaking-news slot.
-          Renders nothing when no article carries the `خبر_رئيسي` tag,
-          so it stays invisible on quiet days. NOTE: this import MUST
-          stay even when local dev preview can't resolve it on a stale
-          branch — production main has the file and Vercel builds fine.
-          Do not delete to silence a worktree dev error. */}
-      <FeaturedNewsHero />
-
-      {/* ═══════════════════════════════════════════════════════════
-          SECTION 1 — آخر التحديثات
-          Magazine style on a light surface. The eyebrow uses a wide
-          tracked uppercase Latin word ("LIVE") next to a pulsing dot
-          so it reads like a newsroom badge. The title is huge and
-          tight; the rule line on the right gives it a "broadsheet"
-          edge instead of a generic centered heading.
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-surface-light dark:bg-slate-950 pt-14 pb-2" dir="rtl">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-end justify-between gap-6 flex-wrap mb-2">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="relative inline-flex items-center justify-center">
-                  <span className="absolute inline-flex w-2.5 h-2.5 rounded-full bg-red-500 opacity-75 animate-ping" />
-                  <span className="relative inline-flex w-2.5 h-2.5 rounded-full bg-red-500" />
-                </span>
-                <span className="text-[11px] font-black tracking-[0.2em] uppercase text-red-600">LIVE · مباشر</span>
-              </div>
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black leading-none text-slate-900 dark:text-slate-50 tracking-tight">
-                آخر التحديثات
-              </h2>
-              <p className="mt-4 text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
-                أبرز الأخبار والقرارات التي تخصّ السوريين والعرب في تركيا — تحديث مستمرّ من مصادر رسمية.
-              </p>
-            </div>
-            <div className="hidden md:flex items-center gap-3 text-slate-400 dark:text-slate-600">
-              <span aria-hidden="true" className="h-px w-24 bg-current" />
-              <Radio size={20} />
-            </div>
-          </div>
-        </div>
-      </section>
-      <Suspense fallback={<div className="h-40 bg-slate-100 rounded-xl animate-pulse"></div>}>
-        <HomeUpdates updates={updates} />
-      </Suspense>
+      {/* Unified news + updates hub. Replaces the old stacked pair —
+          the big FeaturedNewsHero breaking-news carousel AND the separate
+          "آخر التحديثات" HomeUpdates row — which read as two near-identical
+          news rails. NewsHub merges featured/breaking articles with the
+          latest updates (de-duped), then NewsAndUpdates lays them out as a
+          single horizontal scroll-snap rail of date-stamped cards. Renders
+          nothing when there's no news at all. */}
+      <NewsHub updates={updates} />
 
       {/* أدلّة عملية بالصور — illustrated step-by-step guides (HowTo). Hidden
           automatically when there are none. Sits in the light zone with the
