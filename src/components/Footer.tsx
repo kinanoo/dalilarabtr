@@ -49,15 +49,15 @@ export default function Footer() {
               <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-emerald-500 before:rounded-full">أقسام تهمك</h3>
               <ul className="space-y-2.5 text-sm">
                 {footerMenus.section1.length > 0 ? footerMenus.section1.map((item) => (
-                  <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2">{item.label}</Link></li>
+                  <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
                 )) : (
                   // Default Fallback
                   <>
-                    <li><Link href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📂 الدليل الشامل</Link></li>
-                    <li><Link href="/category/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📄 الإقامات في تركيا</Link></li>
-                    <li><Link href="/e-devlet-services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📱 خدمات e-Devlet</Link></li>
-                    <li><Link href="/category/syrians" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏢 خدمات السوريين</Link></li>
-                    <li><Link href="/forms" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📝 نماذج وعقود جاهزة</Link></li>
+                    <li><Link href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📂 الدليل الشامل</Link></li>
+                    <li><Link href="/category/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 الإقامات في تركيا</Link></li>
+                    <li><Link href="/e-devlet-services" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📱 خدمات e-Devlet</Link></li>
+                    <li><Link href="/category/syrians" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏢 خدمات السوريين</Link></li>
+                    <li><Link href="/forms" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📝 نماذج وعقود جاهزة</Link></li>
                   </>
                 )}
               </ul>
@@ -71,16 +71,16 @@ export default function Footer() {
               </h3>
               <ul className="space-y-2.5 text-sm">
                 {footerMenus.section2.length > 0 ? footerMenus.section2.map((item) => (
-                  <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2">{item.label}</Link></li>
+                  <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
                 )) : (
                   // Default Fallback
                   <>
-                    <li key="f1"><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🧭 دليل المواقف</Link></li>
-                    <li key="f2"><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🧮 حاسبة منع الدخول</Link></li>
-                    <li key="f3"><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🛡️ فحص الأكواد الأمنية</Link></li>
-                    <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🆔 فحص قيد الكملك</Link></li>
-                    <li key="f5"><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 حاسبة تكاليف الإقامة</Link></li>
-                    <li key="f6"><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗺️ خريطة المناطق المحظورة</Link></li>
+                    <li key="f1"><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧭 دليل المواقف</Link></li>
+                    <li key="f2"><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧮 حاسبة منع الدخول</Link></li>
+                    <li key="f3"><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🛡️ فحص الأكواد الأمنية</Link></li>
+                    <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🆔 فحص قيد الكملك</Link></li>
+                    <li key="f5"><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💰 حاسبة تكاليف الإقامة</Link></li>
+                    <li key="f6"><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🗺️ خريطة المناطق المحظورة</Link></li>
                   </>
                 )}
               </ul>
@@ -131,8 +131,8 @@ export default function Footer() {
                 © {new Date().getFullYear()} <span className="text-slate-300 font-bold">{SITE_CONFIG.name}</span> — جميع الحقوق محفوظة.
               </p>
 
-              <div className="flex gap-5">
-                <Link href="/about" className="hover:text-emerald-400 transition-colors font-bold text-slate-300">
+              <div className="flex flex-wrap justify-center md:justify-start gap-x-5 gap-y-2">
+                <Link href="/about" className="hover:text-emerald-400 transition-colors font-bold text-slate-300 py-1">
                   من نحن
                 </Link>
                 <Link href="/privacy" className="hover:text-emerald-400 transition-colors">
