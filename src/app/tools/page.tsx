@@ -19,7 +19,6 @@ import {
   CreditCard,
   BookOpen,
   ArrowLeft,
-  Sparkles,
   CheckCircle,
   Wrench,
   Pill,
@@ -196,7 +195,6 @@ function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
       {tool.badge && (
         <Badge
           tone={tool.badge === 'قريباً' ? 'neutral' : tool.badge === 'الأكثر استخداماً' ? 'brand' : 'updated'}
-          icon={tool.badge === 'الأكثر استخداماً' ? <Sparkles size={12} /> : undefined}
           className="absolute -top-3 right-4 z-10 shadow-sm"
         >
           {tool.badge}
@@ -300,11 +298,11 @@ export default function ToolsPage() {
           {/* شريط المعلومات */}
           <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4 mb-8 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="text-emerald-600" size={24} />
+              <CheckCircle className="text-emerald-600" size={24} />
             </div>
             <div>
-              <h2 className="font-bold text-emerald-900 dark:text-emerald-100">جميع الأدوات مجانية 100%</h2>
-              <p className="text-sm text-emerald-700 dark:text-emerald-300">استخدم أي أداة بدون تسجيل أو اشتراك. نتائج فورية ودقيقة.</p>
+              <h2 className="font-bold text-emerald-900 dark:text-emerald-100">جميع الأدوات مجانية</h2>
+              <p className="text-sm text-emerald-700 dark:text-emerald-300">استخدمها بدون تسجيل أو اشتراك.</p>
             </div>
           </div>
 

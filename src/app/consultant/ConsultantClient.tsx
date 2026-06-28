@@ -349,22 +349,9 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               {/* Step 1 */}
               {step === 1 && (
                 <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4 sm:space-y-6">
-                  {/* Step header — magazine-style eyebrow + title +
-                      progress pill. Matches the section-header pattern
-                      used across the site (HomeUpdates, QuickActionsGrid,
-                      zones list). Replaces the flat centered text. */}
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-full">
-                      <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
-                        <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                        <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      </span>
-                      <span className="text-emerald-700 dark:text-emerald-300 font-black text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 1 من 3</span>
-                    </div>
+                  <div className="text-center">
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
-                      من أنت؟
-                      <span className="text-slate-400 dark:text-slate-500 font-medium"> · </span>
-                      <span className="text-emerald-600 dark:text-emerald-400">الصفة القانونية</span>
+                      ما هي <span className="text-emerald-600 dark:text-emerald-400">صفتك القانونية؟</span>
                     </h2>
                   </div>
 
@@ -484,14 +471,7 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               {/* Step 2 */}
               {step === 2 && (
                 <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-full">
-                      <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
-                        <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                        <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      </span>
-                      <span className="text-emerald-700 dark:text-emerald-300 font-black text-[10px] sm:text-xs tracking-widest uppercase">الخطوة 2 من 3</span>
-                    </div>
+                  <div className="text-center">
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
                       ما هو <span className="text-emerald-600 dark:text-emerald-400">المجال؟</span>
                     </h2>
@@ -587,9 +567,8 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
               {/* Step 3 */}
               {step === 3 && !loading && (
                 <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-3 sm:space-y-5">
-                  <div className="text-center space-y-1">
-                    <span className="text-emerald-600 font-bold text-[10px] sm:text-xs tracking-widest uppercase">الخطوة الأخيرة</span>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة:</h2>
+                  <div className="text-center">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة</h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-full sm:max-w-2xl mx-auto">

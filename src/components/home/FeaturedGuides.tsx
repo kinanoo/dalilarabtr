@@ -24,19 +24,11 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
     return (
         <section className="relative bg-white dark:bg-slate-950 pt-4 pb-16" dir="rtl">
             <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center gap-3 mb-3">
-                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                        <ListChecks size={18} />
-                    </span>
-                    <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400">
-                        STEP BY STEP · أدلّة عملية
-                    </span>
-                </div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-50 leading-tight tracking-tight">
-                    أدلّة <span className="bg-gradient-to-l from-emerald-500 to-teal-500 bg-clip-text text-transparent">بالخطوات والصور</span>
+                    شروحات مصوّرة <span className="bg-gradient-to-l from-emerald-500 to-teal-500 bg-clip-text text-transparent">خطوة بخطوة</span>
                 </h2>
                 <p className="mt-3 mb-8 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-                    شروحٌ مصوّرة خطوة بخطوة لأهمّ المعاملات — اضغط أيّ صورة لتكبيرها والتنقّل بين الخطوات.
+                    لأهمّ المعاملات والإجراءات الرسمية في تركيا.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -62,7 +54,7 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
                                             <ListChecks size={26} className="text-white" />
                                         </span>
                                         <span className="relative text-white font-black text-base leading-tight drop-shadow-sm line-clamp-2">{g.category}</span>
-                                        <span className="relative text-white/80 text-[11px] font-bold tracking-wide">دليل خطوة بخطوة</span>
+                                        <span className="relative text-white/80 text-[11px] font-bold tracking-wide">شرح مصوّر</span>
                                     </div>
                                 )}
                                 <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-md">
@@ -78,7 +70,7 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
                                     {g.title}
                                 </h3>
                                 <span className="mt-auto pt-3 inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-sm font-bold">
-                                    اقرأ الدليل
+                                    اقرأ الشرح
                                     <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform" />
                                 </span>
                             </div>

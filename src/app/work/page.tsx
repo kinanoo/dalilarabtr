@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import PageHero from '@/components/PageHero';
-import { Briefcase, Sparkles } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import ShareMenu from '@/components/ShareMenu';
 import CategoryHubCard from '@/components/CategoryHubCard';
@@ -49,13 +49,6 @@ export default async function WorkPage() {
       />
 
       <div className="max-w-screen-2xl mx-auto px-4 py-12">
-        <div className="flex items-center justify-center mb-8">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-black tracking-wider uppercase">
-            <Sparkles size={12} />
-            دليل القسم
-          </span>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.length > 0 ? (
             articles.map((article) => (

@@ -142,11 +142,6 @@ export default function ServicesClient() {
         </div>
 
         <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
-          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-emerald-300 dark:bg-slate-800/80 dark:border-slate-700 rounded-full px-4 py-1 mb-4 shadow-sm animate-in slide-in-from-bottom-4 fade-in duration-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-emerald-700 dark:text-slate-300">نسعى للوصول لأكثر من 500 خدمة موثوقة بفضلكم</span>
-          </div>
-
           <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100 font-cairo">
             ابحث عن <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">الخبراء والمحترفين</span> في تركيا
           </h1>
@@ -366,7 +361,7 @@ export default function ServicesClient() {
             هل تقدم خدمة وتريد <span className="text-emerald-600 dark:text-emerald-400">الوصول لآلاف العملاء؟</span>
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
-            انضم الآن لدليل العرب وكن جزءاً من أكبر تجمع خدمي موثوق في تركيا.
+            انضم إلى دليل العرب وقدّم خدمتك لجمهور عربي واسع في تركيا.
           </p>
           <a
             href={`mailto:${SITE_CONFIG.email}?subject=${encodeURIComponent('طلب إضافة خدمة في دليل العرب')}`}

@@ -129,13 +129,6 @@ export default function SourcesPage() {
                 <p>لا توجد مصادر متاحة حالياً</p>
               </div>
             )}
-
-            {/* ملاحظة */}
-            <div className="mt-10 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-2xl border border-blue-100 dark:border-blue-900/50 text-center">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                💡 <strong>نصيحة:</strong> احفظ هذه الصفحة في المفضلة للوصول السريع للروابط الرسمية
-              </p>
-            </div>
           </>
         )}
       </div>

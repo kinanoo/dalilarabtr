@@ -1,5 +1,5 @@
 import PageHero from '@/components/PageHero';
-import { Users, Scale, BadgeCheck, ShieldCheck, Sparkles, BookOpen, Shield, Clock, Heart } from 'lucide-react';
+import { Users, Scale, BadgeCheck, ShieldCheck, BookOpen, Shield, Clock, Heart } from 'lucide-react';
 import { Metadata } from 'next';
 import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
@@ -53,10 +53,6 @@ export default async function AboutPage() {
             <section className="py-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.08),transparent_60%)]" aria-hidden />
                 <div className="max-w-4xl mx-auto text-center relative">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-4">
-                        <Sparkles size={12} />
-                        قصتنا
-                    </span>
                     <h2 className="text-3xl sm:text-4xl font-black mb-6 text-slate-800 dark:text-slate-100 leading-tight">
                         لماذا أسسنا <span className="bg-gradient-to-l from-emerald-600 to-emerald-500 bg-clip-text text-transparent">دليل العرب في تركيا</span>؟
                     </h2>
@@ -80,9 +76,6 @@ export default async function AboutPage() {
             <section className="py-16 px-4 bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-12">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
-                            مبادئنا
-                        </span>
                         <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100">
                             ثلاث ركائز لا نحيد عنها
                         </h2>
@@ -129,9 +122,6 @@ export default async function AboutPage() {
             <section className="py-16 px-4">
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-10">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
-                            بالأرقام
-                        </span>
                         <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100">
                             ما حققناه حتى الآن
                         </h2>

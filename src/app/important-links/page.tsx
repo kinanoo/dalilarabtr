@@ -1,16 +1,3 @@
-/**
- * 🔗 صفحة الروابط الهامة - تصميم جديد متناسق
- * ==========================================
- * 
- * 📁 انسخ هذا الملف إلى: src/app/important-links/page.tsx
- *    (استبدل الملف القديم)
- * 
- * التحسينات:
- * - بطاقات متساوية الارتفاع
- * - روابط مختصرة ومنظمة
- * - تصميم أفضل على الجوال
- */
-
 'use client';
 
 import PageHero from '@/components/PageHero';
@@ -251,9 +238,6 @@ export default function ImportantLinksPage() {
                 <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
-                  رسمي
-                </span>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
                   المصادر الحكومية الرسمية
                 </h2>
@@ -285,9 +269,6 @@ export default function ImportantLinksPage() {
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-1">
-                  منظمات
-                </span>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
                   منظمات وموارد مفيدة
                 </h2>
@@ -312,12 +293,9 @@ export default function ImportantLinksPage() {
         )}
 
         {/* ملاحظة أسفل الصفحة */}
-        <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800 space-y-1">
+        <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800">
           <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2">
             <ShieldCheck size={12} className="text-green-500" />
-            يتم تحديث هذه الروابط بشكل دوري لضمان الدقة والموثوقية
-          </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-600">
             آخر تحقق من صلاحية الروابط: مارس 2026
           </p>
         </div>

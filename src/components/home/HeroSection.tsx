@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Sparkles } from 'lucide-react';
 
 /**
  * HeroSection — light, airy, colourful hero (government-portal inspired:
@@ -31,19 +30,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
             <div className="max-w-4xl mx-auto text-center relative z-[25]">
                 <div className="animate-hero-entrance">
-                    {/* Eyebrow */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/70 dark:bg-white/[0.06] border border-emerald-300 dark:border-emerald-500/30 rounded-full backdrop-blur-sm mb-5 shadow-sm">
-                        <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
-                            <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                            <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        </span>
-                        <Sparkles size={11} className="text-emerald-600 dark:text-emerald-300" />
-                        <span className="text-[10px] sm:text-xs font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-200">
-                            LIVE · مباشر · 2026
-                        </span>
-                    </div>
-
-                    <h1 className="text-4xl md:text-6xl font-black mb-0 leading-[1.4] text-slate-900 dark:text-white">
+                    <h1 className="text-4xl md:text-6xl font-black mb-0 leading-[1.4] text-slate-900 dark:text-white pt-2">
                         دليلك{' '}
                         <span
                             className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 via-teal-500 to-cyan-600 dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300"

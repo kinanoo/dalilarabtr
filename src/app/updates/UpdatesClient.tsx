@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAdminUpdates } from '@/lib/useAdminData';
 import {
-    Bell, Sparkles, Loader2, Calendar,
+    Bell, Loader2, Calendar,
     Newspaper, ArrowLeft,
     Search, Filter, Clock, TrendingUp, ChevronDown, Flame, Eye,
     FileText, AlertCircle, Shield, HelpCircle
@@ -161,7 +161,7 @@ export default function UpdatesClient() {
                     </div>
                     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-3 col-span-2 sm:col-span-1">
                         <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <Sparkles size={18} className="text-blue-600" />
+                            <Flame size={18} className="text-blue-600" />
                         </div>
                         <div>
                             <p className="text-2xl font-black text-slate-900 dark:text-white">{weekCount}</p>
@@ -361,8 +361,8 @@ function AutoEventCard({ item }: { item: any }) {
                             {cfg.type}
                         </span>
                         {isNew && (
-                            <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-0.5">
-                                <Sparkles size={9} /> جديد
+                            <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">
+                                جديد
                             </span>
                         )}
                         <time dateTime={item.date} className="text-[11px] text-slate-400 flex items-center gap-1 mr-auto">
@@ -450,8 +450,8 @@ function ManualUpdateCard({ u }: { u: any }) {
                         </span>
 
                         {isNew && !isUrgent && (
-                            <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-0.5">
-                                <Sparkles size={9} /> جديد
+                            <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">
+                                جديد
                             </span>
                         )}
 

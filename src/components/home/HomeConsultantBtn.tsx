@@ -21,16 +21,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck, RadioTower, MessageSquareText } from 'lucide-react';
-
-// The three trust signals that used to live in HeroTrustStrip.
-// Kept the same labels so anyone arriving from saved/shared screenshots
-// still sees the familiar wording.
-const TRUST_SIGNALS = [
-    { icon: ShieldCheck, label: 'مصادر رسمية' },
-    { icon: RadioTower, label: 'تحديث مباشر' },
-    { icon: MessageSquareText, label: 'بالعربية للسوريين والعرب' },
-] as const;
+import { ArrowLeft } from 'lucide-react';
 
 export default function HomeConsultantBtn() {
     return (
@@ -50,22 +41,6 @@ export default function HomeConsultantBtn() {
                 </motion.button>
             </Link>
 
-            {/* Trust signals — faint gold over the dark hero. Color is
-                amber-200 with low opacity (visible enough to read, low
-                enough to feel like a watermark, not a CTA). Tiny font
-                + minimal padding so the trio reads as "context for the
-                button above", not as its own section. */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-md">
-                {TRUST_SIGNALS.map(({ icon: Icon, label }) => (
-                    <span
-                        key={label}
-                        className="inline-flex items-center gap-1 text-slate-600 dark:text-amber-200/75 text-[10px] sm:text-[11px] font-bold bg-white/80 dark:bg-white/[0.03] border border-slate-200 dark:border-amber-200/15 rounded-full px-2 py-0.5 whitespace-nowrap shadow-sm"
-                    >
-                        <Icon size={11} className="text-emerald-600 dark:text-amber-300/80" />
-                        <span>{label}</span>
-                    </span>
-                ))}
-            </div>
         </div>
     );
 }

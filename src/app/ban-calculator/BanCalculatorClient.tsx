@@ -5,7 +5,7 @@ import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import { useState } from 'react';
-import { Calculator, AlertTriangle, CheckCircle, Info, Plane, Sparkles } from 'lucide-react';
+import { Calculator, AlertTriangle, CheckCircle, Info, Plane } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
 
@@ -85,14 +85,6 @@ export default function BanCalculator() {
 
       {/* Main Container - Widened for horizontal layout */}
       <div className="max-w-5xl mx-auto px-4 py-8 mt-10 relative z-10">
-
-        {/* Eyebrow */}
-        <div className="flex items-center justify-center mb-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-[11px] font-black tracking-wider uppercase">
-            <Sparkles size={12} />
-            أداة قانونية مجانية
-          </span>
-        </div>
 
         {/* Honest disclaimer — this is an estimate, NOT a legal ruling. Ban
             rules and codes change and depend on the individual case. */}

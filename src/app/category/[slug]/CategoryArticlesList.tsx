@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FileText, ArrowLeft, AlertCircle, Sparkles, Calendar, Loader2, FolderOpen, Search, X, Clock, RefreshCw } from 'lucide-react';
+import { FileText, ArrowLeft, AlertCircle, Calendar, Loader2, FolderOpen, Search, X, Clock, RefreshCw } from 'lucide-react';
 import { useAdminArticles, isNewContent, isRecentlyUpdated, estimateReadingTime } from '@/lib/useAdminData';
 import type { AdminArticle } from '@/lib/types';
 import { TAG_LABELS } from '@/lib/config';
@@ -124,7 +124,6 @@ export default function CategoryArticlesList({
         {/* Active filter pill — premium chip with icon + clear button */}
         {activeTag && (
           <div className="mb-8 inline-flex items-center gap-3 bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/60 rounded-full pl-2 pr-4 py-1.5 shadow-sm">
-            <Sparkles size={14} className="text-emerald-600 dark:text-emerald-400" />
             <span className="text-emerald-700 dark:text-emerald-200 font-black text-sm tracking-wide">
               {TAG_LABELS[activeTag] || activeTag}
             </span>
@@ -195,8 +194,8 @@ export default function CategoryArticlesList({
 
                     <div className="flex items-center gap-1.5 flex-wrap justify-end">
                       {isNew && (
-                        <span className="bg-gradient-to-l from-emerald-500 to-teal-500 text-white text-[10px] font-black tracking-wide uppercase px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1 shadow-sm shadow-emerald-500/40">
-                          <Sparkles size={10} /> جديد
+                        <span className="bg-gradient-to-l from-emerald-500 to-teal-500 text-white text-[10px] font-black tracking-wide uppercase px-2 py-0.5 rounded-full shadow-sm shadow-emerald-500/40">
+                          جديد
                         </span>
                       )}
                       {isUpdated && (

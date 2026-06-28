@@ -106,8 +106,8 @@ export default function CodesClient({ initialCodes }: { initialCodes: AdminCode[
       <ToolSchema tool="security-codes" />
 
       <PageHero
-        title="كاشف ومحلل الأكواد الأمنية"
-        description="افهم كل أكواد المنع والحظر بالتفصيل"
+        title="كاشف الأكواد الأمنية"
+        description="افهم معنى أكواد المنع والحظر وأسبابها"
         icon={<ShieldAlert className="w-10 h-10 md:w-12 md:h-12 text-red-500" />}
       >
         <HeroSearchInput

@@ -206,7 +206,7 @@ export default async function Home() {
       {/* 1. HERO SECTION (Client) */}
       <HeroSection>
         {/* Search is ABOVE the button as requested */}
-        <div id="search" className="w-full relative z-30 mb-1.5">
+        <div id="search" className="w-full relative z-30 mb-5">
           <LazyGlobalSearch />
         </div>
         {/* HomeConsultantBtn now ALSO carries the three trust badges
