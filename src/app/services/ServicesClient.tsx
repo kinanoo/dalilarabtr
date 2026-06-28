@@ -130,25 +130,28 @@ export default function ServicesClient() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
       {/* Hero / Search Section */}
-      <section className="relative overflow-hidden bg-slate-900 text-white pb-8 pt-6 lg:pt-8">
+      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 dark:text-white pb-8 pt-6 lg:pt-8">
+
+        {/* Official colour stripe — a hint of government red */}
+        <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
 
         {/* Abstract Background Shapes */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-10 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20 dark:opacity-10 pointer-events-none">
           <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-emerald-500 blur-[120px]" />
           <div className="absolute top-[40%] -left-[10%] w-[400px] h-[400px] rounded-full bg-blue-600 blur-[100px]" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
-          <div className="inline-flex items-center gap-2 bg-slate-800/80 backdrop-blur border border-slate-700 rounded-full px-4 py-1 mb-4 animate-in slide-in-from-bottom-4 fade-in duration-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-slate-300">نسعى للوصول لأكثر من 500 خدمة موثوقة بفضلكم</span>
+          <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-emerald-300 dark:bg-slate-800/80 dark:border-slate-700 rounded-full px-4 py-1 mb-4 shadow-sm animate-in slide-in-from-bottom-4 fade-in duration-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-bold text-emerald-700 dark:text-slate-300">نسعى للوصول لأكثر من 500 خدمة موثوقة بفضلكم</span>
           </div>
 
           <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100 font-cairo">
-            ابحث عن <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">الخبراء والمحترفين</span> في تركيا
+            ابحث عن <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">الخبراء والمحترفين</span> في تركيا
           </h1>
 
-          <p className="text-base text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
+          <p className="text-base text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
             منصة دليل العرب تجمع لك أفضل الأطباء، المحامين، والخدمات العامة في مكان واحد.
           </p>
 
@@ -188,8 +191,8 @@ export default function ServicesClient() {
                 key={cat.id}
                 onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${activeCategory === cat.id
-                  ? 'bg-white text-slate-900 border-white shadow-lg shadow-emerald-500/20 scale-105'
-                  : 'bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-700 hover:border-slate-500'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-500/30 scale-105 dark:bg-white dark:text-slate-900 dark:border-white'
+                  : 'bg-white/70 text-slate-700 border-slate-200 hover:bg-white hover:border-emerald-300 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:border-slate-500'
                   }`}
               >
                 {cat.label}
@@ -201,7 +204,7 @@ export default function ServicesClient() {
               <select
                 value={activeCity}
                 onChange={(e) => setActiveCity(e.target.value)}
-                className="appearance-none px-4 py-2 pr-8 rounded-lg text-xs font-bold border bg-slate-800/50 text-slate-300 border-slate-700 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                className="appearance-none px-4 py-2 pr-8 rounded-lg text-xs font-bold border bg-white/70 text-slate-700 border-slate-200 hover:bg-white dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
                 <option value="all">كل المدن</option>
                 {availableCities.map(city => (
