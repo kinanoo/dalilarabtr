@@ -4,28 +4,25 @@ import dynamic from 'next/dynamic';
 import "./globals.css";
 import "../styles/animations.css";
 import "../styles/dark-mode.css";
-import { Cairo, Tajawal } from 'next/font/google';
+import { IBM_Plex_Sans_Arabic } from 'next/font/google';
 
-// Cairo stays for body text — its lighter weights (400/600/700) render
-// well in long-form Arabic paragraphs.
-const cairo = Cairo({
+// IBM Plex Sans Arabic — a famous, official, global Arabic typeface (IBM's
+// open-source corporate font). Clean, modern, government-grade legibility.
+// Replaces Cairo/Tajawal site-wide while KEEPING the same CSS variable names
+// (--font-cairo for body, --font-tajawal for headings) so every existing
+// `font-cairo` class + heading rule keeps working — only the glyphs change.
+const cairo = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
-  weight: ['400', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
   variable: '--font-cairo',
   preload: true,
 });
 
-// Tajawal is loaded ONLY for headings. The user reported Cairo Black
-// (font-black, weight 900) had cramped letterforms where Arabic letters
-// touched each other on bold news headlines. Tajawal's 800/900 weights
-// have cleaner kerning + better letter separation — closer to the
-// official-government look on sites like mofaex.gov.sy. Exposed as a CSS
-// custom property `--font-tajawal` and routed via globals.css to every
-// heading element (h1-h6) + `.font-black` utility.
-const tajawal = Tajawal({
+// Same family, heavier weights, for headings (routed via --font-tajawal).
+const tajawal = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
-  weight: ['700', '800', '900'],
+  weight: ['600', '700'],
   display: 'swap',
   variable: '--font-tajawal',
   preload: true,

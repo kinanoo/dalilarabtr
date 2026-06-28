@@ -59,9 +59,9 @@ export default function HomeConsultantBtn() {
                 {TRUST_SIGNALS.map(({ icon: Icon, label }) => (
                     <span
                         key={label}
-                        className="inline-flex items-center gap-1 text-amber-200/75 text-[10px] sm:text-[11px] font-bold bg-white/[0.03] border border-amber-200/15 rounded-full px-2 py-0.5 whitespace-nowrap"
+                        className="inline-flex items-center gap-1 text-slate-600 dark:text-amber-200/75 text-[10px] sm:text-[11px] font-bold bg-white/80 dark:bg-white/[0.03] border border-slate-200 dark:border-amber-200/15 rounded-full px-2 py-0.5 whitespace-nowrap shadow-sm"
                     >
-                        <Icon size={11} className="text-amber-300/80" />
+                        <Icon size={11} className="text-emerald-600 dark:text-amber-300/80" />
                         <span>{label}</span>
                     </span>
                 ))}
