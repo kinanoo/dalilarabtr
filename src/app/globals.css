@@ -90,6 +90,10 @@ h1, h2, h3, h4, h5, h6,
   direction: rtl;
   text-align: right;
   line-height: 1.85;
+  /* Long unbreakable tokens (URLs, security codes, file paths) wrap instead
+     of forcing a horizontal scrollbar on narrow phones. break-word only
+     kicks in when a word would overflow — normal Arabic words stay intact. */
+  overflow-wrap: break-word;
 }
 
 /* Headings */
@@ -212,6 +216,32 @@ html.dark .tiptap hr, html.dark .prose-content hr {
 .prose-content img { cursor: zoom-in; transition: filter 0.2s, transform 0.2s; }
 .prose-content img:hover { filter: brightness(1.04); }
 
+/* Figures — illustrated guides wrap each screenshot in <figure>. Without a
+   rule the browser default (margin: 1em 40px) indents every image 40px on
+   each side (narrowing it badly on phones) and gives no clear gap between
+   consecutive screenshots. Pin full-width + a comfortable vertical rhythm,
+   center the image, and style the caption. */
+.tiptap figure, .prose-content figure {
+  /* !important overrides the inline `margin:0` baked into older published
+     figures (can't mass-edit the stored HTML) so every screenshot gets a
+     consistent vertical gap — never less spacing, only safe breathing room. */
+  margin: 1.5rem 0 !important;
+  max-width: 100%;
+}
+.tiptap figure img, .prose-content figure img {
+  margin: 0 auto;
+}
+.tiptap figcaption, .prose-content figcaption {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+html.dark .tiptap figcaption, html.dark .prose-content figcaption {
+  color: #94a3b8;
+}
+
 /* Code */
 .tiptap code, .prose-content code {
   background: #f1f5f9;
@@ -220,10 +250,39 @@ html.dark .tiptap hr, html.dark .prose-content hr {
   border-radius: 0.25rem;
   font-size: 0.875em;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-wrap: anywhere;
 }
 html.dark .tiptap code, html.dark .prose-content code {
   background: rgba(30, 41, 59, 0.8);
   color: #5eead4;
+}
+
+/* Code blocks (<pre>) — keep long code from breaking the mobile layout:
+   the block scrolls inside itself instead of pushing the page wider.
+   Previously only inline `code` was styled; a bare <pre> inherited the
+   browser default (white-space: pre, no overflow guard) and could force a
+   full-page horizontal scrollbar on phones. */
+.tiptap pre, .prose-content pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  direction: ltr;
+  text-align: left;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.tiptap pre code, .prose-content pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+  white-space: pre;
+  overflow-wrap: normal;
 }
 
 /* Dark-mode blockquote tint — audit found bare blockquotes on dark
