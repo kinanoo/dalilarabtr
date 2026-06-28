@@ -56,8 +56,13 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
                                         className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-600">
-                                        <ListChecks size={64} className="text-white/85" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 px-4 text-center overflow-hidden">
+                                        <ListChecks aria-hidden size={120} className="absolute -bottom-5 -left-5 text-white/10 rotate-[-12deg]" />
+                                        <span className="relative inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm ring-1 ring-white/25">
+                                            <ListChecks size={26} className="text-white" />
+                                        </span>
+                                        <span className="relative text-white font-black text-base leading-tight drop-shadow-sm line-clamp-2">{g.category}</span>
+                                        <span className="relative text-white/80 text-[11px] font-bold tracking-wide">دليل خطوة بخطوة</span>
                                     </div>
                                 )}
                                 <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-md">
