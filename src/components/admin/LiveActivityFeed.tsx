@@ -45,6 +45,14 @@ const CONFIG: Record<string, { icon: typeof Activity; cls: string; label: string
 };
 const FALLBACK = { icon: Activity, cls: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400', label: 'نشاط' };
 
+// Only INBOUND events that may need the admin to act — NOT the admin's own
+// publishing (new_article / new_update / push_broadcast / ticker), which is
+// noise to the person who just did it. Keeps the home short + useful.
+const ACTIONABLE = new Set([
+    'new_member', 'new_comment', 'new_review', 'new_question',
+    'new_request', 'new_zone_report', 'new_service',
+]);
+
 const TABLE_ROUTE: Record<string, string> = {
     articles: '/admin/articles',
     comments: '/admin/community',
@@ -83,8 +91,9 @@ export default function LiveActivityFeed() {
                 .from('admin_activity_log')
                 .select('id, event_type, title, detail, created_at, entity_table, entity_id')
                 .order('created_at', { ascending: false })
-                .limit(10);
-            setEvents((data as ActivityEvent[]) || []);
+                .limit(40);
+            const rows = ((data as ActivityEvent[]) || []).filter((e) => e.event_type && ACTIONABLE.has(e.event_type));
+            setEvents(rows.slice(0, 6));
         } catch { /* best-effort */ }
         setLoading(false);
     }, []);
@@ -106,21 +115,21 @@ export default function LiveActivityFeed() {
 
     return (
         <div>
-            <h2 className="text-[11px] font-black text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-1.5 tracking-[0.2em] uppercase">
+            <h2 className="text-[11px] font-black text-rose-600 dark:text-rose-400 mb-2 flex items-center gap-1.5 tracking-[0.2em] uppercase">
                 <span className="relative inline-flex items-center justify-center w-2 h-2">
                     <span className="absolute inline-flex w-2 h-2 rounded-full bg-rose-500 opacity-75 animate-ping" />
                     <span className="relative inline-flex w-2 h-2 rounded-full bg-rose-500" />
                 </span>
-                النشاط المباشر
+                جديد يحتاج متابعتك
             </h2>
 
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden">
                 {loading ? (
                     <div className="p-8 text-center text-sm text-slate-400">… جاري التحميل</div>
                 ) : events.length === 0 ? (
-                    <div className="p-8 text-center text-sm text-slate-400 flex flex-col items-center gap-2">
-                        <Activity size={26} className="text-slate-300" />
-                        لا يوجد نشاط بعد — ستظهر هنا أحدث أحداث الموقع لحظياً.
+                    <div className="p-6 text-center text-sm text-slate-400 flex flex-col items-center gap-2">
+                        <Activity size={24} className="text-emerald-300" />
+                        كل شيء تحت السيطرة — لا جديد يحتاج متابعتك.
                     </div>
                 ) : (
                     events.map((e) => {
@@ -128,9 +137,9 @@ export default function LiveActivityFeed() {
                         const route = e.entity_table ? TABLE_ROUTE[e.entity_table] : undefined;
                         const Icon = c.icon;
                         const Row = (
-                            <div className="flex items-start gap-3 p-3 sm:p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                                <span className={`shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl ${c.cls}`}>
-                                    <Icon size={16} />
+                            <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                                <span className={`shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg ${c.cls}`}>
+                                    <Icon size={15} />
                                 </span>
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center justify-between gap-2">

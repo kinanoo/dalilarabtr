@@ -76,6 +76,7 @@ export default function NewsTickerManager() {
 
     async function handleDelete(id: string) {
         if (!supabase) return;
+        if (!confirm('هل أنت متأكد من حذف هذا الخبر من الشريط؟ لا يمكن التراجع.')) return;
         const toastId = toast.loading('جاري الحذف...');
         const { error } = await supabase.from('news_ticker').delete().eq('id', id);
 

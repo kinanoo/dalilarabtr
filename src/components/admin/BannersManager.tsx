@@ -48,43 +48,57 @@ export default function BannersManager() {
         if (!newBanner.content) return;
         if (!supabase) return;
 
-        // Deactivate all existing banners first (only one active at a time)
-        if (newBanner.is_active) {
-            await supabase.from('site_banners').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
-        }
-
-        const { error } = await supabase.from('site_banners').insert([newBanner]);
-        if (!error) {
-            toast.success('تم إضافة ونشر البنر بنجاح');
-            setNewBanner({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
-            fetchBanners();
-        } else {
+        // Insert the new banner FIRST, then deactivate the others. This order
+        // means a failure can never leave the site with ZERO active banners
+        // (old one stays up if the insert fails). The previous order
+        // (deactivate-all THEN insert) could blank the banner on a failed insert.
+        const { data: inserted, error } = await supabase
+            .from('site_banners')
+            .insert([newBanner])
+            .select('id')
+            .single();
+        if (error) {
             logger.error('Insert error:', error);
             toast.error('فشل إضافة البنر، حاول مجدداً');
+            return;
         }
+        if (newBanner.is_active && inserted?.id) {
+            const { error: deErr } = await supabase.from('site_banners').update({ is_active: false }).neq('id', inserted.id);
+            if (deErr) {
+                logger.error('Deactivate-others error:', deErr);
+                toast.error('نُشر البنر لكن تعذّر تعطيل البنرات الأخرى — راجعها يدوياً');
+            }
+        }
+        toast.success('تم إضافة ونشر البنر بنجاح');
+        setNewBanner({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
+        fetchBanners();
     }
 
     async function toggleActive(id: string, currentState: boolean) {
         if (!supabase) return;
-        // بنر واحد نشط فقط لتجنب الفوضى
-        if (!currentState) {
-            // تعطيل جميع البنرات الأخرى أولاً
-            await supabase.from('site_banners').update({ is_active: false }).neq('id', id);
-        }
-
+        // Only one active banner at a time. Flip THIS one first, then (when
+        // activating) deactivate the rest — so a mid-way failure never leaves
+        // zero active.
         const { error } = await supabase.from('site_banners').update({ is_active: !currentState }).eq('id', id);
-        if (!error) {
-            toast.success(!currentState ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
-            fetchBanners();
-        } else {
+        if (error) {
             logger.error('Update error:', error);
             toast.error('فشل تحديث البنر، حاول مجدداً');
+            return;
         }
+        if (!currentState) {
+            const { error: deErr } = await supabase.from('site_banners').update({ is_active: false }).neq('id', id);
+            if (deErr) {
+                logger.error('Deactivate-others error:', deErr);
+                toast.error('فُعّل البنر لكن تعذّر تعطيل الباقي — راجعها يدوياً');
+            }
+        }
+        toast.success(!currentState ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
+        fetchBanners();
     }
 
     async function handleDelete(id: string) {
         if (!supabase) return;
-        // if (!confirm('هل أنت متأكد من الحذف؟')) return; // Removed to unblock user
+        if (!confirm('هل أنت متأكد من حذف هذا البنر؟ لا يمكن التراجع.')) return;
 
         const toastId = toast.loading('جاري مسح البنر...');
         const { error } = await supabase.from('site_banners').delete().eq('id', id);

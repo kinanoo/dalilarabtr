@@ -27,24 +27,15 @@ const QUICK_LINKS = [
 
 export default function AdminDashboard() {
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 pb-20">
 
-      {/* 1. Greeting + Search — magazine-style header with eyebrow */}
-      <div className="text-center space-y-4 pt-2 sm:pt-4">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-full mb-3">
-            <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
-              <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
-              <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            </span>
-            <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">
-              ADMIN · لوحة التحكم
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+      {/* Greeting + Search — slim header (compact, no decorative eyebrow) */}
+      <div className="space-y-3 pt-1">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
             مرحباً <span className="bg-gradient-to-l from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">بك</span>
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">ابحث أو اختر من الأقسام أدناه</p>
+          <span className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hidden sm:inline">لوحة التحكم</span>
         </div>
         <GlobalSearch />
       </div>
