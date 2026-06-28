@@ -352,7 +352,8 @@ export default function ServicesClient() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="relative overflow-hidden bg-slate-900 text-white py-16 text-center shadow-2xl">
+      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-900 dark:bg-none dark:text-white py-16 text-center shadow-2xl">
+        <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
         {/* Background Decor */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20 pointer-events-none">
           <div className="absolute top-[-50%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500 blur-[100px] mix-blend-screen" />
@@ -361,10 +362,10 @@ export default function ServicesClient() {
         </div>
 
         <div className="container mx-auto px-4 relative z-10 max-w-2xl">
-          <h2 className="text-2xl md:text-3xl font-black mb-6 leading-tight font-cairo">
-            هل تقدم خدمة وتريد <span className="text-emerald-400">الوصول لآلاف العملاء؟</span>
+          <h2 className="text-2xl md:text-3xl font-black mb-6 leading-tight font-cairo text-slate-900 dark:text-white">
+            هل تقدم خدمة وتريد <span className="text-emerald-600 dark:text-emerald-400">الوصول لآلاف العملاء؟</span>
           </h2>
-          <p className="text-lg text-slate-300 mb-10 leading-relaxed">
+          <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
             انضم الآن لدليل العرب وكن جزءاً من أكبر تجمع خدمي موثوق في تركيا.
           </p>
           <a

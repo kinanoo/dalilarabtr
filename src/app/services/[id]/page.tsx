@@ -119,12 +119,13 @@ export default async function ServiceDetailsPage(
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             {/* Header / Cover */}
-            <div className="bg-slate-900 text-white pt-8 pb-32 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-900 to-emerald-900/20" />
+            <div className="bg-gradient-to-l from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-900 dark:bg-none dark:text-white pt-8 pb-32 relative overflow-hidden">
+                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-blue/10 via-transparent to-brand-magenta/10 dark:from-blue-900/40 dark:via-slate-900 dark:to-emerald-900/20" />
                 <div className="container mx-auto px-4 relative z-10">
                     <Link
                         href="/services"
-                        className="inline-flex items-center gap-2 text-slate-300 hover:text-white transition-colors mb-8 bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm"
+                        className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors mb-8 bg-slate-900/5 dark:bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm"
                     >
                         <ArrowRight size={18} />
                         <span className="text-sm font-bold">العودة للخدمات</span>
