@@ -242,6 +242,23 @@ html.dark .tiptap figcaption, html.dark .prose-content figcaption {
   color: #94a3b8;
 }
 
+/* Highlights & inline-coloured text — theme-safe baseline.
+   The editor lets admins highlight text (TipTap Highlight / <mark>) or set a
+   text colour. Highlight backgrounds are light pastels, but body text INHERITS
+   the theme colour (near-white in dark mode) — so highlighted runs turned
+   white-on-pastel and vanished in dark mode. Force dark text on any highlight
+   in BOTH themes (non-!important so ProseContrastGuard can override per element
+   when a background is unusually dark). Padding/clone make multi-line
+   highlights read as a continuous marker rather than chopped boxes. */
+.tiptap mark, .prose-content mark,
+.tiptap [style*="background"], .prose-content [style*="background"] {
+  color: #1f2937;
+  border-radius: 4px;
+  padding: 0.02em 0.22em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* Code */
 .tiptap code, .prose-content code {
   background: #f1f5f9;
