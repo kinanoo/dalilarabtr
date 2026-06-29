@@ -10,6 +10,7 @@ import UniversalComments from '@/components/community/UniversalComments';
 
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
+import { categorySlugForName } from '@/lib/serviceCategories';
 
 export const revalidate = 60;
 
@@ -89,8 +90,8 @@ export default async function ServiceDetailsPage(
         : provider.rating ? Number(provider.rating) : null;
     const reviewCount = typeof provider.review_count === 'number' ? provider.review_count : 0;
     const hasUsableRating = numericRating !== null && !Number.isNaN(numericRating) && reviewCount > 0;
-    const jsonLd = {
-        '@context': 'https://schema.org',
+    const catSlug = categorySlugForName(provider.category);
+    const serviceLd = {
         '@type': 'Service',
         name: `${provider.profession} — ${provider.name}`,
         description: provider.description || `خدمات ${provider.category} في ${provider.city}`,
@@ -114,6 +115,20 @@ export default async function ServiceDetailsPage(
         areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
         url: `${SITE_CONFIG.siteUrl}/services/${id}`,
     };
+
+    // BreadcrumbList — Home › Services › [Category] › Provider. Links the
+    // provider into the category landing page hierarchy for Google.
+    const breadcrumbLd = {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_CONFIG.siteUrl },
+            { '@type': 'ListItem', position: 2, name: 'الخدمات', item: `${SITE_CONFIG.siteUrl}/services` },
+            ...(catSlug ? [{ '@type': 'ListItem', position: 3, name: provider.category, item: `${SITE_CONFIG.siteUrl}/services/category/${catSlug}` }] : []),
+            { '@type': 'ListItem', position: catSlug ? 4 : 3, name: provider.name, item: `${SITE_CONFIG.siteUrl}/services/${id}` },
+        ],
+    };
+
+    const jsonLd = { '@context': 'https://schema.org', '@graph': [serviceLd, breadcrumbLd] };
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
@@ -175,7 +190,11 @@ export default async function ServiceDetailsPage(
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Briefcase size={18} className="text-slate-400" />
-                                    <span>{provider.category}</span>
+                                    {catSlug ? (
+                                        <Link href={`/services/category/${catSlug}`} className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors">{provider.category}</Link>
+                                    ) : (
+                                        <span>{provider.category}</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

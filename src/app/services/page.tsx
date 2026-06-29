@@ -70,7 +70,8 @@ export default async function ServicesPage() {
         '@type': 'ItemList',
         numberOfItems: total,
         itemListElement: rows.map((p, i) => {
-            const url = `${base}/services/${p.slug || p.id}`;
+            // Detail route resolves by id only (eq('id', id)) — never use slug here.
+            const url = `${base}/services/${p.id}`;
             const biz: Record<string, unknown> = {
                 '@type': 'LocalBusiness',
                 name: p.name,
