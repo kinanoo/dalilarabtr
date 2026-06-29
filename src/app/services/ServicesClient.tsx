@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, MapPin, PhoneCall, MessageCircle, Briefcase, Star, X, Loader2, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
+import { canonicalCity } from '@/lib/turkishCities';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import logger from '@/lib/logger';
@@ -73,20 +74,9 @@ export default function ServicesClient() {
     }
 
     if (data) {
-      // Normalize city names to prevent duplicates like "Istanbul", "إسطنبول", "اسطنبول"
-      const normalizedData = data.map((d: any) => {
-        let normalizedCity = d.city;
-        if (typeof normalizedCity === 'string') {
-          const lowerCity = normalizedCity.toLowerCase().trim();
-          if (lowerCity === 'istanbul' || lowerCity === 'إسطنبول' || lowerCity === 'اسطنبول') {
-            normalizedCity = 'اسطنبول';
-          }
-          if (lowerCity === 'gaziantep' || lowerCity === 'غازي عنتاب') {
-            normalizedCity = 'غازي عنتاب';
-          }
-        }
-        return { ...d, city: normalizedCity };
-      });
+      // Collapse every city spelling (Istanbul / اسطنبول / إسطنبول / …) to one
+      // canonical Arabic name so the dropdown + filter have no duplicates.
+      const normalizedData = data.map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city }));
 
       // Extract unique cities and extra categories when loading all data
       if (activeCategory === 'all' && searchQuery === '' && activeCity === 'all') {
