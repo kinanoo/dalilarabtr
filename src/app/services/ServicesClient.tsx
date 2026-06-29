@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, PhoneCall, MessageCircle, Briefcase, Star, X, Loader2, CheckCircle } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
+import ProviderCard from '@/components/services/ProviderCard';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import logger from '@/lib/logger';
@@ -90,15 +91,13 @@ export default function ServicesClient() {
         setExtraCategories(newCats.sort());
       }
 
-      // Filter by city client-side - but order the selected city FIRST rather than simply filtering out matching cities!
+      // Hard-filter by the selected city (the primary filter for our users) —
+      // show ONLY that city, not just reorder it to the front.
       let finalData = normalizedData;
       if (activeCity !== 'all') {
-        const cityMatches = normalizedData.filter((d: any) => d.city === activeCity);
-        const others = normalizedData.filter((d: any) => d.city !== activeCity);
-        finalData = [...cityMatches, ...others];
+        finalData = normalizedData.filter((d: any) => d.city === activeCity);
       }
 
-      // Sort exact city matches or bring them to front if we wanted soft matching, but hard filter is better here
       setServices(finalData);
     }
     setLoading(false);
@@ -107,13 +106,6 @@ export default function ServicesClient() {
   useEffect(() => {
     fetchServices();
   }, [fetchServices]);
-
-  // --- WhatsApp Helper ---
-  const buildWhatsAppHref = (phone: string, text: string) => {
-    if (!phone) return '';
-    const cleanPhone = phone.replace(/\D/g, '');
-    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
-  };
 
   // --- Filter state helpers ---
   const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery !== '';
@@ -161,49 +153,63 @@ export default function ServicesClient() {
             />
           </div>
 
-          {/* Quick Filters */}
-          <div className="flex flex-wrap justify-center gap-2 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-500">
-            {[
-              { id: 'all', label: 'الكل' },
-              { id: 'طبيب', label: 'أطباء' },
-              { id: 'محامي', label: 'محامون' },
-              { id: 'مترجم', label: 'مترجمون' },
-              { id: 'عقارات', label: 'عقارات' },
-              { id: 'تعليم', label: 'طلاب' },
-              { id: 'تجميل', label: 'تجميل' },
-              { id: 'تأمين', label: 'تأمين' },
-              { id: 'سيارات', label: 'سيارات' },
-              { id: 'مطاعم', label: 'مطاعم' },
-              { id: 'شحن', label: 'شحن' },
-              { id: 'سياحة', label: 'سياحة' },
-              { id: 'خدمات عامة', label: 'عامة' },
-              ...extraCategories.map(c => ({ id: c, label: c })),
-            ].map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${activeCategory === cat.id
-                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-500/30 scale-105 dark:bg-white dark:text-slate-900 dark:border-white'
-                  : 'bg-white/70 text-slate-700 border-slate-200 hover:bg-white hover:border-emerald-300 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:border-slate-500'
-                  }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+          {/* City — the PRIMARY filter (most important axis for our users) */}
+          <div className="mt-1 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-400">
+            <div className="flex items-center justify-center gap-1.5 mb-2.5">
+              <MapPin size={15} className="text-gov-red" />
+              <span className="text-sm font-black text-slate-800 dark:text-slate-100">اختر مدينتك</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {[{ id: 'all', label: 'كل المدن' }, ...availableCities.map(c => ({ id: c, label: c }))].map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCity(c.id)}
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${activeCity === c.id
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700 dark:hover:border-emerald-700'
+                    }`}
+                >
+                  <MapPin size={14} className={activeCity === c.id ? 'text-white' : 'text-slate-400'} />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            {/* City Dropdown Filter */}
-            <div className="relative inline-block mt-2 lg:mt-0 lg:ms-2">
-              <select
-                value={activeCity}
-                onChange={(e) => setActiveCity(e.target.value)}
-                className="appearance-none px-4 py-2 pr-8 rounded-lg text-xs font-bold border bg-white/70 text-slate-700 border-slate-200 hover:bg-white dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-              >
-                <option value="all">كل المدن</option>
-                {availableCities.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-              <MapPin size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          {/* Profession — secondary filter */}
+          <div className="mt-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-500">
+            <div className="flex items-center justify-center gap-1.5 mb-2">
+              <Briefcase size={12} className="text-slate-400" />
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wide">التخصّص</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {[
+                { id: 'all', label: 'الكل' },
+                { id: 'طبيب', label: 'أطباء' },
+                { id: 'محامي', label: 'محامون' },
+                { id: 'مترجم', label: 'مترجمون' },
+                { id: 'عقارات', label: 'عقارات' },
+                { id: 'تعليم', label: 'طلاب' },
+                { id: 'تجميل', label: 'تجميل' },
+                { id: 'تأمين', label: 'تأمين' },
+                { id: 'سيارات', label: 'سيارات' },
+                { id: 'مطاعم', label: 'مطاعم' },
+                { id: 'شحن', label: 'شحن' },
+                { id: 'سياحة', label: 'سياحة' },
+                { id: 'خدمات عامة', label: 'عامة' },
+                ...extraCategories.map(c => ({ id: c, label: c })),
+              ].map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${activeCategory === cat.id
+                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white'
+                    : 'bg-white/70 text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700'
+                    }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -258,125 +264,10 @@ export default function ServicesClient() {
             {errorMsg && <p className="text-red-500 font-mono mt-3 text-xs" dir="ltr">{errorMsg}</p>}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {services.map((provider) => {
-              const hasReviews = !!(provider.review_count && provider.review_count > 0);
-              return (
-              <div
-                key={provider.id}
-                className="group relative bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-400 hover:-translate-y-1 transition-all duration-300 flex flex-col"
-              >
-                {/* Top accent stripe — verified providers get a blue-to-
-                    emerald gradient marking their trust status at a
-                    glance; everyone else gets a faint slate strip so
-                    the card still has the framing without claiming
-                    verification. Same accent-stripe pattern as
-                    UpdateCard, ToolCard, CategoryTile, article hero. */}
-                <div
-                  aria-hidden="true"
-                  className={`absolute top-0 inset-x-0 h-1 ${
-                    provider.is_verified
-                      ? 'bg-gradient-to-l from-blue-400 via-emerald-400 to-teal-400'
-                      : 'bg-slate-200/70 dark:bg-slate-800/40'
-                  }`}
-                />
-
-                {/* Verified badge — Lucide icon instead of the previous
-                    typo'd "موتق ✅". Stays in the top-left corner so it
-                    aligns with the accent stripe above. */}
-                {provider.is_verified && (
-                  <div className="absolute top-3 left-3 bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase border border-blue-500/30 z-10 flex items-center gap-1 backdrop-blur-sm shadow-sm">
-                    <CheckCircle size={10} /> موثّق
-                  </div>
-                )}
-
-                {/* Header */}
-                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shrink-0 overflow-hidden border border-emerald-100/60 dark:border-slate-700 relative shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-300">
-                      {provider.image ? (
-                        <Image
-                          src={provider.image}
-                          alt={provider.name}
-                          fill
-                          className="object-cover"
-                          sizes="56px"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement?.classList.add('fallback-shown');
-                          }}
-                        />
-                      ) : null}
-                      {/* Fallback icon always present underneath or toggled on error */}
-                      <Briefcase size={22} className="text-emerald-500/70 dark:text-emerald-400/60 absolute z-[-1] [.fallback-shown_&]:z-10" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-black text-slate-900 dark:text-slate-100 text-base leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
-                        <Link href={`/services/${provider.slug || provider.id}`} className="hover:underline">
-                          {provider.name}
-                        </Link>
-                      </h3>
-                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 line-clamp-1">{provider.profession}</p>
-                      <div className="flex items-center gap-1 mt-1.5">
-                        {hasReviews ? (
-                          <div className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 px-1.5 py-0.5 rounded-full">
-                            <Star size={10} className="fill-amber-400 text-amber-400" />
-                            <span className="text-[11px] text-amber-700 dark:text-amber-300 font-black tabular-nums">{provider.rating ? Number(provider.rating).toFixed(1) : '5.0'}</span>
-                            <span className="text-[10px] text-amber-600/70 dark:text-amber-400/70 tabular-nums">({provider.review_count})</span>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full uppercase tracking-wide">جديد</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Body */}
-                <div className="p-5 flex-grow">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3 font-medium">
-                    <MapPin size={14} className="text-emerald-500/70 dark:text-emerald-400/60" />
-                    <span>{provider.city} {provider.district && `، ${provider.district}`}</span>
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed h-[40px]">
-                    {provider.description || 'اضغط لعرض التفاصيل الكاملة...'}
-                  </p>
-                </div>
-
-                {/* Footer Buttons — primary (WhatsApp) gets gradient +
-                    emerald glow; secondary (details) is ghost so the
-                    eye lands on the contact action first */}
-                <div className="p-3 bg-slate-50/80 dark:bg-slate-900/50 mt-auto border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex gap-2">
-                    <a
-                      href={buildWhatsAppHref(provider.phone, `مرحباً، رأيت خدمتك "${provider.profession}" على موقع دليل العرب.`)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-l from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl font-black transition-all shadow-md shadow-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/40 active:scale-95 text-xs"
-                    >
-                      <MessageCircle size={15} />
-                      واتساب
-                    </a>
-                    {provider.phone && (
-                      <a
-                        href={`tel:${provider.phone}`}
-                        aria-label={`اتصال بـ ${provider.name}`}
-                        className="flex items-center justify-center gap-1.5 px-4 bg-white dark:bg-slate-800/60 text-emerald-700 dark:text-emerald-400 py-2.5 rounded-xl font-black text-xs border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 active:scale-95 transition-all"
-                      >
-                        <PhoneCall size={15} />
-                        اتصال
-                      </a>
-                    )}
-                  </div>
-                  <Link
-                    href={`/services/${provider.slug || provider.id}`}
-                    className="mt-2 block text-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                  >
-                    عرض كل التفاصيل
-                  </Link>
-                </div>
-              </div>
-            );})}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {services.map((provider) => (
+              <ProviderCard key={provider.id} p={provider} />
+            ))}
           </div>
         )}
       </section>
