@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Phone, Briefcase, Star, X, Loader2, CheckCircle } from 'lucide-react';
+import { Search, MapPin, PhoneCall, MessageCircle, Briefcase, Star, X, Loader2, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
-import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
@@ -126,6 +125,14 @@ export default function ServicesClient() {
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   };
 
+  // --- Filter state helpers ---
+  const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery !== '';
+  const clearFilters = () => {
+    setActiveCategory('all');
+    setActiveCity('all');
+    setSearchQuery('');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
@@ -143,11 +150,11 @@ export default function ServicesClient() {
 
         <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
           <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100 font-cairo">
-            ابحث عن <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">الخبراء والمحترفين</span> في تركيا
+            دليل <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">المهن والخدمات العربية</span> في تركيا
           </h1>
 
           <p className="text-base text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
-            منصة دليل العرب تجمع لك أفضل الأطباء، المحامين، والخدمات العامة في مكان واحد.
+            أطباء، محامون، مترجمون، عقارات، تأمين وشحن — مهنيّون عرب موثوقون في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
           </p>
 
           {/* Search Bar */}
@@ -225,14 +232,40 @@ export default function ServicesClient() {
       {/* Results Grid */}
       <section className="max-w-screen-2xl mx-auto px-4 py-12 w-full">
 
+        {/* Results count + clear filters */}
+        {!loading && (
+          <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
+            <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+              {services.length > 0 ? (
+                <>عرض <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-black">{services.length}</span> {hasActiveFilters ? 'نتيجة مطابقة' : 'مهنيّ وخدمة'}</>
+              ) : 'لا نتائج'}
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <X size={14} /> مسح الفلاتر
+              </button>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>
         ) : services.length === 0 ? (
-          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
-            <Search size={48} className="mx-auto text-slate-300 mb-4" />
-            <h3 className="text-lg font-bold text-slate-600 dark:text-slate-400">لا توجد نتائج لهذا البحث</h3>
-            {errorMsg && <p className="text-red-500 font-mono mt-2">{errorMsg}</p>}
-            <p className="text-slate-500 text-sm">كن أول من يضيف خدمته هنا!</p>
+          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 px-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 mb-4">
+              <Search size={32} />
+            </div>
+            <h3 className="text-lg font-black text-slate-700 dark:text-slate-200">لا توجد نتائج مطابقة</h3>
+            <p className="text-slate-500 text-sm mt-1 mb-5">جرّب كلمة مختلفة أو تصفّح كل المهن والخدمات.</p>
+            {hasActiveFilters && (
+              <button onClick={clearFilters} className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors active:scale-95">
+                <X size={15} /> تصفّح كل الخدمات
+              </button>
+            )}
+            {errorMsg && <p className="text-red-500 font-mono mt-3 text-xs" dir="ltr">{errorMsg}</p>}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -323,22 +356,34 @@ export default function ServicesClient() {
                 {/* Footer Buttons — primary (WhatsApp) gets gradient +
                     emerald glow; secondary (details) is ghost so the
                     eye lands on the contact action first */}
-                <div className="p-3 bg-slate-50/80 dark:bg-slate-900/50 mt-auto grid grid-cols-5 gap-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="p-3 bg-slate-50/80 dark:bg-slate-900/50 mt-auto border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex gap-2">
+                    <a
+                      href={buildWhatsAppHref(provider.phone, `مرحباً، رأيت خدمتك "${provider.profession}" على موقع دليل العرب.`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-l from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl font-black transition-all shadow-md shadow-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/40 active:scale-95 text-xs"
+                    >
+                      <MessageCircle size={15} />
+                      واتساب
+                    </a>
+                    {provider.phone && (
+                      <a
+                        href={`tel:${provider.phone}`}
+                        aria-label={`اتصال بـ ${provider.name}`}
+                        className="flex items-center justify-center gap-1.5 px-4 bg-white dark:bg-slate-800/60 text-emerald-700 dark:text-emerald-400 py-2.5 rounded-xl font-black text-xs border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 active:scale-95 transition-all"
+                      >
+                        <PhoneCall size={15} />
+                        اتصال
+                      </a>
+                    )}
+                  </div>
                   <Link
                     href={`/services/${provider.id}`}
-                    className="col-span-2 flex items-center justify-center gap-1 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 py-2.5 rounded-xl font-black text-xs border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
+                    className="mt-2 block text-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                   >
-                    التفاصيل
+                    عرض كل التفاصيل
                   </Link>
-                  <a
-                    href={buildWhatsAppHref(provider.phone, `مرحباً، رأيت خدمتك "${provider.profession}" على موقع دليل العرب.`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="col-span-3 flex items-center justify-center gap-1.5 bg-gradient-to-l from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl font-black transition-all shadow-md shadow-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/40 active:scale-95 text-xs"
-                  >
-                    <Phone size={14} />
-                    تواصل واتساب
-                  </a>
                 </div>
               </div>
             );})}
@@ -363,12 +408,13 @@ export default function ServicesClient() {
           <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
             انضم إلى دليل العرب وقدّم خدمتك لجمهور عربي واسع في تركيا.
           </p>
-          <a
-            href={`mailto:${SITE_CONFIG.email}?subject=${encodeURIComponent('طلب إضافة خدمة في دليل العرب')}`}
-            className="inline-flex items-center gap-2 bg-emerald-500 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-emerald-600 hover:scale-105 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+          <Link
+            href="/join"
+            className="inline-flex items-center gap-2 bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-emerald-700 hover:scale-105 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
           >
-            تواصل معنا لإضافة خدمتك
-          </a>
+            <Briefcase size={20} />
+            أضف خدمتك مجاناً
+          </Link>
         </div>
       </section>
 

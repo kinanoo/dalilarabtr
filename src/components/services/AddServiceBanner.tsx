@@ -3,84 +3,96 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import { UserPlus, Briefcase, MessageSquare, Star, ArrowLeft } from 'lucide-react';
+import { Briefcase, MessageCircle, Search, BadgeCheck, ArrowLeft, Users } from 'lucide-react';
 
+/**
+ * AddServiceBanner — the primary "list your business free" conversion CTA on
+ * the services directory. Shown to EVERYONE (guests and members), not just
+ * guests, so a professional who's already logged in still gets a one-tap path
+ * to add their listing. Light, on-brand (gov-red stripe + emerald), with a
+ * real value proposition and live social proof (count of listed professionals)
+ * so a professional understands the platform's reach before signing up.
+ */
 export default function AddServiceBanner() {
-    const [isGuest, setIsGuest] = useState(false);
-    const [ready, setReady] = useState(false);
+    const [isGuest, setIsGuest] = useState<boolean | null>(null);
+    const [count, setCount] = useState<number | null>(null);
 
     useEffect(() => {
         if (!supabase) return;
-        supabase.auth.getUser().then(({ data }) => {
-            setIsGuest(!data.user);
-            setReady(true);
-        });
+        supabase.auth.getUser().then(({ data }) => setIsGuest(!data.user));
+        supabase
+            .from('service_providers')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'approved')
+            .then(({ count }) => setCount(count ?? null));
     }, []);
 
-    // Only show to guests — hidden for logged-in members
-    if (!ready || !isGuest) return null;
+    // Guests sign up first; logged-in members go straight to the add form.
+    const href = isGuest === false ? '/dashboard/services/new' : '/join';
+    const ctaLabel = isGuest === false ? 'أضف خدمتك الآن' : 'سجّل وأضف خدمتك مجاناً';
+
+    const VALUE = [
+        { icon: Search, text: 'تظهر في بحث جوجل ويجدك الناس' },
+        { icon: MessageCircle, text: 'العملاء يراسلونك على واتساب مباشرة' },
+        { icon: BadgeCheck, text: 'مجّاني تماماً — بلا رسوم ولا عمولة' },
+    ];
 
     return (
-        <div className="container mx-auto px-4 max-w-6xl mt-6 animate-in fade-in slide-in-from-top-2 duration-500">
-            <div className="relative overflow-hidden bg-gradient-to-l from-slate-900 to-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
-                {/* Background glow */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
-                    <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
-                </div>
+        <div className="container mx-auto px-4 max-w-6xl mt-6">
+            <div className="relative overflow-hidden rounded-2xl border border-emerald-200/70 dark:border-emerald-900/50 bg-gradient-to-l from-emerald-50 via-white to-teal-50/60 dark:from-emerald-950/30 dark:via-slate-900 dark:to-slate-900 p-6 sm:p-8 shadow-sm">
+                {/* Official colour stripe */}
+                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
 
-                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10">
-                    {/* Left: Text */}
-                    <div className="flex-1 text-center md:text-right">
-                        <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">
-                            للأعضاء فقط
-                        </p>
-                        <h3 className="text-white text-xl sm:text-2xl font-black leading-snug mb-3">
-                            سجّل كعضو وافتح مزايا حصرية
+                <div className="relative flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
+                    {/* Text + value props */}
+                    <div className="flex-1 text-center lg:text-right">
+                        <div className="inline-flex items-center gap-2 mb-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white shadow-sm">
+                                <Briefcase size={16} />
+                            </span>
+                            <span className="text-[11px] font-black tracking-[0.18em] uppercase text-emerald-700 dark:text-emerald-400">
+                                للمهنيّين وأصحاب الحرف والمشاريع
+                            </span>
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-black leading-snug text-slate-900 dark:text-white mb-2">
+                            عندك مهنة أو خدمة؟ <span className="text-emerald-600 dark:text-emerald-400">أضف رقمك مجاناً</span> ووصلك العملاء
                         </h3>
-                        <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
-                            انضم لمجتمع دليل العرب وتمتع بمزايا لا تتوفر للزوار العاديين.
-                        </p>
+                        {count && count > 0 ? (
+                            <p className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 mb-4">
+                                <Users size={15} className="text-emerald-600 dark:text-emerald-400" />
+                                انضمّ إلى <span className="text-emerald-700 dark:text-emerald-300 tabular-nums">+{count.toLocaleString('en-US')}</span> مهنيّ معروض على دليل العرب
+                            </p>
+                        ) : (
+                            <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4">كن أوّل من يضيف خدمته في مدينتك على دليل العرب.</p>
+                        )}
 
-                        {/* Benefits */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
-                            <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5">
-                                <div className="w-7 h-7 bg-emerald-900/50 rounded-lg flex items-center justify-center shrink-0">
-                                    <Briefcase size={14} className="text-emerald-400" />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            {VALUE.map(({ icon: Icon, text }) => (
+                                <div key={text} className="flex items-center gap-2 bg-white/70 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5">
+                                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                        <Icon size={14} />
+                                    </span>
+                                    <span className="text-slate-700 dark:text-slate-200 text-xs font-bold leading-tight text-right">{text}</span>
                                 </div>
-                                <span className="text-slate-300 text-xs font-bold">أضف خدمتك مجاناً</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5">
-                                <div className="w-7 h-7 bg-blue-900/50 rounded-lg flex items-center justify-center shrink-0">
-                                    <MessageSquare size={14} className="text-blue-400" />
-                                </div>
-                                <span className="text-slate-300 text-xs font-bold">شارك وعلّق بهويتك</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5">
-                                <div className="w-7 h-7 bg-amber-900/50 rounded-lg flex items-center justify-center shrink-0">
-                                    <Star size={14} className="text-amber-400" />
-                                </div>
-                                <span className="text-slate-300 text-xs font-bold">قيّم الخدمات والمحتوى</span>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Right: CTA buttons */}
-                    <div className="flex flex-col gap-3 shrink-0 w-full md:w-auto">
+                    {/* CTA */}
+                    <div className="shrink-0 w-full lg:w-auto">
                         <Link
-                            href="/join"
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-900/30 text-sm"
+                            href={href}
+                            className="w-full lg:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-black px-8 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-600/25 text-sm"
                         >
-                            <UserPlus size={18} />
-                            إنشاء حساب مجاناً
-                            <ArrowLeft size={15} />
+                            <Briefcase size={18} />
+                            {ctaLabel}
+                            <ArrowLeft size={16} />
                         </Link>
-                        <Link
-                            href="/login"
-                            className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-8 py-3 rounded-xl flex items-center justify-center gap-2 transition-all text-sm border border-slate-600"
-                        >
-                            لديّ حساب — تسجيل الدخول
-                        </Link>
+                        {isGuest && (
+                            <Link href="/login" className="mt-2 block text-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                لديّ حساب — تسجيل الدخول
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
