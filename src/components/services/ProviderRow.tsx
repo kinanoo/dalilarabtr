@@ -1,20 +1,13 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { MapPin, PhoneCall, MessageCircle, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
+import ProviderAvatar from './ProviderAvatar';
 import type { ProviderCardData } from './ProviderCard';
 
 const waHref = (phone: string | null, profession: string | null) => {
     if (!phone) return '';
     return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، رأيت خدمتك "${profession || ''}" على موقع دليل العرب.`)}`;
 };
-
-const GRADS = [
-    'from-emerald-500 to-teal-600', 'from-blue-500 to-cyan-600', 'from-violet-500 to-purple-600',
-    'from-amber-500 to-orange-600', 'from-rose-500 to-pink-600', 'from-sky-500 to-indigo-600',
-];
-function gradFor(s: string) { let h = 0; for (const c of s || '?') h = (h * 31 + c.charCodeAt(0)) >>> 0; return GRADS[h % GRADS.length]; }
-function initials(name: string) { return (name || '؟').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join(''); }
 
 /**
  * ProviderRow — compact, scannable single-row layout for the "list" view of
@@ -29,13 +22,7 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
     return (
         <article className="group flex items-center gap-3 sm:gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:shadow-emerald-500/5 transition-all">
             <Link href={href} className="relative shrink-0" aria-label={p.name}>
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden relative shadow-sm">
-                    {p.image ? (
-                        <Image src={p.image} alt={p.name} fill className="object-cover" sizes="56px" />
-                    ) : (
-                        <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(p.name)} text-white font-black`}>{initials(p.name)}</div>
-                    )}
-                </div>
+                <ProviderAvatar name={p.name} image={p.image} className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl" />
                 {p.is_verified && (
                     <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm">
                         <BadgeCheck size={14} className="text-blue-500" />

@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { MapPin, PhoneCall, MessageCircle, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
+import ProviderAvatar from './ProviderAvatar';
 
 export interface ProviderCardData {
     id: string;
@@ -22,21 +22,6 @@ const waHref = (phone: string | null, profession: string | null) => {
     return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، رأيت خدمتك "${profession || ''}" على موقع دليل العرب.`)}`;
 };
 
-// Coloured initials avatar for the (many) providers with no photo — far
-// cleaner than a generic briefcase icon. Colour is stable per name.
-const GRADS = [
-    'from-emerald-500 to-teal-600', 'from-blue-500 to-cyan-600', 'from-violet-500 to-purple-600',
-    'from-amber-500 to-orange-600', 'from-rose-500 to-pink-600', 'from-sky-500 to-indigo-600',
-];
-function gradFor(s: string) {
-    let h = 0;
-    for (const c of s || '?') h = (h * 31 + c.charCodeAt(0)) >>> 0;
-    return GRADS[h % GRADS.length];
-}
-function initials(name: string) {
-    return (name || '؟').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('');
-}
-
 /**
  * ProviderCard — compact, modern directory card. Avatar-forward, single
  * action row, coloured-initials fallback. Shared by the services list and the
@@ -53,15 +38,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             {/* Header — avatar + name + trust */}
             <div className="flex items-start gap-3">
                 <Link href={href} className="relative shrink-0" aria-label={p.name}>
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden relative shadow-sm">
-                        {p.image ? (
-                            <Image src={p.image} alt={p.name} fill className="object-cover" sizes="56px" />
-                        ) : (
-                            <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(p.name)} text-white font-black text-lg`}>
-                                {initials(p.name)}
-                            </div>
-                        )}
-                    </div>
+                    <ProviderAvatar name={p.name} image={p.image} className="w-14 h-14 rounded-2xl text-lg" />
                     {p.is_verified && (
                         <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm">
                             <BadgeCheck size={16} className="text-blue-500" />

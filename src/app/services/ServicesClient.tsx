@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
@@ -55,7 +55,8 @@ export default function ServicesClient() {
       .select('id, name, profession, category, description, city, phone, image, is_verified, rating, review_count, status, slug, created_at')
       .eq('status', 'approved')
       .order('is_verified', { ascending: false })
-      .order('rating', { ascending: false });
+      .order('rating', { ascending: false })
+      .limit(500); // safety cap — list is paginated client-side; move to server pagination beyond this
 
     if (activeCategory !== 'all') {
       // Use mapped variations for known categories, or exact match for dynamic ones
@@ -64,11 +65,9 @@ export default function ServicesClient() {
     }
 
     if (searchQuery) {
-      // Smart search across multiple columns
-      // Note: We escape the search query to prevent injection in the OR syntax if needed, 
-      // but Supabase client handles parameterization. 
-      // However, for .or() raw string syntax, we strictly format it.
-      const term = `%${searchQuery}%`;
+      // Strip PostgREST-special chars ( , ( ) ) from the term so a comma can't
+      // break out of the .or() filter syntax (injection-safe smart search).
+      const term = `%${searchQuery.replace(/[,()]/g, ' ').trim()}%`;
       query = query.or(`name.ilike.${term},description.ilike.${term},profession.ilike.${term},category.ilike.${term}`);
     }
 
@@ -139,12 +138,22 @@ export default function ServicesClient() {
   const changeView = (v: 'grid' | 'list') => { setView(v); localStorage.setItem('services_view', v); };
   useEffect(() => { setPage(1); }, [activeCategory, activeCity, searchQuery, sortBy]);
 
-  // Sort (client-side; 'recommended' keeps the query order = verified first,
-  // then top-rated). Then paginate so a 50-in-a-city list is a few pages.
-  const sorted = [...services];
-  if (sortBy === 'rating') sorted.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
-  else if (sortBy === 'newest') sorted.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-  else if (sortBy === 'name') sorted.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ar'));
+  // Sort (memoised; 'recommended' keeps the query order = verified first, then
+  // top-rated). Then paginate so a 50-in-a-city list is a few pages.
+  const sorted = useMemo(() => {
+    const arr = [...services];
+    if (sortBy === 'rating') arr.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+    else if (sortBy === 'newest') arr.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    else if (sortBy === 'name') arr.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ar'));
+    return arr;
+  }, [services, sortBy]);
+
+  // Trust strip stats (social proof) from the current result set.
+  const stats = useMemo(() => ({
+    total: services.length,
+    verified: services.filter((s: { is_verified?: boolean }) => s.is_verified).length,
+    cities: new Set(services.map((s: { city?: string }) => s.city).filter(Boolean)).size,
+  }), [services]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
   const pageClamped = Math.min(page, totalPages);
@@ -240,7 +249,7 @@ export default function ServicesClient() {
               ].map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
+                  onClick={() => setActiveCategory(cat.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${activeCategory === cat.id
                     ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white'
                     : 'bg-white/70 text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700'
@@ -254,7 +263,20 @@ export default function ServicesClient() {
         </div>
       </section>
 
-      {/* CTA banner: visible only to logged-in users */}
+      {/* Trust strip — social proof from the current result set */}
+      {!loading && stats.total > 0 && (
+        <div className="container mx-auto px-4 max-w-6xl mt-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3 text-sm shadow-sm">
+            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><Briefcase size={15} className="text-emerald-600" /><span className="tabular-nums font-black">{stats.total}</span> مهنيّ وخدمة</span>
+            <span className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><BadgeCheck size={15} className="text-blue-500" /><span className="tabular-nums font-black">{stats.verified}</span> موثّق</span>
+            <span className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><MapPin size={15} className="text-gov-red" /><span className="tabular-nums font-black">{stats.cities}</span> مدينة</span>
+          </div>
+        </div>
+      )}
+
+      {/* CTA banner */}
       <AddServiceBanner />
 
       {/* Debug Error Message */}
