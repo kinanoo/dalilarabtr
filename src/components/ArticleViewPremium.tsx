@@ -88,8 +88,12 @@ export default function ArticleView({ article, slug, initialComments, children }
   const bodyDetails = useMemo(() => {
     if (heroImages.length < 2) return safeDetails;
     return safeDetails
-      .replace(/<figure[\s\S]*?<\/figure>/gi, '')
-      .replace(/<img[^>]*>/gi, '');
+      // Drop only figures that wrap an uploaded (http) image — those moved to
+      // the top gallery. A figure without an http image is left untouched.
+      .replace(/<figure[\s\S]*?<\/figure>/gi, (m) => (/<img[^>]+src=["']https?:/i.test(m) ? '' : m))
+      // Drop standalone http images too; any non-http image stays in the body
+      // (it isn't in the gallery either, so it can never vanish).
+      .replace(/<img[^>]+src=["']https?:[^>]*>/gi, '');
   }, [safeDetails, heroImages.length]);
   const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
   // Steps come in two historical shapes:
