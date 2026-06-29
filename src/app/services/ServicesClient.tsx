@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, Loader2, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
@@ -301,7 +301,25 @@ export default function ServicesClient() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-emerald-600" size={40} /></div>
+          // Full-height skeleton (not a tiny spinner) so the page keeps its
+          // height during the client fetch — otherwise the browser's scroll
+          // restoration on refresh overshoots a short page and jumps to the
+          // bottom. Also nicer than a lone spinner.
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 animate-pulse">
+                <div className="flex items-start gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="h-3.5 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/2" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/3" />
+                  </div>
+                </div>
+                <div className="mt-3 h-9 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+              </div>
+            ))}
+          </div>
         ) : services.length === 0 ? (
           <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 px-4">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 mb-4">
