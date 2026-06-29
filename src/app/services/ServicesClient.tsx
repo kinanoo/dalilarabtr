@@ -6,6 +6,7 @@ import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRigh
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
+import CityFilter from '@/components/services/CityFilter';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
 import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
@@ -20,6 +21,8 @@ export default function ServicesClient() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeCity, setActiveCity] = useState('all');
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [cityCounts, setCityCounts] = useState<Record<string, number>>({});
+  const [totalCount, setTotalCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -89,6 +92,13 @@ export default function ServicesClient() {
       if (activeCategory === 'all' && searchQuery === '' && activeCity === 'all') {
         const cities = Array.from(new Set(normalizedData.map((d: any) => d.city).filter(Boolean))) as string[];
         setAvailableCities(cities.sort());
+
+        // Per-city provider counts — computed HERE, from the full unfiltered
+        // snapshot. Computing from filtered data would undercount/zero them.
+        const counts: Record<string, number> = {};
+        normalizedData.forEach((d: any) => { if (d.city) counts[d.city] = (counts[d.city] || 0) + 1; });
+        setCityCounts(counts);
+        setTotalCount(normalizedData.length);
 
         // Find categories in DB that aren't in the hardcoded list
         const knownValues = new Set(Object.values(CATEGORY_MAPPING).flat().map(v => v.toLowerCase()));
@@ -221,20 +231,14 @@ export default function ServicesClient() {
               <MapPin size={15} className="text-gov-red" />
               <span className="text-sm font-black text-slate-800 dark:text-slate-100">اختر مدينتك</span>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {[{ id: 'all', label: 'كل المدن' }, ...availableCities.map(c => ({ id: c, label: c }))].map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveCity(c.id)}
-                  className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${activeCity === c.id
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700 dark:hover:border-emerald-700'
-                    }`}
-                >
-                  <MapPin size={14} className={activeCity === c.id ? 'text-white' : 'text-slate-400'} />
-                  {c.label}
-                </button>
-              ))}
+            <div className="max-w-2xl mx-auto">
+              <CityFilter
+                value={activeCity}
+                onChange={setActiveCity}
+                cities={availableCities}
+                counts={cityCounts}
+                totalCount={totalCount}
+              />
             </div>
           </div>
 
