@@ -1,7 +1,11 @@
 import { Metadata } from 'next';
+import type { ElementType } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Briefcase, MapPin, ArrowRight } from 'lucide-react';
+import {
+    Briefcase, MapPin, ArrowRight, Stethoscope, Scale, Languages, Home as HomeIcon,
+    GraduationCap, Sparkles, ShieldCheck, Car, UtensilsCrossed, Package, Plane, Wrench,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 import logger from '@/lib/logger';
@@ -13,6 +17,13 @@ import {
 import { cityBySlug, citySlugForName } from '@/lib/turkishCities';
 
 export const revalidate = 600;
+
+// Per-profession icon for the landing-page hero.
+const CAT_ICONS: Record<string, ElementType> = {
+    doctors: Stethoscope, lawyers: Scale, translators: Languages, 'real-estate': HomeIcon,
+    education: GraduationCap, beauty: Sparkles, insurance: ShieldCheck, cars: Car,
+    restaurants: UtensilsCrossed, cargo: Package, tourism: Plane, general: Wrench,
+};
 
 export function generateStaticParams() {
     return SERVICE_CATEGORIES.map((c) => ({ slug: c.slug }));
@@ -76,6 +87,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     const providers = await fetchProviders(cat);
     // Cities that actually have providers in this profession → crawlable links.
     const cityChips = Array.from(new Set(providers.map((p) => citySlugForName(p.city)).filter(Boolean))) as string[];
+    const Icon = CAT_ICONS[cat.slug] || Briefcase;
     const base = SITE_CONFIG.siteUrl;
     const pageUrl = `${base}/services/category/${cat.slug}`;
 
@@ -137,6 +149,9 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <span>/</span>
                         <span className="text-slate-800 dark:text-slate-200">{cat.labelAr}</span>
                     </nav>
+                    <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 mb-3">
+                        <Icon size={24} />
+                    </span>
                     <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> عرب في تركيا
                     </h1>

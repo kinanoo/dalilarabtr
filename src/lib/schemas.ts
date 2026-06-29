@@ -26,14 +26,16 @@ export const articleSchema = z.object({
 // --- Service Schema ---
 export const serviceSchema = z.object({
     name: requiredString.min(2, { message: "الاسم مطلوب" }),
-    whatsapp: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الواتساب غير صحيح (يجب أن يكون رقم تركي)" }),
+    // `phone` is the single contact field (used for both WhatsApp + call).
+    // The old phantom required `whatsapp` field never matched the form/DB
+    // (the form writes `phone`) and the admin save stripped it — removed.
     city: requiredString, // Replaces location
     bio: z.string().trim().max(150, { message: "النبذة يجب ألا تتجاوز 150 حرفاً" }).optional().transform(v => v === '' ? null : v),
     description: requiredString.min(20, { message: "الوصف يجب أن يكون 20 حرفاً على الأقل" }),
     category: z.string().optional(),
     profession: z.string().trim().min(1, { message: "التخصص مطلوب" }),
     image: optionalString,
-    phone: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الواتساب غير صحيح (يجب أن يكون رقم تركي)" }),
+    phone: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الهاتف غير صحيح (يجب أن يكون رقم تركي يبدأ بـ 5)" }),
     active: z.boolean().optional().default(true),
 });
 
