@@ -98,10 +98,14 @@ export default function ProseContrastGuard() {
                 st.color = el.dataset.cgColor || '';
                 st.backgroundColor = el.dataset.cgBg || '';
 
-                const ownBg = parse(el.dataset.cgBg || '');
-                if (!ownBg && !el.dataset.cgColor) return; // nothing colour-related here
+                if (!el.dataset.cgBg && !el.dataset.cgColor) return; // nothing colour-related
 
-                const bg = ownBg || effectiveBg(el);
+                // effectiveBg() reads the element's OWN computed background
+                // first (which resolves named colours like "yellow" to rgb),
+                // then climbs to the card / page behind it. getComputedStyle is
+                // also used for the text colour, so named text colours resolve
+                // too.
+                const bg = effectiveBg(el);
                 const fg = parse(st.color) || parse(getComputedStyle(el).color) || (isDark ? LIGHT_RGB : DARK_RGB);
 
                 if (contrast(fg, bg) >= MIN_CONTRAST) return; // already readable
