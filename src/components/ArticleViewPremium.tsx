@@ -20,6 +20,7 @@ import ReadingProgressBar from './article/ReadingProgressBar';
 import EndOfArticleShare from './article/EndOfArticleShare';
 import StickyMobileShareBar from './article/StickyMobileShareBar';
 import ArticleHeroImage from './article/ArticleHeroImage';
+import ArticleHeroGallery from './article/ArticleHeroGallery';
 
 export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -64,6 +65,32 @@ export default function ArticleView({ article, slug, initialComments, children }
     const raw = isObfuscated(article.intro) ? deobfuscate(article.intro) : article.intro;
     return DOMPurify.sanitize(raw);
   }, [article.intro]);
+
+  // All article images (hero + the ones embedded in the body), deduped. When
+  // there are 2+, the top shows a gallery instead of a single hero so readers
+  // see the whole illustrated guide up front.
+  const heroImages = useMemo(() => {
+    const out: { src: string; caption: string }[] = [];
+    const seen = new Set<string>();
+    const push = (src?: string | null) => {
+      if (src && src.startsWith('http') && !seen.has(src)) { seen.add(src); out.push({ src, caption: '' }); }
+    };
+    push(article.image);
+    const re = /<img[^>]+src=["']([^"']+)["']/gi;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(safeDetails))) push(m[1]);
+    return out;
+  }, [article.image, safeDetails]);
+
+  // When the top gallery shows all images, strip them out of the body so they
+  // aren't duplicated (the editor wraps uploads in <figure>; also catch bare
+  // <img>). Below the 2-image threshold the body is untouched.
+  const bodyDetails = useMemo(() => {
+    if (heroImages.length < 2) return safeDetails;
+    return safeDetails
+      .replace(/<figure[\s\S]*?<\/figure>/gi, '')
+      .replace(/<img[^>]*>/gi, '');
+  }, [safeDetails, heroImages.length]);
   const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
   // Steps come in two historical shapes:
   //   - legacy: plain strings (whole step in one line)
@@ -318,13 +345,15 @@ export default function ArticleView({ article, slug, initialComments, children }
                   lightbox. Replaces the old 16:9 object-cover crop which
                   mangled tall portrait documents (official letters,
                   decree screenshots) by chopping off the top and bottom. */}
-              {article.image && article.image.startsWith('http') && (
+              {heroImages.length >= 2 ? (
+                <ArticleHeroGallery images={heroImages} />
+              ) : article.image && article.image.startsWith('http') ? (
                 <ArticleHeroImage
                   src={article.image}
                   alt={article.title}
                   priority
                 />
-              )}
+              ) : null}
 
               {/* ✅ ملخص الإجراء — accent stripe on right (RTL) + gradient surface */}
               <div
@@ -362,7 +391,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                   <div
                     data-article-body
                     className="prose-content text-slate-600 dark:text-slate-200 mb-6 text-[17px] sm:text-lg"
-                    dangerouslySetInnerHTML={{ __html: safeDetails }}
+                    dangerouslySetInnerHTML={{ __html: bodyDetails }}
                   />
 
 
