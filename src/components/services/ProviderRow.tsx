@@ -1,13 +1,9 @@
 import Link from 'next/link';
-import { MapPin, PhoneCall, MessageCircle, Star, BadgeCheck } from 'lucide-react';
+import { MapPin, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
 import ProviderAvatar from './ProviderAvatar';
+import ContactButtons from './ContactButtons';
 import type { ProviderCardData } from './ProviderCard';
-
-const waHref = (phone: string | null, profession: string | null) => {
-    if (!phone) return '';
-    return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، رأيت خدمتك "${profession || ''}" على موقع دليل العرب.`)}`;
-};
 
 /**
  * ProviderRow — compact, scannable single-row layout for the "list" view of
@@ -49,19 +45,7 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-                <a
-                    href={waHref(p.phone, p.profession)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-3 sm:px-4 rounded-xl font-black text-xs active:scale-95 transition-all"
-                >
-                    <MessageCircle size={15} /><span className="hidden sm:inline">واتساب</span>
-                </a>
-                {p.phone && (
-                    <a href={`tel:${p.phone}`} aria-label={`اتصال بـ ${p.name}`} className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 active:scale-95 transition-all">
-                        <PhoneCall size={15} />
-                    </a>
-                )}
+                <ContactButtons p={p} compact />
             </div>
         </article>
     );

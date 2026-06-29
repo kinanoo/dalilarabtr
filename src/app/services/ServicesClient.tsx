@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
+import ProviderAvatar from '@/components/services/ProviderAvatar';
 import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
@@ -26,6 +27,7 @@ export default function ServicesClient() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [page, setPage] = useState(1);
+  const [recent, setRecent] = useState<any[]>([]);
   const PER_PAGE = 15;
 
   // --- Category Mapping for Legacy Support ---
@@ -120,6 +122,18 @@ export default function ServicesClient() {
     if (h && 'scrollRestoration' in h) h.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
     return () => { if (h && 'scrollRestoration' in h) h.scrollRestoration = 'auto'; };
+  }, []);
+
+  // Newest providers for the "أضيفوا حديثاً" discovery strip (filter-independent).
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from('service_providers')
+      .select('id, slug, name, profession, city, image, is_verified, created_at')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(10)
+      .then(({ data }) => setRecent((data || []).map((d: any) => ({ ...d, city: canonicalCity(d.city) }))));
   }, []);
 
   // --- Filter state helpers ---
@@ -278,6 +292,39 @@ export default function ServicesClient() {
 
       {/* CTA banner */}
       <AddServiceBanner />
+
+      {/* Recently added — discovery strip (hidden while filtering) */}
+      {!hasActiveFilters && recent.length > 0 && (
+        <section className="max-w-screen-2xl mx-auto px-4 pt-8 w-full">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={16} className="text-amber-500" />
+            <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">أضيفوا حديثاً</h2>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {recent.map((r) => (
+              <Link
+                key={r.id}
+                href={`/services/${r.slug || r.id}`}
+                className="shrink-0 w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all flex flex-col items-center text-center gap-2"
+              >
+                <div className="relative">
+                  <ProviderAvatar name={r.name} image={r.image} className="w-12 h-12 rounded-xl" />
+                  {r.is_verified && (
+                    <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm">
+                      <BadgeCheck size={13} className="text-blue-500" />
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 w-full">
+                  <p className="text-xs font-black text-slate-900 dark:text-slate-100 line-clamp-1">{r.name}</p>
+                  <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 line-clamp-1">{r.profession}</p>
+                </div>
+                <span className="text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border border-amber-200/60 dark:border-amber-800/40 px-2 py-0.5 rounded-full uppercase tracking-wide">جديد</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Debug Error Message */}
       {errorMsg && (

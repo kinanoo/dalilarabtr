@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { MapPin, PhoneCall, MessageCircle, Star, BadgeCheck } from 'lucide-react';
+import { MapPin, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
 import ProviderAvatar from './ProviderAvatar';
+import ContactButtons from './ContactButtons';
 
 export interface ProviderCardData {
     id: string;
@@ -16,11 +17,6 @@ export interface ProviderCardData {
     rating: number | null;
     review_count: number | null;
 }
-
-const waHref = (phone: string | null, profession: string | null) => {
-    if (!phone) return '';
-    return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، رأيت خدمتك "${profession || ''}" على موقع دليل العرب.`)}`;
-};
 
 /**
  * ProviderCard — compact, modern directory card. Avatar-forward, single
@@ -76,23 +72,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
 
             {/* Actions */}
             <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                <a
-                    href={waHref(p.phone, p.profession)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-black text-xs shadow-sm shadow-emerald-600/20 active:scale-95 transition-all"
-                >
-                    <MessageCircle size={15} /> واتساب
-                </a>
-                {p.phone && (
-                    <a
-                        href={`tel:${p.phone}`}
-                        aria-label={`اتصال بـ ${p.name}`}
-                        className="inline-flex items-center justify-center w-11 h-[42px] rounded-xl bg-slate-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 active:scale-95 transition-all"
-                    >
-                        <PhoneCall size={16} />
-                    </a>
-                )}
+                <ContactButtons p={p} />
                 <Link
                     href={href}
                     aria-label="عرض التفاصيل"
