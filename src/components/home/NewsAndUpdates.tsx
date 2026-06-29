@@ -70,17 +70,23 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
     setActive((a) => ((a + dir) % n + n) % n);
   }, [n, bump]);
 
-  // Auto-advance newest -> oldest every 15s — a quiet "the site is live"
-  // heartbeat. Skips while hovered, just after a manual move, or when the
-  // visitor prefers reduced motion.
+  // Auto-advance newest -> oldest every 5s — a "the site is live" heartbeat.
+  // The rail first does a one-time 3s right→left sway hint on load (CSS, see
+  // the `news-sway` class below), so we hold the first advance until that
+  // finishes — the first card change lands at ~8s, then every 5s. Skips while
+  // hovered, just after a manual move, or when the visitor prefers reduced
+  // motion.
   useEffect(() => {
     if (n <= 1) return;
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
-    const id = setInterval(() => {
-      if (hoverPaused || Date.now() < pausedUntil.current) return;
-      setActive((a) => (a + 1) % n);
-    }, 15000);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | undefined;
+    const start = setTimeout(() => {
+      id = setInterval(() => {
+        if (hoverPaused || Date.now() < pausedUntil.current) return;
+        setActive((a) => (a + 1) % n);
+      }, 5000);
+    }, 3000);
+    return () => { clearTimeout(start); if (id) clearInterval(id); };
   }, [n, hoverPaused]);
 
   // shortest signed distance, wrapped — works with fractional values too
@@ -137,7 +143,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
   return (
     <section
-      className="relative overflow-hidden bg-gradient-to-b from-emerald-50/45 via-surface-light to-teal-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 py-12 sm:py-16"
+      className="relative overflow-hidden bg-gradient-to-b from-emerald-50/45 via-surface-light to-teal-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 pt-5 sm:pt-7 pb-12 sm:pb-16"
       dir="rtl"
       aria-labelledby="news-hub-heading"
     >
@@ -148,7 +154,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
       <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 relative z-10">
         {/* Header */}
-        <div className="flex items-end justify-between gap-4 mb-6 sm:mb-10">
+        <div className="flex items-end justify-between gap-4 mb-4 sm:mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="relative inline-flex items-center justify-center">
@@ -191,7 +197,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
           role="region"
           aria-label="بطاقات الأخبار والإعلانات — اسحب للتنقّل"
         >
-          <div className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
+          <div className="news-sway absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
             {items.map((it, i) => {
               const eo = wrap(i - active + dragFrac); // live effective offset
               const abs = Math.abs(eo);

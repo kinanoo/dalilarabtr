@@ -516,6 +516,21 @@ html.dark .card-hover:hover {
   }
 }
 
+/* News & announcements carousel — one-time right→left sway hint on load, a
+   gentle nudge telling the reader the rail moves. Honoured only when the
+   visitor hasn't asked to reduce motion. */
+@keyframes newsSway {
+  0%   { transform: translateX(0); }
+  18%  { transform: translateX(12px); }
+  42%  { transform: translateX(-12px); }
+  64%  { transform: translateX(7px); }
+  82%  { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .news-sway { animation: newsSway 3s ease-in-out 1 both; }
+}
+
 /* 🎨 Hero Background Animations */
 @keyframes gradientSlide {
 

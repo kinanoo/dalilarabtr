@@ -12,7 +12,7 @@ import { ReactNode } from 'react';
 export default function HeroSection({ children }: { children?: ReactNode }) {
     return (
         <section
-            className="relative z-[15] bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 text-slate-900 dark:text-white pt-8 sm:pt-10 pb-10 sm:pb-12 px-4"
+            className="relative z-[15] bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 text-slate-900 dark:text-white pt-4 sm:pt-6 pb-5 sm:pb-6 px-4"
             style={{ overflowX: 'clip' }}
         >
             {/* Top accent stripe — the official-site colour quartet */}
@@ -40,7 +40,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         </span>
                     </h1>
 
-                    <div className="mb-2 mt-3 md:mt-4" />
+                    <div className="mt-2" />
 
                     <p className="text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed font-medium">
                         كل ما تحتاجه في تركيا:{' '}
@@ -50,11 +50,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         و<span className="text-fuchsia-600 dark:text-violet-300 font-bold">خدمات موثوقة</span>.
                     </p>
 
-                    <p className="text-sm md:text-base text-emerald-700 dark:text-emerald-200/90 max-w-2xl mx-auto mb-2 font-bold">
-                        المعلومة الرسمية الأحدث — لا الإشاعات.
-                    </p>
-
-                    <div className="mt-6 max-w-xl mx-auto relative z-[25]">
+                    <div className="mt-5 max-w-xl mx-auto relative z-[25]">
                         {children}
                     </div>
                 </div>
