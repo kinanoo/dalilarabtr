@@ -24,6 +24,7 @@ export default function ServicesClient() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [extraCategories, setExtraCategories] = useState<string[]>([]);
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [page, setPage] = useState(1);
   const PER_PAGE = 15;
 
@@ -125,13 +126,18 @@ export default function ServicesClient() {
     if (saved === 'list' || saved === 'grid') setView(saved);
   }, []);
   const changeView = (v: 'grid' | 'list') => { setView(v); localStorage.setItem('services_view', v); };
-  useEffect(() => { setPage(1); }, [activeCategory, activeCity, searchQuery]);
+  useEffect(() => { setPage(1); }, [activeCategory, activeCity, searchQuery, sortBy]);
 
-  // Client-side pagination — 50 providers in a city should be a few pages,
-  // not an endless scroll.
-  const totalPages = Math.max(1, Math.ceil(services.length / PER_PAGE));
+  // Sort (client-side; 'recommended' keeps the query order = verified first,
+  // then top-rated). Then paginate so a 50-in-a-city list is a few pages.
+  const sorted = [...services];
+  if (sortBy === 'rating') sorted.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+  else if (sortBy === 'newest') sorted.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  else if (sortBy === 'name') sorted.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ar'));
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
   const pageClamped = Math.min(page, totalPages);
-  const paged = services.slice((pageClamped - 1) * PER_PAGE, pageClamped * PER_PAGE);
+  const paged = sorted.slice((pageClamped - 1) * PER_PAGE, pageClamped * PER_PAGE);
   const goPage = (pp: number) => {
     setPage(Math.min(Math.max(1, pp), totalPages));
     if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -269,13 +275,26 @@ export default function ServicesClient() {
               )}
             </div>
             {services.length > 0 && (
-              <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-0.5">
-                <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
-                  <LayoutGrid size={16} />
-                </button>
-                <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
-                  <ListIcon size={16} />
-                </button>
+              <div className="flex items-center gap-2">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  aria-label="ترتيب النتائج"
+                  className="text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                >
+                  <option value="recommended">الأفضل أولاً</option>
+                  <option value="rating">الأعلى تقييماً</option>
+                  <option value="newest">الأحدث</option>
+                  <option value="name">أبجديّاً</option>
+                </select>
+                <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-0.5">
+                  <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                    <LayoutGrid size={16} />
+                  </button>
+                  <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                    <ListIcon size={16} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
