@@ -24,21 +24,27 @@ async function getSupabase() {
     );
 }
 
+// Detail URLs resolve by either the pretty slug (new) or the uuid id (legacy).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const lookupCol = (key: string): 'id' | 'slug' => (UUID_RE.test(key) ? 'id' : 'slug');
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 export async function generateMetadata(
     props: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {
     const { id } = await props.params;
     const supabase = await getSupabase();
+    const key = decodeURIComponent(id);
 
     const { data } = await supabase
         .from('service_providers')
-        .select('name, profession, city, category, description, image')
-        .eq('id', id)
+        .select('name, profession, city, category, description, image, slug, id')
+        .eq(lookupCol(key), key)
         .eq('status', 'approved')
         .single();
 
     if (!data) return { title: 'الخدمة غير موجودة', robots: { index: false, follow: false } };
+    const canonicalId = data.slug || data.id;
 
     // No manual brand suffix — the root layout's title template appends
     // "| <brand>" once. Adding "| دليل العرب" here produced a doubled brand.
@@ -50,7 +56,7 @@ export async function generateMetadata(
     return {
         title,
         description,
-        alternates: { canonical: `/services/${id}` },
+        alternates: { canonical: `/services/${canonicalId}` },
         openGraph: {
             title,
             description,
@@ -65,17 +71,22 @@ export default async function ServiceDetailsPage(
 ) {
     const { id } = await props.params;
     const supabase = await getSupabase();
+    const key = decodeURIComponent(id);
 
     const { data: provider, error } = await supabase
         .from('service_providers')
         .select('*')
-        .eq('id', id)
+        .eq(lookupCol(key), key)
         .eq('status', 'approved')
         .single();
 
     if (error || !provider) {
         notFound();
     }
+
+    // Real row id for entity refs (ratings/comments); slug (if any) for URLs.
+    const realId: string = provider.id;
+    const canonicalId: string = provider.slug || provider.id;
 
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
@@ -113,7 +124,7 @@ export default async function ServiceDetailsPage(
             priceRange: provider.price_range || '$$',
         },
         areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
-        url: `${SITE_CONFIG.siteUrl}/services/${id}`,
+        url: `${SITE_CONFIG.siteUrl}/services/${canonicalId}`,
     };
 
     // BreadcrumbList — Home › Services › [Category] › Provider. Links the
@@ -124,7 +135,7 @@ export default async function ServiceDetailsPage(
             { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_CONFIG.siteUrl },
             { '@type': 'ListItem', position: 2, name: 'الخدمات', item: `${SITE_CONFIG.siteUrl}/services` },
             ...(catSlug ? [{ '@type': 'ListItem', position: 3, name: provider.category, item: `${SITE_CONFIG.siteUrl}/services/category/${catSlug}` }] : []),
-            { '@type': 'ListItem', position: catSlug ? 4 : 3, name: provider.name, item: `${SITE_CONFIG.siteUrl}/services/${id}` },
+            { '@type': 'ListItem', position: catSlug ? 4 : 3, name: provider.name, item: `${SITE_CONFIG.siteUrl}/services/${canonicalId}` },
         ],
     };
 
@@ -176,7 +187,7 @@ export default async function ServiceDetailsPage(
                                     </p>
                                 </div>
                                 <InlineStarRating
-                                    serviceId={id}
+                                    serviceId={realId}
                                     serviceName={provider.name}
                                     currentRating={provider.rating ? Number(provider.rating) : 5.0}
                                     reviewCount={provider.review_count || 0}
@@ -232,7 +243,7 @@ export default async function ServiceDetailsPage(
                         <ShareMenu
                             title={`${provider.name} — ${provider.profession}`}
                             text={`${provider.name} — ${provider.profession} في ${provider.city}. تواصل عبر دليل العرب.`}
-                            url={`${SITE_CONFIG.siteUrl}/services/${id}`}
+                            url={`${SITE_CONFIG.siteUrl}/services/${canonicalId}`}
                         />
                     </div>
                 </div>
@@ -240,7 +251,7 @@ export default async function ServiceDetailsPage(
 
             {/* Reviews + Comments */}
             <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
-                <UniversalComments entityType="service" entityId={id} />
+                <UniversalComments entityType="service" entityId={realId} />
             </div>
         </div>
     );

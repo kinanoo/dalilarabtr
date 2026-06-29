@@ -36,7 +36,7 @@ async function fetchProviders(cat: ServiceCategory): Promise<Row[]> {
         if (!supabase) return [];
         const { data } = await supabase
             .from('service_providers')
-            .select('id, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
+            .select('id, slug, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
             .eq('status', 'approved')
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
@@ -113,8 +113,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                     '@type': 'ItemList',
                     numberOfItems: providers.length,
                     itemListElement: providers.map((p, i) => {
-                        // Detail route resolves by id only — never use slug here.
-                        const url = `${base}/services/${p.id}`;
+                        const url = `${base}/services/${p.slug || p.id}`;
                         const biz: Record<string, unknown> = {
                             '@type': 'LocalBusiness',
                             name: p.name,

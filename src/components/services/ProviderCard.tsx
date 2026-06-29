@@ -5,6 +5,7 @@ import { canonicalCity } from '@/lib/turkishCities';
 
 export interface ProviderCardData {
     id: string;
+    slug: string | null;
     name: string;
     profession: string | null;
     city: string | null;
@@ -42,7 +43,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
                 </div>
                 <div className="min-w-0 flex-1">
                     <h2 className="font-black text-slate-900 dark:text-slate-100 text-base leading-tight line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                        <Link href={`/services/${p.id}`} className="hover:underline">{p.name}</Link>
+                        <Link href={`/services/${p.slug || p.id}`} className="hover:underline">{p.name}</Link>
                     </h2>
                     <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 line-clamp-1">{p.profession}</p>
                     <div className="mt-1.5">
@@ -76,7 +77,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
                         </a>
                     )}
                 </div>
-                <Link href={`/services/${p.id}`} className="mt-2 block text-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors">عرض كل التفاصيل</Link>
+                <Link href={`/services/${p.slug || p.id}`} className="mt-2 block text-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors">عرض كل التفاصيل</Link>
             </div>
         </div>
     );

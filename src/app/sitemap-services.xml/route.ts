@@ -13,13 +13,13 @@ const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function GET() {
-  let services: Array<{ id: string; created_at?: string; is_verified?: boolean; category?: string; city?: string }> = [];
+  let services: Array<{ id: string; slug?: string | null; created_at?: string; is_verified?: boolean; category?: string; city?: string }> = [];
 
   if (supabase) {
     try {
       const { data } = await supabase
         .from('service_providers')
-        .select('id, created_at, is_verified, category, city')
+        .select('id, slug, created_at, is_verified, category, city')
         .eq('status', 'approved');
       services = data || [];
     } catch {
@@ -55,7 +55,7 @@ export async function GET() {
     const created = new Date(s.created_at || now).getTime();
     const fresh = now - created < WEEK_MS;
     return `  <url>
-    <loc>${baseUrl}/services/${s.id}</loc>
+    <loc>${baseUrl}/services/${s.slug || s.id}</loc>
     <lastmod>${new Date(s.created_at || now).toISOString()}</lastmod>
     <changefreq>${fresh ? 'weekly' : 'monthly'}</changefreq>
     <priority>${s.is_verified ? '0.8' : '0.6'}</priority>

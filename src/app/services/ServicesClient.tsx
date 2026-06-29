@@ -312,7 +312,7 @@ export default function ServicesClient() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-black text-slate-900 dark:text-slate-100 text-base leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
-                        <Link href={`/services/${provider.id}`} className="hover:underline">
+                        <Link href={`/services/${provider.slug || provider.id}`} className="hover:underline">
                           {provider.name}
                         </Link>
                       </h3>
@@ -369,7 +369,7 @@ export default function ServicesClient() {
                     )}
                   </div>
                   <Link
-                    href={`/services/${provider.id}`}
+                    href={`/services/${provider.slug || provider.id}`}
                     className="mt-2 block text-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                   >
                     عرض كل التفاصيل

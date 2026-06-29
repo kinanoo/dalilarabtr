@@ -19,7 +19,7 @@ async function fetchProviders(cat: ServiceCategory, city: TRCity): Promise<Row[]
         if (!supabase) return [];
         const { data } = await supabase
             .from('service_providers')
-            .select('id, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
+            .select('id, slug, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
             .eq('status', 'approved')
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
@@ -87,7 +87,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                         const biz: Record<string, unknown> = {
                             '@type': 'LocalBusiness',
                             name: p.name,
-                            url: `${base}/services/${p.id}`,
+                            url: `${base}/services/${p.slug || p.id}`,
                             ...(p.profession ? { description: p.profession } : {}),
                             ...(p.image ? { image: p.image } : {}),
                             ...(p.phone ? { telephone: p.phone } : {}),
