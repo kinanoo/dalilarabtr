@@ -242,21 +242,51 @@ html.dark .tiptap figcaption, html.dark .prose-content figcaption {
   color: #94a3b8;
 }
 
-/* Highlights & inline-coloured text — theme-safe baseline.
-   The editor lets admins highlight text (TipTap Highlight / <mark>) or set a
-   text colour. Highlight backgrounds are light pastels, but body text INHERITS
-   the theme colour (near-white in dark mode) — so highlighted runs turned
-   white-on-pastel and vanished in dark mode. Force dark text on any highlight
-   in BOTH themes (non-!important so ProseContrastGuard can override per element
-   when a background is unusually dark). Padding/clone make multi-line
-   highlights read as a continuous marker rather than chopped boxes. */
-.tiptap mark, .prose-content mark,
-.tiptap [style*="background"], .prose-content [style*="background"] {
+/* ── Highlights & admin colour boxes: keep text readable in BOTH themes ──
+   Article bodies are admin HTML. Highlights (<mark>) and callout boxes declare
+   LIGHT backgrounds, but .prose-content text INHERITS the theme colour (light
+   in dark mode) and the dark-theme overrides below paint bold/links/headings
+   light (for the dark page). On a light box that becomes light-on-light and
+   the text vanished in dark mode. */
+
+/* <mark> highlight: always dark text on its light marker, tidy padding. */
+.tiptap mark, .prose-content mark {
   color: #1f2937;
+  background-color: #fef08a;
   border-radius: 4px;
   padding: 0.02em 0.22em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+
+/* A box that declares its own background gets a dark default text colour
+   (admin boxes are light); an inline colour the admin set still wins. */
+.tiptap [style*="background"], .prose-content [style*="background"] {
+  color: #1f2937;
+}
+
+/* Inside such a box the dark-theme colour overrides (strong/links/headings →
+   light) must NOT apply or they turn light-on-light. Make every text element
+   inherit the box's own colour instead. These selectors outrank the dark rules
+   on specificity, but carry no !important — so an intentional inline colour on
+   the element still wins. */
+html.dark .prose-content [style*="background"] strong,
+html.dark .prose-content [style*="background"] b,
+html.dark .prose-content [style*="background"] em,
+html.dark .prose-content [style*="background"] i,
+html.dark .prose-content [style*="background"] u,
+html.dark .prose-content [style*="background"] a,
+html.dark .prose-content [style*="background"] span,
+html.dark .prose-content [style*="background"] code,
+html.dark .prose-content [style*="background"] li,
+html.dark .prose-content [style*="background"] p,
+html.dark .prose-content [style*="background"] ul,
+html.dark .prose-content [style*="background"] ol,
+html.dark .prose-content [style*="background"] h1,
+html.dark .prose-content [style*="background"] h2,
+html.dark .prose-content [style*="background"] h3,
+html.dark .prose-content [style*="background"] h4 {
+  color: inherit;
 }
 
 /* Code */
