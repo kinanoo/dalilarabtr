@@ -112,6 +112,17 @@ export default function ServicesClient() {
     fetchServices();
   }, [fetchServices]);
 
+  // /services builds its list client-side, so on a hard refresh the browser's
+  // scroll restoration overshoots the (briefly short) page and jumps to the
+  // bottom. Turn off auto-restoration for this route and pin to the top; the
+  // tall skeleton keeps it flicker-free. Restored to 'auto' on leave.
+  useEffect(() => {
+    const h = typeof window !== 'undefined' ? window.history : null;
+    if (h && 'scrollRestoration' in h) h.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    return () => { if (h && 'scrollRestoration' in h) h.scrollRestoration = 'auto'; };
+  }, []);
+
   // --- Filter state helpers ---
   const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery !== '';
   const clearFilters = () => {
