@@ -143,7 +143,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
   return (
     <section
-      className="relative overflow-hidden bg-gradient-to-b from-emerald-50/45 via-surface-light to-teal-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 pt-5 sm:pt-7 pb-12 sm:pb-16"
+      className="isolate relative overflow-hidden bg-gradient-to-b from-emerald-50/45 via-surface-light to-teal-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 pt-5 sm:pt-7 pb-12 sm:pb-16"
       dir="rtl"
       aria-labelledby="news-hub-heading"
     >
