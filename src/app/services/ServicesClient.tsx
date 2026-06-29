@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, Loader2 } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, Loader2, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
 import ProviderCard from '@/components/services/ProviderCard';
+import ProviderRow from '@/components/services/ProviderRow';
 import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import logger from '@/lib/logger';
@@ -22,6 +23,9 @@ export default function ServicesClient() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [extraCategories, setExtraCategories] = useState<string[]>([]);
+  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 15;
 
   // --- Category Mapping for Legacy Support ---
   const CATEGORY_MAPPING: Record<string, string[]> = {
@@ -113,6 +117,24 @@ export default function ServicesClient() {
     setActiveCategory('all');
     setActiveCity('all');
     setSearchQuery('');
+  };
+
+  // Grid/list preference (persisted) + reset to page 1 when results change.
+  useEffect(() => {
+    const saved = localStorage.getItem('services_view');
+    if (saved === 'list' || saved === 'grid') setView(saved);
+  }, []);
+  const changeView = (v: 'grid' | 'list') => { setView(v); localStorage.setItem('services_view', v); };
+  useEffect(() => { setPage(1); }, [activeCategory, activeCity, searchQuery]);
+
+  // Client-side pagination — 50 providers in a city should be a few pages,
+  // not an endless scroll.
+  const totalPages = Math.max(1, Math.ceil(services.length / PER_PAGE));
+  const pageClamped = Math.min(page, totalPages);
+  const paged = services.slice((pageClamped - 1) * PER_PAGE, pageClamped * PER_PAGE);
+  const goPage = (pp: number) => {
+    setPage(Math.min(Math.max(1, pp), totalPages));
+    if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -225,24 +247,36 @@ export default function ServicesClient() {
         </div>
       )}
 
-      {/* Results Grid */}
-      <section className="max-w-screen-2xl mx-auto px-4 py-12 w-full">
+      {/* Results */}
+      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-12 w-full scroll-mt-4">
 
-        {/* Results count + clear filters */}
+        {/* Results count + view toggle + clear filters */}
         {!loading && (
           <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
-            <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
-              {services.length > 0 ? (
-                <>عرض <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-black">{services.length}</span> {hasActiveFilters ? 'نتيجة مطابقة' : 'مهنيّ وخدمة'}</>
-              ) : 'لا نتائج'}
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                <X size={14} /> مسح الفلاتر
-              </button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                {services.length > 0 ? (
+                  <>عرض <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-black">{services.length}</span> {hasActiveFilters ? 'نتيجة مطابقة' : 'مهنيّ وخدمة'}</>
+                ) : 'لا نتائج'}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <X size={14} /> مسح الفلاتر
+                </button>
+              )}
+            </div>
+            {services.length > 0 && (
+              <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-0.5">
+                <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                  <LayoutGrid size={16} />
+                </button>
+                <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                  <ListIcon size={16} />
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -264,11 +298,58 @@ export default function ServicesClient() {
             {errorMsg && <p className="text-red-500 font-mono mt-3 text-xs" dir="ltr">{errorMsg}</p>}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-            {services.map((provider) => (
-              <ProviderCard key={provider.id} p={provider} />
-            ))}
-          </div>
+          <>
+            {view === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {paged.map((provider) => (
+                  <ProviderCard key={provider.id} p={provider} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 max-w-4xl mx-auto">
+                {paged.map((provider) => (
+                  <ProviderRow key={provider.id} p={provider} />
+                ))}
+              </div>
+            )}
+
+            {/* Pagination — keeps a 50-per-city list to a few pages */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-1.5 mt-10">
+                <button
+                  onClick={() => goPage(pageClamped - 1)}
+                  disabled={pageClamped <= 1}
+                  aria-label="السابق"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:border-emerald-300 transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((n) => n === 1 || n === totalPages || Math.abs(n - pageClamped) <= 1)
+                  .map((n, idx, arr) => (
+                    <span key={n} className="flex items-center">
+                      {idx > 0 && arr[idx - 1] !== n - 1 && <span className="px-1 text-slate-400">…</span>}
+                      <button
+                        onClick={() => goPage(n)}
+                        className={`min-w-9 h-9 px-2 rounded-lg text-sm font-black transition-colors ${n === pageClamped
+                          ? 'bg-emerald-600 text-white'
+                          : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-emerald-300'}`}
+                      >
+                        {n}
+                      </button>
+                    </span>
+                  ))}
+                <button
+                  onClick={() => goPage(pageClamped + 1)}
+                  disabled={pageClamped >= totalPages}
+                  aria-label="التالي"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:border-emerald-300 transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
