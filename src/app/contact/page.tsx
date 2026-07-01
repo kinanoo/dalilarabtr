@@ -3,7 +3,7 @@
 import PageHero from '@/components/PageHero';
 import Link from 'next/link';
 import { useState } from 'react';
-import { User, MessageCircle, Copy, AlertCircle, Scale, HelpCircle, FileText, Mail, Send } from 'lucide-react';
+import { User, MessageCircle, Copy, AlertCircle, Scale, HelpCircle, FileText, Send } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
 
 import { useForm } from 'react-hook-form';
@@ -61,8 +61,9 @@ export default function ContactPage() {
 
     void copyToClipboard();
 
-    // Open email client
-    window.location.href = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
+    // Open WhatsApp with the message pre-filled
+    const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+    window.location.href = `https://wa.me/${num}?text=${subject}%0A%0A${body}`;
   };
 
   return (
@@ -74,15 +75,17 @@ export default function ContactPage() {
         {/* Quick Action Cards — family treatment with accent stripes */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <a
-            href={`mailto:${SITE_CONFIG.email}`}
+            href={`https://wa.me/${(SITE_CONFIG.whatsapp || '').replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300"
           >
             <span className="absolute top-0 right-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
             <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
-              <Mail className="w-7 h-7" />
+              <MessageCircle className="w-7 h-7" />
             </div>
-            <h3 className="font-black text-slate-800 dark:text-slate-100 mb-1 group-hover:text-emerald-600 transition-colors">البريد الإلكتروني</h3>
-            <p className="text-xs text-slate-400 truncate" dir="ltr">{SITE_CONFIG.email}</p>
+            <h3 className="font-black text-slate-800 dark:text-slate-100 mb-1 group-hover:text-emerald-600 transition-colors">واتساب</h3>
+            <p className="text-xs text-slate-400">راسلنا مباشرةً على واتساب</p>
           </a>
 
           <Link
@@ -114,7 +117,7 @@ export default function ContactPage() {
         <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">أرسل رسالتك</h2>
-            <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح تطبيق البريد الإلكتروني لإرسال رسالتك مباشرة.</p>
+            <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح واتساب لإرسال رسالتك مباشرةً.</p>
           </div>
 
           <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -179,7 +182,7 @@ export default function ContactPage() {
                   : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
               `}
             >
-              <span>{copied ? 'تم النسخ — جارٍ فتح البريد' : 'إرسال عبر البريد الإلكتروني'}</span>
+              <span>{copied ? 'تم النسخ — جارٍ فتح واتساب' : 'إرسال عبر واتساب'}</span>
               {copied ? <Copy size={18} /> : <Send size={18} />}
             </button>
 
@@ -188,7 +191,7 @@ export default function ContactPage() {
 
         {/* Response Note */}
         <p className="text-center text-xs text-slate-400 dark:text-slate-500">
-          نردّ عادةً خلال 24 ساعة عبر البريد الإلكتروني. إذا كان طلبك متعلقاً بخدمة محددة، استخدم صفحة{' '}
+          نردّ عادةً خلال 24 ساعة عبر واتساب. إذا كان طلبك متعلقاً بخدمة محددة، استخدم صفحة{' '}
           <Link href="/request" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">طلب خدمة</Link>.
         </p>
 

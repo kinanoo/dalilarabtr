@@ -7,7 +7,6 @@ import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, L
 import Link from 'next/link';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
-import { Mail } from 'lucide-react';
 import { SITE_CONFIG, CATEGORY_SLUGS, TAG_LABELS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
 import InlineRelatedArticles from './InlineRelatedArticles';
@@ -50,11 +49,6 @@ export default function ArticleView({ article, slug, initialComments, children }
     if (shouldTrack) localStorage.setItem(key, String(now));
   }, [slug]);
 
-  const emailHref = useMemo(() => {
-    const subject = encodeURIComponent(`استفسار: ${article.title}`);
-    const body = encodeURIComponent(`السلام عليكم،\n\nأحتاج مساعدة بخصوص: ${article.title}\n${SITE_CONFIG.siteUrl}/article/${slug}\n\n`);
-    return `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
-  }, [article.title, slug]);
 
   // 🛡️ فك تشفير المحتوى المحمي
   const safeDetails = useMemo(() => {
@@ -458,16 +452,6 @@ export default function ArticleView({ article, slug, initialComments, children }
 
 
 
-              {/* بطاقة المساعدة المباشرة - NativeConsultCard (Clean) - Keeping original placement as well or removing if duplicate? 
-                   User said "Move Consultation Widget -> To After Summary". I added the 'Contextual Help Widget' above.
-                   NativeConsultCard was the green one? Wait. 
-                   The previous code had `NativeConsultCard` at line 253.
-                   I'll remove the one at line 253 to avoid duplication, or keep it as the 'Contextual' one I just added.
-                   I will assume the 'Contextual Help Widget' code above replaces line 253.
-                   Wait, `NativeConsultCard` is a component. I should use that component if possible, but the user gave specific styling: "wide, inline card... bg-blue-50/50".
-                   I'll rely on the manual code I wrote above for the specific style requested.
-                */}
-
               {/* قد يهمك أيضاً — Mid-article related articles */}
               <InlineRelatedArticles currentArticleId={slug} category={article.category} />
 
@@ -518,24 +502,6 @@ export default function ArticleView({ article, slug, initialComments, children }
                   </ul>
                 </div>
               )}
-
-              {/* 🧠 Contextual Help Widget — accent stripe + gradient */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50/60 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200 dark:border-blue-900/40 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
-                <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-sm">
-                    <BrainCircuit size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-slate-800 dark:text-slate-100">هل الإجراء يبدو معقداً؟</h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">تحدث مع مستشار مختص لإنهاء معاملتك قانونياً.</p>
-                  </div>
-                </div>
-                <a href={emailHref} className="group/cta w-full sm:w-auto bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-black text-sm transition-all shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:-translate-y-0.5 whitespace-nowrap text-center inline-flex items-center justify-center gap-2">
-                  <Mail size={16} className="group-hover/cta:rotate-12 transition-transform" />
-                  تواصل عبر البريد
-                </a>
-              </div>
 
               {/* التحذير القانوني (Subtle Accordion Footer) */}
               <div className="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800">

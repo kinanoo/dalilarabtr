@@ -3,7 +3,7 @@
 import PageHero from '@/components/PageHero';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState, Suspense } from 'react';
-import { Copy, User, FileText, CheckCircle, AlertCircle, Send, Mail } from 'lucide-react';
+import { Copy, User, FileText, CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
 import { SERVICES_LIST } from '@/lib/constants';
 import { fetchRemoteServices, mergeServices, subscribeDemoDataUpdated, type RuntimeService } from '@/lib/remoteData';
@@ -102,15 +102,16 @@ function RequestForm() {
 
     void copyToClipboard();
 
-    // Open email client
-    window.location.href = `mailto:${SITE_CONFIG.email}?subject=${subject}&body=${body}`;
+    // Open WhatsApp with the request details pre-filled
+    const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+    window.location.href = `https://wa.me/${num}?text=${subject}%0A%0A${body}`;
   };
 
   return (
     <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">نموذج طلب خدمة</h2>
-        <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح تطبيق البريد الإلكتروني لإرسال طلبك مباشرة.</p>
+        <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح واتساب لإرسال طلبك مباشرةً.</p>
       </div>
 
       <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -176,7 +177,7 @@ function RequestForm() {
               : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
           `}
         >
-          <span>{copied ? 'تم النسخ — جارٍ فتح البريد' : 'إرسال الطلب عبر البريد الإلكتروني'}</span>
+          <span>{copied ? 'تم النسخ — جارٍ فتح واتساب' : 'إرسال الطلب عبر واتساب'}</span>
           {copied ? <Copy size={20} /> : <Send size={20} />}
         </button>
 

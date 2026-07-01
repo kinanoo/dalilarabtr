@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Scale, Mail, MessageCircle } from 'lucide-react';
+import { Scale, MessageCircle } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
 
 const ALLOWED_PATHS = ['/', '/services'];
@@ -56,7 +56,7 @@ export default function WhatsAppAssistant() {
             <Scale size={14} />
           </Link>
         </div>
-        {/* Email contact */}
+        {/* WhatsApp contact */}
         <div
           className="flex items-center gap-1.5 transition-all duration-300 ease-out"
           style={{
@@ -66,14 +66,16 @@ export default function WhatsAppAssistant() {
             pointerEvents: open ? 'auto' : 'none',
           }}
         >
-          <span className="text-[9px] font-bold bg-slate-900/80 dark:bg-slate-100/90 text-white dark:text-slate-900 px-1.5 py-0.5 rounded shadow-lg backdrop-blur-sm whitespace-nowrap">تواصل</span>
+          <span className="text-[9px] font-bold bg-slate-900/80 dark:bg-slate-100/90 text-white dark:text-slate-900 px-1.5 py-0.5 rounded shadow-lg backdrop-blur-sm whitespace-nowrap">واتساب</span>
           <a
-            href={`mailto:${SITE_CONFIG.email}`}
+            href={`https://wa.me/${(SITE_CONFIG.whatsapp || '').replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setOpen(false)}
             className="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-md flex items-center justify-center transition-all duration-200"
-            aria-label="تواصل عبر البريد"
+            aria-label="تواصل عبر واتساب"
           >
-            <Mail size={14} />
+            <MessageCircle size={14} />
           </a>
         </div>
       </div>

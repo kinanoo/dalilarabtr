@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   CheckCircle, AlertTriangle, FileText, RefreshCw, ShieldAlert, Lightbulb,
   ArrowLeft, Gavel, HeartPulse, Plane, Building2, GraduationCap, Scale,
-  Landmark, FileCheck, Wallet, Home, ChevronRight, Briefcase, Printer, Users, Baby, Search, X, MessageCircle, Mail
+  Landmark, FileCheck, Wallet, Home, ChevronRight, Briefcase, Printer, Users, Baby, Search, X, MessageCircle
 } from 'lucide-react';
 
 import ToolSchema from '@/components/ToolSchema';
@@ -1277,11 +1277,13 @@ export default function ConsultantClient({ initialComments = [] }: Props) {
                       هل تحتاج مساعدة شخصية؟
                     </p>
                     <a
-                      href={`mailto:${SITE_CONFIG.email}?subject=${encodeURIComponent(`استشارة: ${shownResult.title}`)}&body=${encodeURIComponent(`السلام عليكم، أحتاج مساعدة بخصوص:\n${shownResult.title}\n${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id}\n\n`)}`}
+                      href={`https://wa.me/${(SITE_CONFIG.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`السلام عليكم، أحتاج مساعدة بخصوص:\n${shownResult.title}\n${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-colors w-full text-sm"
                     >
-                      <Mail size={18} />
-                      تواصل معنا عبر البريد الإلكتروني
+                      <MessageCircle size={18} />
+                      تواصل معنا عبر واتساب
                     </a>
                   </div>
 
