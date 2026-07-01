@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
 import RelatedArticles from '@/components/RelatedArticles';
 import ArticleFeedback from '@/components/article/ArticleFeedback';
+import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import { stripHtml } from '@/lib/stripHtml';
 
 
@@ -408,6 +409,9 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
         {/* "Was this article helpful?" — collects voluntary feedback at the
             article footer. Renders above comments so the user sees the prompt
             before they navigate away. */}
+        {/* "Didn't understand? message us on WhatsApp" — on every article
+            (not the services directory, which has its own contact buttons). */}
+        <AskOnWhatsApp topic={article.title} />
         <ArticleFeedback articleId={params.id} />
         <UniversalComments entityType="article" entityId={params.id} />
       </ArticleHydratedView>
