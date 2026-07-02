@@ -3,8 +3,9 @@ export const SITE_CONFIG = {
     slogan: "دليلك الشامل والموثوق",
     lang: "ar",
     country: "تركيا",
-    email: "dalilarabtr@gmail.com",
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487", // kept for services page only
+    // THE site-wide contact channel (articles, updates, contact, request,
+    // consultant, floating assistant). Override via NEXT_PUBLIC_WHATSAPP_PHONE.
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "966580757487",
     siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, ''),
     // روابط السوشيال ميديا — أضف روابطك هنا لما تجهز الحسابات
     // Google بيستخدمها لبناء Knowledge Panel وعرض اللوغو بنتائج البحث

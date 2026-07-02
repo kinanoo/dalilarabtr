@@ -13,6 +13,13 @@ import { ChevronLeft, ChevronRight, Images } from 'lucide-react';
  * BodyImageGallery lightbox automatically handles a click on any slide and
  * opens the full set with arrows / thumbnails — no separate lightbox needed.
  */
+// Arabic counted-noun agreement: 2 = dual, 3-10 = plural, 11+ = singular.
+function countLabel(n: number): string {
+    if (n === 2) return 'صورتان';
+    if (n >= 3 && n <= 10) return `${n} صور`;
+    return `${n} صورة`;
+}
+
 export default function ArticleHeroGallery({ images }: { images: { src: string; caption: string }[] }) {
     const scroller = useRef<HTMLDivElement>(null);
     const [idx, setIdx] = useState(0);
@@ -75,8 +82,15 @@ export default function ArticleHeroGallery({ images }: { images: { src: string; 
                 ))}
             </div>
 
+            {/* Current slide's caption (the admin-authored step text) */}
+            {images[idx]?.caption && (
+                <p className="mt-2 px-3 text-center text-sm font-semibold leading-relaxed text-slate-600 dark:text-slate-300">
+                    {images[idx].caption}
+                </p>
+            )}
+
             <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                {images.length} صور — اسحب، أو اضغط الصورة لعرضها بالحجم الكامل
+                {countLabel(images.length)} — اسحب، أو اضغط الصورة لعرضها بالحجم الكامل
             </p>
         </div>
     );

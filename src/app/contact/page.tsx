@@ -61,9 +61,10 @@ export default function ContactPage() {
 
     void copyToClipboard();
 
-    // Open WhatsApp with the message pre-filled
+    // Open WhatsApp with the message pre-filled — in a NEW tab so the page
+    // (and the visitor's place on it) isn't lost to the wa.me interstitial.
     const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
-    window.location.href = `https://wa.me/${num}?text=${subject}%0A%0A${body}`;
+    window.open(`https://wa.me/${num}?text=${subject}%0A%0A${body}`, '_blank', 'noopener,noreferrer');
   };
 
   return (

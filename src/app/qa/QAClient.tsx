@@ -288,7 +288,6 @@ function AskModal({ onClose }: { onClose: () => void }) {
     const [context, setContext] = useState('');
     const [category, setCategory] = useState('');
     const [askerName, setAskerName] = useState('');
-    const [askerEmail, setAskerEmail] = useState('');
     const [result, setResult] = useState<AskResult>({ state: 'idle' });
 
     async function onSubmit(e: React.FormEvent) {
@@ -305,7 +304,6 @@ function AskModal({ onClose }: { onClose: () => void }) {
                     context,
                     category,
                     askerName,
-                    askerEmail,
                 }),
             });
             const payload = await res.json().catch(() => ({}));
@@ -429,20 +427,6 @@ function AskModal({ onClose }: { onClose: () => void }) {
                                     className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
                             </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                بريد إلكتروني (اختياري — لإعلامك بالإجابة)
-                            </label>
-                            <input
-                                type="email"
-                                value={askerEmail}
-                                onChange={(e) => setAskerEmail(e.target.value)}
-                                placeholder="you@example.com"
-                                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-                                dir="ltr"
-                            />
                         </div>
 
                         {result.state === 'error' && (

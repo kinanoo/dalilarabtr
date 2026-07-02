@@ -405,9 +405,6 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.howTo) }} />
       )}
       <ArticleHydratedView articleData={article} slug={params.id}>
-        {/* "Was this article helpful?" — collects voluntary feedback at the
-            article footer. Renders above comments so the user sees the prompt
-            before they navigate away. */}
         {/* "Didn't understand? message us on WhatsApp" — on every article
             (not the services directory, which has its own contact buttons). */}
         <AskOnWhatsApp topic={article.title} />

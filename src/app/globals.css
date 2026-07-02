@@ -285,7 +285,9 @@ html.dark .prose-content [style*="background"] ol,
 html.dark .prose-content [style*="background"] h1,
 html.dark .prose-content [style*="background"] h2,
 html.dark .prose-content [style*="background"] h3,
-html.dark .prose-content [style*="background"] h4 {
+html.dark .prose-content [style*="background"] h4,
+html.dark .prose-content [style*="background"] blockquote,
+html.dark .prose-content [style*="background"] figcaption {
   color: inherit;
 }
 

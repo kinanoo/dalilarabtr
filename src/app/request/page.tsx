@@ -102,9 +102,10 @@ function RequestForm() {
 
     void copyToClipboard();
 
-    // Open WhatsApp with the request details pre-filled
+    // Open WhatsApp with the request details pre-filled — in a NEW tab so the
+    // form page (and its "copied" state) isn't lost to the wa.me interstitial.
     const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
-    window.location.href = `https://wa.me/${num}?text=${subject}%0A%0A${body}`;
+    window.open(`https://wa.me/${num}?text=${subject}%0A%0A${body}`, '_blank', 'noopener,noreferrer');
   };
 
   return (

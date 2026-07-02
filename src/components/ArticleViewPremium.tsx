@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { Article } from '@/lib/types'; // Only Type
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, BrainCircuit, ChevronDown, Clock, Eye, RefreshCw } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, Eye, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
@@ -60,19 +60,43 @@ export default function ArticleView({ article, slug, initialComments, children }
     return DOMPurify.sanitize(raw);
   }, [article.intro]);
 
-  // All article images (hero + the ones embedded in the body), deduped. When
-  // there are 2+, the top shows a gallery instead of a single hero so readers
-  // see the whole illustrated guide up front.
+  // All article images (hero + the ones embedded in the body), deduped, WITH
+  // their captions (figcaption, falling back to alt) — review found the first
+  // version dropped the admin-authored step captions entirely. When there are
+  // 2+, the top shows a gallery instead of a single hero so readers see the
+  // whole illustrated guide up front.
   const heroImages = useMemo(() => {
     const out: { src: string; caption: string }[] = [];
-    const seen = new Set<string>();
-    const push = (src?: string | null) => {
-      if (src && src.startsWith('http') && !seen.has(src)) { seen.add(src); out.push({ src, caption: '' }); }
+    const idx = new Map<string, number>();
+    const push = (src?: string | null, caption = '') => {
+      if (!src || !src.startsWith('http')) return;
+      const at = idx.get(src);
+      if (at != null) {
+        // Same image seen again with a real caption — keep the caption.
+        if (caption && !out[at].caption) out[at].caption = caption;
+        return;
+      }
+      idx.set(src, out.length);
+      out.push({ src, caption });
     };
     push(article.image);
-    const re = /<img[^>]+src=["']([^"']+)["']/gi;
+    // Figures first: they carry the step captions.
+    const figs = safeDetails.match(/<figure[\s\S]*?<\/figure>/gi) || [];
+    for (const block of figs) {
+      const src = block.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1];
+      const cap =
+        block.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() ||
+        block.match(/<img[^>]+alt=["']([^"']*)["']/i)?.[1] || '';
+      if (src) push(src, cap);
+    }
+    // Then bare images outside figures (alt as caption).
+    const noFigs = safeDetails.replace(/<figure[\s\S]*?<\/figure>/gi, '');
+    const imgRe = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(safeDetails))) push(m[1]);
+    while ((m = imgRe.exec(noFigs))) {
+      const alt = m[0].match(/alt=["']([^"']*)["']/i)?.[1] || '';
+      push(m[1], alt);
+    }
     return out;
   }, [article.image, safeDetails]);
 
@@ -81,13 +105,24 @@ export default function ArticleView({ article, slug, initialComments, children }
   // <img>). Below the 2-image threshold the body is untouched.
   const bodyDetails = useMemo(() => {
     if (heroImages.length < 2) return safeDetails;
-    return safeDetails
+    let out = safeDetails
       // Drop only figures that wrap an uploaded (http) image — those moved to
       // the top gallery. A figure without an http image is left untouched.
       .replace(/<figure[\s\S]*?<\/figure>/gi, (m) => (/<img[^>]+src=["']https?:/i.test(m) ? '' : m))
       // Drop standalone http images too; any non-http image stays in the body
       // (it isn't in the gallery either, so it can never vanish).
-      .replace(/<img[^>]+src=["']https?:[^>]*>/gi, '');
+      .replace(/<img[^>]+src=["']https?:[^>]*>/gi, '')
+      // The in-body image carousels shipped with a "اسحب للتنقّل" hint line —
+      // meaningless once the images moved to the top gallery.
+      .replace(/<p[^>]*>[^<]*اسحب للتنقّل[^<]*<\/p>/gi, '');
+    // Sweep the now-empty wrappers the stripping leaves behind (carousel divs,
+    // emptied links/paragraphs). A few passes handle shallow nesting.
+    for (let i = 0; i < 3; i++) {
+      const next = out.replace(/<(div|p|a|span)\b[^>]*>\s*<\/\1>/gi, '');
+      if (next === out) break;
+      out = next;
+    }
+    return out;
   }, [safeDetails, heroImages.length]);
   const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
   // Steps come in two historical shapes:
