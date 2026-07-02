@@ -1,0 +1,19 @@
+# og.dalilarabtr.com — dynamic OpenGraph share-card worker (workers-og/Satori).
+# Deployed separately from the main site worker:
+#   cd workers/og && npm install && npx wrangler deploy
+# The custom-domain route below is created automatically on first deploy
+# (DNS is already on Cloudflare).
+
+name = "dalilarabtr-og"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+routes = [
+  { pattern = "og.dalilarabtr.com", custom_domain = true }
+]
+
+# Bundle the .ttf fonts as binary data at build time.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf"]
+fallthrough = true

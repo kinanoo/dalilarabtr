@@ -1,0 +1,15 @@
+{
+  "name": "dalilarabtr-og",
+  "private": true,
+  "description": "Dynamic OpenGraph share-card worker for dalilarabtr.com (Satori on Workers)",
+  "scripts": {
+    "dev": "wrangler dev --port 8790",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "workers-og": "^0.0.25"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
