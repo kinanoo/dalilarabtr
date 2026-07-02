@@ -22,7 +22,7 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
     if (!guides?.length) return null;
 
     return (
-        <section className="relative bg-white dark:bg-slate-950 pt-4 pb-16" dir="rtl">
+        <section className="relative bg-gradient-to-b from-emerald-50/45 via-surface-light to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 pt-4 pb-16" dir="rtl">
             <div className="max-w-7xl mx-auto px-4">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-50 leading-tight tracking-tight">
                     شروحات مصوّرة <span className="bg-gradient-to-l from-emerald-500 to-teal-500 bg-clip-text text-transparent">خطوة بخطوة</span>
