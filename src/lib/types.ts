@@ -59,6 +59,9 @@ export interface AdminCode {
     category: string;
     severity: 'info' | 'warning' | 'urgent' | 'critical';
     active: boolean;
+    // Turkish translations (nullable — fall back to Arabic in the UI).
+    title_tr?: string | null;
+    description_tr?: string | null;
 }
 
 export interface AdminFAQ {

@@ -39,7 +39,9 @@ export function useAdminCodes() {
           desc: d.description,
           category: d.category,
           severity: d.severity as any,
-          active: true
+          active: true,
+          title_tr: d.title_tr ?? null,
+          description_tr: d.description_tr ?? null,
         }));
       return transformed;
     }

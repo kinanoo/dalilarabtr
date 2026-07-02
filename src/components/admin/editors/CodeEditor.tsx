@@ -97,5 +97,51 @@ export const CodeEditor = ({ form, setForm }: any) => (
                 <option value="security">أمني (Security)</option>
             </select>
         </div>
+
+        {/* Turkish translation — shown to Turkish visitors (?lang=tr). Leave
+            blank to fall back to the Arabic above. */}
+        <details className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 overflow-hidden">
+            <summary className="cursor-pointer select-none px-4 py-3 font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                🇹🇷 الترجمة التركية (Türkçe) — اختياري
+            </summary>
+            <div className="p-4 space-y-4" dir="ltr">
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Başlık (العنوان)</label>
+                    <input
+                        value={form.title_tr || ''}
+                        onChange={(e: any) => setForm({ ...form, title_tr: e.target.value })}
+                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
+                        placeholder="Kod başlığı..."
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Açıklama (الوصف)</label>
+                    <textarea
+                        value={form.description_tr || ''}
+                        onChange={(e: any) => setForm({ ...form, description_tr: e.target.value })}
+                        className="w-full p-4 h-28 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"
+                        placeholder="Kodun açıklaması..."
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nasıl kaldırılır? (كيف ترفعه)</label>
+                    <textarea
+                        value={form.how_to_remove_tr || ''}
+                        onChange={(e: any) => setForm({ ...form, how_to_remove_tr: e.target.value })}
+                        className="w-full p-4 h-28 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed"
+                        placeholder="Kodun kaldırılma adımları..."
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Süre (مدة الحظر)</label>
+                    <input
+                        value={form.duration_tr || ''}
+                        onChange={(e: any) => setForm({ ...form, duration_tr: e.target.value })}
+                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
+                        placeholder="örn: 5 yıl, ceza ödenene kadar..."
+                    />
+                </div>
+            </div>
+        </details>
     </div>
 );
