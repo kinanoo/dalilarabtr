@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'دليلك الشامل لأنواع الإقامات وشروطها وطرق التقديم والتجديد في تركيا.',
   openGraph: {
     title: 'أنواع الإقامات في تركيا',
-    images: [{ url: getOgImage(), width: 1200, height: 630 }],
+    images: [{ url: getOgImage(undefined, { title: 'أنواع الإقامات في تركيا' }), width: 1200, height: 630 }],
   },
 };
 

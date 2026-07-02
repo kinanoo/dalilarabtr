@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'دليلك الشامل للسكن والإيجار والحياة اليومية في تركيا.',
   openGraph: {
     title: 'السكن والحياة في تركيا',
-    images: [{ url: getOgImage(), width: 1200, height: 630 }],
+    images: [{ url: getOgImage(undefined, { title: 'السكن والحياة في تركيا' }), width: 1200, height: 630 }],
   },
 };
 

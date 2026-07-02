@@ -46,7 +46,7 @@ export async function generateMetadata(
         openGraph: {
             title: data.title,
             description: stripHtml(data.content).substring(0, 200),
-            images: [{ url: getOgImage(), width: 1200, height: 630, alt: data.title }],
+            images: [{ url: getOgImage(undefined, { title: data.title, category: 'أخبار وتحديثات' }), width: 1200, height: 630, alt: data.title }],
         },
     };
 }

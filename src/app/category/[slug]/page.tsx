@@ -35,7 +35,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
       description,
       url,
       type: 'website',
-      images: [{ url: getOgImage(), width: 1200, height: 630, alt: categoryName }],
+      images: [{ url: getOgImage(undefined, { title: categoryName }), width: 1200, height: 630, alt: categoryName }],
     },
   };
 }

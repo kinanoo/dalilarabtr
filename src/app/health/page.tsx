@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'دليلك الشامل للتأمين الصحي والمستشفيات والخدمات الطبية في تركيا.',
   openGraph: {
     title: 'الصحة والتأمين في تركيا',
-    images: [{ url: getOgImage(), width: 1200, height: 630 }],
+    images: [{ url: getOgImage(undefined, { title: 'الصحة والتأمين في تركيا' }), width: 1200, height: 630 }],
   },
 };
 

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     title: 'دليل المواقف | دليل العرب في تركيا',
     description: 'دليل تفاعلي يساعدك في تحديد الإجراءات المطلوبة لحالتك.',
     url: `${SITE_CONFIG.siteUrl}/consultant`,
-    images: [{ url: getOgImage(), width: 1200, height: 630, alt: 'دليل المواقف' }],
+    images: [{ url: getOgImage(undefined, { title: 'دليل المواقف — حدّد إجراءك القانوني في تركيا' }), width: 1200, height: 630, alt: 'دليل المواقف' }],
   },
   alternates: { canonical: '/consultant' },
 };

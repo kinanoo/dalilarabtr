@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'دليلك الشامل لإذن العمل، فتح شركة، الضرائب، والتأمينات الاجتماعية في تركيا.',
   openGraph: {
     title: 'العمل والاستثمار في تركيا',
-    images: [{ url: getOgImage(), width: 1200, height: 630 }],
+    images: [{ url: getOgImage(undefined, { title: 'العمل والاستثمار في تركيا' }), width: 1200, height: 630 }],
   },
 };
 

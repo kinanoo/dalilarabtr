@@ -18,8 +18,10 @@ import cairoRegular from '../fonts/Cairo-Regular.ttf';
 
 // ── verbatim helpers from the old /api/og route ────────────────────────────
 
-// Satori renders Arabic words LTR — reverse word order + fix bracket/slash positions
+// Satori renders Arabic words LTR — reverse word order + fix bracket/slash positions.
+// ONLY for Arabic text: a Turkish/Latin title must keep its natural order.
 function fixArabic(text) {
+    if (!/[؀-ۿ]/.test(text)) return text;
     return text
         .split(' ')
         .reverse()

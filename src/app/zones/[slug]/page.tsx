@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             robots: { index: false, follow: true },
             openGraph: {
                 title: zoneTitle,
-                images: [{ url: getOgImage(), width: 1200, height: 630, alt: zoneTitle }],
+                images: [{ url: getOgImage(undefined, { title: zoneTitle }), width: 1200, height: 630, alt: zoneTitle }],
             },
         };
     }
@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
                 title: districtTitle,
-                images: [{ url: getOgImage(), width: 1200, height: 630, alt: districtTitle }],
+                images: [{ url: getOgImage(undefined, { title: districtTitle }), width: 1200, height: 630, alt: districtTitle }],
             },
         };
     }
@@ -99,7 +99,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             alternates: { canonical: `/zones/${decodedSlug}` },
             openGraph: {
                 title: cityTitle,
-                images: [{ url: getOgImage(), width: 1200, height: 630, alt: cityTitle }],
+                images: [{ url: getOgImage(undefined, { title: cityTitle }), width: 1200, height: 630, alt: cityTitle }],
             },
         };
     }

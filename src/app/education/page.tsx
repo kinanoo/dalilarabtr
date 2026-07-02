@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: 'دليلك الشامل للدراسة والمنح والمدارس والجامعات في تركيا.',
   openGraph: {
     title: 'الدراسة والتعليم في تركيا',
-    images: [{ url: getOgImage(), width: 1200, height: 630 }],
+    images: [{ url: getOgImage(undefined, { title: 'الدراسة والتعليم في تركيا' }), width: 1200, height: 630 }],
   },
 };
 

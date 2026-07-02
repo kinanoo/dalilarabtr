@@ -52,7 +52,7 @@ export async function generateMetadata(
     const title = `${data.name} - ${data.profession} في ${data.city}`;
     const description = data.description?.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
-    const ogImage = getOgImage(data.image);
+    const ogImage = getOgImage(data.image, { title });
 
     return {
         title,

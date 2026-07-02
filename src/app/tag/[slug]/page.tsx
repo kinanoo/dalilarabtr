@@ -88,7 +88,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
             description,
             url,
             type: 'website',
-            images: [{ url: getOgImage(), width: 1200, height: 630, alt: label }],
+            images: [{ url: getOgImage(undefined, { title: label }), width: 1200, height: 630, alt: label }],
         },
     };
 }
