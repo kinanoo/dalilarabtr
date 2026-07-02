@@ -72,8 +72,10 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
     const hasTr = codes.some((c) => c.title_tr || c.description_tr);
     const showToggle = hasTr || lang === 'tr';
 
-    // ── Families, derived from the data (counts + dominant categories) ──
-    const families = useMemo(() => {
+    // ── Families, derived from the data (counts + dominant categories).
+    // Rare letters (<5 codes: O, K, A, numeric-only…) collapse into one
+    // "أخرى" bucket so phones aren't cluttered with one-code boxes. ──
+    const { families, majorLetters } = useMemo(() => {
         const map = new Map<string, AdminCode[]>();
         codes.forEach((c) => {
             const f = famOf(c.code);
@@ -81,7 +83,9 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
             map.get(f)!.push(c);
         });
         const order = [...FAMILY_ORDER.filter((f) => map.has(f)), ...[...map.keys()].filter((f) => !FAMILY_ORDER.includes(f)).sort()];
-        return order.map((letter) => {
+        const majors = order.filter((l) => map.get(l)!.length >= 5);
+        const otherCount = order.filter((l) => !majors.includes(l)).reduce((n, l) => n + map.get(l)!.length, 0);
+        const fams = majors.map((letter) => {
             const list = map.get(letter)!;
             const freq: Record<string, number> = {};
             list.forEach((c) => {
@@ -91,17 +95,23 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
             const topCats = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => k);
             return { letter, count: list.length, topCats };
         });
+        if (otherCount > 0) fams.push({ letter: 'other', count: otherCount, topCats: [] });
+        return { families: fams, majorLetters: majors };
     }, [codes, lang]);
 
-    // ── "Most critical" quick-access strip (straight from severity data) ──
-    const criticalCodes = useMemo(() => codes.filter((c) => c.severity === ('critical' as AdminCode['severity'])).slice(0, 8), [codes]);
+    const famMatch = (code: string, filter: string) =>
+        filter === 'other' ? !majorLetters.includes(famOf(code)) : famOf(code) === filter;
+
+    // ── "Most critical" quick-access strip (straight from severity data).
+    // 6 chips ≈ two wrapped lines on a 360px phone — no side-scroll. ──
+    const criticalCodes = useMemo(() => codes.filter((c) => c.severity === ('critical' as AdminCode['severity'])).slice(0, 6), [codes]);
 
     const presentSeverities = SEVERITY_ORDER.filter((s) => codes.some((c) => c.severity === s));
 
     // ── Filtering ──
     const searchActive = query.trim().length > 0;
     const filteredCodes = codes.filter((item) => {
-        if (familyFilter !== 'all' && famOf(item.code) !== familyFilter) return false;
+        if (familyFilter !== 'all' && !famMatch(item.code, familyFilter)) return false;
         if (severityFilter !== 'all' && item.severity !== severityFilter) return false;
         if (!searchActive) return true;
 
@@ -220,21 +230,21 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                     <Layers size={12} />
                                     {ui.families}
                                 </h2>
-                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                {/* Compact wrapping pills — NO horizontal scroll, no big
+                                    squares; fits 360px phones in two short lines. */}
+                                <div className="flex flex-wrap gap-2">
                                     <button
                                         type="button"
                                         onClick={() => setFamilyFilter('all')}
                                         aria-pressed={familyFilter === 'all'}
-                                        className={`rounded-2xl border p-3 text-center transition-all ${
+                                        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                                             familyFilter === 'all'
-                                                ? 'border-emerald-500 bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5'
+                                                ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
                                         }`}
                                     >
-                                        <span className="block text-lg font-black">{ui.all}</span>
-                                        <span className={`block text-[10px] font-bold mt-0.5 ${familyFilter === 'all' ? 'text-emerald-100' : 'text-slate-400'}`}>
-                                            {codeCount(codes.length, lang)}
-                                        </span>
+                                        {ui.all}
+                                        <span className={`text-[10px] font-bold ${familyFilter === 'all' ? 'text-emerald-100' : 'text-slate-400'}`}>{codes.length}</span>
                                     </button>
                                     {families.map((f) => (
                                         <button
@@ -243,16 +253,16 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                             onClick={() => setFamilyFilter(familyFilter === f.letter ? 'all' : f.letter)}
                                             aria-pressed={familyFilter === f.letter}
                                             title={f.topCats.join(' · ')}
-                                            className={`rounded-2xl border p-3 text-center transition-all ${
+                                            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                                                 familyFilter === f.letter
-                                                    ? 'border-emerald-500 bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                                                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5'
+                                                    ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                                                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
                                             }`}
                                         >
-                                            <span dir="ltr" className="block text-lg font-black font-mono">{f.letter}</span>
-                                            <span className={`block text-[10px] font-bold mt-0.5 ${familyFilter === f.letter ? 'text-emerald-100' : 'text-slate-400'}`}>
-                                                {codeCount(f.count, lang)}
-                                            </span>
+                                            {f.letter === 'other'
+                                                ? <span>{ui.other}</span>
+                                                : <span dir="ltr" className="font-mono">{f.letter}</span>}
+                                            <span className={`text-[10px] font-bold ${familyFilter === f.letter ? 'text-emerald-100' : 'text-slate-400'}`}>{f.count}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -272,7 +282,8 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                     <AlertTriangle size={12} />
                                     {ui.critical}
                                 </h2>
-                                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 [scrollbar-width:thin]">
+                                {/* Wrapping chips — everything visible, no side-drag. */}
+                                <div className="flex flex-wrap gap-2">
                                     {criticalCodes.map((c) => (
                                         <Link
                                             key={c.id}
@@ -289,7 +300,7 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
 
                         {/* ── Severity filter ── */}
                         {presentSeverities.length > 1 && (
-                            <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4 [scrollbar-width:thin]">
+                            <div className="flex flex-wrap gap-2 mb-6">
                                 <button
                                     type="button"
                                     onClick={() => setSeverityFilter('all')}
@@ -345,10 +356,10 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                     <section key={letter}>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span dir="ltr" className="font-mono font-black text-sm px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                                                {letter}
+                                                {letter === '#' ? '•' : letter}
                                             </span>
                                             <h2 className="text-sm font-black text-slate-700 dark:text-slate-200">
-                                                {ui.familyWord} {letter}
+                                                {letter === '#' ? ui.other : `${ui.familyWord} ${letter}`}
                                             </h2>
                                             <span className="text-xs font-bold text-slate-400">· {codeCount(list.length, lang)}</span>
                                         </div>

@@ -93,6 +93,7 @@ export const UI = {
         noResultsHint: 'جرّب كوداً مختلفاً أو كلمات أخرى',
         families: 'عائلات الأكواد',
         familyWord: 'عائلة',
+        other: 'أخرى',
         critical: 'الأشدّ خطورة',
         searchResults: 'نتائج البحث',
         disclaimer:
@@ -117,6 +118,7 @@ export const UI = {
         noResultsHint: 'Farklı bir kod veya başka kelimeler deneyin',
         families: 'Kod aileleri',
         familyWord: 'ailesi',
+        other: 'Diğer',
         critical: 'En kritik kodlar',
         searchResults: 'Arama sonuçları',
         disclaimer:
