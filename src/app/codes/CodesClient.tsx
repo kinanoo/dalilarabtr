@@ -6,7 +6,7 @@ import HeroSearchInput from '@/components/HeroSearchInput';
 import { useAdminCodes } from '@/lib/useAdminData';
 import type { AdminCode } from '@/lib/types';
 import { useMemo, useState } from 'react';
-import { ShieldAlert, AlertTriangle, ChevronLeft, Loader2, Layers } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, ChevronLeft, Clock, Loader2, Layers } from 'lucide-react';
 import ShareMenu from '@/components/ShareMenu';
 import Link from 'next/link';
 import { SITE_CONFIG } from '@/lib/config';
@@ -40,13 +40,15 @@ const DOT: Record<string, string> = {
     info: 'bg-blue-400',
     safe: 'bg-green-500',
 };
-const SEV_TEXT: Record<string, string> = {
-    critical: 'text-red-600 dark:text-red-400',
-    high: 'text-orange-600 dark:text-orange-400',
-    medium: 'text-yellow-700 dark:text-yellow-400',
-    low: 'text-slate-500 dark:text-slate-400',
-    info: 'text-blue-600 dark:text-blue-400',
-    safe: 'text-green-600 dark:text-green-400',
+// The "passport-stamp stub": a severity-tinted block holding code + severity,
+// separated from the card body by a dashed tear line (ticket metaphor).
+const STUB: Record<string, { bg: string; text: string }> = {
+    critical: { bg: 'bg-red-50 dark:bg-red-950/40', text: 'text-red-700 dark:text-red-300' },
+    high: { bg: 'bg-orange-50 dark:bg-orange-950/40', text: 'text-orange-700 dark:text-orange-300' },
+    medium: { bg: 'bg-yellow-50 dark:bg-yellow-950/40', text: 'text-yellow-700 dark:text-yellow-300' },
+    low: { bg: 'bg-slate-100 dark:bg-slate-800/60', text: 'text-slate-600 dark:text-slate-300' },
+    info: { bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-700 dark:text-blue-300' },
+    safe: { bg: 'bg-green-50 dark:bg-green-950/40', text: 'text-green-700 dark:text-green-300' },
 };
 
 const FAMILY_ORDER = ['Ç', 'V', 'G', 'N', 'O'];
@@ -134,36 +136,50 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
         return order.map((letter) => ({ letter, list: map.get(letter)! }));
     })();
 
-    // ── Row (compact, scannable). Plain render helper — NOT a nested
-    // component, so rows don't remount on every keystroke. ──
-    const row = (item: AdminCode) => (
-        <Link
-            key={item.id}
-            href={`/codes/${encodeURIComponent(item.code)}${suffix}`}
-            className="group flex items-center gap-3 px-3.5 sm:px-5 py-3 bg-white dark:bg-slate-900 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-colors"
-        >
-            {/* Severity dot */}
-            <span className={`w-2 h-2 rounded-full shrink-0 ${DOT[item.severity] || DOT.low}`} aria-hidden="true" />
-            {/* Code badge */}
-            <span dir="ltr" className="font-mono font-black text-xs sm:text-sm px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 shrink-0 min-w-[3.75rem] text-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors">
-                {item.code}
-            </span>
-            {/* Title + one-line description */}
-            <span className="min-w-0 flex-1">
-                <span className="block font-bold text-sm text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                    {dTitle(item)}
+    // ── Card: "passport-stamp stub" (owner's pick, 2026-07). A severity-
+    // tinted stub holds the code + severity like a stamped ticket edge,
+    // separated by a dashed tear line; the body carries title, one clamped
+    // description line and the in-force duration. Plain render helper — NOT
+    // a nested component, so cards don't remount on every keystroke. ──
+    const row = (item: AdminCode) => {
+        const stub = STUB[item.severity] || STUB.low;
+        const dur = lang === 'tr' ? item.duration_tr || item.duration : item.duration;
+        return (
+            <Link
+                key={item.id}
+                href={`/codes/${encodeURIComponent(item.code)}${suffix}`}
+                className="group flex items-stretch rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all"
+            >
+                {/* Stamp stub — severity-tinted, dashed tear line on its inner edge */}
+                <span className={`w-[5.25rem] sm:w-24 shrink-0 flex flex-col items-center justify-center gap-0.5 px-1.5 py-3 border-e-2 border-dashed border-slate-200 dark:border-slate-700 ${stub.bg}`}>
+                    <span dir="ltr" className={`font-mono font-black text-sm sm:text-base leading-none ${stub.text}`}>
+                        {item.code}
+                    </span>
+                    <span className={`text-[10px] font-bold text-center leading-tight ${stub.text}`}>
+                        {severityLabel(item.severity, lang)}
+                    </span>
                 </span>
-                <span className="block text-xs text-slate-400 dark:text-slate-500 truncate">
-                    {dDesc(item)}
+                {/* Body */}
+                <span className="min-w-0 flex-1 flex items-center gap-2.5 px-3.5 sm:px-4 py-3">
+                    <span className="min-w-0 flex-1">
+                        <span className="block font-bold text-sm text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                            {dTitle(item)}
+                        </span>
+                        <span className="block text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                            {dDesc(item)}
+                        </span>
+                        {dur && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1.5">
+                                <Clock size={12} className="shrink-0" />
+                                <span className="truncate">{dur}</span>
+                            </span>
+                        )}
+                    </span>
+                    <ChevronLeft size={16} className={`text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 shrink-0 transition-colors ${lang === 'tr' ? 'rotate-180' : ''}`} />
                 </span>
-            </span>
-            {/* Severity label (sm+) + go chevron */}
-            <span className={`hidden sm:block text-[11px] font-bold shrink-0 ${SEV_TEXT[item.severity] || SEV_TEXT.low}`}>
-                {severityLabel(item.severity, lang)}
-            </span>
-            <ChevronLeft size={16} className={`text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 shrink-0 transition-colors ${lang === 'tr' ? 'rotate-180' : ''}`} />
-        </Link>
-    );
+            </Link>
+        );
+    };
 
     return (
         <main className="flex flex-col min-h-screen">
@@ -318,7 +334,7 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                 <h2 className="text-[11px] font-black tracking-[0.2em] uppercase text-slate-400 mb-3">
                                     {ui.searchResults} · {codeCount(filteredCodes.length, lang)}
                                 </h2>
-                                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden shadow-sm">
+                                <div className="space-y-2.5">
                                     {filteredCodes.map(row)}
                                 </div>
                             </section>
@@ -336,7 +352,7 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                             </h2>
                                             <span className="text-xs font-bold text-slate-400">· {codeCount(list.length, lang)}</span>
                                         </div>
-                                        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden shadow-sm">
+                                        <div className="space-y-2.5">
                                             {list.map(row)}
                                         </div>
                                     </section>

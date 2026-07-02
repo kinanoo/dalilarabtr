@@ -40,8 +40,10 @@ export function useAdminCodes() {
           category: d.category,
           severity: d.severity as any,
           active: true,
+          duration: d.duration ?? null,
           title_tr: d.title_tr ?? null,
           description_tr: d.description_tr ?? null,
+          duration_tr: d.duration_tr ?? null,
         }));
       return transformed;
     }

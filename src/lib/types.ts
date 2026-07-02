@@ -59,9 +59,12 @@ export interface AdminCode {
     category: string;
     severity: 'info' | 'warning' | 'urgent' | 'critical';
     active: boolean;
+    // How long the code stays in force (shown on the list stamp-stub cards).
+    duration?: string | null;
     // Turkish translations (nullable — fall back to Arabic in the UI).
     title_tr?: string | null;
     description_tr?: string | null;
+    duration_tr?: string | null;
 }
 
 export interface AdminFAQ {

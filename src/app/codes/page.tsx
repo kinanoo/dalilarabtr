@@ -39,7 +39,7 @@ export default async function CodesPage({ searchParams }: Props) {
       .order('code');
     initialCodes = (data || [])
       .filter((d: { active?: boolean }) => d.active !== false)
-      .map((d: { code: string; title: string; description: string; category: string; severity: string; title_tr?: string | null; description_tr?: string | null }) => ({
+      .map((d: { code: string; title: string; description: string; category: string; severity: string; duration?: string | null; title_tr?: string | null; description_tr?: string | null; duration_tr?: string | null }) => ({
         id: d.code,
         code: d.code,
         title: d.title,
@@ -47,8 +47,10 @@ export default async function CodesPage({ searchParams }: Props) {
         category: d.category,
         severity: d.severity as AdminCode['severity'],
         active: true,
+        duration: d.duration ?? null,
         title_tr: d.title_tr ?? null,
         description_tr: d.description_tr ?? null,
+        duration_tr: d.duration_tr ?? null,
       }));
   }
 
