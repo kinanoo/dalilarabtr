@@ -21,7 +21,7 @@ export default function AskOnWhatsApp({ topic }: { topic?: string }) {
     const openWithContext = () => {
         const title = (topic || (typeof document !== 'undefined' ? document.title : '') || '').trim();
         const url = typeof location !== 'undefined' ? location.href : '';
-        const msg = `السلام عليكم 👋\nبخصوص: «${title}»\n${url}\n\nلم أفهم الموضوع تماماً، أرجو توضيح التفاصيل.`;
+        const msg = `السلام عليكم\nأرغب باستشارة بخصوص: «${title}»\n${url}\n\nأرجو توضيح الخطوات من فضلكم.`;
         window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
     };
 
@@ -31,8 +31,8 @@ export default function AskOnWhatsApp({ topic }: { topic?: string }) {
                 <MessageCircle size={24} />
             </div>
             <div className="min-w-0 flex-1">
-                <h3 className="text-base font-black text-slate-900 dark:text-white">لم تفهم الموضوع؟ لا تقلق</h3>
-                <p className="mt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">راسلنا على واتساب وسنوضّح لك التفاصيل مباشرةً.</p>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">هل الإجراء معقّد؟</h3>
+                <p className="mt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">يمكنك استشارتنا مجاناً، وسنوضّح لك الخطوات مباشرةً.</p>
             </div>
             <a
                 href={`https://wa.me/${num}`}
@@ -42,7 +42,7 @@ export default function AskOnWhatsApp({ topic }: { topic?: string }) {
                 className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-95"
             >
                 <MessageCircle size={18} />
-                راسلنا على واتساب
+                انقر هنا للاستشارة
             </a>
         </div>
     );
