@@ -6,7 +6,7 @@ import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight, Clock, Link2
 import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
-import AnswerOnWhatsApp from '@/components/AnswerOnWhatsApp';
+import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import CodesLangToggle from '@/components/codes/CodesLangToggle';
 import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
@@ -124,16 +124,6 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
     };
 
     const codeUrl = `${SITE_CONFIG.siteUrl}/codes/${enc}${lang === 'tr' ? '?lang=tr' : ''}`;
-    // Pre-formatted, attributed answer block users send in WhatsApp groups.
-    const answerText = [
-        `🔒 ${item.code} — ${title}`,
-        '',
-        description,
-        ...(howToRemove ? ['', `✅ ${ui.howRemove}`, howToRemove] : []),
-        '',
-        `📋 ${ui.source}`,
-        `🔗 ${codeUrl}`,
-    ].join('\n');
 
     // Structured data — DefinedTerm (glossary) + FAQ (rich result)
     const definedTerm = {
@@ -223,11 +213,10 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
                     </div>
                 </div>
 
-                {/* Send answer on WhatsApp — growth CTA (one tap) */}
-                <div className="mt-6 flex flex-col items-center gap-2">
-                    <AnswerOnWhatsApp text={answerText} label={ui.send} className="w-full sm:w-auto" />
-                    <span className="text-xs text-slate-400 dark:text-slate-500 text-center">{ui.sendHint}</span>
-                </div>
+                {/* Consultation CTA — same as articles: "for more details,
+                    contact us on WhatsApp" straight to the site's number,
+                    with the code prefilled so the admin knows the topic. */}
+                <AskOnWhatsApp topic={`${item.code} — ${title}`} lang={lang} />
 
                 {/* How to Remove Section */}
                 {howToRemove && (

@@ -5,24 +5,43 @@ import { SITE_CONFIG } from '@/lib/config';
 
 /**
  * AskOnWhatsApp — an inline "didn't understand? message us" CTA for content
- * pages (articles, news, info pages). NOT for the services directory, which
- * has its own per-provider contact buttons.
+ * pages (articles, news, info pages, security codes). NOT for the services
+ * directory, which has its own per-provider contact buttons.
  *
  * Clicking opens a WhatsApp chat to the site's number
  * (SITE_CONFIG.whatsapp, overridable via NEXT_PUBLIC_WHATSAPP_PHONE) with the
  * page title + URL pre-filled, so the admin instantly knows which topic the
  * visitor is asking about. The bare wa.me link is the href fallback (works
  * without JS); the click handler adds the contextual message.
+ *
+ * `lang="tr"` renders the Turkish variant (used on /codes?lang=tr pages).
  */
-export default function AskOnWhatsApp({ topic }: { topic?: string }) {
+const STRINGS = {
+    ar: {
+        title: 'هل الإجراء معقّد؟',
+        sub: 'يمكنك استشارتنا مجاناً، وسنوضّح لك الخطوات مباشرةً.',
+        button: 'انقر هنا للاستشارة',
+        msg: (title: string, url: string) =>
+            `السلام عليكم\nأرغب باستشارة بخصوص: «${title}»\n${url}\n\nأرجو توضيح الخطوات من فضلكم.`,
+    },
+    tr: {
+        title: 'Sorunuz mu var?',
+        sub: 'Bize ücretsiz danışabilirsiniz, adımları doğrudan açıklarız.',
+        button: 'WhatsApp\'tan danışın',
+        msg: (title: string, url: string) =>
+            `Merhaba,\n«${title}» hakkında danışmak istiyorum.\n${url}\n\nAdımları açıklayabilir misiniz?`,
+    },
+} as const;
+
+export default function AskOnWhatsApp({ topic, lang = 'ar' }: { topic?: string; lang?: 'ar' | 'tr' }) {
     const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
     if (!num) return null;
+    const t = STRINGS[lang];
 
     const openWithContext = () => {
         const title = (topic || (typeof document !== 'undefined' ? document.title : '') || '').trim();
         const url = typeof location !== 'undefined' ? location.href : '';
-        const msg = `السلام عليكم\nأرغب باستشارة بخصوص: «${title}»\n${url}\n\nأرجو توضيح الخطوات من فضلكم.`;
-        window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+        window.open(`https://wa.me/${num}?text=${encodeURIComponent(t.msg(title, url))}`, '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -31,8 +50,8 @@ export default function AskOnWhatsApp({ topic }: { topic?: string }) {
                 <MessageCircle size={24} />
             </div>
             <div className="min-w-0 flex-1">
-                <h3 className="text-base font-black text-slate-900 dark:text-white">هل الإجراء معقّد؟</h3>
-                <p className="mt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">يمكنك استشارتنا مجاناً، وسنوضّح لك الخطوات مباشرةً.</p>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">{t.title}</h3>
+                <p className="mt-0.5 text-sm font-medium text-slate-600 dark:text-slate-300">{t.sub}</p>
             </div>
             <a
                 href={`https://wa.me/${num}`}
@@ -42,7 +61,7 @@ export default function AskOnWhatsApp({ topic }: { topic?: string }) {
                 className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-95"
             >
                 <MessageCircle size={18} />
-                انقر هنا للاستشارة
+                {t.button}
             </a>
         </div>
     );
