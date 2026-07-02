@@ -43,6 +43,11 @@ export function ActionCenter() {
         if (!supabase) return;
 
         const lastVisit = localStorage.getItem(LAST_VISIT_KEY) || new Date(0).toISOString();
+        // Stamp THIS visit up front, then advance the marker after the counts
+        // load — so "since your last visit" measures from the previous time
+        // the dashboard was opened, and the next visit measures from now.
+        // (The activity bell no longer owns this key.)
+        const thisVisit = new Date().toISOString();
 
         const [comments, feedback, members, services, reviews] = await Promise.all([
             supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
@@ -66,6 +71,7 @@ export function ActionCenter() {
             newReviews: reviews.count || 0,
         });
         setLoading(false);
+        localStorage.setItem(LAST_VISIT_KEY, thisVisit);
     }, []);
 
     useEffect(() => {

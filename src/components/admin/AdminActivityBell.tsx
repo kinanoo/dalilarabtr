@@ -12,7 +12,10 @@ import { ar } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const LAST_VISIT_KEY = 'admin_last_visit_ts';
+// The activity bell tracks "have I seen these log entries" with its OWN key.
+// It used to share 'admin_last_visit_ts' with ActionCenter's "since your last
+// visit" summary — so merely opening the bell reset that summary to zero.
+const LAST_VISIT_KEY = 'admin_activity_seen_ts';
 
 const EVENT_CONFIG: Record<string, { icon: typeof Users; bg: string; text: string; label: string }> = {
     new_member:   { icon: Users,         bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'عضو جديد' },

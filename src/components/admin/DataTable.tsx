@@ -104,15 +104,22 @@ export function DataTable({
                 query = customFilter(query);
             }
 
-            if (term) {
+            // Sanitize the term before it reaches the query. In a raw .or()
+            // filter, commas/dots/colons/parens are PostgREST grammar — an
+            // admin typing "a,b" or "x)" would silently break the filter (or
+            // inject extra conditions); % _ * are LIKE wildcards. Strip them
+            // all to spaces so search is literal and can never malform the
+            // request. Empty-after-strip → no filter (show all).
+            const safeTerm = term ? term.replace(/[,.:()%_*\\]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+            if (safeTerm) {
                 if (searchFields && searchFields.length > 0) {
                     // Use OR syntax for multiple fields
-                    const orQuery = searchFields.map(field => `${field}.ilike.%${term}%`).join(',');
+                    const orQuery = searchFields.map(field => `${field}.ilike.%${safeTerm}%`).join(',');
                     query = query.or(orQuery);
                 } else {
                     // Fallback legacy logic
                     const searchCol = tableName === 'faqs' ? 'question' : (tableName === 'service_providers' ? 'name' : 'title');
-                    query = query.ilike(searchCol, `%${term}%`);
+                    query = query.ilike(searchCol, `%${safeTerm}%`);
                 }
             }
 

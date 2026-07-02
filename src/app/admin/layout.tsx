@@ -12,6 +12,7 @@ import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
 import { AIAssistant, AIFab } from '@/components/admin/AIAssistant';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import logger from '@/lib/logger';
+import { useIsXlUp } from '@/lib/useIsXlUp';
 
 export default function AdminLayout({
     children,
@@ -25,6 +26,11 @@ export default function AdminLayout({
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [aiOpen, setAiOpen] = useState(false);
+    // The activity/visitor bells live in the mobile header AND the desktop
+    // sidebar. Mount them in exactly ONE spot per breakpoint — a CSS-hidden
+    // copy still opens its realtime subscription. Mobile header renders them
+    // only below xl; the sidebar renders them only at xl+.
+    const isXl = useIsXlUp();
 
     // ─── Auth Guard State ───────────────────────────────────────────────
     const [authState, setAuthState] = useState<'loading' | 'authorized' | 'unauthorized'>('loading');
@@ -154,10 +160,12 @@ export default function AdminLayout({
                             <h1 className="font-bold text-slate-800 dark:text-white text-sm">لوحة التحكم</h1>
                         </Link>
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 [&_button]:bg-slate-100 [&_button]:dark:bg-slate-800 [&_button]:text-slate-600 [&_button]:dark:text-slate-300">
-                                <ActiveVisitorsBell />
-                                <AdminActivityBell />
-                            </div>
+                            {!isXl && (
+                                <div className="flex items-center gap-1.5 [&_button]:bg-slate-100 [&_button]:dark:bg-slate-800 [&_button]:text-slate-600 [&_button]:dark:text-slate-300">
+                                    <ActiveVisitorsBell />
+                                    <AdminActivityBell />
+                                </div>
+                            )}
                             <button
                                 type="button"
                                 aria-label="فتح القائمة"

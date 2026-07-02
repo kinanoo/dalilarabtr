@@ -57,6 +57,7 @@ export default function DashboardLayoutClient({
         if (typeof window !== 'undefined') {
             try {
                 ['anon_comment_id', 'visitor_id', 'admin_last_visit_ts',
+                 'admin_activity_seen_ts',
                  'admin_lockout_until', 'admin_login_attempts']
                     .forEach((k) => localStorage.removeItem(k));
             } catch { /* localStorage may be disabled — non-fatal */ }
