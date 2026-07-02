@@ -64,6 +64,15 @@ export function hasTurkish(row: Record<string, unknown>): boolean {
     return !!(row.title_tr || row.description_tr || row.how_to_remove_tr);
 }
 
+/** Counted-noun grammar for "N codes". */
+export function codeCount(n: number, lang: Lang): string {
+    if (lang === 'tr') return `${n} kod`;
+    if (n === 1) return 'كود واحد';
+    if (n === 2) return 'كودان';
+    if (n <= 10) return `${n} أكواد`;
+    return `${n} كوداً`;
+}
+
 /** Static UI strings per language. */
 export const UI = {
     ar: {
@@ -82,6 +91,10 @@ export const UI = {
         severityFilter: 'حسب الخطورة',
         noResults: 'لا توجد أكواد مطابقة',
         noResultsHint: 'جرّب كوداً مختلفاً أو كلمات أخرى',
+        families: 'عائلات الأكواد',
+        familyWord: 'عائلة',
+        critical: 'الأشدّ خطورة',
+        searchResults: 'نتائج البحث',
         disclaimer:
             'هذه المعلومات استرشادية فقط وقد تتغيّر؛ المرجع النهائي هو الجهة الرسمية. لسنا محامين ولا تابعين لأي جهة حكومية، ولا نطلب مالاً ولا نَعِد بنتيجة.',
         source: 'المصدر: دليل العرب والسوريين في تركيا',
@@ -102,6 +115,10 @@ export const UI = {
         severityFilter: 'Risk düzeyi',
         noResults: 'Eşleşen kod bulunamadı',
         noResultsHint: 'Farklı bir kod veya başka kelimeler deneyin',
+        families: 'Kod aileleri',
+        familyWord: 'ailesi',
+        critical: 'En kritik kodlar',
+        searchResults: 'Arama sonuçları',
         disclaimer:
             'Bu bilgiler yalnızca yol göstericidir ve değişebilir; nihai kaynak resmî makamdır. Avukat değiliz, hiçbir resmî kuruma bağlı değiliz, para talep etmiyor ve sonuç vaat etmiyoruz.',
         source: "Kaynak: Türkiye'deki Araplar ve Suriyeliler Rehberi",
