@@ -6,7 +6,7 @@ import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight, Clock, Link2
 import Link from 'next/link';
 import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
-import CopyAnswerButton from '@/components/CopyAnswerButton';
+import AnswerOnWhatsApp from '@/components/AnswerOnWhatsApp';
 import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
@@ -155,10 +155,10 @@ export default async function CodeDetailPage({ params }: Props) {
                     </div>
                 </div>
 
-                {/* انسخ الإجابة — WhatsApp growth CTA */}
+                {/* أرسِل الإجابة على واتساب — WhatsApp growth CTA (one tap) */}
                 <div className="mt-6 flex flex-col items-center gap-2">
-                    <CopyAnswerButton text={answerText} className="w-full sm:w-auto" />
-                    <span className="text-xs text-slate-400 dark:text-slate-500">جاوب أصدقاءك في مجموعات واتساب فوراً — انسخ والصق</span>
+                    <AnswerOnWhatsApp text={answerText} className="w-full sm:w-auto" />
+                    <span className="text-xs text-slate-400 dark:text-slate-500">بضغطة واحدة — يفتح واتساب والإجابة جاهزة لإرسالها لأصدقائك أو مجموعتك</span>
                 </div>
 
                 {/* How to Remove Section */}
