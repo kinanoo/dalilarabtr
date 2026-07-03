@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import {
     ShieldAlert, ShieldCheck, CheckCircle2, AlertTriangle,
-    ExternalLink, Copy, Check, UserCheck, Hash, ChevronDown, BookOpen
+    ExternalLink, Copy, Check, UserCheck, Hash, ChevronDown, BookOpen, HelpCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
@@ -59,36 +60,25 @@ export default function KimlikCheckPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo flex flex-col">
 
-            {/* ===== Hero — Compact ===== */}
-            <section className="bg-gradient-to-bl from-primary-900 via-primary-950 to-slate-900 text-white pt-16 pb-12 px-4 rounded-b-[40px]">
-                <div className="max-w-3xl mx-auto text-center">
-                    <div className="inline-flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-sm rounded-2xl mb-3">
-                        <UserCheck className="w-7 h-7 text-emerald-400" />
-                    </div>
-                    <h1 className="text-2xl md:text-4xl font-extrabold mb-2">
-                        فاحص الكملك التركي
-                    </h1>
-                    <p className="text-sm md:text-base text-slate-300 max-w-lg mx-auto">
-                        تحقق من صحة رقم الكملك فوراً، أو انتقل للموقع الرسمي لفحص صلاحية القيد
-                    </p>
-                </div>
-            </section>
+            {/* ===== Hero — shared light PageHero ===== */}
+            <PageHero
+                title="فاحص الكملك التركي"
+                description="تحقق من صحة رقم الكملك فوراً، أو انتقل للموقع الرسمي لفحص صلاحية القيد"
+                icon={<UserCheck className="w-10 h-10 md:w-12 md:h-12" />}
+            />
 
-            <main className="flex-grow pt-6 pb-16 px-4 -mt-6 relative z-20">
+            <main className="flex-grow pt-8 pb-16 px-4">
                 <div className="container mx-auto max-w-2xl space-y-5">
 
-                    {/* ===== Section 1: Algorithm Checker — accent stripe + gradient ===== */}
-                    <div className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20 rounded-3xl shadow-xl shadow-emerald-500/5 border border-slate-200 dark:border-slate-800 p-5 md:p-8">
-                        <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-80" />
+                    {/* ===== Section 1: Algorithm Checker — flat card + emerald side-rail ===== */}
+                    <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 md:p-8">
+                        <span className="absolute top-0 start-0 h-full w-1 bg-emerald-500" />
 
                         <div className="flex items-center gap-3 mb-5">
-                            <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl group-hover:rotate-3 transition-transform">
+                            <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
                                 <Hash className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[9px] font-black tracking-wider uppercase mb-1">
-                                    فحص محلي
-                                </span>
                                 <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">
                                     فحص رقم الكملك
                                 </h2>
@@ -116,7 +106,7 @@ export default function KimlikCheckPage() {
                                     maxLength={11}
                                 />
                                 {/* Copy button */}
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                <div className="absolute end-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                     {tcNumber ? (
                                         <button
                                             onClick={copyToClipboard}
@@ -129,7 +119,7 @@ export default function KimlikCheckPage() {
                                     ) : null}
                                 </div>
                                 {/* Counter */}
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <div className="absolute start-3 top-1/2 -translate-y-1/2">
                                     <span className={`text-xs font-bold px-2 py-1 rounded-lg ${tcNumber.length === 11 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
                                         {tcNumber.length}/11
                                     </span>
@@ -179,47 +169,44 @@ export default function KimlikCheckPage() {
                         )}
                     </div>
 
-                    {/* ===== Section 2: CTA — Official NVI Site — premium gradient ===== */}
-                    <a
-                        href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative overflow-hidden block bg-gradient-to-l from-emerald-600 via-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 rounded-2xl p-5 text-white transition-all shadow-xl shadow-emerald-600/30 hover:shadow-2xl hover:shadow-emerald-600/40 hover:-translate-y-0.5"
-                    >
-                        <span className="absolute top-0 right-0 h-full w-1.5 bg-white/30" />
-                        <span className="absolute -left-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                        <div className="relative flex items-center justify-between gap-4">
+                    {/* ===== Section 2: CTA — Official NVI Site — flat card + emerald rail ===== */}
+                    <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all p-5">
+                        <span className="absolute top-0 start-0 h-full w-1 bg-emerald-500" />
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/15 backdrop-blur text-white rounded-full text-[10px] font-black tracking-wider uppercase mb-2">
-                                    رسمي
-                                </span>
-                                <h2 className="text-lg font-black mb-1">
+                                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-1">
                                     فحص صلاحية القيد — الموقع الرسمي
                                 </h2>
-                                <p className="text-sm text-emerald-100/95 opacity-95 leading-relaxed">
+                                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                                     انتقل لموقع النفوس التركي (NVI) لمعرفة إن كان القيد فعّال أو مُبطل
                                 </p>
-                                <div className="flex items-center gap-3 mt-2 text-xs text-emerald-100">
-                                    <span className="flex items-center gap-1">
+                                <div className="flex items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                    <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
                                         <ShieldCheck size={12} />
                                         موقع حكومي رسمي
                                     </span>
                                     <span className="font-mono" dir="ltr">tckimlik.nvi.gov.tr</span>
                                 </div>
                             </div>
-                            <div className="shrink-0 p-3 bg-white/15 rounded-xl group-hover:bg-white/25 group-hover:rotate-3 transition-all">
-                                <ExternalLink className="w-6 h-6" />
-                            </div>
+                            <a
+                                href="https://tckimlik.nvi.gov.tr/Modul/YabanciKimlikNoDogrula"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="shrink-0 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
+                            >
+                                فحص القيد بالموقع الرسمي
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
                         </div>
-                    </a>
+                    </div>
 
                     {/* ===== Section 3: Visual Guide (Collapsible) ===== */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
 
                         {/* Toggle Button */}
                         <button
                             onClick={() => setGuideOpen(!guideOpen)}
-                            className="w-full flex items-center justify-between gap-3 p-5 text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            className="w-full flex items-center justify-between gap-3 p-5 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                             aria-expanded={guideOpen}
                             aria-label="عرض أو إخفاء الدليل المصوّر"
                         >
@@ -227,7 +214,7 @@ export default function KimlikCheckPage() {
                                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
                                     <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <div className="text-right">
+                                <div className="text-start">
                                     <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100">
                                         دليل مصوّر: كيف تفحص بالموقع الرسمي؟
                                     </h2>
@@ -300,10 +287,10 @@ export default function KimlikCheckPage() {
 
                     {/* ===== Section 4: Educational Cards — accent stripes ===== */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1 hover:border-blue-300 transition-all">
-                            <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 hover:border-blue-300 dark:hover:border-blue-700 transition-all">
+                            <span className="absolute top-0 start-0 h-full w-1 bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity" />
                             <h4 className="font-black text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2 text-sm">
-                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:rotate-3 transition-transform">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                     <ShieldCheck className="w-4 h-4" />
                                 </span>
                                 كيف أعرف أن الكملك توقف؟
@@ -320,10 +307,10 @@ export default function KimlikCheckPage() {
                             </ul>
                         </div>
 
-                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-amber-50/50 dark:from-slate-900 dark:to-amber-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:shadow-lg hover:shadow-amber-500/10 hover:-translate-y-1 hover:border-amber-300 transition-all">
-                            <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 hover:border-amber-300 dark:hover:border-amber-700 transition-all">
+                            <span className="absolute top-0 start-0 h-full w-1 bg-amber-500 opacity-70 group-hover:opacity-100 transition-opacity" />
                             <h4 className="font-black text-amber-800 dark:text-amber-300 mb-3 flex items-center gap-2 text-sm">
-                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 group-hover:rotate-3 transition-transform">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
                                     <ShieldAlert className="w-4 h-4" />
                                 </span>
                                 تحذير هام
@@ -335,9 +322,9 @@ export default function KimlikCheckPage() {
                     </div>
 
                     {/* ===== Section 4.5: Visible FAQ — helps SEO + user engagement ===== */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-5 md:p-8">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 md:p-8">
                         <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-5 flex items-center gap-2">
-                            <span className="text-xl">❓</span>
+                            <HelpCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             أسئلة شائعة عن فحص الكملك
                         </h2>
                         <div className="space-y-4">
@@ -401,7 +388,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
     return (
         <details className="group border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
             <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors list-none [&::-webkit-details-marker]:hidden">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-right">{question}</h3>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-start">{question}</h3>
                 <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 group-open:rotate-180" />
             </summary>
             <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
@@ -429,7 +416,7 @@ function FormFieldGuide({ label, arabic, placeholder, step }: {
             </div>
 
             {/* Arabic annotation */}
-            <div className="sm:text-right">
+            <div className="sm:text-start">
                 <StepBadge step={step} text={arabic} />
             </div>
         </div>

@@ -1,112 +1,86 @@
 'use client';
 
-import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowRight, Phone, Info, Clock, ChevronDown } from 'lucide-react';
+import { HeartPulse, ExternalLink, ShieldCheck, MapPin, ArrowLeft, Phone, Info, Clock, ChevronDown, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
+import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
+
+/*
+ * 2026-07 redesign — brought in line with the site's new design language:
+ * shared light PageHero instead of the hand-rolled dark red hero, flat
+ * white/slate cards with a thin start-side accent rail (logical utilities),
+ * solid emerald-600 primary action, and zero instructional filler.
+ */
 
 export default function PharmacyPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo flex flex-col">
 
-            {/* Hero Section - Compact & Action-oriented */}
-            <section className="relative bg-gradient-to-bl from-red-900 via-red-950 to-slate-900 text-white pt-16 pb-12 px-4 overflow-hidden rounded-b-[40px] shadow-lg">
-                <div className="max-w-3xl mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-sm rounded-2xl mb-3">
-                        <HeartPulse className="w-7 h-7 text-red-400" />
-                    </div>
-                    <h1 className="text-2xl md:text-4xl font-extrabold mb-2">
-                        الصيدلية المناوبة الآن
-                    </h1>
-                    <p className="text-sm md:text-base text-slate-300 max-w-lg mx-auto">
-                        اعرف أقرب صيدلية مفتوحة في منطقتك — رابط رسمي مباشر من e-Devlet
-                    </p>
-                    <div className="flex items-center justify-center gap-3 mt-3 text-xs text-slate-400">
-                        <span className="flex items-center gap-1">
-                            <Clock size={12} />
-                            محدّث لحظياً
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                            <MapPin size={12} />
-                            81 ولاية تركية
-                        </span>
-                    </div>
-                </div>
-            </section>
+            <PageHero
+                title="الصيدلية المناوبة الآن"
+                description="اعرف أقرب صيدلية مفتوحة في منطقتك — رابط رسمي مباشر من e-Devlet"
+                icon={<HeartPulse className="w-10 h-10 md:w-12 md:h-12 text-red-500" />}
+            />
 
-            <main className="flex-grow pt-10 pb-16 px-4 -mt-10 relative z-20">
+            <main className="flex-grow py-10 px-4">
                 <div className="container mx-auto max-w-2xl">
 
-                    {/* Eyebrow */}
-                    <div className="flex items-center justify-center mb-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-[11px] font-black tracking-wider uppercase">
-                            <span className="relative inline-flex items-center justify-center">
-                                <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-red-500 opacity-75 animate-ping" />
-                                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-red-500" />
-                            </span>
-                            متاح الآن 24/7
-                        </span>
-                    </div>
-
-                    {/* Main Action Card — accent stripe + gradient */}
-                    <div className="bg-gradient-to-br from-white to-red-50/40 dark:from-slate-900 dark:to-red-950/20 rounded-3xl shadow-xl shadow-red-500/5 border border-slate-200 dark:border-slate-800 p-8 text-center relative overflow-hidden group">
-
-                        {/* Background Decoration */}
-                        <span className="absolute top-0 right-0 h-full w-1.5 bg-gradient-to-b from-red-500 via-red-600 to-red-500 opacity-80" />
-                        <div className="absolute -right-20 -top-20 w-64 h-64 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
-
-                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-6 relative z-10">
-                            اضغط أدناه للبحث عن الصيدلية المناوبة في منطقتك
-                        </h2>
+                    {/* Main action card — flat, thin accent rail, compact CTA */}
+                    <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 text-center">
+                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-emerald-500" />
 
                         <a
                             href="https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group/cta relative z-10 inline-flex items-center justify-center gap-3 w-full py-5 px-6 bg-gradient-to-l from-red-600 via-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white text-xl font-black rounded-2xl shadow-xl shadow-red-600/40 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-red-600/50 transition-all duration-300"
+                            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
                         >
                             <span>الانتقال لبحث e-Devlet الرسمي</span>
-                            <ExternalLink className="w-6 h-6 group-hover/cta:rotate-12 transition-transform" />
+                            <ExternalLink className="w-5 h-5" />
                         </a>
 
-                        <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm text-slate-500 dark:text-slate-400 relative z-10">
-                            <span className="flex items-center gap-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-3 py-1.5 rounded-full text-xs font-black">
-                                <ShieldCheck className="w-4 h-4" />
-                                مصدر حكومي 100٪
+                        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            <span className="flex items-center gap-1.5">
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                مصدر حكومي رسمي 100%
                             </span>
-                            <span className="flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-black">
-                                <MapPin className="w-4 h-4" />
-                                81 ولاية
+                            <span className="flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                يغطي 81 ولاية
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                محدّث لحظياً 24/7
                             </span>
                         </div>
                     </div>
 
-                    {/* How to use — accent stripe */}
-                    <div className="group/how relative overflow-hidden mt-6 bg-gradient-to-br from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 transition-all">
-                        <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
-                        <h3 className="font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover/how:rotate-3 transition-transform">
+                    {/* How to use */}
+                    <div className="relative overflow-hidden mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-blue-500" />
+                        <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                 <Info size={16} />
                             </span>
                             كيف تستخدم الخدمة؟
-                        </h3>
+                        </h2>
                         <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-300 list-decimal list-inside leading-relaxed">
-                            <li>اضغط الزر أعلاه للانتقال لبوابة e-Devlet</li>
+                            <li>افتح بوابة e-Devlet من الزر الرسمي</li>
                             <li>اختر الولاية (İl) ثم المنطقة (İlçe)</li>
                             <li>ستظهر قائمة الصيدليات المناوبة مع العناوين وأرقام الهاتف</li>
                         </ol>
                     </div>
 
-                    {/* Emergency Numbers — accent stripe */}
-                    <div className="group/emg relative overflow-hidden mt-4 bg-gradient-to-br from-white to-rose-50/40 dark:from-slate-900 dark:to-rose-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <span className="absolute top-0 right-0 h-full w-1 bg-rose-500 opacity-70" />
-                        <h3 className="font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 group-hover/emg:rotate-3 transition-transform">
+                    {/* Emergency numbers */}
+                    <div className="relative overflow-hidden mt-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-red-500" />
+                        <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                                 <Phone size={16} />
                             </span>
                             أرقام الطوارئ في تركيا
-                        </h3>
+                        </h2>
                         <div className="grid grid-cols-2 gap-3">
                             {[
                                 { number: '112', label: 'الطوارئ العامة (Acil)' },
@@ -117,9 +91,8 @@ export default function PharmacyPage() {
                                 <a
                                     key={item.number}
                                     href={`tel:${item.number}`}
-                                    className="group/num relative overflow-hidden flex items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-800/50 hover:bg-red-50 dark:hover:bg-red-950/30 border border-slate-200 dark:border-slate-700 hover:border-red-400 hover:shadow-md hover:shadow-red-500/10 hover:-translate-y-0.5 transition-all"
+                                    className="flex items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md hover:-translate-y-0.5 transition-all"
                                 >
-                                    <span className="absolute top-0 right-0 h-full w-0.5 bg-red-500 opacity-0 group-hover/num:opacity-70 transition-opacity" />
                                     <span className="text-lg font-black text-red-600 dark:text-red-400 font-mono tabular-nums" dir="ltr">{item.number}</span>
                                     <span className="text-xs text-slate-600 dark:text-slate-300 font-bold leading-tight">{item.label}</span>
                                 </a>
@@ -129,10 +102,12 @@ export default function PharmacyPage() {
 
                     {/* FAQ Section — visible for SEO */}
                     <div className="mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <span className="text-lg">❓</span>
+                        <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                                <HelpCircle size={16} />
+                            </span>
                             أسئلة شائعة عن الصيدليات المناوبة
-                        </h3>
+                        </h2>
                         <div className="space-y-3">
                             <PharmacyFaq
                                 question="كيف أعرف الصيدلية المناوبة في موقعي الآن؟"
@@ -165,16 +140,16 @@ export default function PharmacyPage() {
                     <div className="mt-4 text-center">
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-slate-500 hover:text-red-500 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                            className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors py-2 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
                             <span>العودة للرئيسية</span>
-                            <ArrowRight className="w-4 h-4 rotate-180" />
+                            <ArrowLeft className="w-4 h-4" />
                         </Link>
                     </div>
 
                 </div>
             </main>
-</div>
+        </div>
     );
 }
 
@@ -183,7 +158,7 @@ function PharmacyFaq({ question, answer }: { question: string; answer: string })
     return (
         <details className="group border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
             <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors list-none [&::-webkit-details-marker]:hidden">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-right">{question}</h4>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-start">{question}</h3>
                 <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 group-open:rotate-180" />
             </summary>
             <div className="px-4 pb-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">

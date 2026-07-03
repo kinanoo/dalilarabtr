@@ -6,9 +6,15 @@
  * Shows answered questions + a CTA that opens an "Ask a question" modal.
  * On submit: optimistic toast, no immediate listing (question is pending
  * until admin answers it).
+ *
+ * 2026-07 redesign — brought in line with the site's new design language
+ * (codes/faq/services): shared light PageHero + hero search instead of the
+ * hand-rolled gradient icon hero, flat white cards instead of colour-washed
+ * gradient panels, and RTL logical classes throughout.
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
     HelpCircle,
     Plus,
@@ -17,10 +23,10 @@ import {
     CheckCircle2,
     AlertTriangle,
     X,
-    Search,
-    Sparkles,
-    ChevronLeft,
+    ChevronDown,
 } from 'lucide-react';
+import PageHero from '@/components/PageHero';
+import HeroSearchInput from '@/components/HeroSearchInput';
 
 interface QAItem {
     id: string;
@@ -38,6 +44,14 @@ interface QAItem {
 interface AskResult {
     state: 'idle' | 'sending' | 'success' | 'error';
     message?: string;
+}
+
+/** Arabic counted noun for answered questions — Latin digits. */
+function answeredCount(n: number): string {
+    if (n === 1) return 'سؤال واحد مُجاب';
+    if (n === 2) return 'سؤالان مُجابان';
+    if (n <= 10) return `${n} أسئلة مُجابة`;
+    return `${n} سؤالاً مُجاباً`;
 }
 
 export default function QAClient() {
@@ -78,63 +92,49 @@ export default function QAClient() {
     }, [items, query]);
 
     return (
-        <main className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
-            {/* Hero */}
-            <section className="text-center mb-10">
-                <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30 mb-4">
-                    <HelpCircle size={28} />
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-slate-50 mb-2">
-                    اسأل واحصل على إجابة موثّقة
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-                    منصّة سؤال وجواب للسوريين والعرب في تركيا. اطرح سؤالك وسيُجيبك فريقنا بمصادر رسمية.
-                    {total > 0 && (
-                        <>
-                            {' '}جاهز للاطّلاع: <strong>{total.toLocaleString('en-US')}</strong> سؤالاً مُجاباً.
-                        </>
-                    )}
-                </p>
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
+            <PageHero
+                title="اسأل واحصل على إجابة موثّقة"
+                description={`منصّة سؤال وجواب للسوريين والعرب في تركيا. اطرح سؤالك وسيُجيبك فريقنا بمصادر رسمية.${
+                    total > 0 ? ` جاهز للاطّلاع: ${answeredCount(total)}.` : ''
+                }`}
+                icon={<HelpCircle className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 dark:text-emerald-300" />}
+            >
+                <HeroSearchInput
+                    value={query}
+                    onChange={setQuery}
+                    placeholder="ابحث في الأسئلة المُجابة…"
+                />
                 <button
                     type="button"
                     onClick={() => setShowAsk(true)}
-                    className="mt-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.02]"
+                    className="mt-4 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md shadow-emerald-600/20 transition-all"
                 >
                     <Plus size={18} /> اطرح سؤالك الآن
                 </button>
-            </section>
+            </PageHero>
 
-            {/* Search */}
-            <div className="relative mb-6">
-                <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                    type="search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="ابحث في الأسئلة المُجابة…"
-                    className="w-full pr-10 pl-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+            <div className="max-w-4xl mx-auto px-4 py-10">
+                {/* List */}
+                {loading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <Loader2 size={28} className="animate-spin text-emerald-600" />
+                    </div>
+                ) : filtered.length === 0 ? (
+                    <EmptyState query={query} onAsk={() => setShowAsk(true)} />
+                ) : (
+                    <ul className="space-y-3">
+                        {filtered.map((q) => (
+                            <QACard
+                                key={q.id}
+                                item={q}
+                                isOpen={openId === q.id}
+                                onToggle={() => setOpenId(openId === q.id ? null : q.id)}
+                            />
+                        ))}
+                    </ul>
+                )}
             </div>
-
-            {/* List */}
-            {loading ? (
-                <div className="flex items-center justify-center py-16 text-slate-400">
-                    <Loader2 size={28} className="animate-spin" />
-                </div>
-            ) : filtered.length === 0 ? (
-                <EmptyState query={query} onAsk={() => setShowAsk(true)} />
-            ) : (
-                <ul className="space-y-3">
-                    {filtered.map((q) => (
-                        <QACard
-                            key={q.id}
-                            item={q}
-                            isOpen={openId === q.id}
-                            onToggle={() => setOpenId(openId === q.id ? null : q.id)}
-                        />
-                    ))}
-                </ul>
-            )}
 
             {/* Floating ask CTA (mobile-only — desktop has the hero button) */}
             <button
@@ -167,7 +167,8 @@ function QACard({
 }) {
     const date = useMemo(() => {
         try {
-            return new Date(item.answered_at).toLocaleDateString('ar-EG', {
+            // 'ar-u-nu-latn': Arabic month names, Latin digits (site standard).
+            return new Date(item.answered_at).toLocaleDateString('ar-u-nu-latn', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
@@ -179,30 +180,19 @@ function QACard({
 
     return (
         <li
-            className={`group relative bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-2xl border transition-all duration-300 overflow-hidden ${
+            className={`group bg-white dark:bg-slate-900 rounded-2xl border transition-all duration-300 ${
                 isOpen
-                    ? 'border-emerald-400 dark:border-emerald-600 shadow-xl shadow-emerald-500/15 -translate-y-0.5'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-0.5'
+                    ? 'border-emerald-400 dark:border-emerald-600 shadow-md'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5'
             }`}
         >
-            {/* Top accent stripe — same family pattern. Stronger when
-                the answer is expanded; faint when collapsed. */}
-            <div
-                aria-hidden="true"
-                className={`absolute top-0 inset-x-0 h-1 transition-opacity duration-300 ${
-                    isOpen
-                        ? 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500 opacity-100'
-                        : 'bg-gradient-to-l from-emerald-300 via-teal-300 to-emerald-400 opacity-40 group-hover:opacity-80'
-                }`}
-            />
-
             <button
                 type="button"
                 onClick={onToggle}
-                className="relative w-full text-right p-4 sm:p-5 flex items-start gap-3"
+                className="w-full text-start p-4 sm:p-5 flex items-start gap-3"
                 aria-expanded={isOpen}
             >
-                <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-200 font-black text-sm shadow-sm group-hover:scale-105 transition-transform duration-300">
+                <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-black text-sm">
                     س
                 </span>
                 <div className="flex-1 min-w-0">
@@ -211,13 +201,14 @@ function QACard({
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                         {item.category && (
-                            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/40 font-black uppercase tracking-wide">
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/40 font-bold">
                                 {item.category}
                             </span>
                         )}
                         {item.is_featured && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 font-black uppercase tracking-wide">
-                                <Sparkles size={10} /> مميّز
+                            <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+                                <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                مميّز
                             </span>
                         )}
                         {date && (
@@ -226,20 +217,21 @@ function QACard({
                     </div>
                 </div>
                 {/* Toggle chevron — rotates when expanded */}
-                <span
+                <ChevronDown
+                    size={18}
                     aria-hidden="true"
-                    className={`shrink-0 mt-1 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 transition-all duration-300 ${
-                        isOpen ? 'rotate-180 text-emerald-500' : ''
+                    className={`shrink-0 mt-1 transition-transform duration-300 ${
+                        isOpen
+                            ? 'rotate-180 text-emerald-500'
+                            : 'text-slate-400 dark:text-slate-500 group-hover:text-emerald-500'
                     }`}
-                >
-                    <ChevronLeft size={18} className="-rotate-90" />
-                </span>
+                />
             </button>
             {isOpen && (
-                <div className="relative px-4 sm:px-5 pb-5 pt-1 animate-in fade-in slide-in-from-top-1 duration-300">
-                    <div className="rounded-xl bg-gradient-to-br from-emerald-50/80 to-teal-50/40 dark:from-emerald-900/15 dark:to-teal-900/10 border border-emerald-100 dark:border-emerald-900/30 p-4 shadow-inner">
+                <div className="px-4 sm:px-5 pb-5 pt-1 animate-in fade-in slide-in-from-top-1 duration-300">
+                    <div className="rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-4">
                         <div className="flex items-start gap-2.5">
-                            <span className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 text-white font-black text-xs shadow-md shadow-emerald-500/30">
+                            <span className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white font-black text-xs">
                                 ج
                             </span>
                             <div
@@ -264,7 +256,7 @@ function QACard({
 
 function EmptyState({ query, onAsk }: { query: string; onAsk: () => void }) {
     return (
-        <div className="text-center py-12 px-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800">
+        <div className="text-center py-12 px-4 rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800">
             <HelpCircle size={40} className="mx-auto text-slate-300 dark:text-slate-700 mb-3" />
             <p className="text-slate-600 dark:text-slate-400 font-bold mb-1">
                 {query ? `لا أسئلة مُجابة تطابق «${query}»` : 'لا أسئلة مُجابة بعد'}
@@ -349,7 +341,7 @@ function AskModal({ onClose }: { onClose: () => void }) {
                     <div className="text-center py-8">
                         <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-3" />
                         <p className="font-bold text-slate-900 dark:text-slate-50 text-lg mb-1">
-                            تمّ استلام سؤالك ✨
+                            تمّ استلام سؤالك
                         </p>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
                             سنجيبك فور مراجعته. لو تركت بريدك، سنُعلِمك عند نشر الإجابة.
@@ -439,7 +431,7 @@ function AskModal({ onClose }: { onClose: () => void }) {
                         <button
                             type="submit"
                             disabled={result.state === 'sending'}
-                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
                         >
                             {result.state === 'sending' ? (
                                 <>
@@ -453,7 +445,11 @@ function AskModal({ onClose }: { onClose: () => void }) {
                         </button>
 
                         <p className="text-[11px] text-slate-400 text-center mt-1">
-                            بإرسال السؤال، توافق على شروط الاستخدام وسياسة الخصوصية.
+                            بإرسال السؤال، توافق على{' '}
+                            <Link href="/privacy" className="underline hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                شروط الاستخدام وسياسة الخصوصية
+                            </Link>
+                            .
                         </p>
                     </form>
                 )}

@@ -2,7 +2,7 @@
 
 import PageHero from '@/components/PageHero';
 import { OFFICIAL_SOURCES } from '@/lib/constants';
-import { ExternalLink, Link2, ShieldCheck, Users, Globe, Copy, Check } from 'lucide-react';
+import { ExternalLink, Link2, Users, Globe, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
@@ -95,19 +95,19 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative bg-gradient-to-br from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-700 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
+      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col h-full"
     >
-      {/* Accent stripe — right edge in RTL */}
-      <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity z-10" />
+      {/* Accent stripe — logical start edge (right in RTL) */}
+      <span className="absolute top-0 start-0 h-full w-1 bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity z-10" />
 
       {/* الجزء العلوي - الأيقونة والعنوان */}
       <div className="p-4 sm:p-5 flex-grow">
         <div className="flex items-start gap-3 mb-3">
-          <div className="p-2.5 sm:p-3 bg-blue-100 dark:bg-blue-950/40 rounded-2xl group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-blue-600 transition-all flex-shrink-0 group-hover:rotate-3 shadow-sm">
-            <Globe size={20} className="text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors" />
+          <div className="p-2.5 sm:p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl flex-shrink-0">
+            <Globe size={20} className="text-blue-600 dark:text-blue-400" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
               {source.name}
             </h3>
           </div>
@@ -139,7 +139,7 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
                 <Copy size={14} className="text-slate-400" />
               )}
             </button>
-            <ExternalLink size={14} className="text-slate-400 group-hover:text-blue-500" />
+            <ExternalLink size={14} className="text-slate-400 group-hover:text-emerald-500" />
           </div>
         </div>
       </div>
@@ -157,25 +157,25 @@ function TrustedResourceCard({ resource }: { resource: ImportantLink }) {
       href={resource.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50/60 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 p-4 sm:p-5 hover:shadow-xl hover:shadow-emerald-500/15 hover:border-emerald-400 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+      className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all flex flex-col h-full"
     >
-      {/* Accent stripe — right edge in RTL */}
-      <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+      {/* Accent stripe — logical start edge (right in RTL) */}
+      <span className="absolute top-0 start-0 h-full w-1 bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
 
       <div className="flex items-start gap-3 mb-2">
-        <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex-shrink-0 group-hover:rotate-3 transition-transform shadow-sm">
+        <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl flex-shrink-0">
           <Globe size={18} className="text-emerald-600 dark:text-emerald-400" />
         </div>
-        <h3 className="font-black text-emerald-900 dark:text-emerald-100 text-sm sm:text-base leading-tight">
+        <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
           {resource.name}
         </h3>
       </div>
-      <p className="text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm flex-grow leading-relaxed">
+      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm flex-grow leading-relaxed">
         {resource.desc}
       </p>
       <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs font-black mt-3">
         زيارة الموقع
-        <ExternalLink size={12} className="group-hover:translate-x-1 transition-transform" />
+        <ExternalLink size={12} className="group-hover:-translate-x-1 transition-transform" />
       </div>
     </a>
   );
@@ -292,13 +292,6 @@ export default function ImportantLinksPage() {
           </div>
         )}
 
-        {/* ملاحظة أسفل الصفحة */}
-        <div className="mt-12 text-center pt-8 border-t border-slate-100 dark:border-slate-800">
-          <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2">
-            <ShieldCheck size={12} className="text-green-500" />
-            آخر تحقق من صلاحية الروابط: مارس 2026
-          </p>
-        </div>
       </div>
     </main>
   );

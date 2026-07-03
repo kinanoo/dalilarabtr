@@ -3,7 +3,6 @@ import { getFAQData } from '@/lib/faq';
 import { createClient } from '@supabase/supabase-js';
 import { withTimeout } from '@/lib/supabaseClient';
 import { FAQCategory, FAQQuestion } from '@/lib/faq-types';
-import { Suspense } from 'react';
 import { Metadata } from 'next';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
@@ -25,7 +24,13 @@ export const metadata: Metadata = {
 
 export const revalidate = 60; // Revalidate every minute
 
-export default async function FAQPage() {
+type Props = { searchParams: Promise<{ q?: string }> };
+
+export default async function FAQPage({ searchParams }: Props) {
+  // Deep-link query (?q=…) read on the SERVER — passing it down as a prop
+  // (instead of useSearchParams in the client) keeps the whole page
+  // server-rendered: crawlers see all questions, not a Suspense fallback.
+  const initialQuery = (await searchParams).q || '';
   // 1. Static Data (600+ questions)
   const staticData = getFAQData();
 
@@ -150,9 +155,7 @@ export default async function FAQPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Suspense fallback={<div>جاري تحميل الأسئلة...</div>}>
-        <FAQClientNew staticData={mergedData} totalCount={totalCount} />
-      </Suspense>
+      <FAQClientNew staticData={mergedData} totalCount={totalCount} initialQuery={initialQuery} />
       <div className="flex justify-center py-6">
         <ShareMenu
           title="الأسئلة الشائعة — دليل العرب في تركيا"

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
-import { MapPin, ShieldAlert, Building2, ChevronLeft, Sparkles, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { MapPin, ShieldAlert, Building2, ChevronLeft, Sparkles, CheckCircle2, XCircle, Clock, Search } from 'lucide-react';
 import logger from '@/lib/logger';
 
 // Status:
@@ -282,11 +282,8 @@ export default function ZonesPage() {
           placeholder="اكتب اسم المنطقة (مثال: Fatih, Esenyurt)..."
           dir="ltr"
           lang="tr"
-          inputClassName="placeholder:text-right placeholder:[direction:rtl] placeholder:[unicode-bidi:plaintext]"
+          inputClassName="placeholder:text-start placeholder:[direction:rtl] placeholder:[unicode-bidi:plaintext]"
         />
-        <p className="text-center text-white/90 text-sm md:text-base mt-3 font-medium">
-          اضغط <b>Enter</b> للبحث المتقدم أو اختر من القائمة أدناه
-        </p>
       </PageHero>
 
       {/* Breaking-news banner — the page used to look frozen at the 2022
@@ -304,7 +301,7 @@ export default function ZonesPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">تحديث 6 يونيو 2026</span>
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">تحديث 6 يونيو 2026</span>
                   </div>
                   <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-50 leading-tight">
                     رُفع الحظر عن <span className="text-emerald-600 dark:text-emerald-400">{totals.reopened.toLocaleString('en-US')}</span> حياً في تركيا
@@ -385,7 +382,7 @@ export default function ZonesPage() {
               </div>
 
               {/* شريط الإحصائيات */}
-              <div className="mt-6 mb-2 flex flex-row-reverse justify-between items-center text-sm bg-slate-50 dark:bg-slate-800/60 rounded-xl px-4 py-3 shadow-sm border border-slate-100 dark:border-slate-800">
+              <div className="mt-6 mb-2 flex justify-between items-center text-sm bg-slate-50 dark:bg-slate-800/60 rounded-xl px-4 py-3 shadow-sm border border-slate-100 dark:border-slate-800">
                 <span className="inline-flex items-center gap-2 font-bold text-slate-700 dark:text-slate-100">
                   <MapPin size={17} className="text-accent-600 dark:text-accent-400" />
                   المعروض حالياً
@@ -408,24 +405,10 @@ export default function ZonesPage() {
               {/* City browsing grid when no search */}
               {!showResults && !loading && hasData && cityStats.length > 0 && (
                 <div className="mt-6">
-                  {/* Section header — magazine-style with eyebrow,
-                      matches the rest of the site's section headings
-                      (HomeUpdates, QuickActionsGrid, etc.). The
-                      previous text-base centered h3 was easy to miss
-                      between the dense stats above and the city grid
-                      below. */}
                   <div className="text-center mb-5">
-                    <div className="inline-flex items-center gap-1.5 mb-2">
-                      <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400">
-                        BROWSE · تصفّح
-                      </span>
-                    </div>
                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-50 leading-tight">
                       الولايات والأقضية
                     </h3>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      اضغط على ولاية لرؤية أحيائها وأقضيتها بالتفصيل
-                    </p>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {cityStats.map(({ city, count, reopenedCount, pendingCount, districtCount }) => {
@@ -526,7 +509,7 @@ export default function ZonesPage() {
                           </div>
                           <div className={`relative hidden sm:flex items-center justify-end mt-2 text-[11px] font-black opacity-0 group-hover:opacity-100 group-hover:translate-x-[-2px] transition-all ${iconColor}`}>
                             عرض التفاصيل
-                            <ChevronLeft size={12} className="mr-0.5" />
+                            <ChevronLeft size={12} className="ms-0.5" />
                           </div>
                         </Link>
                       );
@@ -553,12 +536,6 @@ export default function ZonesPage() {
                 </div>
               )}
 
-              {!showResults && !loading && !hasData && !loadError && (
-                <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">
-                  اكتب اسم المنطقة لبدء البحث، أو اضغط Enter للذهاب للصفحة المخصصة.
-                </p>
-              )}
-
               {loading && (
                 <p className="text-center text-xs md:text-sm text-slate-500 dark:text-slate-400">جاري تحميل قاعدة البيانات…</p>
               )}
@@ -571,7 +548,7 @@ export default function ZonesPage() {
 
               {!loading && !loadError && !hasData && (
                 <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 text-center text-sm text-slate-700 dark:text-slate-300">
-                  قاعدة البيانات غير متوفرة بعد. ضع الملف في <strong>public/data/closed-areas.json</strong> ثم أعد المحاولة.
+                  البيانات غير متوفرة حالياً، حاول مجدداً لاحقاً.
                 </div>
               )}
 
@@ -644,7 +621,9 @@ export default function ZonesPage() {
                     </>
                   ) : (
                     <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-5 text-center">
-                      <div className="text-2xl mb-2">🔎</div>
+                      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                        <Search size={18} className="text-amber-600 dark:text-amber-400" />
+                      </div>
                       <div className="font-bold text-slate-900 dark:text-slate-100">
                         لم نجد سجلّ حظر بهذا الاسم
                       </div>

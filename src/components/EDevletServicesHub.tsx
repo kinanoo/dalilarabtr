@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, FileText, Smartphone, ShieldCheck, Sparkles } from 'lucide-react';
+import { ExternalLink, FileText, Smartphone } from 'lucide-react';
 import { minTokenMatches, normalizeArabic, tokenizeArabicQuery } from '@/lib/arabicSearch';
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
@@ -101,38 +101,36 @@ export default function EDevletServicesHub({
 
       <div className="flex-grow max-w-screen-2xl mx-auto px-4 py-12 w-full">
 
-        {/* Eyebrow */}
-        <div className="flex items-center justify-center mb-6">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-full text-[11px] font-black tracking-wider uppercase">
-            <Sparkles size={12} />
-            خدمات حكومية
-          </span>
-        </div>
-
-        {/* Category Filter Tabs — gradient active state */}
+        {/* Category filter pills — same language as /codes */}
         {categories.length > 1 && (
           <div className="flex flex-wrap gap-2 mb-8 justify-center">
             <button
+              type="button"
               onClick={() => setActiveCategory(null)}
-              className={`px-4 py-2 rounded-full text-sm font-black transition-all ${
+              aria-pressed={!activeCategory}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                 !activeCategory
-                  ? 'bg-gradient-to-l from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/30'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-cyan-400'
+                  ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
               }`}
             >
-              الكل ({services.length})
+              الكل
+              <span className={`text-[10px] font-bold ${!activeCategory ? 'text-emerald-100' : 'text-slate-400'}`}>{services.length}</span>
             </button>
             {categories.map(cat => (
               <button
                 key={cat.label}
+                type="button"
                 onClick={() => setActiveCategory(activeCategory === cat.label ? null : cat.label)}
-                className={`px-4 py-2 rounded-full text-sm font-black transition-all ${
+                aria-pressed={activeCategory === cat.label}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                   activeCategory === cat.label
-                    ? 'bg-gradient-to-l from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-500/30'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-cyan-400'
+                    ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
                 }`}
               >
-                {cat.label} ({cat.count})
+                {cat.label}
+                <span className={`text-[10px] font-bold ${activeCategory === cat.label ? 'text-emerald-100' : 'text-slate-400'}`}>{cat.count}</span>
               </button>
             ))}
           </div>
@@ -143,13 +141,13 @@ export default function EDevletServicesHub({
             {filteredServices.map((service) => (
               <div
                 key={service.id}
-                className="group relative overflow-hidden bg-gradient-to-br from-white to-cyan-50/40 dark:from-slate-900 dark:to-cyan-950/20 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col hover:shadow-xl hover:shadow-cyan-500/10 hover:border-cyan-400 hover:-translate-y-1 transition-all duration-300"
+                className="group relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all"
               >
-                {/* Accent stripe — right edge in RTL */}
-                <span className="absolute top-0 right-0 h-full w-1 bg-cyan-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                {/* Accent stripe — start edge (RTL-aware) */}
+                <span className="absolute top-0 start-0 h-full w-1 bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
 
                 <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="p-3 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
+                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
                     <FileText size={22} />
                   </div>
                   <span className="text-xs font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg whitespace-nowrap tabular-nums" dir="ltr">
@@ -157,7 +155,7 @@ export default function EDevletServicesHub({
                   </span>
                 </div>
 
-                <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2 leading-snug group-hover:text-cyan-600 transition-colors">
+                <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2 leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {service.title}
                 </h2>
                 <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed">
@@ -167,7 +165,7 @@ export default function EDevletServicesHub({
                 <div className="flex items-center justify-between gap-3">
                   <Link
                     href={`/article/${service.slug || service.id}`}
-                    className="text-cyan-700 dark:text-cyan-300 font-black text-sm hover:underline"
+                    className="text-emerald-700 dark:text-emerald-400 font-black text-sm hover:underline"
                   >
                     اقرأ الشرح
                   </Link>
@@ -177,10 +175,10 @@ export default function EDevletServicesHub({
                       href={service.source}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group/visit bg-gradient-to-l from-blue-600 to-cyan-600 text-white px-4 py-2 rounded-xl font-black hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 hover:-translate-y-0.5 flex items-center gap-2 text-sm"
+                      className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-black hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
                     >
                       زيارة الموقع
-                      <ExternalLink size={16} className="group-hover/visit:rotate-12 transition-transform" />
+                      <ExternalLink size={16} />
                     </a>
                   ) : null}
                 </div>
@@ -192,14 +190,6 @@ export default function EDevletServicesHub({
             <p className="text-lg text-slate-500 dark:text-slate-300">لا توجد نتائج مطابقة.</p>
           </div>
         )}
-
-        {/* Last verified date */}
-        <div className="mt-12 text-center pt-6 border-t border-slate-100 dark:border-slate-800">
-          <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2">
-            <ShieldCheck size={12} className="text-green-500" />
-            آخر تحقق من صلاحية الروابط: مارس 2026
-          </p>
-        </div>
       </div>
     </>
   );

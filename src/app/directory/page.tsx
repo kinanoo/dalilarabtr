@@ -7,7 +7,7 @@ import { CATEGORY_SLUGS } from '@/lib/config';
 import { useAdminArticles, useAdminServices, useAdminScenarios, isNewContent } from '@/lib/useAdminData';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FileText, FolderOpen, ArrowLeft, Sparkles, Calendar, Loader2, ChevronDown, ChevronUp, IdCard, Plane, Briefcase, HeartPulse, GraduationCap, Link2, ShieldAlert, Calculator, BookOpen, Bell, Smartphone, MapPin, BrainCircuit, Home, Scale, Coffee, Zap, Building2 } from 'lucide-react';
+import { FileText, FolderOpen, ArrowLeft, Calendar, Loader2, ChevronDown, ChevronUp, IdCard, Plane, Briefcase, HeartPulse, GraduationCap, Link2, ShieldAlert, Calculator, BookOpen, Bell, Smartphone, MapPin, BrainCircuit, Home, Scale, Coffee, Zap, Building2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { minTokenMatches, normalizeArabic, tokenizeArabicQuery } from '@/lib/arabicSearch';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
@@ -57,6 +57,31 @@ const ADDITIONAL_SECTIONS: Array<{ key: string; title: string; description: stri
   { key: 'important-links', title: 'الروابط الهامة', description: 'روابط مباشرة وموثوقة للخدمات الحكومية والمنظمات', href: '/important-links', icon: Link2, color: 'bg-sky-500 dark:bg-sky-600' },
   { key: 'services', title: 'اطلب خدمة', description: 'خدماتنا الخاصة لإنجاز معاملاتك', href: '/services', icon: Briefcase, color: 'bg-violet-500 dark:bg-violet-600' },
 ];
+
+// الأدوات والخدمات الذكية — بطاقات مدمجة بدل المربعات الملوّنة
+const SMART_TOOLS: Array<{ href: string; title: string; desc: string; icon: any }> = [
+  { href: '/consultant', title: 'دليل المواقف', desc: 'تشخيص قانوني آلي', icon: BrainCircuit },
+  { href: '/codes', title: 'كاشف الأكواد', desc: 'شرح أكواد المنع', icon: ShieldAlert },
+  { href: '/ban-calculator', title: 'حاسبة المنع', desc: 'احسب مدة المنع', icon: Calculator },
+  { href: '/zones', title: 'المناطق المحظورة', desc: 'الأحياء المغلقة', icon: MapPin },
+  { href: '/tools/kimlik-check', title: 'فحص الكملك', desc: 'تحقق من TC', icon: IdCard },
+  { href: '/tools/pharmacy', title: 'الصيدليات المناوبة', desc: 'صيدليات إسطنبول', icon: HeartPulse },
+  { href: '/calculator', title: 'حاسبة التكاليف', desc: 'تكاليف الإقامة', icon: Calculator },
+  { href: '/faq', title: 'الأسئلة الشائعة', desc: '+471 سؤال', icon: BookOpen },
+  { href: '/forms', title: 'النماذج الجاهزة', desc: 'عقود واستمارات', icon: FileText },
+  { href: '/important-links', title: 'الروابط الهامة', desc: 'مواقع حكومية', icon: Link2 },
+  { href: '/e-devlet-services', title: 'خدمات e-Devlet', desc: 'البوابة الحكومية', icon: Smartphone },
+  { href: '/tools', title: 'كل الأدوات', desc: 'جميع الأدوات', icon: Zap },
+];
+
+// صيغة العدد العربية الصحيحة (مقال واحد / مقالان / N مقالات / N مقالاً)
+function articleCountLabel(count: number): string {
+  if (count === 0) return 'لا توجد مقالات';
+  if (count === 1) return 'مقال واحد';
+  if (count === 2) return 'مقالان';
+  if (count <= 10) return `${count} مقالات`;
+  return `${count} مقالاً`;
+}
 
 function categoryToPrimaryKey(categoryName: string): string {
   // If it's a known scenario category or we just dump them all in 'scenarios' bucket for now
@@ -282,91 +307,26 @@ export default function DirectoryPage() {
                     className="mb-6"
                 />
                 <h2 className="sr-only">الأدوات والخدمات الذكية</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                  <Link href="/consultant" className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-2 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><BrainCircuit size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">دليل المواقف</h3>
-                      <p className="text-emerald-100 text-xs md:text-sm mt-1">تشخيص قانوني آلي</p>
-                    </div>
-                  </Link>
-                  <Link href="/codes" className="bg-gradient-to-br from-red-600 to-rose-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><ShieldAlert size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">كاشف الأكواد</h3>
-                      <p className="text-red-100 text-xs md:text-sm mt-1">شرح أكواد المنع</p>
-                    </div>
-                  </Link>
-                  <Link href="/ban-calculator" className="bg-gradient-to-br from-orange-600 to-red-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><Calculator size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">حاسبة المنع</h3>
-                      <p className="text-orange-100 text-xs md:text-sm mt-1">احسب مدة المنع</p>
-                    </div>
-                  </Link>
-                  <Link href="/zones" className="bg-gradient-to-br from-pink-600 to-rose-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><MapPin size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">المناطق المحظورة</h3>
-                      <p className="text-pink-100 text-xs md:text-sm mt-1">الأحياء المغلقة</p>
-                    </div>
-                  </Link>
-                  <Link href="/tools/kimlik-check" className="bg-gradient-to-br from-cyan-600 to-blue-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><IdCard size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">فحص الكملك</h3>
-                      <p className="text-cyan-100 text-xs md:text-sm mt-1">تحقق من TC</p>
-                    </div>
-                  </Link>
-                  <Link href="/tools/pharmacy" className="bg-gradient-to-br from-green-600 to-emerald-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><HeartPulse size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">الصيدليات المناوبة</h3>
-                      <p className="text-green-100 text-xs md:text-sm mt-1">صيدليات إسطنبول</p>
-                    </div>
-                  </Link>
-                  <Link href="/calculator" className="bg-gradient-to-br from-amber-600 to-orange-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><Calculator size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">حاسبة التكاليف</h3>
-                      <p className="text-amber-100 text-xs md:text-sm mt-1">تكاليف الإقامة</p>
-                    </div>
-                  </Link>
-                  <Link href="/faq" className="bg-gradient-to-br from-teal-600 to-cyan-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><BookOpen size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">الأسئلة الشائعة</h3>
-                      <p className="text-teal-100 text-xs md:text-sm mt-1">+471 سؤال</p>
-                    </div>
-                  </Link>
-                  <Link href="/forms" className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><FileText size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">النماذج الجاهزة</h3>
-                      <p className="text-indigo-100 text-xs md:text-sm mt-1">عقود واستمارات</p>
-                    </div>
-                  </Link>
-                  <Link href="/important-links" className="bg-gradient-to-br from-sky-600 to-blue-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><Link2 size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">الروابط الهامة</h3>
-                      <p className="text-sky-100 text-xs md:text-sm mt-1">مواقع حكومية</p>
-                    </div>
-                  </Link>
-                  <Link href="/e-devlet-services" className="bg-gradient-to-br from-purple-600 to-violet-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><Smartphone size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">خدمات e-Devlet</h3>
-                      <p className="text-purple-100 text-xs md:text-sm mt-1">البوابة الحكومية</p>
-                    </div>
-                  </Link>
-                  <Link href="/tools" className="bg-gradient-to-br from-slate-600 to-gray-700 text-white p-5 md:p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center gap-3 text-center group">
-                    <div className="p-2.5 bg-white/20 rounded-lg group-hover:scale-110 transition"><Zap size={32} /></div>
-                    <div>
-                      <h3 className="font-bold text-base md:text-lg">كل الأدوات</h3>
-                      <p className="text-slate-100 text-xs md:text-sm mt-1">جميع الأدوات</p>
-                    </div>
-                  </Link>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3">
+                  {SMART_TOOLS.map((tool) => {
+                    const ToolIcon = tool.icon;
+                    return (
+                      <Link
+                        key={tool.href}
+                        href={tool.href}
+                        className="group flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                      >
+                        <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors shrink-0">
+                          <ToolIcon size={20} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-bold text-sm text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">{tool.title}</span>
+                          <span className="block text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{tool.desc}</span>
+                        </span>
+                        <ArrowLeft size={14} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 shrink-0 transition-colors" />
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -382,7 +342,7 @@ export default function DirectoryPage() {
                 return Object.keys(section.groups).length > 0 && (
                   <div
                     key={section.key}
-                    className={`bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all overflow-hidden ${isExpanded ? 'sm:col-span-2 lg:col-span-2 xl:col-span-3 2xl:col-span-4' : ''
+                    className={`bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all overflow-hidden ${isExpanded ? 'sm:col-span-2 lg:col-span-2 xl:col-span-3 2xl:col-span-4' : ''
                       }`}
                   >
                     <button
@@ -397,16 +357,16 @@ export default function DirectoryPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 justify-end">
-                        <div className="flex-1 min-w-0 text-right">
+                        <div className="flex-1 min-w-0 text-start">
                           <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-0.5 sm:mb-1">
                             {section.title}
                           </h2>
                           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                            {articleCount} {articleCount === 1 ? 'مقال' : 'مقال'}
+                            {articleCountLabel(articleCount)}
                           </p>
                         </div>
-                        <div className={`flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl ${section.color} text-white shadow-sm flex-shrink-0`}>
-                          <SectionIcon size={24} className="sm:w-7 sm:h-7 md:w-8 md:h-8" />
+                        <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex-shrink-0">
+                          <SectionIcon size={22} className="sm:w-6 sm:h-6" />
                         </div>
                       </div>
                     </button>
@@ -463,14 +423,14 @@ export default function DirectoryPage() {
                                               article.risk === 'medium' ? 'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-900/30' :
                                                 'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30'
                                             }`}>
-                                            {article.risk === 'high' ? '⚠️ حساس' : article.risk === 'medium' ? '⚡ متوسط' : '✅ روتيني'}
+                                            {article.risk === 'high' ? 'حساس' : article.risk === 'medium' ? 'متوسط' : 'روتيني'}
                                           </span>
                                         )}
 
                                         {/* New Badge for Articles */}
                                         {article.type !== 'scenario' && article.createdAt && isNewContent(article.createdAt) && (
-                                          <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full animate-pulse flex items-center gap-0.5 sm:gap-1">
-                                            <Sparkles size={8} className="sm:w-2.5 sm:h-2.5 md:w-3 md:h-3" /> جديد
+                                          <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
+                                            جديد
                                           </span>
                                         )}
                                       </div>
@@ -487,15 +447,14 @@ export default function DirectoryPage() {
 
                                     <div className="flex items-center justify-between mt-auto pt-2 sm:pt-2.5 md:pt-3 border-t border-slate-100 dark:border-slate-800">
                                       <span className="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1">
-                                        <Calendar size={10} className="sm:w-3 sm:h-3" />
-                                        <span className="hidden sm:inline">{article.lastUpdate}</span>
-                                        <span className="sm:hidden text-[9px]">...</span>
+                                        <Calendar size={10} className="sm:w-3 sm:h-3 shrink-0" />
+                                        <span>{article.lastUpdate}</span>
                                       </span>
                                       <span className={`flex items-center font-bold text-[10px] sm:text-xs md:text-sm group-hover:gap-2 transition-all
                                           ${article.type === 'scenario' ? 'text-emerald-600' : 'text-accent-600'}`}>
                                         <span className="hidden sm:inline">{article.type === 'scenario' ? 'تشخيص الحالة' : 'عرض التفاصيل'}</span>
                                         <span className="sm:hidden">عرض</span>
-                                        <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-0.5 sm:mr-1" />
+                                        <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 ms-0.5 sm:ms-1" />
                                       </span>
                                     </div>
                                   </div>

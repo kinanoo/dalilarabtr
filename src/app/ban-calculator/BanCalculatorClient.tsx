@@ -6,7 +6,6 @@ import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import { useState } from 'react';
 import { Calculator, AlertTriangle, CheckCircle, Info, Plane } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
 
 export default function BanCalculator() {
@@ -39,7 +38,7 @@ export default function BanCalculator() {
           banDesc = "يمكنك العودة بشرط استخراج فيزا أو إقامة قانونية. (قاعدة 3 أشهر - 180 يوماً تطبق).";
           break;
         case '3m-6m':
-          banText = "منع لمدة 1 شهر";
+          banText = "منع لمدة شهر واحد";
           banColor = "bg-orange-400";
           banDesc = "بسبب تجاوز المدة من 3 إلى 6 أشهر.";
           break;
@@ -49,12 +48,12 @@ export default function BanCalculator() {
           banDesc = "بسبب تجاوز المدة من 6 أشهر إلى سنة.";
           break;
         case '1y-2y':
-          banText = "منع لمدة 1 سنة";
+          banText = "منع لمدة سنة واحدة";
           banColor = "bg-red-400";
           banDesc = "بسبب تجاوز المدة من سنة إلى سنتين.";
           break;
         case '2y-3y':
-          banText = "منع لمدة 2 سنة";
+          banText = "منع لمدة سنتين";
           banColor = "bg-red-500";
           banDesc = "بسبب تجاوز المدة من سنتين إلى 3 سنوات.";
           break;
@@ -98,10 +97,10 @@ export default function BanCalculator() {
           </p>
         </div>
 
-        {/* Compact Card — accent stripe + gradient surface */}
-        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-indigo-50/40 dark:from-slate-900 dark:to-indigo-950/20 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-indigo-500/5 border border-slate-300 dark:border-slate-800 min-h-[550px] flex flex-col">
-          {/* Accent stripe — right edge in RTL */}
-          <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-indigo-500 to-violet-500 opacity-80" />
+        {/* Compact Card — flat surface + accent stripe on the start edge */}
+        <div className="relative overflow-hidden bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+          {/* Accent stripe — start edge (logical, RTL-safe) */}
+          <span className="absolute top-0 end-0 h-full w-1 bg-gradient-to-b from-indigo-500 to-violet-500 opacity-80" />
 
           {/* Grid Layout for Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -121,9 +120,9 @@ export default function BanCalculator() {
               >
                 <option value="0-3m">أقل من 3 أشهر</option>
                 <option value="3m-6m">3 - 6 أشهر</option>
-                <option value="6m-1y">6 أشهر - 1 سنة</option>
-                <option value="1y-2y">1 - 2 سنة</option>
-                <option value="2y-3y">2 - 3 سنوات</option>
+                <option value="6m-1y">من 6 أشهر إلى سنة</option>
+                <option value="1y-2y">من سنة إلى سنتين</option>
+                <option value="2y-3y">من سنتين إلى 3 سنوات</option>
                 <option value="3y+">أكثر من 3 سنوات</option>
               </select>
             </div>
@@ -166,8 +165,8 @@ export default function BanCalculator() {
 
           </div>
 
-          {/* Calculate Button — premium gradient */}
-          <div className="mt-auto pt-8 flex justify-center pb-4">
+          {/* Calculate Button */}
+          <div className="pt-8 flex justify-center pb-4">
             <button
               type="button"
               onClick={calculateBan}
@@ -178,41 +177,34 @@ export default function BanCalculator() {
             </button>
           </div>
 
-          {/* Result Section (Inline/Compact) */}
-          <AnimatePresence mode="wait">
-            {result && (
-              <motion.div
-                key={result.text}
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800 grid md:grid-cols-[auto_1fr] gap-6 items-center animate-in fade-in slide-in-from-bottom-4">
+          {/* Result Section (Inline/Compact) — CSS-only reveal, re-runs per result via key */}
+          {result && (
+            <div
+              key={result.text}
+              className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800 grid md:grid-cols-[auto_1fr] gap-6 items-center animate-in fade-in slide-in-from-bottom-4"
+            >
 
-                  {/* Badge — accent stripe + premium shadow */}
-                  <div className={`relative overflow-hidden shrink-0 ${result.color} text-white py-5 px-8 rounded-2xl shadow-xl text-center md:text-right min-w-[240px]`}>
-                    <span className="absolute top-0 right-0 h-full w-1.5 bg-white/30" />
-                    <p className="text-white/85 text-[10px] font-black mb-1 uppercase tracking-[0.2em]">تقدير مبدئي (غير رسمي)</p>
-                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">{result.text}</h2>
-                  </div>
+              {/* Badge — accent stripe */}
+              <div className={`relative overflow-hidden shrink-0 ${result.color} text-white py-5 px-8 rounded-2xl shadow-md text-center md:text-start min-w-[240px]`}>
+                <span className="absolute top-0 end-0 h-full w-1.5 bg-white/30" />
+                <p className="text-white/85 text-[10px] font-black mb-1 uppercase tracking-[0.2em]">تقدير مبدئي (غير رسمي)</p>
+                <h2 className="text-2xl md:text-3xl font-black tracking-tight">{result.text}</h2>
+              </div>
 
-                  {/* Description — gradient surface + accent */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-amber-50/40 dark:from-slate-950 dark:to-amber-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-start gap-3">
-                    <span className="absolute top-0 right-0 h-full w-1 bg-amber-500 opacity-70" />
-                    <AlertTriangle className="text-amber-500 flex-shrink-0 mt-1" size={24} />
-                    <div>
-                      <h4 className="font-black text-slate-800 dark:text-slate-200 text-sm mb-1">ملاحظات تقديرية:</h4>
-                      <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
-                        {result.desc}
-                      </p>
-                    </div>
-                  </div>
-
+              {/* Description — notice surface + accent */}
+              <div className="relative overflow-hidden bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-start gap-3">
+                <span className="absolute top-0 end-0 h-full w-1 bg-amber-500 opacity-70" />
+                <AlertTriangle className="text-amber-500 flex-shrink-0 mt-1" size={24} />
+                <div>
+                  <h4 className="font-black text-slate-800 dark:text-slate-200 text-sm mb-1">ملاحظات تقديرية:</h4>
+                  <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+                    {result.desc}
+                  </p>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+
+            </div>
+          )}
 
         </div>
       </div>

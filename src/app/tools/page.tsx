@@ -1,7 +1,7 @@
 /**
  * 🛠️ صفحة الأدوات الرئيسية
  * =========================
- * 
+ *
  * 📁 ضع هذا الملف في: src/app/tools/page.tsx
  */
 
@@ -20,6 +20,7 @@ import {
   BookOpen,
   ArrowLeft,
   CheckCircle,
+  ChevronLeft,
   Wrench,
   Pill,
   Smartphone
@@ -54,10 +55,7 @@ const TOOLS = [
     icon: BrainCircuit,
     href: '/consultant',
     color: 'from-emerald-500 to-teal-600',
-    bgLight: 'bg-emerald-50 dark:bg-emerald-950/30',
-    borderColor: 'border-emerald-200 dark:border-emerald-800',
     badge: 'الأكثر استخداماً',
-    features: ['تحليل شامل', 'توصيات مخصصة', 'مجاني 100%']
   },
   {
     id: 'ban-calculator',
@@ -66,10 +64,7 @@ const TOOLS = [
     icon: Calculator,
     href: '/ban-calculator',
     color: 'from-blue-500 to-indigo-600',
-    bgLight: 'bg-blue-50 dark:bg-blue-950/30',
-    borderColor: 'border-blue-200 dark:border-blue-800',
     badge: null,
-    features: ['حساب دقيق', 'كل أنواع الحظر', 'نتيجة فورية']
   },
   {
     id: 'security-codes',
@@ -78,10 +73,7 @@ const TOOLS = [
     icon: ShieldAlert,
     href: '/codes',
     color: 'from-rose-500 to-red-600',
-    bgLight: 'bg-rose-50 dark:bg-rose-950/30',
-    borderColor: 'border-rose-200 dark:border-rose-800',
     badge: null,
-    features: ['V-87, G-87, N-82', 'شرح مفصل', 'حلول مقترحة']
   },
   {
     id: 'restricted-areas',
@@ -90,10 +82,7 @@ const TOOLS = [
     icon: MapPin,
     href: '/zones',
     color: 'from-amber-500 to-orange-600',
-    bgLight: 'bg-amber-50 dark:bg-amber-950/30',
-    borderColor: 'border-amber-200 dark:border-amber-800',
     badge: 'محدّث',
-    features: ['كل الولايات', 'بحث سريع', 'بيانات رسمية']
   },
   {
     id: 'kimlik-checker',
@@ -102,10 +91,7 @@ const TOOLS = [
     icon: CreditCard,
     href: '/tools/kimlik-check',
     color: 'from-purple-500 to-violet-600',
-    bgLight: 'bg-purple-50 dark:bg-purple-950/30',
-    borderColor: 'border-purple-200 dark:border-purple-800',
     badge: null,
-    features: ['تحقق فوري', 'حالة الإقامة', 'تنبيهات']
   },
   {
     id: 'dictionary',
@@ -114,10 +100,7 @@ const TOOLS = [
     icon: BookOpen,
     href: '/dictionary',
     color: 'from-cyan-500 to-sky-600',
-    bgLight: 'bg-cyan-50 dark:bg-cyan-950/30',
-    borderColor: 'border-cyan-200 dark:border-cyan-800',
     badge: null,
-    features: ['مصطلحات قانونية', 'شرح مفصل', 'أمثلة']
   },
   {
     id: 'pharmacy',
@@ -126,10 +109,7 @@ const TOOLS = [
     icon: Pill,
     href: '/tools/pharmacy',
     color: 'from-green-500 to-emerald-600',
-    bgLight: 'bg-green-50 dark:bg-green-950/30',
-    borderColor: 'border-green-200 dark:border-green-800',
     badge: null,
-    features: ['كل الولايات', 'تحديث مباشر', 'أقرب صيدلية']
   },
   {
     id: 'edevlet',
@@ -138,10 +118,7 @@ const TOOLS = [
     icon: Smartphone,
     href: '/e-devlet-services',
     color: 'from-sky-500 to-blue-600',
-    bgLight: 'bg-sky-50 dark:bg-sky-950/30',
-    borderColor: 'border-sky-200 dark:border-sky-800',
     badge: null,
-    features: ['روابط رسمية', 'وصول سريع', 'مصنّفة']
   },
 ];
 
@@ -181,87 +158,55 @@ function ToolsPageSchema() {
 }
 
 // =====================================================
-// 🎨 مكون بطاقة الأداة
+// 🎨 مكون بطاقة الأداة — صف مدمج قابل للمسح السريع (نمط /codes):
+// أيقونة صغيرة بهوية الأداة اللونية + عنوان + سطر وصف، بدون شارات
+// حشو أو زخارف دوّارة. البطاقة نفسها رابط، فلا حاجة لزر إضافي.
 // =====================================================
 
 function ToolCard({ tool }: { tool: typeof TOOLS[0] }) {
   const Icon = tool.icon;
   const isComingSoon = tool.badge === 'قريباً';
 
+  const body = (
+    <>
+      <span className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center shrink-0 ${isComingSoon ? 'opacity-50' : ''}`}>
+        <Icon size={20} className="text-white" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+          {tool.title}
+        </span>
+        <span className="block text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 mt-0.5">
+          {tool.description}
+        </span>
+      </span>
+    </>
+  );
+
   return (
-    <div className={`relative group ${isComingSoon ? 'opacity-70' : ''}`}>
+    <div className={`relative h-full ${isComingSoon ? 'opacity-70' : ''}`}>
       {/* البادج — مكوّن Badge الموحّد بألوان دلالية (نفس المعنى = نفس اللون
           عبر كل الموقع: "محدّث" أزرق دائماً، "الأكثر استخداماً" أخضر العلامة) */}
       {tool.badge && (
         <Badge
           tone={tool.badge === 'قريباً' ? 'neutral' : tool.badge === 'الأكثر استخداماً' ? 'brand' : 'updated'}
-          className="absolute -top-3 right-4 z-10 shadow-sm"
+          className="absolute -top-3 end-4 z-10 shadow-sm"
         >
           {tool.badge}
         </Badge>
       )}
 
       {isComingSoon ? (
-        <div className={`relative h-full ${tool.bgLight} border ${tool.borderColor} rounded-2xl p-6 cursor-not-allowed overflow-hidden`}>
-          {/* Top accent stripe — soft slate for the "coming soon"
-              variant so it reads as muted/inactive */}
-          <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-slate-300/60 dark:bg-slate-700/40" />
-          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 opacity-50`}>
-            <Icon size={28} className="text-white" />
-          </div>
-          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{tool.title}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">{tool.description}</p>
+        <div className="h-full flex items-center gap-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 cursor-not-allowed">
+          {body}
         </div>
       ) : (
         <Link
           href={tool.href}
-          className={`relative block h-full bg-gradient-to-br from-white to-slate-50/70 dark:from-slate-900 dark:to-slate-950 border ${tool.borderColor} rounded-2xl p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden`}
+          className="group h-full flex items-center gap-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all"
         >
-          {/* Top accent stripe — matches the tool's gradient (emerald,
-              blue, rose, etc.) so each card reads as "branded" with
-              its function. Bottom-most border of the strip is heavier
-              than the rest of the card border. */}
-          <div
-            aria-hidden="true"
-            className={`absolute top-0 inset-x-0 h-1.5 bg-gradient-to-l ${tool.color}`}
-          />
-
-          {/* Subtle decorative orb in the top-left corner that takes
-              the tool's color — gives each card a unique atmosphere */}
-          <div
-            aria-hidden="true"
-            className={`absolute -top-16 -left-16 w-40 h-40 rounded-full bg-gradient-to-br ${tool.color} opacity-[0.08] blur-3xl pointer-events-none`}
-          />
-
-          <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 shadow-lg shadow-black/20 group-hover:scale-110 group-hover:rotate-[-4deg] transition-all duration-300`}>
-            <Icon size={28} className="text-white" />
-          </div>
-          <h3 className="relative text-xl font-black text-slate-800 dark:text-slate-100 mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
-            {tool.title}
-          </h3>
-          <p className="relative text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">{tool.description}</p>
-
-          {/* Features pills — bullet list → small pill chips so the
-              "what this tool gives you" reads as concrete capabilities,
-              not random bullets */}
-          <ul className="relative flex flex-wrap gap-1.5 mb-4">
-            {tool.features.map((feature, i) => (
-              <li
-                key={i}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-white/[0.04] border border-slate-200/70 dark:border-white/10 px-2 py-0.5 rounded-full"
-              >
-                <CheckCircle size={10} className="text-emerald-500 dark:text-emerald-400" />
-                {feature}
-              </li>
-            ))}
-          </ul>
-
-          <div className="relative flex items-center justify-between pt-3 border-t border-slate-200/60 dark:border-white/10">
-            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-2 group-hover:gap-3 transition-all">
-              استخدم الأداة
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            </span>
-          </div>
+          {body}
+          <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 shrink-0 transition-colors" />
         </Link>
       )}
     </div>
@@ -307,7 +252,7 @@ export default function ToolsPage() {
           </div>
 
           {/* شبكة الأدوات */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {TOOLS.map(tool => (
               <ToolCard key={tool.id} tool={tool} />
             ))}

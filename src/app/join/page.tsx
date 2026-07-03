@@ -6,6 +6,7 @@ import { Loader2, UserPlus, Mail, Lock, User, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import PageHero from '@/components/PageHero';
 
 export default function JoinPage() {
     const [loading, setLoading] = useState(false);
@@ -62,7 +63,7 @@ export default function JoinPage() {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 font-cairo p-4" dir="rtl">
-                <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-xl animate-in fade-in zoom-in max-w-md w-full border border-slate-200 dark:border-slate-800">
+                <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in zoom-in max-w-md w-full">
                     <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Mail size={40} />
                     </div>
@@ -72,7 +73,7 @@ export default function JoinPage() {
                         <strong className="text-emerald-600 dark:text-emerald-400 block mt-2 text-base">{email}</strong><br />
                         يرجى تفقد صندوق الوارد (أو مجلد الرسائل المزعجة Spam) والنقر على الرابط لتفعيل حسابك، ثم تسجيل الدخول.
                     </p>
-                    <Link href="/login" className="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold px-8 py-3.5 rounded-xl transition-all hover:scale-105 shadow-xl shadow-slate-900/10 w-full sm:w-auto">
+                    <Link href="/login" className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-xl transition-colors shadow-md shadow-emerald-600/20 w-full sm:w-auto">
                         الذهاب لصفحة الدخول
                     </Link>
                 </div>
@@ -81,48 +82,22 @@ export default function JoinPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 font-cairo py-12" dir="rtl">
-            <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
+            <PageHero
+                title="إنشاء حساب جديد"
+                description="انضم الآن لعائلة دليل العرب"
+                icon={<UserPlus size={32} />}
+            />
 
-                {/* Advantages Section - Left Side on Desktop */}
-                <div className="bg-slate-900 p-8 md:p-12 text-white relative flex flex-col justify-center order-2 md:order-1">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-emerald-600/20 opacity-50" />
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+            <div className="max-w-5xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 
-                    <div className="relative z-10">
-                        <h2 className="text-3xl font-black mb-6 leading-tight">لماذا ينبغي عليك الانضمام؟</h2>
-                        <ul className="space-y-6">
-                            {[
-                                { icon: <UserPlus size={24} className="text-blue-400" />, title: 'مشاركة خدماتك ورؤيتك', desc: 'أضف خدماتك المهنية ليصل إليها آلاف العملاء يومياً.' },
-                                { icon: <Lock size={24} className="text-emerald-400" />, title: 'حفظ الاستشارات', desc: 'استشر الذكاء الاصطناعي واحتفظ بجميع استشاراتك للرجوع لها لاحقاً.' },
-                                { icon: <CheckCircle size={24} className="text-amber-400" />, title: 'أدوات ذكية حصرية', desc: 'استخدم أدوات حساب الضرائب وتكاليف المعيشة مجاناً بضغطة زر.' },
-                            ].map((item, idx) => (
-                                <li key={idx} className="flex items-start gap-4">
-                                    <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-sm shrink-0">
-                                        {item.icon}
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                                        <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-
-                {/* Form Section - Right Side on Desktop */}
-                <div className="p-8 md:p-12 order-1 md:order-2 flex flex-col justify-center">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">إنشاء حساب جديد</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">انضم الآن لعائلة دليل العرب بضغطة زر</p>
-                    </div>
-
+                {/* Form Section */}
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
                     {/* Google Login */}
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all mb-6 shadow-sm"
+                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors mb-6 shadow-sm"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path
@@ -147,7 +122,7 @@ export default function JoinPage() {
 
                     <div className="flex items-center gap-4 mb-6">
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
-                        <span className="text-xs text-slate-400 font-bold">أو بالطريقة التقليدية</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-bold">أو بالطريقة التقليدية</span>
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
                     </div>
 
@@ -155,14 +130,14 @@ export default function JoinPage() {
                         <div>
                             <label htmlFor="join-name" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم الكامل</label>
                             <div className="relative">
-                                <User className="absolute top-3.5 right-4 text-slate-400" size={18} />
+                                <User className="absolute top-3.5 start-4 text-slate-400" size={18} />
                                 <input
                                     id="join-name"
                                     type="text"
                                     required
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
-                                    className="w-full pr-11 pl-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
+                                    className="w-full ps-11 pe-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
                                     placeholder="مثال: أحمد محمد"
                                 />
                             </div>
@@ -171,14 +146,14 @@ export default function JoinPage() {
                         <div>
                             <label htmlFor="join-email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
                             <div className="relative">
-                                <Mail className="absolute top-3.5 right-4 text-slate-400" size={18} />
+                                <Mail className="absolute top-3.5 start-4 text-slate-400" size={18} />
                                 <input
                                     id="join-email"
                                     type="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pr-11 pl-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-left ltr font-medium"
+                                    className="w-full ps-11 pe-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-left ltr font-medium"
                                     placeholder="name@example.com"
                                 />
                             </div>
@@ -187,7 +162,7 @@ export default function JoinPage() {
                         <div>
                             <label htmlFor="join-password" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">كلمة المرور</label>
                             <div className="relative">
-                                <Lock className="absolute top-3.5 right-4 text-slate-400" size={18} />
+                                <Lock className="absolute top-3.5 start-4 text-slate-400" size={18} />
                                 <input
                                     id="join-password"
                                     type="password"
@@ -195,7 +170,7 @@ export default function JoinPage() {
                                     minLength={6}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pr-11 pl-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-left ltr font-medium"
+                                    className="w-full ps-11 pe-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-left ltr font-medium"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -204,21 +179,46 @@ export default function JoinPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-blue-600/30 active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-black py-4 rounded-xl transition-colors shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 mt-4 text-lg"
                         >
                             {loading ? <Loader2 className="animate-spin" /> : <UserPlus size={24} />}
                             انضم إلينا الآن
                         </button>
 
                         <div className="text-center mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
                                 لديك حساب بالفعل؟{' '}
-                                <Link href="/login" className="text-blue-600 font-bold hover:underline transition-all">
+                                <Link href="/login" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline transition-colors">
                                     سجل دخولك
                                 </Link>
                             </p>
                         </div>
                     </form>
+                </div>
+
+                {/* Advantages Section */}
+                <div>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white mb-4">لماذا ينبغي عليك الانضمام؟</h2>
+                    <ul className="space-y-4">
+                        {[
+                            { icon: <UserPlus size={22} />, title: 'مشاركة خدماتك ورؤيتك', desc: 'أضف خدماتك المهنية ليصل إليها آلاف العملاء يومياً.' },
+                            { icon: <Lock size={22} />, title: 'حفظ الاستشارات', desc: 'استشر الذكاء الاصطناعي واحتفظ بجميع استشاراتك للرجوع لها لاحقاً.' },
+                            { icon: <CheckCircle size={22} />, title: 'أدوات ذكية حصرية', desc: 'استخدم أدوات حساب الضرائب وتكاليف المعيشة مجاناً.' },
+                        ].map((item, idx) => (
+                            <li
+                                key={idx}
+                                className="flex items-start gap-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 transition-all hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5"
+                            >
+                                <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-3 rounded-2xl shrink-0">
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-900 dark:text-white mb-1">{item.title}</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </div>
         </div>

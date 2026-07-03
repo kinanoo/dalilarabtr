@@ -37,7 +37,7 @@ export default function CalculatorPage() {
         <div className="max-w-2xl mx-auto">
 
           <div className="relative overflow-hidden bg-gradient-to-br from-white to-amber-50/40 dark:from-slate-900 dark:to-amber-950/20 rounded-2xl shadow-xl border border-amber-200 dark:border-amber-900/40 p-6 md:p-8">
-            <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-amber-500 to-orange-500 opacity-80" />
+            <span className="absolute top-0 end-0 h-full w-1 bg-gradient-to-b from-amber-500 to-orange-500 opacity-80" />
 
             <div className="flex items-start gap-3 mb-5">
               <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 shrink-0">

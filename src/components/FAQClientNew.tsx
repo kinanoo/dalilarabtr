@@ -1,46 +1,55 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, ChevronRight, ChevronDown, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
+import { ChevronRight, ChevronDown, Home, Briefcase, GraduationCap, Plane, Building2, Stethoscope, Shield, Scale, FileText, HelpCircle, MapPin, Wallet } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
+import PageHero from '@/components/PageHero';
+import HeroSearchInput from '@/components/HeroSearchInput';
 import { FAQCategory } from '@/lib/faq-types';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
-import { useSearchParams } from 'next/navigation';
+/*
+ * 2026-07 redesign — brought in line with the site's new design language
+ * (codes/services/homepage): the old page had its own dark slate hero with
+ * nebula glows + a desktop sidebar that collapsed into a toggle on mobile.
+ * Now: the shared light PageHero + hero search, and the categories are
+ * compact WRAPPING pills with icon + count (no sidebar, no toggle, nothing
+ * to drag). Search/pagination logic untouched.
+ */
 
-// Category visual config — color + icon for known categories
-const CATEGORY_STYLES: Record<string, { icon: typeof Home; bg: string; text: string; border: string }> = {
-  'الإقامة في تركيا': { icon: Home, bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
-  'الكملك': { icon: Shield, bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800' },
-  'إذن العمل': { icon: Briefcase, bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800' },
-  'التعليم': { icon: GraduationCap, bg: 'bg-violet-50 dark:bg-violet-950/30', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-800' },
-  'الصحة والتأمين': { icon: Stethoscope, bg: 'bg-teal-50 dark:bg-teal-950/30', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-200 dark:border-teal-800' },
-  'السفر والتأشيرات': { icon: Plane, bg: 'bg-cyan-50 dark:bg-cyan-950/30', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800' },
-  'القنصلية': { icon: Building2, bg: 'bg-indigo-50 dark:bg-indigo-950/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800' },
-  'الشؤون القانونية': { icon: Scale, bg: 'bg-orange-50 dark:bg-orange-950/30', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800' },
-  'الجنسية التركية': { icon: FileText, bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
-  'السكن': { icon: MapPin, bg: 'bg-pink-50 dark:bg-pink-950/30', text: 'text-pink-600 dark:text-pink-400', border: 'border-pink-200 dark:border-pink-800' },
-  'المالية والضرائب': { icon: Wallet, bg: 'bg-lime-50 dark:bg-lime-950/30', text: 'text-lime-600 dark:text-lime-400', border: 'border-lime-200 dark:border-lime-800' },
+// Category visual config — icon + accent for known categories
+const CATEGORY_STYLES: Record<string, { icon: typeof Home; text: string }> = {
+  'الإقامة في تركيا': { icon: Home, text: 'text-blue-600 dark:text-blue-400' },
+  'الكملك': { icon: Shield, text: 'text-red-600 dark:text-red-400' },
+  'إذن العمل': { icon: Briefcase, text: 'text-amber-600 dark:text-amber-400' },
+  'التعليم': { icon: GraduationCap, text: 'text-violet-600 dark:text-violet-400' },
+  'الصحة والتأمين': { icon: Stethoscope, text: 'text-teal-600 dark:text-teal-400' },
+  'السفر والتأشيرات': { icon: Plane, text: 'text-cyan-600 dark:text-cyan-400' },
+  'القنصلية': { icon: Building2, text: 'text-indigo-600 dark:text-indigo-400' },
+  'الشؤون القانونية': { icon: Scale, text: 'text-orange-600 dark:text-orange-400' },
+  'الجنسية التركية': { icon: FileText, text: 'text-emerald-600 dark:text-emerald-400' },
+  'السكن': { icon: MapPin, text: 'text-pink-600 dark:text-pink-400' },
+  'المالية والضرائب': { icon: Wallet, text: 'text-lime-600 dark:text-lime-400' },
 };
 
-const DEFAULT_STYLE = { icon: HelpCircle, bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-slate-600 dark:text-slate-400', border: 'border-slate-200 dark:border-slate-700' };
+const DEFAULT_STYLE = { icon: HelpCircle, text: 'text-slate-500 dark:text-slate-400' };
 
 interface FAQClientProps {
   staticData: FAQCategory[];
   totalCount: number;
+  // Deep-link query (?q=…) — read on the SERVER and passed down. Using
+  // useSearchParams here bailed the whole page out to client rendering:
+  // crawlers saw only the Suspense fallback instead of 600+ questions.
+  initialQuery?: string;
 }
 
 const ITEMS_PER_PAGE = 15;
 
-export default function FAQClientNew({ staticData, totalCount }: FAQClientProps) {
-  const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
-
+export default function FAQClientNew({ staticData, totalCount, initialQuery = '' }: FAQClientProps) {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);
 
   // Scroll to top when page changes
@@ -126,209 +135,139 @@ export default function FAQClientNew({ staticData, totalCount }: FAQClientProps)
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo">
+      <PageHero
+        title="الأسئلة الشائعة"
+        description={`${totalCount} إجابة موثّقة تغطي جوانب الحياة في تركيا`}
+        icon={<HelpCircle className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 dark:text-emerald-300" />}
+      >
+        <HeroSearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="ابحث عن سؤال... (إقامة، تأمين، جواز...)"
+        />
+      </PageHero>
 
-      {/* 
-        Custom Hero Section - "Slightly Different" 
-        Differences:
-        1. No "Legal Guide" text.
-        2. Gradient is more Slate/Emerald focused, less Gold/Cyan.
-        3. Background shapes are different (Nebula glow instead of curves).
-      */}
-      <section className="relative z-[15] bg-slate-900 border-b border-emerald-500/10 pb-12 pt-10 rounded-b-[2.5rem] overflow-hidden shadow-2xl">
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900" />
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '10s' }} />
+      <div className="max-w-4xl mx-auto px-4 py-10">
+        {/* Category pills — wrapping, no sidebar, no side-scroll */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            aria-pressed={!selectedCategory}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-bold transition-all ${
+              !selectedCategory
+                ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
+            }`}
+          >
+            الكل
+            <span className={`text-[10px] font-bold ${!selectedCategory ? 'text-emerald-100' : 'text-slate-400'}`}>{totalCount}</span>
+          </button>
+          {staticData.map((cat) => {
+            const style = CATEGORY_STYLES[cat.category] || DEFAULT_STYLE;
+            const Icon = style.icon;
+            const isActive = selectedCategory === cat.category;
+            return (
+              <button
+                type="button"
+                key={cat.category}
+                onClick={() => setSelectedCategory(isActive ? null : cat.category)}
+                aria-pressed={isActive}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-bold transition-all ${
+                  isActive
+                    ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
+                }`}
+              >
+                <Icon size={15} className={isActive ? 'text-white' : style.text} />
+                <span className="max-w-[9rem] truncate">{cat.category}</span>
+                <span className={`text-[10px] font-bold ${isActive ? 'text-emerald-100' : 'text-slate-400'}`}>{cat.questions.length}</span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          {/* Main Title - ONLY FAQ */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-white to-teal-200 mb-6 drop-shadow-sm">
-            الأسئلة الشائعة
-          </h1>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8 font-medium">
-            مجتمع تفاعلي يغطي كل جوانب الحياة في تركيا. {totalCount} إجابة موثقة.
-          </p>
-
-          {/* Search Box */}
-          <div className="relative group max-w-xl mx-auto transform hover:scale-[1.01] transition-transform duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
-            <div className="relative">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors" size={22} />
-              <input
-                type="search"
-                id="faq-search"
-                aria-label="ابحث في الأسئلة الشائعة"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن سؤال... (إقامة، تأمين، جواز...)"
-                className="w-full pr-12 pl-4 py-4 rounded-2xl border border-slate-700 bg-slate-800/80 backdrop-blur-xl text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-emerald-500/50 shadow-xl transition-all outline-none font-bold text-lg"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Two-column layout: sidebar + content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-
-          {/* Sidebar — categories list */}
-          <aside className="lg:w-60 xl:w-64 shrink-0">
-            {/* Mobile toggle */}
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm font-bold text-sm text-slate-700 dark:text-slate-300 mb-3"
-            >
-              <span className="flex items-center gap-2">
-                <Filter size={16} className="text-emerald-600" />
-                {selectedCategory || 'التصنيفات'}
-              </span>
-              <ChevronDown size={16} className={`transition-transform ${sidebarOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Category list — always visible on desktop, toggle on mobile */}
-            <nav className={`${sidebarOpen ? 'block' : 'hidden'} lg:block lg:sticky lg:top-4`}>
-              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <h2 className="px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                  <Filter size={14} />
-                  التصنيفات
-                </h2>
-
-                {/* "All" option */}
-                <button
-                  type="button"
-                  onClick={() => { setSelectedCategory(null); setSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold transition-colors text-right ${
-                    !selectedCategory
-                      ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-r-[3px] border-emerald-500'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 border-r-[3px] border-transparent'
-                  }`}
-                >
-                  <HelpCircle size={16} className="shrink-0" />
-                  <span className="flex-1">الكل</span>
-                  <span className="text-[11px] opacity-60">{totalCount}</span>
-                </button>
-
-                {/* All categories from data */}
-                {staticData.map((cat) => {
-                  const style = CATEGORY_STYLES[cat.category] || DEFAULT_STYLE;
-                  const Icon = style.icon;
-                  const isActive = selectedCategory === cat.category;
-                  return (
-                    <button
-                      type="button"
-                      key={cat.category}
-                      onClick={() => { setSelectedCategory(isActive ? null : cat.category); setSidebarOpen(false); }}
-                      className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold transition-colors text-right ${
-                        isActive
-                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-r-[3px] border-emerald-500'
-                          : `text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 border-r-[3px] border-transparent`
-                      }`}
-                    >
-                      <Icon size={16} className={`shrink-0 ${isActive ? 'text-emerald-500' : style.text}`} />
-                      <span className="flex-1 truncate">{cat.category}</span>
-                      <span className="text-[11px] opacity-60">{cat.questions.length}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </nav>
-          </aside>
-
-          {/* Main Content — questions */}
-          <main className="flex-1 min-w-0">
-            {/* Active filter indicator */}
-            {selectedCategory && (
-              <div className="flex items-center gap-2 mb-4 text-sm text-slate-500 dark:text-slate-400">
-                <span>التصنيف:</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">{selectedCategory}</span>
-                <span className="opacity-60">({totalFilteredCount} سؤال)</span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory(null)}
-                  className="mr-auto text-xs text-red-500 hover:text-red-600 font-bold"
-                >
-                  إزالة الفلتر
-                </button>
-              </div>
+        {flattenedQuestions.length === 0 ? (
+          <EmptyState
+            message={`لا توجد نتائج لـ "${searchQuery}". جرب كلمات مختلفة.`}
+          />
+        ) : (
+          <div className="space-y-4">
+            {/* Results count while filtering */}
+            {(selectedCategory || searchQuery.trim()) && (
+              <p className="text-xs font-bold text-slate-400">
+                {totalFilteredCount} سؤال{selectedCategory ? ` · ${selectedCategory}` : ''}
+              </p>
             )}
 
-            {flattenedQuestions.length === 0 ? (
-              <EmptyState
-                message={`لا توجد نتائج لـ "${searchQuery}". جرب كلمات مختلفة.`}
-              />
-            ) : (
-              <div className="space-y-4">
-                {/* Questions List */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                  {currentQuestions.map((q, idx) => {
-                    const qId = q.id || `q-${idx}`;
-                    const isOpen = openQuestionId === qId;
-                    return (
-                      <div key={qId} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
-                        <button
-                          type="button"
-                          onClick={() => setOpenQuestionId(isOpen ? null : qId)}
-                          className="w-full flex items-center justify-between p-4 sm:p-5 text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                          aria-expanded={isOpen ? "true" : "false"}
-                        >
-                          <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 flex-1">
-                            {q.q}
-                          </h3>
-                          <ChevronDown
-                            size={20}
-                            className={`text-slate-400 shrink-0 mr-3 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                          />
-                        </button>
-                        <div
-                          className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
-                        >
-                          <div className="px-4 sm:px-5 pb-4 sm:pb-5 prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-right font-medium">
-                            {q.a}
-                          </div>
-                        </div>
+            {/* Questions List */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              {currentQuestions.map((q, idx) => {
+                const qId = q.id || `q-${idx}`;
+                const isOpen = openQuestionId === qId;
+                const style = CATEGORY_STYLES[q.category] || DEFAULT_STYLE;
+                const Icon = style.icon;
+                return (
+                  <div key={qId} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
+                    <button
+                      type="button"
+                      onClick={() => setOpenQuestionId(isOpen ? null : qId)}
+                      className="w-full flex items-center gap-3 p-4 sm:p-5 text-start hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-colors"
+                      aria-expanded={isOpen ? 'true' : 'false'}
+                    >
+                      <Icon size={16} className={`shrink-0 ${style.text}`} aria-hidden="true" />
+                      <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 flex-1">
+                        {q.q}
+                      </h3>
+                      <ChevronDown
+                        size={20}
+                        className={`text-slate-400 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
+                      <div className="px-4 sm:px-5 pb-4 sm:pb-5 prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed text-start font-medium">
+                        {q.a}
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-3 mt-8">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="الصفحة السابقة"
+                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 disabled:opacity-50 transition-all flex items-center gap-2 font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 shadow-sm"
+                >
+                  <ChevronRight size={18} />
+                  السابق
+                </button>
+
+                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl font-mono font-bold text-slate-600 dark:text-slate-300" dir="ltr">
+                  {currentPage} / {totalPages}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-3 mt-8">
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      aria-label="الصفحة السابقة"
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all flex items-center gap-2 font-bold text-slate-600 bg-white dark:bg-slate-900 shadow-sm"
-                    >
-                      <ChevronRight size={18} />
-                      السابق
-                    </button>
-
-                    <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl font-mono font-bold text-slate-600 dark:text-slate-300">
-                      {currentPage} / {totalPages}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      aria-label="الصفحة التالية"
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 transition-all flex items-center gap-2 font-bold text-slate-600 bg-white dark:bg-slate-900 shadow-sm"
-                    >
-                      التالي
-                      <ChevronRight size={18} className="rotate-180" />
-                    </button>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="الصفحة التالية"
+                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 disabled:opacity-50 transition-all flex items-center gap-2 font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 shadow-sm"
+                >
+                  التالي
+                  <ChevronRight size={18} className="rotate-180" />
+                </button>
               </div>
             )}
-          </main>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

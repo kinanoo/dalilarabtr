@@ -307,7 +307,7 @@ function UpdateCard({ update, index = 0 }: { update: Update; index?: number }) {
                         </div>
                     ) : isAuto && iconConfig ? (
                         <div className={`w-12 h-12 rounded-xl shadow-sm ${iconConfig.bgLight} ${iconConfig.bgDark} flex items-center justify-center`}>
-                            <iconConfig.icon size={20} className={`text-${iconConfig.color}-600`} />
+                            <iconConfig.icon size={20} className={iconConfig.textColor} />
                         </div>
                     ) : update.image ? (
                         <div className="relative w-12 h-12 rounded-xl shadow-sm overflow-hidden bg-slate-100 dark:bg-slate-800">

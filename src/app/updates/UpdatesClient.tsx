@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAdminUpdates } from '@/lib/useAdminData';
 import {
     Bell, Loader2, Calendar,
@@ -11,6 +11,14 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { isNewContent, formatDate, AUTO_EVENT_CONFIG } from '@/lib/updateUtils';
+
+/** Count-aware Arabic plural for remaining updates (Latin digits) */
+function remainingUpdatesLabel(n: number): string {
+    if (n === 1) return 'تحديث واحد متبقٍ';
+    if (n === 2) return 'تحديثان متبقيان';
+    if (n >= 3 && n <= 10) return `${n} تحديثات متبقية`;
+    return `${n} تحديثاً متبقياً`;
+}
 
 const FILTER_TABS = [
     { key: 'all', label: 'الكل', icon: Filter },
@@ -172,38 +180,38 @@ export default function UpdatesClient() {
 
                 {/* Search */}
                 <div className="relative mb-5">
-                    <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
                         placeholder="ابحث في التحديثات..."
                         value={searchQuery}
                         onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(20); }}
-                        className="w-full pr-10 pl-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder:text-slate-400"
+                        className="w-full ps-10 pe-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder:text-slate-400"
                     />
                 </div>
 
-                {/* Filter Tabs */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-4 mb-6 -mx-1 px-1">
+                {/* Filter Tabs — wrapping pills, no horizontal scroll */}
+                <div className="flex flex-wrap gap-2 mb-6">
                     {FILTER_TABS.map(tab => {
                         const count = filterCounts[tab.key] || 0;
                         const Icon = tab.icon;
                         return (
                             <button
                                 key={tab.key}
+                                type="button"
                                 onClick={() => { setActiveFilter(tab.key); setVisibleCount(20); }}
-                                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                aria-pressed={activeFilter === tab.key}
+                                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-sm font-bold transition-all ${
                                     activeFilter === tab.key
-                                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
-                                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-emerald-400'
+                                        ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-emerald-300 dark:hover:border-emerald-700'
                                 }`}
                             >
                                 <Icon size={14} />
                                 {tab.label}
                                 {count > 0 && (
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                                        activeFilter === tab.key
-                                            ? 'bg-white/20 text-white'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                    <span className={`text-[10px] font-bold ${
+                                        activeFilter === tab.key ? 'text-emerald-100' : 'text-slate-400'
                                     }`}>
                                         {count}
                                     </span>
@@ -222,7 +230,7 @@ export default function UpdatesClient() {
                 ) : filteredItems.length ? (
                     <div className="relative">
                         {/* Timeline line */}
-                        <div className="absolute right-[19px] top-0 bottom-0 w-px bg-gradient-to-b from-emerald-300 via-slate-200 to-transparent dark:from-emerald-700 dark:via-slate-800" />
+                        <div className="absolute start-[19px] top-0 bottom-0 w-px bg-gradient-to-b from-emerald-300 via-slate-200 to-transparent dark:from-emerald-700 dark:via-slate-800" />
 
                         {groups.map(group => (
                             <div key={group.label} className="mb-10 last:mb-0">
@@ -242,9 +250,9 @@ export default function UpdatesClient() {
                                 </div>
 
                                 {/* Items */}
-                                <div className="space-y-3 pr-5">
-                                    {group.items.map((item: any, index: number) => (
-                                        <TimelineItem key={`${item.source}-${item.id}`} item={item} index={index} />
+                                <div className="space-y-3 ps-5">
+                                    {group.items.map((item: any) => (
+                                        <TimelineItem key={`${item.source}-${item.id}`} item={item} />
                                     ))}
                                 </div>
                             </div>
@@ -258,7 +266,7 @@ export default function UpdatesClient() {
                                     className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-400 hover:text-emerald-600 transition-all shadow-sm"
                                 >
                                     <ChevronDown size={16} />
-                                    عرض المزيد ({filteredItems.length - visibleCount} تحديث متبقي)
+                                    عرض المزيد ({remainingUpdatesLabel(filteredItems.length - visibleCount)})
                                 </button>
                             </div>
                         )}
@@ -290,37 +298,12 @@ export default function UpdatesClient() {
     );
 }
 
-// Timeline item with fade-in
-function TimelineItem({ item, index }: { item: any; index: number }) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.unobserve(el);
-                }
-            },
-            { threshold: 0.1, rootMargin: '0px 0px -30px 0px' }
-        );
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, []);
-
+// Timeline item — always visible (no JS gate); transform-only CSS entrance
+function TimelineItem({ item }: { item: any }) {
     return (
-        <div
-            ref={ref}
-            className={`relative transition-all duration-500 ease-out ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
-            }`}
-            style={{ transitionDelay: `${Math.min(index * 60, 300)}ms` }}
-        >
+        <div className="relative animate-hero-entrance">
             {/* Timeline dot */}
-            <div className={`absolute -right-[15px] top-6 w-3 h-3 rounded-full border-2 border-white dark:border-slate-950 z-10 ${
+            <div className={`absolute -start-[15px] top-6 w-3 h-3 rounded-full border-2 border-white dark:border-slate-950 z-10 ${
                 isNewContent(item.sortDate || item.date)
                     ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50'
                     : 'bg-slate-300 dark:bg-slate-700'
@@ -352,12 +335,12 @@ function AutoEventCard({ item }: { item: any }) {
         >
             <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 flex-shrink-0 rounded-xl ${cfg.bgLight} ${cfg.bgDark} flex items-center justify-center`}>
-                    <Icon size={22} className={`text-${cfg.color}-600`} />
+                    <Icon size={22} className={cfg.textColor} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${cfg.bgLight} ${cfg.bgDark} text-${cfg.color}-700 dark:text-${cfg.color}-300`}>
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${cfg.bgLight} ${cfg.bgDark} ${cfg.badgeText}`}>
                             {cfg.type}
                         </span>
                         {isNew && (
@@ -365,7 +348,7 @@ function AutoEventCard({ item }: { item: any }) {
                                 جديد
                             </span>
                         )}
-                        <time dateTime={item.date} className="text-[11px] text-slate-400 flex items-center gap-1 mr-auto">
+                        <time dateTime={item.date} className="text-[11px] text-slate-400 flex items-center gap-1 ms-auto">
                             <Clock size={11} />
                             {formatDate(item.date)}
                         </time>
@@ -410,7 +393,7 @@ function ManualUpdateCard({ u }: { u: any }) {
         >
             {/* Urgent accent */}
             {isUrgent && (
-                <div className="absolute top-0 right-0 w-1 h-full bg-red-500 rounded-r-full" />
+                <div className="absolute top-0 start-0 w-1 h-full bg-red-500 rounded-s-full" />
             )}
 
             <div className="flex items-start gap-4">
@@ -446,7 +429,7 @@ function ManualUpdateCard({ u }: { u: any }) {
                                 ? 'bg-red-500 text-white'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}>
-                            {isUrgent ? '⚠️ هام' : u.type === 'news' ? 'خبر' : u.type}
+                            {isUrgent ? 'هام' : u.type === 'news' ? 'خبر' : u.type}
                         </span>
 
                         {isNew && !isUrgent && (
@@ -455,7 +438,7 @@ function ManualUpdateCard({ u }: { u: any }) {
                             </span>
                         )}
 
-                        <time dateTime={u.date} className="text-[11px] text-slate-400 flex items-center gap-1 mr-auto">
+                        <time dateTime={u.date} className="text-[11px] text-slate-400 flex items-center gap-1 ms-auto">
                             <Clock size={11} />
                             {formatDate(u.date)}
                         </time>

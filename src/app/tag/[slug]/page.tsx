@@ -23,7 +23,8 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { TAG_LABELS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
-import { ArrowLeft, Calendar, Tag as TagIcon } from 'lucide-react';
+import PageHero from '@/components/PageHero';
+import { Calendar, Tag as TagIcon } from 'lucide-react';
 
 export const revalidate = 600; // 10 min ISR
 
@@ -34,6 +35,17 @@ function decodeSlug(raw: string): string {
 
 function labelFor(tag: string): string {
     return TAG_LABELS[tag] || tag;
+}
+
+/**
+ * Count-aware Arabic counted-noun for "مقال" (Latin digits):
+ * 1 → مقال واحد، 2 → مقالان، 3-10 → N مقالات، 11+ → N مقالاً.
+ */
+function articleCountLabel(n: number): string {
+    if (n === 1) return 'مقال واحد';
+    if (n === 2) return 'مقالان';
+    if (n <= 10) return `${n} مقالات`;
+    return `${n} مقالاً`;
 }
 
 async function fetchArticlesByTag(tag: string) {
@@ -65,7 +77,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     const url = `${SITE_CONFIG.siteUrl}/tag/${encodeURIComponent(tag)}`;
     const title = `${label} — كل المقالات | ${SITE_CONFIG.name}`;
-    const description = `كل المقالات والأدلة عن "${label}" — ${articles.length} مقالاً محدّثاً للسوريين والعرب في تركيا.`;
+    const description = `كل المقالات والأدلة عن "${label}" — ${articleCountLabel(articles.length)} بمعلومات محدّثة للسوريين والعرب في تركيا.`;
 
     return {
         title,
@@ -120,30 +132,14 @@ export default async function TagPage(props: PageProps) {
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
 
             {/* Hero */}
-            <header className="bg-gradient-to-b from-emerald-900 via-slate-900 to-slate-950 text-white">
-                <div className="container mx-auto max-w-5xl px-4 py-10 sm:py-14">
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white transition mb-6"
-                    >
-                        <ArrowLeft size={16} />
-                        العودة للرئيسية
-                    </Link>
-                    <div className="flex flex-col gap-3">
-                        <div className="inline-flex items-center gap-2 self-start bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded-full px-3 py-1 text-xs font-bold">
-                            <TagIcon size={12} />
-                            وسم
-                        </div>
-                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">{label}</h1>
-                        <p className="text-slate-300 text-sm sm:text-base">
-                            {articles.length} مقالاً يتعلّق بـ "{label}" — كلها محدّثة ومن مصادر رسمية.
-                        </p>
-                    </div>
-                </div>
-            </header>
+            <PageHero
+                title={label}
+                description={`${articleCountLabel(articles.length)} عن "${label}" — محتوى محدّث ومن مصادر رسمية.`}
+                icon={<TagIcon className="w-10 h-10 md:w-12 md:h-12" aria-hidden="true" />}
+            />
 
             {/* Article grid */}
-            <section className="container mx-auto max-w-5xl px-4 -mt-6 sm:-mt-8 relative z-10">
+            <section className="container mx-auto max-w-5xl px-4 py-8 sm:py-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                     {articles.map((a) => (
                         <ArticleCard key={a.id} article={a} />
@@ -172,7 +168,7 @@ function ArticleCard({ article }: { article: ArticleLite }) {
     return (
         <Link
             href={href}
-            className="group block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-lg hover:border-emerald-500/40 transition-all"
+            className="group block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
             {hasHttpImage ? (
                 <div className="relative w-full aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
@@ -185,7 +181,7 @@ function ArticleCard({ article }: { article: ArticleLite }) {
                     />
                 </div>
             ) : (
-                <div className="w-full aspect-video bg-gradient-to-br from-emerald-50 to-slate-100 dark:from-emerald-900/20 dark:to-slate-800 flex items-center justify-center">
+                <div className="w-full aspect-video bg-emerald-50 dark:bg-slate-800 flex items-center justify-center">
                     <TagIcon size={32} className="text-emerald-500/40" />
                 </div>
             )}

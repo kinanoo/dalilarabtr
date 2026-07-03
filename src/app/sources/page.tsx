@@ -7,6 +7,14 @@ import { useState } from 'react';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 
+// عدّاد عربي سليم النحو لكلمة "رابط" (نفس نمط codeCount في src/lib/codesI18n.ts)
+function linkCount(n: number): string {
+  if (n === 1) return 'رابط واحد';
+  if (n === 2) return 'رابطان';
+  if (n <= 10) return `${n} روابط`;
+  return `${n} رابطاً`;
+}
+
 function SourceCard({ source }: { source: { id: string; name: string; url: string; desc: string } }) {
   const [copied, setCopied] = useState(false);
 
@@ -36,16 +44,17 @@ function SourceCard({ source }: { source: { id: string; name: string; url: strin
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full"
+      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col h-full"
     >
-      <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:h-1.5 transition-all" />
+      {/* Accent side-rail — logical start edge (right in RTL) */}
+      <span aria-hidden="true" className="absolute top-0 start-0 h-full w-1 bg-emerald-500/80" />
 
       <div className="p-4 sm:p-5 flex-grow flex flex-col">
         <div className="flex items-start gap-3 mb-3">
-          <div className="p-2.5 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
+          <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl flex-shrink-0">
             <ShieldCheck size={20} />
           </div>
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors flex-1 min-w-0">
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors flex-1 min-w-0">
             {source.name}
           </h3>
         </div>
@@ -58,8 +67,8 @@ function SourceCard({ source }: { source: { id: string; name: string; url: strin
       <div className="px-4 sm:px-5 pb-4 sm:pb-5">
         <div className="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl px-3 py-2.5 border border-slate-100 dark:border-slate-700/50">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Globe size={14} className="text-blue-500 flex-shrink-0" />
-            <span className="text-xs font-mono text-blue-600 dark:text-blue-400 truncate">
+            <Globe size={14} className="text-emerald-500 flex-shrink-0" />
+            <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 truncate">
               {shortUrl}
             </span>
           </div>
@@ -75,7 +84,7 @@ function SourceCard({ source }: { source: { id: string; name: string; url: strin
                 <Copy size={14} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
               )}
             </button>
-            <ExternalLink size={14} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+            <ExternalLink size={14} className="text-slate-400 group-hover:text-emerald-500 transition-colors" />
           </div>
         </div>
       </div>
@@ -113,7 +122,7 @@ export default function SourcesPage() {
             {/* إحصائية */}
             <div className="flex items-center justify-center gap-2 mb-8 text-sm text-slate-500 dark:text-slate-400">
               <ShieldCheck size={16} className="text-green-500" />
-              <span>{sources.length} رابط حكومي موثوق</span>
+              <span>{linkCount(sources.length)} من المصادر الحكومية الموثوقة</span>
             </div>
 
             {/* شبكة البطاقات */}
