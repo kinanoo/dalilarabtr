@@ -130,8 +130,9 @@ function LinkCard({ source, index }: { source: ImportantLink; index: number }) {
           <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={handleCopy}
-              className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
               title="نسخ الرابط"
+              aria-label="نسخ الرابط"
             >
               {copied ? (
                 <Check size={14} className="text-green-500" />
