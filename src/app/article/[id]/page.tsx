@@ -263,16 +263,13 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const article = await fetchArticleData(params.id);
 
   if (!article) {
-    // SEO: a missing/deleted/mistyped article URL must NOT be indexable.
-    // Without robots:noindex Google was being invited to index a 404 body
-    // across the site's largest URL space (300+ articles) — a top cause of
-    // "Crawled – currently not indexed". The page itself calls notFound()
-    // (renders the noindex not-found.tsx).
-    return {
-      title: '404 - المقالة غير موجودة',
-      description: 'عذراً، هذه المقالة لم تعد موجودة',
-      robots: { index: false, follow: false },
-    };
+    // SEO — REAL 404, not a soft one: the /article segment has a loading.tsx,
+    // so once the page starts streaming the 200 status is already committed
+    // and the page-level notFound() renders the 404 UI *with HTTP 200*
+    // (soft-404 → GSC "Crawled – currently not indexed" across the site's
+    // largest URL space). generateMetadata resolves BEFORE the first flush,
+    // so throwing notFound() here returns a genuine 404 status.
+    notFound();
   }
 
   // Prefer English slug for canonical URL (SEO best practice)

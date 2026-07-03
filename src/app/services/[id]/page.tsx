@@ -43,7 +43,8 @@ export async function generateMetadata(
         .eq('status', 'approved')
         .single();
 
-    if (!data) return { title: 'الخدمة غير موجودة', robots: { index: false, follow: false } };
+    // Pre-stream notFound() → real HTTP 404 (see codes/[code] note).
+    if (!data) notFound();
     const canonicalId = data.slug || data.id;
 
     // No manual brand suffix — the root layout's title template appends

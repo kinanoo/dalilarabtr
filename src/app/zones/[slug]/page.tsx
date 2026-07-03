@@ -104,7 +104,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
     }
 
-    return { title: 'المنطقة غير موجودة', robots: { index: false, follow: false } };
+    // Unknown zone slugs are NOT 404s by design: the page renders a rich
+    // "did you mean?" suggestions view (most misses are typos/Turkish-letter
+    // variants of real neighbourhoods). Keep it reachable but OUT of the
+    // index — Google files noindex pages under "Excluded", not "Soft 404".
+    return { title: 'المنطقة غير موجودة', robots: { index: false, follow: true } };
 }
 
 // Helper — pretty status pill on the SINGLE zone view.

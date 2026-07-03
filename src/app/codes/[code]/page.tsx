@@ -34,7 +34,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
         .eq('code', decodedCode)
         .single();
 
-    if (!item) return { title: 'الكود غير موجود', robots: { index: false, follow: false } };
+    // Throw in generateMetadata (pre-stream) → real HTTP 404. Returning
+    // noindex metadata here let the loading.tsx stream commit a 200 first
+    // (soft-404) — a top "Crawled – not indexed" cause in GSC.
+    if (!item) notFound();
 
     const title = pick(item, 'title', lang);
     const desc = pick(item, 'description', lang);

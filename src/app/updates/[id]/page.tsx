@@ -36,7 +36,8 @@ export async function generateMetadata(
         .eq('active', true)
         .single();
 
-    if (!data) return { title: 'التحديث غير موجود', robots: { index: false, follow: false } };
+    // Pre-stream notFound() → real HTTP 404 (see codes/[code] note).
+    if (!data) notFound();
 
     return {
         title: data.title,
