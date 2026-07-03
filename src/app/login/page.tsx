@@ -73,28 +73,30 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 font-cairo py-12" dir="rtl">
-            <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 rounded-2xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-800">
 
                 {/* Advantages Section - Left Side on Desktop */}
-                <div className="bg-slate-900 p-8 md:p-12 text-white relative flex flex-col justify-center order-2 md:order-1">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-blue-600/20 opacity-50" />
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-emerald-950 p-8 md:p-12 text-slate-900 dark:text-white relative flex flex-col justify-center order-2 md:order-1">
+                    <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <div className="absolute top-0 end-16 w-56 h-56 bg-emerald-300/25 dark:bg-emerald-500/10 rounded-full blur-3xl" />
+                        <div className="absolute bottom-0 start-16 w-56 h-56 bg-sky-300/25 dark:bg-cyan-500/10 rounded-full blur-3xl" />
+                    </div>
 
                     <div className="relative z-10">
-                        <h2 className="text-3xl font-black mb-6 leading-tight">مزايا العودة للمنصة</h2>
+                        <h2 className="text-3xl font-black mb-6 leading-tight text-slate-900 dark:text-white">مزايا العودة للمنصة</h2>
                         <ul className="space-y-6">
                             {[
-                                { icon: <ShieldCheck size={24} className="text-emerald-400" />, title: 'أمان وخصوصية تامة', desc: 'جميع بياناتك واستشاراتك محفوظة بأعلى معايير التشفير.' },
-                                { icon: <AlertCircle size={24} className="text-amber-400" />, title: 'إشعارات حصرية', desc: 'تلقَ تنبيهات بأحدث القوانين، الأخبار، والتغييرات التي تهمك.' },
-                                { icon: <LogIn size={24} className="text-blue-400" />, title: 'تواصل سريع ومباشر', desc: 'ردود أسرع على استشاراتك وسهولة في التواصل مع الخبراء.' },
+                                { icon: <ShieldCheck size={24} className="text-emerald-600 dark:text-emerald-400" />, title: 'أمان وخصوصية تامة', desc: 'جميع بياناتك واستشاراتك محفوظة بأعلى معايير التشفير.' },
+                                { icon: <AlertCircle size={24} className="text-amber-600 dark:text-amber-400" />, title: 'إشعارات حصرية', desc: 'تلقَ تنبيهات بأحدث القوانين، الأخبار، والتغييرات التي تهمك.' },
+                                { icon: <LogIn size={24} className="text-blue-600 dark:text-blue-400" />, title: 'تواصل سريع ومباشر', desc: 'ردود أسرع على استشاراتك وسهولة في التواصل مع الخبراء.' },
                             ].map((item, idx) => (
                                 <li key={idx} className="flex items-start gap-4">
-                                    <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-sm shrink-0">
+                                    <div className="bg-white/80 dark:bg-white/10 p-3 rounded-2xl border border-slate-200 dark:border-transparent shadow-sm dark:shadow-none shrink-0">
                                         {item.icon}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                                        <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                        <h3 className="font-bold text-lg mb-1 text-slate-900 dark:text-white">{item.title}</h3>
+                                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
                                     </div>
                                 </li>
                             ))}
@@ -199,7 +201,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-l from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-600 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-emerald-500/40 hover:shadow-2xl hover:shadow-emerald-500/50 active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-md shadow-emerald-600/20 hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="animate-spin" /> : <LogIn size={24} />}
                             {loading ? 'جاري التحقق...' : 'دخول'}

@@ -109,7 +109,7 @@ function RequestForm() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
+    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">نموذج طلب خدمة</h2>
         <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح واتساب لإرسال طلبك مباشرةً.</p>
@@ -131,7 +131,7 @@ function RequestForm() {
                 `}
               placeholder="مثال: محمد أحمد"
             />
-            {errors.name && <AlertCircle size={20} className="absolute left-4 top-4 text-red-500" />}
+            {errors.name && <AlertCircle size={20} className="absolute end-4 top-4 text-red-500" />}
           </div>
           {errors.name && <p className="text-red-500 text-xs mt-1 animate-in slide-in-from-top-1">{errors.name.message}</p>}
         </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useBookmarks } from '@/hooks/useBookmarks';
 // import { ARTICLES } from '@/lib/articles'; // REMOVED
-import { Bookmark, FileText } from 'lucide-react';
+import { Bookmark, FileText, Loader2 } from 'lucide-react';
 import BookmarkButton from '@/components/BookmarkButton';
 import PageHero from '@/components/PageHero';
 import EmptyState from '@/components/EmptyState';
@@ -54,16 +54,18 @@ export default function BookmarksPage() {
             <PageHero
                 title="مفضلاتي"
                 description="المقالات التي قمت بحفظها للعودة إليها لاحقاً"
-                icon={<Bookmark className="w-9 h-9 text-emerald-300" />}
+                icon={<Bookmark className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
             />
 
             <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 pb-20">
                 {!isLoaded || fetching ? (
-                    <div className="text-center py-20 opacity-50">جاري التحميل...</div>
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 size={40} className="animate-spin text-emerald-600" />
+                    </div>
                 ) : savedArticles.length === 0 ? (
                     <EmptyState
                         type="bookmarks"
-                        message="لم تقم بحفظ أي مقالات بعد. اضغط على أيقونة النجمة بجانب أي مقال لحفظه هنا."
+                        message="احفظ أي مقال بأيقونة الحفظ ليظهر هنا"
                         actionLabel="تصفح المقالات"
                         actionHref="/"
                     />
@@ -72,10 +74,10 @@ export default function BookmarksPage() {
                         {savedArticles.map((article) => (
                             <div
                                 key={article.id}
-                                className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-400 hover:-translate-y-1 transition-all duration-300 flex gap-4 items-start"
+                                className="group relative overflow-hidden bg-white dark:bg-slate-900 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all duration-300 flex gap-4 items-start"
                             >
-                                {/* Accent stripe — right edge in RTL */}
-                                <span className="absolute top-0 right-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                                {/* Accent stripe — start edge (right in RTL) */}
+                                <span className="absolute top-0 end-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
 
                                 <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                     <FileText size={24} />
@@ -91,7 +93,7 @@ export default function BookmarksPage() {
                                     </div>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">{article.intro?.replace(/<[^>]*>/g, '')}</p>
                                     <div className="flex items-center gap-3 text-xs">
-                                        <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg font-black uppercase tracking-wider text-[10px]">
+                                        <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg font-black text-[10px]">
                                             {article.category}
                                         </span>
                                         <span className="text-slate-400 tabular-nums" dir="ltr">{article.lastUpdate}</span>

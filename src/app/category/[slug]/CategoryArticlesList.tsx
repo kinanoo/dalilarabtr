@@ -107,7 +107,7 @@ export default function CategoryArticlesList({
       >
         {/* Search Input In Hero */}
         <div className="relative max-w-xl mx-auto mt-6">
-          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 start-3 flex items-center pointer-events-none">
             <Search className="text-slate-500 dark:text-slate-400" size={20} />
           </div>
           <input
@@ -115,7 +115,7 @@ export default function CategoryArticlesList({
             placeholder={`بحث في ${categoryName}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pr-10 pl-4 py-3 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-md border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-accent-400/50 transition-all font-medium"
+            className="w-full ps-10 pe-4 py-3 rounded-xl bg-white/80 dark:bg-white/10 backdrop-blur-md border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-accent-400/50 transition-all font-medium"
           />
         </div>
       </PageHero>
@@ -123,7 +123,7 @@ export default function CategoryArticlesList({
       <div className="max-w-screen-2xl mx-auto px-4 py-16 w-full">
         {/* Active filter pill — premium chip with icon + clear button */}
         {activeTag && (
-          <div className="mb-8 inline-flex items-center gap-3 bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/60 rounded-full pl-2 pr-4 py-1.5 shadow-sm">
+          <div className="mb-8 inline-flex items-center gap-3 bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/60 rounded-full ps-2 pe-4 py-1.5 shadow-sm">
             <span className="text-emerald-700 dark:text-emerald-200 font-black text-sm tracking-wide">
               {TAG_LABELS[activeTag] || activeTag}
             </span>

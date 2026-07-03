@@ -46,7 +46,7 @@ export default async function AboutPage() {
             <PageHero
                 title="من نحن؟"
                 description="قصتنا، رسالتنا، ولماذا نسعى أن نكون دليلك القانوني الموثوق في تركيا"
-                icon={<Users className="w-12 h-12 text-emerald-400" />}
+                icon={<Users className="w-12 h-12" />}
             />
 
             {/* Mission Section */}
@@ -82,8 +82,8 @@ export default async function AboutPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300">
-                            <span className="absolute top-0 right-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-1 transition-all duration-300">
+                            <span className="absolute top-0 end-0 w-1 h-full bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
                             <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                 <Scale size={32} />
                             </div>
@@ -93,8 +93,8 @@ export default async function AboutPage() {
                             </p>
                         </div>
 
-                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-300 hover:-translate-y-1 transition-all duration-300">
-                            <span className="absolute top-0 right-0 w-1 h-full bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-1 transition-all duration-300">
+                            <span className="absolute top-0 end-0 w-1 h-full bg-blue-500 opacity-70 group-hover:opacity-100 transition-opacity" />
                             <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                 <BadgeCheck size={32} />
                             </div>
@@ -104,8 +104,8 @@ export default async function AboutPage() {
                             </p>
                         </div>
 
-                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-violet-50/50 dark:from-slate-900 dark:to-violet-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-violet-500/10 hover:border-violet-300 hover:-translate-y-1 transition-all duration-300">
-                            <span className="absolute top-0 right-0 w-1 h-full bg-violet-500 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-gradient-to-br from-white to-violet-50/50 dark:from-slate-900 dark:to-violet-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-7 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-1 transition-all duration-300">
+                            <span className="absolute top-0 end-0 w-1 h-full bg-violet-500 opacity-70 group-hover:opacity-100 transition-opacity" />
                             <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">
                                 <ShieldCheck size={32} />
                             </div>
@@ -128,8 +128,8 @@ export default async function AboutPage() {
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:border-emerald-300 transition-all">
-                            <span className="absolute top-0 right-0 w-0.5 h-full bg-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
+                            <span className="absolute top-0 end-0 w-0.5 h-full bg-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                             <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <BookOpen size={22} />
                             </div>
@@ -137,8 +137,8 @@ export default async function AboutPage() {
                             <div className="text-xs sm:text-sm text-slate-500 font-bold">مقال ودليل</div>
                         </div>
 
-                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1 hover:border-blue-300 transition-all">
-                            <span className="absolute top-0 right-0 w-0.5 h-full bg-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
+                            <span className="absolute top-0 end-0 w-0.5 h-full bg-blue-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                             <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Shield size={22} />
                             </div>
@@ -146,8 +146,8 @@ export default async function AboutPage() {
                             <div className="text-xs sm:text-sm text-slate-500 font-bold">كود أمني</div>
                         </div>
 
-                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-violet-500/10 hover:-translate-y-1 hover:border-violet-300 transition-all">
-                            <span className="absolute top-0 right-0 w-0.5 h-full bg-violet-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
+                            <span className="absolute top-0 end-0 w-0.5 h-full bg-violet-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                             <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Clock size={22} />
                             </div>
@@ -155,8 +155,8 @@ export default async function AboutPage() {
                             <div className="text-xs sm:text-sm text-slate-500 font-bold">دليل المواقف</div>
                         </div>
 
-                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-rose-500/10 hover:-translate-y-1 hover:border-rose-300 transition-all">
-                            <span className="absolute top-0 right-0 w-0.5 h-full bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 text-center hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
+                            <span className="absolute top-0 end-0 w-0.5 h-full bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                             <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Heart size={22} />
                             </div>
