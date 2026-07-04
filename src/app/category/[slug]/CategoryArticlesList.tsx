@@ -32,7 +32,12 @@ export default function CategoryArticlesList({
   initialArticles: ArticlePreview[];
   activeTag?: string;
 }) {
-  const { articles, loading } = useAdminArticles();
+  // The server already rendered this category's articles (initialArticles).
+  // Skip the client fetch of the WHOLE articles table (full HTML bodies ×
+  // ~310 rows) — the memo below already falls back to initialArticles when
+  // the hook is empty, so nothing changes for the user; the browser just
+  // stops re-downloading everything from Supabase (egress saver).
+  const { articles, loading } = useAdminArticles(initialArticles.length > 0);
   const [searchQuery, setSearchQuery] = useState('');
 
   // فلترة المقالات حسب التصنيف والبحث والتاغ

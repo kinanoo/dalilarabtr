@@ -140,9 +140,16 @@ export default function DirectoryContent({ initialArticles = [] }: { initialArti
 
 
   // 🆕 استخدام بيانات لوحة التحكم
-  const { articles: adminArticles, loading: loadingArticles } = useAdminArticles();
-  const { services: adminServices, loading: loadingServices } = useAdminServices();
-  const { scenarios: adminScenarios, loading: loadingScenarios } = useAdminScenarios();
+  // The server already merged articles + scenarios into initialArticles. Skip
+  // all three client table fetches (articles is the whole table with full HTML
+  // bodies) — the memo below falls back to initialArticles when the hooks are
+  // empty, so nothing changes for the user; the browser stops re-downloading
+  // these tables from Supabase (egress saver). Services is only read for a
+  // loading flag here, never rendered, so skipping it is harmless.
+  const hasServer = initialArticles.length > 0;
+  const { articles: adminArticles, loading: loadingArticles } = useAdminArticles(hasServer);
+  const { services: adminServices, loading: loadingServices } = useAdminServices(hasServer);
+  const { scenarios: adminScenarios, loading: loadingScenarios } = useAdminScenarios(hasServer);
 
   // بيانات المناطق المحظورة
   const [zones, setZones] = useState<any[]>([]);

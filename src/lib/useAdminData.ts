@@ -62,11 +62,13 @@ export function useAdminCodes(skip = false) {
 
 // import { STATIC_ARTICLES } from '@/lib/staticArticles'; // REMOVED
 
-export function useAdminArticles() {
+export function useAdminArticles(skip = false) {
+  // `skip` = the caller already has server-rendered (ISR) articles, so the
+  // browser must NOT re-download the whole articles table (full HTML bodies).
   // Static Fallback + DB — only show approved/active articles on public pages
   const { data: articles, loading } = useResource<AdminArticle>(
     'articles',
-    'articles',
+    skip ? null : 'articles',
     [], // No static fallback
     (statics, remotes) => {
       // Filter out pending/inactive articles for public display
@@ -105,7 +107,7 @@ export function useAdminArticles() {
 // 🪝 Hooks - Services
 // ============================================
 
-export function useAdminServices() {
+export function useAdminServices(skip = false) {
   const staticServices: AdminService[] = useMemo(() => SERVICES_LIST.map(s => ({
     id: s.id,
     title: s.title,
@@ -138,7 +140,7 @@ export function useAdminServices() {
 
   const { data: services, loading } = useResource<AdminService>(
     'services',
-    'service_providers', // Table name
+    skip ? null : 'service_providers', // null = skip fetch (caller has server data)
     staticServices,
     serviceMerger
   );
@@ -446,10 +448,11 @@ export function useAdminArticle(slug: string) {
 
 import { PlanResult } from '@/lib/types';
 
-export function useAdminScenarios() {
+export function useAdminScenarios(skip = false) {
+  // `skip` = caller already has server data → don't re-fetch the table client-side.
   const { data: scenarios, loading } = useResource<PlanResult>(
     'scenarios',
-    'consultant_scenarios',
+    skip ? null : 'consultant_scenarios',
     [],
     (statics, remotes) => remotes // No merger needed for now, DB is source of truth
   );
