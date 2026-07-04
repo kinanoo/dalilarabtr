@@ -10,6 +10,42 @@ import dynamic from 'next/dynamic';
 
 const RichTextEditor = dynamic(() => import('../ui/RichTextEditor'), { ssr: false });
 
+// Basic Arabic → Latin transliteration so the editor can auto-suggest a
+// short, clean, ASCII slug from an Arabic title (the raw Arabic title makes
+// the URL a huge %D8%… percent-encoded string when shared). It's a STARTING
+// point the admin edits — not a linguistics engine. Latin words in the title
+// (e.g. "SGK", "e-Devlet") pass through untouched.
+const AR_TO_LATIN: Record<string, string> = {
+    'ا': 'a', 'أ': 'a', 'إ': 'a', 'آ': 'a', 'ٱ': 'a',
+    'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh',
+    'د': 'd', 'ذ': 'dh', 'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh',
+    'ص': 's', 'ض': 'd', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh',
+    'ف': 'f', 'ق': 'q', 'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n',
+    'ه': 'h', 'و': 'w', 'ي': 'y', 'ى': 'a', 'ة': 'a', 'ء': '',
+    'ئ': 'y', 'ؤ': 'w',
+};
+
+function sanitizeSlug(raw: string): string {
+    return raw
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-') // anything not url-safe → hyphen
+        .replace(/-+/g, '-')          // collapse repeats
+        .replace(/^-+|-+$/g, '');      // trim leading/trailing hyphens
+}
+
+function suggestSlug(title: string): string {
+    if (!title) return '';
+    // Strip Arabic diacritics (harakat) first.
+    const noHarakat = title.replace(/[ً-ْٰ]/g, '');
+    let out = '';
+    for (const ch of noHarakat) {
+        out += AR_TO_LATIN[ch] !== undefined ? AR_TO_LATIN[ch] : ch;
+    }
+    // Keep the first ~6 words so the slug stays short + readable.
+    const words = sanitizeSlug(out).split('-').filter(Boolean).slice(0, 6);
+    return words.join('-');
+}
+
 // Extended form shape — adds the SEO + workflow fields that live on the
 // articles row but weren't surfaced in the older editor. Kept as a
 // permissive intersection so ArticleEditor can still accept the bare
@@ -275,6 +311,37 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
 
                 {seoOpen && (
                     <div className="mt-4 grid grid-cols-1 gap-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+                        <Field
+                            label="الرابط المختصر (Slug) — إنجليزي فقط"
+                            icon={LinkIcon}
+                            note="يصنع رابطاً قصيراً نظيفاً عند المشاركة بدل الرابط العربي الطويل"
+                        >
+                            <div className="flex gap-2">
+                                <input
+                                    className={`${ltrInputStyles} flex-1`}
+                                    value={form.slug || ''}
+                                    onChange={e => setForm({ ...form, slug: sanitizeSlug(e.target.value) })}
+                                    placeholder="pasaport-gaziantep"
+                                    dir="ltr"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setForm({ ...form, slug: suggestSlug(form.title || '') })}
+                                    disabled={!form.title}
+                                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    title="اقترح رابطاً لاتينياً من العنوان"
+                                >
+                                    <Sparkles size={14} /> اقترح
+                                </button>
+                            </div>
+                            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 break-all" dir="ltr">
+                                {SITE_CONFIG.siteUrl}/article/{form.slug || '…'}
+                            </p>
+                            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+                                اتركه فارغاً = رابط عربي تلقائي. لو غيّرته على مقال قديم، رابطه القديم يبقى يعمل ويُحوّل للجديد تلقائياً (بلا كسر أو خسارة SEO).
+                            </p>
+                        </Field>
+
                         <Field
                             label="عنوان SEO (يظهر في نتائج Google)"
                             icon={Search}

@@ -6,7 +6,7 @@
 
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleHydratedView from '@/components/ArticleHydratedView';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
@@ -343,6 +343,17 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     // body. This stops Google from crawling/indexing endless missing-article
     // URLs and poisoning trust in the /article pattern.
     notFound();
+  }
+
+  // Canonicalise the URL: if this article has a short (English) slug and the
+  // visitor arrived via its long Arabic id — or any other non-current slug —
+  // 308-redirect to the canonical short URL. The id-based lookup in
+  // fetchArticleData means the OLD Arabic link keeps working forever; it just
+  // forwards to the clean short link now, so shortening an existing article's
+  // slug never 404s a shared/indexed URL and consolidates its SEO signals.
+  const decodedParam = decodeURIComponent(params.id);
+  if (article.slug && decodedParam !== article.slug) {
+    permanentRedirect(`/article/${article.slug}`);
   }
 
   const canonicalSlug = article.slug || params.id;
