@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Sparkles } from 'lucide-react';
 import Image from 'next/image';
@@ -14,23 +14,35 @@ import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import logger from '@/lib/logger';
 
-export default function ServicesClient() {
+export default function ServicesClient({ initialServices = [] }: { initialServices?: any[] }) {
+  // The server (page.tsx) fetches the FULL approved directory once, ISR-cached,
+  // and passes it here as `initialServices`. When present we never touch
+  // Supabase from the browser: filtering, search, city + sort all run in memory
+  // over this seed (the list is small). This kills the per-visit + per-filter
+  // egress that used to re-pull the whole service_providers table from every
+  // client, and puts every provider card in the server HTML (crawlable).
+  const hasSeed = initialServices.length > 0;
+
+  // Normalize the seed's city spellings once (Istanbul/اسطنبول/إسطنبول → one).
+  const seed = useMemo(
+    () => initialServices.map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city })),
+    [initialServices]
+  );
+
   // --- State ---
-  const [services, setServices] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // `rawData` = the full approved list (unfiltered). Seeded from the server;
+  // only fetched client-side as a FALLBACK when the server seed is empty
+  // (e.g. the build-time fetch failed) so the page still works standalone.
+  const [rawData, setRawData] = useState<any[]>(seed);
+  const [loading, setLoading] = useState(!hasSeed);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeCity, setActiveCity] = useState('all');
-  const [availableCities, setAvailableCities] = useState<string[]>([]);
-  const [cityCounts, setCityCounts] = useState<Record<string, number>>({});
-  const [totalCount, setTotalCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [extraCategories, setExtraCategories] = useState<string[]>([]);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [page, setPage] = useState(1);
-  const [recent, setRecent] = useState<any[]>([]);
   const PER_PAGE = 15;
 
   // --- Category Mapping for Legacy Support ---
@@ -49,79 +61,62 @@ export default function ServicesClient() {
     'خدمات عامة': ['خدمات عامة', 'General', 'general', 'other'],
   };
 
-  // --- Fetch Data ---
-  const fetchServices = useCallback(async () => {
+  // --- Fallback fetch (only when the server seed is empty) ---
+  // Runs at most once. With a healthy seed this never touches the network.
+  useEffect(() => {
+    if (hasSeed || !supabase) { setLoading(false); return; }
+    let alive = true;
     setLoading(true);
-    setErrorMsg(null);
-    if (!supabase) return;
-
-    let query = supabase
+    supabase
       .from('service_providers')
       .select('id, name, profession, category, description, city, phone, image, is_verified, rating, review_count, status, slug, created_at')
       .eq('status', 'approved')
       .order('is_verified', { ascending: false })
       .order('rating', { ascending: false })
-      .limit(500); // safety cap — list is paginated client-side; move to server pagination beyond this
+      .limit(500)
+      .then(({ data, error }) => {
+        if (!alive) return;
+        if (error) { logger.error('Supabase Error:', error); setErrorMsg(error.message + ' (' + error.code + ')'); }
+        setRawData(((data as any[]) || []).map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city })));
+        setLoading(false);
+      });
+    return () => { alive = false; };
+  }, [hasSeed]);
 
+  // Cities + per-city counts + extra (dynamic) categories — derived from the
+  // FULL unfiltered snapshot so counts never undercount.
+  const { availableCities, cityCounts, totalCount, extraCategories } = useMemo(() => {
+    const cities = Array.from(new Set(rawData.map((d: any) => d.city).filter(Boolean))) as string[];
+    const counts: Record<string, number> = {};
+    rawData.forEach((d: any) => { if (d.city) counts[d.city] = (counts[d.city] || 0) + 1; });
+    const knownValues = new Set(Object.values(CATEGORY_MAPPING).flat().map(v => v.toLowerCase()));
+    const dbCategories = Array.from(new Set(rawData.map((d: any) => d.category).filter(Boolean))) as string[];
+    const newCats = dbCategories.filter(c => !knownValues.has(c.toLowerCase()));
+    return { availableCities: cities.sort(), cityCounts: counts, totalCount: rawData.length, extraCategories: newCats.sort() };
+  }, [rawData]);
+
+  // The displayed list — category + search + city applied client-side over the
+  // full seed (mirrors the old server query: category = exact `.in()` variants,
+  // search = case-insensitive substring across the same 4 fields, city = exact).
+  const services = useMemo(() => {
+    let list = rawData;
     if (activeCategory !== 'all') {
-      // Use mapped variations for known categories, or exact match for dynamic ones
-      const validCategories = CATEGORY_MAPPING[activeCategory] || [activeCategory];
-      query = query.in('category', validCategories);
+      const valid = new Set(CATEGORY_MAPPING[activeCategory] || [activeCategory]);
+      list = list.filter((d: any) => d.category && valid.has(d.category));
     }
-
-    if (searchQuery) {
-      // Strip PostgREST-special chars ( , ( ) ) from the term so a comma can't
-      // break out of the .or() filter syntax (injection-safe smart search).
-      const term = `%${searchQuery.replace(/[,()]/g, ' ').trim()}%`;
-      query = query.or(`name.ilike.${term},description.ilike.${term},profession.ilike.${term},category.ilike.${term}`);
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter((d: any) =>
+        [d.name, d.description, d.profession, d.category].some(
+          (f) => f && String(f).toLowerCase().includes(q)
+        )
+      );
     }
-
-    const { data, error } = await query;
-
-    if (error) {
-      logger.error('Supabase Error:', error);
-      setErrorMsg(error.message + ' (' + error.code + ')');
+    if (activeCity !== 'all') {
+      list = list.filter((d: any) => d.city === activeCity);
     }
-
-    if (data) {
-      // Collapse every city spelling (Istanbul / اسطنبول / إسطنبول / …) to one
-      // canonical Arabic name so the dropdown + filter have no duplicates.
-      const normalizedData = data.map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city }));
-
-      // Extract unique cities and extra categories when loading all data
-      if (activeCategory === 'all' && searchQuery === '' && activeCity === 'all') {
-        const cities = Array.from(new Set(normalizedData.map((d: any) => d.city).filter(Boolean))) as string[];
-        setAvailableCities(cities.sort());
-
-        // Per-city provider counts — computed HERE, from the full unfiltered
-        // snapshot. Computing from filtered data would undercount/zero them.
-        const counts: Record<string, number> = {};
-        normalizedData.forEach((d: any) => { if (d.city) counts[d.city] = (counts[d.city] || 0) + 1; });
-        setCityCounts(counts);
-        setTotalCount(normalizedData.length);
-
-        // Find categories in DB that aren't in the hardcoded list
-        const knownValues = new Set(Object.values(CATEGORY_MAPPING).flat().map(v => v.toLowerCase()));
-        const dbCategories = Array.from(new Set(normalizedData.map((d: any) => d.category).filter(Boolean))) as string[];
-        const newCats = dbCategories.filter(c => !knownValues.has(c.toLowerCase()));
-        setExtraCategories(newCats.sort());
-      }
-
-      // Hard-filter by the selected city (the primary filter for our users) —
-      // show ONLY that city, not just reorder it to the front.
-      let finalData = normalizedData;
-      if (activeCity !== 'all') {
-        finalData = normalizedData.filter((d: any) => d.city === activeCity);
-      }
-
-      setServices(finalData);
-    }
-    setLoading(false);
-  }, [activeCategory, searchQuery, activeCity]);
-
-  useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+    return list;
+  }, [rawData, activeCategory, searchQuery, activeCity]);
 
   // /services builds its list client-side, so on a hard refresh the browser's
   // scroll restoration overshoots the (briefly short) page and jumps to the
@@ -134,17 +129,14 @@ export default function ServicesClient() {
     return () => { if (h && 'scrollRestoration' in h) h.scrollRestoration = 'auto'; };
   }, []);
 
-  // Newest providers for the "أضيفوا حديثاً" discovery strip (filter-independent).
-  useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from('service_providers')
-      .select('id, slug, name, profession, city, image, is_verified, created_at')
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false })
-      .limit(10)
-      .then(({ data }) => setRecent((data || []).map((d: any) => ({ ...d, city: canonicalCity(d.city) }))));
-  }, []);
+  // Newest providers for the "أضيفوا حديثاً" discovery strip (filter-independent) —
+  // derived from the same seed, newest first. No extra Supabase round-trip.
+  const recent = useMemo(
+    () => [...rawData]
+      .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, 10),
+    [rawData]
+  );
 
   // --- Filter state helpers ---
   const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery !== '';

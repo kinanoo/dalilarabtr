@@ -27,33 +27,43 @@ interface DirRow {
     slug: string | null;
     name: string;
     profession: string | null;
+    category: string | null;
+    description: string | null;
     city: string | null;
     image: string | null;
     phone: string | null;
+    is_verified: boolean | null;
     rating: number | null;
     review_count: number | null;
+    status: string | null;
+    created_at: string | null;
 }
 
-/** Fetch top providers + total count for the directory JSON-LD (best-effort). */
+/**
+ * Fetch the FULL approved directory once, server-side, cached by ISR
+ * (revalidate=600). It powers both the JSON-LD (top slice) AND seeds
+ * <ServicesClient> so the browser never re-pulls the whole service_providers
+ * table on every visit + filter change (egress saver). The list is small
+ * (~cap 500), so shipping it all in the first HTML is cheap and also makes
+ * every provider card crawlable instead of hidden behind a client spinner.
+ */
 async function getDirectory(): Promise<{ rows: DirRow[]; total: number }> {
     try {
         if (!supabase) return { rows: [], total: 0 };
-        const [{ data }, { count }] = await Promise.all([
-            supabase
-                .from('service_providers')
-                .select('id, slug, name, profession, city, image, phone, rating, review_count')
-                .eq('status', 'approved')
-                .order('is_verified', { ascending: false })
-                .order('rating', { ascending: false })
-                .limit(40),
-            supabase
-                .from('service_providers')
-                .select('id', { count: 'exact', head: true })
-                .eq('status', 'approved'),
-        ]);
-        return { rows: (data as DirRow[]) || [], total: count || (data?.length ?? 0) };
+        const { data, count } = await supabase
+            .from('service_providers')
+            .select(
+                'id, slug, name, profession, category, description, city, image, phone, is_verified, rating, review_count, status, created_at',
+                { count: 'exact' }
+            )
+            .eq('status', 'approved')
+            .order('is_verified', { ascending: false })
+            .order('rating', { ascending: false })
+            .limit(500); // safety cap — matches the client's former query cap
+        const rows = (data as DirRow[]) || [];
+        return { rows, total: count || rows.length };
     } catch (e) {
-        logger.error('services directory JSON-LD fetch failed:', e);
+        logger.error('services directory fetch failed:', e);
         return { rows: [], total: 0 };
     }
 }
@@ -62,6 +72,10 @@ export default async function ServicesPage() {
     const { rows, total } = await getDirectory();
     const base = SITE_CONFIG.siteUrl;
 
+    // JSON-LD lists only the top slice (already ordered verified → top-rated)
+    // to keep the ItemList compact; the client gets the full set.
+    const jsonLdRows = rows.slice(0, 40);
+
     // schema.org: a CollectionPage whose mainEntity is an ItemList of the
     // listed professionals, each modelled as a LocalBusiness. This tells
     // Google /services is a curated directory of contactable businesses with
@@ -69,7 +83,7 @@ export default async function ServicesPage() {
     const itemList = {
         '@type': 'ItemList',
         numberOfItems: total,
-        itemListElement: rows.map((p, i) => {
+        itemListElement: jsonLdRows.map((p, i) => {
             const url = `${base}/services/${p.slug || p.id}`;
             const biz: Record<string, unknown> = {
                 '@type': 'LocalBusiness',
@@ -126,7 +140,7 @@ export default async function ServicesPage() {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
             )}
-            <ServicesClient />
+            <ServicesClient initialServices={rows} />
         </>
     );
 }
