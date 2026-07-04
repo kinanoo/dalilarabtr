@@ -7,6 +7,7 @@ import { SITE_CONFIG } from '@/lib/config';
 import { useState } from 'react';
 import { Calculator, AlertTriangle, CheckCircle, Info, Plane } from 'lucide-react';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
+import CrossLinks from '@/components/seo/CrossLinks';
 
 export default function BanCalculator() {
 
@@ -207,6 +208,11 @@ export default function BanCalculator() {
           )}
 
         </div>
+      </div>
+
+      {/* Cross-links — curated internal links for SEO */}
+      <div className="w-full max-w-5xl mx-auto px-4 pb-4">
+        <CrossLinks context="tool" />
       </div>
 
       <div className="max-w-5xl mx-auto px-4 pb-12">

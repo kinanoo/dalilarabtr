@@ -5,6 +5,7 @@ import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
+import CrossLinks from '@/components/seo/CrossLinks';
 
 /*
  * 2026-07 redesign — brought in line with the site's new design language:
@@ -126,6 +127,11 @@ export default function PharmacyPage() {
                                 answer="نعم، الخدمة مرتبطة ببوابة الحكومة الإلكترونية e-Devlet وتغطي كافة الولايات التركية الـ 81 بما فيها إسطنبول، أنقرة، غازي عنتاب، مرسين، أنطاليا وغيرها."
                             />
                         </div>
+                    </div>
+
+                    {/* Cross-links — curated internal links for SEO */}
+                    <div className="mt-6">
+                        <CrossLinks context="tool" />
                     </div>
 
                     <div className="mt-6 flex justify-center">

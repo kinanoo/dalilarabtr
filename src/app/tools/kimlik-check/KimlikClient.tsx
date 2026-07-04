@@ -10,6 +10,7 @@ import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
+import CrossLinks from '@/components/seo/CrossLinks';
 
 export default function KimlikCheckPage() {
     const [tcNumber, setTcNumber] = useState('');
@@ -346,6 +347,9 @@ export default function KimlikCheckPage() {
                             />
                         </div>
                     </div>
+
+                    {/* ===== Section 4.6: Cross-links — curated internal links for SEO ===== */}
+                    <CrossLinks context="tool" />
 
                     {/* ===== Section 5: Share + Related ===== */}
                     <div className="flex justify-center">

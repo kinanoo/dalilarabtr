@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ShareMenu from '@/components/ShareMenu';
 import ZoneReportButton from '@/components/zones/ZoneReportButton';
 import SectionDivider from '@/components/ui/SectionDivider';
+import CrossLinks from '@/components/seo/CrossLinks';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const revalidate = 600;
@@ -423,6 +424,11 @@ export default async function ZoneDetailPage({ params }: Props) {
                             {badge.blurb(item.neighborhood)}
                         </p>
                     </div>
+                    {/* Cross-links — curated internal links for SEO */}
+                    <div className="mt-8">
+                        <CrossLinks context="zone" />
+                    </div>
+
                     <div className="mt-8 flex justify-center">
                         <ShareMenu title={`حالة حي ${item.neighborhood}`} />
                     </div>
@@ -593,6 +599,11 @@ export default async function ZoneDetailPage({ params }: Props) {
                             tone="amber"
                             Icon={Clock}
                         />
+                    </div>
+
+                    {/* Cross-links — curated internal links for SEO */}
+                    <div className="mt-8">
+                        <CrossLinks context="zone" />
                     </div>
 
                     <div className="mt-8 flex justify-center">

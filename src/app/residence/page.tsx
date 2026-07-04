@@ -4,6 +4,7 @@ import { FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import ShareMenu from '@/components/ShareMenu';
 import CategoryHubCard from '@/components/CategoryHubCard';
+import CrossLinks from '@/components/seo/CrossLinks';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const revalidate = 3600;
@@ -60,6 +61,10 @@ export default async function ResidencePage() {
             </div>
           )}
         </div>
+      </div>
+      {/* Cross-links — curated internal links for SEO */}
+      <div className="w-full max-w-screen-2xl mx-auto px-4 pb-12">
+        <CrossLinks context="hub" />
       </div>
       <div className="max-w-screen-2xl mx-auto px-4 pb-12 flex justify-center">
         <ShareMenu title="أنواع الإقامات في تركيا" text="دليلك الشامل لأنواع الإقامات وشروطها في تركيا." />

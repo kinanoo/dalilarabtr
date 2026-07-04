@@ -11,6 +11,7 @@ import CodesLangToggle from '@/components/codes/CodesLangToggle';
 import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import RelatedArticles from '@/components/RelatedArticles';
+import CrossLinks from '@/components/seo/CrossLinks';
 import { normalizeLang, categoryLabel, severityLabel, pick, hasTurkish, UI, type Lang } from '@/lib/codesI18n';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -267,6 +268,11 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
                         </div>
                     </div>
                 )}
+
+                {/* Cross-links — curated internal links for SEO */}
+                <div className="mt-6">
+                    <CrossLinks context="code" category={item.category} />
+                </div>
 
                 <div className="mt-8 flex justify-center mb-12">
                     <ShareMenu
