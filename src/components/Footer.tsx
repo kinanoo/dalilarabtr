@@ -51,10 +51,18 @@ export default function Footer() {
                 {footerMenus.section1.length > 0 ? footerMenus.section1.map((item) => (
                   <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
                 )) : (
-                  // Default Fallback
+                  // Default Fallback — includes the 5 section hubs so they're
+                  // always reachable from this persistent footer surface.
+                  // Residence points to /residence (NOT /category/residence)
+                  // to match CrossLinks and the standalone residence hub's
+                  // canonical, so link equity isn't split across two URLs.
                   <>
                     <li><Link href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📂 الدليل الشامل</Link></li>
-                    <li><Link href="/category/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 الإقامات في تركيا</Link></li>
+                    <li><Link href="/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 دليل الإقامات</Link></li>
+                    <li><Link href="/work" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💼 دليل العمل</Link></li>
+                    <li><Link href="/education" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🎓 دليل التعليم</Link></li>
+                    <li><Link href="/housing" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏠 دليل السكن</Link></li>
+                    <li><Link href="/health" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🩺 دليل الصحة والتأمين</Link></li>
                     <li><Link href="/e-devlet-services" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📱 خدمات e-Devlet</Link></li>
                     <li><Link href="/category/syrians" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏢 خدمات السوريين</Link></li>
                     <li><Link href="/forms" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📝 نماذج وعقود جاهزة</Link></li>

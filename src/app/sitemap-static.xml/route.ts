@@ -16,20 +16,23 @@ const staticPages = [
   { path: '/forms', priority: 0.7 },
   { path: '/request', priority: 0.6 },
   { path: '/join', priority: 0.5 },
-  { path: '/bookmarks', priority: 0.4 },
+  // NOTE: /bookmarks intentionally omitted — it's a per-user page that
+  // renders client-side saved items, so it has no stable indexable content
+  // (and is Disallowed in robots.txt).
   { path: '/tools', priority: 0.7 },
   { path: '/tools/kimlik-check', priority: 0.8 },
   { path: '/tools/pharmacy', priority: 0.7 },
 ];
 
 export async function GET() {
-  const now = new Date().toISOString();
-
+  // NOTE: no <lastmod> on these entries. These are truly-static hub pages;
+  // stamping them with `new Date()` on every request is a fake "changed just
+  // now" signal that Google distrusts. Omitting it is the honest option —
+  // matching sitemap.ts, which already omits lastmod on static hubs.
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticPages.map(p => `  <url>
     <loc>${baseUrl}${p.path}</loc>
-    <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>${p.priority}</priority>
   </url>`).join('\n')}

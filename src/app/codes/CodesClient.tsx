@@ -14,6 +14,7 @@ import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { normalizeArabic } from '@/lib/arabicSearch';
 import { UI, severityLabel, categoryLabel, codeCount, type Lang } from '@/lib/codesI18n';
 import CodesLangToggle from '@/components/codes/CodesLangToggle';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 /*
  * Radical list redesign (owner+visitor thinking, 2026-07):
@@ -210,6 +211,11 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
             </PageHero>
 
             <div className="max-w-4xl mx-auto px-4 py-10 w-full" dir={ui.dir}>
+                <Breadcrumbs
+                    items={[
+                        { name: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد', href: `/codes${suffix}`, isActive: true },
+                    ]}
+                />
                 {/* Language toggle */}
                 {showToggle && (
                     <div className="flex justify-center mb-8">

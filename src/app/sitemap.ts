@@ -19,6 +19,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // signal. Google ignores (and distrusts) lastmod when it lies; omitting it
   // is the honest option. The dynamic child sitemaps carry REAL dates.
 
+  // This root sitemap.xml owns ONLY the top-level hub pages that NO child
+  // sitemap lists. Every URL that also appears in a child sitemap has been
+  // removed here so no URL is duplicated across sitemap files:
+  //   - /residence /work /education /housing /health  → sitemap-categories.xml
+  //   - /zones                                        → sitemap-zones.xml
+  //   - /tools /tools/kimlik-check /tools/pharmacy    → sitemap-static.xml
+  //     /forms /request /about /contact /important-links
+  //     /sources /privacy /disclaimer                 → sitemap-static.xml
+  // The bare hubs kept below (e.g. /codes, /services, /updates) are NOT in
+  // any child — their child sitemaps list only sub-pages (/codes/<code>,
+  // /services/<id>, /updates/<id>), never the hub itself.
   return [
     // NOTE: do NOT list /server-sitemap-index.xml here. This file is a
     // <urlset> of real pages; the index is a <sitemapindex>. Listing the
@@ -77,97 +88,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/zones`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
       url: `${baseUrl}/updates`,
       changeFrequency: 'daily',
       priority: 0.8,
-    },
-    // Tools — high traffic pages
-    {
-      url: `${baseUrl}/tools/kimlik-check`,
-      changeFrequency: 'monthly',
-      priority: 0.95,
-    },
-    {
-      url: `${baseUrl}/tools/pharmacy`,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    },
-    // Category pages
-    {
-      url: `${baseUrl}/residence`,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/work`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/forms`,
-      changeFrequency: 'weekly',
-      priority: 0.75,
-    },
-    {
-      url: `${baseUrl}/request`,
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    // Additional pages
-    {
-      url: `${baseUrl}/tools`,
-      changeFrequency: 'monthly',
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/education`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/health`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/housing`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/about`,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/important-links`,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/sources`,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/disclaimer`,
-      changeFrequency: 'yearly',
-      priority: 0.3,
     },
   ];
 }

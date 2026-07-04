@@ -11,6 +11,7 @@ import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
 import { stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
+import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
 
 export const revalidate = 60;
 
@@ -100,8 +101,55 @@ export default async function UpdateDetailPage(
     const readTime = update.content ? estimateReadTime(update.content) : 0;
     const plainContent = update.content ? stripHtml(update.content) : '';
 
+    // ── Structured data (SEO) ──────────────────────────────────────────────
+    const updateUrl = `${SITE_CONFIG.siteUrl}/updates/${id}`;
+    const publishedISO = toISODate(update.created_at || update.date || '');
+    const modifiedISO = toISODate(update.date || update.created_at || '');
+    const description = plainContent.substring(0, 200) || update.title;
+    const imageUrl = update.image
+        ? (update.image.startsWith('http') ? update.image : `${SITE_CONFIG.siteUrl}${update.image}`)
+        : getOgImage(undefined, { title: update.title, category: 'أخبار وتحديثات' });
+
+    const articleSchema = {
+        '@context': 'https://schema.org',
+        '@type': update.type === 'news' ? 'NewsArticle' : 'Article',
+        headline: update.title,
+        description,
+        datePublished: publishedISO,
+        dateModified: modifiedISO,
+        image: {
+            '@type': 'ImageObject',
+            url: imageUrl,
+        },
+        author: {
+            '@type': 'Organization',
+            name: SITE_CONFIG.name,
+            url: SITE_CONFIG.siteUrl,
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: SITE_CONFIG.name,
+            logo: {
+                '@type': 'ImageObject',
+                url: `${SITE_CONFIG.siteUrl}/logo.png`,
+            },
+        },
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': updateUrl,
+        },
+        inLanguage: 'ar',
+    };
+
+    const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: 'الرئيسية', url: '/' },
+        { name: 'التحديثات', url: '/updates' },
+        { name: update.title, url: `/updates/${id}` },
+    ]);
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
+            <SchemaScript schema={[articleSchema, breadcrumbSchema]} />
             {/* Header */}
             <div className={`text-white pt-6 pb-20 relative overflow-hidden ${
                 isAlert

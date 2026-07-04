@@ -414,8 +414,8 @@ export default async function ZoneDetailPage({ params }: Props) {
                                 <Icon size={48} />
                             </div>
                         </div>
-                        <h1 className="text-3xl sm:text-4xl font-black mb-2 text-slate-800 dark:text-slate-100">{item.neighborhood}</h1>
-                        <h2 className="text-xl text-slate-500 font-bold mb-6">{item.district} / {item.city}</h2>
+                        <h2 className="text-3xl sm:text-4xl font-black mb-2 text-slate-800 dark:text-slate-100">{item.neighborhood}</h2>
+                        <p className="text-xl text-slate-500 font-bold mb-6">{item.district} / {item.city}</p>
 
                         <div className={`inline-block px-6 py-2 rounded-xl text-base sm:text-lg font-bold border-2 text-white ${badge.pillBg}`}>
                             {badge.label}

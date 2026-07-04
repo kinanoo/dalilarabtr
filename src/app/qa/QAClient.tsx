@@ -54,10 +54,19 @@ function answeredCount(n: number): string {
     return `${n} سؤالاً مُجاباً`;
 }
 
-export default function QAClient() {
-    const [items, setItems] = useState<QAItem[]>([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(true);
+export default function QAClient({
+    initialItems = [],
+    initialTotal = 0,
+}: {
+    initialItems?: QAItem[];
+    initialTotal?: number;
+}) {
+    // Seed from server-fetched props so the answered questions are present on
+    // first paint (SEO + no spinner). We still re-fetch on mount to pick up
+    // freshly-answered questions between ISR revalidations.
+    const [items, setItems] = useState<QAItem[]>(initialItems);
+    const [total, setTotal] = useState(initialTotal);
+    const [loading, setLoading] = useState(initialItems.length === 0);
     const [query, setQuery] = useState('');
     const [openId, setOpenId] = useState<string | null>(null);
     const [showAsk, setShowAsk] = useState(false);
@@ -67,10 +76,10 @@ export default function QAClient() {
             try {
                 const res = await fetch('/api/questions?limit=50&featured=1');
                 const data = await res.json();
-                setItems(Array.isArray(data?.items) ? data.items : []);
-                setTotal(typeof data?.total === 'number' ? data.total : 0);
+                if (Array.isArray(data?.items)) setItems(data.items);
+                if (typeof data?.total === 'number') setTotal(data.total);
             } catch {
-                setItems([]);
+                // Keep the server-provided items on network failure.
             } finally {
                 setLoading(false);
             }

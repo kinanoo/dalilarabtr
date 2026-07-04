@@ -181,6 +181,69 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]) {
 }
 
 // ============================================
+// 🗂️ Hub Collection Schema (content-hub pages)
+// ============================================
+
+/**
+ * Schema لصفحات المحاور (/education /health /housing /work /residence).
+ * يُصدِر مصفوفة من مخططين اثنين ليتم تمريرهما إلى <SchemaScript>:
+ *  1) BreadcrumbList: [الرئيسية → اسم المحور]
+ *  2) ItemList: قائمة المقالات المعروضة في المحور
+ *
+ * يعكس تماماً نمط src/app/category/[slug]/page.tsx حتى لا تتكرر الأكواد
+ * في المحاور الخمسة.
+ *
+ * @param name اسم المحور المعروض (مثل: "الدراسة والتعليم")
+ * @param slug مسار المحور بدون الشرطة الأمامية (مثل: "education")
+ * @param articles المقالات المعروضة (نستخدم slug ثم id للرابط)
+ */
+export function hubCollectionJsonLd(
+  name: string,
+  slug: string,
+  articles: { slug?: string | null; id?: string | null; title?: string | null }[],
+): object[] {
+  const hubUrl = `${SITE_CONFIG.siteUrl}/${slug}`;
+
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'الرئيسية',
+        item: SITE_CONFIG.siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name,
+        item: hubUrl,
+      },
+    ],
+  };
+
+  const schemas: object[] = [breadcrumb];
+
+  if (articles.length > 0) {
+    schemas.push({
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name,
+      numberOfItems: articles.length,
+      itemListElement: articles.slice(0, 20).map((a, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${SITE_CONFIG.siteUrl}/article/${a.slug || a.id}`,
+        name: a.title,
+      })),
+    });
+  }
+
+  return schemas;
+}
+
+// ============================================
 // 🛠️ Service Schema
 // ============================================
 

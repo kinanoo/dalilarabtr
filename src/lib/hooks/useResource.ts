@@ -15,7 +15,11 @@ export function useResource<T extends { id: string; active?: boolean }>(
     key: string,
     tableName: string | null,
     staticData: T[],
-    merger: (staticItems: T[], remoteItems: T[]) => T[]
+    merger: (staticItems: T[], remoteItems: T[]) => T[],
+    // Optional raw remote rows fetched on the server (SSR). When provided, SWR
+    // hydrates with these so the merged list is present in the first HTML —
+    // crawlers/no-JS see real content instead of an empty shell.
+    fallbackData?: any[]
 ) {
     const fetcher = async () => {
         if (!tableName || !supabase) return [];
@@ -45,6 +49,7 @@ export function useResource<T extends { id: string; active?: boolean }>(
     const { data: remoteData, error, isLoading, mutate } = useSWR(tableName ? key : null, fetcher, {
         revalidateOnFocus: false, // Don't revalidate on window focus to save requests
         dedupingInterval: 60000, // Cache for 1 minute
+        ...(fallbackData ? { fallbackData: fallbackData as T[] } : {}),
     });
 
     // Merge Logic

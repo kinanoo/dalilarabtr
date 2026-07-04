@@ -5,13 +5,14 @@ import { supabase } from '@/lib/supabaseClient';
 import ShareMenu from '@/components/ShareMenu';
 import CategoryHubCard from '@/components/CategoryHubCard';
 import CrossLinks from '@/components/seo/CrossLinks';
-import { SITE_CONFIG, getOgImage } from '@/lib/config';
+import { getOgImage } from '@/lib/config';
+import { SchemaScript, hubCollectionJsonLd } from '@/lib/schemaOrg';
 
 export const revalidate = 3600;
 
+// title + description are inherited from layout.tsx (single source of truth).
+// Only page-specific openGraph fields live here.
 export const metadata: Metadata = {
-  title: 'الدراسة والتعليم في تركيا | دليل العرب',
-  description: 'دليلك الشامل للدراسة والمنح والمدارس والجامعات في تركيا.',
   openGraph: {
     title: 'الدراسة والتعليم في تركيا',
     images: [{ url: getOgImage(undefined, { title: 'الدراسة والتعليم في تركيا' }), width: 1200, height: 630 }],
@@ -43,6 +44,7 @@ export default async function EducationPage() {
 
   return (
     <main className="flex flex-col min-h-screen">
+      <SchemaScript schema={hubCollectionJsonLd('الدراسة والتعليم', 'education', articles)} />
       <PageHero
         title="الدراسة والتعليم"
         description="المدارس، الجامعات، المنح الدراسية، ومعادلة الشهادات."

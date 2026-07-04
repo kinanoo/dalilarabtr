@@ -55,8 +55,8 @@ function groupByDate(items: any[]): { label: string; date: string; items: any[] 
         .map(([label, g]) => ({ label, date: g.date, items: g.items }));
 }
 
-export default function UpdatesClient() {
-    const { updates: dbUpdates, loading: updatesLoading } = useAdminUpdates();
+export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any[] } = {}) {
+    const { updates: dbUpdates, loading: updatesLoading } = useAdminUpdates(initialUpdates);
     const [autoEvents, setAutoEvents] = useState<any[]>([]);
     const [autoLoading, setAutoLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('all');

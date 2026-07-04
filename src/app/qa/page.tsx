@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import QAClient from './QAClient';
 import { SITE_CONFIG } from '@/lib/config';
+import { supabase, withTimeout } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 /**
  * /qa — public community Q&A page.
@@ -9,9 +11,53 @@ import { SITE_CONFIG } from '@/lib/config';
  * QAClient so we can lazy-load the modal and avoid hydrating it on first
  * paint. ISR (10 min) keeps the page fresh enough that newly-answered
  * questions appear quickly without burning Vercel functions per visit.
+ *
+ * The answered/featured questions are fetched here on the server and passed to
+ * QAClient as initial props, so crawlers and first paint see the full Q&A
+ * content (SEO) instead of a spinner. QAClient keeps the client search box and
+ * still owns the ask-modal / interactivity.
  */
 
 export const revalidate = 600;
+
+interface QARow {
+    id: string;
+    question: string;
+    context: string | null;
+    category: string | null;
+    asker_name: string | null;
+    answer: string;
+    answered_at: string;
+    upvotes: number;
+    views: number;
+    is_featured: boolean;
+}
+
+/** Fetch answered questions server-side, mirroring GET /api/questions?featured=1. */
+async function getInitialQuestions(): Promise<{ items: QARow[]; total: number }> {
+    if (!supabase) return { items: [], total: 0 };
+    try {
+        const res = await withTimeout(
+            supabase
+                .from('questions')
+                .select(
+                    'id, question, context, category, asker_name, answer, answered_at, upvotes, views, is_featured',
+                    { count: 'exact' }
+                )
+                .eq('status', 'answered')
+                .order('is_featured', { ascending: false })
+                .range(0, 49)
+        );
+        if (!res || res.error) {
+            if (res?.error) logger.error('qa initial fetch:', res.error);
+            return { items: [], total: 0 };
+        }
+        return { items: (res.data as QARow[]) || [], total: res.count ?? 0 };
+    } catch (err) {
+        logger.error('qa initial fetch unhandled:', err);
+        return { items: [], total: 0 };
+    }
+}
 
 export const metadata: Metadata = {
     title: 'الأسئلة والأجوبة | اسأل واحصل على إجابة موثّقة',
@@ -26,6 +72,7 @@ export const metadata: Metadata = {
     },
 };
 
-export default function QAPage() {
-    return <QAClient />;
+export default async function QAPage() {
+    const { items, total } = await getInitialQuestions();
+    return <QAClient initialItems={items} initialTotal={total} />;
 }

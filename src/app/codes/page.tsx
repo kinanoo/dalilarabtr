@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import type { AdminCode } from '@/lib/types';
 import CodesClient from './CodesClient';
+import { SITE_CONFIG } from '@/lib/config';
 import { normalizeLang, type Lang } from '@/lib/codesI18n';
 
 export const revalidate = 3600; // refresh the server-rendered list hourly
@@ -11,11 +12,19 @@ type Props = { searchParams: Promise<{ lang?: string }> };
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const lang = normalizeLang((await searchParams).lang);
   if (lang === 'tr') {
+    const trTitle = 'Türkiye Tahdit ve Giriş Yasağı Kodları Rehberi (V-87, G-87, Ç...) | Dalil';
+    const trDesc = 'Tüm Türkiye tahdit / giriş yasağı kodlarının anlamı, konma nedenleri ve nasıl kaldırılacağı — koda veya açıklamaya göre aranabilir kapsamlı rehber.';
     return {
-      title: 'Türkiye Tahdit ve Giriş Yasağı Kodları Rehberi (V-87, G-87, Ç...) | Dalil',
-      description: 'Tüm Türkiye tahdit / giriş yasağı kodlarının anlamı, konma nedenleri ve nasıl kaldırılacağı — koda veya açıklamaya göre aranabilir kapsamlı rehber.',
+      title: trTitle,
+      description: trDesc,
       alternates: { canonical: '/codes?lang=tr', languages: { ar: '/codes', tr: '/codes?lang=tr' } },
-      openGraph: { locale: 'tr_TR' },
+      openGraph: {
+        type: 'website',
+        locale: 'tr_TR',
+        url: `${SITE_CONFIG.siteUrl}/codes?lang=tr`,
+        title: trTitle,
+        description: trDesc,
+      },
     };
   }
   return {
@@ -54,5 +63,25 @@ export default async function CodesPage({ searchParams }: Props) {
       }));
   }
 
-  return <CodesClient initialCodes={initialCodes} lang={lang} />;
+  // DefinedTermSet JSON-LD — the codes glossary, so Google understands each
+  // code as a defined term within one named set (crawlable from the list page).
+  const definedTermSet = {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTermSet',
+    name: 'الأكواد الأمنية التركية',
+    url: `${SITE_CONFIG.siteUrl}/codes`,
+    hasDefinedTerm: initialCodes.slice(0, 100).map((c) => ({
+      '@type': 'DefinedTerm',
+      name: c.code,
+      description: c.title,
+      url: `${SITE_CONFIG.siteUrl}/codes/${encodeURIComponent(c.code)}`,
+    })),
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(definedTermSet) }} />
+      <CodesClient initialCodes={initialCodes} lang={lang} />
+    </>
+  );
 }

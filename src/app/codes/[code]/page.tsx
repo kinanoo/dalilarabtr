@@ -12,6 +12,8 @@ import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import RelatedArticles from '@/components/RelatedArticles';
 import CrossLinks from '@/components/seo/CrossLinks';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { generateBreadcrumbSchema } from '@/lib/schemaOrg';
 import { normalizeLang, categoryLabel, severityLabel, pick, hasTurkish, UI, type Lang } from '@/lib/codesI18n';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -159,12 +161,19 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
             }] : []),
         ],
     };
+    // BreadcrumbList — الرئيسية › الأكواد الأمنية › {code}
+    const breadcrumbSchema = generateBreadcrumbSchema([
+        { name: lang === 'tr' ? 'Ana Sayfa' : 'الرئيسية', url: SITE_CONFIG.siteUrl },
+        { name: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد الأمنية', url: `${SITE_CONFIG.siteUrl}/codes${lang === 'tr' ? '?lang=tr' : ''}` },
+        { name: item.code, url: codeUrl },
+    ]);
 
     return (
         <main className="min-h-screen bg-white dark:bg-slate-950">
             <ToolSchema tool="security-codes" />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(definedTerm) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
             <PageHero
                 title={lang === 'tr' ? `${item.code} kodu` : `الكود ${item.code}`}
@@ -173,6 +182,12 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
             />
 
             <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12" dir={ui.dir}>
+                <Breadcrumbs
+                    items={[
+                        { name: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد', href: lang === 'tr' ? '/codes?lang=tr' : '/codes' },
+                        { name: item.code, href: `/codes/${enc}${lang === 'tr' ? '?lang=tr' : ''}`, isActive: true },
+                    ]}
+                />
                 {/* Back + language toggle */}
                 <div className="flex items-center justify-between gap-3 mb-6">
                     <Link href={lang === 'tr' ? '/codes?lang=tr' : '/codes'} className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 font-bold w-fit transition">
@@ -206,9 +221,9 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
                                         </span>
                                     )}
                                 </div>
-                                <h1 className="text-2xl sm:text-4xl font-black mb-4 leading-tight">
+                                <h2 className="text-2xl sm:text-4xl font-black mb-4 leading-tight">
                                     {title}
-                                </h1>
+                                </h2>
                                 <div className="prose dark:prose-invert max-w-none">
                                     <p className="text-lg sm:text-xl leading-relaxed font-medium opacity-90">
                                         {description}

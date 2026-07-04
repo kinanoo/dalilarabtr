@@ -216,6 +216,18 @@ html.dark .tiptap hr, html.dark .prose-content hr {
 .prose-content img { cursor: zoom-in; transition: filter 0.2s, transform 0.2s; }
 .prose-content img:hover { filter: brightness(1.04); }
 
+/* CLS guard: reserve vertical space for body images that ship WITHOUT
+   intrinsic width/height attributes. Those already-sized images keep their
+   own ratio via the width/height attrs + `max-width:100%; height:auto` above,
+   so we exclude them (`:not([width]):not([height])`) to avoid distortion.
+   For attribute-less images a default 16/9 box holds the layout stable while
+   the image loads, then `object-fit: contain` letterboxes the real image
+   inside that box instead of stretching it. */
+.prose-content img:not([width]):not([height]) {
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
 /* Figures — illustrated guides wrap each screenshot in <figure>. Without a
    rule the browser default (margin: 1em 40px) indents every image 40px on
    each side (narrowing it badly on phones) and gives no clear gap between

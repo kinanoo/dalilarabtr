@@ -42,7 +42,15 @@ export const GUIDES_MENU = [
     { name: "الدليل الشامل", href: "/directory", icon: FolderOpen },
     { name: "خدمات السوريين", href: "/category/syrians", icon: Building2 },
     { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone },
-    { name: "خدمات الإقامات", href: "/category/residence", icon: FileText },
+    // Section hubs — standalone guide pages. `/residence` (not
+    // /category/residence) is the canonical residence hub: it's the page with
+    // its own canonical + the URL CrossLinks links to. Keep Footer/CrossLinks
+    // pointing at the SAME /residence URL to avoid split link equity.
+    { name: "دليل الإقامات", href: "/residence", icon: FileText },
+    { name: "دليل العمل", href: "/work", icon: Briefcase },
+    { name: "دليل التعليم", href: "/education", icon: GraduationCap },
+    { name: "دليل السكن", href: "/housing", icon: Home },
+    { name: "دليل الصحة والتأمين", href: "/health", icon: HeartPulse },
     { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen },
     { name: "نماذج جاهزة", href: "/forms", icon: FileText },
     { name: "اطلب خدمة خاصة", href: "/request", icon: ScrollText },

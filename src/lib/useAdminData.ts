@@ -148,7 +148,7 @@ export function useAdminServices() {
 // 🪝 Hooks - Updates
 // ============================================
 
-export function useAdminUpdates() {
+export function useAdminUpdates(initialUpdates?: any[]) {
   const staticUpdates: AdminUpdate[] = useMemo(() => LATEST_UPDATES.map(u => ({
     id: String(u.id),
     type: u.type as any,
@@ -177,7 +177,8 @@ export function useAdminUpdates() {
     'updates',
     'updates',
     staticUpdates,
-    updateMerger
+    updateMerger,
+    initialUpdates
   );
 
   return { updates, loading };
