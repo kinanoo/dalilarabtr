@@ -70,6 +70,11 @@ export function generateOrganizationSchema() {
       height: 256,
     },
     image: `${SITE_CONFIG.siteUrl}/og-image.jpg`,
+    // Anchor the entity to Turkey so Google understands this is a Turkey-focused
+    // organisation (strengthens the brand knowledge-panel + local relevance for
+    // "دليل العرب في تركيا"-type queries).
+    areaServed: { '@type': 'Country', name: 'Turkey' },
+    address: { '@type': 'PostalAddress', addressCountry: 'TR' },
     ...(SITE_CONFIG.whatsapp ? {
       contactPoint: {
         '@type': 'ContactPoint',

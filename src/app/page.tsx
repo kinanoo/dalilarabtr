@@ -155,7 +155,7 @@ async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
   }
 }
 
-const HOME_DESCRIPTION = "الدليل الشامل للعرب في تركيا. خدمات قانونية، إقامات، أكواد أمنية، ودليل شامل لكل ما تحتاجه.";
+const HOME_DESCRIPTION = "دليلك الموثوق للعرب والسوريين في تركيا: الكملك والإقامة، الجنسية، جواز السفر والقنصلية، إذن العمل، والأكواد الأمنية — في اسطنبول وغازي عنتاب وأنقرة وبورصة.";
 
 export const metadata: Metadata = {
   // Keyword-front-loaded homepage title. `absolute` bypasses the

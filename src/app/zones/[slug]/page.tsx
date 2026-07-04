@@ -51,7 +51,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return {
             title: `${zoneTitle} | ${exactZone.city}`,
             description: `تحقّق من حالة حي ${exactZone.neighborhood} في ${exactZone.district} / ${exactZone.city} وفق آخر تحديث رسمي.`,
-            alternates: { canonical: `/zones/${decodedSlug}` },
+            // Canonical uses the DB's stored casing (not the requested slug) so
+            // /zones/Gaziantep and /zones/gaziantep both point at ONE canonical
+            // URL instead of self-canonicalising and splitting ranking signals.
+            alternates: { canonical: `/zones/${encodeURIComponent(exactZone.neighborhood)}` },
             // SEO: the ~1166 individual-neighborhood pages are thin and
             // near-duplicate (one status pill + a templated line). Keep them
             // OUT of the index so they don't compete with — and dilute — the
@@ -68,16 +71,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Try finding by district
     const { data: districtZones } = await supabase
         .from('zones')
-        .select('id')
+        .select('id, district')
         .ilike('district', decodedSlug)
         .limit(1);
 
     if (districtZones && districtZones.length > 0) {
+        const canonicalDistrict = districtZones[0].district || decodedSlug;
         const districtTitle = `الأحياء المغلقة والمفتوحة في ${decodedSlug}`;
         return {
             title: `${districtTitle} | تحديث 2026`,
             description: `قائمة محدّثة بحالة الأحياء في منطقة ${decodedSlug} — ما فُتح، ما زال مغلقاً، وما هو قيد التحديث.`,
-            alternates: { canonical: `/zones/${decodedSlug}` },
+            alternates: { canonical: `/zones/${encodeURIComponent(canonicalDistrict)}` },
             openGraph: {
                 title: districtTitle,
                 images: [{ url: getOgImage(undefined, { title: districtTitle }), width: 1200, height: 630, alt: districtTitle }],
@@ -88,16 +92,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Try finding by city
     const { data: cityZones } = await supabase
         .from('zones')
-        .select('id')
+        .select('id, city')
         .ilike('city', decodedSlug)
         .limit(1);
 
     if (cityZones && cityZones.length > 0) {
+        const canonicalCityName = cityZones[0].city || decodedSlug;
         const cityTitle = `أحياء ${decodedSlug} — حالة التسجيل الرسمية`;
         return {
             title: `${cityTitle} | تحديث 2026`,
             description: `حالة الأحياء في ولاية ${decodedSlug} وفق آخر مراجعة لقائمة الأحياء المغلقة — ما فُتح حديثاً وما زال مغلقاً.`,
-            alternates: { canonical: `/zones/${decodedSlug}` },
+            alternates: { canonical: `/zones/${encodeURIComponent(canonicalCityName)}` },
             openGraph: {
                 title: cityTitle,
                 images: [{ url: getOgImage(undefined, { title: cityTitle }), width: 1200, height: 630, alt: cityTitle }],
