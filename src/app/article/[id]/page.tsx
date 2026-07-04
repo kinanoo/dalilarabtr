@@ -275,7 +275,18 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   // Prefer English slug for canonical URL (SEO best practice)
   const canonicalSlug = article.slug || params.id;
   const canonicalUrl = `${SITE_CONFIG.siteUrl}/article/${canonicalSlug}`;
-  const title = article.seoTitle?.trim() || `${article.title} | ${SITE_CONFIG.name}`;
+  // Title hygiene: ~44% of stored seo_title values already end with a (often
+  // truncated) brand suffix like "… | دليل العرب في ت". The root layout's
+  // title.template then appends the brand AGAIN → a bloated, double-branded,
+  // keyword-burying title that Google truncates (e.g. "… | دليل العرب في ت |
+  // دليل العرب والسوريين في تركيا"). Strip any embedded brand fragment, append a
+  // concise brand ONCE, and return it as `absolute` below so the template never
+  // stacks a second brand. Keyword stays first + fully visible in the SERP.
+  const BRAND_SUFFIX = 'دليل العرب في تركيا';
+  const stripBrand = (s: string) =>
+    s.replace(/\s*[|｜–—-]\s*دليل\s+العرب[\s\S]*$/u, '').replace(/\s*[|｜]\s*$/u, '').trim();
+  const cleanTitleBase = stripBrand(article.seoTitle?.trim() || article.title || '') || (article.title || '').trim();
+  const title = `${cleanTitleBase} | ${BRAND_SUFFIX}`;
   // Build description: prefer seoDescription, then intro, pad with details if too short
   let rawDesc = article.seoDescription?.trim() || stripHtml(article.intro);
   if (rawDesc.length < 120) {
@@ -298,7 +309,9 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   ) : new Date().toISOString();
 
   return {
-    title,
+    // `absolute` bypasses the root layout's "%s | brand" template so the brand
+    // appears exactly once (see title-hygiene note above).
+    title: { absolute: title },
     description,
     keywords,
     authors: [{ name: SITE_CONFIG.name }],
