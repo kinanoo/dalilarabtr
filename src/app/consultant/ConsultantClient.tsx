@@ -27,6 +27,10 @@ import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios';
 
 type Props = {
   initialComments?: any[]; // Keep any for comments flexible
+  // Server-seeded scenario catalogue (consultant_scenarios, select('*')).
+  // When present the client hook is skipped so the browser never re-pulls the
+  // whole table. Same shape as the hook's rows, so the map below is unchanged.
+  initialScenarios?: any[];
 };
 
 const mapArticleToPlan = (article: Article, key: string, scenario: PlanResult): PlanResult => {
@@ -62,15 +66,18 @@ const mapArticleToPlan = (article: Article, key: string, scenario: PlanResult): 
   };
 };
 
-export default function ConsultantClient({ initialComments = [] }: Props) {
-  const { scenarios, loading: scenariosLoading } = useAdminScenarios();
+export default function ConsultantClient({ initialComments = [], initialScenarios = [] }: Props) {
+  const hasSeed = initialScenarios.length > 0;
+  // Skip the client table pull when the server already seeded the catalogue.
+  const { scenarios, loading: scenariosLoading } = useAdminScenarios(hasSeed);
 
-  // Create a map for quick lookup by ID
+  // Create a map for quick lookup by ID. Prefer the server seed; fall back to
+  // the client hook when no seed was provided (e.g. build-time fetch failed).
   const SCENARIOS = useMemo(() => {
     const map: Record<string, PlanResult> = { ...CONSULTANT_SCENARIOS };
-    scenarios.forEach(s => map[s.id] = s);
+    (hasSeed ? initialScenarios : scenarios).forEach((s: PlanResult) => map[s.id] = s);
     return map;
-  }, [scenarios]);
+  }, [scenarios, initialScenarios, hasSeed]);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);

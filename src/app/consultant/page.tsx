@@ -17,10 +17,28 @@ export const metadata: Metadata = {
 
 
 
-export default function ConsultantPage() {
+// ISR: server-fetch the scenario catalogue once (cached) so the browser stops
+// re-pulling the whole consultant_scenarios table on every visit via the anon
+// key. Same shape as the client hook (useResource → select('*')), so seeding
+// is transparent; the on-demand single-row fetch when a scenario is opened is
+// untouched.
+export const revalidate = 600;
+
+async function getInitialScenarios() {
+  if (!supabase) return [];
+  try {
+    const { data } = await supabase.from('consultant_scenarios').select('*');
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function ConsultantPage() {
+  const initialScenarios = await getInitialScenarios();
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
-      <ConsultantClient initialComments={[]} />
+      <ConsultantClient initialComments={[]} initialScenarios={initialScenarios} />
     </main>
   );
 }
