@@ -319,7 +319,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description,
       type: 'article',
       url: canonicalUrl,
-      images: [{ url: getOgImage(article.image, { title: article.title }), width: 1200, height: 630, alt: article.title }],
+      images: [{ url: getOgImage(article.image, { title: article.title }), width: 1200, height: 630, type: 'image/png', alt: article.title }],
       publishedTime: dateModified,
       modifiedTime: dateModified,
       section: article.category,

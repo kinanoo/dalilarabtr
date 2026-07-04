@@ -59,9 +59,11 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
             languages: { ar: `/codes/${enc}`, tr: `/codes/${enc}?lang=tr` },
         },
         openGraph: {
+            type: 'article',
+            url: `${SITE_CONFIG.siteUrl}/codes/${enc}${lang === 'tr' ? '?lang=tr' : ''}`,
             title: metaTitle,
             description: metaDesc?.slice(0, 200),
-            images: [{ url: getOgImage(undefined, { title: lang === 'tr' ? `${item.code} kodu — ${title}` : `الكود ${item.code} — ${title}`, category: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد الأمنية' }), width: 1200, height: 630, alt: metaTitle }],
+            images: [{ url: getOgImage(undefined, { title: lang === 'tr' ? `${item.code} kodu — ${title}` : `الكود ${item.code} — ${title}`, category: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد الأمنية' }), width: 1200, height: 630, type: 'image/png', alt: metaTitle }],
             locale: lang === 'tr' ? 'tr_TR' : 'ar_AR',
         },
     };
