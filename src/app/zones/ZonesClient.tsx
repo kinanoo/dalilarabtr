@@ -67,11 +67,15 @@ function normalizeText(text: string): string {
   return normalized;
 }
 
-export default function ZonesPage() {
+export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPayload | null }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
-  const [data, setData] = useState<ClosedAreasPayload | null>(null);
+  // Seed from the server-rendered snapshot when present. The load() effect
+  // below early-returns when `data` is already set, so this also SKIPS the
+  // per-visitor client fetch of the whole zones table (Supabase-egress saver);
+  // the client fetch remains as a fallback only when the server passed nothing.
+  const [data, setData] = useState<ClosedAreasPayload | null>(initialData ?? null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 

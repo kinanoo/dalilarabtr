@@ -59,9 +59,13 @@ function famOf(code: string): string {
 }
 
 export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCodes: AdminCode[]; lang?: Lang }) {
-    const { codes: remoteCodes, loading } = useAdminCodes();
-    // Server passed the full list — render INSTANTLY; SWR merges in silently.
-    const codes = remoteCodes.length > 0 ? remoteCodes : initialCodes;
+    // The server already rendered the full list (ISR). Prefer it and skip the
+    // client fetch entirely so each visitor's browser doesn't re-download the
+    // whole security_codes table (Supabase-egress saver). Only fall back to a
+    // client fetch on the rare chance the server list is empty.
+    const hasServer = initialCodes.length > 0;
+    const { codes: remoteCodes, loading } = useAdminCodes(hasServer);
+    const codes = hasServer ? initialCodes : remoteCodes;
     const [query, setQuery] = useState('');
     const [familyFilter, setFamilyFilter] = useState('all');
     const [severityFilter, setSeverityFilter] = useState('all');

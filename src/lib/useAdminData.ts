@@ -23,11 +23,13 @@ import { useResource, standardMerger } from '@/lib/hooks/useResource';
 // ============================================
 
 
-export function useAdminCodes() {
-  // Static Fallback removed - strictly remote
+export function useAdminCodes(skip = false) {
+  // `skip` = the caller already has server-rendered (ISR) codes, so the
+  // browser must NOT re-download the whole security_codes table (egress
+  // saver). Passing a null table to useResource disables the fetch entirely.
   const { data: codes, loading } = useResource<AdminCode>(
     'codes',
-    'security_codes',
+    skip ? null : 'security_codes',
     [],
     (statics, remotes) => {
       const transformed: AdminCode[] = remotes

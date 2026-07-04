@@ -46,10 +46,21 @@ export function useResource<T extends { id: string; active?: boolean }>(
         }
     };
 
+    // When the server already delivered fresh (ISR) rows in the first HTML,
+    // do NOT make every visitor's browser re-download the whole table. This
+    // is the main Supabase-egress saver: an SSR page then costs ZERO client
+    // DB bandwidth. mutate() still fetches on demand (e.g. after an action),
+    // and pages WITHOUT server data (admin, client-only) keep revalidating
+    // normally. Freshness for public content comes from the page's own
+    // `revalidate` (ISR) window on the server, not per-visitor refetches.
+    const hasServerData = Array.isArray(fallbackData);
     const { data: remoteData, error, isLoading, mutate } = useSWR(tableName ? key : null, fetcher, {
         revalidateOnFocus: false, // Don't revalidate on window focus to save requests
+        revalidateOnReconnect: false,
         dedupingInterval: 60000, // Cache for 1 minute
-        ...(fallbackData ? { fallbackData: fallbackData as T[] } : {}),
+        ...(hasServerData
+            ? { fallbackData: fallbackData as T[], revalidateOnMount: false, revalidateIfStale: false }
+            : {}),
     });
 
     // Merge Logic
