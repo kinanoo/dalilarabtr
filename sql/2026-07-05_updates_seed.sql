@@ -14,7 +14,10 @@
 -- ============================================================================
 
 INSERT INTO updates (title, type, content, date, link, active)
-SELECT * FROM (VALUES
+-- `date` column is of type DATE; cast the text literal so the VALUES→SELECT
+-- type-inference does not fail with "column date is of type date but
+-- expression is of type text" (error 42804).
+SELECT title, type, content, date::date, link, active FROM (VALUES
   (
     $$أداة جديدة: حاسبة أيام الإقامة والغياب عن تركيا$$,
     $$news$$,
