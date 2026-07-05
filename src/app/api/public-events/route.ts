@@ -1,9 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+// NOTE: 'new_update' is intentionally EXCLUDED. The /updates feed already
+// renders the `updates` table directly (as "manual" news cards), so emitting a
+// parallel new_update auto-event made every update appear TWICE in the feed
+// (once as the manual card, once as the auto "خبر" card). Updates are the only
+// event type with a dedicated direct-render path, so they must not also come
+// through public-events. The other types have no direct list → they belong here.
 const PUBLIC_EVENT_TYPES = [
   'new_article', 'new_scenario', 'new_faq', 'new_code',
-  'new_zone', 'new_update', 'new_service', 'new_tool', 'new_source',
+  'new_zone', 'new_service', 'new_tool', 'new_source',
 ];
 
 // Map event_type → underlying table + visibility filter.
