@@ -82,6 +82,21 @@ h1, h2, h3, h4, h5, h6,
 .tiptap:focus { outline: none; }
 
 /* ============================================
+   Site-wide keyboard focus indicator (WCAG 2.4.7)
+   ============================================
+   Several interactive elements (primary nav links, dropdown triggers)
+   use Tailwind's `outline-none` to drop the mouse-focus ring — which also
+   erased the KEYBOARD focus ring. This restores a clear, consistent
+   emerald ring for keyboard users only (:focus-visible never fires on a
+   mouse click). Unlayered so it overrides the layered `outline-none`
+   utility on those elements. */
+:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================
    Rich Content Rendering — Public Pages + Editor
    Shared styles for both .tiptap (editor) and
    .prose-content (public display)

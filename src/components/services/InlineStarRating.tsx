@@ -300,6 +300,8 @@ export default function InlineStarRating({
                                     <button
                                         key={star}
                                         type="button"
+                                        aria-label={`${star} نجوم`}
+                                        aria-pressed={star <= selectedRating}
                                         onClick={() => setSelectedRating(star)}
                                         className="transition-transform hover:scale-125 active:scale-95"
                                     >

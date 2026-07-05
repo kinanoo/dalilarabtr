@@ -335,13 +335,6 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
         </section>
       )}
 
-      {/* Debug Error Message */}
-      {errorMsg && (
-        <div className="max-w-4xl mx-auto mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center font-bold" dir="ltr">
-          Debug Error: {errorMsg}
-        </div>
-      )}
-
       {/* Results */}
       <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-12 w-full scroll-mt-4">
 
@@ -421,7 +414,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
                 <X size={15} /> تصفّح كل الخدمات
               </button>
             )}
-            {errorMsg && <p className="text-red-500 font-mono mt-3 text-xs" dir="ltr">{errorMsg}</p>}
+            {errorMsg && <p className="text-slate-400 text-xs mt-3">تعذّر تحميل الخدمات الآن — حدّث الصفحة أو حاول لاحقاً.</p>}
           </div>
         ) : (
           <>

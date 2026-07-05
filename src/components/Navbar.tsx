@@ -344,6 +344,7 @@ export default function Navbar() {
                         { name: 'دليل المدن', href: '/city', icon: MapPin },
                         { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
                         { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
+                        { name: 'أسئلة وأجوبة', href: '/qa', icon: BookOpen },
                         { name: 'خدمات e-Devlet', href: '/e-devlet-services', icon: Smartphone },
                         { name: 'الأكواد', href: '/codes', icon: ShieldAlert },
                         { name: 'روابط هامة', href: '/important-links', icon: LinkIcon },

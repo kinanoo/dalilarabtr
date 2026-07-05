@@ -272,7 +272,7 @@ export default function NotificationBell() {
                     type="button"
                     ref={bellBtnRef}
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`group relative p-2.5 rounded-full transition-all duration-300 ${
+                    className={`group relative p-2.5 min-w-11 min-h-11 flex items-center justify-center rounded-full transition-all duration-300 ${
                         totalUnread > 0
                             ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm'
                             : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-700'

@@ -53,6 +53,7 @@ export const GUIDES_MENU = [
     { name: "دليل السكن", href: "/housing", icon: Home },
     { name: "دليل الصحة والتأمين", href: "/health", icon: HeartPulse },
     { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen },
+    { name: "أسئلة وأجوبة", href: "/qa", icon: BookOpen },
     { name: "نماذج جاهزة", href: "/forms", icon: FileText },
     { name: "اطلب خدمة خاصة", href: "/request", icon: ScrollText },
 ];

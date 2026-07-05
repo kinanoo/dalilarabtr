@@ -108,8 +108,7 @@ export default async function TagPage(props: PageProps) {
         '@type': 'BreadcrumbList',
         itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_CONFIG.siteUrl },
-            { '@type': 'ListItem', position: 2, name: 'الوسوم', item: `${SITE_CONFIG.siteUrl}/tags` },
-            { '@type': 'ListItem', position: 3, name: label, item: url },
+            { '@type': 'ListItem', position: 2, name: label, item: url },
         ],
     };
 

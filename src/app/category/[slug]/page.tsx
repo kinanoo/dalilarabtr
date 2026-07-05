@@ -110,12 +110,6 @@ export default async function CategoryPage(props: {
               {
                 "@type": "ListItem",
                 "position": 2,
-                "name": "الأقسام",
-                "item": `${SITE_CONFIG.siteUrl}/category`
-              },
-              {
-                "@type": "ListItem",
-                "position": 3,
                 "name": categoryName,
                 "item": `${SITE_CONFIG.siteUrl}/category/${params.slug}`
               }

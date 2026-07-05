@@ -20,6 +20,7 @@ import HeroSection from '@/components/home/HeroSection';
 import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
+import HeroTrustStrip from '@/components/home/HeroTrustStrip';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -209,15 +210,13 @@ export default async function Home() {
         <div id="search" className="w-full relative z-30 mb-5">
           <LazyGlobalSearch />
         </div>
-        {/* HomeConsultantBtn now ALSO carries the three trust badges
-            (مصادر رسمية / تحديث مباشر / بالعربية للسوريين والعرب) as
-            small faint-gold chips beneath the CTA. The standalone
-            HeroTrustStrip section that used to sit here was removed —
-            it created a hard visual seam between the dark hero and the
-            content below it. A thin slate divider does the same job
-            without claiming attention. */}
         <HomeConsultantBtn />
       </HeroSection>
+
+      {/* Trust signals right under the hero — three checkable chips
+          (مصادر رسمية / تحديث مباشر / بالعربية للسوريين والعرب). A first-time,
+          scam-wary visitor gets concrete credibility in the first seconds. */}
+      <HeroTrustStrip />
 
       {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
           emerald hairline marks it without a heavy divider. */}

@@ -68,6 +68,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/qa`,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/e-devlet-services`,
       changeFrequency: 'weekly',
       priority: 0.9,

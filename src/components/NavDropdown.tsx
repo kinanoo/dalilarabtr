@@ -59,7 +59,7 @@ export default function NavDropdown({ title, items, icon }: NavDropdownProps) {
 
             {/* Standard Dropdown Panel - Enhanced Styling */}
             <div
-                className={`absolute end-0 z-50 mt-4 w-60 origin-top-right rounded-2xl bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 border border-slate-100 dark:border-slate-800 transition-all duration-200 transform ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                className={`absolute end-0 z-50 mt-4 w-60 origin-top-right rounded-2xl bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 border border-slate-100 dark:border-slate-800 transition-all duration-200 transform ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none invisible'
                     }`}
             >
                 {/* Decoration Arrow */}
