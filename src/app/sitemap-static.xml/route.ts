@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { TR_CITIES } from '@/lib/turkishCities';
 
 /**
  * Sitemap — الصفحات الثابتة (About, Contact, Privacy, etc.)
@@ -7,6 +8,9 @@ import { NextResponse } from 'next/server';
 const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '');
 
 const staticPages = [
+  { path: '/city', priority: 0.8 },
+  // Per-city hubs (local-SEO landing pages).
+  ...TR_CITIES.map((c) => ({ path: `/city/${c.slug}`, priority: 0.8 })),
   { path: '/about', priority: 0.6 },
   { path: '/contact', priority: 0.6 },
   { path: '/privacy', priority: 0.3 },

@@ -58,6 +58,7 @@ export default function Footer() {
                   // canonical, so link equity isn't split across two URLs.
                   <>
                     <li><Link href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📂 الدليل الشامل</Link></li>
+                    <li><Link href="/city" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏙️ دليل المدن</Link></li>
                     <li><Link href="/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 دليل الإقامات</Link></li>
                     <li><Link href="/work" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💼 دليل العمل</Link></li>
                     <li><Link href="/education" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🎓 دليل التعليم</Link></li>
@@ -87,6 +88,7 @@ export default function Footer() {
                     <li key="f2"><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧮 حاسبة منع الدخول</Link></li>
                     <li key="f3"><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🛡️ فحص الأكواد الأمنية</Link></li>
                     <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🆔 فحص قيد الكملك</Link></li>
+                    <li key="f4b"><Link href="/tools/residence-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📅 حاسبة أيام الإقامة والغياب</Link></li>
                     <li key="f5"><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💰 حاسبة تكاليف الإقامة</Link></li>
                     <li key="f6"><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🗺️ خريطة المناطق المحظورة</Link></li>
                   </>
