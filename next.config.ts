@@ -170,6 +170,14 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', 'framer-motion', 'date-fns'],
   },
 
+  // 🔕 Strip console.* (except error/warn) from the PRODUCTION bundle. The site
+  // has many logger/console calls; dropping them shrinks client JS a touch and
+  // stops debug noise/info leaking to visitors' consoles. error+warn are kept
+  // so genuine problems still surface.
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+
   // 🔄 React Strict Mode — enabled for better performance and bug detection
   reactStrictMode: true,
 
