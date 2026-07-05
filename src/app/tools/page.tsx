@@ -23,7 +23,8 @@ import {
   ChevronLeft,
   Wrench,
   Pill,
-  Smartphone
+  Smartphone,
+  CalendarClock
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 
@@ -92,6 +93,15 @@ const TOOLS = [
     href: '/tools/kimlik-check',
     color: 'from-purple-500 to-violet-600',
     badge: null,
+  },
+  {
+    id: 'residence-calculator',
+    title: 'حاسبة أيام الإقامة والغياب',
+    description: 'احسب أيام غيابك عن تركيا لمتابعة شرط الإقامة المتّصلة للجنسية والإقامة الدائمة',
+    icon: CalendarClock,
+    href: '/tools/residence-calculator',
+    color: 'from-teal-500 to-emerald-600',
+    badge: 'جديد',
   },
   {
     id: 'dictionary',
