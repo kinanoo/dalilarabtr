@@ -1,7 +1,31 @@
+> # ✅ الحالة: تمّ النقل — الموقع حيّ على Cloudflare (لا تتعامل مع ما تحت كأنه معلّق)
+>
+> **بالعربي (للمالك):** dalilarabtr.com **منشور ويعمل الآن على Cloudflare Workers منذ ~21 يونيو 2026.**
+> الدليل: ترويسة الموقع ترجع `Server: cloudflare`، وكل تحديث للكود (push إلى `main`)
+> يُنشَر تلقائياً عبر **Cloudflare Workers Builds**. الوثيقة أدناه هي **دليل النقل التاريخي**
+> (كُتب *قبل* التنفيذ) — احتفظ به للمرجع فقط، ولا تنفّذه كأنه لم يتمّ.
+>
+> **تصحيح مهم (مالي):** الموقع يعمل على **Cloudflare Workers Paid = ‏5$/شهر**، **وليس** الخطة
+> المجانية. السبب: حزمة الموقع ~3.9MB تتجاوز سقف الخطة المجانية (3MB)، فتمّت الترقية للمدفوعة
+> (سقف 10MB) يوم النقل. تجاهِل أي ذكر لـ"Free tier / بدون بطاقة" في الخطوات أدناه — يصف مساراً لم يُعتمَد.
+>
+> **للنشر الآن:** لا خطوة يدوية — فقط `git push` إلى `main`، فيبني Cloudflare وينشر تلقائياً.
+> (البناء: `npm run cf:build` · النشر اليدوي عند اللزوم: `npx opennextjs-cloudflare deploy`.)
+>
+> **EN summary:** Migration is DONE. Site is live on **Cloudflare Workers *Paid* ($5/mo)** since ~2026-06-21
+> (the Free tier's 3 MB bundle cap didn't fit the ~3.9 MB bundle). The guide below is the *historical*
+> pre-cutover runbook — reference only. Deploy today = push to `main`; Workers Builds auto-deploys.
+
+---
+
 # Deploying dalilarabtr.com to Cloudflare Workers
 
 Step-by-step guide for the Vercel → Cloudflare migration cutover. Written
 for the project owner; assumes no prior Cloudflare experience.
+
+> ⚠️ HISTORICAL — this migration was completed on 2026-06-21. Kept for reference.
+> The "Free tier / no credit card" notes below are superseded: the site runs on
+> **Workers Paid ($5/mo)**. See the status banner at the very top.
 
 ---
 
