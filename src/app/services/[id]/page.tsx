@@ -90,8 +90,11 @@ export default async function ServiceDetailsPage(
     const canonicalId: string = provider.slug || provider.id;
 
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
+    // Include this listing's link so the provider sees the client came from
+    // دليل العرب + which exact service page — trust + lead attribution.
+    const listingUrl = `${SITE_CONFIG.siteUrl}/services/${canonicalId}`;
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-        `مرحباً أستاذ ${provider.name}، رأيت خدمتك "${provider.profession}" على منصة دليل العرب في تركيا وأود الاستفسار.`
+        `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${provider.profession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`
     )}`;
 
     // Schema.org: Service + LocalBusiness — now with aggregateRating when we

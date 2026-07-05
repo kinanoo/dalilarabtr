@@ -2,6 +2,7 @@
 
 import { PhoneCall, MessageCircle } from 'lucide-react';
 import type { ProviderCardData } from './ProviderCard';
+import { SITE_CONFIG } from '@/lib/config';
 
 /**
  * Contact actions (WhatsApp + call) with click tracking. Logs a
@@ -30,8 +31,16 @@ function trackContact(p: ProviderCardData, channel: 'whatsapp' | 'call') {
     } catch { /* tracking must never block the contact action */ }
 }
 
-const waUrl = (p: ProviderCardData) =>
-    p.phone ? `https://wa.me/${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، رأيت خدمتك "${p.profession || ''}" على موقع دليل العرب.`)}` : '';
+const waUrl = (p: ProviderCardData) => {
+    if (!p.phone) return '';
+    // Include the provider's own listing link so they instantly see the client
+    // came from دليل العرب + exactly which service page — builds trust and lets
+    // the owner attribute the lead to the site.
+    const listing = `${SITE_CONFIG.siteUrl}/services/${p.slug || p.id}`;
+    const service = p.profession || p.name || 'خدمتك';
+    const msg = `مرحباً، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${service}" على هذا الرابط:\n${listing}`;
+    return `https://wa.me/${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+};
 
 // Returns a fragment (WhatsApp + call) so the parent card/row controls layout.
 export default function ContactButtons({ p, compact = false }: { p: ProviderCardData; compact?: boolean }) {
