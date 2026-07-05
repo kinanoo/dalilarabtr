@@ -146,10 +146,16 @@ export default function Navbar() {
   const { data: siteConfig } = useSiteConfig();
 
   useEffect(() => {
-    if (!siteConfig?.tools?.length) return;
-    const uniqueTools = Array.from(new Map(siteConfig.tools.map((item: any) => [item.route, item])).values())
+    // MERGE the static TOOLS_MENU with the DB tools_registry (dedup by route).
+    // Previously the DB list REPLACED the static one, so any tool not yet in
+    // tools_registry (e.g. a newly shipped tool) was invisible in the nav.
+    // Merging guarantees new static tools appear; DB entries still win on
+    // name/order for shared routes.
+    const staticTools = TOOLS_MENU.map((t: any) => ({ name: t.name, route: t.href }));
+    const dbTools = siteConfig?.tools || [];
+    const merged = Array.from(new Map([...staticTools, ...dbTools].map((item: any) => [item.route, item])).values())
       .filter((t: any) => t.route !== '/forms' && t.route !== '/directory' && t.route !== '/consultant');
-    setTools(uniqueTools);
+    setTools(merged);
   }, [siteConfig]);
 
   useEffect(() => {
@@ -327,7 +333,7 @@ export default function Navbar() {
                         <FolderOpen size={16} className="text-emerald-600 dark:text-emerald-400" />
                       </span>
                       <span className="font-bold text-sm text-slate-700 dark:text-slate-200">الدليل والمعلومات</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">6</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">7</span>
                     </span>
                     <ChevronLeft size={16} className={`text-slate-400 transition-transform duration-300 ${openSection === 'guide' ? '-rotate-90' : ''}`} />
                   </button>
@@ -335,6 +341,7 @@ export default function Navbar() {
                     <div className="px-2 pb-2 space-y-1">
                       {[
                         { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
+                        { name: 'دليل المدن', href: '/city', icon: MapPin },
                         { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
                         { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
                         { name: 'خدمات e-Devlet', href: '/e-devlet-services', icon: Smartphone },
@@ -370,13 +377,14 @@ export default function Navbar() {
                         <BrainCircuit size={16} className="text-blue-600 dark:text-blue-400" />
                       </span>
                       <span className="font-bold text-sm text-slate-700 dark:text-slate-200">الأدوات الذكية</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">5</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">6</span>
                     </span>
                     <ChevronLeft size={16} className={`text-slate-400 transition-transform duration-300 ${openSection === 'tools' ? '-rotate-90' : ''}`} />
                   </button>
                   <div className={`transition-all duration-300 ease-in-out overflow-hidden ${openSection === 'tools' ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="px-2 pb-2 space-y-1">
                       {[
+                        { name: 'حاسبة أيام الإقامة والغياب', href: '/tools/residence-calculator', icon: Calculator },
                         { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
                         { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
                         { name: 'حاسبة تكاليف الإقامة', href: '/calculator', icon: Calculator },

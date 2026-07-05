@@ -40,6 +40,7 @@ export const PRIMARY_NAV = [
 
 export const GUIDES_MENU = [
     { name: "الدليل الشامل", href: "/directory", icon: FolderOpen },
+    { name: "دليل المدن", href: "/city", icon: MapPin },
     { name: "خدمات السوريين", href: "/category/syrians", icon: Building2 },
     { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone },
     // Section hubs — standalone guide pages. `/residence` (not
@@ -57,6 +58,7 @@ export const GUIDES_MENU = [
 ];
 
 export const TOOLS_MENU = [
+    { name: "حاسبة أيام الإقامة والغياب", href: "/tools/residence-calculator", icon: CalendarClock },
     { name: "فحص الكملك", href: "/tools/kimlik-check", icon: UserCheck },
     { name: "حاسبة المنع", href: "/ban-calculator", icon: Calculator },
     { name: "حاسبة تكاليف الإقامة", href: "/calculator", icon: Calculator },
