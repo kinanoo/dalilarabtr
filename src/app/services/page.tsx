@@ -33,6 +33,7 @@ interface DirRow {
     image: string | null;
     phone: string | null;
     is_verified: boolean | null;
+    is_featured: boolean | null;
     rating: number | null;
     review_count: number | null;
     status: string | null;
@@ -50,18 +51,30 @@ interface DirRow {
 async function getDirectory(): Promise<{ rows: DirRow[]; total: number }> {
     try {
         if (!supabase) return { rows: [], total: 0 };
-        const { data, count } = await supabase
+        const BASE = 'id, slug, name, profession, category, description, city, image, phone, is_verified, rating, review_count, status, created_at';
+        // Prefer featured-first ordering. If the `is_featured` column doesn't
+        // exist yet (monetization migration not run), the query errors — fall
+        // back to the base query so /services never breaks. Once the migration
+        // is applied, the featured path just starts working with no redeploy.
+        let res: { data: unknown; count: number | null; error: unknown } = await supabase
             .from('service_providers')
-            .select(
-                'id, slug, name, profession, category, description, city, image, phone, is_verified, rating, review_count, status, created_at',
-                { count: 'exact' }
-            )
+            .select(`${BASE}, is_featured`, { count: 'exact' })
             .eq('status', 'approved')
+            .order('is_featured', { ascending: false })
             .order('is_verified', { ascending: false })
             .order('rating', { ascending: false })
-            .limit(500); // safety cap — matches the client's former query cap
-        const rows = (data as DirRow[]) || [];
-        return { rows, total: count || rows.length };
+            .limit(500);
+        if (res.error) {
+            res = await supabase
+                .from('service_providers')
+                .select(BASE, { count: 'exact' })
+                .eq('status', 'approved')
+                .order('is_verified', { ascending: false })
+                .order('rating', { ascending: false })
+                .limit(500);
+        }
+        const rows = (res.data as DirRow[]) || [];
+        return { rows, total: res.count || rows.length };
     } catch (e) {
         logger.error('services directory fetch failed:', e);
         return { rows: [], total: 0 };

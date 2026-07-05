@@ -67,19 +67,32 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
     if (hasSeed || !supabase) { setLoading(false); return; }
     let alive = true;
     setLoading(true);
-    supabase
-      .from('service_providers')
-      .select('id, name, profession, category, description, city, phone, image, is_verified, rating, review_count, status, slug, created_at')
-      .eq('status', 'approved')
-      .order('is_verified', { ascending: false })
-      .order('rating', { ascending: false })
-      .limit(500)
-      .then(({ data, error }) => {
-        if (!alive) return;
-        if (error) { logger.error('Supabase Error:', error); setErrorMsg(error.message + ' (' + error.code + ')'); }
-        setRawData(((data as any[]) || []).map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city })));
-        setLoading(false);
-      });
+    (async () => {
+      const BASE = 'id, name, profession, category, description, city, phone, image, is_verified, rating, review_count, status, slug, created_at';
+      // Featured-first if the column exists; fall back to base if the
+      // monetization migration hasn't been run yet (so the list never breaks).
+      let res: { data: unknown; error: any } = await supabase!
+        .from('service_providers')
+        .select(`${BASE}, is_featured`)
+        .eq('status', 'approved')
+        .order('is_featured', { ascending: false })
+        .order('is_verified', { ascending: false })
+        .order('rating', { ascending: false })
+        .limit(500);
+      if (res.error) {
+        res = await supabase!
+          .from('service_providers')
+          .select(BASE)
+          .eq('status', 'approved')
+          .order('is_verified', { ascending: false })
+          .order('rating', { ascending: false })
+          .limit(500);
+      }
+      if (!alive) return;
+      if (res.error) { logger.error('Supabase Error:', res.error); setErrorMsg(res.error.message + ' (' + res.error.code + ')'); }
+      setRawData(((res.data as any[]) || []).map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city })));
+      setLoading(false);
+    })();
     return () => { alive = false; };
   }, [hasSeed]);
 

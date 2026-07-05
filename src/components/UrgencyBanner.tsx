@@ -51,9 +51,10 @@ export default function UrgencyBanner() {
 
     const isAlert = bannerData.type === 'alert';
     const isWarning = bannerData.type === 'warning';
+    const isSponsor = bannerData.type === 'sponsor';
 
-    const Icon = isAlert ? Bell : isWarning ? AlertTriangle : Info;
-    const label = isAlert ? 'تنبيه هام' : isWarning ? 'تحذير' : 'معلومة';
+    const Icon = isSponsor ? Sparkles : isAlert ? Bell : isWarning ? AlertTriangle : Info;
+    const label = isSponsor ? 'برعاية' : isAlert ? 'تنبيه هام' : isWarning ? 'تحذير' : 'معلومة';
 
     return (
         <div
@@ -63,11 +64,13 @@ export default function UrgencyBanner() {
         >
             {/* Gradient background */}
             <div className={`absolute inset-0 ${
-                isAlert
-                    ? 'bg-gradient-to-l from-red-700 via-red-600 to-red-700'
-                    : isWarning
-                        ? 'bg-gradient-to-l from-amber-600 via-amber-500 to-amber-600'
-                        : 'bg-gradient-to-l from-blue-700 via-blue-600 to-blue-700'
+                isSponsor
+                    ? 'bg-gradient-to-l from-emerald-700 via-emerald-600 to-teal-700'
+                    : isAlert
+                        ? 'bg-gradient-to-l from-red-700 via-red-600 to-red-700'
+                        : isWarning
+                            ? 'bg-gradient-to-l from-amber-600 via-amber-500 to-amber-600'
+                            : 'bg-gradient-to-l from-blue-700 via-blue-600 to-blue-700'
             }`} />
 
             {/* Animated stripe overlay for alerts */}
@@ -86,7 +89,7 @@ export default function UrgencyBanner() {
                     {/* Icon — no pulse ring on mobile to save space */}
                     <span className="relative flex-shrink-0">
                         <span className={`absolute inset-0 rounded-full animate-ping opacity-30 hidden sm:block ${
-                            isAlert ? 'bg-red-300' : isWarning ? 'bg-amber-300' : 'bg-blue-300'
+                            isSponsor ? 'bg-emerald-300' : isAlert ? 'bg-red-300' : isWarning ? 'bg-amber-300' : 'bg-blue-300'
                         }`} />
                         <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full">
                             <Icon size={14} className="text-white sm:w-4 sm:h-4" />

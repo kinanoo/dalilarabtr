@@ -22,6 +22,7 @@ export default function ServiceForm() {
         district: '',
         phone: '',
         description: '',
+        is_featured: false,
     });
 
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -92,6 +93,7 @@ export default function ServiceForm() {
                 district: '',
                 phone: '',
                 description: '',
+                is_featured: false,
             });
             setImageFile(null);
 
@@ -224,6 +226,20 @@ export default function ServiceForm() {
                         />
                     </label>
                 </div>
+
+                {/* Featured (paid) toggle — tick after the provider pays for a
+                    promoted spot; puts them at the TOP of /services with a ⭐ badge. */}
+                <label className="flex items-center gap-3 p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/60 dark:bg-amber-950/20 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={formData.is_featured}
+                        onChange={e => setFormData({ ...formData, is_featured: e.target.checked })}
+                        className="w-5 h-5 accent-amber-500"
+                    />
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                        ⭐ مميّز (مدفوع) — يظهر بأعلى نتائج الخدمات مع شارة تمييز
+                    </span>
+                </label>
 
                 {/* Submit Button */}
                 <button

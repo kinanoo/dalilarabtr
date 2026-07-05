@@ -25,6 +25,7 @@ export const BannerEditor = ({ form, setForm }: any) => (
                     <option value="info">معلومة زرقاء (Info)</option>
                     <option value="warning">تحذير أصفر (Warning)</option>
                     <option value="success">نجاح أخضر (Success)</option>
+                    <option value="sponsor">برعاية — إعلان مدفوع (أخضر)</option>
                 </select>
             </div>
             <div className="space-y-2">

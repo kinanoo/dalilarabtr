@@ -14,6 +14,7 @@ export interface ProviderCardData {
     phone: string | null;
     image: string | null;
     is_verified: boolean | null;
+    is_featured?: boolean | null;
     rating: number | null;
     review_count: number | null;
 }
@@ -30,7 +31,17 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
     const hasReviews = !!(p.review_count && p.review_count > 0);
 
     return (
-        <article className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:shadow-xl hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all duration-300">
+        <article className={`group relative flex flex-col rounded-2xl border bg-white dark:bg-slate-900 p-4 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 ${
+            p.is_featured
+                ? 'border-amber-300 dark:border-amber-700/60 ring-1 ring-amber-200/70 dark:ring-amber-800/40 hover:shadow-amber-500/10 hover:border-amber-400'
+                : 'border-slate-200 dark:border-slate-800 hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700'
+        }`}>
+            {/* Featured (paid) ribbon */}
+            {p.is_featured && (
+                <span className="absolute -top-2 start-3 z-10 inline-flex items-center gap-1 bg-gradient-to-l from-amber-500 to-yellow-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm shadow-amber-500/40">
+                    <Star size={10} className="fill-white text-white" /> مميّز
+                </span>
+            )}
             {/* Header — avatar + name + trust */}
             <div className="flex items-start gap-3">
                 <Link href={href} className="relative shrink-0" aria-label={p.name}>
