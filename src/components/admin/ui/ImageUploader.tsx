@@ -65,10 +65,12 @@ export const ImageUploader = ({
             const fileExt = file.name.split('.').pop();
             const filePath = `${path}/${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-            // 3. Upload
+            // 3. Upload — content-addressed filename never changes, so cache it
+            // for a year (browser + Cloudflare edge). Cuts repeat egress and
+            // speeds up LCP on repeat views (a mobile ranking signal).
             const { error: uploadError } = await sb.storage
                 .from(bucket)
-                .upload(filePath, file, { contentType: file.type });
+                .upload(filePath, file, { contentType: file.type, cacheControl: '31536000' });
 
             if (uploadError) throw uploadError;
 

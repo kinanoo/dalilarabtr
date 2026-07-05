@@ -52,7 +52,8 @@ export default function ServiceForm() {
                 const fileName = `${Date.now()}.${fileExt}`;
                 const { error: uploadError, data } = await supabase.storage
                     .from('providers')
-                    .upload(fileName, watermarked, { contentType: watermarked.type });
+                    // Timestamped filename never changes → cache a year (edge + browser).
+                    .upload(fileName, watermarked, { contentType: watermarked.type, cacheControl: '31536000' });
 
                 if (uploadError) throw uploadError;
 

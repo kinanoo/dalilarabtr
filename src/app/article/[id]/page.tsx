@@ -156,6 +156,10 @@ function buildJsonLd(args: {
   articleBody?: string;
   keywords?: string[];
   image?: string;
+  // Official source URL(s) — emitted as schema.org `citation` so Google sees
+  // the article is backed by an authoritative outbound reference (a strong
+  // E-E-A-T signal for a YMYL immigration/government-procedure site).
+  source?: string;
   // Procedural fields used to emit an additional HowTo schema when the
   // article has explicit step-by-step content. HowTo is rich-snippet-eligible
   // (numbered carousel in Google), so articles with 3+ ordered steps benefit
@@ -219,6 +223,14 @@ function buildJsonLd(args: {
       url: args.siteUrl,
     },
     lastReviewed: dateModified,
+    // Cite the official government/authority source(s) backing this article.
+    ...((() => {
+      const cites = (args.source || '')
+        .split(/[,\n|]/)
+        .map((s) => s.trim())
+        .filter((s) => /^https?:\/\//.test(s));
+      return cites.length ? { citation: cites } : {};
+    })()),
   };
 
   const breadcrumbItems = [
@@ -403,6 +415,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     articleBody,
     keywords,
     image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
+    source: article.source,
     steps: article.steps,
     stepImages,
   });
