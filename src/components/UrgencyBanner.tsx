@@ -6,6 +6,23 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname } from 'next/navigation';
 
+// Which storage remembers a dismissal.
+//  • alert / info / warning = "read it once" news → permanent dismiss
+//    (localStorage): once you've seen it, it stays gone.
+//  • sponsor = PAID reach → the advertiser should recur, so its dismiss is
+//    scoped to the CURRENT session (sessionStorage): it comes back on the
+//    visitor's next visit instead of vanishing forever after a single ✕.
+// Returns null when storage is unavailable (SSR / privacy mode) — caller
+// then just shows the banner.
+const dismissStore = (type?: string): Storage | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+        return type === 'sponsor' ? window.sessionStorage : window.localStorage;
+    } catch {
+        return null;
+    }
+};
+
 export default function UrgencyBanner() {
     const pathname = usePathname();
     const [isVisible, setIsVisible] = useState(false);
@@ -24,7 +41,8 @@ export default function UrgencyBanner() {
                 .maybeSingle();
 
             if (data) {
-                const dismissedId = isLocalStorageAvailable() ? localStorage.getItem('dismissed_banner_id') : null;
+                const store = dismissStore(data.type);
+                const dismissedId = store ? store.getItem('dismissed_banner_id') : null;
                 if (dismissedId === data.id.toString()) return;
 
                 setBannerData(data);
@@ -35,14 +53,13 @@ export default function UrgencyBanner() {
         fetchBanner();
     }, []);
 
-    const isLocalStorageAvailable = () => typeof window !== 'undefined' && window.localStorage;
-
     if (pathname?.startsWith('/admin')) return null;
 
     const handleDismiss = () => {
         setIsExiting(true);
-        if (bannerData?.id && isLocalStorageAvailable()) {
-            localStorage.setItem('dismissed_banner_id', bannerData.id.toString());
+        const store = dismissStore(bannerData?.type);
+        if (bannerData?.id && store) {
+            store.setItem('dismissed_banner_id', bannerData.id.toString());
         }
         setTimeout(() => setIsVisible(false), 300);
     };
