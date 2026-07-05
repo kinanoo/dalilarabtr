@@ -20,7 +20,8 @@ import {
     Megaphone,
     Newspaper,
     Users,
-    Bot
+    Bot,
+    Coins
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -91,7 +92,8 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
         {
             title: 'الرئيسية',
             items: [
-                { href: '/admin', label: 'الرئيسية', icon: LayoutDashboard, exact: true }
+                { href: '/admin', label: 'الرئيسية', icon: LayoutDashboard, exact: true },
+                { href: '/admin/monetization', label: 'الربح والإعلانات', icon: Coins },
             ]
         },
         {

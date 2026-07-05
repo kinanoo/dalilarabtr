@@ -18,7 +18,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users, Eye, TrendingUp, TrendingDown, Activity, Globe, RefreshCw,
-    FileText, Share2, MapPin, Clock, Smartphone,
+    FileText, Share2, MapPin, Clock, Smartphone, ChevronDown,
 } from 'lucide-react';
 
 interface Stats {
@@ -114,6 +114,21 @@ export default function SitePulse() {
     const [devices, setDevices] = useState<Row[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    // The KPI strip answers "how's traffic?" at a glance and always shows. The
+    // four breakdown panels (pages/sources/countries/devices) are detail — kept
+    // collapsed by default so the dashboard stays short ("ملمومة"), expandable
+    // when the owner wants to dig in. Preference persists per browser.
+    const [showDetails, setShowDetails] = useState(false);
+    useEffect(() => {
+        try { setShowDetails(localStorage.getItem('sitepulse_details') === '1'); } catch { /* ignore */ }
+    }, []);
+    const toggleDetails = () => {
+        setShowDetails((v) => {
+            const next = !v;
+            try { localStorage.setItem('sitepulse_details', next ? '1' : '0'); } catch { /* ignore */ }
+            return next;
+        });
+    };
 
     const load = useCallback(async (silent = false) => {
         if (!supabase) { setLoading(false); return; }
@@ -203,14 +218,27 @@ export default function SitePulse() {
                 </div>
             )}
 
-            {/* Live mini-panels — what they read, where they came from, who they are */}
+            {/* Live mini-panels — collapsible detail. Toggle keeps the dashboard
+                compact by default; owner expands to see the full breakdown. */}
             {!loading && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                    <MiniPanel title="أكثر الصفحات زيارة" icon={FileText} accent="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" rows={pages} />
-                    <MiniPanel title="من أين أتى الزوار" icon={Share2} accent="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" rows={sources} />
-                    <MiniPanel title="الدول" icon={MapPin} accent="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" rows={countries} prefix={(c) => flag(c)} />
-                    <MiniPanel title="الأجهزة" icon={Smartphone} accent="bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" rows={devices} />
-                </div>
+                <>
+                    <button
+                        onClick={toggleDetails}
+                        className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                        aria-expanded={showDetails}
+                    >
+                        <ChevronDown size={14} className={`transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+                        {showDetails ? 'إخفاء تفاصيل الزوّار' : 'تفاصيل الزوّار (صفحات · مصادر · دول · أجهزة)'}
+                    </button>
+                    {showDetails && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                            <MiniPanel title="أكثر الصفحات زيارة" icon={FileText} accent="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" rows={pages} />
+                            <MiniPanel title="من أين أتى الزوار" icon={Share2} accent="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" rows={sources} />
+                            <MiniPanel title="الدول" icon={MapPin} accent="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" rows={countries} prefix={(c) => flag(c)} />
+                            <MiniPanel title="الأجهزة" icon={Smartphone} accent="bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" rows={devices} />
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
