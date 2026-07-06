@@ -93,40 +93,55 @@ export default function MonetizationPage() {
         );
     }, [providers, search]);
 
+    // Writes go through the service-role admin API, NOT the browser client:
+    // site_banners write RLS requires is_admin(), and a direct client insert
+    // fails with 42501 whenever that claim isn't perfectly satisfied — which
+    // silently left the table empty ("I add a banner but it never shows"). The
+    // server route verifies the admin session then writes with the service role,
+    // so a save can never be blocked by an RLS edge case. Reads (loadBanner)
+    // stay on the client — the SELECT policy is public.
     const saveBanner = async () => {
-        if (!supabase) return;
         if (!banner.content.trim()) { toast.error('اكتب نصّ الإعلان أولاً'); return; }
         setSavingB(true);
-        const payload = {
-            content: banner.content.trim(),
-            link_url: banner.link_url.trim() || null,
-            link_text: banner.link_text.trim() || 'زيارة',
-            type: 'sponsor',
-            is_active: banner.is_active,
-        };
-        // If this sponsor banner is being activated, deactivate other banners so
-        // only one shows at a time (the front-end renders a single active banner).
-        if (banner.is_active) {
-            await supabase.from('site_banners').update({ is_active: false }).neq('id', banner.id || '00000000-0000-0000-0000-000000000000');
+        try {
+            const res = await fetch('/api/admin/banners', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: banner.id || undefined,
+                    content: banner.content.trim(),
+                    link_url: banner.link_url.trim() || null,
+                    link_text: banner.link_text.trim() || 'زيارة',
+                    type: 'sponsor',
+                    is_active: banner.is_active,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) { toast.error('فشل الحفظ: ' + (data.error || res.status)); return; }
+            toast.success('تم حفظ البانر الراعي ✅');
+            loadBanner();
+        } catch {
+            toast.error('خطأ في الاتصال');
+        } finally {
+            setSavingB(false);
         }
-        const res = banner.id
-            ? await supabase.from('site_banners').update(payload).eq('id', banner.id)
-            : await supabase.from('site_banners').insert([payload]);
-        setSavingB(false);
-        if (res.error) { toast.error('فشل الحفظ: ' + res.error.message); return; }
-        toast.success('تم حفظ البانر الراعي ✅');
-        loadBanner();
     };
 
     const deleteBanner = async () => {
-        if (!supabase || !banner.id) { setBanner(EMPTY_BANNER); return; }
+        if (!banner.id) { setBanner(EMPTY_BANNER); return; }
         if (!confirm('حذف البانر الراعي نهائياً؟')) return;
         setSavingB(true);
-        const { error } = await supabase.from('site_banners').delete().eq('id', banner.id);
-        setSavingB(false);
-        if (error) { toast.error('فشل الحذف: ' + error.message); return; }
-        toast.success('حُذف البانر');
-        setBanner(EMPTY_BANNER);
+        try {
+            const res = await fetch(`/api/admin/banners?id=${encodeURIComponent(banner.id)}`, { method: 'DELETE' });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) { toast.error('فشل الحذف: ' + (data.error || res.status)); return; }
+            toast.success('حُذف البانر');
+            setBanner(EMPTY_BANNER);
+        } catch {
+            toast.error('خطأ في الاتصال');
+        } finally {
+            setSavingB(false);
+        }
     };
 
     return (

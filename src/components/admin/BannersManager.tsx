@@ -44,71 +44,59 @@ export default function BannersManager() {
         setIsLoading(false);
     }
 
+    // All writes go through the service-role admin API, not the browser client:
+    // site_banners write RLS requires is_admin(), so a direct client insert can
+    // fail with 42501 ("violates row-level security policy") and silently leave
+    // the table empty. The server route verifies the admin session then writes
+    // with the service role. Reads (fetchBanners) stay on the client — SELECT is
+    // public. Single-active is enforced server-side.
     async function handleAdd() {
         if (!newBanner.content) return;
-        if (!supabase) return;
-
-        // Insert the new banner FIRST, then deactivate the others. This order
-        // means a failure can never leave the site with ZERO active banners
-        // (old one stays up if the insert fails). The previous order
-        // (deactivate-all THEN insert) could blank the banner on a failed insert.
-        const { data: inserted, error } = await supabase
-            .from('site_banners')
-            .insert([newBanner])
-            .select('id')
-            .single();
-        if (error) {
-            logger.error('Insert error:', error);
-            toast.error('فشل إضافة البنر، حاول مجدداً');
+        const res = await fetch('/api/admin/banners', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newBanner),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            logger.error('Insert error:', data);
+            toast.error('فشل إضافة البنر: ' + (data.error || res.status));
             return;
-        }
-        if (newBanner.is_active && inserted?.id) {
-            const { error: deErr } = await supabase.from('site_banners').update({ is_active: false }).neq('id', inserted.id);
-            if (deErr) {
-                logger.error('Deactivate-others error:', deErr);
-                toast.error('نُشر البنر لكن تعذّر تعطيل البنرات الأخرى — راجعها يدوياً');
-            }
         }
         toast.success('تم إضافة ونشر البنر بنجاح');
         setNewBanner({ content: '', type: 'alert', is_active: true, link_url: '', link_text: '' });
         fetchBanners();
     }
 
-    async function toggleActive(id: string, currentState: boolean) {
-        if (!supabase) return;
-        // Only one active banner at a time. Flip THIS one first, then (when
-        // activating) deactivate the rest — so a mid-way failure never leaves
-        // zero active.
-        const { error } = await supabase.from('site_banners').update({ is_active: !currentState }).eq('id', id);
-        if (error) {
-            logger.error('Update error:', error);
-            toast.error('فشل تحديث البنر، حاول مجدداً');
+    async function toggleActive(banner: Banner) {
+        const next = !banner.is_active;
+        const res = await fetch('/api/admin/banners', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...banner, is_active: next }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            logger.error('Update error:', data);
+            toast.error('فشل تحديث البنر: ' + (data.error || res.status));
             return;
         }
-        if (!currentState) {
-            const { error: deErr } = await supabase.from('site_banners').update({ is_active: false }).neq('id', id);
-            if (deErr) {
-                logger.error('Deactivate-others error:', deErr);
-                toast.error('فُعّل البنر لكن تعذّر تعطيل الباقي — راجعها يدوياً');
-            }
-        }
-        toast.success(!currentState ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
+        toast.success(next ? 'تم تفعيل البنر ونشره' : 'تم تعطيل البنر');
         fetchBanners();
     }
 
     async function handleDelete(id: string) {
-        if (!supabase) return;
         if (!confirm('هل أنت متأكد من حذف هذا البنر؟ لا يمكن التراجع.')) return;
 
         const toastId = toast.loading('جاري مسح البنر...');
-        const { error } = await supabase.from('site_banners').delete().eq('id', id);
-
-        if (!error) {
+        const res = await fetch(`/api/admin/banners?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (res.ok) {
             toast.success('تم حذف البنر بنجاح', { id: toastId });
             fetchBanners();
         } else {
-            logger.error('Delete error:', error);
-            toast.error('فشل حذف البنر، حاول مجدداً', { id: toastId });
+            const data = await res.json().catch(() => ({}));
+            logger.error('Delete error:', data);
+            toast.error('فشل حذف البنر: ' + (data.error || res.status), { id: toastId });
         }
     }
 
@@ -235,7 +223,7 @@ export default function BannersManager() {
 
                             <div className="flex items-center gap-2 shrink-0">
                                 <button
-                                    onClick={() => toggleActive(banner.id, banner.is_active)}
+                                    onClick={() => toggleActive(banner)}
                                     className={`p-2 rounded-xl transition-all hover:scale-110 active:scale-95 ${
                                         banner.is_active
                                             ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
