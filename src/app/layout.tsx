@@ -39,9 +39,6 @@ import Footer from "@/components/Footer";
 import ScrollRestoration from "@/components/ScrollRestoration";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
 
-// Non-critical above-fold components — lazy loaded to reduce initial JS
-const UrgencyBanner = dynamic(() => import('@/components/UrgencyBanner'));
-
 // Wrapper that delays rendering until browser is idle (~2.5s after page load)
 const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
 
@@ -255,7 +252,6 @@ export default function RootLayout({
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
             <div className="relative z-10">
-              <UrgencyBanner />
               <Navbar />
               <div id="main-content">
                 {children}

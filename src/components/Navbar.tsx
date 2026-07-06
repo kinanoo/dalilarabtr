@@ -18,6 +18,7 @@ import { ThemeToggle } from './ThemeToggle';
 import PrayerPopover from './PrayerPopover';
 import NavDropdown from './NavDropdown';
 import NotificationBell from './notifications/NotificationBell';
+import UrgencyBanner from './UrgencyBanner';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -445,6 +446,14 @@ export default function Navbar() {
         // body overflow settings.
         className={`fixed top-0 left-0 right-0 z-[100] w-full bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-[#020617] dark:via-[#0f172a] dark:to-[#020617] border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
       >
+        {/* Promo / alert / sponsor banner — MUST live INSIDE this fixed header.
+            The header is `position: fixed; top-0; z-[100]`; a banner rendered
+            above it in normal flow (the old layout.tsx spot) sat at y=0 and was
+            painted OVER by this fixed bar, so it never showed. Inside the header
+            it renders above the nav row, and navRef's ResizeObserver folds its
+            height into the spacer automatically. */}
+        <UrgencyBanner />
+
         {/* Rich Gradient Line */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
 
