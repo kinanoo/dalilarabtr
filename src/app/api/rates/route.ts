@@ -73,11 +73,38 @@ async function fromErApi(): Promise<{ rates: Rates; updated: string | null } | n
     }
 }
 
+// Reliable gram-gold fallback: truncgil (which has gram altın) is often
+// unreachable from the Cloudflare edge, so compute gram gold in TRY from a
+// keyless spot source (XAU USD/oz) × the USD→TRY we already have. One troy
+// ounce = 31.1035 g. This tracks the Turkish "gram altın" within ~0.1%.
+async function goldFromApi(usdTry: number): Promise<Rate | null> {
+    try {
+        const res = await fetch('https://api.gold-api.com/price/XAU', {
+            headers: { 'User-Agent': UA, Accept: 'application/json' },
+            signal: AbortSignal.timeout(8000),
+            next: { revalidate: REVALIDATE },
+        });
+        if (!res.ok) return null;
+        const d = await res.json() as { price?: number };
+        const xau = num(d.price);
+        if (!xau) return null;
+        return { value: (xau / 31.1035) * usdTry, change: 0 };
+    } catch {
+        return null;
+    }
+}
+
 export async function GET() {
     const data = (await fromTruncgil()) || (await fromErApi());
     if (!data) return NextResponse.json({ ok: false }, { status: 200 });
+    const rates = data.rates;
+    // If the primary source didn't give gold, compute it from the spot source.
+    if (!rates.gold && rates.usd) {
+        const g = await goldFromApi(rates.usd.value);
+        if (g) rates.gold = g;
+    }
     return NextResponse.json(
-        { ok: true, rates: data.rates, updated: data.updated },
+        { ok: true, rates, updated: data.updated },
         { headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' } }
     );
 }
