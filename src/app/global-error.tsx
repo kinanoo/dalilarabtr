@@ -25,8 +25,8 @@ export default function GlobalError({
 
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-3">خطأ في الخادم</h1>
           <p className="text-slate-600 dark:text-slate-300 mb-2">عذراً، حدثت مشكلة غير متوقعة في النظام</p>
-          {error.message && (
-            <p className="text-xs text-slate-500 dark:text-slate-300 mb-6 bg-slate-100 dark:bg-slate-800 p-3 rounded-lg">
+          {process.env.NODE_ENV === 'development' && error.message && (
+            <p className="text-xs text-slate-500 dark:text-slate-300 mb-6 bg-slate-100 dark:bg-slate-800 p-3 rounded-lg" dir="ltr">
               {error.message}
             </p>
           )}
