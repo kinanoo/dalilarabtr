@@ -31,6 +31,8 @@ const RATE_ITEMS: { key: string; label: string; unit: string; dec: number }[] = 
     { key: 'sar', label: 'ريال سعودي', unit: '₺', dec: 2 },
     { key: 'gold', label: 'غرام ذهب', unit: '₺', dec: 0 },
     { key: 'goldOz', label: 'أونصة ذهب', unit: '$', dec: 0 },
+    { key: 'sypUsd', label: 'الدولار مقابل السوري', unit: 'ل.س', dec: 0 },
+    { key: 'sypTry', label: 'التركي مقابل السوري', unit: 'ل.س', dec: 2 },
 ];
 
 const EASTERN_DIGITS = /[٠-٩۰-۹]/g;

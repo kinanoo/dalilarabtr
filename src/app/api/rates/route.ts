@@ -19,7 +19,13 @@ const REVALIDATE = 600; // 10 min
 const UA = 'Mozilla/5.0 (compatible; dalilarabtr/1.0; +https://dalilarabtr.com)';
 
 interface Rate { value: number; change: number }
-type Rates = { usd: Rate | null; eur: Rate | null; sar: Rate | null; gold: Rate | null; goldOz?: Rate | null };
+type Rates = {
+    usd: Rate | null; eur: Rate | null; sar: Rate | null; gold: Rate | null;
+    goldOz?: Rate | null;
+    // syp = TRY per 1 SYP (as the sources give it); sypUsd/sypTry are the way
+    // Syrians actually read it — SYP per 1 USD and SYP per 1 TRY.
+    syp?: Rate | null; sypUsd?: Rate | null; sypTry?: Rate | null;
+};
 
 function num(v: unknown): number | null {
     const n = Number(v);
@@ -42,7 +48,7 @@ async function fromTruncgil(): Promise<{ rates: Rates; updated: string | null } 
             if (value == null) return null;
             return { value, change: num(o.Change) ?? 0 };
         };
-        const rates: Rates = { usd: pick('USD'), eur: pick('EUR'), sar: pick('SAR'), gold: pick('GRA') };
+        const rates: Rates = { usd: pick('USD'), eur: pick('EUR'), sar: pick('SAR'), gold: pick('GRA'), syp: pick('SYP') };
         if (!rates.usd && !rates.eur) return null;
         return { rates, updated: (d.Update_Date as string) || null };
     } catch {
@@ -66,7 +72,7 @@ async function fromErApi(): Promise<{ rates: Rates; updated: string | null } | n
             const r = d.rates?.[code];
             return r ? { value: t / r, change: 0 } : null;
         };
-        const rates: Rates = { usd: { value: t, change: 0 }, eur: per('EUR'), sar: per('SAR'), gold: null };
+        const rates: Rates = { usd: { value: t, change: 0 }, eur: per('EUR'), sar: per('SAR'), gold: null, syp: per('SYP') };
         return { rates, updated: d.time_last_update_utc || null };
     } catch {
         return null;
@@ -109,6 +115,12 @@ export async function GET() {
             if (!rates.gold) rates.gold = g.gram;
             rates.goldOz = g.oz;
         }
+    }
+    // Syrian pound — derive SYP-per-USD and SYP-per-TRY from the TRY-per-SYP the
+    // sources give, so the ticker reads "الدولار = X ل.س / التركي = Y ل.س".
+    if (rates.syp && rates.syp.value > 0 && rates.usd) {
+        rates.sypUsd = { value: rates.usd.value / rates.syp.value, change: 0 };
+        rates.sypTry = { value: 1 / rates.syp.value, change: 0 };
     }
     return NextResponse.json(
         { ok: true, rates, updated: data.updated },
