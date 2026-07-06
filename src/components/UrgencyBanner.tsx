@@ -41,10 +41,15 @@ export default function UrgencyBanner() {
                 .maybeSingle();
 
             if (data) {
-                const store = dismissStore(data.type);
-                const dismissedId = store ? store.getItem('dismissed_banner_id') : null;
-                if (dismissedId === data.id.toString()) return;
-
+                // Sponsor (paid) banners are NEVER dismissible — they always
+                // show while active so the advertiser can rely on the placement
+                // (the owner hides it by toggling it off in the panel). Only the
+                // read-once alert/info/warning types honor a per-visitor dismiss.
+                if (data.type !== 'sponsor') {
+                    const store = dismissStore(data.type);
+                    const dismissedId = store ? store.getItem('dismissed_banner_id') : null;
+                    if (dismissedId === data.id.toString()) return;
+                }
                 setBannerData(data);
                 setIsVisible(true);
             }
@@ -128,14 +133,16 @@ export default function UrgencyBanner() {
                     )}
                 </div>
 
-                <button
-                    type="button"
-                    onClick={handleDismiss}
-                    className="text-white/70 hover:text-white transition-colors p-1.5 sm:p-2 flex items-center justify-center hover:bg-white/10 rounded-full flex-shrink-0"
-                    aria-label="إغلاق التنبيه"
-                >
-                    <X size={16} />
-                </button>
+                {!isSponsor && (
+                    <button
+                        type="button"
+                        onClick={handleDismiss}
+                        className="text-white/70 hover:text-white transition-colors p-1.5 sm:p-2 flex items-center justify-center hover:bg-white/10 rounded-full flex-shrink-0"
+                        aria-label="إغلاق التنبيه"
+                    >
+                        <X size={16} />
+                    </button>
+                )}
             </div>
 
             <style dangerouslySetInnerHTML={{ __html: `
