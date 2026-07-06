@@ -130,7 +130,7 @@ export default function NewsTicker() {
         const t = setTimeout(() => {
             if (!copyRef.current) return;
             const copyWidth = copyRef.current.scrollWidth;
-            setDuration(Math.max(12, copyWidth / 95));
+            setDuration(Math.max(15, copyWidth / 70));
         }, 120);
         return () => clearTimeout(t);
     }, [entries]);
