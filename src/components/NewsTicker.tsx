@@ -118,7 +118,7 @@ export default function NewsTicker() {
         const t = setTimeout(() => {
             if (!copyRef.current) return;
             const copyWidth = copyRef.current.scrollWidth;
-            setDuration(Math.max(8, copyWidth / 180));
+            setDuration(Math.max(10, copyWidth / 140));
         }, 120);
         return () => clearTimeout(t);
     }, [entries]);
@@ -165,7 +165,6 @@ export default function NewsTicker() {
             <div className="relative flex items-center h-[32px] sm:h-[36px]">
                 <div className="flex-1 overflow-hidden">
                     <div
-                        dir="ltr"
                         className="flex items-center w-max will-change-transform"
                         style={{ animation: `ticker-scroll ${duration}s linear infinite`, animationPlayState: isPaused ? 'paused' : 'running' }}
                     >
@@ -185,7 +184,7 @@ export default function NewsTicker() {
             <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes ticker-scroll {
                     from { transform: translateX(0); }
-                    to { transform: translateX(-50%); }
+                    to { transform: translateX(50%); }
                 }
             `}} />
         </div>
