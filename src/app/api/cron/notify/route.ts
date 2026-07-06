@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { createClient } from '@supabase/supabase-js';
 import logger from '@/lib/logger';
+import { SITE_CONFIG } from '@/lib/config';
 
 /**
  * Scheduled content-notification endpoint.
@@ -137,6 +138,14 @@ async function handle(request: Request) {
         subs = (data as typeof subs) || [];
     }
 
+    // Telegram channel broadcast — the "bot that posts daily". Optional: fires
+    // only when both env vars are set (bot token from BotFather + the channel's
+    // chat id). Same content as the push/bell, one message per fresh item.
+    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+    const tgChat = process.env.TELEGRAM_CHAT_ID;
+    const tgEnabled = !!(tgToken && tgChat);
+    let tgSent = 0;
+
     let notifInserted = 0;
     let pushSuccess = 0;
     let pushFail = 0;
@@ -173,6 +182,22 @@ async function handle(request: Request) {
                     })
             ));
         }
+
+        // Telegram post — one message per fresh item to the channel.
+        if (tgEnabled) {
+            try {
+                const text = `${item.title}\n\n${item.message}\n\n${SITE_CONFIG.siteUrl}${item.link}`;
+                const tgRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: tgChat, text }),
+                });
+                if (tgRes.ok) tgSent++;
+                else logger.error('telegram send failed:', tgRes.status);
+            } catch (err) {
+                logger.error('telegram send error:', err);
+            }
+        }
     }
 
     if (expired.length > 0) {
@@ -187,6 +212,7 @@ async function handle(request: Request) {
         subscribers: subs.length,
         pushSuccess,
         pushFail,
+        telegramSent: tgSent,
         cleaned: expired.length,
         skippedForCap,
     });
