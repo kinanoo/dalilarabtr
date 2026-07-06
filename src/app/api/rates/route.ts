@@ -19,7 +19,7 @@ const REVALIDATE = 600; // 10 min
 const UA = 'Mozilla/5.0 (compatible; dalilarabtr/1.0; +https://dalilarabtr.com)';
 
 interface Rate { value: number; change: number }
-type Rates = { usd: Rate | null; eur: Rate | null; sar: Rate | null; gold: Rate | null };
+type Rates = { usd: Rate | null; eur: Rate | null; sar: Rate | null; gold: Rate | null; goldOz?: Rate | null };
 
 function num(v: unknown): number | null {
     const n = Number(v);
@@ -77,7 +77,7 @@ async function fromErApi(): Promise<{ rates: Rates; updated: string | null } | n
 // unreachable from the Cloudflare edge, so compute gram gold in TRY from a
 // keyless spot source (XAU USD/oz) × the USD→TRY we already have. One troy
 // ounce = 31.1035 g. This tracks the Turkish "gram altın" within ~0.1%.
-async function goldFromApi(usdTry: number): Promise<Rate | null> {
+async function goldFromApi(usdTry: number): Promise<{ gram: Rate; oz: Rate } | null> {
     try {
         const res = await fetch('https://api.gold-api.com/price/XAU', {
             headers: { 'User-Agent': UA, Accept: 'application/json' },
@@ -86,9 +86,12 @@ async function goldFromApi(usdTry: number): Promise<Rate | null> {
         });
         if (!res.ok) return null;
         const d = await res.json() as { price?: number };
-        const xau = num(d.price);
+        const xau = num(d.price); // USD per troy ounce
         if (!xau) return null;
-        return { value: (xau / 31.1035) * usdTry, change: 0 };
+        return {
+            gram: { value: (xau / 31.1035) * usdTry, change: 0 }, // gram gold in TRY
+            oz: { value: xau, change: 0 },                        // ounce gold in USD
+        };
     } catch {
         return null;
     }
@@ -98,10 +101,14 @@ export async function GET() {
     const data = (await fromTruncgil()) || (await fromErApi());
     if (!data) return NextResponse.json({ ok: false }, { status: 200 });
     const rates = data.rates;
-    // If the primary source didn't give gold, compute it from the spot source.
-    if (!rates.gold && rates.usd) {
+    // gold-api gives the ounce in USD always; use it for the ounce, and compute
+    // gram gold in TRY from it when the primary source didn't provide gram.
+    if (rates.usd) {
         const g = await goldFromApi(rates.usd.value);
-        if (g) rates.gold = g;
+        if (g) {
+            if (!rates.gold) rates.gold = g.gram;
+            rates.goldOz = g.oz;
+        }
     }
     return NextResponse.json(
         { ok: true, rates, updated: data.updated },

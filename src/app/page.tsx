@@ -20,7 +20,6 @@ import HeroSection from '@/components/home/HeroSection';
 import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
-import LiveRatesStrip from '@/components/home/LiveRatesStrip';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -212,10 +211,6 @@ export default async function Home() {
         </div>
         <HomeConsultantBtn />
       </HeroSection>
-
-      {/* Live TRY exchange-rate strip — USD/EUR/SAR/gram-gold, the audience's
-          #1 daily-habit check. A concrete reason to open the site every day. */}
-      <LiveRatesStrip />
 
       {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
           emerald hairline marks it without a heavy divider. */}
