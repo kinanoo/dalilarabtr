@@ -1,0 +1,45 @@
+name: Content notification cron
+
+# Fires the site's /api/cron/notify endpoint on a schedule so newly-published
+# articles/updates automatically notify subscribers (in-site bell + web-push),
+# instead of waiting for an admin to broadcast manually.
+#
+# Why GitHub Actions and not a Cloudflare cron trigger: the site is deployed via
+# @opennextjs/cloudflare, whose worker ships no `scheduled()` handler — adding one
+# means risky surgery on the generated worker entry. A scheduled curl to the HTTP
+# endpoint is simpler, safe, and just as reliable.
+#
+# ONE-TIME SETUP (owner):
+#   1. Pick a long random secret (e.g. `openssl rand -hex 32`).
+#   2. Cloudflare → Workers → dalilarabtr → Settings → Variables → add
+#      CRON_SECRET (as a Secret) = <that value>, then redeploy.
+#   3. GitHub → repo → Settings → Secrets and variables → Actions → New
+#      repository secret → CRON_SECRET = <the SAME value>.
+# Until CRON_SECRET is set in Cloudflare the endpoint returns 503 (inert).
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # every 30 minutes (UTC)
+  workflow_dispatch: {}        # allow a manual run from the Actions tab
+
+# Never run two overlapping notifiers.
+concurrency:
+  group: cron-notify
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger content notifications
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET not set — skipping (add it in repo Actions secrets)."
+            exit 0
+          fi
+          curl -sS -X POST "https://dalilarabtr.com/api/cron/notify" \
+            -H "x-cron-key: $CRON_SECRET" \
+            -w $'\nHTTP %{http_code}\n' \
+            --max-time 60 --fail-with-body
