@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, ArrowRight, Bell, Sparkles, AlertTriangle, Info } from 'lucide-react';
+import { X, ArrowRight, Bell, Megaphone, AlertTriangle, Info } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { usePathname } from 'next/navigation';
@@ -75,7 +75,7 @@ export default function UrgencyBanner() {
     const isWarning = bannerData.type === 'warning';
     const isSponsor = bannerData.type === 'sponsor';
 
-    const Icon = isSponsor ? Sparkles : isAlert ? Bell : isWarning ? AlertTriangle : Info;
+    const Icon = isSponsor ? Megaphone : isAlert ? Bell : isWarning ? AlertTriangle : Info;
     const label = isSponsor ? 'برعاية' : isAlert ? 'تنبيه هام' : isWarning ? 'تحذير' : 'معلومة';
 
     return (
@@ -87,7 +87,7 @@ export default function UrgencyBanner() {
             {/* Gradient background */}
             <div className={`absolute inset-0 ${
                 isSponsor
-                    ? 'bg-gradient-to-l from-emerald-700 via-emerald-600 to-teal-700'
+                    ? 'bg-gradient-to-l from-[#3f4a22] via-[#5b6b30] to-[#2f3817]'
                     : isAlert
                         ? 'bg-gradient-to-l from-red-700 via-red-600 to-red-700'
                         : isWarning
@@ -111,10 +111,10 @@ export default function UrgencyBanner() {
                     {/* Icon — no pulse ring on mobile to save space */}
                     <span className="relative flex-shrink-0">
                         <span className={`absolute inset-0 rounded-full animate-ping opacity-30 hidden sm:block ${
-                            isSponsor ? 'bg-emerald-300' : isAlert ? 'bg-red-300' : isWarning ? 'bg-amber-300' : 'bg-blue-300'
+                            isSponsor ? 'bg-amber-300' : isAlert ? 'bg-red-300' : isWarning ? 'bg-amber-300' : 'bg-blue-300'
                         }`} />
-                        <span className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-full">
-                            <Icon size={14} className="text-white sm:w-4 sm:h-4" />
+                        <span className={`relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full ${isSponsor ? 'bg-[#2f3817]/70 ring-1 ring-amber-300/60' : 'bg-white/20'}`}>
+                            <Icon size={14} className={`sm:w-4 sm:h-4 ${isSponsor ? 'text-amber-300' : 'text-white'}`} />
                         </span>
                     </span>
 
@@ -126,7 +126,7 @@ export default function UrgencyBanner() {
                     {bannerData.link_url && (
                         <Link
                             href={bannerData.link_url}
-                            className="hidden sm:flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full text-xs font-bold text-white transition-colors whitespace-nowrap shrink-0"
+                            className={`hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black transition-colors whitespace-nowrap shrink-0 ${isSponsor ? 'bg-gradient-to-l from-amber-300 to-yellow-500 text-[#2f3817] hover:from-amber-200 hover:to-yellow-400 shadow-sm' : 'bg-white/20 hover:bg-white/30 text-white'}`}
                         >
                             {bannerData.link_text || 'اقرأ المزيد'} <ArrowRight size={12} className="rotate-180" />
                         </Link>
