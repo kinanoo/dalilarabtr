@@ -50,7 +50,23 @@ async function getCityData(slug: string) {
     const cityZones = zones.filter((z) => canonicalCity(z.c) === city.ar);
     const districts = Array.from(new Set(cityZones.map((z) => z.d).filter(Boolean)));
 
-    return { city, providers, closedCount: cityZones.length, districts };
+    // City-relevant articles — surface the existing 300+ article base for local
+    // relevance + internal link equity. Match the city's Arabic name in title.
+    let cityArticles: { slug: string | null; title: string }[] = [];
+    if (supabase) {
+        try {
+            const { data } = await supabase
+                .from('articles')
+                .select('slug, title')
+                .eq('status', 'approved')
+                .ilike('title', `%${city.ar}%`)
+                .order('published_at', { ascending: false })
+                .limit(8);
+            cityArticles = (data as { slug: string | null; title: string }[]) || [];
+        } catch { /* graceful */ }
+    }
+
+    return { city, providers, closedCount: cityZones.length, districts, cityArticles };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -75,9 +91,16 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
     const { slug } = await params;
     const data = await getCityData(slug);
     if (!data) notFound();
-    const { city, providers, closedCount, districts } = data;
+    const { city, providers, closedCount, districts, cityArticles } = data;
     const base = SITE_CONFIG.siteUrl;
     const topProviders = providers.slice(0, 8);
+
+    const faqs = [
+        { q: `كم عدد الأحياء المغلقة لتسجيل الأجانب في ${city.ar}؟`, a: closedCount > 0 ? `يوجد ${closedCount} حيّاً مغلقاً أمام تسجيل الأجانب في ${city.ar}، موزّعة على ${districts.length} منطقة. تحقّق دائماً أن الحيّ مفتوح قبل استئجار أو شراء سكن.` : `لا توجد أحياء مغلقة مسجّلة حالياً في ${city.ar} في قائمتنا. تحقّق دائماً قبل التسجيل.` },
+        { q: `كم عدد مقدّمي الخدمات العرب في ${city.ar}؟`, a: providers.length > 0 ? `يضمّ دليل العرب ${providers.length} مقدّم خدمة عربيّ موثوق في ${city.ar} — أطباء ومحامون ومترجمون وعقارات وغيرها، مع تواصل مباشر عبر واتساب.` : `لا يوجد مقدّمو خدمات مسجّلون في ${city.ar} بعد — يمكن إضافة الخدمات مجاناً.` },
+        { q: `كيف أحجز موعد الإقامة (Randevu) في ${city.ar}؟`, a: `عبر بوابة دائرة الهجرة الرسمية randevu.goc.gov.tr — اختر ولاية ${city.ar} ونوع المعاملة ثم احجز أقرب موعد متاح.` },
+        { q: `كيف أعرف إن كان الحيّ مفتوحاً لتسجيل الأجانب في ${city.ar}؟`, a: `استخدم أداة فحص الأحياء المغلقة في دليل العرب، أو استعلم رسمياً من دائرة الهجرة قبل توقيع عقد السكن.` },
+    ];
 
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -97,6 +120,10 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                 inLanguage: 'ar',
                 about: { '@type': 'City', name: city.ar, address: { '@type': 'PostalAddress', addressCountry: 'TR' } },
                 isPartOf: { '@type': 'WebSite', name: SITE_CONFIG.name, url: base },
+            },
+            {
+                '@type': 'FAQPage',
+                mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
             },
         ],
     };
@@ -253,6 +280,43 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                                     <div className="min-w-0 flex-1"><p className="font-black text-sm text-slate-900 dark:text-slate-100">{l.label}</p><p className="text-xs text-slate-500 dark:text-slate-400">{l.note}</p></div>
                                 </a>
                             )
+                        ))}
+                    </div>
+                </section>
+
+                {/* City-relevant articles — leverages the existing article base */}
+                {cityArticles.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                            <FileText size={20} className="text-emerald-600" /> أخبار وأدلّة تخصّ {city.ar}
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {cityArticles.map((a) => (
+                                <Link key={a.slug} href={`/article/${a.slug}`}
+                                    className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all">
+                                    <FileText size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                    <span className="font-bold text-sm text-slate-800 dark:text-slate-100 line-clamp-2 flex-1">{a.title}</span>
+                                    <ArrowLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* City FAQ — also emitted as FAQPage structured data above */}
+                <section>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                        <MapPin size={20} className="text-emerald-600" /> أسئلة شائعة عن {city.ar}
+                    </h2>
+                    <div className="space-y-3">
+                        {faqs.map((f, i) => (
+                            <details key={i} className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                                <summary className="font-black text-sm text-slate-900 dark:text-slate-100 cursor-pointer list-none flex items-center justify-between gap-2">
+                                    {f.q}
+                                    <span className="text-slate-400 group-open:rotate-45 transition-transform text-lg leading-none shrink-0">+</span>
+                                </summary>
+                                <p className="text-sm text-slate-600 dark:text-slate-300 mt-3 leading-relaxed">{f.a}</p>
+                            </details>
                         ))}
                     </div>
                 </section>
