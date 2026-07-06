@@ -73,6 +73,18 @@ export default function NewsTicker() {
             const rateEntries: Entry[] = [];
             const newsEntries: Entry[] = [];
 
+            // Admin on/off switch (site_settings.ticker_enabled). Defaults to
+            // shown when the column is missing (pre-migration) or the read fails.
+            try {
+                if (supabase) {
+                    const { data, error } = await supabase.from('site_settings').select('ticker_enabled').limit(1).maybeSingle();
+                    if (!error && data && (data as { ticker_enabled?: boolean }).ticker_enabled === false) {
+                        if (alive) setEntries([]);
+                        return;
+                    }
+                }
+            } catch { /* default shown */ }
+
             try {
                 const r = await fetch('/api/rates');
                 const d = (await r.json()) as RatesResp;
@@ -118,7 +130,7 @@ export default function NewsTicker() {
         const t = setTimeout(() => {
             if (!copyRef.current) return;
             const copyWidth = copyRef.current.scrollWidth;
-            setDuration(Math.max(10, copyWidth / 140));
+            setDuration(Math.max(12, copyWidth / 95));
         }, 120);
         return () => clearTimeout(t);
     }, [entries]);
@@ -152,7 +164,7 @@ export default function NewsTicker() {
 
     return (
         <div
-            className="relative overflow-hidden text-xs sm:text-sm font-bold select-none border-b border-emerald-500/20"
+            className="relative overflow-hidden text-[11px] sm:text-xs font-bold select-none border-b border-emerald-500/20"
             dir="rtl"
             role="status"
             aria-live="off"
@@ -162,7 +174,7 @@ export default function NewsTicker() {
         >
             <div className="absolute inset-0 bg-[#0b1830]" />
 
-            <div className="relative flex items-center h-[32px] sm:h-[36px]">
+            <div className="relative flex items-center h-[24px] sm:h-[28px]">
                 <div className="flex-1 overflow-hidden">
                     <div
                         className="flex items-center w-max will-change-transform"

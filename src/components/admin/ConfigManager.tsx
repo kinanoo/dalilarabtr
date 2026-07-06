@@ -677,7 +677,7 @@ function AIProviderManager() {
 }
 
 function GeneralSettingsForm() {
-    const [settings, setSettings] = useState<Record<string, string>>({});
+    const [settings, setSettings] = useState<Record<string, any>>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -770,6 +770,27 @@ function GeneralSettingsForm() {
                         <input className={`${inputCls} font-mono`} dir="ltr" value={settings.email_address || ''} onChange={e => setSettings({ ...settings, email_address: e.target.value })} />
                     </div>
                 </div>
+            </div>
+
+            {/* Homepage ticker on/off */}
+            <div className="space-y-3 border-b pb-6 border-slate-200 dark:border-slate-700">
+                <h4 className="font-black text-slate-600 dark:text-slate-300 text-sm flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    شريط الأسعار والأخبار المتحرّك
+                </h4>
+                <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, ticker_enabled: settings.ticker_enabled === false })}
+                    className="flex items-center gap-3 w-full rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-right"
+                >
+                    <span className={`relative w-11 h-6 rounded-full transition-colors ${settings.ticker_enabled !== false ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${settings.ticker_enabled !== false ? 'right-0.5' : 'right-[22px]'}`} />
+                    </span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                        {settings.ticker_enabled !== false ? 'ظاهر للزوّار الآن' : 'مخفيّ'}
+                    </span>
+                </button>
+                <p className="text-[11px] text-slate-400">الشريط الداكن أعلى الرئيسية (أسعار الصرف + الأخبار). أطفئه لإخفائه كليّاً عن الزوّار.</p>
             </div>
 
             <button
