@@ -20,7 +20,6 @@ import HeroSection from '@/components/home/HeroSection';
 import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
-import HeroTrustStrip from '@/components/home/HeroTrustStrip';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
@@ -212,11 +211,6 @@ export default async function Home() {
         </div>
         <HomeConsultantBtn />
       </HeroSection>
-
-      {/* Trust signals right under the hero — three checkable chips
-          (مصادر رسمية / تحديث مباشر / بالعربية للسوريين والعرب). A first-time,
-          scam-wary visitor gets concrete credibility in the first seconds. */}
-      <HeroTrustStrip />
 
       {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
           emerald hairline marks it without a heavy divider. */}
