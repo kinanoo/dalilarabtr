@@ -125,15 +125,15 @@ export default function AdminServicesPage() {
                 clean.category = clean.profession || 'عام';
             }
 
-            // Prepare Payload
-            const payload = selectedItem.id === 'new' ? { ...clean } : { id: selectedItem.id, ...clean };
-            if (selectedItem.id === 'new') delete payload.id;
-
-
-
-            // Execute Upsert to 'service_providers'
-            const { error } = await supabase.from('service_providers').upsert(payload);
-            if (error) throw error;
+            // Persist via the server-side admin API — column-whitelisted +
+            // validated server-side (no direct client write to service_providers).
+            const res = await fetch('/api/admin/services', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: selectedItem.id, data: clean }),
+            });
+            const result = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(result.error || 'فشل الحفظ');
 
             toast.success('✅ تم حفظ الخدمة بنجاح');
             setSelectedItem(null);

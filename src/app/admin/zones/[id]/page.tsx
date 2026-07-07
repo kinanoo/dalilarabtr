@@ -57,21 +57,18 @@ export default function ZoneEditPage({ params }: { params: Promise<{ id: string 
 
     // Save
     const handleSave = async () => {
-        if (!supabase) return;
         setSaving(true);
         try {
-            const payload = { ...form };
+            // Validation (server re-validates + whitelists columns)
+            if (!form.city) throw new Error("اسم المدينة مطلوب (City is required)");
 
-            // Validation
-            if (!payload.city) throw new Error("اسم المدينة مطلوب (City is required)");
-
-            if (isNew) delete payload.id; // Let DB handle ID (auto-increment usually or uuid)
-
-            const { error } = await supabase
-                .from('zones')
-                .upsert(payload);
-
-            if (error) throw error;
+            const res = await fetch('/api/admin/zones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: isNew ? 'new' : form.id, data: form }),
+            });
+            const result = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(result.error || 'فشل الحفظ');
 
             toast.success(isNew ? 'تم إضافة المنطقة بنجاح' : 'تم حفظ التعديلات');
             router.refresh();
