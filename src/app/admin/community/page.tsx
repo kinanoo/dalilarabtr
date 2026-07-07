@@ -33,6 +33,7 @@ export default function AdminCommunityPage() {
     const [converting, setConverting] = useState<string | null>(null);
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [replyContent, setReplyContent] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved'>('all');
 
     useEffect(() => {
         fetchComments();
@@ -41,10 +42,13 @@ export default function AdminCommunityPage() {
     const fetchComments = async () => {
         if (!supabase) return;
         // Fetch all comments, then separate parents from replies in JS
+        // Cap the fetch so the moderation queue never loads unbounded rows;
+        // the status filter below lets the admin focus on what needs action.
         const { data } = await supabase
             .from('comments')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(500);
 
         if (data) {
             const parents = data.filter(c => !c.parent_id);
@@ -154,6 +158,10 @@ export default function AdminCommunityPage() {
 
     if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>;
 
+    const pendingCount = comments.filter((c) => c.status === 'pending').length;
+    const approvedCount = comments.filter((c) => c.status === 'approved').length;
+    const visible = statusFilter === 'all' ? comments : comments.filter((c) => c.status === statusFilter);
+
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-6 pb-20 sm:pb-6">
             <AdminPageHeader
@@ -172,14 +180,28 @@ export default function AdminCommunityPage() {
                 }
             />
 
-            {comments.length === 0 ? (
+            {/* Status filter — focus the moderation queue on what needs action */}
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-fit">
+                {([['all', 'الكلّ', comments.length], ['pending', 'بانتظار', pendingCount], ['approved', 'منشور', approvedCount]] as const).map(([val, label, count]) => (
+                    <button
+                        key={val}
+                        type="button"
+                        onClick={() => setStatusFilter(val)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${statusFilter === val ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                    >
+                        {label} <span className="tabular-nums opacity-70">({count})</span>
+                    </button>
+                ))}
+            </div>
+
+            {visible.length === 0 ? (
                 <div className="text-center py-20 text-slate-400">
                     <MessageSquare size={48} className="mx-auto mb-4 opacity-30" />
-                    <p className="font-bold">لا توجد تعليقات حتى الآن</p>
+                    <p className="font-bold">{comments.length === 0 ? 'لا توجد تعليقات حتى الآن' : 'لا تعليقات في هذا الفلتر'}</p>
                 </div>
             ) : (
             <div className="grid gap-4">
-                {comments.map((c) => (
+                {visible.map((c) => (
                     <div key={c.id} className={`p-4 sm:p-6 rounded-2xl border ${c.is_correction ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/10' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800'} shadow-sm relative overflow-hidden`}>
                         {c.is_correction && (
                             <div className="absolute top-0 right-0 sm:left-0 sm:right-auto bg-amber-500 text-white text-[10px] px-3 py-1 rounded-bl-xl sm:rounded-br-xl sm:rounded-bl-none font-bold flex items-center gap-1 z-10">
