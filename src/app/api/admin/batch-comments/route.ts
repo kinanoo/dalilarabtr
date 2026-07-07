@@ -75,6 +75,19 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'فشل التحديث' }, { status: 500 });
         }
 
+        // Audit-log the bulk moderation action (best-effort, non-blocking).
+        void (async () => {
+            try {
+                await serviceClient.from('admin_activity_log').insert({
+                    event_type: 'bulk_comments',
+                    title: `${action === 'approve' ? 'قبول' : 'رفض'} جماعي لـ ${count} تعليق`,
+                    detail: `الحالة الجديدة: ${newStatus}`,
+                    entity_table: 'comments',
+                    actor_user_id: user.id,
+                });
+            } catch { /* audit is best-effort */ }
+        })();
+
         return NextResponse.json({
             success: true,
             message: action === 'approve'

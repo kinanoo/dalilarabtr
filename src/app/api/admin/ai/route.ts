@@ -44,6 +44,16 @@ const SchemaType = {
 type FunctionDeclarationsTool = { functionDeclarations: Array<{ name: string; description?: string; parameters?: Record<string, unknown> }> };
 
 // ── All table mappings (every DB table the AI can access) ──
+// Columns the AI assistant must NEVER write via update_content, on ANY table —
+// identity / ownership / audit / security fields. Even though the AI is behind
+// the admin gate, this blocks a prompt-injected or hallucinated update from
+// escalating a role, spoofing ownership, or rewriting audit/security columns.
+const AI_PROTECTED_FIELDS = new Set<string>([
+  'id', 'user_id', 'author_id', 'answered_by', 'reviewed_by',
+  'created_at', 'ip_hash', 'role', 'email', 'password',
+  'p256dh', 'auth', 'endpoint', 'vapid_private_key',
+]);
+
 const TABLE_MAP: Record<string, string> = {
   // Core content
   article: 'articles',
@@ -1045,6 +1055,14 @@ async function executeFunction(
 
       // Resolve category if present
       const resolvedFields = resolveFilters(fields);
+      // Field-level ACL: strip identity/ownership/audit/security columns so the
+      // AI can only edit content fields, never escalate/spoof/tamper.
+      for (const k of Object.keys(resolvedFields)) {
+        if (AI_PROTECTED_FIELDS.has(k)) delete resolvedFields[k];
+      }
+      if (Object.keys(resolvedFields).length === 0) {
+        return { result: { error: 'لا حقول قابلة للتحديث (الحقول المحمية مُستبعدة).' } };
+      }
       const pkField = pk(table);
       const { data, error } = await serviceClient.from(table).update(resolvedFields).eq(pkField, id).select().single();
       if (error) return { result: { error: `Update failed: ${error.message}` } };
