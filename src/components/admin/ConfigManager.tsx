@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Settings, Menu, Layers, Save, Loader2, RefreshCw, Trash2, Edit, Check, X, Bot, Plus, Zap, Eye, EyeOff, AlertTriangle, BarChart3, MessageSquare, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
-import DataMigration from './DataMigration';
 
 // === Types ===
 type DBMenu = {
@@ -27,7 +26,7 @@ type DBCategory = {
 };
 
 export default function ConfigManager() {
-    const [activeTab, setActiveTab] = useState<'menus' | 'categories' | 'migration' | 'settings' | 'ai'>('menus');
+    const [activeTab, setActiveTab] = useState<'menus' | 'categories' | 'settings' | 'ai'>('menus');
     const [loading, setLoading] = useState(false);
 
     // Menus State
@@ -98,12 +97,11 @@ export default function ConfigManager() {
     // rest of the admin (HomeManager uses the same pattern). Each tab
     // carries an icon + theme; the active tab gets a coloured pill +
     // small accent bar, inactive tabs sit in slate.
-    type CMTabId = 'menus' | 'categories' | 'migration' | 'settings' | 'ai';
+    type CMTabId = 'menus' | 'categories' | 'settings' | 'ai';
     const TABS: Array<{ id: CMTabId; label: string; icon: typeof Menu; theme: { bg: string; text: string; accent: string } }> = [
         { id: 'menus',      label: 'القوائم',         icon: Menu,      theme: { bg: 'bg-blue-100 dark:bg-blue-900/30',     text: 'text-blue-700 dark:text-blue-300',     accent: 'bg-blue-500' } },
         { id: 'categories', label: 'التصنيفات',       icon: Layers,    theme: { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-700 dark:text-violet-300', accent: 'bg-violet-500' } },
         { id: 'settings',   label: 'إعدادات الموقع',  icon: Settings,  theme: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', accent: 'bg-emerald-500' } },
-        { id: 'migration',  label: 'أدوات متقدمة',    icon: RefreshCw, theme: { bg: 'bg-slate-200 dark:bg-slate-700',      text: 'text-slate-800 dark:text-slate-100',   accent: 'bg-slate-500' } },
         { id: 'ai',         label: 'المساعد الذكي (AI)', icon: Bot,     theme: { bg: 'bg-amber-100 dark:bg-amber-900/30',   text: 'text-amber-700 dark:text-amber-300',   accent: 'bg-amber-500' } },
     ];
 
@@ -289,12 +287,6 @@ export default function ConfigManager() {
                 </div>
             )}
 
-            {/* === MIGRATION TAB === */}
-            {activeTab === 'migration' && (
-                <div className="space-y-4">
-                    <DataMigration />
-                </div>
-            )}
 
             {/* === AI PROVIDERS TAB === */}
             {activeTab === 'ai' && (

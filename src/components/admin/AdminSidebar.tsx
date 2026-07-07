@@ -16,12 +16,12 @@ import {
     ChevronLeft,
     ChevronRight,
     BrainCircuit,
-    ShieldCheck,
     Megaphone,
     Newspaper,
     Users,
     Bot,
-    Coins
+    Coins,
+    MapPin
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -88,11 +88,17 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
         exact?: boolean;
     }
 
+    // Menu — decluttered into 5 clear, non-overlapping groups (2026-07 audit).
+    // Labels say plainly what each page does so nothing is a mystery:
+    //   • «التعليقات» not «المجتمع», «أسئلة الزوّار» vs «الأسئلة الشائعة».
+    // Reference-content managers (codes/zones/sources/scenarios) moved out of
+    // «النظام» into their own group. Removed «فحص النظام» (a weak, partly-broken
+    // duplicate of «المحلل الاستراتيجي», which already covers integrity checks).
     const menuGroups: { title: string; items: MenuItem[] }[] = [
         {
             title: 'الرئيسية',
             items: [
-                { href: '/admin', label: 'الرئيسية', icon: LayoutDashboard, exact: true },
+                { href: '/admin', label: 'لوحة المعلومات', icon: LayoutDashboard, exact: true },
                 { href: '/admin/monetization', label: 'الربح والإعلانات', icon: Coins },
             ]
         },
@@ -102,18 +108,26 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/requests', label: 'طلبات الانضمام', icon: Bell },
                 { href: '/admin/services', label: 'الخدمات', icon: Briefcase },
                 { href: '/admin/articles', label: 'المقالات', icon: FileText },
-                { href: '/admin/updates', label: 'التحديثات', icon: Megaphone }, // Changed Bell to Megaphone to avoid dup
+                { href: '/admin/updates', label: 'التحديثات والأخبار', icon: Megaphone },
             ]
         },
         {
-            title: 'التفاعل',
+            title: 'التفاعل مع الزوّار',
             items: [
-                { href: '/admin/members', label: 'الأعضاء', icon: Users },
-                { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
+                { href: '/admin/community', label: 'التعليقات', icon: MessageSquare },
                 { href: '/admin/reviews', label: 'التقييمات', icon: Star },
-                { href: '/admin/questions', label: 'الأسئلة المُرسَلة', icon: MessageSquare },
+                { href: '/admin/questions', label: 'أسئلة الزوّار', icon: MessageSquare },
+                { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
                 { href: '/admin/push-broadcast', label: 'بثّ إشعار فوري', icon: Megaphone },
-                { href: '/admin/community', label: 'المجتمع', icon: MessageSquare },
+                { href: '/admin/members', label: 'الأعضاء', icon: Users },
+            ]
+        },
+        {
+            title: 'المحتوى المرجعي',
+            items: [
+                { href: '/admin/codes', label: 'الأكواد الأمنية', icon: ShieldAlert },
+                { href: '/admin/zones', label: 'المناطق المحظورة', icon: MapPin },
+                { href: '/admin/sources', label: 'المصادر الرسمية', icon: Database },
                 { href: '/admin/scenarios', label: 'سيناريوهات المستشار', icon: BrainCircuit },
             ]
         },
@@ -122,12 +136,8 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
             items: [
                 { href: '/admin/ai-assistant', label: 'المساعد الذكي', icon: Bot },
                 { href: '/admin/analyst', label: 'المحلل الاستراتيجي', icon: BrainCircuit },
-                { href: '/admin/integrity', label: 'فحص النظام', icon: ShieldCheck },
                 { href: '/admin/banners', label: 'البنرات والتنبيهات', icon: Megaphone },
                 { href: '/admin/news-ticker', label: 'شريط الأخبار', icon: Newspaper },
-                { href: '/admin/codes', label: 'أكواد أمنية', icon: ShieldAlert },
-                { href: '/admin/zones', label: 'مناطق محظورة', icon: ShieldAlert },
-                { href: '/admin/sources', label: 'مصادر رسمية', icon: Database },
                 { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
             ]
         }

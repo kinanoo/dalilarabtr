@@ -40,8 +40,13 @@ export const ZoneEditor = ({ form, setForm }: any) => (
                     onChange={(e: any) => setForm({ ...form, status: e.target.value })}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:ring-2 focus:ring-emerald-500 transition-all"
                 >
+                    {/* Values MUST match what the zones list + filters + public
+                        pages understand: closed | reopened | pending. The old
+                        "open" value was stored verbatim and matched no filter,
+                        so a zone saved as open silently vanished / showed red. */}
                     <option value="closed">🔴 منطقة محظورة (Closed)</option>
-                    <option value="open">🟢 منطقة مفتوحة (Open)</option>
+                    <option value="reopened">🟢 منطقة مفتوحة (Open)</option>
+                    <option value="pending">🟡 قيد التحديث (Pending)</option>
                 </select>
             </div>
         </div>

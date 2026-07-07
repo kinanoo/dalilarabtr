@@ -712,11 +712,9 @@ CRITICAL: ALWAYS respond in Arabic. The admin speaks Arabic only.
 
 ### Admin Pages (/admin/*):
 - /admin/ai-assistant — THIS assistant (you!)
-- /admin/analyst — strategic analysis engine (7-layer analysis)
-- /admin/integrity — system integrity checks
+- /admin/analyst — strategic analysis engine (7-layer analysis; also covers data-integrity checks)
 - /admin/news-ticker — manages the news_ticker table directly
 - /admin/settings — global site settings
-- /admin/migration — data migration tools
 - /admin/requests — pending articles & services for approval
 - /admin/articles — article editor (CRUD for articles table)
 - /admin/services — service providers editor
