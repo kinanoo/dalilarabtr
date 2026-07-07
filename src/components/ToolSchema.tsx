@@ -237,7 +237,7 @@ export default function ToolSchema({ tool }: ToolSchemaProps) {
   const data = TOOLS_DATA[tool];
   if (!data) return null;
 
-  const baseUrl = SITE_CONFIG.siteUrl || 'https://daleel-arab.com';
+  const baseUrl = SITE_CONFIG.siteUrl || 'https://dalilarabtr.com';
 
   // Schema للأداة (WebApplication)
   const applicationSchema = {
@@ -246,7 +246,8 @@ export default function ToolSchema({ tool }: ToolSchemaProps) {
     'name': data.name,
     'description': data.description,
     'url': `${baseUrl}${data.url}`,
-    'applicationCategory': data.category,
+    // Normalize to a valid schema.org applicationCategory value.
+    'applicationCategory': data.category === 'UtilityApplication' ? 'UtilitiesApplication' : data.category,
     'operatingSystem': 'Web Browser',
     'browserRequirements': 'Requires JavaScript',
     'inLanguage': 'ar',
@@ -259,12 +260,14 @@ export default function ToolSchema({ tool }: ToolSchemaProps) {
     'author': {
       '@type': 'Organization',
       'name': 'دليل العرب في تركيا',
-      'url': baseUrl
+      'url': baseUrl,
+      'publishingPrinciples': `${baseUrl}/editorial-policy`
     },
     'publisher': {
       '@type': 'Organization',
       'name': 'دليل العرب في تركيا',
-      'url': baseUrl
+      'url': baseUrl,
+      'publishingPrinciples': `${baseUrl}/editorial-policy`
     },
     'keywords': data.keywords.join(', ')
   };
@@ -352,41 +355,4 @@ export default function ToolSchema({ tool }: ToolSchemaProps) {
       />
     </>
   );
-}
-
-// =====================================================
-// 🎯 مكون للـ Meta Tags المحسنة
-// =====================================================
-
-interface ToolMetaProps {
-  tool: ToolType;
-}
-
-export function getToolMetadata(tool: ToolType) {
-  const data = TOOLS_DATA[tool];
-  if (!data) return {};
-
-  const baseUrl = 'https://daleel-arab.com';
-
-  return {
-    title: `${data.name} | دليل العرب في تركيا`,
-    description: data.description,
-    keywords: data.keywords.join(', '),
-    openGraph: {
-      title: data.name,
-      description: data.description,
-      url: `${baseUrl}${data.url}`,
-      siteName: 'دليل العرب في تركيا',
-      locale: 'ar_SA',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: data.name,
-      description: data.description,
-    },
-    alternates: {
-      canonical: `${baseUrl}${data.url}`,
-    },
-  };
 }
