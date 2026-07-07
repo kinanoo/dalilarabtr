@@ -44,7 +44,9 @@ export function SourcesManager() {
     const handleDelete = async (id: string) => {
         if (!confirm('حذف؟')) return;
         if (!supabase) return;
-        await supabase.from('official_sources').delete().eq('id', id);
+        const { error } = await supabase.from('official_sources').delete().eq('id', id);
+        if (error) { toast.error('فشل الحذف: ' + error.message); return; }
+        toast.success('تم حذف المصدر');
         fetchSources();
     };
 

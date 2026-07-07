@@ -111,3 +111,54 @@ export async function GET() {
         return NextResponse.json({ error: 'خطأ داخلي في الخادم' }, { status: 500 });
     }
 }
+
+/**
+ * PATCH /api/admin/members — change a member's role (admin ↔ member).
+ *
+ * Sensitive (privilege escalation), so it runs entirely server-side behind the
+ * same admin gate as GET and writes with the service role. Two guards:
+ *   • role must be exactly 'admin' or 'member' (no arbitrary values).
+ *   • an admin can't strip their OWN admin role — prevents self-lockout.
+ */
+export async function PATCH(req: Request) {
+    try {
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!serviceRoleKey) return NextResponse.json({ error: 'server_config' }, { status: 500 });
+
+        const cookieStore = await cookies();
+        const authClient = createServerClient(url, anonKey, {
+            cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} },
+        });
+        const { data: { user } } = await authClient.auth.getUser();
+        if (!user) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+
+        const serviceClient = createClient(url, serviceRoleKey, {
+            auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const { data: callerProfile } = await serviceClient
+            .from('member_profiles').select('role').eq('id', user.id).single();
+        if (callerProfile?.role !== 'admin') return NextResponse.json({ error: 'محظور' }, { status: 403 });
+
+        const body = await req.json().catch(() => ({}));
+        const targetId = typeof body?.userId === 'string' ? body.userId : '';
+        const role = body?.role === 'admin' ? 'admin' : body?.role === 'member' ? 'member' : '';
+        if (!targetId || !role) return NextResponse.json({ error: 'بيانات غير صالحة' }, { status: 400 });
+
+        if (targetId === user.id && role !== 'admin') {
+            return NextResponse.json({ error: 'لا يمكنك إزالة صلاحيتك الإدارية عن نفسك.' }, { status: 400 });
+        }
+
+        const { error } = await serviceClient
+            .from('member_profiles').update({ role }).eq('id', targetId);
+        if (error) {
+            logger.error('admin/members PATCH update:', error);
+            return NextResponse.json({ error: 'فشل تحديث الدور' }, { status: 500 });
+        }
+        return NextResponse.json({ ok: true });
+    } catch (err) {
+        logger.error('admin/members PATCH unhandled:', err);
+        return NextResponse.json({ error: 'خطأ داخلي في الخادم' }, { status: 500 });
+    }
+}

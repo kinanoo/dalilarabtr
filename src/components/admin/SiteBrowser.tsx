@@ -355,7 +355,10 @@ function CardEditor({ cardId, onBack }: { cardId: string, onBack: () => void }) 
 
     const deleteCard = async () => {
         if (!confirm('حذف؟')) return;
-        await supabase?.from('home_cards').delete().eq('id', cardId);
+        if (!supabase) return;
+        const { error } = await supabase.from('home_cards').delete().eq('id', cardId);
+        if (error) { showToast('فشل الحذف: ' + error.message, 'error'); return; }
+        showToast('تم الحذف', 'success');
         onBack();
     }
 

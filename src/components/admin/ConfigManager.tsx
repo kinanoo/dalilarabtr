@@ -56,16 +56,18 @@ export default function ConfigManager() {
     const handleSaveMenu = async (id: string) => {
         if (!supabase) return;
         const { error } = await supabase.from('site_menus').update(menuForm).eq('id', id);
-        if (!error) {
-            setEditingMenu(null);
-            fetchMenus();
-        }
+        if (error) { toast.error('فشل الحفظ: ' + error.message); return; }
+        toast.success('تم حفظ الرابط');
+        setEditingMenu(null);
+        fetchMenus();
     };
 
     const handleDeleteMenu = async (id: string) => {
         if (!confirm('حذف هذا الرابط؟')) return;
         if (!supabase) return;
-        await supabase.from('site_menus').delete().eq('id', id);
+        const { error } = await supabase.from('site_menus').delete().eq('id', id);
+        if (error) { toast.error('فشل الحذف: ' + error.message); return; }
+        toast.success('تم حذف الرابط');
         fetchMenus();
     };
 
@@ -81,15 +83,17 @@ export default function ConfigManager() {
     const handleSaveCategory = async (slug: string) => {
         if (!supabase) return;
         const { error } = await supabase.from('service_categories').update(catForm).eq('slug', slug);
-        if (!error) {
-            setEditingCategory(null);
-            fetchCategories();
-        }
+        if (error) { toast.error('فشل الحفظ: ' + error.message); return; }
+        toast.success('تم حفظ التصنيف');
+        setEditingCategory(null);
+        fetchCategories();
     };
 
     const toggleCatStatus = async (slug: string, current: boolean) => {
         if (!supabase) return;
-        await supabase.from('service_categories').update({ active: !current }).eq('slug', slug);
+        const { error } = await supabase.from('service_categories').update({ active: !current }).eq('slug', slug);
+        if (error) { toast.error('فشل التحديث: ' + error.message); return; }
+        toast.success(current ? 'تم تعطيل التصنيف' : 'تم تفعيل التصنيف');
         fetchCategories();
     }
 

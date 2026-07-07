@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Users, Mail, Calendar, Search, Shield, UserCheck, Loader2 } from 'lucide-react';
+import { Users, Mail, Calendar, Search, Shield, UserCheck, Loader2, Download, ShieldPlus, ShieldMinus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { toast } from 'sonner';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 interface Member {
@@ -16,10 +17,15 @@ interface Member {
     email?: string;
 }
 
+const PAGE_SIZE = 25;
+
 export default function AdminMembersPage() {
     const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'member'>('all');
+    const [page, setPage] = useState(0);
+    const [busyId, setBusyId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchMembers();
@@ -27,11 +33,6 @@ export default function AdminMembersPage() {
 
     async function fetchMembers() {
         setLoading(true);
-
-        // Fetch from the admin endpoint, which joins member_profiles with the
-        // emails from auth.users (only reachable server-side via the service
-        // role). Falls back to a direct profiles query (no emails) if the
-        // endpoint is unavailable, so the page never shows blank.
         try {
             const res = await fetch('/api/admin/members', { cache: 'no-store' });
             if (res.ok) {
@@ -56,16 +57,72 @@ export default function AdminMembersPage() {
         setLoading(false);
     }
 
-    const filtered = search.trim()
-        ? members.filter(
-              (m) =>
-                  m.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-                  m.email?.toLowerCase().includes(search.toLowerCase())
-          )
-        : members;
+    // Promote/demote a member. Goes through the service-role PATCH endpoint
+    // (RLS forbids the anon client from writing another user's role).
+    async function changeRole(member: Member) {
+        const nextRole = member.role === 'admin' ? 'member' : 'admin';
+        const verb = nextRole === 'admin' ? 'ترقية إلى مدير' : 'إزالة صلاحية المدير';
+        if (!confirm(`${verb} — «${member.full_name || 'بدون اسم'}»؟`)) return;
+
+        setBusyId(member.id);
+        try {
+            const res = await fetch('/api/admin/members', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: member.id, role: nextRole }),
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                toast.error(json?.error || 'فشل تحديث الدور');
+                return;
+            }
+            setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: nextRole } : m)));
+            toast.success(nextRole === 'admin' ? 'تمّت الترقية إلى مدير' : 'تمّت إزالة صلاحية المدير');
+        } catch {
+            toast.error('خطأ في الشبكة');
+        } finally {
+            setBusyId(null);
+        }
+    }
+
+    const filtered = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return members.filter((m) => {
+            if (roleFilter !== 'all' && m.role !== roleFilter) return false;
+            if (!q) return true;
+            return (m.full_name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q));
+        });
+    }, [members, search, roleFilter]);
+
+    // Reset to first page whenever the filter set changes.
+    useEffect(() => { setPage(0); }, [search, roleFilter]);
+
+    const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    const current = Math.min(page, pageCount - 1);
+    const paged = filtered.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
 
     const totalMembers = members.length;
     const adminCount = members.filter((m) => m.role === 'admin').length;
+
+    function exportCsv() {
+        const rows = [['الاسم', 'الإيميل', 'الدور', 'تاريخ التسجيل']];
+        for (const m of filtered) {
+            rows.push([
+                (m.full_name || '').replace(/"/g, '""'),
+                (m.email || '').replace(/"/g, '""'),
+                m.role === 'admin' ? 'مدير' : 'عضو',
+                m.created_at || '',
+            ]);
+        }
+        const csv = '﻿' + rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `members-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast.success(`تم تصدير ${filtered.length} عضواً`);
+    }
 
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-6" dir="rtl">
@@ -73,7 +130,7 @@ export default function AdminMembersPage() {
                 icon={Users}
                 theme="cyan"
                 title="الأعضاء المسجلون"
-                subtitle="جميع المستخدمين المسجلين في المنصة"
+                subtitle="إدارة المستخدمين: البحث، الأدوار، والتصدير"
                 eyebrow="أعضاء"
                 actions={
                     <div className="flex items-center gap-2">
@@ -89,16 +146,40 @@ export default function AdminMembersPage() {
                 }
             />
 
-            {/* Search */}
-            <div className="relative max-w-md">
-                <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="ابحث بالاسم أو الإيميل..."
-                    className="w-full pr-10 pl-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                />
+            {/* Toolbar: search + role filter + export */}
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 min-w-[220px] max-w-md">
+                    <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="ابحث بالاسم أو الإيميل..."
+                        className="w-full pr-10 pl-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                    />
+                </div>
+
+                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+                    {(['all', 'admin', 'member'] as const).map((r) => (
+                        <button
+                            key={r}
+                            type="button"
+                            onClick={() => setRoleFilter(r)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${roleFilter === r ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        >
+                            {r === 'all' ? 'الكلّ' : r === 'admin' ? 'المديرون' : 'الأعضاء'}
+                        </button>
+                    ))}
+                </div>
+
+                <button
+                    type="button"
+                    onClick={exportCsv}
+                    disabled={filtered.length === 0}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-40"
+                >
+                    <Download size={16} /> تصدير CSV
+                </button>
             </div>
 
             {/* Members Table */}
@@ -111,7 +192,7 @@ export default function AdminMembersPage() {
                 ) : filtered.length === 0 ? (
                     <div className="text-center py-16 text-slate-400">
                         <Users size={40} className="mx-auto mb-3 opacity-30" />
-                        <p className="font-bold">لا يوجد أعضاء</p>
+                        <p className="font-bold">لا يوجد أعضاء مطابقون</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
@@ -123,12 +204,13 @@ export default function AdminMembersPage() {
                                     <th className="text-right py-3 px-4 font-bold text-slate-500 text-xs">الإيميل</th>
                                     <th className="text-right py-3 px-4 font-bold text-slate-500 text-xs">الدور</th>
                                     <th className="text-right py-3 px-4 font-bold text-slate-500 text-xs">تاريخ التسجيل</th>
+                                    <th className="text-right py-3 px-4 font-bold text-slate-500 text-xs">إجراء</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                                {filtered.map((member, i) => (
+                                {paged.map((member, i) => (
                                     <tr key={member.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                        <td className="py-3 px-4 text-slate-400 text-xs">{i + 1}</td>
+                                        <td className="py-3 px-4 text-slate-400 text-xs">{current * PAGE_SIZE + i + 1}</td>
                                         <td className="py-3 px-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
@@ -174,6 +256,25 @@ export default function AdminMembersPage() {
                                                     : '—'}
                                             </div>
                                         </td>
+                                        <td className="py-3 px-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => changeRole(member)}
+                                                disabled={busyId === member.id}
+                                                title={member.role === 'admin' ? 'إزالة صلاحية المدير' : 'ترقية إلى مدير'}
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors disabled:opacity-50 ${member.role === 'admin'
+                                                    ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 hover:bg-rose-100'
+                                                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-100'}`}
+                                            >
+                                                {busyId === member.id ? (
+                                                    <Loader2 size={12} className="animate-spin" />
+                                                ) : member.role === 'admin' ? (
+                                                    <><ShieldMinus size={12} /> إزالة الإدارة</>
+                                                ) : (
+                                                    <><ShieldPlus size={12} /> ترقية لمدير</>
+                                                )}
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -181,6 +282,34 @@ export default function AdminMembersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Pagination */}
+            {!loading && filtered.length > PAGE_SIZE && (
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 font-bold tabular-nums">
+                        {current * PAGE_SIZE + 1}–{Math.min((current + 1) * PAGE_SIZE, filtered.length)} من {filtered.length}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setPage((p) => Math.max(0, p - 1))}
+                            disabled={current === 0}
+                            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                            <ChevronRight size={16} /> السابق
+                        </button>
+                        <span className="text-slate-500 font-bold tabular-nums px-2">{current + 1} / {pageCount}</span>
+                        <button
+                            type="button"
+                            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                            disabled={current >= pageCount - 1}
+                            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                            التالي <ChevronLeft size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
