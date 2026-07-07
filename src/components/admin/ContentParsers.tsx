@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock, Send } from 'lucide-react';
+import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock, Send, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { LATEST_UPDATES } from '@/lib/constants';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
@@ -128,6 +128,16 @@ export function UpdatesManager() {
         }
     }
 
+    // Show/hide a published update without deleting it (active=false hides it
+    // from visitors but keeps it editable/restorable).
+    const toggleActive = async (id: string, current: boolean) => {
+        if (!supabase) return;
+        const { error } = await supabase.from('updates').update({ active: !current }).eq('id', id);
+        if (error) { toast.error('فشل التحديث: ' + error.message); return; }
+        toast.success(current ? 'تم التعطيل (مخفيّ عن الزوّار)' : 'تم التفعيل');
+        fetchUpdates();
+    };
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Form — amber accent stripe + gradient */}
@@ -237,12 +247,14 @@ export function UpdatesManager() {
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${typeChip}`}>{u.type}</span>
+                                            {!u.active && <span className="text-[10px] font-black px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">معطّل</span>}
                                             <span className="text-xs text-slate-400 tabular-nums" dir="ltr">{u.date}</span>
                                         </div>
                                         <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 truncate">{u.title}</h4>
                                     </div>
                                 </div>
                                 <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                    <button onClick={() => toggleActive(u.id, u.active)} className={`p-2 rounded-xl transition-all hover:scale-110 active:scale-95 ${u.active ? 'bg-emerald-50 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-slate-200'}`} title={u.active ? 'تعطيل (إخفاء عن الزوّار)' : 'تفعيل'} aria-label="تفعيل أو تعطيل">{u.active ? <Eye size={16} /> : <EyeOff size={16} />}</button>
                                     <button onClick={() => { setEditingId(u.id); setFormData(u); setSendPush(false); }} className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/15 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-110 active:scale-95 transition-all" aria-label="تعديل"><Edit size={16} /></button>
                                     <button onClick={() => handleDelete(u.id, u.title)} className="p-2 rounded-xl bg-red-50 dark:bg-red-900/15 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:scale-110 active:scale-95 transition-all" title="حذف" aria-label="حذف"><Trash2 size={16} /></button>
                                 </div>
