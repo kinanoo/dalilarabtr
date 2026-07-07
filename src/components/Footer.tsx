@@ -6,7 +6,7 @@ import SocialLinks from './SocialLinks';
 import { SITE_CONFIG } from '@/lib/config';
 import { usePathname } from 'next/navigation';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
-import { Wrench, Lightbulb, Shield, Scale } from 'lucide-react';
+import { Wrench, Shield, Scale } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -29,7 +29,7 @@ export default function Footer() {
         <div aria-hidden="true" className="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-500/[0.04] rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-screen-2xl mx-auto px-4 py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
 
             {/* القسم 1: عن الموقع */}
             <div className="md:col-span-1">
@@ -96,26 +96,6 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* القسم 4: CTA — كرت متدرّج مع توهّج خفيف يجعل نقطة الاتّصال
-                الأبرز بصرياً في الفوتر، بدلاً من المربّع المسطّح القديم. */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-900/40 via-slate-900 to-slate-900 p-6 rounded-2xl border border-emerald-500/20 shadow-xl shadow-emerald-900/20">
-              <div aria-hidden="true" className="absolute -top-10 -left-10 w-32 h-32 bg-emerald-500/[0.12] rounded-full blur-2xl pointer-events-none" />
-              <div className="relative">
-                <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
-                  <Lightbulb size={20} className="text-amber-300" />
-                  تحتاج مساعدة خاصة؟
-                </h3>
-                <p className="text-sm text-slate-300 mb-4 leading-relaxed">
-                  دليل المواقف يساعدك على تحديد إجراءاتك القانونية خطوة بخطوة — مجاناً.
-                </p>
-                <Link
-                  href="/consultant"
-                  className="block w-full text-center bg-white text-emerald-700 hover:bg-emerald-50 font-bold py-3 px-4 rounded-xl transition-all shadow-lg hover:scale-[1.01]"
-                >
-                  استشر الآن
-                </Link>
-              </div>
-            </div>
           </div>
 
           {/* شارات الثقة — شريط أنيق بكروت بدل النصّ المسطّح. */}
