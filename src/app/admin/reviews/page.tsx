@@ -63,17 +63,21 @@ export default function AdminReviewsPage() {
         if (!supabase) return;
         setLoading(true);
 
+        // Cap both feeds so the page stays fast as reviews/feedback grow
+        // (most-recent 200 each — the actionable window for moderation).
         const { data: reviewsData } = await supabase
             .from('service_reviews')
             .select(`*, review_replies (*)`)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(200);
         if (reviewsData) setReviews(reviewsData);
 
         const { data: feedbackData } = await supabase
             .from('content_votes')
             .select('*')
             .eq('vote_type', 'down')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(200);
 
         if (feedbackData && feedbackData.length > 0) {
             const articleIds = feedbackData.filter(f => f.entity_type === 'article').map(f => f.entity_id).filter(Boolean);

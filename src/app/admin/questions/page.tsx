@@ -55,18 +55,22 @@ export default function AdminQuestionsPage() {
     const [loading, setLoading] = useState(true);
     const [draftAnswers, setDraftAnswers] = useState<Record<string, string>>({});
     const [busy, setBusy] = useState<string | null>(null);
+    const [total, setTotal] = useState(0);
 
     async function load() {
         if (!supabase) return;
         setLoading(true);
+        // count:'exact' returns the full matching total even though we only
+        // render the first 100 — so we can tell the admin more exist.
         let q = supabase
             .from('questions')
-            .select('*')
+            .select('*', { count: 'exact' })
             .order('created_at', { ascending: false })
             .limit(100);
         if (filter !== 'all') q = q.eq('status', filter);
-        const { data } = await q;
+        const { data, count } = await q;
         setItems((data as Question[]) || []);
+        setTotal(count || 0);
         setLoading(false);
     }
 
@@ -189,6 +193,11 @@ export default function AdminQuestionsPage() {
             </div>
 
             {/* List */}
+            {!loading && total > items.length && (
+                <p className="text-xs text-slate-500 mb-3">
+                    عرض {items.length} من أصل {total} — استخدم الفلاتر أعلاه لتضييق النتائج.
+                </p>
+            )}
             {loading ? (
                 <div className="flex items-center justify-center py-16 text-slate-400">
                     <Loader2 size={28} className="animate-spin" />
