@@ -289,12 +289,15 @@ function AskModal({ onClose }: { onClose: () => void }) {
     const [context, setContext] = useState('');
     const [category, setCategory] = useState('');
     const [askerName, setAskerName] = useState('');
+    const [askerEmail, setAskerEmail] = useState('');
+    const [emailProvided, setEmailProvided] = useState(false);
     const [result, setResult] = useState<AskResult>({ state: 'idle' });
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (result.state === 'sending') return;
         setResult({ state: 'sending' });
+        setEmailProvided(askerEmail.trim().length > 0);
 
         try {
             const res = await fetch('/api/questions', {
@@ -305,6 +308,7 @@ function AskModal({ onClose }: { onClose: () => void }) {
                     context,
                     category,
                     askerName,
+                    askerEmail,
                 }),
             });
             const payload = await res.json().catch(() => ({}));
@@ -353,7 +357,9 @@ function AskModal({ onClose }: { onClose: () => void }) {
                             تمّ استلام سؤالك
                         </p>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                            سنجيبك فور مراجعته. لو تركت بريدك، سنُعلِمك عند نشر الإجابة.
+                            {emailProvided
+                                ? 'سنجيبك فور مراجعته، ونُعلِمك على بريدك عند نشر الإجابة.'
+                                : 'سنجيبك فور مراجعته — تابِع صفحة الأسئلة للاطّلاع على الإجابة.'}
                         </p>
                         <button
                             type="button"
@@ -428,6 +434,23 @@ function AskModal({ onClose }: { onClose: () => void }) {
                                     className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                بريدك الإلكتروني (اختياري) — لنُعلِمك عند نشر الإجابة
+                            </label>
+                            <input
+                                type="email"
+                                value={askerEmail}
+                                onChange={(e) => setAskerEmail(e.target.value)}
+                                maxLength={200}
+                                inputMode="email"
+                                autoComplete="email"
+                                dir="ltr"
+                                placeholder="you@example.com"
+                                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-start"
+                            />
                         </div>
 
                         {result.state === 'error' && (

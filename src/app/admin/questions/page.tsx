@@ -233,6 +233,15 @@ export default function AdminQuestionsPage() {
                                             </span>
                                         )}
                                         {q.asker_name && <span>👤 {q.asker_name}</span>}
+                                        {q.asker_email && (
+                                            <a
+                                                href={`mailto:${q.asker_email}`}
+                                                className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                                                dir="ltr"
+                                            >
+                                                ✉ {q.asker_email}
+                                            </a>
+                                        )}
                                         <span>{new Date(q.created_at).toLocaleDateString('ar-EG')}</span>
                                         {q.views > 0 && <span>👁 {q.views}</span>}
                                     </div>
@@ -337,9 +346,19 @@ export default function AdminQuestionsPage() {
                                 </button>
                             )}
                             {q.status === 'answered' && (
-                                <p className="mt-2 text-[11px] text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                                    <CheckCircle2 size={12} /> منشور للجمهور
-                                </p>
+                                <div className="mt-2 flex flex-wrap items-center gap-3">
+                                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                                        <CheckCircle2 size={12} /> منشور للجمهور
+                                    </p>
+                                    {q.asker_email && (
+                                        <a
+                                            href={`mailto:${q.asker_email}?subject=${encodeURIComponent('تمّت الإجابة على سؤالك — دليل العرب في تركيا')}&body=${encodeURIComponent(`السلام عليكم${q.asker_name ? ' ' + q.asker_name : ''}،\n\nتمّت الإجابة على سؤالك:\n«${q.question}»\n\nاطّلع على الإجابة هنا:\nhttps://dalilarabtr.com/qa\n\nمع تحيّات فريق دليل العرب والسوريين في تركيا.`)}`}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 px-2 py-1 rounded-lg"
+                                        >
+                                            <Send size={11} /> أعلِم السائل بالبريد
+                                        </a>
+                                    )}
+                                </div>
                             )}
                         </li>
                     ))}

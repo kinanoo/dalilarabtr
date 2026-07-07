@@ -74,5 +74,41 @@ export const metadata: Metadata = {
 
 export default async function QAPage() {
     const { items, total } = await getInitialQuestions();
-    return <QAClient initialItems={items} initialTotal={total} />;
+
+    // FAQPage structured data — surfaces the answered questions as Google rich
+    // results, which is the single biggest organic-discovery lever for Q&A
+    // (people search their exact question). Answers here are authoritative
+    // (written by the site team), so FAQPage is the correct type. Cap + trim to
+    // keep the payload sane.
+    const faqEntities = items.slice(0, 30).map((q) => ({
+        '@type': 'Question',
+        name: q.question,
+        acceptedAnswer: {
+            '@type': 'Answer',
+            text: (q.answer || '').replace(/\s+/g, ' ').trim().slice(0, 1200),
+        },
+    }));
+
+    const jsonLd = faqEntities.length > 0
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            '@id': `${SITE_CONFIG.siteUrl}/qa`,
+            name: 'الأسئلة والأجوبة — دليل العرب والسوريين في تركيا',
+            inLanguage: 'ar',
+            mainEntity: faqEntities,
+        }
+        : null;
+
+    return (
+        <>
+            {jsonLd && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+            )}
+            <QAClient initialItems={items} initialTotal={total} />
+        </>
+    );
 }
