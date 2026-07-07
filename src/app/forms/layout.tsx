@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'النماذج الرسمية | دليل العرب في تركيا',
+  title: 'النماذج الرسمية',
   description: 'تحميل النماذج والاستمارات الرسمية التركية المترجمة للعربية: طلبات إقامة، عمل، وخدمات حكومية.',
   alternates: { canonical: '/forms' },
   openGraph: {

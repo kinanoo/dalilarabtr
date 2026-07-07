@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'المصادر الرسمية | دليل العرب في تركيا',
+  title: 'المصادر الرسمية',
   description: 'روابط مباشرة وآمنة للمواقع الحكومية التركية الرسمية: وزارات، بوابات إلكترونية، وخدمات حكومية موثوقة.',
   alternates: { canonical: '/sources' },
   openGraph: {

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'طلب خدمة | دليل العرب في تركيا',
+  title: 'طلب خدمة',
   description: 'قدّم طلب خدمة جديد: حجز مواعيد، ترجمة، معاملات إقامة، وخدمات قانونية في تركيا.',
   alternates: { canonical: '/request' },
   openGraph: {

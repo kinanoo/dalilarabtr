@@ -28,7 +28,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     };
   }
   return {
-    title: 'كاشف ومحلل الأكواد الأمنية في تركيا (V-87، G-87، Ç...) | دليل العرب',
+    title: 'كاشف ومحلل الأكواد الأمنية في تركيا (V-87، G-87، Ç...)',
     description: 'افهم كل أكواد المنع والحظر الأمنية التركية وأسباب وضعها وكيفية إزالتها — كاشف شامل قابل للبحث بالكود أو بالوصف.',
     alternates: { canonical: '/codes', languages: { ar: '/codes', tr: '/codes?lang=tr' } },
   };

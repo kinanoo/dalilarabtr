@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import DashboardLayoutClient from './DashboardLayoutClient';
 
 export const metadata: Metadata = {
-    title: 'لوحة الأعضاء | دليل العرب في تركيا',
+    title: 'لوحة الأعضاء',
     robots: { index: false, follow: false, noarchive: true },
 };
 

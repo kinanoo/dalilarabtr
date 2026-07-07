@@ -2,11 +2,11 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'إخلاء المسؤولية | دليل العرب في تركيا',
+  title: 'إخلاء المسؤولية',
   description: 'إخلاء مسؤولية قانوني — المعلومات المنشورة للتثقيف فقط ولا تُعدّ استشارة قانونية رسمية. تحقق دائماً من الجهات الحكومية.',
   alternates: { canonical: '/disclaimer' },
   openGraph: {
-    title: 'إخلاء المسؤولية | دليل العرب في تركيا',
+    title: 'إخلاء المسؤولية',
     description: 'إخلاء مسؤولية قانوني — المعلومات المنشورة للتثقيف فقط ولا تُعدّ استشارة قانونية رسمية.',
     url: `${SITE_CONFIG.siteUrl}/disclaimer`,
     type: 'website',

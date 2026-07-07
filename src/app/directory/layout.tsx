@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'الدليل الشامل | دليل العرب في تركيا',
+  title: 'الدليل الشامل',
   description: 'دليل شامل بكل المعلومات التي يحتاجها العرب والسوريون في تركيا: إقامات، خدمات، قانون، وحياة يومية.',
   alternates: { canonical: '/directory' },
   openGraph: {

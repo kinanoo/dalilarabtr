@@ -6,7 +6,7 @@ import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'خدمات e-Devlet للأجانب | دليل العرب في تركيا',
+  title: 'خدمات e-Devlet للأجانب',
   description: 'روابط مباشرة لأهم خدمات بوابة الحكومة التركية الإلكترونية e-Devlet: نفوس، طابو، محكمة، ضريبة، وأكثر.',
   alternates: { canonical: '/e-devlet-services' },
 };

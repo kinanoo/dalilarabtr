@@ -1292,7 +1292,7 @@ async function executeFunction(
         zones: 'id, city, district, neighborhood, status, notes, created_at',
         site_banners: 'id, content, link_text, link_url, type, is_active, created_at',
         comments: 'id, entity_type, entity_id, author_name, content, status, created_at',
-        service_reviews: 'id, provider_id, client_name, rating, comment, is_approved, user_id, created_at',
+        service_reviews: 'id, service_id, client_name, rating, comment, is_approved, user_id, created_at',
         member_profiles: 'id, full_name, role, created_at',
         official_sources: 'id, name, url, category, active, created_at',
         site_menus: 'id, label, href, location, sort_order, is_active, created_at',

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: 'آخر التحديثات | دليل العرب في تركيا',
+  title: 'آخر التحديثات',
   description: 'أهم الأخبار والتحديثات الجديدة المتعلقة بالإقامة والقوانين والخدمات للعرب والسوريين في تركيا.',
   alternates: { canonical: '/updates' },
   openGraph: {

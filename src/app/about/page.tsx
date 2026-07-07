@@ -7,7 +7,7 @@ import { SITE_CONFIG } from '@/lib/config';
 export const revalidate = 3600; // Cache for 1 hour
 
 export const metadata: Metadata = {
-  title: 'عن الموقع | دليل العرب في تركيا',
+  title: 'عن الموقع',
   description: 'تعرّف على دليل العرب والسوريين في تركيا، رسالتنا، وفريقنا المتخصص في تقديم المعلومات القانونية والإجرائية.',
   alternates: { canonical: '/about' },
   openGraph: {

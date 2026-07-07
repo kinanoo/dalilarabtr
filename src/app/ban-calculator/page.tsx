@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     keywords: 'حاسبة المنع, منع الدخول تركيا, كود V-87, كود G-87, ترحيل من تركيا, مخالفة الإقامة, غرامة المطار',
     alternates: { canonical: '/ban-calculator' },
     openGraph: {
-        title: 'حاسبة مدة المنع من تركيا 2026 | دليل العرب في تركيا',
+        title: 'حاسبة مدة المنع من تركيا 2026',
         description: 'حاسبة قانونية دقيقة لحساب مدة المنع من دخول تركيا بناءً على مدة المخالفة ونوع الخروج.',
         url: `${SITE_CONFIG.siteUrl}/ban-calculator`,
         type: 'website',

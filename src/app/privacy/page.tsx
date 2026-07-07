@@ -4,7 +4,7 @@ import PageHero from '@/components/PageHero';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'سياسة الخصوصية | دليل العرب في تركيا',
+  title: 'سياسة الخصوصية',
   description: 'سياسة الخصوصية وشروط الاستخدام لموقع دليل العرب والسوريين في تركيا.',
   alternates: { canonical: '/privacy' },
 };
