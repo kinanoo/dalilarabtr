@@ -89,7 +89,8 @@ export default async function AboutPage() {
                             </div>
                             <h3 className="text-xl font-black mb-3 text-slate-800 dark:text-slate-100">دقة قانونية</h3>
                             <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                                معلوماتنا مستمدة مباشرة من الجريدة الرسمية التركية ومواقع الدوائر الحكومية (Göç İdaresi, Nüfus).
+                                معلوماتنا مستمدة مباشرة من الجريدة الرسمية التركية ومواقع الدوائر الحكومية (Göç İdaresi, Nüfus).{' '}
+                                <a href="/editorial-policy" className="font-bold text-emerald-700 dark:text-emerald-400 underline underline-offset-2">اطّلع على منهجيتنا التحريرية</a>.
                             </p>
                         </div>
 

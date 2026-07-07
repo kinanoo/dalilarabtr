@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { Article } from '@/lib/types'; // Only Type
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, Eye, RefreshCw } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, Eye, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
@@ -274,7 +274,14 @@ export default function ArticleView({ article, slug, initialComments, children }
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black mb-4 lg:mb-6 leading-[1.5] drop-shadow-lg">{article.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-slate-400 text-sm font-medium">
-                  <span className="flex items-center gap-2"><Sparkles size={16} className="text-emerald-400" /> آخر تحديث: {article.lastUpdate}</span>
+                  {/* Visible authorship + review byline — the on-page E-E-A-T
+                      signal Google looks for on YMYL pages. Attributed honestly
+                      to the editorial team (no fabricated personal authors), and
+                      linked to the methodology page. */}
+                  <Link href="/editorial-policy" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors border-b border-transparent hover:border-emerald-400 pb-0.5">
+                    <ShieldCheck size={16} className="text-emerald-400" /> بإشراف هيئة تحرير دليل العرب
+                  </Link>
+                  <span className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400" /> راجعته الهيئة · آخر تحديث: {article.lastUpdate}</span>
                   <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>
                   {views != null && views > 0 && (
                     <span className="flex items-center gap-2"><Eye size={14} /> {formatViewCount(views)}</span>

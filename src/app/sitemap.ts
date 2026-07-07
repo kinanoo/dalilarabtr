@@ -94,5 +94,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/editorial-policy`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
   ];
 }

@@ -193,11 +193,15 @@ function buildJsonLd(args: {
       '@type': 'Organization',
       name: args.siteName,
       url: args.siteUrl,
+      // Editorial methodology page — a Google-recognized E-E-A-T signal that
+      // documents who produces the content and how it is verified.
+      publishingPrinciples: `${args.siteUrl}/editorial-policy`,
     },
     publisher: {
       '@type': 'Organization',
       name: args.siteName,
       url: args.siteUrl,
+      publishingPrinciples: `${args.siteUrl}/editorial-policy`,
       logo: {
         '@type': 'ImageObject',
         url: `${args.siteUrl}/logo.png`,
