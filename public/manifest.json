@@ -1,8 +1,10 @@
 {
+    "id": "/",
     "name": "دليل العرب والسوريين في تركيا",
     "short_name": "دليل العرب والسوريين",
     "description": "الدليل الشامل للخدمات والمعلومات القانونية والمعيشية للعرب في تركيا.",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#10b981",
@@ -25,6 +27,36 @@
         "lifestyle",
         "travel",
         "productivity"
+    ],
+    "shortcuts": [
+        {
+            "name": "الخدمات",
+            "short_name": "الخدمات",
+            "description": "دليل مقدّمي الخدمات العرب في تركيا",
+            "url": "/services",
+            "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "الأخبار والتحديثات",
+            "short_name": "الأخبار",
+            "description": "أحدث القرارات والأخبار الرسمية",
+            "url": "/updates",
+            "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "أسئلة وأجوبة",
+            "short_name": "أسئلة",
+            "description": "مجتمع الأسئلة والأجوبة",
+            "url": "/qa",
+            "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "الأكواد والرموز",
+            "short_name": "الأكواد",
+            "description": "أكواد ورموز الكملك والإقامة",
+            "url": "/codes",
+            "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+        }
     ],
     "dir": "rtl",
     "lang": "ar"
