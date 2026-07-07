@@ -77,11 +77,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.9,
     },
-    {
-      url: `${baseUrl}/dictionary`,
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
+    // NOTE: /dictionary intentionally NOT listed — it 307-redirects to
+    // /directory (already listed above). Sitemaps should carry final URLs only.
     {
       url: `${baseUrl}/calculator`,
       changeFrequency: 'monthly',

@@ -34,7 +34,11 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const { data: item } = await supabase
         .from('security_codes')
         .select('*')
-        .eq('code', decodedCode)
+        // Case-insensitive match: sitemap emits the raw DB `code`, but a stray
+        // lowercase row (e.g. "v217") never matched the uppercased lookup and
+        // 404'd. ilike (no wildcards in a code) resolves it and hardens against
+        // any future casing drift.
+        .ilike('code', decodedCode)
         .single();
 
     // Throw in generateMetadata (pre-stream) → real HTTP 404. Returning
@@ -83,7 +87,11 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
     const { data: item } = await supabase
         .from('security_codes')
         .select('*')
-        .eq('code', decodedCode)
+        // Case-insensitive match: sitemap emits the raw DB `code`, but a stray
+        // lowercase row (e.g. "v217") never matched the uppercased lookup and
+        // 404'd. ilike (no wildcards in a code) resolves it and hardens against
+        // any future casing drift.
+        .ilike('code', decodedCode)
         .single();
 
     if (!item) return notFound();
