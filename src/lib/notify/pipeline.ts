@@ -123,17 +123,18 @@ export async function sendTelegram(text: string): Promise<{ ok: boolean; error: 
  * SAME encrypted request through it restores delivery while reusing web-push's
  * proven VAPID JWT + aes128gcm crypto (node:crypto DOES work under nodejs_compat).
  *
- * Returns ok + the HTTP status; `expired` marks 404/410 endpoints for cleanup.
+ * Returns ok + the raw HTTP status; callers decide what to prune (404/410 =
+ * gone; 403 = key mismatch, prune only when other sends succeed).
  */
 export async function dispatchWebPush(
     subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
     payload: string
-): Promise<{ ok: boolean; statusCode: number | null; expired: boolean; error: string | null }> {
+): Promise<{ ok: boolean; statusCode: number | null; error: string | null }> {
     let details: ReturnType<typeof webpush.generateRequestDetails>;
     try {
         details = webpush.generateRequestDetails(subscription, payload);
     } catch (e) {
-        return { ok: false, statusCode: null, expired: false, error: 'encrypt_failed: ' + String((e as Error)?.message || e).slice(0, 140) };
+        return { ok: false, statusCode: null, error: 'encrypt_failed: ' + String((e as Error)?.message || e).slice(0, 140) };
     }
     // fetch computes Content-Length itself; forwarding web-push's manual one can
     // conflict on some runtimes, so drop it (case-insensitively).
@@ -148,12 +149,32 @@ export async function dispatchWebPush(
             headers,
             body: details.body ? (details.body as unknown as BodyInit) : undefined,
         });
-        if (res.status >= 200 && res.status < 300) return { ok: true, statusCode: res.status, expired: false, error: null };
-        const expired = res.status === 404 || res.status === 410;
-        return { ok: false, statusCode: res.status, expired, error: `HTTP ${res.status}` };
+        if (res.status >= 200 && res.status < 300) return { ok: true, statusCode: res.status, error: null };
+        return { ok: false, statusCode: res.status, error: `HTTP ${res.status}` };
     } catch (e) {
-        return { ok: false, statusCode: null, expired: false, error: String((e as Error)?.message || e).slice(0, 140) };
+        return { ok: false, statusCode: null, error: String((e as Error)?.message || e).slice(0, 140) };
     }
+}
+
+/**
+ * Classify a batch of dispatch results into endpoints safe to delete.
+ *   - 404/410  → the subscription is gone; always prune.
+ *   - 403      → VAPID key mismatch (stale sub from an old key). Prune ONLY when
+ *                at least one send in the batch succeeded — otherwise an all-403
+ *                batch signals a systemic signing problem, and we must NOT wipe
+ *                every subscriber over a config glitch.
+ */
+export function deadEndpoints(
+    results: { endpoint: string; statusCode: number | null; ok: boolean }[]
+): string[] {
+    const anyOk = results.some((r) => r.ok);
+    const dead: string[] = [];
+    for (const r of results) {
+        if (r.ok) continue;
+        if (r.statusCode === 404 || r.statusCode === 410) dead.push(r.endpoint);
+        else if (r.statusCode === 403 && anyOk) dead.push(r.endpoint);
+    }
+    return dead;
 }
 
 /**
@@ -248,11 +269,12 @@ export async function runNotifyPipeline(
         // Device push — fetch-based transport (Workers-native), see dispatchWebPush.
         if (vapidConfigured && subs.length > 0) {
             const payload = JSON.stringify({ title: item.title, message: item.message, url: item.link });
-            await Promise.all(subs.map(async (s) => {
+            const results = await Promise.all(subs.map(async (s) => {
                 const r = await dispatchWebPush({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload);
-                if (r.ok) pushSuccess++;
-                else { pushFail++; if (r.expired) expired.push(s.endpoint); }
+                if (r.ok) pushSuccess++; else pushFail++;
+                return { endpoint: s.endpoint, statusCode: r.statusCode, ok: r.ok };
             }));
+            expired.push(...deadEndpoints(results));
         }
 
         // Telegram post — one message per fresh item to the channel.
@@ -346,12 +368,18 @@ export async function pushProbe(svc: SupabaseClient): Promise<Record<string, unk
         info.keypairCheckError = String((e as Error)?.message || e).slice(0, 140);
     }
 
-    const { data, count } = await svc
+    // Probe the NEWEST subscription so a fresh re-subscribe can be verified.
+    // Fall back to unordered if the table has no created_at column.
+    let q = await svc
         .from('push_subscriptions')
         .select('endpoint, p256dh, auth', { count: 'exact' })
+        .order('created_at', { ascending: false })
         .limit(1);
-    const sub = (data as { endpoint: string; p256dh: string; auth: string }[] | null)?.[0];
-    info.subCount = count ?? (data ? data.length : 0);
+    if (q.error) {
+        q = await svc.from('push_subscriptions').select('endpoint, p256dh, auth', { count: 'exact' }).limit(1);
+    }
+    const sub = (q.data as { endpoint: string; p256dh: string; auth: string }[] | null)?.[0];
+    info.subCount = q.count ?? (q.data ? q.data.length : 0);
     if (!sub) return { ...info, note: 'no subscription rows to probe' };
 
     let endpointHost = '';
@@ -368,5 +396,5 @@ export async function pushProbe(svc: SupabaseClient): Promise<Record<string, unk
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         JSON.stringify({ title: 'اختبار الإشعارات', message: 'رسالة فحص — تجاهلها', url: '/updates' })
     );
-    return { ...info, result: r.ok ? 'SENT_OK' : 'FAILED', statusCode: r.statusCode, expired: r.expired, body: r.error };
+    return { ...info, result: r.ok ? 'SENT_OK' : 'FAILED', statusCode: r.statusCode, body: r.error };
 }
