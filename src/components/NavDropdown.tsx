@@ -22,15 +22,22 @@ export default function NavDropdown({ title, items, icon }: NavDropdownProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
 
-    // Close when clicking outside
+    // Close when clicking outside or pressing Escape
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         }
+        function onKey(e: KeyboardEvent) {
+            if (e.key === 'Escape') setIsOpen(false);
+        }
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', onKey);
+        };
     }, []);
 
     // Check if any child is active

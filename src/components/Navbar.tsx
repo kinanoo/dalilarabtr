@@ -9,10 +9,12 @@ import { SITE_CONFIG } from '@/lib/config';
 import { SECTIONS_MENU, LATEST_UPDATES_VERSION, UPDATES_STORAGE_KEY, TOOLS_MENU } from '@/lib/constants';
 import { fetchRemoteUpdatesVersion } from '@/lib/remoteData';
 import {
-  Menu, X, BrainCircuit, Search, Bell, Sparkles, ChevronDown, ChevronLeft,
+  Menu, X, ChevronDown, ChevronLeft,
   Home, Briefcase, FileText, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
-  UserCheck, HeartPulse, Link as LinkIcon, ScrollText, Newspaper
+  UserCheck, HeartPulse, Link as LinkIcon, ScrollText, Newspaper,
+  Compass, CalendarClock, Wallet, Ban, Pill, LogIn, UserRound,
+  LayoutGrid, Wrench, type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import PrayerPopover from './PrayerPopover';
@@ -23,12 +25,99 @@ import UrgencyBanner from './UrgencyBanner';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { useAuth } from '@/lib/hooks/useAuth';
 
-// Helper to map icon names to components
+// Helper to map icon names to components.
+// "BrainCircuit" stays as a KEY (DB menu rows may still reference the name)
+// but renders Compass — the owner wants no AI-looking symbols on the site.
 export const IconMap: Record<string, React.ComponentType<{ size?: number | string; className?: string }>> = {
-  Home, Briefcase, FileText, BrainCircuit, Info, Building2, Smartphone,
+  Home, Briefcase, FileText, BrainCircuit: Compass, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
   UserCheck, HeartPulse, Link: LinkIcon, ScrollText
 };
+
+// ── Mobile drawer data ────────────────────────────────────────────────
+// Sections reuse SECTIONS_MENU (single source of truth with the desktop
+// mega-menu). Tools are curated here: the /codes duplicate is dropped
+// (it's a section) and the longest label is shortened so nothing
+// truncates at 360px-wide phones.
+const DRAWER_TOOLS = [
+  { name: 'حاسبة الإقامة والغياب', href: '/tools/residence-calculator', icon: CalendarClock },
+  { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
+  { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
+  { name: 'حاسبة تكاليف الإقامة', href: '/calculator', icon: Wallet },
+  { name: 'المناطق المحظورة', href: '/zones', icon: Ban },
+  { name: 'الصيدليات المناوبة', href: '/tools/pharmacy', icon: Pill },
+];
+
+// The ONE row used for every drawer destination: emerald icon chip on the
+// right (RTL first-child), label tight beside it, 48px tall, active =
+// filled chip + side bar. Keeps the whole menu on a single visual rhythm.
+function DrawerRow({ item, active, dot, onClick }: {
+  item: { name: string; href: string; icon: LucideIcon };
+  active: boolean;
+  dot?: boolean;
+  onClick: () => void;
+}) {
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className={`relative flex items-center gap-3 h-12 px-4 transition-colors ${active
+        ? 'bg-emerald-600/10 dark:bg-emerald-400/10'
+        : 'hover:bg-slate-50 dark:hover:bg-white/[0.03] active:bg-slate-100 dark:active:bg-white/[0.05]'
+      }`}
+    >
+      {active && <span aria-hidden="true" className="absolute start-0 inset-y-2 w-[3px] rounded-full bg-emerald-600 dark:bg-emerald-400" />}
+      <span className={`relative grid place-items-center shrink-0 w-8 h-8 rounded-lg ${active
+        ? 'bg-emerald-600 text-white dark:bg-emerald-400 dark:text-emerald-950'
+        : 'bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300'
+      }`}>
+        <Icon size={18} />
+        {dot && <span className="absolute -top-0.5 -end-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-950" />}
+      </span>
+      <span className={`flex-1 min-w-0 truncate text-[15px] ${active
+        ? 'font-bold text-emerald-800 dark:text-emerald-200'
+        : 'font-medium text-slate-700 dark:text-slate-200'
+      }`}>{item.name}</span>
+    </Link>
+  );
+}
+
+// Account card at the top of the drawer — the ONLY place gold appears.
+function DrawerAccount({ onNavigate }: { onNavigate: () => void }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="mx-3 h-[62px] rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse" />;
+  if (user) {
+    return (
+      <Link
+        href="/dashboard"
+        onClick={onNavigate}
+        className="mx-3 flex items-center gap-3 rounded-2xl p-3 bg-emerald-600/[0.07] ring-1 ring-emerald-600/15 dark:bg-emerald-400/10 dark:ring-emerald-400/20"
+      >
+        <span className="grid place-items-center w-10 h-10 rounded-xl bg-emerald-600 text-white dark:bg-emerald-400 dark:text-emerald-950 shrink-0"><UserRound size={20} /></span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-[15px] font-bold text-emerald-900 dark:text-emerald-100">حسابي</span>
+          <span className="block text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">لوحة التحكّم والإشعارات</span>
+        </span>
+        <ChevronLeft size={16} className="shrink-0 text-slate-300 dark:text-slate-600" />
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href="/login"
+      onClick={onNavigate}
+      className="mx-3 flex items-center gap-3 rounded-2xl p-3 bg-[#d8b96a]/15 ring-1 ring-[#d8b96a]/40 dark:bg-[#d8b96a]/10 dark:ring-[#d8b96a]/30"
+    >
+      <span className="grid place-items-center w-10 h-10 rounded-xl bg-[#d8b96a] text-white shrink-0"><LogIn size={20} /></span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-[15px] font-bold text-[#6d5518] dark:text-[#e7cd8f]">تسجيل الدخول</span>
+        <span className="block text-[12px] text-[#9a8144] dark:text-[#b89a5a] mt-0.5">سجّل لحفظ مفضّلتك ومتابعة طلباتك</span>
+      </span>
+      <ChevronLeft size={16} className="shrink-0 text-[#c2a878]" />
+    </Link>
+  );
+}
 
 
 function AuthButton({ mobile = false }: { mobile?: boolean }) {
@@ -213,6 +302,14 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
+  // When the drawer opens, reveal the group that contains the current
+  // page: a tools route opens «الأدوات», anything else keeps «كل الأقسام»
+  // open (the default) so the active row is never hidden behind a fold.
+  useEffect(() => {
+    if (!isOpen) return;
+    setOpenSection(DRAWER_TOOLS.some((t) => t.href === pathname) ? 'tools' : 'sections');
+  }, [isOpen, pathname]);
+
   // Don't render on Admin pages (after all hooks)
   if (pathname?.startsWith('/admin')) return null;
 
@@ -227,199 +324,122 @@ export default function Navbar() {
               className={`fixed inset-0 z-[110] lg:hidden bg-black/20 dark:bg-black/60 backdrop-blur-md transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             />
 
-            {/* Drawer */}
+            {/* Drawer — slides from the LEFT: the hamburger sits on the
+                left side of the RTL header, so the panel opening from the
+                same side feels natural (owner request). */}
             <div
               id="mobile-menu"
               role="dialog"
               aria-modal={isOpen || undefined}
+              aria-hidden={!isOpen}
+              inert={!isOpen}
               aria-label="القائمة الرئيسية"
-              className={`fixed top-0 right-0 z-[120] h-full w-[85vw] max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+              className={`fixed top-0 left-0 z-[120] h-full w-[85vw] max-w-md bg-[#faf9f6] dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
-              {/* Header — magazine-style eyebrow + title + close
-                  button. Replaces the flat single-line "القائمة" so
-                  the drawer feels like a real navigation surface, not
-                  a popover. Matches the eyebrow pattern used across
-                  the site (HomeUpdates, QuickActionsGrid, etc.). */}
-              <div className="relative p-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 dark:from-emerald-950/40 dark:via-cyan-950/40 dark:to-blue-950/40 overflow-hidden">
-                {/* Top accent stripe — same family as the site nav */}
-                <div
-                  aria-hidden="true"
-                  className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400"
-                />
-                {/* Soft top sheen */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/30 to-transparent dark:from-white/[0.04] pointer-events-none"
-                />
-                <div className="relative flex items-center justify-between gap-3">
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 mb-1">
-                      <span className="relative inline-flex items-center justify-center w-1.5 h-1.5">
-                        <span className="absolute inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                        <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      </span>
-                      <span className="text-[10px] font-black tracking-[0.2em] uppercase text-emerald-700 dark:text-emerald-300">
-                        MENU · القائمة
-                      </span>
-                    </div>
-                    <span className="block font-black text-lg sm:text-xl text-slate-900 dark:text-slate-50 leading-tight">
-                      تصفّح الموقع
-                    </span>
+              {/* Header — flat and calm: logo + name + close. */}
+              <div className="flex-none h-14 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Image src="/logo.png" alt="شعار دليل العرب" width={30} height={30} className="w-[30px] h-[30px] object-contain shrink-0" />
+                  <div className="min-w-0">
+                    <span className="block text-[15px] font-extrabold leading-tight text-emerald-900 dark:text-emerald-100 truncate">{SITE_CONFIG.name}</span>
+                    <span className="block text-[10px] text-slate-400 dark:text-slate-500">دليلك الموثوق في تركيا</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-white dark:bg-slate-900 rounded-full text-slate-600 dark:text-slate-300 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-300 transition-all duration-200 shadow-sm border border-slate-200 dark:border-slate-700 group"
-                    aria-label="إغلاق القائمة"
-                  >
-                    <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
-                  </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="w-11 h-11 shrink-0 grid place-items-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="إغلاق القائمة"
+                >
+                  <X size={20} />
+                </button>
               </div>
 
               {/* Items */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto overscroll-contain pb-4 custom-scrollbar">
 
-                {/* Auth Button */}
-                <div className="mb-2" onClick={() => setIsOpen(false)}>
-                  <AuthButton mobile={true} />
+                {/* حسابك */}
+                <div className="px-4 pt-4 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-500">حسابك</div>
+                <DrawerAccount onNavigate={() => setIsOpen(false)} />
+
+                {/* الخدمات — its own prominent section (owner request) */}
+                <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-500">الخدمات</div>
+                <Link
+                  href="/services"
+                  onClick={() => setIsOpen(false)}
+                  className="mx-3 flex items-center gap-3 rounded-2xl p-3.5 bg-gradient-to-l from-emerald-600 to-emerald-700 text-white shadow-md shadow-emerald-600/25"
+                >
+                  <span className="grid place-items-center w-10 h-10 rounded-xl bg-white/20 shrink-0"><Briefcase size={20} /></span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[15px] font-bold">الخدمات والمهن</span>
+                    <span className="block text-[11px] text-white/75 mt-0.5">تصفّح مقدّمي الخدمات والحرفيين</span>
+                  </span>
+                  <ChevronLeft size={18} className="shrink-0 opacity-70" />
+                </Link>
+
+                {/* الوصول السريع */}
+                <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-500">الوصول السريع</div>
+                <div className="mx-3 rounded-2xl bg-white dark:bg-slate-900/40 ring-1 ring-black/[0.04] dark:ring-white/[0.06] divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
+                  <DrawerRow item={{ name: 'الرئيسية', href: '/', icon: Home }} active={pathname === '/'} onClick={() => setIsOpen(false)} />
+                  <DrawerRow item={{ name: 'الأخبار', href: '/updates', icon: Newspaper }} active={!!pathname?.startsWith('/updates')} dot={hasNewUpdates} onClick={() => setIsOpen(false)} />
+                  <DrawerRow item={{ name: 'دليل المواقف', href: '/consultant', icon: Compass }} active={pathname === '/consultant'} onClick={() => setIsOpen(false)} />
                 </div>
 
-                {/* Primary Links */}
-                <nav className="space-y-2">
-                  {[
-                    { name: 'الرئيسية', href: '/', icon: Home },
-                    { name: 'دليل المواقف', href: '/consultant', icon: BrainCircuit },
-                    { name: 'الأكواد الأمنية', href: '/codes', icon: ShieldAlert },
-                    { name: 'روابط حكومية رسمية', href: '/important-links', icon: LinkIcon },
-                  ].map((item) => {
-                    const isActive = pathname === item.href;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsOpen(false)}
-                        className={`group relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 overflow-hidden ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold shadow-md' : 'bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'} hover:shadow-[0_4px_12px_-2px_rgba(16,185,129,0.15)]`}
-                      >
-                        <span className="absolute bottom-0 right-0 h-[2px] w-0 bg-gradient-to-l from-emerald-400 to-emerald-600 shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all duration-300 ease-out group-hover:w-full" />
-                        <span className={`p-2 rounded-xl transition-colors ${isActive ? 'bg-white dark:bg-emerald-950 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 group-hover:text-emerald-500'}`}>
-                          <item.icon size={20} />
-                        </span>
-                        <span className="text-base">{item.name}</span>
-                      </Link>
-                    );
-                  })}
-
-                  {/* Services Card */}
-                  <Link
-                    href="/services"
-                    onClick={() => setIsOpen(false)}
-                    className={`group relative flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 overflow-hidden ${pathname === '/services' ? 'bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/30' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-500/30'}`}
-                  >
-                    <span className="p-2 rounded-xl bg-white/20"><Briefcase size={20} /></span>
-                    <div>
-                      <span className="text-base font-bold block">خدمات ومهن</span>
-                      <span className="text-[11px] text-white/70">تصفّح مقدمي الخدمات والحرفيين</span>
-                    </div>
-                    <Sparkles size={16} className="mr-auto opacity-60" />
-                  </Link>
-                </nav>
-
-                {/* ── Collapsible: الدليل والمعلومات ── */}
-                <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                {/* ── كل الأقسام — bold accordion header + full sections list ── */}
+                <div className="mx-3 mt-4 rounded-2xl bg-white dark:bg-slate-900/40 ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden">
                   <button
                     type="button"
-                    onClick={() => setOpenSection(openSection === 'guide' ? null : 'guide')}
-                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    onClick={() => setOpenSection(openSection === 'sections' ? null : 'sections')}
+                    aria-expanded={openSection === 'sections'}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                        <FolderOpen size={16} className="text-emerald-600 dark:text-emerald-400" />
-                      </span>
-                      <span className="font-bold text-sm text-slate-700 dark:text-slate-200">الدليل والمعلومات</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">7</span>
-                    </span>
-                    <ChevronLeft size={16} className={`text-slate-400 transition-transform duration-300 ${openSection === 'guide' ? '-rotate-90' : ''}`} />
+                    <span className="grid place-items-center w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 shrink-0"><LayoutGrid size={18} /></span>
+                    <span className="flex-1 text-start text-[15px] font-bold text-slate-800 dark:text-slate-100">كل الأقسام</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">12</span>
+                    <ChevronDown size={16} className={`shrink-0 text-slate-400 transition-transform duration-200 ${openSection === 'sections' ? 'rotate-180' : ''}`} />
                   </button>
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${openSection === 'guide' ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="px-2 pb-2 space-y-1">
-                      {[
-                        { name: 'الدليل الشامل', href: '/directory', icon: FolderOpen },
-                        { name: 'دليل المدن', href: '/city', icon: MapPin },
-                        { name: 'خدمات السوريين', href: '/category/syrians', icon: Building2 },
-                        { name: 'الأسئلة الشائعة', href: '/faq', icon: BookOpen },
-                        { name: 'أسئلة وأجوبة', href: '/qa', icon: BookOpen },
-                        { name: 'خدمات e-Devlet', href: '/e-devlet-services', icon: Smartphone },
-                        { name: 'الأكواد', href: '/codes', icon: ShieldAlert },
-                        { name: 'روابط هامة', href: '/important-links', icon: LinkIcon },
-                      ].map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setIsOpen(false)}
-                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 overflow-hidden ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                          >
-                            <item.icon size={16} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
-                            <span className="font-medium text-sm">{item.name}</span>
-                          </Link>
-                        );
-                      })}
+                  <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${openSection === 'sections' ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className="overflow-hidden">
+                      <div className="border-t border-slate-100 dark:border-slate-800/60 divide-y divide-slate-100 dark:divide-slate-800/60">
+                        {SECTIONS_MENU.map((item) => (
+                          <DrawerRow key={item.href} item={item} active={pathname === item.href} onClick={() => setIsOpen(false)} />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* ── Collapsible: الأدوات الذكية ── */}
-                <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
+                {/* ── الأدوات — bold accordion header + tools list ── */}
+                <div className="mx-3 mt-3 rounded-2xl bg-white dark:bg-slate-900/40 ring-1 ring-black/[0.04] dark:ring-white/[0.06] overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setOpenSection(openSection === 'tools' ? null : 'tools')}
-                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    aria-expanded={openSection === 'tools'}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                        <BrainCircuit size={16} className="text-blue-600 dark:text-blue-400" />
-                      </span>
-                      <span className="font-bold text-sm text-slate-700 dark:text-slate-200">الأدوات الذكية</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-full font-bold">6</span>
-                    </span>
-                    <ChevronLeft size={16} className={`text-slate-400 transition-transform duration-300 ${openSection === 'tools' ? '-rotate-90' : ''}`} />
+                    <span className="grid place-items-center w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 shrink-0"><Wrench size={18} /></span>
+                    <span className="flex-1 text-start text-[15px] font-bold text-slate-800 dark:text-slate-100">الأدوات</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">6</span>
+                    <ChevronDown size={16} className={`shrink-0 text-slate-400 transition-transform duration-200 ${openSection === 'tools' ? 'rotate-180' : ''}`} />
                   </button>
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${openSection === 'tools' ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="px-2 pb-2 space-y-1">
-                      {[
-                        { name: 'حاسبة أيام الإقامة والغياب', href: '/tools/residence-calculator', icon: Calculator },
-                        { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
-                        { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
-                        { name: 'حاسبة تكاليف الإقامة', href: '/calculator', icon: Calculator },
-                        { name: 'المناطق المحظورة', href: '/zones', icon: MapPin },
-                        { name: 'الصيدليات المناوبة', href: '/tools/pharmacy', icon: HeartPulse },
-                      ].map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setIsOpen(false)}
-                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 overflow-hidden ${isActive ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                          >
-                            <item.icon size={16} className={`transition-colors ${isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
-                            <span className="font-medium text-sm">{item.name}</span>
-                          </Link>
-                        );
-                      })}
+                  <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${openSection === 'tools' ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className="overflow-hidden">
+                      <div className="border-t border-slate-100 dark:border-slate-800/60 divide-y divide-slate-100 dark:divide-slate-800/60">
+                        {DRAWER_TOOLS.map((item) => (
+                          <DrawerRow key={item.href} item={item} active={pathname === item.href} onClick={() => setIsOpen(false)} />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
               </div>
 
-              {/* Footer */}
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-950"
-              >
-                <p className="text-xs text-center text-slate-500 mb-4">{SITE_CONFIG.slogan}</p>
-                <div className="flex justify-center">
+              {/* Footer — slogan + labeled theme toggle, safe-area aware */}
+              <div className="flex-none border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
+                <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 mb-2.5">{SITE_CONFIG.slogan}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">المظهر</span>
                   <ThemeToggle />
                 </div>
               </div>
@@ -504,7 +524,7 @@ export default function Navbar() {
                 return {
                   name: t.name,
                   href: t.route,
-                  icon: staticTool?.icon || Sparkles
+                  icon: staticTool?.icon || Wrench
                 };
               })}
             />

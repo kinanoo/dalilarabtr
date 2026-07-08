@@ -33,7 +33,7 @@ export default function PrayerPopover() {
     const [showCities, setShowCities] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
 
-    // Close on outside click
+    // Close on outside click or Escape
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
@@ -41,9 +41,19 @@ export default function PrayerPopover() {
                 setShowCities(false);
             }
         }
+        function onKey(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+                setIsOpen(false);
+                setShowCities(false);
+            }
+        }
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
-            return () => document.removeEventListener('mousedown', handleClickOutside);
+            document.addEventListener('keydown', onKey);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+                document.removeEventListener('keydown', onKey);
+            };
         }
     }, [isOpen]);
 
