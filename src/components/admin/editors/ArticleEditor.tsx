@@ -104,6 +104,12 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
     // power-user knobs without taking the user to a separate page.
     const [seoOpen, setSeoOpen] = useState<boolean>(false);
     const [workflowOpen, setWorkflowOpen] = useState<boolean>(false);
+    // Whether the admin has hand-edited the slug. Until they do, we auto-derive
+    // a clean Latin slug from the title on every keystroke (so a new article gets
+    // a short share link by default, instead of the huge %D8%… Arabic-title URL).
+    // Existing articles load with a slug already set → treat as "touched" so we
+    // never overwrite a live URL when the title is tweaked.
+    const [slugTouched, setSlugTouched] = useState<boolean>(!!form?.slug);
 
     // Convenience derived values
     const slug = (form.slug as string) || (form.id as string) || '';
@@ -165,7 +171,12 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                         required
                         className={`${inputStyles} text-lg font-bold`}
                         value={form.title || ''}
-                        onChange={e => setForm({ ...form, title: e.target.value })}
+                        onChange={e => {
+                            const t = e.target.value;
+                            // Auto-derive the slug from the title until the admin
+                            // hand-edits it — keeps new share links short by default.
+                            setForm(slugTouched ? { ...form, title: t } : { ...form, title: t, slug: suggestSlug(t) });
+                        }}
                         placeholder="عنوان جذاب للمقال..."
                     />
                 </Field>
@@ -320,7 +331,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                                 <input
                                     className={`${ltrInputStyles} flex-1`}
                                     value={form.slug || ''}
-                                    onChange={e => setForm({ ...form, slug: sanitizeSlug(e.target.value) })}
+                                    onChange={e => { setSlugTouched(true); setForm({ ...form, slug: sanitizeSlug(e.target.value) }); }}
                                     placeholder="pasaport-gaziantep"
                                     dir="ltr"
                                 />
