@@ -245,3 +245,82 @@ export async function runNotifyPipeline(
         skippedForCap,
     };
 }
+
+/**
+ * Diagnostic: attempt ONE real web-push to the first stored subscription and
+ * return the raw failure so we can classify why every send fails. It reports:
+ *   - moduleLoadVapidConfigured — did setVapidDetails succeed at cold start
+ *     (if false while the keys ARE present, env wasn't in process.env yet).
+ *   - a NON-secret fingerprint of the public key (len + head/tail) so it can be
+ *     compared against the key the BROWSER subscribed with (mismatch = 403).
+ *     Private key: presence + length only, never the value.
+ *   - the WebPushError statusCode + body + endpoint host: the smoking gun.
+ *       401/403 + "VAPID"/"Unauthorized"      → signing key mismatch/invalid JWT
+ *       404/410                                → that endpoint expired (stale sub)
+ *       throws before HTTP / 400               → encryption/library broken on Workers
+ * Cron-key gated by the caller. Sends one real notification only on success.
+ */
+export async function pushProbe(svc: SupabaseClient): Promise<Record<string, unknown>> {
+    const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
+    const priv = process.env.VAPID_PRIVATE_KEY || '';
+    const info: Record<string, unknown> = {
+        moduleLoadVapidConfigured: vapidConfigured,
+        hasPublicKey: !!pub,
+        hasPrivateKey: !!priv,
+        publicKeyLen: pub.length,
+        publicKeyHead: pub.slice(0, 10),
+        publicKeyTail: pub.slice(-8),
+        privateKeyLen: priv.length,
+    };
+
+    // Re-apply VAPID at REQUEST time (keys are reliably in process.env now, even
+    // if they weren't at module load under OpenNext). Distinguishes a cold-start
+    // timing problem from a genuinely bad key/signature.
+    let requestTimeConfigured = false;
+    let setVapidError: string | null = null;
+    if (pub && priv) {
+        try {
+            webpush.setVapidDetails(`mailto:${process.env.ADMIN_EMAIL || 'support@dalilarab.com'}`, pub, priv);
+            requestTimeConfigured = true;
+        } catch (e) {
+            setVapidError = String((e as Error)?.message || e).slice(0, 200);
+        }
+    }
+    info.requestTimeConfigured = requestTimeConfigured;
+    info.setVapidError = setVapidError;
+
+    const { data, count } = await svc
+        .from('push_subscriptions')
+        .select('endpoint, p256dh, auth', { count: 'exact' })
+        .limit(1);
+    const sub = (data as { endpoint: string; p256dh: string; auth: string }[] | null)?.[0];
+    info.subCount = count ?? (data ? data.length : 0);
+    if (!sub) return { ...info, note: 'no subscription rows to probe' };
+
+    let endpointHost = '';
+    try { endpointHost = new URL(sub.endpoint).host; } catch { /* ignore */ }
+    info.endpointHost = endpointHost;
+    info.p256dhLen = (sub.p256dh || '').length;
+    info.authLen = (sub.auth || '').length;
+
+    if (!requestTimeConfigured) {
+        return { ...info, result: 'CANNOT_SEND', note: 'VAPID not configured at request time' };
+    }
+
+    try {
+        await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            JSON.stringify({ title: 'اختبار الإشعارات', message: 'رسالة فحص — تجاهلها', url: '/updates' })
+        );
+        return { ...info, result: 'SENT_OK' };
+    } catch (err) {
+        const e = err as { statusCode?: number; body?: string; name?: string; message?: string };
+        return {
+            ...info,
+            result: 'FAILED',
+            statusCode: e?.statusCode ?? null,
+            errName: e?.name ?? null,
+            body: (typeof e?.body === 'string' ? e.body : (e?.message || String(err))).slice(0, 400),
+        };
+    }
+}

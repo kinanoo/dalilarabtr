@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { runNotifyPipeline, resolveTelegramChat } from '@/lib/notify/pipeline';
+import { runNotifyPipeline, resolveTelegramChat, pushProbe } from '@/lib/notify/pipeline';
 
 /**
  * Scheduled content-notification endpoint (the 30-min safety net).
@@ -73,6 +73,13 @@ async function handle(request: Request) {
         return NextResponse.json({ error: 'server_config' }, { status: 500 });
     }
     const svc = createClient(supabaseUrl, serviceRoleKey);
+
+    // Diagnostic: ?pushtest=1 sends ONE real push to the first subscription and
+    // returns the raw failure (statusCode + body + key fingerprints) so we can
+    // classify why every push send fails. Cron-key gated (checked above).
+    if (url.searchParams.get('pushtest') === '1') {
+        return NextResponse.json({ pushtest: true, ...(await pushProbe(svc)) });
+    }
 
     const result = await runNotifyPipeline(svc, { dryRun: url.searchParams.get('dry') === '1' });
     return NextResponse.json(result);

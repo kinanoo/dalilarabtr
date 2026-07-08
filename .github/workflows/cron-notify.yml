@@ -26,6 +26,10 @@ on:
         description: 'Send a Telegram test message (diagnostic)'
         type: boolean
         default: false
+      pushtest:
+        description: 'Probe one real web-push send and return the raw error (diagnostic)'
+        type: boolean
+        default: false
 
 # Never run two overlapping notifiers.
 concurrency:
@@ -46,6 +50,7 @@ jobs:
           fi
           URL="https://dalilarabtr.com/api/cron/notify"
           if [ "${{ inputs.tgtest }}" = "true" ]; then URL="$URL?tgtest=1"; fi
+          if [ "${{ inputs.pushtest }}" = "true" ]; then URL="$URL?pushtest=1"; fi
           curl -sS -X POST "$URL" \
             -H "x-cron-key: $CRON_SECRET" \
             -w $'\nHTTP %{http_code}\n' \
