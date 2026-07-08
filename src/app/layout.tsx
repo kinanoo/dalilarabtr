@@ -36,6 +36,7 @@ import ProseContrastGuard from "@/components/article/ProseContrastGuard";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SiteBackdrop from "@/components/SiteBackdrop";
 import ScrollRestoration from "@/components/ScrollRestoration";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
 
@@ -251,6 +252,8 @@ export default function RootLayout({
         <ThemeProviderWrapper>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
+            {/* Faint Istanbul photo behind everything (z-0); content is z-10. */}
+            <SiteBackdrop />
             <div className="relative z-10">
               <Navbar />
               <div id="main-content">

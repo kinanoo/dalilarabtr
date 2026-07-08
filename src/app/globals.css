@@ -577,3 +577,32 @@ html.dark .card-hover:hover {
 .bg-gradient-premium {
   @apply bg-gradient-to-br from-primary-900 via-primary-800 to-emerald-900 dark:from-primary-950 dark:via-primary-900 dark:to-emerald-950;
 }
+
+/* ============================================
+   Site backdrop — faint fixed Istanbul photo behind ALL content.
+   Decorative only (aria-hidden + pointer-events:none). Sits ABOVE the opaque
+   body background but BELOW the z-10 content wrapper, so the existing design,
+   layout and text are untouched — the photo only shows through the page's
+   light gaps at a whisper. Owner-approved levels: image 8% · veil 25% · green 55%.
+   ============================================ */
+.site-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.site-backdrop > div { position: absolute; inset: 0; }
+.sb-img {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+}
+.sb-tint {
+  background: radial-gradient(120% 80% at 50% 40%, rgba(5, 150, 105, 0.16), transparent 70%);
+  opacity: 0.55;
+}
+.sb-veil { background: #FAF6EE; opacity: 0.25; }
+.dark .sb-img { opacity: 0.13; }
+.dark .sb-veil { background: #020617; opacity: 0.34; }
