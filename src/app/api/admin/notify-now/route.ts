@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/api/adminAuth';
-import { runNotifyPipeline } from '@/lib/notify/pipeline';
+import { runNotifyPipeline, notifyArticle } from '@/lib/notify/pipeline';
 import logger from '@/lib/logger';
 
 /**
@@ -21,12 +21,20 @@ import logger from '@/lib/logger';
  */
 export const runtime = 'nodejs';
 
-export async function POST() {
+export async function POST(request: Request) {
     const gate = await requireAdmin();
     if (!gate.ok) return gate.res;
 
     try {
-        const result = await runNotifyPipeline(gate.svc);
+        // Optional { articleId }: notify that specific article instantly,
+        // regardless of its created_at (covers approving an old pending draft).
+        // No body → the time-window scan (used by the editor's create flow).
+        const body = await request.json().catch(() => ({} as Record<string, unknown>));
+        const articleId = typeof body?.articleId === 'string' ? body.articleId : null;
+
+        const result = articleId
+            ? await notifyArticle(gate.svc, articleId)
+            : await runNotifyPipeline(gate.svc);
         return NextResponse.json(result);
     } catch (err) {
         logger.error('notify-now failed:', err);

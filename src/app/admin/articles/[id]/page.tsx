@@ -179,24 +179,32 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 }).catch(() => { /* non-critical */ });
             } catch { /* non-critical */ }
 
-            // Notify for new articles. One instant pipeline fans out to bell +
-            // push + Telegram (derives the canonical /article/<slug> link from
-            // the DB, so the 30-min cron dedupes it and never double-posts).
-            if (isNew && sendPush && payload.title) {
+            // Notify when saving an APPROVED article with the toggle on — whether
+            // it's a brand-new article OR an existing pending draft being approved
+            // (isNew was too narrow: approving a pending draft never fired). We pass
+            // the specific articleId so it notifies THIS article regardless of its
+            // created_at (the 30-min cron's time window would miss an old draft).
+            // Deduped by link server-side, so re-saving never double-posts.
+            if (sendPush && payload.title && payload.status === 'approved') {
                 try {
-                    const res = await fetch('/api/admin/notify-now', { method: 'POST' });
+                    const res = await fetch('/api/admin/notify-now', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ articleId: payload.id }),
+                    });
                     const r = await res.json();
                     if (res.ok) {
                         const bits: string[] = [];
                         if (typeof r.pushSuccess === 'number' && r.pushSuccess > 0) bits.push(`${r.pushSuccess} جهاز`);
                         if (r.telegramSent > 0) bits.push('تلغرام');
-                        toast.success(bits.length ? `تم النشر + إشعار (${bits.join(' + ')})` : 'تم النشر + إشعار');
+                        if (r.sent === 0) toast.success(isNew ? 'تم إنشاء المقال' : 'تم حفظ التعديلات');
+                        else toast.success(bits.length ? `تم النشر + إشعار (${bits.join(' + ')})` : 'تم النشر + إشعار');
                     } else {
-                        toast.success('تم إنشاء المقال بنجاح');
+                        toast.success(isNew ? 'تم إنشاء المقال بنجاح' : 'تم حفظ التعديلات');
                         toast.error('فشل إرسال الإشعار: ' + (r.error || ''));
                     }
                 } catch {
-                    toast.success('تم إنشاء المقال بنجاح');
+                    toast.success(isNew ? 'تم إنشاء المقال بنجاح' : 'تم حفظ التعديلات');
                     toast.error('فشل إرسال الإشعار');
                 }
             } else {

@@ -178,12 +178,14 @@ export function deadEndpoints(
 }
 
 /**
- * Gather freshly-published content, de-dupe against what was already notified,
- * and fan out to bell + push + Telegram. Pass `{ dryRun: true }` to preview
- * exactly what WOULD be sent without sending.
+ * De-dupe a list of items against already-sent notifications, then fan out to
+ * bell + push + Telegram. Shared by BOTH the time-window scan (cron) and the
+ * per-article instant path, so they dedup on the same key and never double-send.
+ * Pass `{ dryRun: true }` to preview what WOULD be sent without sending.
  */
-export async function runNotifyPipeline(
+async function sendItems(
     svc: SupabaseClient,
+    items: NotifyItem[],
     opts: { dryRun?: boolean } = {}
 ): Promise<NotifyResult> {
     const dryRun = !!opts.dryRun;
@@ -191,37 +193,11 @@ export async function runNotifyPipeline(
     // exactly when the bot-token Secret is present.
     const tgEnabled = !!process.env.TELEGRAM_BOT_TOKEN;
 
-    const cutoffIso = new Date(Date.now() - LOOKBACK_MINUTES * 60_000).toISOString();
-
-    // ── 1. Gather freshly-published content ──────────────────────────────
-    const [artRes, updRes] = await Promise.all([
-        svc.from('articles')
-            .select('id, slug, title, created_at')
-            .eq('status', 'approved')
-            .gt('created_at', cutoffIso)
-            .order('created_at', { ascending: false })
-            .limit(20),
-        svc.from('updates')
-            .select('id, title, created_at')
-            .eq('active', true)
-            .gt('created_at', cutoffIso)
-            .order('created_at', { ascending: false })
-            .limit(20),
-    ]);
-
-    const items: NotifyItem[] = [];
-    for (const a of (artRes.data as { id: string; slug: string | null; title: string }[] | null) || []) {
-        items.push({ link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title });
-    }
-    for (const u of (updRes.data as { id: string; title: string }[] | null) || []) {
-        items.push({ link: `/updates?u=${u.id}`, title: 'تحديث جديد ⚡', message: u.title });
-    }
-
     if (items.length === 0) {
-        return { ok: true, newItems: 0, sent: 0, note: 'no new content in window', tgEnabled };
+        return { ok: true, newItems: 0, sent: 0, note: 'no new content', tgEnabled };
     }
 
-    // ── 2. De-dupe against already-sent notifications (idempotency) ───────
+    // ── De-dupe against already-sent notifications (idempotency) ──────────
     const links = items.map((i) => i.link);
     const { data: existing } = await svc.from('notifications').select('link').in('link', links);
     const seen = new Set(((existing as { link: string }[] | null) || []).map((r) => r.link));
@@ -237,7 +213,7 @@ export async function runNotifyPipeline(
         return { ok: true, newItems: items.length, sent: 0, note: 'all already notified', tgEnabled };
     }
 
-    // ── 3. Load subscribers once (only if push is configured) ────────────
+    // ── Load subscribers once (only if push is configured) ───────────────
     let subs: { endpoint: string; p256dh: string; auth: string }[] = [];
     if (vapidConfigured) {
         const { data } = await svc.from('push_subscriptions').select('endpoint, p256dh, auth');
@@ -305,6 +281,62 @@ export async function runNotifyPipeline(
         cleaned: expired.length,
         skippedForCap,
     };
+}
+
+/**
+ * Time-window scan (the 30-min cron safety net): gather content published in
+ * the last LOOKBACK_MINUTES and notify anything not already sent.
+ */
+export async function runNotifyPipeline(
+    svc: SupabaseClient,
+    opts: { dryRun?: boolean } = {}
+): Promise<NotifyResult> {
+    const cutoffIso = new Date(Date.now() - LOOKBACK_MINUTES * 60_000).toISOString();
+    const [artRes, updRes] = await Promise.all([
+        svc.from('articles')
+            .select('id, slug, title, created_at')
+            .eq('status', 'approved')
+            .gt('created_at', cutoffIso)
+            .order('created_at', { ascending: false })
+            .limit(20),
+        svc.from('updates')
+            .select('id, title, created_at')
+            .eq('active', true)
+            .gt('created_at', cutoffIso)
+            .order('created_at', { ascending: false })
+            .limit(20),
+    ]);
+
+    const items: NotifyItem[] = [];
+    for (const a of (artRes.data as { id: string; slug: string | null; title: string }[] | null) || []) {
+        items.push({ link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title });
+    }
+    for (const u of (updRes.data as { id: string; title: string }[] | null) || []) {
+        items.push({ link: `/updates?u=${u.id}`, title: 'تحديث جديد ⚡', message: u.title });
+    }
+
+    return sendItems(svc, items, opts);
+}
+
+/**
+ * Instant path: notify ONE specific article the moment it's published/approved,
+ * regardless of its created_at — so approving an OLD pending draft still fires
+ * (the time-window scan would miss it). Deduped by link, so it's safe even if
+ * the cron later scans the same article. No-op if the article isn't approved.
+ */
+export async function notifyArticle(svc: SupabaseClient, articleId: string): Promise<NotifyResult> {
+    const tgEnabled = !!process.env.TELEGRAM_BOT_TOKEN;
+    const { data } = await svc
+        .from('articles')
+        .select('id, slug, title, status')
+        .eq('id', articleId)
+        .limit(1);
+    const a = (data as { id: string; slug: string | null; title: string; status: string }[] | null)?.[0];
+    if (!a) return { ok: true, newItems: 0, sent: 0, note: 'article not found', tgEnabled };
+    if (a.status !== 'approved') return { ok: true, newItems: 0, sent: 0, note: 'article not approved', tgEnabled };
+
+    const item: NotifyItem = { link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title };
+    return sendItems(svc, [item], {});
 }
 
 /**
