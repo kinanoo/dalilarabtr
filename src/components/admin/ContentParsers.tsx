@@ -71,28 +71,20 @@ export function UpdatesManager() {
                 return;
             }
 
-            // Send push notification for new updates (not edits)
+            // Notify for new updates (not edits). One instant pipeline fans out
+            // to bell + push + Telegram; the 30-min cron is only a safety net.
             if (!editingId && sendPush && formData.title) {
                 try {
-                    // Strip HTML tags from rich text content for clean notification text
-                    const plainMessage = formData.content
-                        ? formData.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim()
-                        : formData.title;
-                    const pushRes = await fetch('/api/admin/push', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            title: formData.title,
-                            message: plainMessage || formData.title,
-                            url: formData.link || '/updates',
-                        }),
-                    });
-                    const pushResult = await pushRes.json();
-                    if (pushRes.ok) {
-                        toast.success(`تم النشر + إرسال إشعار لـ ${pushResult.successCount} مشترك`);
+                    const res = await fetch('/api/admin/notify-now', { method: 'POST' });
+                    const r = await res.json();
+                    if (res.ok) {
+                        const bits: string[] = [];
+                        if (typeof r.pushSuccess === 'number' && r.pushSuccess > 0) bits.push(`${r.pushSuccess} جهاز`);
+                        if (r.telegramSent > 0) bits.push('تلغرام');
+                        toast.success(bits.length ? `تم النشر + إشعار (${bits.join(' + ')})` : 'تم النشر + إشعار');
                     } else {
                         toast.success('تم النشر');
-                        toast.error('فشل إرسال الإشعار: ' + (pushResult.error || ''));
+                        toast.error('فشل إرسال الإشعار: ' + (r.error || ''));
                     }
                 } catch {
                     toast.success('تم النشر');

@@ -41,9 +41,14 @@ interface LastArticle {
 }
 
 interface PushResult {
-    success?: number;
-    failed?: number;
-    expired?: number;
+    // Field names must match the /api/admin/push JSON exactly, or the summary
+    // renders 0/0/0 regardless of the real result.
+    successCount?: number;
+    failCount?: number;
+    cleaned?: number;
+    totalSubscribers?: number;
+    telegramSent?: number;
+    tgError?: string | null;
     error?: string;
 }
 
@@ -236,8 +241,9 @@ export default function PushBroadcastPage() {
                 </h1>
                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                     أرسل إشعاراً عبر Web Push لكلّ مشترك فعّل التنبيهات على الموقع.
-                    الإشعار يُحفظ أيضاً في جرس الإشعارات داخل الموقع. استخدم هذا
-                    للأخبار العاجلة فقط — لا تُفرط لكي لا يتراجع المشتركون.
+                    الإشعار يُحفظ أيضاً في جرس الإشعارات داخل الموقع ويُنشر في قناة
+                    تلغرام. استخدم هذا للأخبار العاجلة فقط — لا تُفرط لكي لا يتراجع
+                    المشتركون.
                 </p>
             </div>
 
@@ -332,9 +338,15 @@ export default function PushBroadcastPage() {
                             <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
                             <div>
                                 تمّ البثّ:&nbsp;
-                                <strong>{result.success ?? 0}</strong> ناجح،&nbsp;
-                                <strong>{result.failed ?? 0}</strong> فشل،&nbsp;
-                                <strong>{result.expired ?? 0}</strong> منتهي الصلاحية (نُظِّفت).
+                                <strong>{result.successCount ?? 0}</strong> ناجح،&nbsp;
+                                <strong>{result.failCount ?? 0}</strong> فشل،&nbsp;
+                                <strong>{result.cleaned ?? 0}</strong> منتهي الصلاحية (نُظِّفت).
+                                {result.telegramSent ? (
+                                    <span className="block mt-1">📣 نُشر أيضاً في قناة تلغرام.</span>
+                                ) : null}
+                                {result.tgError ? (
+                                    <span className="block mt-1 text-amber-700 dark:text-amber-300">تعذّر النشر في تلغرام.</span>
+                                ) : null}
                             </div>
                         </div>
                     )

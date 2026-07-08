@@ -4,6 +4,8 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import logger from '@/lib/logger';
+import { sendTelegram } from '@/lib/notify/pipeline';
+import { SITE_CONFIG } from '@/lib/config';
 
 /**
  * Runtime: Node.js (default — explicit declaration for clarity).
@@ -175,7 +177,19 @@ export async function POST(request: Request) {
             }
         })();
 
-        // ── 2. Send push notifications to subscribed devices ─────────
+        // ── 2. Telegram channel broadcast (independent of web-push) ──
+        // Same message to the channel. Reuses the shared helper so config +
+        // error handling match the content pipeline exactly. Never throws.
+        let telegramSent = 0;
+        let tgError: string | null = null;
+        {
+            const tgText = `${title}${message ? `\n\n${message}` : ''}\n\n${SITE_CONFIG.siteUrl}${targetUrl}`;
+            const tg = await sendTelegram(tgText);
+            if (tg.ok) telegramSent = 1;
+            else if (tg.error && tg.error !== 'tg_not_configured') tgError = tg.error;
+        }
+
+        // ── 3. Send push notifications to subscribed devices ─────────
         // If VAPID isn't configured, skip the send entirely. The in-site
         // notification above is already saved, so the bell still updates; we
         // just report honestly that no device pushes went out instead of
@@ -189,6 +203,8 @@ export async function POST(request: Request) {
                 failCount: 0,
                 cleaned: 0,
                 totalSubscribers: 0,
+                telegramSent,
+                tgError,
             });
         }
 
@@ -245,6 +261,8 @@ export async function POST(request: Request) {
             failCount,
             cleaned: expiredEndpoints.length,
             totalSubscribers: subscriptions?.length || 0,
+            telegramSent,
+            tgError,
         });
 
     } catch (error) {

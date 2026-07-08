@@ -179,24 +179,21 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 }).catch(() => { /* non-critical */ });
             } catch { /* non-critical */ }
 
-            // Send push notification for new articles
+            // Notify for new articles. One instant pipeline fans out to bell +
+            // push + Telegram (derives the canonical /article/<slug> link from
+            // the DB, so the 30-min cron dedupes it and never double-posts).
             if (isNew && sendPush && payload.title) {
                 try {
-                    const pushRes = await fetch('/api/admin/push', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            title: 'مقال جديد',
-                            message: payload.title,
-                            url: `/article/${payload.id}`,
-                        }),
-                    });
-                    const pushResult = await pushRes.json();
-                    if (pushRes.ok) {
-                        toast.success(`تم النشر + إرسال إشعار لـ ${pushResult.successCount} مشترك`);
+                    const res = await fetch('/api/admin/notify-now', { method: 'POST' });
+                    const r = await res.json();
+                    if (res.ok) {
+                        const bits: string[] = [];
+                        if (typeof r.pushSuccess === 'number' && r.pushSuccess > 0) bits.push(`${r.pushSuccess} جهاز`);
+                        if (r.telegramSent > 0) bits.push('تلغرام');
+                        toast.success(bits.length ? `تم النشر + إشعار (${bits.join(' + ')})` : 'تم النشر + إشعار');
                     } else {
                         toast.success('تم إنشاء المقال بنجاح');
-                        toast.error('فشل إرسال الإشعار: ' + (pushResult.error || ''));
+                        toast.error('فشل إرسال الإشعار: ' + (r.error || ''));
                     }
                 } catch {
                     toast.success('تم إنشاء المقال بنجاح');
