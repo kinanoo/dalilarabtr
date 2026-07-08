@@ -111,6 +111,51 @@ export async function sendTelegram(text: string): Promise<{ ok: boolean; error: 
 }
 
 /**
+ * Dispatch ONE web-push. Uses web-push ONLY to build the encrypted body + VAPID
+ * headers (`generateRequestDetails`), then sends over `fetch()`.
+ *
+ * WHY not `webpush.sendNotification()`: it transports via node:https
+ * `https.request`, which Cloudflare Workers' unenv Node-compat layer leaves as
+ * an unimplemented stub — every send threw "[unenv] https.request is not
+ * implemented yet!" before any HTTP, so all 145 subscribers silently failed
+ * (statusCode:null, 0 cleaned). `fetch()` is native on Workers, so routing the
+ * SAME encrypted request through it restores delivery while reusing web-push's
+ * proven VAPID JWT + aes128gcm crypto (node:crypto DOES work under nodejs_compat).
+ *
+ * Returns ok + the HTTP status; `expired` marks 404/410 endpoints for cleanup.
+ */
+export async function dispatchWebPush(
+    subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
+    payload: string
+): Promise<{ ok: boolean; statusCode: number | null; expired: boolean; error: string | null }> {
+    let details: ReturnType<typeof webpush.generateRequestDetails>;
+    try {
+        details = webpush.generateRequestDetails(subscription, payload);
+    } catch (e) {
+        return { ok: false, statusCode: null, expired: false, error: 'encrypt_failed: ' + String((e as Error)?.message || e).slice(0, 140) };
+    }
+    // fetch computes Content-Length itself; forwarding web-push's manual one can
+    // conflict on some runtimes, so drop it (case-insensitively).
+    const headers: Record<string, string> = {};
+    for (const [k, v] of Object.entries(details.headers || {})) {
+        if (k.toLowerCase() === 'content-length') continue;
+        headers[k] = String(v);
+    }
+    try {
+        const res = await fetch(details.endpoint, {
+            method: details.method || 'POST',
+            headers,
+            body: details.body ? (details.body as unknown as BodyInit) : undefined,
+        });
+        if (res.status >= 200 && res.status < 300) return { ok: true, statusCode: res.status, expired: false, error: null };
+        const expired = res.status === 404 || res.status === 410;
+        return { ok: false, statusCode: res.status, expired, error: `HTTP ${res.status}` };
+    } catch (e) {
+        return { ok: false, statusCode: null, expired: false, error: String((e as Error)?.message || e).slice(0, 140) };
+    }
+}
+
+/**
  * Gather freshly-published content, de-dupe against what was already notified,
  * and fan out to bell + push + Telegram. Pass `{ dryRun: true }` to preview
  * exactly what WOULD be sent without sending.
@@ -199,21 +244,14 @@ export async function runNotifyPipeline(
         if (!insErr) notifInserted++;
         else logger.error('notify insert failed:', insErr);
 
-        // Device push — reuse the proven web-push send/cleanup path.
+        // Device push — fetch-based transport (Workers-native), see dispatchWebPush.
         if (vapidConfigured && subs.length > 0) {
             const payload = JSON.stringify({ title: item.title, message: item.message, url: item.link });
-            await Promise.all(subs.map((s) =>
-                webpush.sendNotification(
-                    { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-                    payload
-                )
-                    .then(() => { pushSuccess++; })
-                    .catch((err: unknown) => {
-                        pushFail++;
-                        const code = (err as { statusCode?: number })?.statusCode;
-                        if (code === 410 || code === 404) expired.push(s.endpoint);
-                    })
-            ));
+            await Promise.all(subs.map(async (s) => {
+                const r = await dispatchWebPush({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload);
+                if (r.ok) pushSuccess++;
+                else { pushFail++; if (r.expired) expired.push(s.endpoint); }
+            }));
         }
 
         // Telegram post — one message per fresh item to the channel.
@@ -307,20 +345,9 @@ export async function pushProbe(svc: SupabaseClient): Promise<Record<string, unk
         return { ...info, result: 'CANNOT_SEND', note: 'VAPID not configured at request time' };
     }
 
-    try {
-        await webpush.sendNotification(
-            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-            JSON.stringify({ title: 'اختبار الإشعارات', message: 'رسالة فحص — تجاهلها', url: '/updates' })
-        );
-        return { ...info, result: 'SENT_OK' };
-    } catch (err) {
-        const e = err as { statusCode?: number; body?: string; name?: string; message?: string };
-        return {
-            ...info,
-            result: 'FAILED',
-            statusCode: e?.statusCode ?? null,
-            errName: e?.name ?? null,
-            body: (typeof e?.body === 'string' ? e.body : (e?.message || String(err))).slice(0, 400),
-        };
-    }
+    const r = await dispatchWebPush(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        JSON.stringify({ title: 'اختبار الإشعارات', message: 'رسالة فحص — تجاهلها', url: '/updates' })
+    );
+    return { ...info, result: r.ok ? 'SENT_OK' : 'FAILED', statusCode: r.statusCode, expired: r.expired, body: r.error };
 }

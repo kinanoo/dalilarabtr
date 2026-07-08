@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import logger from '@/lib/logger';
-import { sendTelegram } from '@/lib/notify/pipeline';
+import { sendTelegram, dispatchWebPush } from '@/lib/notify/pipeline';
 import { SITE_CONFIG } from '@/lib/config';
 
 /**
@@ -223,25 +223,16 @@ export async function POST(request: Request) {
         if (subscriptions && subscriptions.length > 0) {
             const payload = JSON.stringify({ title, message, url: targetUrl });
 
-            const promises = subscriptions.map((sub) =>
-                webpush.sendNotification(
-                    {
-                        endpoint: sub.endpoint,
-                        keys: {
-                            p256dh: sub.p256dh,
-                            auth: sub.auth,
-                        },
-                    },
+            // Send over fetch (Workers-native) — webpush.sendNotification's
+            // node:https transport is unimplemented on Cloudflare. See dispatchWebPush.
+            const promises = subscriptions.map(async (sub) => {
+                const r = await dispatchWebPush(
+                    { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
                     payload
-                )
-                    .then(() => { successCount++; })
-                    .catch((err: any) => {
-                        failCount++;
-                        if (err?.statusCode === 410 || err?.statusCode === 404) {
-                            expiredEndpoints.push(sub.endpoint);
-                        }
-                    })
-            );
+                );
+                if (r.ok) successCount++;
+                else { failCount++; if (r.expired) expiredEndpoints.push(sub.endpoint); }
+            });
 
             await Promise.all(promises);
 
