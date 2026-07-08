@@ -111,8 +111,14 @@ async function handle(request: Request) {
         items.push({ link: `/updates?u=${u.id}`, title: 'تحديث جديد ⚡', message: u.title });
     }
 
+    // Telegram config read up front so diagnostics report it even on no-op runs.
+    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+    const tgChat = process.env.TELEGRAM_CHAT_ID;
+    const tgEnabled = !!(tgToken && tgChat);
+    let tgError: string | null = null;
+
     if (items.length === 0) {
-        return NextResponse.json({ ok: true, newItems: 0, sent: 0, note: 'no new content in window' });
+        return NextResponse.json({ ok: true, newItems: 0, sent: 0, note: 'no new content in window', tgEnabled });
     }
 
     // ── 2. De-dupe against already-sent notifications (idempotency) ───────
@@ -141,9 +147,6 @@ async function handle(request: Request) {
     // Telegram channel broadcast — the "bot that posts daily". Optional: fires
     // only when both env vars are set (bot token from BotFather + the channel's
     // chat id). Same content as the push/bell, one message per fresh item.
-    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-    const tgChat = process.env.TELEGRAM_CHAT_ID;
-    const tgEnabled = !!(tgToken && tgChat);
     let tgSent = 0;
 
     let notifInserted = 0;
@@ -193,8 +196,9 @@ async function handle(request: Request) {
                     body: JSON.stringify({ chat_id: tgChat, text }),
                 });
                 if (tgRes.ok) tgSent++;
-                else logger.error('telegram send failed:', tgRes.status);
+                else { tgError = `HTTP ${tgRes.status}: ${(await tgRes.text()).slice(0, 160)}`; logger.error('telegram send failed:', tgError); }
             } catch (err) {
+                tgError = String(err);
                 logger.error('telegram send error:', err);
             }
         }
@@ -213,6 +217,8 @@ async function handle(request: Request) {
         pushSuccess,
         pushFail,
         telegramSent: tgSent,
+        tgEnabled,
+        tgError,
         cleaned: expired.length,
         skippedForCap,
     });
