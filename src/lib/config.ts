@@ -45,6 +45,10 @@ export function getOgImage(
     if (title) {
         const params = new URLSearchParams({ title });
         if (card?.category?.trim()) params.set('category', card.category.trim());
+        // Cache-bust: the OG worker caches each URL immutably for a year, so bump
+        // this whenever the card DESIGN changes to force fresh cards everywhere
+        // (v2 = olive-green + gold redesign, 2026-07-08).
+        params.set('v', '2');
         return `https://og.dalilarabtr.com/?${params.toString()}`;
     }
     return `${SITE_CONFIG.siteUrl}/og-image.jpg`;

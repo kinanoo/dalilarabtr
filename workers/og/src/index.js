@@ -69,6 +69,12 @@ function getTitleSize(len) {
 // Element helper (satori object notation — no JSX in a plain worker)
 const h = (type, style, children) => ({ type, props: { style, children } });
 
+// Palette — deep olive-green (lightened from the very-dark ministry olive) with
+// muted gold accents. White title for maximum legibility on long Arabic titles;
+// gold reserved for the frame, category pill, accent rule, and brand name so the
+// card reads "official / premium" without hurting readability.
+const GOLD = '#d8b96a';
+
 function card(title, category) {
     const { fontSize, charsPerLine } = getTitleSize(title.length);
     const lines = splitLines(title, charsPerLine);
@@ -76,35 +82,41 @@ function card(title, category) {
     return h('div', {
         width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
         justifyContent: 'space-between',
-        background: 'linear-gradient(135deg, #065f46 0%, #0d9488 50%, #047857 100%)',
-        fontFamily: 'Cairo', padding: '60px', position: 'relative',
+        background: 'linear-gradient(135deg, #16382c 0%, #22493a 52%, #163a2d 100%)',
+        fontFamily: 'Cairo', padding: '64px', position: 'relative',
     }, [
-        // Dot pattern overlay
+        // Faint gold dot texture
         h('div', {
             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(255,255,255,0.06) 1px, transparent 1px)',
-            backgroundSize: '30px 30px', display: 'flex',
+            backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(216,185,106,0.05) 1px, transparent 1px)',
+            backgroundSize: '32px 32px', display: 'flex',
         }),
-        // Top: category pill + title lines (right-aligned)
-        h('div', { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '20px' }, [
+        // Elegant inset gold frame (official-document feel)
+        h('div', {
+            position: 'absolute', top: '26px', left: '26px', right: '26px', bottom: '26px',
+            border: '1.5px solid rgba(216,185,106,0.35)', borderRadius: '10px', display: 'flex',
+        }),
+        // Top: category pill + gold accent rule + title lines (right-aligned)
+        h('div', { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '22px', position: 'relative' }, [
             ...(category ? [h('span', {
-                background: 'rgba(255,255,255,0.2)', color: 'white', padding: '8px 24px',
-                borderRadius: '9999px', fontSize: '22px', fontWeight: 400,
-                border: '1px solid rgba(255,255,255,0.3)',
+                background: 'rgba(216,185,106,0.12)', color: GOLD, padding: '8px 26px',
+                borderRadius: '9999px', fontSize: '23px', fontWeight: 700,
+                border: '1px solid rgba(216,185,106,0.5)',
             }, fixArabic(category))] : []),
+            h('div', { width: '92px', height: '5px', background: GOLD, borderRadius: '4px', display: 'flex' }),
             h('div', { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '100%' },
                 lines.map((line) => h('div', {
-                    color: 'white', fontSize: `${fontSize}px`, fontWeight: 700, lineHeight: 1.5,
+                    color: '#ffffff', fontSize: `${fontSize}px`, fontWeight: 700, lineHeight: 1.4,
                 }, fixArabic(line)))),
         ]),
         // Bottom branding bar
         h('div', {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: 'rgba(255,255,255,0.15)', borderRadius: '16px', padding: '16px 24px',
-            border: '1px solid rgba(255,255,255,0.2)',
+            background: 'rgba(0,0,0,0.20)', borderRadius: '16px', padding: '18px 28px',
+            border: '1px solid rgba(216,185,106,0.30)', position: 'relative',
         }, [
-            h('span', { color: 'rgba(255,255,255,0.7)', fontSize: '20px', fontWeight: 400 }, 'dalilarabtr.com'),
-            h('span', { color: 'white', fontSize: '24px', fontWeight: 700 }, fixArabic('دليل العرب في تركيا')),
+            h('span', { color: 'rgba(255,255,255,0.62)', fontSize: '21px', fontWeight: 400 }, 'dalilarabtr.com'),
+            h('span', { color: GOLD, fontSize: '25px', fontWeight: 700 }, fixArabic('دليل العرب في تركيا')),
         ]),
     ]);
 }
