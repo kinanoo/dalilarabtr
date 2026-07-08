@@ -74,14 +74,29 @@ export interface NotifyResult {
 }
 
 /**
- * Post one message to the Telegram channel. Fires only when both env vars are
- * set (bot token from BotFather + the channel's chat id). Returns a plain
+ * Public Telegram channel handle. Hardcoded as the default target ON PURPOSE:
+ * plain-text Cloudflare `vars` get wiped on every `wrangler deploy` (only
+ * encrypted Secrets survive), and this handle kept vanishing after deploys.
+ * It's a PUBLIC channel — anyone can read @dalilarabtr — so baking it in is
+ * safe and removes a whole class of "env var disappeared" outages. A
+ * TELEGRAM_CHAT_ID env value (Secret) still overrides it if ever needed.
+ *
+ * The bot TOKEN stays env-only (a real secret) — never hardcode it.
+ */
+export const DEFAULT_TELEGRAM_CHAT = '@dalilarabtr';
+export function resolveTelegramChat(): string {
+    return process.env.TELEGRAM_CHAT_ID || DEFAULT_TELEGRAM_CHAT;
+}
+
+/**
+ * Post one message to the Telegram channel. Fires whenever the bot token is
+ * present (the chat handle always has a public default). Returns a plain
  * ok/error — never throws — so a Telegram outage can't break the bell/push path.
  */
 export async function sendTelegram(text: string): Promise<{ ok: boolean; error: string | null }> {
     const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-    const tgChat = process.env.TELEGRAM_CHAT_ID;
-    if (!(tgToken && tgChat)) return { ok: false, error: 'tg_not_configured' };
+    if (!tgToken) return { ok: false, error: 'tg_not_configured' };
+    const tgChat = resolveTelegramChat();
     try {
         const res = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
             method: 'POST',
@@ -105,7 +120,9 @@ export async function runNotifyPipeline(
     opts: { dryRun?: boolean } = {}
 ): Promise<NotifyResult> {
     const dryRun = !!opts.dryRun;
-    const tgEnabled = !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID);
+    // Chat handle always resolves (public default), so Telegram is "enabled"
+    // exactly when the bot-token Secret is present.
+    const tgEnabled = !!process.env.TELEGRAM_BOT_TOKEN;
 
     const cutoffIso = new Date(Date.now() - LOOKBACK_MINUTES * 60_000).toISOString();
 

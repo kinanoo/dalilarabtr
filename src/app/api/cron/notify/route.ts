@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { runNotifyPipeline } from '@/lib/notify/pipeline';
+import { runNotifyPipeline, resolveTelegramChat } from '@/lib/notify/pipeline';
 
 /**
  * Scheduled content-notification endpoint (the 30-min safety net).
@@ -52,9 +52,9 @@ async function handle(request: Request) {
     // Cron-key gated (checked above), so it's not publicly abusable.
     if (url.searchParams.get('tgtest') === '1') {
         const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-        const tgChat = process.env.TELEGRAM_CHAT_ID;
-        if (!(tgToken && tgChat)) {
-            return NextResponse.json({ tgtest: true, tgEnabled: false, hasToken: !!tgToken, hasChat: !!tgChat, note: 'env vars missing in the worker' });
+        const tgChat = resolveTelegramChat();
+        if (!tgToken) {
+            return NextResponse.json({ tgtest: true, tgEnabled: false, hasToken: false, note: 'bot token secret missing in the worker' });
         }
         try {
             const r = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {

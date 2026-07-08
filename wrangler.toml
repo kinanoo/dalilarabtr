@@ -22,19 +22,13 @@ compatibility_date = "2025-03-25"
 # Edge routes don't need this flag but it's a no-op on them — leaving on is safe.
 compatibility_flags = ["nodejs_compat"]
 
-# Non-secret runtime variables, version-controlled here on purpose.
-#
-# WHY: plain-text vars added through the Cloudflare dashboard get WIPED on every
-# `wrangler deploy` (Workers Builds runs one on each git push) — only encrypted
-# Secrets survive. TELEGRAM_CHAT_ID kept vanishing after deploys for exactly this
-# reason. It's a PUBLIC channel handle (anyone can read @dalilarabtr), so it is
-# safe to commit and belongs here where no deploy can drop it.
-#
-# NEVER put secrets here (bot token, service-role key, VAPID private key,
-# CRON_SECRET) — those stay as encrypted Secrets in the dashboard, which deploys
-# preserve. This block is for non-secret config only.
-[vars]
-TELEGRAM_CHAT_ID = "@dalilarabtr"
+# NOTE on env vars: under Workers Builds + @opennextjs/cloudflare, only encrypted
+# Secrets reliably reach process.env at runtime — plain-text `[vars]` here did
+# NOT surface (verified: TELEGRAM_CHAT_ID stayed undefined). So:
+#   - Secrets (bot token, service-role key, VAPID private key, CRON_SECRET) live
+#     as encrypted Secrets in the dashboard; deploys preserve them.
+#   - The one PUBLIC constant we kept losing (the Telegram channel handle) is now
+#     hardcoded as a default in src/lib/notify/pipeline.ts, immune to deploys.
 
 # Static assets from public/ + the Next.js .open-next/assets bundle.
 # directory = the folder of files to ship; binding = how the Worker code
