@@ -1,4 +1,5 @@
 import webpush from 'web-push';
+import crypto from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import logger from '@/lib/logger';
 import { SITE_CONFIG } from '@/lib/config';
@@ -326,6 +327,24 @@ export async function pushProbe(svc: SupabaseClient): Promise<Record<string, unk
     }
     info.requestTimeConfigured = requestTimeConfigured;
     info.setVapidError = setVapidError;
+
+    // Is the configured keypair self-consistent? Derive the public key from the
+    // private scalar and compare to the configured public key. If they MATCH,
+    // the config is fine and a 403 means the stored subs were created with an
+    // OLD public key (users must re-subscribe). If they DON'T match, the pair
+    // itself is broken and even fresh subs would 403.
+    try {
+        if (priv && pub) {
+            const ecdh = crypto.createECDH('prime256v1');
+            ecdh.setPrivateKey(Buffer.from(priv, 'base64url'));
+            const derived = ecdh.getPublicKey().toString('base64url');
+            info.derivedPublicHead = derived.slice(0, 10);
+            info.derivedPublicTail = derived.slice(-8);
+            info.keypairSelfConsistent = derived === pub;
+        }
+    } catch (e) {
+        info.keypairCheckError = String((e as Error)?.message || e).slice(0, 140);
+    }
 
     const { data, count } = await svc
         .from('push_subscriptions')
