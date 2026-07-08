@@ -21,7 +21,8 @@ import {
     Users,
     Bot,
     Coins,
-    MapPin
+    MapPin,
+    Palette
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -139,6 +140,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/banners', label: 'البنرات والتنبيهات', icon: Megaphone },
                 { href: '/admin/news-ticker', label: 'شريط الأخبار', icon: Newspaper },
                 { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
+                { href: '/admin/appearance', label: 'خلفيّة الموقع', icon: Palette },
             ]
         }
     ];

@@ -17,6 +17,9 @@ interface ImageUploaderProps {
     className?: string;
     maxWidth?: number;
     quality?: number;
+    /** Bake in the diagonal site-attribution watermark. Default true — turn OFF
+     *  for decorative assets like the site backdrop where a watermark would show. */
+    watermark?: boolean;
 }
 
 export const ImageUploader = ({
@@ -28,6 +31,7 @@ export const ImageUploader = ({
     className,
     maxWidth = 800,
     quality = 0.7,
+    watermark = true,
 }: ImageUploaderProps) => {
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(value || null);
@@ -60,7 +64,7 @@ export const ImageUploader = ({
             //    article pages. Soft failure: if watermarking throws,
             //    the helper returns the compressed file unchanged so
             //    publishing never blocks on a cosmetic step.
-            const file = await watermarkImage(compressed);
+            const file = watermark ? await watermarkImage(compressed) : compressed;
 
             const fileExt = file.name.split('.').pop();
             const filePath = `${path}/${Math.random().toString(36).substring(2)}.${fileExt}`;
