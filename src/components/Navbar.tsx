@@ -6,17 +6,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { SITE_CONFIG } from '@/lib/config';
-import { GUIDES_MENU, LATEST_UPDATES_VERSION, UPDATES_STORAGE_KEY, PRIMARY_NAV, TOOLS_MENU } from '@/lib/constants';
+import { SECTIONS_MENU, LATEST_UPDATES_VERSION, UPDATES_STORAGE_KEY, TOOLS_MENU } from '@/lib/constants';
 import { fetchRemoteUpdatesVersion } from '@/lib/remoteData';
 import {
   Menu, X, BrainCircuit, Search, Bell, Sparkles, ChevronDown, ChevronLeft,
   Home, Briefcase, FileText, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
-  UserCheck, HeartPulse, Link as LinkIcon, ScrollText
+  UserCheck, HeartPulse, Link as LinkIcon, ScrollText, Newspaper
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import PrayerPopover from './PrayerPopover';
 import NavDropdown from './NavDropdown';
+import NavMegaMenu from './NavMegaMenu';
 import NotificationBell from './notifications/NotificationBell';
 import UrgencyBanner from './UrgencyBanner';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
@@ -33,15 +34,19 @@ export const IconMap: Record<string, React.ComponentType<{ size?: number | strin
 function AuthButton({ mobile = false }: { mobile?: boolean }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="hidden sm:block w-[90px] h-[32px] rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
+  if (loading) return <div className={`hidden sm:block w-[90px] h-[32px] rounded-full animate-pulse ${mobile ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white/20'}`} />;
 
   const displayClass = mobile ? 'flex' : 'hidden sm:flex';
 
   if (user) {
+    // On the teal bar → gold CTA; inside the white mobile drawer → emerald chip.
+    const cls = mobile
+      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800'
+      : 'bg-[#d8b96a] hover:bg-[#cfa94f] text-[#3a2c0c] border border-[#e6cf92] shadow-sm';
     return (
       <Link
         href="/dashboard"
-        className={`${displayClass} items-center justify-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors border border-emerald-100 dark:border-emerald-800 w-full sm:w-auto`}
+        className={`${displayClass} items-center justify-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors w-full sm:w-auto ${cls}`}
       >
         <UserCheck size={14} />
         <span>حسابي</span>
@@ -49,10 +54,14 @@ function AuthButton({ mobile = false }: { mobile?: boolean }) {
     );
   }
 
+  // Logged-out CTA: white pill on the teal bar; dark pill in the white drawer.
+  const loginCls = mobile
+    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/20 hover:scale-105'
+    : 'bg-white text-[hsl(200,45%,26%)] hover:bg-white/90 shadow-sm';
   return (
     <Link
       href="/login"
-      className={`${displayClass} items-center justify-center gap-2 px-4 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-bold hover:scale-105 transition-transform shadow-lg shadow-slate-900/20 w-full sm:w-auto`}
+      className={`${displayClass} items-center justify-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all w-full sm:w-auto ${loginCls}`}
     >
       <span>تسجيل الدخول</span>
     </Link>
@@ -65,12 +74,6 @@ export default function Navbar() {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [hasNewUpdates, setHasNewUpdates] = useState(false);
   const [currentUpdatesVersion, setCurrentUpdatesVersion] = useState(LATEST_UPDATES_VERSION);
-  // Initialize with Static Data (Fallback)
-  const [headerMenus, setHeaderMenus] = useState<any[]>(PRIMARY_NAV.map(item => ({
-    href: item.href,
-    label: item.name,
-    icon: item.icon // Component
-  })));
   // Tools Fallback
   const [tools, setTools] = useState<any[]>(TOOLS_MENU.map((t: any) => ({
     name: t.name,
@@ -444,7 +447,7 @@ export default function Navbar() {
         // bypasses the sticky containing-block / overflow ancestor
         // rules entirely and works in every browser regardless of
         // body overflow settings.
-        className={`fixed top-0 left-0 right-0 z-[100] w-full bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-[#020617] dark:via-[#0f172a] dark:to-[#020617] border-b border-emerald-100/50 dark:border-emerald-500/20 shadow-sm dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)] will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
+        className={`fixed top-0 left-0 right-0 z-[100] w-full bg-[hsl(200,42%,30%)] dark:bg-[hsl(200,42%,20%)] border-b border-white/10 shadow-md shadow-black/10 will-change-transform transition-transform duration-300 ease-out ${navHidden ? '-translate-y-full' : 'translate-y-0'}`}
       >
         {/* Promo / alert / sponsor banner — MUST live INSIDE this fixed header.
             The header is `position: fixed; top-0; z-[100]`; a banner rendered
@@ -454,8 +457,8 @@ export default function Navbar() {
             height into the spacer automatically. */}
         <UrgencyBanner />
 
-        {/* Rich Gradient Line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] dark:h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-80 dark:opacity-100 dark:shadow-[0_0_12px_2px_rgba(16,185,129,0.4)]" />
+        {/* Soft gold accent line — matches the CTA, sits quietly on the teal bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#d8b96a]/70 to-transparent" />
 
         {/* Main Container - Flex Row */}
         <div className="max-w-screen-2xl mx-auto px-4 h-12 flex items-center justify-between relative">
@@ -467,10 +470,10 @@ export default function Navbar() {
                 <Image src="/logo.png" alt="شعار دليل العرب" width={36} height={36} priority className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-md transition-all" />
               </div>
               <div className="hidden sm:block">
-                <div className="font-extrabold text-lg leading-tight text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                <div className="font-extrabold text-lg leading-tight text-white group-hover:text-[#f0dca8] transition-colors">
                   {SITE_CONFIG.name}
                 </div>
-                <p className="text-[9px] text-slate-500 font-bold">دليلك الشامل والموثوق</p>
+                <p className="text-[9px] text-white/70 font-bold">دليلك الشامل والموثوق</p>
               </div>
             </Link>
           </div>
@@ -481,28 +484,21 @@ export default function Navbar() {
             className="hidden lg:flex flex-1 justify-center items-center gap-1 mx-4 bg-transparent border-none ring-0 outline-none shadow-none isolate"
             style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}
           >
-            {headerMenus.map((item) => {
-              const Icon = typeof item.icon === 'string' ? (IconMap[item.icon] || Info) : item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-300 outline-none focus:ring-0 border-none relative overflow-hidden group/link
-                    ${pathname === item.href
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20 translate-y-0'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-gradient-to-tr hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/40 dark:hover:to-teal-900/40 hover:text-emerald-800 dark:hover:text-emerald-300 hover:shadow-md hover:shadow-emerald-200/50 dark:hover:shadow-none hover:-translate-y-0.5'
-                    }`}
-                >
-                  <Icon size={16} className={`relative z-10 transition-transform duration-300 ${pathname === item.href ? 'stroke-[2.5px]' : 'group-hover:scale-110 stroke-2'}`} />
-                  <span className="relative z-10">{item.label}</span>
-                </Link>
-              )
-            })}
+            {/* الرئيسية */}
+            <Link
+              href="/"
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${pathname === '/' ? 'bg-white text-[hsl(200,45%,26%)] shadow-sm' : 'text-white/90 hover:bg-white/15 hover:text-white'}`}
+            >
+              <Home size={16} />
+              <span>الرئيسية</span>
+            </Link>
 
-            {/* Dropdowns */}
-            <NavDropdown title="الدليل" items={GUIDES_MENU} />
+            {/* الأقسام — mega-menu */}
+            <NavMegaMenu title="الأقسام" items={SECTIONS_MENU} />
+
+            {/* الأدوات — dropdown */}
             <NavDropdown
-              title="أدوات ذكية"
+              title="الأدوات"
               items={tools.map(t => {
                 const staticTool = TOOLS_MENU.find(tm => tm.href === t.route);
                 return {
@@ -512,6 +508,27 @@ export default function Navbar() {
                 };
               })}
             />
+
+            {/* الخدمات */}
+            <Link
+              href="/services"
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${pathname === '/services' ? 'bg-white text-[hsl(200,45%,26%)] shadow-sm' : 'text-white/90 hover:bg-white/15 hover:text-white'}`}
+            >
+              <Briefcase size={16} />
+              <span>الخدمات</span>
+            </Link>
+
+            {/* الأخبار */}
+            <Link
+              href="/updates"
+              className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${pathname?.startsWith('/updates') ? 'bg-white text-[hsl(200,45%,26%)] shadow-sm' : 'text-white/90 hover:bg-white/15 hover:text-white'}`}
+            >
+              <Newspaper size={16} />
+              <span>الأخبار</span>
+              {hasNewUpdates && !pathname?.startsWith('/updates') && (
+                <span className="absolute top-1.5 left-2 w-1.5 h-1.5 rounded-full bg-[#f0dca8] ring-2 ring-[hsl(200,42%,30%)] dark:ring-[hsl(200,42%,20%)]" />
+              )}
+            </Link>
           </nav>
 
           {/* 3. Actions Section (Right) */}
@@ -526,7 +543,7 @@ export default function Navbar() {
             {/* Mobile Menu Toggle */}
             <button
               type="button"
-              className="lg:hidden p-2.5 min-w-11 min-h-11 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="lg:hidden p-2.5 min-w-11 min-h-11 flex items-center justify-center text-white hover:bg-white/15 rounded-lg transition-colors"
               onClick={() => setIsOpen(true)}
               aria-label="القائمة الرئيسية"
               aria-expanded={isOpen}

@@ -62,7 +62,7 @@ export default function PrayerPopover() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="مواقيت الصلاة"
-                className="relative p-2 min-w-11 min-h-11 flex items-center justify-center text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+                className="relative p-2 min-w-11 min-h-11 flex items-center justify-center text-white/90 hover:text-white hover:bg-white/15 rounded-lg transition-colors"
             >
                 <MosqueIcon size={20} />
             </button>

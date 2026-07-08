@@ -274,9 +274,9 @@ export default function NotificationBell() {
                     onClick={() => setIsOpen(!isOpen)}
                     className={`group relative p-2.5 min-w-11 min-h-11 flex items-center justify-center rounded-full transition-all duration-300 ${
                         totalUnread > 0
-                            ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-700'
-                    } ${isOpen ? 'ring-2 ring-emerald-400/40' : ''}`}
+                            ? 'bg-white/15 text-white hover:bg-white/25 shadow-sm'
+                            : 'text-white/90 hover:bg-white/15 hover:text-white'
+                    } ${isOpen ? 'ring-2 ring-white/40' : ''}`}
                     aria-label={totalUnread > 0 ? `${totalUnread} إشعار جديد` : 'الإشعارات'}
                     aria-expanded={isOpen ? 'true' : 'false'}
                     aria-haspopup="true"
@@ -291,7 +291,7 @@ export default function NotificationBell() {
                             {/* Pulse ring — draws the eye without being noisy */}
                             <span
                                 aria-hidden="true"
-                                className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping pointer-events-none"
+                                className="absolute inset-0 rounded-full bg-white/25 animate-ping pointer-events-none"
                             />
                             <span
                                 className="absolute -top-1 -right-1 bg-gradient-to-br from-rose-500 to-red-500 text-white text-[10px] font-black tabular-nums rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-white dark:ring-slate-950 shadow-md shadow-rose-500/40 animate-in zoom-in duration-200"

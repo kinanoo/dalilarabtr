@@ -43,16 +43,16 @@ export default function NavDropdown({ title, items, icon }: NavDropdownProps) {
                 aria-haspopup="true"
                 aria-expanded={isOpen}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-bold transition-all duration-300 outline-none focus:ring-0 border-none ring-0
+                className={`group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-white/50 border-none
                     ${isChildActive || isOpen
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-gradient-to-tr hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/40 dark:hover:to-teal-900/40 hover:text-emerald-800 dark:hover:text-emerald-300 hover:shadow-lg hover:shadow-emerald-200/50 dark:hover:shadow-none hover:-translate-y-0.5'
+                        ? 'bg-white text-[hsl(200,45%,26%)] shadow-sm'
+                        : 'text-white/90 hover:bg-white/15 hover:text-white'
                     }`}
             >
-                {icon && <span className={isChildActive || isOpen ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500 transition-colors'}>{icon}</span>}
+                {icon && <span className={isChildActive || isOpen ? 'text-[hsl(200,45%,26%)]' : 'text-white/80 group-hover:text-white transition-colors'}>{icon}</span>}
                 <span>{title}</span>
                 <ChevronDown
-                    className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180 text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`}
+                    className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isChildActive || isOpen ? 'text-[hsl(200,45%,26%)]' : 'text-white/70 group-hover:text-white'}`}
                     aria-hidden="true"
                 />
             </button>

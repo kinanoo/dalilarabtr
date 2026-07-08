@@ -58,6 +58,24 @@ export const GUIDES_MENU = [
     { name: "اطلب خدمة خاصة", href: "/request", icon: ScrollText },
 ];
 
+// Curated "الأقسام" mega-menu — the site's main sections in one grid.
+// Every href points at a real, existing page (no 404s). `desc` is the
+// one-line hint shown under each title in the desktop mega-menu.
+export const SECTIONS_MENU = [
+    { name: "الإقامات", href: "/residence", icon: FileText, desc: "أنواعها وشروط التجديد" },
+    { name: "الأكواد الأمنية", href: "/codes", icon: ShieldAlert, desc: "رموز المنع والوضع القانونيّ" },
+    { name: "الدليل الشامل", href: "/directory", icon: FolderOpen, desc: "كل الخدمات في مكان واحد" },
+    { name: "الروابط الرسمية", href: "/important-links", icon: Link, desc: "مواقع حكوميّة موثوقة" },
+    { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone, desc: "معاملات إلكترونيّة" },
+    { name: "خدمات السوريين", href: "/category/syrians", icon: Building2, desc: "مكاتب ومراكز الخدمة" },
+    { name: "التعليم والجامعات", href: "/education", icon: GraduationCap, desc: "YÖS والمنح الدراسيّة" },
+    { name: "العمل والاستثمار", href: "/work", icon: Briefcase, desc: "تصاريح العمل والشركات" },
+    { name: "الصحة والتأمين", href: "/health", icon: HeartPulse, desc: "SGK وMHRS والتأمين" },
+    { name: "السكن", href: "/housing", icon: Home, desc: "الإيجار والعقود" },
+    { name: "دليل المدن", href: "/city", icon: MapPin, desc: "خدمات كل مدينة" },
+    { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen, desc: "إجابات موثّقة" },
+] as const;
+
 export const TOOLS_MENU = [
     { name: "حاسبة أيام الإقامة والغياب", href: "/tools/residence-calculator", icon: CalendarClock },
     { name: "فحص الكملك", href: "/tools/kimlik-check", icon: UserCheck },
