@@ -78,6 +78,26 @@ async function handle(request: Request) {
 
     const dryRun = url.searchParams.get('dry') === '1';
 
+    // Diagnostic: ?tgtest=1 sends ONE message straight to the Telegram channel
+    // and reports exactly why it did/didn't work — no fresh content needed.
+    // Cron-key gated (checked above), so it's not publicly abusable.
+    if (url.searchParams.get('tgtest') === '1') {
+        const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+        const tgChat = process.env.TELEGRAM_CHAT_ID;
+        if (!(tgToken && tgChat)) {
+            return NextResponse.json({ tgtest: true, tgEnabled: false, hasToken: !!tgToken, hasChat: !!tgChat, note: 'env vars missing in the worker' });
+        }
+        try {
+            const r = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: tgChat, text: '✅ اختبار إشعار تلغرام من دليل العرب — يمكن تجاهله.' }),
+            });
+            return NextResponse.json({ tgtest: true, tgEnabled: true, status: r.status, ok: r.ok, response: (await r.text()).slice(0, 300) });
+        } catch (err) {
+            return NextResponse.json({ tgtest: true, tgEnabled: true, error: String(err) });
+        }
+    }
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !serviceRoleKey) {

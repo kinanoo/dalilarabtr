@@ -20,7 +20,12 @@ name: Content notification cron
 on:
   schedule:
     - cron: '*/30 * * * *'   # every 30 minutes (UTC)
-  workflow_dispatch: {}        # allow a manual run from the Actions tab
+  workflow_dispatch:           # allow a manual run from the Actions tab
+    inputs:
+      tgtest:
+        description: 'Send a Telegram test message (diagnostic)'
+        type: boolean
+        default: false
 
 # Never run two overlapping notifiers.
 concurrency:
@@ -39,7 +44,9 @@ jobs:
             echo "CRON_SECRET not set — skipping (add it in repo Actions secrets)."
             exit 0
           fi
-          curl -sS -X POST "https://dalilarabtr.com/api/cron/notify" \
+          URL="https://dalilarabtr.com/api/cron/notify"
+          if [ "${{ inputs.tgtest }}" = "true" ]; then URL="$URL?tgtest=1"; fi
+          curl -sS -X POST "$URL" \
             -H "x-cron-key: $CRON_SECRET" \
             -w $'\nHTTP %{http_code}\n' \
             --max-time 60 --fail-with-body
