@@ -597,12 +597,12 @@ html.dark .card-hover:hover {
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  opacity: 0.08;
+  opacity: 0.055;
 }
 .sb-tint {
   background: radial-gradient(120% 80% at 50% 40%, rgba(5, 150, 105, 0.16), transparent 70%);
   opacity: 0.55;
 }
-.sb-veil { background: #FAF6EE; opacity: 0.25; }
-.dark .sb-img { opacity: 0.13; }
-.dark .sb-veil { background: #020617; opacity: 0.34; }
+.sb-veil { background: #FAF6EE; opacity: 0.30; }
+.dark .sb-img { opacity: 0.09; }
+.dark .sb-veil { background: #020617; opacity: 0.40; }
