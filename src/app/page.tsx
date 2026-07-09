@@ -243,7 +243,7 @@ export default async function Home() {
           breaking-news carousel + "آخر التحديثات" lead the page, then
           the situation picker follows on its dark orientation surface.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-950 dark:bg-none dark:text-white py-16 overflow-hidden" dir="rtl">
+      <section className="relative bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-950 dark:bg-none dark:text-white pt-16 pb-4 overflow-hidden" dir="rtl">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.20),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
         <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-emerald-500/[0.07] dark:text-white/[0.04] leading-none select-none pointer-events-none">01</div>
@@ -267,7 +267,7 @@ export default async function Home() {
       </section>
 
       {/* Transition — dark (journey) → sky (tools). */}
-      <div className="relative h-12 bg-gradient-to-b from-sky-50 to-emerald-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
+      <div className="relative h-6 bg-gradient-to-b from-sky-50 to-emerald-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-cyan-500/30 to-transparent" />
       </div>
 
