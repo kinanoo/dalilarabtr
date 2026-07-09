@@ -233,7 +233,7 @@ export default async function Home() {
       <FeaturedGuides guides={guides} />
 
       {/* Transition — light (news) → dark (journey). */}
-      <div className="relative h-16 bg-gradient-to-b from-white to-emerald-50 dark:from-slate-950 dark:to-slate-950" aria-hidden="true">
+      <div className="relative h-6 bg-gradient-to-b from-white to-emerald-50 dark:from-slate-950 dark:to-slate-950" aria-hidden="true">
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-500/30 to-transparent" />
       </div>
 
