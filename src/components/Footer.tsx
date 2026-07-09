@@ -28,11 +28,15 @@ export default function Footer() {
         <div aria-hidden="true" className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-500/[0.05] rounded-full blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-500/[0.04] rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-screen-2xl mx-auto px-4 py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+        <div className="relative max-w-screen-2xl mx-auto px-4 py-10">
+          {/* Brand spans a full row (sm) / half (lg) so the two link columns
+              always sit SIDE BY SIDE with aligned tops — the old md:2-col
+              grid paired the short brand block with the tall links column
+              and pushed «أدوات ذكية» onto a ragged lonely row. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10 mb-8">
 
             {/* القسم 1: عن الموقع */}
-            <div className="md:col-span-1">
+            <div className="sm:col-span-2 lg:pe-10">
               <h3 className="font-black text-2xl mb-3 leading-tight">
                 <Link href="/" className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent hover:from-emerald-300 hover:to-cyan-300 transition-all">
                   {SITE_CONFIG.name}
@@ -99,7 +103,7 @@ export default function Footer() {
           </div>
 
           {/* شارات الثقة — شريط أنيق بكروت بدل النصّ المسطّح. */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 py-8 border-t border-slate-800/60">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 py-6 border-t border-slate-800/60">
             <div className="flex items-center gap-3 bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               <span className="font-bold text-sm text-slate-200">مراجعة دورية للمحتوى</span>
@@ -136,7 +140,7 @@ export default function Footer() {
                 </Link>
               </div>
             </div>
-            <p className="text-center text-xs text-slate-600 mt-6">
+            <p className="text-center text-xs text-slate-600 mt-4">
               صُنع بـ <span className="text-rose-400">♥</span> للسوريين والعرب في تركيا
             </p>
           </div>

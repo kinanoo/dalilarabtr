@@ -243,11 +243,11 @@ export default async function Home() {
           breaking-news carousel + "آخر التحديثات" lead the page, then
           the situation picker follows on its dark orientation surface.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-950 dark:bg-none dark:text-white pt-16 pb-4 overflow-hidden" dir="rtl">
+      <section className="relative bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-950 dark:bg-none dark:text-white pt-12 pb-4 overflow-hidden" dir="rtl">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.20),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_60%)]" />
         <div aria-hidden="true" className="absolute -top-20 right-0 text-[180px] sm:text-[240px] font-black text-emerald-500/[0.07] dark:text-white/[0.04] leading-none select-none pointer-events-none">01</div>
-        <div className="relative max-w-7xl mx-auto px-4 mb-10">
+        <div className="relative max-w-7xl mx-auto px-4 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Sparkles size={18} className="text-emerald-600 dark:text-emerald-400" />
             <span className="text-[11px] font-black tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400">ابدأ من هنا</span>
@@ -278,7 +278,7 @@ export default async function Home() {
           with their own colors so this section feels like a
           dashboard, not just another article list.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-b from-emerald-50/60 to-surface-light dark:from-slate-900 dark:to-slate-950 py-16" dir="rtl">
+      <section className="relative bg-gradient-to-b from-emerald-50/60 to-surface-light dark:from-slate-900 dark:to-slate-950 pt-12 pb-8" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 mb-8">
           <div className="flex items-center gap-3 mb-3">
             <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
@@ -306,9 +306,9 @@ export default async function Home() {
           behind the title to telegraph "FAQ / questions". Calm
           background on slate-50 lets the cards below pop.
           ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-surface-light dark:bg-slate-900 py-16" dir="rtl">
+      <section className="relative bg-surface-light dark:bg-slate-900 pt-12 pb-12" dir="rtl">
         <div aria-hidden="true" className="absolute top-6 left-1/2 -translate-x-1/2 text-[200px] sm:text-[280px] font-black text-slate-200 dark:text-slate-800/40 leading-none select-none pointer-events-none">؟</div>
-        <div className="relative max-w-3xl mx-auto px-4 text-center mb-10">
+        <div className="relative max-w-3xl mx-auto px-4 text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 shadow-sm">
             <MessageCircleQuestion size={16} className="text-amber-500" />
             <span className="text-xs font-black tracking-wider text-slate-700 dark:text-slate-200">أسئلة الجمهور الأكثر تكراراً</span>
