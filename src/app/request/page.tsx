@@ -1,205 +1,100 @@
-'use client';
-
+import { Suspense } from 'react';
 import PageHero from '@/components/PageHero';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState, Suspense } from 'react';
-import { Copy, User, FileText, CheckCircle, AlertCircle, Send } from 'lucide-react';
+import RequestForm from './RequestForm';
 import { SITE_CONFIG } from '@/lib/config';
 import { SERVICES_LIST } from '@/lib/constants';
-import { fetchRemoteServices, mergeServices, subscribeDemoDataUpdated, type RuntimeService } from '@/lib/remoteData';
+import { MessageCircle, ClipboardList, Send, ShieldCheck } from 'lucide-react';
 
-// Validation
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { requestServiceSchema, type RequestServiceInputs } from '@/lib/schemas';
+// Server component — the page shell renders REAL content in the first HTML
+// (services, how it works, trust notes, a no-JS WhatsApp fallback CTA).
+// Previously the whole page was a client component and crawlers/no-JS users
+// saw only the Suspense fallback «جاري تحميل النموذج...». The interactive
+// form itself stays a client island in ./RequestForm.
 
-// مكون النموذج (مفصول ليعمل داخل Suspense)
-function RequestForm() {
-  const searchParams = useSearchParams();
-  const initialServiceId = searchParams.get('service') || 'other';
+const STEPS = [
+  { icon: ClipboardList, title: 'اختر الخدمة واكتب طلبك', desc: 'حدّد نوع الخدمة من القائمة وأضف التفاصيل التي تريدها.' },
+  { icon: Send, title: 'يفتح واتساب برسالة جاهزة', desc: 'طلبك يُرسَل إلينا مباشرة عبر واتساب — بلا تسجيل وبلا حسابات.' },
+  { icon: MessageCircle, title: 'نردّ عليك بالتكلفة والخطوات', desc: 'نراجع طلبك ونعود إليك بالتفاصيل والاتفاق قبل أي بدء.' },
+];
 
-  const [services, setServices] = useState<RuntimeService[]>(SERVICES_LIST);
-  const [copied, setCopied] = useState(false);
-
-  // 1. Zod Form Setup
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isValid }
-  } = useForm<RequestServiceInputs>({
-    resolver: zodResolver(requestServiceSchema),
-    defaultValues: {
-      name: '',
-      serviceId: initialServiceId,
-      details: ''
-    },
-    mode: 'onChange'
-  });
-
-  const selectedServiceId = watch('serviceId');
-
-  useEffect(() => {
-    let cancelled = false;
-    const reload = async () => {
-      const [remoteServices] = await Promise.all([fetchRemoteServices()]);
-      if (cancelled) return;
-
-      const merged = mergeServices(remoteServices);
-      setServices(merged);
-
-      if (selectedServiceId && selectedServiceId !== 'other' && !merged.find(s => s.id === selectedServiceId)) {
-        setValue('serviceId', 'other');
-      } else if (!selectedServiceId) {
-        setValue('serviceId', 'other');
-      }
-    };
-
-    void reload();
-    const unsubscribe = subscribeDemoDataUpdated(() => void reload());
-    return () => {
-      cancelled = true;
-      unsubscribe();
-    };
-  }, []);
-
-  const selectedService = useMemo(
-    () => services.find((s) => s.id === selectedServiceId) || services[0],
-    [services, selectedServiceId]
-  );
-
-
-  const onSubmit = (data: RequestServiceInputs) => {
-    const serviceName = services.find((s) => s.id === data.serviceId)?.title || 'غير محددة';
-    const subject = encodeURIComponent(`طلب خدمة: ${serviceName}`);
-    const body = encodeURIComponent(
-      `الاسم: ${data.name || 'غير محدد'}\nالخدمة المطلوبة: ${serviceName}\n\nالتفاصيل:\n${data.details || 'لا يوجد'}\n\nيرجى الرد وتزويدي بالتكلفة والإجراءات.`
-    );
-
-    // Copy to clipboard as backup
-    const message = `الاسم: ${data.name || 'غير محدد'}\nالخدمة: ${serviceName}\n\n${data.details || ''}`;
-    const copyToClipboard = async () => {
-      try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(message);
-        } else {
-          const textarea = document.createElement('textarea');
-          textarea.value = message;
-          textarea.style.position = 'fixed';
-          textarea.style.opacity = '0';
-          document.body.appendChild(textarea);
-          textarea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textarea);
-        }
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // ignore
-      }
-    };
-
-    void copyToClipboard();
-
-    // Open WhatsApp with the request details pre-filled — in a NEW tab so the
-    // form page (and its "copied" state) isn't lost to the wa.me interstitial.
-    const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
-    window.open(`https://wa.me/${num}?text=${subject}%0A%0A${body}`, '_blank', 'noopener,noreferrer');
-  };
-
-  return (
-    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">نموذج طلب خدمة</h2>
-        <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">سيتم فتح واتساب لإرسال طلبك مباشرةً.</p>
-      </div>
-
-      <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-        {/* Name Field */}
-        <div className="group">
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <User size={18} className="text-primary-500" /> الاسم الكامل (اختياري)
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              {...register('name')}
-              className={`w-full p-4 bg-slate-50 dark:bg-slate-950 border rounded-xl outline-none transition text-slate-900 dark:text-slate-100 placeholder:text-slate-400
-                    ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary-500'}
-                `}
-              placeholder="مثال: محمد أحمد"
-            />
-            {errors.name && <AlertCircle size={20} className="absolute end-4 top-4 text-red-500" />}
-          </div>
-          {errors.name && <p className="text-red-500 text-xs mt-1 animate-in slide-in-from-top-1">{errors.name.message}</p>}
-        </div>
-
-        {/* Service Type */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <CheckCircle size={18} className="text-primary-500" /> نوع الخدمة
-          </label>
-          <select
-            {...register('serviceId')}
-            className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition cursor-pointer text-slate-900 dark:text-slate-100"
-          >
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>{s.title}</option>
-            ))}
-            <option value="other">خدمة أخرى (غير موجودة بالقائمة)</option>
-          </select>
-          {errors.serviceId && <p className="text-red-500 text-xs mt-1">{errors.serviceId.message}</p>}
-        </div>
-
-        {/* Details */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <FileText size={18} className="text-primary-500" /> تفاصيل إضافية (اختياري)
-          </label>
-          <textarea
-            {...register('details')}
-            rows={4}
-            className={`w-full p-4 bg-slate-50 dark:bg-slate-950 border rounded-xl outline-none transition text-slate-900 dark:text-slate-100 placeholder:text-slate-400
-                  ${errors.details ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary-500'}
-            `}
-            placeholder="اكتب تفاصيل طلبك هنا... (مثال: أريد حجز موعد قنصلية لجواز مستعجل لعائلة مكونة من 3 أشخاص)"
-          ></textarea>
-          {errors.details && <p className="text-red-500 text-xs mt-1">{errors.details.message}</p>}
-        </div>
-
-        <button
-          type="submit"
-          disabled={!isValid}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2
-            ${isValid
-              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-              : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
-          `}
-        >
-          <span>{copied ? 'تم النسخ — جارٍ فتح واتساب' : 'إرسال الطلب عبر واتساب'}</span>
-          {copied ? <Copy size={20} /> : <Send size={20} />}
-        </button>
-
-        <p className="text-xs text-center text-slate-400 dark:text-slate-500 mt-4">
-          * قد يتم تطبيق رسوم خدمة رمزية حسب نوع المعاملة، ويتم الاتفاق عليها قبل البدء.
-        </p>
-
-      </form>
-    </div>
-  );
-}
-
-// الصفحة الرئيسية (تغلف النموذج بـ Suspense لتجنب أخطاء Next.js)
 export default function RequestPage() {
+  const whatsappNumber = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+
   return (
     <main className="flex flex-col min-h-screen">
-      <PageHero title="تقديم طلب جديد" />
-      <div className="w-full md:max-w-2xl mx-auto px-4 py-12 -mt-8 relative z-10">
+      <PageHero
+        title="تقديم طلب خدمة"
+        description="حجز مواعيد، ترجمة محلّفة، تصديق أوراق، جلب وثائق من سوريا، وخدمات أخرى — قدّم طلبك ويصلك الرد عبر واتساب."
+      />
+
+      <div className="w-full max-w-3xl mx-auto px-4 pt-8 pb-12 relative z-10">
+
+        {/* How it works — server-rendered */}
+        <section aria-label="كيف تعمل الخدمة" className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+          {STEPS.map((s, i) => (
+            <div key={s.title} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="grid place-items-center w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 shrink-0">
+                  <s.icon size={16} />
+                </span>
+                <span className="text-[11px] font-black text-slate-400">الخطوة {i + 1}</span>
+              </div>
+              <h2 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 leading-snug">{s.title}</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* The interactive form (client island) */}
         <Suspense fallback={<div className="text-center p-10 font-bold text-slate-500">جاري تحميل النموذج...</div>}>
           <RequestForm />
         </Suspense>
+
+        {/* No-JS / direct fallback — server-rendered, always crawlable */}
+        <div className="mt-4 text-center">
+          <a
+            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('مرحباً، أريد طلب خدمة من دليل العرب.')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+          >
+            <MessageCircle size={16} />
+            أو راسلنا على واتساب مباشرة بدون النموذج
+          </a>
+        </div>
+
+        {/* Services we handle — server-rendered */}
+        <section aria-label="الخدمات المتاحة" className="mt-10">
+          <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-3">خدمات نستقبل طلباتها</h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {SERVICES_LIST.map((s) => (
+              <li key={s.id} className="flex items-start gap-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5">
+                <span className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  <span className="block text-sm font-bold text-slate-800 dark:text-slate-100">{s.title}</span>
+                  <span className="block text-xs text-slate-500 dark:text-slate-400">{s.desc}</span>
+                </div>
+              </li>
+            ))}
+            <li className="flex items-start gap-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5">
+              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+              <div>
+                <span className="block text-sm font-bold text-slate-800 dark:text-slate-100">خدمة أخرى غير مذكورة؟</span>
+                <span className="block text-xs text-slate-500 dark:text-slate-400">اكتبها في النموذج وسنخبرك إن كان بإمكاننا المساعدة.</span>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        {/* Trust / legal note — server-rendered */}
+        <div className="mt-8 flex items-start gap-3 bg-emerald-600/[0.06] dark:bg-emerald-400/10 border border-emerald-600/15 dark:border-emerald-400/20 rounded-2xl p-4">
+          <ShieldCheck size={18} className="text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5" />
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            نتفق على التكلفة والخطوات معك قبل البدء بأي معاملة، ولا نطلب أي مبلغ مسبقاً عبر النموذج.
+            لا ترسل صور وثائقك الشخصية إلا بعد التواصل والاتفاق. الموقع جهة مساعدة وتوجيه وليس مكتب محاماة
+            أو جهة حكومية — للتفاصيل راجع صفحة إخلاء المسؤولية.
+          </p>
+        </div>
       </div>
     </main>
   );
