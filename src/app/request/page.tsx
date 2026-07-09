@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import RequestForm from './RequestForm';
 import { SITE_CONFIG } from '@/lib/config';
@@ -68,12 +69,17 @@ export default function RequestPage() {
           <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 mb-3">خدمات نستقبل طلباتها</h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {SERVICES_LIST.map((s) => (
-              <li key={s.id} className="flex items-start gap-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5">
-                <span className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <span className="block text-sm font-bold text-slate-800 dark:text-slate-100">{s.title}</span>
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">{s.desc}</span>
-                </div>
+              <li key={s.id}>
+                <Link
+                  href={`/request/${s.id}`}
+                  className="flex items-start gap-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors h-full"
+                >
+                  <span className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-slate-800 dark:text-slate-100">{s.title}</span>
+                    <span className="block text-xs text-slate-500 dark:text-slate-400">{s.desc}</span>
+                  </span>
+                </Link>
               </li>
             ))}
             <li className="flex items-start gap-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5">
