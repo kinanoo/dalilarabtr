@@ -312,7 +312,7 @@ export async function runNotifyPipeline(
         items.push({ link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title });
     }
     for (const u of (updRes.data as { id: string; title: string }[] | null) || []) {
-        items.push({ link: `/updates?u=${u.id}`, title: 'تحديث جديد ⚡', message: u.title });
+        items.push({ link: `/updates/${u.id}`, title: 'تحديث جديد ⚡', message: u.title });
     }
 
     return sendItems(svc, items, opts);

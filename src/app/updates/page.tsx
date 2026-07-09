@@ -1,5 +1,3 @@
-import PageHero from '@/components/PageHero';
-import { Bell } from 'lucide-react';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import UpdatesClient from './UpdatesClient';
@@ -7,9 +5,10 @@ import UpdatesClient from './UpdatesClient';
 export const revalidate = 60;
 
 // Fetch the raw `updates` rows on the server so the primary list is present in
-// the first HTML (crawlers/no-JS see real content). These rows are passed to
-// the client list as SWR fallbackData — the client keeps revalidating and all
-// existing interactivity (search, filters, auto-events) stays untouched.
+// the first HTML (crawlers/no-JS see real content). select('*') keeps the
+// query tolerant: the optional editorial columns (category, summary,
+// source_url, source_name, pinned) come through once the migration has run,
+// and the query still succeeds while they don't exist yet.
 async function getInitialUpdates() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -20,9 +19,11 @@ async function getInitialUpdates() {
 
   const { data } = await supabase
     .from('updates')
-    .select('id, type, title, content, date, link, image, active, created_at')
+    .select('*')
     .eq('active', true)
-    .order('date', { ascending: false });
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(120);
 
   return data ?? [];
 }
@@ -32,13 +33,6 @@ export default async function UpdatesPage() {
 
   return (
     <main className="flex flex-col min-h-screen font-cairo bg-slate-50 dark:bg-slate-950">
-      <PageHero
-        title="آخر التحديثات"
-        description="كل ما يُضاف للموقع من مقالات وسيناريوهات وأخبار — تلقائياً."
-        icon={<Bell className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
-        titleClassName="md:text-5xl"
-      />
-
       <UpdatesClient initialUpdates={initialUpdates} />
     </main>
   );

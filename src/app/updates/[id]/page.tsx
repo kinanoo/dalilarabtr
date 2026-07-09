@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle, ExternalLink } from 'lucide-react';
 import UniversalComments from '@/components/community/UniversalComments';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import ShareMenu from '@/components/ShareMenu';
@@ -14,6 +14,30 @@ import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
 
 export const revalidate = 60;
+
+// Arabic labels for updates.category (missing/unknown → no chip)
+const CATEGORY_LABELS: Record<string, string> = {
+    official: 'قرارات رسمية',
+    residence: 'إقامات وجنسية',
+    work: 'عمل واقتصاد',
+    education: 'تعليم',
+    health: 'صحة',
+    security: 'أمن وتنبيهات',
+    general: 'عام',
+};
+
+// Arabic month names with LATIN digits (house rule: no Arabic-Indic numerals)
+const AR_MONTHS = [
+    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+];
+
+function formatDateLatin(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return `${date.getDate()} ${AR_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
 
 async function getSupabase() {
     const cookieStore = await cookies();
@@ -30,9 +54,11 @@ export async function generateMetadata(
     const { id } = await props.params;
     const supabase = await getSupabase();
 
+    // select('*') so optional columns (summary, category, ...) are tolerated
+    // whether or not the migration adding them has run.
     const { data } = await supabase
         .from('updates')
-        .select('title, content, type')
+        .select('*')
         .eq('id', id)
         .eq('active', true)
         .single();
@@ -42,7 +68,7 @@ export async function generateMetadata(
 
     return {
         title: data.title,
-        description: stripHtml(data.content).substring(0, 160) || data.title,
+        description: data.summary || stripHtml(data.content).substring(0, 160) || data.title,
         alternates: { canonical: `/updates/${id}` },
         openGraph: {
             title: data.title,
@@ -61,7 +87,7 @@ function getRelativeDate(dateStr: string): string {
     if (diffDays === 1) return 'أمس';
     if (diffDays === 2) return 'قبل يومين';
     if (diffDays <= 7) return `قبل ${diffDays} أيام`;
-    return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+    return formatDateLatin(dateStr);
 }
 
 function estimateReadTime(content: string): number {
@@ -78,7 +104,7 @@ export default async function UpdateDetailPage(
 
     const { data: update, error } = await supabase
         .from('updates')
-        .select('id, type, title, content, date, link, image, created_at')
+        .select('*')
         .eq('id', id)
         .eq('active', true)
         .single();
@@ -105,7 +131,7 @@ export default async function UpdateDetailPage(
     const updateUrl = `${SITE_CONFIG.siteUrl}/updates/${id}`;
     const publishedISO = toISODate(update.created_at || update.date || '');
     const modifiedISO = toISODate(update.date || update.created_at || '');
-    const description = plainContent.substring(0, 200) || update.title;
+    const description = update.summary || plainContent.substring(0, 200) || update.title;
     const imageUrl = update.image
         ? (update.image.startsWith('http') ? update.image : `${SITE_CONFIG.siteUrl}${update.image}`)
         : getOgImage(undefined, { title: update.title, category: 'أخبار وتحديثات' });
@@ -176,10 +202,15 @@ export default async function UpdateDetailPage(
                             {isAlert ? <AlertTriangle size={12} /> : <Newspaper size={12} />}
                             {typeLabel}
                         </span>
+                        {update.category && CATEGORY_LABELS[update.category] && (
+                            <span className="inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-200 border border-emerald-400/20">
+                                {CATEGORY_LABELS[update.category]}
+                            </span>
+                        )}
                         {update.date && (
                             <span className="text-white/60 text-xs flex items-center gap-1.5">
                                 <Calendar size={12} />
-                                {update.date}
+                                {formatDateLatin(update.date)}
                                 <span className="text-white/40 mx-1">·</span>
                                 {getRelativeDate(update.date)}
                             </span>
@@ -233,6 +264,21 @@ export default async function UpdateDetailPage(
                             )}
 
                             <div className="p-5 sm:p-8">
+                                {/* Official source — clearly labeled outbound link */}
+                                {update.source_url && (
+                                    <div className="mb-6">
+                                        <a
+                                            href={update.source_url}
+                                            target="_blank"
+                                            rel="nofollow noopener"
+                                            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl px-4 py-2.5 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors"
+                                        >
+                                            <ExternalLink size={14} />
+                                            المصدر الرسمي{update.source_name ? `: ${update.source_name}` : ''}
+                                        </a>
+                                    </div>
+                                )}
+
                                 {/* Main content */}
                                 {update.content && (
                                     <div className="prose-update">
