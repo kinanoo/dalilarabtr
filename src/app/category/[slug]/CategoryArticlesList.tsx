@@ -85,7 +85,7 @@ export default function CategoryArticlesList({
   // loading spinner. Remote data merges in silently once it arrives.
   if (loading && initialArticles.length === 0) {
     return (
-      <div className="max-w-screen-2xl mx-auto px-4 py-16">
+      <div className="max-w-screen-2xl mx-auto px-4 pt-8 pb-12">
         <div className="flex items-center justify-center py-20">
           <Loader2 size={40} className="animate-spin text-emerald-600" />
         </div>
@@ -125,7 +125,7 @@ export default function CategoryArticlesList({
         </div>
       </PageHero>
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-16 w-full">
+      <div className="max-w-screen-2xl mx-auto px-4 pt-8 pb-12 w-full">
         {/* Active filter pill — premium chip with icon + clear button */}
         {activeTag && (
           <div className="mb-8 inline-flex items-center gap-3 bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/60 rounded-full ps-2 pe-4 py-1.5 shadow-sm">

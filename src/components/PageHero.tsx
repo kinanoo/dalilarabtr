@@ -36,7 +36,7 @@ export default function PageHero({
 }: PageHeroProps) {
   return (
     <section
-      className={`relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 text-slate-900 dark:text-white py-14 px-4 ${className || ''}`.trim()}
+      className={`relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 text-slate-900 dark:text-white pt-10 pb-8 px-4 ${className || ''}`.trim()}
     >
       {/* Official colour stripe — a hint of government red */}
       <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
@@ -65,7 +65,7 @@ export default function PageHero({
           ) : null}
         </div>
 
-        {children ? <div className="mt-8 max-w-2xl mx-auto">{children}</div> : null}
+        {children ? <div className="mt-6 max-w-2xl mx-auto">{children}</div> : null}
       </div>
     </section>
   );

@@ -313,7 +313,7 @@ export default function DirectoryContent({ initialArticles = [] }: { initialArti
         <HeroSearchInput value={filter} onChange={setFilter} placeholder="ابحث داخل الدليل..." />
       </PageHero>
 
-      <div className="max-w-screen-2xl 2xl:max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="max-w-screen-2xl 2xl:max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 pt-8 pb-12">
         {!hasContent && (loadingArticles || loadingServices) ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={40} className="animate-spin text-emerald-600" />

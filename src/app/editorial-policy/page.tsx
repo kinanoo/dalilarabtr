@@ -123,7 +123,7 @@ export default function EditorialPolicyPage() {
                 icon={<ScrollText className="w-12 h-12" />}
             />
 
-            <section className="py-12 sm:py-16 px-4">
+            <section className="pt-8 pb-12 px-4">
                 <div className="max-w-3xl mx-auto space-y-4">
                     {SECTIONS.map((s, i) => (
                         <article

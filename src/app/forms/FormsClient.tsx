@@ -22,7 +22,7 @@ export default function FormsClient({ initialForms = [] }: { initialForms?: Admi
         icon={<FileText className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
       />
 
-      <div className="max-w-5xl mx-auto px-4 py-16">
+      <div className="max-w-5xl mx-auto px-4 pt-8 pb-12">
         {/* تحذير قانوني */}
         <div className="bg-amber-50 dark:bg-amber-950/30 border-s-4 border-amber-500 p-6 rounded-xl mb-12 flex gap-4">
           <Shield className="text-amber-600 flex-shrink-0" size={24} />
