@@ -169,7 +169,7 @@ export default async function UpdateDetailPage(
 
     const breadcrumbSchema = generateBreadcrumbSchema([
         { name: 'الرئيسية', url: '/' },
-        { name: 'التحديثات', url: '/updates' },
+        { name: 'الأخبار', url: '/updates' },
         { name: update.title, url: `/updates/${id}` },
     ]);
 
@@ -189,7 +189,7 @@ export default async function UpdateDetailPage(
                         className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-4 text-sm"
                     >
                         <ArrowRight size={16} />
-                        العودة للتحديثات
+                        العودة للأخبار
                     </Link>
 
                     {/* Type + Date + Share row */}
@@ -318,7 +318,7 @@ export default async function UpdateDetailPage(
                             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
                                 <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-1.5">
                                     <Newspaper size={14} className="text-amber-600" />
-                                    تحديثات أخرى
+                                    أخبار أخرى
                                 </h3>
                                 <div className="space-y-3">
                                     {relatedUpdates.map((item) => (
@@ -368,7 +368,7 @@ export default async function UpdateDetailPage(
                                     href="/updates"
                                     className="block text-center mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs font-bold text-emerald-600 hover:text-emerald-700"
                                 >
-                                    عرض كل التحديثات ←
+                                    عرض كل الأخبار ←
                                 </Link>
                             </div>
                         )}
