@@ -6,6 +6,7 @@ import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import Tabs from '@/components/ui/Tabs';
 import EmptyState from '@/components/EmptyState';
 import { useBookmarks } from '@/hooks/useBookmarks';
@@ -92,6 +93,12 @@ export default function ActivityPage() {
             getMyArticles(),
         ]);
 
+        // Surface real backend failures instead of silently showing an empty
+        // state (which looks identical to "you have no activity yet").
+        if ([reviewsRes, commentsRes, servicesRes, articlesRes].some((r) => (r as { error?: unknown }).error)) {
+            toast.error('تعذّر تحميل بعض بياناتك — تحقّق من اتصالك وأعد المحاولة.');
+        }
+
         setStats(statsRes.data);
         setReviews(reviewsRes.data);
         setComments(commentsRes.data);
@@ -177,25 +184,38 @@ export default function ActivityPage() {
                 <EmptyState type="list" title="لا توجد خدمات" message="لم تقم بإضافة أي خدمة بعد." actionLabel="أضف خدمة" actionHref="/dashboard/services/new" />
             ) : (
                 <div className="space-y-3">
-                    {services.map((s) => (
-                        <Link key={s.id} href={`/services/${s.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="font-bold text-slate-800 dark:text-white truncate">{s.name}</h4>
-                                <StatusBadge status={s.status || 'pending'} />
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                                {s.profession && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{s.profession}</span>}
-                                {s.city && <span>{s.city}</span>}
-                                <span>{formatDate(s.created_at)}</span>
-                            </div>
-                            {s.rating && (
-                                <div className="mt-2 flex items-center gap-2">
-                                    <StarDisplay rating={Math.round(s.rating)} />
-                                    <span className="text-xs text-slate-400">({s.review_count || 0})</span>
+                    {services.map((s) => {
+                        // Only link APPROVED items to the public route — the public
+                        // /services/[id] hard-404s non-approved content, so a member
+                        // clicking their own pending/rejected item would hit a 404.
+                        const approved = (s.status || 'pending') === 'approved';
+                        const base = 'block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4';
+                        const body = (
+                            <>
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                    <h4 className="font-bold text-slate-800 dark:text-white truncate">{s.name}</h4>
+                                    <StatusBadge status={s.status || 'pending'} />
                                 </div>
-                            )}
-                        </Link>
-                    ))}
+                                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                                    {s.profession && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{s.profession}</span>}
+                                    {s.city && <span>{s.city}</span>}
+                                    <span>{formatDate(s.created_at)}</span>
+                                </div>
+                                {s.rating && (
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <StarDisplay rating={Math.round(s.rating)} />
+                                        <span className="text-xs text-slate-400">({s.review_count || 0})</span>
+                                    </div>
+                                )}
+                                {!approved && <p className="mt-2 text-[11px] font-bold text-amber-600 dark:text-amber-400">تظهر علناً بعد موافقة الإدارة.</p>}
+                            </>
+                        );
+                        return approved ? (
+                            <Link key={s.id} href={`/services/${s.id}`} className={`${base} hover:shadow-md transition-shadow`}>{body}</Link>
+                        ) : (
+                            <div key={s.id} className={`${base} cursor-default`}>{body}</div>
+                        );
+                    })}
                 </div>
             ),
         },
@@ -207,18 +227,31 @@ export default function ActivityPage() {
                 <EmptyState type="list" title="لا توجد مقالات" message="لم تكتب أي مقال بعد." actionLabel="اكتب مقال" actionHref="/dashboard/articles/new" />
             ) : (
                 <div className="space-y-3">
-                    {articles.map((a) => (
-                        <Link key={a.id} href={`/article/${a.slug || a.id}`} className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="font-bold text-slate-800 dark:text-white truncate">{a.title}</h4>
-                                <StatusBadge status={a.status || 'pending'} />
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                                {a.category && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{a.category}</span>}
-                                <span>{formatDate(a.created_at)}</span>
-                            </div>
-                        </Link>
-                    ))}
+                    {articles.map((a) => {
+                        // Only link APPROVED articles to the public route (it 404s
+                        // non-approved), so a member never lands on a 404 for their
+                        // own pending/draft article.
+                        const approved = (a.status || 'pending') === 'approved';
+                        const base = 'block bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 p-4';
+                        const body = (
+                            <>
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                    <h4 className="font-bold text-slate-800 dark:text-white truncate">{a.title}</h4>
+                                    <StatusBadge status={a.status || 'pending'} />
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                                    {a.category && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">{a.category}</span>}
+                                    <span>{formatDate(a.created_at)}</span>
+                                </div>
+                                {!approved && <p className="mt-2 text-[11px] font-bold text-amber-600 dark:text-amber-400">يظهر علناً بعد موافقة الإدارة.</p>}
+                            </>
+                        );
+                        return approved ? (
+                            <Link key={a.id} href={`/article/${a.slug || a.id}`} className={`${base} hover:shadow-md transition-shadow`}>{body}</Link>
+                        ) : (
+                            <div key={a.id} className={`${base} cursor-default`}>{body}</div>
+                        );
+                    })}
                 </div>
             ),
         },
