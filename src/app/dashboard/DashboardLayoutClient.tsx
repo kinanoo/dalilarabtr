@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient, getClientUser } from '@/lib/supabaseClient';
 import { Loader2, LogOut, User, Home, UserCircle, Activity } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -27,7 +27,7 @@ export default function DashboardLayoutClient({
         const checkUser = async () => {
             if (!supabase) { router.push('/login'); return; }
 
-            const { data: { user } } = await supabase.auth.getUser();
+            const user = await getClientUser();
             if (!user) {
                 router.push('/login');
                 return;

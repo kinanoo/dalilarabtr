@@ -22,8 +22,8 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
 
     useEffect(() => {
         if (!supabase) return;
-        supabase.auth.getUser().then(({ data }) => {
-            setIsGuest(!data.user);
+        supabase.auth.getSession().then(({ data }) => {
+            setIsGuest(!data.session?.user);
         });
     }, []);
 

@@ -34,7 +34,8 @@ function encodeKey(sub: PushSubscription, name: 'p256dh' | 'auth'): string {
 
 async function persistSubscription(sub: PushSubscription): Promise<void> {
     if (!supabase) return;
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     // Plain insert (no onConflict — the table's unique constraints aren't in a
     // tracked migration, so don't assume one on `endpoint`). A fresh subscribe
     // always yields a NEW endpoint, so this is an INSERT in practice; a repeat

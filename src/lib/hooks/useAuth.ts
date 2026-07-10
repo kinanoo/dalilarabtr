@@ -16,8 +16,8 @@ function initAuth() {
     }
     initialized = true;
 
-    supabase.auth.getUser().then(({ data }) => {
-        sharedUser = data.user ?? null;
+    supabase.auth.getSession().then(({ data }) => {
+        sharedUser = data.session?.user ?? null;
         subscribers.forEach(cb => cb(sharedUser!));
     });
 

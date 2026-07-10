@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient, getClientUser } from '@/lib/supabaseClient';
 import { ArrowRight, Save, Loader2, Mail, Calendar, Shield, UserCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,7 +35,7 @@ export default function ProfilePage() {
 
     const loadProfile = async () => {
         if (!supabase) { router.push('/login'); return; }
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getClientUser();
         if (!user) { router.push('/login'); return; }
 
         setEmail(user.email || '');

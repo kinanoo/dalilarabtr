@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient, getClientUser } from '@/lib/supabaseClient';
 import { ArrowRight, Star, MessageCircle, Briefcase, FileText, Bookmark, Loader2, Clock, CheckCircle2, XCircle, AlertCircle, Award, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -81,7 +81,7 @@ export default function ActivityPage() {
     const loadData = async () => {
         if (!supabase) { router.push('/login'); return; }
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getClientUser();
         if (!user) { router.push('/login'); return; }
 
         const [statsRes, reviewsRes, commentsRes, servicesRes, articlesRes] = await Promise.all([

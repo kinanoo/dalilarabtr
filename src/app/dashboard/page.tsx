@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient, getClientUser } from '@/lib/supabaseClient';
 import { Loader2, Briefcase, FileText, BrainCircuit, UserCircle, Activity, Star, MessageCircle, Sparkles, ArrowLeft } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -98,7 +98,7 @@ export default function DashboardPage() {
     const checkUser = async () => {
         if (!supabase) { router.push('/login'); return; }
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getClientUser();
         if (!user) {
             router.push('/login');
             return;

@@ -51,8 +51,8 @@ export default function InlineStarRating({
     useEffect(() => {
         if (!supabase) return;
         const sb = supabase;
-        sb.auth.getUser().then(async ({ data }) => {
-            const user = data.user;
+        sb.auth.getSession().then(async ({ data }) => {
+            const user = data.session?.user;
             setIsGuest(!user);
             if (user) {
                 setUserId(user.id);

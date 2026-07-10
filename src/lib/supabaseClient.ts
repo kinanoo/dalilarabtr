@@ -42,6 +42,25 @@ export function getAuthClient() {
   return getBrowserClient();
 }
 
+/**
+ * Client-side "is the user logged in?" check for UX guards.
+ *
+ * Reads the PERSISTED session (getSession) instead of getUser(). getUser() makes
+ * a network round-trip to the Auth server to re-validate the JWT; on transient
+ * network failures or access-token refresh timing it returns null even for a
+ * genuinely logged-in member — which made dashboard guards and the "add service"
+ * CTA bounce logged-in users to /login or /join. getSession() reads the stored
+ * session instantly with no network call (the client refreshes the token in the
+ * background), so it never false-negatives. This is a UX gate only; real security
+ * stays enforced by RLS and by server-side getUser() in the API routes.
+ */
+export async function getClientUser() {
+  const client = getAuthClient();
+  if (!client) return null;
+  const { data } = await client.auth.getSession();
+  return data.session?.user ?? null;
+}
+
 // Plain anon client for public reads (no auth session — bypasses RLS user-specific policies)
 const ANON_KEY = '__daleel_supabase_anon' as const;
 declare global {

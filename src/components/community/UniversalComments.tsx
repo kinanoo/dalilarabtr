@@ -396,7 +396,8 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
 
     const resolveUserName = async () => {
         if (!supabase) return;
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
 
         if (user) {
             const { data: profile } = await supabase

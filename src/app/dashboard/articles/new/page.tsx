@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { getAuthClient } from '@/lib/supabaseClient';
+import { getAuthClient, getClientUser } from '@/lib/supabaseClient';
 import { Loader2, Save, ArrowRight, Info, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -41,8 +41,7 @@ export default function AddArticlePage() {
         if (!supabase) return;
         setLoading(true);
 
-        const { data: { user } } = await supabase.auth.getUser();
-
+        const user = await getClientUser();
         if (!user) {
             toast.error('يرجى تسجيل الدخول أولاً');
             router.push('/login');

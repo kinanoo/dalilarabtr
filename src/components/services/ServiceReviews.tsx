@@ -71,8 +71,8 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
     // Auth check + has-reviewed check
     useEffect(() => {
         if (!supabase) return;
-        supabase.auth.getUser().then(async ({ data }) => {
-            const user = data.user;
+        supabase.auth.getSession().then(async ({ data }) => {
+            const user = data.session?.user;
             setIsGuest(!user);
             if (user) {
                 setUserId(user.id);
