@@ -24,7 +24,8 @@ import {
   Wrench,
   Pill,
   Smartphone,
-  CalendarClock
+  CalendarClock,
+  Wallet
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 
@@ -57,6 +58,15 @@ const TOOLS = [
     href: '/consultant',
     color: 'from-emerald-500 to-teal-600',
     badge: 'الأكثر استخداماً',
+  },
+  {
+    id: 'salary-calculator',
+    title: 'حاسبة الراتب الصافي والإجمالي',
+    description: 'حوّل راتبك بين الإجمالي (Brüt) والصافي (Net) 2026 مع تفصيل كل الاقتطاعات',
+    icon: Wallet,
+    href: '/tools/salary-calculator',
+    color: 'from-emerald-500 to-green-600',
+    badge: 'جديد',
   },
   {
     id: 'ban-calculator',
