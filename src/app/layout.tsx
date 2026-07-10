@@ -107,12 +107,14 @@ export const metadata: Metadata = {
     ],
   },
 
-  // ✅ Twitter Card
+  // ✅ Twitter Card — card TYPE only, deliberately no title/description/image.
+  // Telegram (and X) prefer twitter:* over og:* when both exist, so site-wide
+  // twitter defaults here made every inner page that only sets openGraph
+  // unfurl with the generic marble og-image + site name instead of its own
+  // generated title card (proven on /updates/{id} link previews). With only
+  // the card type declared, crawlers fall back to each page's og:* tags.
   twitter: {
     card: "summary_large_image",
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    images: ["/og-image.jpg"],
   },
 
   // ✅ Favicon و Icons
