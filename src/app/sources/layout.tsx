@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: 'روابط آمنة ومباشرة للوزارات والبوابات الإلكترونية الحكومية التركية.',
     url: `${SITE_CONFIG.siteUrl}/sources`,
     type: 'website',
-    images: ['/og-image.jpg'],
+    images: ['/og-banner.jpg'],
   },
 };
 

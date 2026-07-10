@@ -75,7 +75,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
         keywords: cat.keywords,
         alternates: { canonical: `/services/category/${cat.slug}` },
         robots: count === 0 ? { index: false, follow: true } : undefined,
-        openGraph: { title, description, url: `${SITE_CONFIG.siteUrl}/services/category/${cat.slug}`, type: 'website', images: ['/og-image.jpg'] },
+        openGraph: { title, description, url: `${SITE_CONFIG.siteUrl}/services/category/${cat.slug}`, type: 'website', images: ['/og-banner.jpg'] },
     };
 }
 

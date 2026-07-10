@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       'آخر القرارات والتعديلات والأخبار في تركيا التي تهمّ العرب والسوريين: إقامات وجنسية، عمل، تعليم، صحة — بمصادر موثّقة.',
     url: `${SITE_CONFIG.siteUrl}/updates`,
     type: 'website',
-    images: ['/og-image.jpg'],
+    images: ['/og-banner.jpg'],
   },
 };
 

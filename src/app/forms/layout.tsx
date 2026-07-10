@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: 'حمّل النماذج الرسمية مترجمة: طلبات إقامة، إذن عمل، وخدمات حكومية تركية.',
     url: `${SITE_CONFIG.siteUrl}/forms`,
     type: 'website',
-    images: ['/og-image.jpg'],
+    images: ['/og-banner.jpg'],
   },
 };
 

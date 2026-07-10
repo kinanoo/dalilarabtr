@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: 'احسب التكلفة التقريبية لإقامتك في تركيا — ضريبة + تأمين + رسوم البطاقة',
     url: `${SITE_CONFIG.siteUrl}/calculator`,
     type: 'website',
-    images: [{ url: `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
+    images: [{ url: `${SITE_CONFIG.siteUrl}/og-banner.jpg`, width: 1200, height: 630 }],
   },
   alternates: { canonical: '/calculator' },
 };

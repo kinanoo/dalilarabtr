@@ -13,7 +13,7 @@ export const metadata: Metadata = {
         description: 'حاسبة قانونية دقيقة لحساب مدة المنع من دخول تركيا بناءً على مدة المخالفة ونوع الخروج.',
         url: `${SITE_CONFIG.siteUrl}/ban-calculator`,
         type: 'website',
-        images: [{ url: `${SITE_CONFIG.siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
+        images: [{ url: `${SITE_CONFIG.siteUrl}/og-banner.jpg`, width: 1200, height: 630 }],
     },
 };
 

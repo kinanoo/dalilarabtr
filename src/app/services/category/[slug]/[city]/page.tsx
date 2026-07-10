@@ -48,7 +48,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string; 
         keywords: [...cat.keywords.map((k) => `${k} ${cityObj.ar}`), `${cat.labelAr} ${cityObj.ar}`],
         alternates: { canonical: `/services/category/${cat.slug}/${cityObj.slug}` },
         robots: providers.length === 0 ? { index: false, follow: true } : undefined,
-        openGraph: { title, description, url: `${SITE_CONFIG.siteUrl}/services/category/${cat.slug}/${cityObj.slug}`, type: 'website', images: ['/og-image.jpg'] },
+        openGraph: { title, description, url: `${SITE_CONFIG.siteUrl}/services/category/${cat.slug}/${cityObj.slug}`, type: 'website', images: ['/og-banner.jpg'] },
     };
 }
 

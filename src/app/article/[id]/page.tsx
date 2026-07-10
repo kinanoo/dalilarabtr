@@ -219,7 +219,7 @@ function buildJsonLd(args: {
     // itself to be ≥1200px wide (handled at upload, not here).
     image: {
       '@type': 'ImageObject',
-      url: args.image || `${args.siteUrl}/og-image.jpg`,
+      url: args.image || `${args.siteUrl}/og-banner.jpg`,
     },
     reviewedBy: {
       '@type': 'Organization',
@@ -259,7 +259,7 @@ function buildJsonLd(args: {
     name: args.title,
     description: args.description,
     inLanguage: 'ar',
-    image: args.image || `${args.siteUrl}/og-image.jpg`,
+    image: args.image || `${args.siteUrl}/og-banner.jpg`,
     ...(args.totalTimeIso ? { totalTime: args.totalTimeIso } : {}),
     step: usableSteps.map((text, i) => ({
       '@type': 'HowToStep',
@@ -418,7 +418,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     siteUrl: SITE_CONFIG.siteUrl,
     articleBody,
     keywords,
-    image: article.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
+    image: article.image || `${SITE_CONFIG.siteUrl}/og-banner.jpg`,
     source: article.source,
     steps: article.steps,
     stepImages,

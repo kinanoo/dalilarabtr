@@ -32,7 +32,7 @@ export function getArticleHref(article: { slug?: string | null; id: string }): s
  *      relative paths 404 for social crawlers.
  *   2. A generated branded title card from og.dalilarabtr.com (the
  *      workers/og Satori worker — the pre-migration /api/og cards, back).
- *   3. The site-wide static /og-image.jpg.
+ *   3. The site-wide static /og-banner.jpg.
  */
 export function getOgImage(
     preferredImage?: string | null,
@@ -51,7 +51,7 @@ export function getOgImage(
         params.set('v', '2');
         return `https://og.dalilarabtr.com/?${params.toString()}`;
     }
-    return `${SITE_CONFIG.siteUrl}/og-image.jpg`;
+    return `${SITE_CONFIG.siteUrl}/og-banner.jpg`;
 }
 
 export const CATEGORY_SLUGS: Record<string, string> = {

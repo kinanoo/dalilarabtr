@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         description: 'تحقق فوراً إذا كان الحي مفتوح أو مغلق لتسجيل النفوس. يغطي كل الولايات التركية.',
         url: `${SITE_CONFIG.siteUrl}/zones`,
         type: 'website',
-        images: ['/og-image.jpg'],
+        images: ['/og-banner.jpg'],
     },
 };
 

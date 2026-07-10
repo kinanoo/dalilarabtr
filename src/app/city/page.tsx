@@ -13,7 +13,7 @@ export const metadata: Metadata = {
         title: 'دليل العرب حسب المدن في تركيا',
         description: 'الخدمات، الأحياء المغلقة، وأدلّة الإجراءات لكل مدينة تركية.',
         url: `${SITE_CONFIG.siteUrl}/city`,
-        images: ['/og-image.jpg'],
+        images: ['/og-banner.jpg'],
     },
 };
 

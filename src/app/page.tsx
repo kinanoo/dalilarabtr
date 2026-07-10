@@ -172,7 +172,7 @@ export const metadata: Metadata = {
     siteName: SITE_CONFIG.name,
     title: SITE_CONFIG.name,
     description: HOME_DESCRIPTION,
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: SITE_CONFIG.name }],
+    images: [{ url: '/og-banner.jpg', width: 1200, height: 630, alt: SITE_CONFIG.name }],
   },
 };
 

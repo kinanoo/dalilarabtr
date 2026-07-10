@@ -69,7 +69,7 @@ export function generateOrganizationSchema() {
       width: 256,
       height: 256,
     },
-    image: `${SITE_CONFIG.siteUrl}/og-image.jpg`,
+    image: `${SITE_CONFIG.siteUrl}/og-banner.jpg`,
     // Anchor the entity to Turkey so Google understands this is a Turkey-focused
     // organisation (strengthens the brand knowledge-panel + local relevance for
     // "دليل العرب في تركيا"-type queries).
@@ -150,7 +150,7 @@ export function generateArticleSchema(data: ArticleSchemaData) {
       '@type': 'WebPage',
       '@id': data.url || SITE_CONFIG.siteUrl,
     },
-    image: data.image || `${SITE_CONFIG.siteUrl}/og-image.jpg`,
+    image: data.image || `${SITE_CONFIG.siteUrl}/og-banner.jpg`,
     inLanguage: 'ar',
   };
 }

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         title: 'حاسبة أيام الإقامة والغياب عن تركيا',
         description: 'عدّ أيام غيابك عن تركيا وتابع شرط الإقامة المتّصلة للجنسية أو الإقامة طويلة الأمد.',
         url: `${SITE_CONFIG.siteUrl}/tools/residence-calculator`,
-        images: ['/og-image.jpg'],
+        images: ['/og-banner.jpg'],
     },
 };
 
