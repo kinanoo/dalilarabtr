@@ -19,17 +19,20 @@ import { SITE_CONFIG } from '@/lib/config';
 const STRINGS = {
     ar: {
         title: 'هل الإجراء معقّد؟',
-        sub: 'يمكنك استشارتنا مجاناً، وسنوضّح لك الخطوات مباشرةً.',
+        sub: 'راسلنا على واتساب وسنوضّح لك الخطوات — الاستشارة ليست مجانية (رسوم يُتفق عليها قبل البدء)، ونردّ عادةً خلال ساعات.',
         button: 'انقر هنا للاستشارة',
+        // Shown when the user taps WhatsApp — sets expectations before the chat opens.
+        notice: 'تنبيه: الاستشارة ليست مجانية — تُطبَّق رسوم يُتفق عليها قبل البدء، ونردّ عادةً خلال ساعات. يرجى توضيح ما تريده بالضبط في رسالتك ليصلك ردّ دقيق.\n\nهل تريد المتابعة إلى واتساب؟',
         msg: (title: string, url: string) =>
-            `السلام عليكم\nأرغب باستشارة بخصوص: «${title}»\n${url}\n\nأرجو توضيح الخطوات من فضلكم.`,
+            `السلام عليكم\nأرغب باستشارة بخصوص: «${title}»\n${url}\n\nطلبي بالتفصيل (يرجى التوضيح بدقة): `,
     },
     tr: {
         title: 'Sorunuz mu var?',
-        sub: 'Bize ücretsiz danışabilirsiniz, adımları doğrudan açıklarız.',
+        sub: 'WhatsApp\'tan bize yazın, adımları açıklayalım — danışmanlık ücretlidir (başlamadan önce anlaşılır) ve genelde saatler içinde yanıt veririz.',
         button: 'WhatsApp\'tan danışın',
+        notice: 'Uyarı: Danışmanlık ücretsiz değildir — başlamadan önce anlaşılan bir ücret uygulanır ve genelde saatler içinde yanıt veririz. Lütfen mesajınızda ne istediğinizi tam olarak belirtin.\n\nWhatsApp\'a devam edilsin mi?',
         msg: (title: string, url: string) =>
-            `Merhaba,\n«${title}» hakkında danışmak istiyorum.\n${url}\n\nAdımları açıklayabilir misiniz?`,
+            `Merhaba,\n«${title}» hakkında danışmak istiyorum.\n${url}\n\nTalebim (lütfen net belirtin): `,
     },
 } as const;
 
@@ -39,6 +42,9 @@ export default function AskOnWhatsApp({ topic, lang = 'ar' }: { topic?: string; 
     const t = STRINGS[lang];
 
     const openWithContext = () => {
+        // Notice the user BEFORE the chat opens: consultation is not free,
+        // reply within hours, and they should state their request precisely.
+        if (typeof window !== 'undefined' && !window.confirm(t.notice)) return;
         const title = (topic || (typeof document !== 'undefined' ? document.title : '') || '').trim();
         const url = typeof location !== 'undefined' ? location.href : '';
         window.open(`https://wa.me/${num}?text=${encodeURIComponent(t.msg(title, url))}`, '_blank', 'noopener,noreferrer');
