@@ -120,6 +120,8 @@ export default function DashboardPage() {
     };
 
     const handleLogout = async () => {
+        // Confirm first so an accidental click doesn't end the session.
+        if (typeof window !== 'undefined' && !window.confirm('هل تريد تسجيل الخروج من حسابك؟')) return;
         // Use server-side signout to properly clear HTTP-only session cookies
         await fetch('/api/auth/signout', { method: 'POST' });
         router.push('/login');

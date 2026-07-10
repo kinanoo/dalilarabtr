@@ -48,6 +48,9 @@ export default function DashboardLayoutClient({
 
     const handleLogout = async () => {
         if (!supabase) return;
+        // Confirm first — the logout button sits right next to the name, so a
+        // stray tap shouldn't drop the session.
+        if (typeof window !== 'undefined' && !window.confirm('هل تريد تسجيل الخروج من حسابك؟')) return;
         await supabase.auth.signOut();
         // signOut() only clears the Supabase auth cookies. Anything we wrote
         // ourselves to localStorage (anon_comment_id, visitor_id, draft
