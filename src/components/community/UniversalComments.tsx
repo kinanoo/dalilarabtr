@@ -554,7 +554,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     const totalCount = comments.reduce((sum, c) => sum + 1 + (c.replies?.length || 0), 0);
 
     return (
-        <section className={`bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 ${className}`}>
+        <section className={`bg-white dark:bg-slate-800 rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 ${className || ''}`}>
             {/* Comments List */}
             <div className="space-y-4 mb-6">
                 {loading ? (

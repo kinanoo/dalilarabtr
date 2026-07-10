@@ -309,7 +309,17 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     const extra = stripHtml(article.details);
     if (extra) rawDesc = (rawDesc + ' ' + extra).trim();
   }
-  const description = rawDesc.length > 155 ? rawDesc.substring(0, 155).trim() + '…' : rawDesc;
+  // Trim without cutting mid-word: prefer the last full sentence within 155
+  // chars, else the last whole word + ellipsis. Avoids dangling fragments like
+  // "… وكيف تعترض. من هيئة…" in SERP snippets and social cards.
+  const description = (() => {
+    if (rawDesc.length <= 155) return rawDesc;
+    const slice = rawDesc.slice(0, 155);
+    const sentenceEnd = Math.max(slice.lastIndexOf('. '), slice.lastIndexOf('؟ '), slice.lastIndexOf('! '));
+    if (sentenceEnd > 90) return slice.slice(0, sentenceEnd + 1).trim();
+    const sp = slice.lastIndexOf(' ');
+    return (sp > 0 ? slice.slice(0, sp) : slice).trim() + '…';
+  })();
   const keywords = buildArticleKeywords({
     slug: params.id,
     title: article.title,

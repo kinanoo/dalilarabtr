@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MapPin, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
+import { toLatinDigits } from '@/lib/digits';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 
@@ -78,7 +79,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
 
             {/* Description */}
             <p className="mt-3 text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 min-h-[38px]">
-                {p.description || 'اضغط لعرض التفاصيل الكاملة وطرق التواصل.'}
+                {toLatinDigits(p.description) || 'اضغط لعرض التفاصيل الكاملة وطرق التواصل.'}
             </p>
 
             {/* Actions */}
