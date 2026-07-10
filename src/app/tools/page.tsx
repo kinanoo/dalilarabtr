@@ -26,7 +26,8 @@ import {
   Smartphone,
   CalendarClock,
   Wallet,
-  Coins
+  Coins,
+  Home
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 
@@ -76,6 +77,15 @@ const TOOLS = [
     icon: Coins,
     href: '/tools/severance-calculator',
     color: 'from-amber-500 to-yellow-600',
+    badge: 'جديد',
+  },
+  {
+    id: 'rent-increase-calculator',
+    title: 'حاسبة زيادة الإيجار القانونية',
+    description: 'اعرف الحد الأقصى القانوني لزيادة إيجارك 2026 حسب متوسط TÜFE — واحمِ نفسك من الزيادات غير القانونية',
+    icon: Home,
+    href: '/tools/rent-increase-calculator',
+    color: 'from-rose-500 to-pink-600',
     badge: 'جديد',
   },
   {
