@@ -11,6 +11,7 @@ import { fetchRemoteServices, mergeServices, subscribeDemoDataUpdated, type Runt
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { requestServiceSchema, type RequestServiceInputs } from '@/lib/schemas';
+import { trackEvent } from '@/lib/analytics';
 
 // The interactive request form — a client island. The page shell around it is
 // a server component (real SSR content for crawlers/no-JS); this file only
@@ -74,6 +75,9 @@ export default function RequestForm() {
 
   const onSubmit = (data: RequestServiceInputs) => {
     const serviceName = services.find((s) => s.id === data.serviceId)?.title || 'غير محددة';
+
+    // Conversion: a service request was submitted (opens WhatsApp).
+    trackEvent('submit_request', 'conversion', serviceName);
     const subject = encodeURIComponent(`طلب خدمة: ${serviceName}`);
     const body = encodeURIComponent(
       `الاسم: ${data.name || 'غير محدد'}\nالخدمة المطلوبة: ${serviceName}\n\nالتفاصيل:\n${data.details || 'لا يوجد'}\n\nيرجى الرد وتزويدي بالتكلفة والإجراءات.`

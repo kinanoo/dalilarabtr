@@ -11,6 +11,7 @@ import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
 import CrossLinks from '@/components/seo/CrossLinks';
+import { trackEvent } from '@/lib/analytics';
 
 export default function KimlikCheckPage() {
     const [tcNumber, setTcNumber] = useState('');
@@ -31,7 +32,10 @@ export default function KimlikCheckPage() {
             (digits[1] + digits[3] + digits[5] + digits[7])) % 10) + 10) % 10;
         const d11 = (digits.slice(0, 10).reduce((a, b) => a + b, 0)) % 10;
 
-        setResult(digits[9] === d10 && digits[10] === d11 ? 'valid' : 'invalid');
+        const ok = digits[9] === d10 && digits[10] === d11;
+        setResult(ok ? 'valid' : 'invalid');
+        // Conversion: the kimlik tool was actually used (a full 11-digit check).
+        trackEvent('use_kimlik_tool', 'tool', ok ? 'valid' : 'invalid');
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

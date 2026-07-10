@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 
 const AmbientBackground = lazy(() => import('@/components/ui/AmbientBackground'));
 const AnalyticsTracker = lazy(() => import('@/components/analytics/AnalyticsTracker').then(m => ({ default: m.AnalyticsTracker })));
+const ConversionEvents = lazy(() => import('@/components/analytics/ConversionEvents').then(m => ({ default: m.ConversionEvents })));
 const NotificationManager = lazy(() => import('@/components/NotificationManager'));
 const CopyProtection = lazy(() => import('@/components/ui/CopyProtection'));
 const ServiceWorkerRegister = lazy(() => import('@/components/pwa/ServiceWorkerRegister'));
@@ -17,6 +18,7 @@ export default function DeferredExtras() {
     <Suspense fallback={null}>
       <AmbientBackground />
       <AnalyticsTracker />
+      <ConversionEvents />
       <NotificationManager />
       <CopyProtection />
       <ServiceWorkerRegister />

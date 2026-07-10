@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 import { urlBase64ToUint8Array } from '@/lib/utils/vapid';
 import logger from '@/lib/logger';
+import { trackEvent } from '@/lib/analytics';
 
 const DISMISS_KEY = 'daleel.push_prompt_dismissed';
 // Bumped when the subscription must be re-bound (e.g. after the VAPID key that
@@ -144,6 +145,7 @@ export default function NotificationManager() {
                 const ok = await ensureFreshSubscription();
                 if (ok) {
                     localStorage.setItem(SYNC_KEY, VAPID_PUBLIC_KEY);
+                    trackEvent('subscribe_push', 'conversion', 'prompt');
                     toast.success('تم تفعيل الإشعارات بنجاح!', {
                         description: 'ستصلك آخر التحديثات والأخبار المهمة فوراً.',
                     });
