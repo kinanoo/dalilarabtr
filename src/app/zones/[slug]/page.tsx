@@ -9,6 +9,7 @@ import ZoneReportButton from '@/components/zones/ZoneReportButton';
 import SectionDivider from '@/components/ui/SectionDivider';
 import CrossLinks from '@/components/seo/CrossLinks';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
+import { citySlugForName } from '@/lib/turkishCities';
 
 export const revalidate = 600;
 
@@ -530,6 +531,30 @@ export default async function ZoneDetailPage({ params }: Props) {
                         <ArrowRight size={20} />
                         عودة للخريطة
                     </Link>
+
+                    {/* City-hub funnel — the zones pages are the #1 traffic
+                        source; send that traffic into the conversion-rich city
+                        guide (services, providers, official links). Only on the
+                        city view, and only when the city has a real hub page. */}
+                    {viewType === 'city' && (() => {
+                        const citySlug = citySlugForName(title);
+                        if (!citySlug) return null;
+                        return (
+                            <Link
+                                href={`/city/${citySlug}`}
+                                className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/70 dark:bg-emerald-950/20 p-4 hover:border-emerald-400 hover:shadow-md transition-all group"
+                            >
+                                <span className="grid place-items-center w-11 h-11 rounded-xl bg-emerald-600 text-white shrink-0">
+                                    <MapPin size={20} />
+                                </span>
+                                <span className="flex-1 min-w-0">
+                                    <span className="block text-sm font-black text-emerald-900 dark:text-emerald-100">دليل العرب الكامل في {title}</span>
+                                    <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">مقدّمو خدمات موثوقون · الإقامة والأوراق · روابط رسمية</span>
+                                </span>
+                                <ArrowRight size={18} className="text-emerald-500 shrink-0 group-hover:-translate-x-1 transition-transform" />
+                            </Link>
+                        );
+                    })()}
 
                     {/* Top-of-page summary banner — three stat chips that
                         instantly answer "what's the situation here?" */}
