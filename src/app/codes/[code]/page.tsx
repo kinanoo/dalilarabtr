@@ -11,6 +11,7 @@ import CodesLangToggle from '@/components/codes/CodesLangToggle';
 import UniversalComments from '@/components/community/UniversalComments';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import RelatedArticles from '@/components/RelatedArticles';
+import CodesLegalNote from '@/components/codes/CodesLegalNote';
 import CrossLinks from '@/components/seo/CrossLinks';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { generateBreadcrumbSchema } from '@/lib/schemaOrg';
@@ -311,6 +312,8 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
                     <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
                     <p>{ui.disclaimer}</p>
                 </div>
+
+                <CodesLegalNote variant="stamp" />
 
                 <div className="mt-8">
                     <UniversalComments entityType="scenario" entityId={`code-${item.code}`} />

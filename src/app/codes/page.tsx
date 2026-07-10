@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import type { AdminCode } from '@/lib/types';
 import CodesClient from './CodesClient';
+import CodesLegalNote from '@/components/codes/CodesLegalNote';
 import { SITE_CONFIG } from '@/lib/config';
 import { normalizeLang, type Lang } from '@/lib/codesI18n';
 
@@ -82,6 +83,7 @@ export default async function CodesPage({ searchParams }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(definedTermSet) }} />
       <CodesClient initialCodes={initialCodes} lang={lang} />
+      <CodesLegalNote />
     </>
   );
 }
