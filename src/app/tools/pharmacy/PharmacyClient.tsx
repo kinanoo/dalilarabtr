@@ -38,7 +38,10 @@ function nearMe() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) { openSearch(); return; }
     navigator.geolocation.getCurrentPosition(
         (pos) => window.open(
-            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Nöbetçi Eczane')}&center=${pos.coords.latitude},${pos.coords.longitude}`,
+            // Path form `/@lat,lng,zoom` actually centres the map on the user —
+            // the api=1 search endpoint silently ignores `&center=`, so the
+            // captured coordinates were being thrown away.
+            `https://www.google.com/maps/search/${encodeURIComponent('Nöbetçi Eczane')}/@${pos.coords.latitude},${pos.coords.longitude},14z`,
             '_blank', 'noopener,noreferrer',
         ),
         () => openSearch(),

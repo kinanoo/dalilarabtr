@@ -89,7 +89,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && query.trim().length > 0) {
       // Redirect raw query to Server Page (Smart Routing)
-      router.push(`/zones/${query.trim()}`);
+      router.push(`/zones/${encodeURIComponent(query.trim())}`);
     }
   };
 
@@ -149,9 +149,14 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
           r: r.reopened_at || null,
         }));
 
-        // Get latest update date
-        const latestInfo = allRows.length > 0
-          ? new Date(Math.max(...allRows.map((r: any) => new Date(r.updated_at).getTime()))).toISOString().split('T')[0]
+        // Get latest update date — filter to valid timestamps first so one bad
+        // `updated_at` (→ NaN) can't turn Math.max into NaN and throw on
+        // toISOString(), which would fail the whole dataset load.
+        const times = allRows
+          .map((r: any) => new Date(r.updated_at).getTime())
+          .filter((t: number) => Number.isFinite(t));
+        const latestInfo = times.length > 0
+          ? new Date(Math.max(...times)).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0];
 
         const payload: ClosedAreasPayload = {
@@ -598,7 +603,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
                         return (
                           <Link
                             key={`${zone.c}-${zone.d}-${zone.n}-${idx}`}
-                            href={`/zones/${zone.n}`}
+                            href={`/zones/${encodeURIComponent(zone.n)}`}
                             className={`rounded-xl border p-4 flex items-center justify-between gap-3 transition cursor-pointer ${styles.border} ${styles.bg}`}
                           >
                             <div className="text-right min-w-0 flex-1">
@@ -641,7 +646,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
                           آخر تحديث للبيانات: {data.updatedAt}
                         </p>
                       )}
-                      <button onClick={() => router.push(`/zones/${query}`)} className="mt-4 text-xs bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition">
+                      <button onClick={() => router.push(`/zones/${encodeURIComponent(query.trim())}`)} className="mt-4 text-xs bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition">
                         عرض التفاصيل والتحقق
                       </button>
                     </div>

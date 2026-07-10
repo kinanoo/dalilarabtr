@@ -9,6 +9,7 @@ import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
+import { toLatinDigits } from '@/lib/digits';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
 import CrossLinks from '@/components/seo/CrossLinks';
 import { trackEvent } from '@/lib/analytics';
@@ -39,7 +40,10 @@ export default function KimlikCheckPage() {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value.replace(/\D/g, '');
+        // Normalize Arabic-Indic/Persian digits first — this site's audience types
+        // on Arabic keyboards, and JS \D (ASCII-only) would otherwise strip ٠-٩
+        // and leave the field empty with no feedback.
+        const val = toLatinDigits(e.target.value).replace(/\D/g, '');
         if (val.length <= 11) {
             setTcNumber(val);
             if (val.length === 11) validateTC(val);

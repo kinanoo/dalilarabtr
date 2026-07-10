@@ -46,6 +46,7 @@ const waUrl = (p: ProviderCardData) => {
 export default function ContactButtons({ p, compact = false }: { p: ProviderCardData; compact?: boolean }) {
     return (
         <>
+            {p.phone && (
             <a
                 href={waUrl(p)}
                 target="_blank"
@@ -56,6 +57,7 @@ export default function ContactButtons({ p, compact = false }: { p: ProviderCard
             >
                 <MessageCircle size={15} /><span className={compact ? 'hidden sm:inline' : ''}>واتساب</span>
             </a>
+            )}
             {p.phone && (
                 <a
                     href={`tel:${p.phone}`}
