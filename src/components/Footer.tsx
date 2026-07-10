@@ -95,6 +95,7 @@ export default function Footer() {
                     <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🆔 فحص قيد الكملك</Link></li>
                     <li key="f4b"><Link href="/tools/residence-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📅 حاسبة أيام الإقامة والغياب</Link></li>
                     <li key="f4c"><Link href="/tools/salary-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💵 حاسبة الراتب الصافي والإجمالي</Link></li>
+                    <li key="f4d"><Link href="/tools/severance-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🪙 حاسبة تعويض نهاية الخدمة</Link></li>
                     <li key="f5"><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💰 حاسبة تكاليف الإقامة</Link></li>
                     <li key="f6"><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🗺️ خريطة المناطق المحظورة</Link></li>
                   </>

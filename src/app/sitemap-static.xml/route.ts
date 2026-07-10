@@ -27,6 +27,8 @@ const staticPages = [
   { path: '/tools/kimlik-check', priority: 0.8 },
   { path: '/tools/pharmacy', priority: 0.7 },
   { path: '/tools/residence-calculator', priority: 0.8 },
+  { path: '/tools/salary-calculator', priority: 0.8 },
+  { path: '/tools/severance-calculator', priority: 0.8 },
 ];
 
 export async function GET() {

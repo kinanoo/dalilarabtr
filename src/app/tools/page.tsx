@@ -25,7 +25,8 @@ import {
   Pill,
   Smartphone,
   CalendarClock,
-  Wallet
+  Wallet,
+  Coins
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 
@@ -66,6 +67,15 @@ const TOOLS = [
     icon: Wallet,
     href: '/tools/salary-calculator',
     color: 'from-emerald-500 to-green-600',
+    badge: 'جديد',
+  },
+  {
+    id: 'severance-calculator',
+    title: 'حاسبة تعويض نهاية الخدمة',
+    description: 'احسب تعويض نهاية الخدمة (Kıdem) والإشعار (İhbar) 2026 حسب راتبك ومدة عملك',
+    icon: Coins,
+    href: '/tools/severance-calculator',
+    color: 'from-amber-500 to-yellow-600',
     badge: 'جديد',
   },
   {
