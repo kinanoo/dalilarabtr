@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalComments';
 
@@ -145,6 +145,28 @@ export default async function ServiceDetailsPage(
 
     const jsonLd = { '@context': 'https://schema.org', '@graph': [serviceLd, breadcrumbLd] };
 
+    // Related providers — same profession (same-city first) → crawlable internal
+    // links that keep the visitor browsing when this listing isn't the right fit
+    // (engagement + more conversions + spreads link equity to sibling pages).
+    type Related = { id: string; slug: string | null; name: string; profession: string | null; city: string | null; image: string | null; is_verified: boolean | null; rating: number | null; review_count: number | null };
+    let related: Related[] = [];
+    try {
+        const { data: rel } = await supabase
+            .from('service_providers')
+            .select('id, slug, name, profession, city, image, is_verified, rating, review_count')
+            .eq('status', 'approved')
+            .eq('category', provider.category)
+            .neq('id', realId)
+            .order('is_verified', { ascending: false })
+            .order('rating', { ascending: false })
+            .limit(9);
+        related = (rel as Related[]) || [];
+        if (provider.city) {
+            related.sort((a, b) => Number(b.city === provider.city) - Number(a.city === provider.city));
+        }
+        related = related.slice(0, 6);
+    } catch { /* best-effort — related is a nice-to-have */ }
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -252,6 +274,52 @@ export default async function ServiceDetailsPage(
                     </div>
                 </div>
             </div>
+
+            {/* Related providers — crawlable internal links + keeps visitors browsing */}
+            {related.length > 0 && (
+                <div className="container mx-auto px-4 max-w-4xl pb-4">
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                            {provider.category ? `${provider.category} آخرون قد يهمّونك` : 'مزوّدون آخرون قد يهمّونك'}
+                        </h2>
+                        {catSlug && (
+                            <Link href={`/services/category/${catSlug}`} className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:gap-2 transition-all shrink-0">
+                                عرض الكل <ArrowLeft size={16} />
+                            </Link>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {related.map((r) => (
+                            <Link
+                                key={r.id}
+                                href={`/services/${r.slug || r.id}`}
+                                className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-start gap-3 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md transition-all"
+                            >
+                                <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden relative flex items-center justify-center">
+                                    {r.image ? (
+                                        <Image src={r.image} alt={r.name} fill className="object-cover" sizes="56px" />
+                                    ) : (
+                                        <Briefcase size={22} className="text-slate-300" />
+                                    )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1 font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
+                                        <span className="truncate">{r.name}</span>
+                                        {r.is_verified && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
+                                    </div>
+                                    {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{r.profession}</p>}
+                                    <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                                        {r.city && <span className="inline-flex items-center gap-0.5"><MapPin size={11} />{r.city}</span>}
+                                        {!!(r.review_count && r.review_count > 0 && r.rating) && (
+                                            <span className="inline-flex items-center gap-0.5 tabular-nums"><Star size={11} className="text-amber-400 fill-amber-400" />{Number(r.rating).toFixed(1)}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Reviews + Comments */}
             <div className="container mx-auto px-4 max-w-4xl pb-12 space-y-8">
