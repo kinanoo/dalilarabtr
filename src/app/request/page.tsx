@@ -13,9 +13,9 @@ import { MessageCircle, ClipboardList, Send, ShieldCheck, Clock } from 'lucide-r
 // form itself stays a client island in ./RequestForm.
 
 const STEPS = [
-  { icon: ClipboardList, title: 'اختر الخدمة واكتب طلبك', desc: 'حدّد نوع الخدمة من القائمة وأضف التفاصيل التي تريدها.' },
+  { icon: ClipboardList, title: 'اختر الخدمة ووضّح طلبك', desc: 'حدّد نوع الخدمة، ويرجى توضيح ما تريده بالضبط في التفاصيل ليصلك ردّ دقيق.' },
   { icon: Send, title: 'يفتح واتساب برسالة جاهزة', desc: 'طلبك يُرسَل إلينا مباشرة عبر واتساب — بلا تسجيل وبلا حسابات.' },
-  { icon: MessageCircle, title: 'نردّ عليك بالتكلفة والخطوات', desc: 'نراجع طلبك ونعود إليك بالتفاصيل والاتفاق قبل البدء — عادةً خلال يوم واحد.' },
+  { icon: MessageCircle, title: 'نردّ عليك بالتكلفة والخطوات', desc: 'نراجع طلبك ونعود إليك بالتفاصيل والاتفاق قبل البدء — عادةً خلال ساعات.' },
 ];
 
 export default function RequestPage() {
@@ -65,7 +65,7 @@ export default function RequestPage() {
           </a>
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
             <Clock size={13} className="text-emerald-600 dark:text-emerald-400" />
-            نردّ عادةً خلال يوم واحد — بلا تسجيل وبلا رسوم مقدّمة.
+            نردّ عادةً خلال ساعات — بلا تسجيل، والرسوم تُتفق عليها قبل البدء.
           </p>
         </div>
 
@@ -101,7 +101,8 @@ export default function RequestPage() {
         <div className="mt-8 flex items-start gap-3 bg-emerald-600/[0.06] dark:bg-emerald-400/10 border border-emerald-600/15 dark:border-emerald-400/20 rounded-2xl p-4">
           <ShieldCheck size={18} className="text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5" />
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            نتفق على التكلفة والخطوات معك قبل البدء بأي معاملة، ولا نطلب أي مبلغ مسبقاً عبر النموذج.
+            الخدمة والاستشارة ليست مجانية — تُطبَّق رسوم حسب نوع المعاملة يُتفق عليها معك قبل البدء،
+            لكن لا نطلب أي مبلغ مسبقاً عبر النموذج.
             لا ترسل صور وثائقك الشخصية أو رقم الكملك الكامل إلا بعد التواصل والاتفاق. طلبك لا يُخزَّن
             على خوادمنا — يُرسَل مباشرةً عبر واتساب. الموقع جهة مساعدة وتوجيه وليس مكتب محاماة أو جهة
             حكومية — للتفاصيل راجع{' '}

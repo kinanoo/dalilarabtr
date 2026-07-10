@@ -162,8 +162,11 @@ export default function RequestForm() {
         {/* Details */}
         <div>
           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
-            <FileText size={18} className="text-primary-500" /> تفاصيل إضافية (اختياري)
+            <FileText size={18} className="text-primary-500" /> تفاصيل الطلب
           </label>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+            يرجى توضيح ما تريده بالضبط (نوع المعاملة، المدينة، عدد الأشخاص، أي استعجال) — كلما وضّحت أكثر جاءك ردّ أدقّ وأسرع.
+          </p>
           <textarea
             {...register('details')}
             rows={4}
@@ -189,7 +192,7 @@ export default function RequestForm() {
         </button>
 
         <p className="text-xs text-center text-slate-400 dark:text-slate-500 mt-4">
-          * قد يتم تطبيق رسوم خدمة رمزية حسب نوع المعاملة، ويتم الاتفاق عليها قبل البدء.
+          * الخدمة والاستشارة ليست مجانية؛ تُطبَّق رسوم حسب نوع المعاملة يُتفق عليها معك قبل البدء.
         </p>
 
       </form>
