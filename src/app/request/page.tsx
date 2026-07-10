@@ -4,7 +4,7 @@ import PageHero from '@/components/PageHero';
 import RequestForm from './RequestForm';
 import { SITE_CONFIG } from '@/lib/config';
 import { SERVICES_LIST } from '@/lib/constants';
-import { MessageCircle, ClipboardList, Send, ShieldCheck } from 'lucide-react';
+import { MessageCircle, ClipboardList, Send, ShieldCheck, Clock } from 'lucide-react';
 
 // Server component — the page shell renders REAL content in the first HTML
 // (services, how it works, trust notes, a no-JS WhatsApp fallback CTA).
@@ -15,7 +15,7 @@ import { MessageCircle, ClipboardList, Send, ShieldCheck } from 'lucide-react';
 const STEPS = [
   { icon: ClipboardList, title: 'اختر الخدمة واكتب طلبك', desc: 'حدّد نوع الخدمة من القائمة وأضف التفاصيل التي تريدها.' },
   { icon: Send, title: 'يفتح واتساب برسالة جاهزة', desc: 'طلبك يُرسَل إلينا مباشرة عبر واتساب — بلا تسجيل وبلا حسابات.' },
-  { icon: MessageCircle, title: 'نردّ عليك بالتكلفة والخطوات', desc: 'نراجع طلبك ونعود إليك بالتفاصيل والاتفاق قبل أي بدء.' },
+  { icon: MessageCircle, title: 'نردّ عليك بالتكلفة والخطوات', desc: 'نراجع طلبك ونعود إليك بالتفاصيل والاتفاق قبل البدء — عادةً خلال يوم واحد.' },
 ];
 
 export default function RequestPage() {
@@ -51,17 +51,22 @@ export default function RequestPage() {
           <RequestForm />
         </Suspense>
 
-        {/* No-JS / direct fallback — server-rendered, always crawlable */}
-        <div className="mt-4 text-center">
+        {/* Prominent WhatsApp CTA + expected response time — server-rendered,
+            works even with JavaScript disabled (a real no-JS conversion path). */}
+        <div className="mt-5 flex flex-col items-center gap-2.5">
           <a
             href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('مرحباً، أريد طلب خدمة من دليل العرب.')}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+            className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-7 py-3.5 shadow-lg shadow-emerald-600/25 transition-colors w-full sm:w-auto"
           >
-            <MessageCircle size={16} />
-            أو راسلنا على واتساب مباشرة بدون النموذج
+            <MessageCircle size={20} />
+            راسلنا مباشرة على واتساب
           </a>
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <Clock size={13} className="text-emerald-600 dark:text-emerald-400" />
+            نردّ عادةً خلال يوم واحد — بلا تسجيل وبلا رسوم مقدّمة.
+          </p>
         </div>
 
         {/* Services we handle — server-rendered */}
@@ -97,8 +102,12 @@ export default function RequestPage() {
           <ShieldCheck size={18} className="text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5" />
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
             نتفق على التكلفة والخطوات معك قبل البدء بأي معاملة، ولا نطلب أي مبلغ مسبقاً عبر النموذج.
-            لا ترسل صور وثائقك الشخصية إلا بعد التواصل والاتفاق. الموقع جهة مساعدة وتوجيه وليس مكتب محاماة
-            أو جهة حكومية — للتفاصيل راجع صفحة إخلاء المسؤولية.
+            لا ترسل صور وثائقك الشخصية أو رقم الكملك الكامل إلا بعد التواصل والاتفاق. طلبك لا يُخزَّن
+            على خوادمنا — يُرسَل مباشرةً عبر واتساب. الموقع جهة مساعدة وتوجيه وليس مكتب محاماة أو جهة
+            حكومية — للتفاصيل راجع{' '}
+            <Link href="/privacy" className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline">سياسة الخصوصية</Link>
+            {' '}و
+            <Link href="/disclaimer" className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline">إخلاء المسؤولية</Link>.
           </p>
         </div>
       </div>

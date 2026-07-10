@@ -1,7 +1,7 @@
 import PageHero from '@/components/PageHero';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ShieldCheck, Database, Bell, MessageCircle, UserRound, Trash2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
+import { ShieldCheck, Database, Bell, MessageCircle, UserRound, Trash2, AlertTriangle, Link as LinkIcon, Users, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'سياسة الخصوصية',
@@ -69,6 +69,32 @@ const SECTIONS = [
         <li>تفضيلات واجهة بسيطة (الوضع الليلي، آخر الأخبار المقروءة) في التخزين المحلي لمتصفحك — لا تغادر جهازك.</li>
         <li>تُستضاف قاعدة البيانات لدى Supabase والموقع لدى Cloudflare، وقد تعالج Cloudflare عناوين IP تقنياً لأغراض الحماية من الهجمات وإحصاءات مجمّعة لا تحدد هويتك.</li>
         <li>لا نستخدم أدوات تتبّع إعلانية، ولا نبيع أو نشارك أي بيانات مع أي جهة تجارية.</li>
+      </ul>
+    ),
+  },
+  {
+    icon: Users,
+    title: 'من يستطيع الوصول إلى بياناتك',
+    body: (
+      <ul className="list-disc ps-5 space-y-2">
+        <li><strong>محادثة واتساب</strong>: يراها أنت وفريقنا فقط، وتخضع لتشفير واتساب من طرف إلى طرف.</li>
+        <li><strong>حسابك ونشرتك البريدية وبلاغات الأحياء</strong>: لا يطّلع عليها إلا فريق تحرير وإدارة دليل العرب، وفقط لأغراض التشغيل والإشراف والدعم — لا أكثر.</li>
+        <li><strong>تعليقاتك وأسئلتك العامة</strong>: مرئية للجميع بطبيعتها لأنك نشرتها علناً على الموقع.</li>
+        <li><strong>مزوّدو الاستضافة</strong> (Supabase لقاعدة البيانات، Cloudflare للموقع) يعالجون البيانات تقنياً بصفتهم منفّذين لخدمتنا وضمن سياساتهم، لا لاستخدامهم الخاص.</li>
+        <li><strong>لا نمنح أي وصول</strong> لمعلنين أو وسطاء بيانات أو أي جهة تجارية، ولا نبيع بياناتك إطلاقاً.</li>
+      </ul>
+    ),
+  },
+  {
+    icon: Clock,
+    title: 'مدة الاحتفاظ بالبيانات',
+    body: (
+      <ul className="list-disc ps-5 space-y-2">
+        <li><strong>طلبات الخدمة</strong>: لا تُحفظ لدينا أصلاً — تذهب مباشرةً إلى واتساب، فلا مدة احتفاظ على خوادمنا.</li>
+        <li><strong>الحساب والتعليقات والنشرة البريدية</strong>: تبقى ما دام حسابك/اشتراكك قائماً، وتُحذف فور طلبك ذلك أو حذفك لحسابك.</li>
+        <li><strong>اشتراك الإشعارات</strong>: يبقى حتى تُلغيه من متصفحك، وتُحذف الاشتراكات المعطّلة تلقائياً.</li>
+        <li><strong>تفضيلات الواجهة</strong> (الوضع الليلي، آخر ما قرأت): على جهازك فقط حتى تمسح بيانات المتصفح.</li>
+        <li>نحتفظ بالحد الأدنى وللمدة اللازمة للغرض فقط؛ ومتى زال الغرض أو طلبت الحذف، نحذف دون إبطاء.</li>
       </ul>
     ),
   },
