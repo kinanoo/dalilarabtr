@@ -45,14 +45,17 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
     const isUnread = !notification.is_read;
     const isGrouped = (notification.group_count ?? 1) > 1;
 
-    // Always provide a useful link — fallback by type if DB link is missing
+    // Always provide a useful link — fallback by type if DB link is missing.
+    // Article/announcement fall back to /articles (the latest-articles hub),
+    // NOT /updates (which only lists news) — a "new article" notification must
+    // never land on a page empty of the articles it promised.
     const effectiveLink = notification.link || (() => {
         switch (notification.type) {
-            case 'article': return '/updates';
+            case 'article': return '/articles';
             case 'update': return '/updates';
             case 'alert': return '/codes';
             case 'service': return '/services';
-            case 'announcement': return '/updates';
+            case 'announcement': return '/articles';
             default: return '/updates';
         }
     })();

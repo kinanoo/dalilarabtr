@@ -309,7 +309,9 @@ BEGIN
                 END,
                 message = 'اطّلع على آخر المحتوى المنشور',
                 link = CASE NEW.event_type
-                    WHEN 'new_article' THEN '/updates'
+                    -- Articles land on the dedicated latest-articles hub (news
+                    -- page lists only `updates`, never articles → empty landing).
+                    WHEN 'new_article' THEN '/articles'
                     WHEN 'new_update'  THEN '/updates'
                 END,
                 created_at = NOW()  -- Bump to top

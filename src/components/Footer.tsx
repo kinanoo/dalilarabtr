@@ -61,6 +61,7 @@ export default function Footer() {
                   // to match CrossLinks and the standalone residence hub's
                   // canonical, so link equity isn't split across two URLs.
                   <>
+                    <li><Link href="/articles" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📰 أحدث المقالات</Link></li>
                     <li><Link href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📂 الدليل الشامل</Link></li>
                     <li><Link href="/city" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏙️ دليل المدن</Link></li>
                     <li><Link href="/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 دليل الإقامات</Link></li>
