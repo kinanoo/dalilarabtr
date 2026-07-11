@@ -142,6 +142,12 @@ const PROPERTY_LINK: CrossLink = {
   icon: Landmark,
 };
 
+const WORKER_RIGHTS_LINK: CrossLink = {
+  href: '/article/worker-rights-turkey-2026',
+  label: 'اعرف حقوقك كعامل في تركيا: الساعات والإجازات والعمل الإضافي والفصل',
+  icon: HeartHandshake,
+};
+
 // Content hubs reachable from a code page via `category`.
 // Keys are normalized (lowercase, trimmed); Arabic aliases included.
 const HUB_LINKS: Record<string, CrossLink> = {
@@ -236,7 +242,8 @@ function getLinks(context: CrossLinksContext, category?: string): CrossLink[] {
       // discovers the money calculators in-context (crawlable internal links).
       const cat = category?.trim().toLowerCase();
       if (cat === 'work' || cat === 'عمل' || cat === 'العمل') {
-        links = [SALARY_LINK, COST_OF_LIVING_LINK, SEVERANCE_LINK, ...links];
+        // Ordered by work intent; the 6-link cap drops the generic tail.
+        links = [WORKER_RIGHTS_LINK, SALARY_LINK, SEVERANCE_LINK, COST_OF_LIVING_LINK, ...links];
       } else if (cat === 'housing' || cat === 'سكن' || cat === 'السكن') {
         // Ordered by housing intent; getLinks caps at 6, so the generic tail
         // (services/tools) drops off once the topical links fill the list.
