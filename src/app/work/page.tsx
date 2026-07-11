@@ -66,7 +66,7 @@ export default async function WorkPage() {
       </div>
       {/* Cross-links — curated internal links for SEO */}
       <div className="w-full max-w-screen-2xl mx-auto px-4 pb-12">
-        <CrossLinks context="hub" />
+        <CrossLinks context="hub" category="work" />
       </div>
       <div className="max-w-screen-2xl mx-auto px-4 pb-12 flex justify-center">
         <ShareMenu title="العمل والاستثمار في تركيا" text="دليلك الشامل لإذن العمل وفتح الشركات في تركيا." />

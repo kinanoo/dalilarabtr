@@ -66,7 +66,7 @@ export default async function HousingPage() {
       </div>
       {/* Cross-links — curated internal links for SEO */}
       <div className="w-full max-w-screen-2xl mx-auto px-4 pb-12">
-        <CrossLinks context="hub" />
+        <CrossLinks context="hub" category="housing" />
       </div>
       <div className="max-w-screen-2xl mx-auto px-4 pb-12 flex justify-center">
         <ShareMenu title="السكن والحياة في تركيا" text="دليلك الشامل للسكن والإيجار والحياة اليومية في تركيا." />

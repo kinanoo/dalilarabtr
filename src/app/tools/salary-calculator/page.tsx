@@ -16,6 +16,9 @@ export const metadata: Metadata = {
         description: 'حوّل راتبك بين الإجمالي والصافي مع تفصيل كل الاقتطاعات الرسمية لعام 2026 — الضمان، البطالة، ضريبة الدخل، وضريبة الطابع.',
         url: `${SITE_CONFIG.siteUrl}/tools/salary-calculator`,
         images: ['/og-banner.jpg'],
+        type: 'website',
+        locale: 'ar_TR',
+        siteName: SITE_CONFIG.name,
     },
 };
 

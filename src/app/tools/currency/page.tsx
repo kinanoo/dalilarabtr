@@ -14,6 +14,9 @@ export const metadata: Metadata = {
         description: 'أحدث أسعار الدولار واليورو والريال والذهب والليرة السورية مقابل الليرة التركية، مع محوّل فوري.',
         url: `${SITE_CONFIG.siteUrl}/tools/currency`,
         images: ['/og-banner.jpg'],
+        type: 'website',
+        locale: 'ar_TR',
+        siteName: SITE_CONFIG.name,
     },
 };
 

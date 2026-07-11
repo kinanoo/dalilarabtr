@@ -13,7 +13,7 @@ import {
   Home, Briefcase, FileText, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
   UserCheck, HeartPulse, Link as LinkIcon, ScrollText, Newspaper,
-  Compass, CalendarClock, Wallet, Ban, Pill, LogIn, UserRound,
+  Compass, CalendarClock, Wallet, Banknote, Ban, Pill, LogIn, UserRound,
   LayoutGrid, Wrench, type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -40,6 +40,7 @@ export const IconMap: Record<string, React.ComponentType<{ size?: number | strin
 // (it's a section) and the longest label is shortened so nothing
 // truncates at 360px-wide phones.
 const DRAWER_TOOLS = [
+  { name: 'أسعار الصرف والعملات', href: '/tools/currency', icon: Banknote },
   { name: 'حاسبة الإقامة والغياب', href: '/tools/residence-calculator', icon: CalendarClock },
   { name: 'فحص الكملك', href: '/tools/kimlik-check', icon: UserCheck },
   { name: 'حاسبة المنع', href: '/ban-calculator', icon: Calculator },
@@ -419,7 +420,7 @@ export default function Navbar() {
                   >
                     <span className="grid place-items-center w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 shrink-0"><Wrench size={18} /></span>
                     <span className="flex-1 text-start text-[15px] font-bold text-slate-800 dark:text-slate-100">الأدوات</span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">6</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">7</span>
                     <ChevronDown size={16} className={`shrink-0 text-slate-400 transition-transform duration-200 ${openSection === 'tools' ? 'rotate-180' : ''}`} />
                   </button>
                   <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${openSection === 'tools' ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>

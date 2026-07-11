@@ -14,6 +14,9 @@ export const metadata: Metadata = {
         description: 'احسب حقوقك عند إنهاء العمل: تعويض نهاية الخدمة وتعويض الإشعار حسب راتبك ومدة خدمتك، بأرقام 2026 الرسمية.',
         url: `${SITE_CONFIG.siteUrl}/tools/severance-calculator`,
         images: ['/og-banner.jpg'],
+        type: 'website',
+        locale: 'ar_TR',
+        siteName: SITE_CONFIG.name,
     },
 };
 

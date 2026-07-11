@@ -125,7 +125,7 @@ export default function CurrencyClient() {
     return (
         <main className="flex flex-col min-h-screen font-cairo">
             <PageHero
-                title="أسعار الصرف اليوم ومحوّل العملات"
+                title="أسعار الدولار واليورو مقابل الليرة التركية اليوم"
                 description="سعر الدولار واليورو والريال والذهب مقابل الليرة التركية — محدّث تلقائياً، مع محوّل فوري"
                 icon={<Coins className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
             />

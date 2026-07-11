@@ -77,6 +77,10 @@ export const SECTIONS_MENU = [
 ] as const;
 
 export const TOOLS_MENU = [
+    { name: "أسعار الصرف والعملات", href: "/tools/currency", icon: Banknote },
+    { name: "حاسبة الراتب الصافي", href: "/tools/salary-calculator", icon: Wallet },
+    { name: "تعويض نهاية الخدمة", href: "/tools/severance-calculator", icon: Coins },
+    { name: "زيادة الإيجار القانونية", href: "/tools/rent-increase-calculator", icon: Home },
     { name: "حاسبة أيام الإقامة والغياب", href: "/tools/residence-calculator", icon: CalendarClock },
     { name: "فحص الكملك", href: "/tools/kimlik-check", icon: UserCheck },
     { name: "حاسبة المنع", href: "/ban-calculator", icon: Calculator },

@@ -23,7 +23,8 @@ import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import { GuidedJourney, QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import { Sparkles, Wrench, MessageCircleQuestion } from 'lucide-react';
+import { Sparkles, Wrench, MessageCircleQuestion, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -294,6 +295,10 @@ export default async function Home() {
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl">
             حاسبات وأدوات قانونية تُجيبك في ثوانٍ بدلاً من ساعات بحث.
           </p>
+          <Link href="/tools" className="mt-4 inline-flex items-center gap-1.5 text-sm font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+            تصفّح كل الأدوات
+            <ChevronLeft size={15} />
+          </Link>
         </div>
         <ScrollReveal>
           <QuickActionsGrid />

@@ -14,6 +14,9 @@ export const metadata: Metadata = {
         description: 'اعرف الحد الأقصى القانوني لزيادة إيجارك حسب متوسط TÜFE لاثني عشر شهراً — واحمِ نفسك من الزيادات غير القانونية.',
         url: `${SITE_CONFIG.siteUrl}/tools/rent-increase-calculator`,
         images: ['/og-banner.jpg'],
+        type: 'website',
+        locale: 'ar_TR',
+        siteName: SITE_CONFIG.name,
     },
 };
 

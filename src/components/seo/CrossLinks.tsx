@@ -16,6 +16,8 @@
 import Link from 'next/link';
 import {
   ArrowLeft,
+  Banknote,
+  Coins,
   Compass,
   GraduationCap,
   HeartHandshake,
@@ -27,6 +29,7 @@ import {
   Link2,
   MapPin,
   ShieldAlert,
+  Wallet,
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
@@ -98,6 +101,31 @@ const SERVICES_LINK: CrossLink = {
 const RESIDENCE_LINK: CrossLink = {
   href: '/residence',
   label: 'اقرأ أدلة الإقامة في تركيا: أنواعها وشروط تجديدها',
+  icon: Home,
+};
+
+// Finance tools — surfaced contextually on the work + housing hubs.
+const CURRENCY_LINK: CrossLink = {
+  href: '/tools/currency',
+  label: 'تابع سعر الدولار واليورو والذهب مقابل الليرة التركية اليوم',
+  icon: Banknote,
+};
+
+const SALARY_LINK: CrossLink = {
+  href: '/tools/salary-calculator',
+  label: 'احسب راتبك الصافي من الإجمالي في تركيا مع كل الاقتطاعات',
+  icon: Wallet,
+};
+
+const SEVERANCE_LINK: CrossLink = {
+  href: '/tools/severance-calculator',
+  label: 'احسب تعويض نهاية الخدمة وتعويض الإشعار حسب راتبك ومدة عملك',
+  icon: Coins,
+};
+
+const RENT_LINK: CrossLink = {
+  href: '/tools/rent-increase-calculator',
+  label: 'اعرف الحد الأقصى القانوني لزيادة إيجارك السنوية في تركيا',
   icon: Home,
 };
 
@@ -189,9 +217,18 @@ function getLinks(context: CrossLinksContext, category?: string): CrossLink[] {
     case 'zone':
       links = [ZONES_LINK, CODES_LINK, CONSULTANT_LINK, RESIDENCE_LINK];
       break;
-    case 'hub':
+    case 'hub': {
       links = [CONSULTANT_LINK, FAQ_LINK, SERVICES_LINK, TOOLS_LINK];
+      // Prepend topically-matched finance tools so a work/housing hub visitor
+      // discovers the money calculators in-context (crawlable internal links).
+      const cat = category?.trim().toLowerCase();
+      if (cat === 'work' || cat === 'عمل' || cat === 'العمل') {
+        links = [SALARY_LINK, SEVERANCE_LINK, ...links];
+      } else if (cat === 'housing' || cat === 'سكن' || cat === 'السكن') {
+        links = [RENT_LINK, CURRENCY_LINK, ...links];
+      }
       break;
+    }
   }
 
   // Dedupe by href (defensive — the curated lists should already be unique).
