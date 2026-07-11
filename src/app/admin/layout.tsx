@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { MobileBottomNav } from '@/components/admin/MobileBottomNav';
-import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { ActiveVisitorsBell } from '@/components/admin/ActiveVisitorsBell';
 import { AIAssistant, AIFab } from '@/components/admin/AIAssistant';
 import { Loader2, ShieldAlert } from 'lucide-react';
@@ -26,10 +25,10 @@ export default function AdminLayout({
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [aiOpen, setAiOpen] = useState(false);
-    // The activity/visitor bells live in the mobile header AND the desktop
-    // sidebar. Mount them in exactly ONE spot per breakpoint — a CSS-hidden
-    // copy still opens its realtime subscription. Mobile header renders them
-    // only below xl; the sidebar renders them only at xl+.
+    // The live-visitors bell lives only in the mobile header (below xl). A
+    // CSS-hidden copy would still open its realtime subscription, so mount it
+    // in exactly ONE spot. On desktop the dashboard's SitePulse shows the same
+    // live count, so the sidebar needs no bell.
     const isXl = useIsXlUp();
 
     // ─── Auth Guard State ───────────────────────────────────────────────
@@ -163,7 +162,6 @@ export default function AdminLayout({
                             {!isXl && (
                                 <div className="flex items-center gap-1.5 [&_button]:bg-slate-100 [&_button]:dark:bg-slate-800 [&_button]:text-slate-600 [&_button]:dark:text-slate-300">
                                     <ActiveVisitorsBell />
-                                    <AdminActivityBell />
                                 </div>
                             )}
                             <button

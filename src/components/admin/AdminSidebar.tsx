@@ -29,9 +29,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { AdminActivityBell } from '@/components/admin/AdminActivityBell';
 import { supabase } from '@/lib/supabaseClient';
-import { useIsXlUp } from '@/lib/useIsXlUp';
 
 interface SidebarProps {
     collapsed?: boolean;
@@ -46,9 +44,6 @@ interface SidebarProps {
 export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentView, setView, isOpen = false, onClose }: SidebarProps) {
     const pathname = usePathname();
     const [badges, setBadges] = useState<Record<string, number>>({});
-    // Only mount the activity bell here on desktop — on mobile it lives in the
-    // top header, and a second (drawer) copy would double-subscribe.
-    const isXl = useIsXlUp();
 
     useEffect(() => {
         const fetchBadges = async () => {
@@ -285,9 +280,8 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                         </Link>
                     )}
 
-                    {/* Activity Bell + Toggle Button */}
+                    {/* Collapse Toggle */}
                     <div className="flex items-center gap-1.5">
-                        {isXl && <AdminActivityBell />}
                         <button
                             onClick={onToggle}
                             className="flex w-8 h-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"

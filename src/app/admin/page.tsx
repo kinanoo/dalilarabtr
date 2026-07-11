@@ -25,12 +25,12 @@ const QUICK_LINKS = [
 
 export default function AdminDashboard() {
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5">
+    <div className="p-3 sm:p-5 max-w-7xl mx-auto space-y-4">
 
       {/* Greeting + Search — slim header (compact, no decorative eyebrow) */}
-      <div className="space-y-3 pt-1">
+      <div className="space-y-2.5 pt-0.5">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white leading-tight">
             مرحباً <span className="bg-gradient-to-l from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">بك</span>
           </h1>
           <span className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hidden sm:inline">لوحة التحكم</span>
@@ -38,38 +38,33 @@ export default function AdminDashboard() {
         <GlobalSearch />
       </div>
 
-      {/* Site pulse — live traffic + growth, leads the page */}
+      {/* 1. Pending tasks — the reason to open the dashboard, so it leads. */}
+      <ActionCenter />
+
+      {/* 2. Site pulse — live traffic + growth. */}
       <SitePulse />
 
-      {/* 2. Quick Actions — premium grid with accent stripes */}
+      {/* 3. Quick Actions — compact nav grid to the busiest managers. */}
       <div>
-        <h2 className="text-[11px] font-black text-amber-600 dark:text-amber-400 mb-3 flex items-center gap-1.5 tracking-[0.2em] uppercase">
+        <h2 className="text-[11px] font-black text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5 tracking-[0.2em] uppercase">
           <Zap size={12} />
           وصول سريع
         </h2>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {QUICK_LINKS.map(({ title, icon: Icon, color, href }) => (
             <Link
               key={href}
               href={href}
-              className="group relative flex flex-col items-center gap-2 p-3 sm:p-4 bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-1 active:scale-95 transition-all duration-300 overflow-hidden"
+              className="group relative flex flex-col items-center gap-1.5 p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700 active:scale-95 transition-all duration-200"
             >
-              {/* Top accent stripe — neutral until hover, then emerald */}
-              <div
-                aria-hidden="true"
-                className="absolute top-0 inset-x-0 h-1 bg-slate-200/70 dark:bg-slate-700/40 group-hover:bg-gradient-to-l group-hover:from-emerald-400 group-hover:to-teal-500 transition-all duration-300"
-              />
-              <div className={`relative p-2.5 rounded-lg ${color} group-hover:scale-110 group-hover:rotate-[-4deg] transition-transform duration-300 shadow-sm`}>
-                <Icon size={18} />
+              <div className={`p-2 rounded-lg ${color} group-hover:scale-110 transition-transform duration-200`}>
+                <Icon size={17} />
               </div>
-              <span className="relative text-[11px] sm:text-xs font-black text-slate-700 dark:text-slate-300 text-center leading-tight">{title}</span>
+              <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 text-center leading-tight">{title}</span>
             </Link>
           ))}
         </div>
       </div>
-
-      {/* 3. Pending Tasks */}
-      <ActionCenter />
 
     </div>
   );
