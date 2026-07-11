@@ -48,7 +48,12 @@ export function ActionCenter() {
         const channelName = `action-center-${Math.random().toString(36).slice(2, 10)}`;
         const channel = supabase
             .channel(channelName)
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, () => {
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments' }, (payload) => {
+                // Only a NEW *pending* comment is a moderation task. Admin replies
+                // and auto-approved inserts land as status !== 'pending' and must
+                // not inflate the badge into a phantom that never clears.
+                const status = (payload.new as { status?: string })?.status;
+                if (status && status !== 'pending') return;
                 setCounts((prev) => ({ ...prev, comments: prev.comments + 1 }));
             })
             .subscribe();

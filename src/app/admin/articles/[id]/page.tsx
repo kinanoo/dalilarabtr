@@ -287,7 +287,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 for a published article, and the button label states what will
                 actually happen. No more digging into a collapsed panel to know
                 if the article is live. */}
-            <div className="fixed bottom-0 left-0 right-0 px-3 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 sm:gap-3 z-50 md:pl-64 shadow-lg">
+            <div className="fixed bottom-0 left-0 right-0 px-3 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2 sm:gap-3 z-50 md:pl-64 shadow-lg">
                 {/* Live / draft segmented control */}
                 <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1 mr-0 sm:mr-1">
                     <button
@@ -310,9 +310,12 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                     </button>
                 </div>
 
-                {/* Push option — only meaningful for a live article. */}
+                {/* Push option — only meaningful for a live article. Visible on
+                    ALL breakpoints (the admin often publishes from a phone); on
+                    narrow screens the label text collapses to just the checkbox
+                    + icon so it stays toggleable without overflowing the bar. */}
                 {isPublished && (
-                    <label className="hidden sm:flex items-center gap-2 cursor-pointer">
+                    <label className="flex items-center gap-2 cursor-pointer shrink-0">
                         <input
                             type="checkbox"
                             checked={sendPush}
@@ -320,7 +323,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                             className="w-4 h-4 rounded accent-emerald-600"
                         />
                         <Send size={14} className="text-emerald-600" />
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">إشعار للمتابعين</span>
+                        <span className="hidden sm:inline text-xs font-bold text-slate-600 dark:text-slate-300">إشعار للمتابعين</span>
                     </label>
                 )}
 
