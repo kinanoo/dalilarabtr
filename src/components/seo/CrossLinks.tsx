@@ -136,6 +136,12 @@ const COST_OF_LIVING_LINK: CrossLink = {
   icon: Receipt,
 };
 
+const PROPERTY_LINK: CrossLink = {
+  href: '/article/buying-property-turkey-2026',
+  label: 'اقرأ دليل شراء العقار في تركيا 2026 والوضع الخاص للسوريين',
+  icon: Landmark,
+};
+
 // Content hubs reachable from a code page via `category`.
 // Keys are normalized (lowercase, trimmed); Arabic aliases included.
 const HUB_LINKS: Record<string, CrossLink> = {
@@ -232,7 +238,9 @@ function getLinks(context: CrossLinksContext, category?: string): CrossLink[] {
       if (cat === 'work' || cat === 'عمل' || cat === 'العمل') {
         links = [SALARY_LINK, COST_OF_LIVING_LINK, SEVERANCE_LINK, ...links];
       } else if (cat === 'housing' || cat === 'سكن' || cat === 'السكن') {
-        links = [RENT_LINK, COST_OF_LIVING_LINK, CURRENCY_LINK, ...links];
+        // Ordered by housing intent; getLinks caps at 6, so the generic tail
+        // (services/tools) drops off once the topical links fill the list.
+        links = [RENT_LINK, PROPERTY_LINK, COST_OF_LIVING_LINK, CURRENCY_LINK, ...links];
       }
       break;
     }
