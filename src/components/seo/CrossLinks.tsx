@@ -28,6 +28,7 @@ import {
   Landmark,
   Link2,
   MapPin,
+  Receipt,
   ShieldAlert,
   Wallet,
   Wrench,
@@ -129,6 +130,12 @@ const RENT_LINK: CrossLink = {
   icon: Home,
 };
 
+const COST_OF_LIVING_LINK: CrossLink = {
+  href: '/article/cost-of-living-turkey-2026',
+  label: 'اطّلع على دليل تكاليف المعيشة في تركيا 2026 بالأرقام لكل بند',
+  icon: Receipt,
+};
+
 // Content hubs reachable from a code page via `category`.
 // Keys are normalized (lowercase, trimmed); Arabic aliases included.
 const HUB_LINKS: Record<string, CrossLink> = {
@@ -223,9 +230,9 @@ function getLinks(context: CrossLinksContext, category?: string): CrossLink[] {
       // discovers the money calculators in-context (crawlable internal links).
       const cat = category?.trim().toLowerCase();
       if (cat === 'work' || cat === 'عمل' || cat === 'العمل') {
-        links = [SALARY_LINK, SEVERANCE_LINK, ...links];
+        links = [SALARY_LINK, COST_OF_LIVING_LINK, SEVERANCE_LINK, ...links];
       } else if (cat === 'housing' || cat === 'سكن' || cat === 'السكن') {
-        links = [RENT_LINK, CURRENCY_LINK, ...links];
+        links = [RENT_LINK, COST_OF_LIVING_LINK, CURRENCY_LINK, ...links];
       }
       break;
     }
