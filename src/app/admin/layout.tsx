@@ -189,9 +189,14 @@ export default function AdminLayout({
                 {/* Mobile app-style bottom nav — one-tap section switching on phones */}
                 <MobileBottomNav onMore={() => setIsMobileOpen(true)} />
 
-                {/* AI Assistant — FAB + Overlay (hidden on /admin/ai-assistant page) */}
+                {/* AI Assistant — FAB + Overlay (hidden on /admin/ai-assistant page).
+                    Editor detail pages pin a save bar above the bottom nav; lift
+                    the FAB there so it never sits on top of the save button. */}
                 {!readOnly && pathname !== '/admin/ai-assistant' && pathname !== '/admin/models' && !aiOpen && (
-                    <AIFab onClick={() => setAiOpen(true)} />
+                    <AIFab
+                        onClick={() => setAiOpen(true)}
+                        lifted={/^\/admin\/(articles|scenarios|zones|codes|faqs)\/[^/]+/.test(pathname)}
+                    />
                 )}
                 {!readOnly && <AIAssistant isOpen={aiOpen} onClose={() => setAiOpen(false)} />}
             </div>

@@ -714,14 +714,22 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
 }
 
 // ── FAB Button — safe-area aware ──
-export function AIFab({ onClick }: { onClick: () => void }) {
+// `lifted`: editor detail pages pin a save bar above the mobile bottom nav; the
+// FAB must clear nav (64px) + save bar (worst case ~110px when the article bar
+// wraps to two rows on narrow phones), otherwise it covers the save button —
+// which in RTL is the leftmost control, exactly under the FAB's left-6 spot.
+export function AIFab({ onClick, lifted = false }: { onClick: () => void; lifted?: boolean }) {
   return (
     <motion.button
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', delay: 0.5 }}
       onClick={onClick}
-      className="fixed z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all left-6 bottom-[calc(88px_+_env(safe-area-inset-bottom))] xl:bottom-[calc(24px_+_env(safe-area-inset-bottom))]"
+      className={`fixed z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all left-6 ${
+        lifted
+          ? 'bottom-[calc(188px_+_env(safe-area-inset-bottom))]'
+          : 'bottom-[calc(88px_+_env(safe-area-inset-bottom))]'
+      } xl:bottom-[calc(24px_+_env(safe-area-inset-bottom))]`}
       title="المساعد الذكي"
     >
       <Bot size={24} />
