@@ -27,6 +27,7 @@ import {
   CalendarClock,
   Wallet,
   Coins,
+  Banknote,
   Home
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
@@ -60,6 +61,15 @@ const TOOLS = [
     href: '/consultant',
     color: 'from-emerald-500 to-teal-600',
     badge: 'الأكثر استخداماً',
+  },
+  {
+    id: 'currency-converter',
+    title: 'أسعار الصرف ومحوّل العملات',
+    description: 'سعر الدولار واليورو والريال والذهب والليرة السورية مقابل الليرة التركية اليوم، مع محوّل فوري',
+    icon: Banknote,
+    href: '/tools/currency',
+    color: 'from-emerald-500 to-green-600',
+    badge: 'جديد',
   },
   {
     id: 'salary-calculator',

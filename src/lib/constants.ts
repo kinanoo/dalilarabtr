@@ -3,7 +3,7 @@ import {
     FileText, Briefcase, HeartPulse, MapPin, Shield, BookOpen,
     FolderOpen, Building2, Smartphone, ShieldAlert, Calculator,
     UserCheck, Plane, FileCheck, Newspaper, Stamp, CalendarClock,
-    ScrollText, Link, BrainCircuit, Wallet, Coins
+    ScrollText, Link, BrainCircuit, Wallet, Coins, Banknote
 } from 'lucide-react';
 
 export const SERVICE_CATEGORIES = [
@@ -149,6 +149,7 @@ export const QUICK_ACTIONS = [
     { title: "الأكواد الأمنية", desc: "افحص رموز المنع (V-87, G-87...)", icon: ShieldAlert, href: "/codes" },
     { title: "المناطق المحظورة", desc: "خريطة الأحياء المغلقة للسوريين", icon: MapPin, href: "/zones" },
     { title: "حساب المنع", desc: "حاسبة مدة منع الدخول", icon: Calculator, href: "/ban-calculator" },
+    { title: "أسعار الصرف والعملات", desc: "الدولار واليورو والذهب مقابل الليرة + محوّل", icon: Banknote, href: "/tools/currency" },
     { title: "حاسبة الراتب الصافي", desc: "حوّل راتبك بين الإجمالي والصافي 2026", icon: Wallet, href: "/tools/salary-calculator" },
     { title: "تعويض نهاية الخدمة", desc: "احسب Kıdem و İhbar حسب راتبك ومدتك", icon: Coins, href: "/tools/severance-calculator" },
     { title: "زيادة الإيجار القانونية", desc: "الحد الأقصى لزيادة إيجارك 2026", icon: Home, href: "/tools/rent-increase-calculator" },

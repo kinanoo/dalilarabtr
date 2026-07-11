@@ -30,6 +30,7 @@ const staticPages = [
   { path: '/tools/salary-calculator', priority: 0.8 },
   { path: '/tools/severance-calculator', priority: 0.8 },
   { path: '/tools/rent-increase-calculator', priority: 0.8 },
+  { path: '/tools/currency', priority: 0.9 },
 ];
 
 export async function GET() {
