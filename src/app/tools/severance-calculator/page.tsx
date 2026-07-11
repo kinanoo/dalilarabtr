@@ -1,5 +1,6 @@
 import SeveranceCalculatorClient from './SeveranceCalculatorClient';
 import ToolSchema from '@/components/ToolSchema';
+import RelatedFinanceTools from '@/components/RelatedFinanceTools';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -21,6 +22,7 @@ export default function SeveranceCalculatorPage() {
         <>
             <ToolSchema tool="severance-calculator" />
             <SeveranceCalculatorClient />
+            <RelatedFinanceTools current="severance" />
         </>
     );
 }

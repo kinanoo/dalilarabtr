@@ -1,5 +1,6 @@
 import SalaryCalculatorClient from './SalaryCalculatorClient';
 import ToolSchema from '@/components/ToolSchema';
+import RelatedFinanceTools from '@/components/RelatedFinanceTools';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -23,6 +24,7 @@ export default function SalaryCalculatorPage() {
         <>
             <ToolSchema tool="salary-calculator" />
             <SalaryCalculatorClient />
+            <RelatedFinanceTools current="salary" />
         </>
     );
 }

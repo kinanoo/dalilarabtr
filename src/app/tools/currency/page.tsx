@@ -1,5 +1,6 @@
 import CurrencyClient from './CurrencyClient';
 import ToolSchema from '@/components/ToolSchema';
+import RelatedFinanceTools from '@/components/RelatedFinanceTools';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -21,6 +22,7 @@ export default function CurrencyPage() {
         <>
             <ToolSchema tool="currency-converter" />
             <CurrencyClient />
+            <RelatedFinanceTools current="currency" />
         </>
     );
 }
