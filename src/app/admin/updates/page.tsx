@@ -7,7 +7,7 @@ import { Newspaper } from 'lucide-react';
 
 export default function UpdatesAdminPage() {
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div className="p-4 sm:p-5 max-w-7xl mx-auto space-y-4 animate-in fade-in duration-500">
       <AdminPageHeader
         icon={Newspaper}
         theme="amber"

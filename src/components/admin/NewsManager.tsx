@@ -123,6 +123,10 @@ export default function NewsManager() {
   // Original row while editing — preserves date + active on save.
   const [editingRow, setEditingRow] = useState<DBUpdate | null>(null);
   const [sendPush, setSendPush] = useState(true);
+  // New items: publish live now (default — keeps the fast one-tap flow) OR
+  // save as a hidden draft to review/verify before it goes public. A draft
+  // never pushes. Editing preserves the row's existing visibility (list toggle).
+  const [goLive, setGoLive] = useState(true);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const composerRef = useRef<HTMLDivElement>(null);
@@ -146,6 +150,7 @@ export default function NewsManager() {
     setEditingRow(null);
     setForm(EMPTY_FORM);
     setSendPush(true);
+    setGoLive(true);
   };
 
   const startEdit = (u: DBUpdate) => {
@@ -172,9 +177,10 @@ export default function NewsManager() {
     setSubmitting(true);
 
     try {
-      // Preserve original date + visibility on edit; new rows go live today.
+      // Preserve original date + visibility on edit; a new row is live today
+      // unless the admin chose "draft" (goLive=false → hidden until published).
       const date = editingRow ? editingRow.date : new Date().toISOString().split('T')[0];
-      const active = editingRow ? editingRow.active : true;
+      const active = editingRow ? editingRow.active : goLive;
 
       const basePayload: Record<string, unknown> = {
         type: form.type,
@@ -209,10 +215,10 @@ export default function NewsManager() {
         return;
       }
 
-      // Notify for new items (not edits). One instant pipeline fans out to
-      // bell + push + Telegram; the 30-min cron is only a safety net.
-      // No body — the pipeline scans recent updates itself.
-      if (!editingRow && sendPush) {
+      // Notify only for a NEW, LIVE item (not edits, not drafts). One instant
+      // pipeline fans out to bell + push + Telegram; the 30-min cron is only a
+      // safety net. No body — the pipeline scans recent updates itself.
+      if (!editingRow && goLive && sendPush) {
         try {
           const res = await fetch('/api/admin/notify-now', { method: 'POST' });
           const r = await res.json();
@@ -230,7 +236,7 @@ export default function NewsManager() {
           toast.error('فشل إرسال الإشعار');
         }
       } else {
-        toast.success(editingRow ? 'تم حفظ التعديل' : 'تم النشر');
+        toast.success(editingRow ? 'تم حفظ التعديل' : goLive ? 'تم النشر' : 'حُفظ كمسودة (غير ظاهر للزوّار)');
       }
 
       resetForm();
@@ -280,10 +286,10 @@ export default function NewsManager() {
     }`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* ===== Composer ===== */}
-      <div ref={composerRef} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm scroll-mt-24">
-        <div className="flex items-center justify-between gap-2 mb-5">
+      <div ref={composerRef} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm scroll-mt-24">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <h3 className="font-black flex items-center gap-2 text-slate-800 dark:text-slate-100">
             <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
               <Newspaper size={16} />
@@ -412,6 +418,28 @@ export default function NewsManager() {
           />
 
           <div className="space-y-2">
+            {/* Publish state — new items only. Default "نشر الآن" keeps the
+                one-tap flow; "مسودة" saves it hidden so the admin can review /
+                verify before it goes public (and it never pushes). */}
+            {!editingRow && (
+              <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 p-1.5">
+                <button
+                  type="button"
+                  onClick={() => setGoLive(true)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-black transition-all ${goLive ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                >
+                  <Eye size={14} /> نشر الآن
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGoLive(false)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-black transition-all ${!goLive ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                >
+                  <EyeOff size={14} /> حفظ كمسودة
+                </button>
+              </div>
+            )}
+
             <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               <input
                 type="checkbox"
@@ -423,7 +451,9 @@ export default function NewsManager() {
               <span className="text-sm font-black text-slate-700 dark:text-slate-300">تثبيت كخبر أبرز</span>
             </label>
 
-            {!editingRow && (
+            {/* Push option — only for a NEW item that goes live now. A draft
+                can't notify anyone, so the toggle hides when "مسودة" is picked. */}
+            {!editingRow && goLive && (
               <label className="flex items-center gap-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-900/10 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
                 <input
                   type="checkbox"
@@ -442,15 +472,21 @@ export default function NewsManager() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 rounded-xl font-black text-white bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all disabled:opacity-60 active:scale-[0.99]"
+            className={`w-full py-3 rounded-xl font-black text-white flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all disabled:opacity-60 active:scale-[0.99] ${
+              !editingRow && !goLive
+                ? 'bg-amber-500 hover:bg-amber-600'
+                : 'bg-emerald-600 hover:bg-emerald-700'
+            }`}
           >
             {submitting
               ? <Loader2 size={18} className="animate-spin" />
               : editingRow
                 ? 'حفظ التعديل'
-                : sendPush
-                  ? <><Send size={16} /> نشر وإرسال إشعار</>
-                  : 'نشر الخبر'}
+                : !goLive
+                  ? <><EyeOff size={16} /> حفظ كمسودة</>
+                  : sendPush
+                    ? <><Send size={16} /> نشر وإرسال إشعار</>
+                    : 'نشر الخبر'}
           </button>
         </form>
       </div>
