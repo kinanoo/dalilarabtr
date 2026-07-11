@@ -1,5 +1,6 @@
 import RentIncreaseCalculatorClient from './RentIncreaseCalculatorClient';
-import ToolSchema from '@/components/ToolSchema';
+import ToolSchema, { getToolFaqs } from '@/components/ToolSchema';
+import ToolFaq from '@/components/ToolFaq';
 import RelatedFinanceTools from '@/components/RelatedFinanceTools';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
@@ -25,6 +26,7 @@ export default function RentIncreaseCalculatorPage() {
         <>
             <ToolSchema tool="rent-increase-calculator" />
             <RentIncreaseCalculatorClient />
+            <ToolFaq faqs={getToolFaqs('rent-increase-calculator')} />
             <RelatedFinanceTools current="rent" />
         </>
     );

@@ -333,6 +333,13 @@ const TOOLS_DATA: Record<ToolType, ToolData> = {
   }
 };
 
+// Single source of truth for a tool's FAQ — used both by the JSON-LD FAQPage
+// schema (below) and by the VISIBLE <ToolFaq> section on the page, so the
+// marked-up Q&A always matches what the visitor sees (Google requires this).
+export function getToolFaqs(tool: ToolType): Array<{ question: string; answer: string }> {
+  return TOOLS_DATA[tool]?.faqs ?? [];
+}
+
 interface ToolSchemaProps {
   tool: ToolType;
 }
