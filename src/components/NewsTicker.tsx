@@ -143,16 +143,18 @@ export default function NewsTicker() {
     const renderItem = (item: Entry, i: number) => (
         <span key={`${item.id}-${i}`} className="inline-flex items-center shrink-0">
             {item.kind === 'rate' ? (
-                <span className="inline-flex items-center gap-1.5 px-4">
-                    <span className="text-slate-300">{item.label}</span>
-                    <span className="text-white tabular-nums" dir="ltr">{item.value} {item.unit}</span>
+                // Rates are the audience's #1 daily check — make the strip a
+                // doorway into the full board + converter instead of a dead span.
+                <Link href="/tools/currency" title="أسعار الصرف ومحوّل العملات" className="group inline-flex items-center gap-1.5 px-4 transition-colors">
+                    <span className="text-slate-300 group-hover:text-emerald-300 transition-colors">{item.label}</span>
+                    <span className="text-white tabular-nums group-hover:text-emerald-200 transition-colors" dir="ltr">{item.value} {item.unit}</span>
                     {item.change !== 0 && (
                         <span className={`inline-flex items-center gap-0.5 tabular-nums ${item.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} dir="ltr">
                             {item.change >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                             {item.change >= 0 ? '+' : ''}{fmt(item.change, 2)}%
                         </span>
                     )}
-                </span>
+                </Link>
             ) : item.link ? (
                 <Link href={item.link} className="text-slate-100 hover:text-emerald-300 transition-colors px-4 tabular-nums">{item.text}</Link>
             ) : (
