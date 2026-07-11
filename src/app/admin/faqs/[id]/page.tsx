@@ -82,14 +82,14 @@ export default function FaqEditPage({ params }: { params: Promise<{ id: string }
     if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={48} /></div>;
 
     return (
-        <div className="p-6 max-w-5xl mx-auto pb-32">
-            <div className="mb-6">
-                <Link href="/admin/faqs" className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 w-fit mb-4">
-                    <ArrowRight size={20} />
+        <div className="p-4 sm:p-5 max-w-5xl mx-auto pb-32">
+            <div className="mb-4">
+                <Link href="/admin/faqs" className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 w-fit mb-3 text-sm">
+                    <ArrowRight size={18} />
                     <span className="font-bold">العودة للقائمة</span>
                 </Link>
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-white">
                         {isNew ? 'إضافة سؤال جديد' : 'تعديل السؤال'}
                     </h1>
                 </div>
