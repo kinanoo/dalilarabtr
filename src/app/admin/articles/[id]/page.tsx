@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { ArticleEditor } from '@/components/admin/editors/ArticleEditor';
-import { Loader2, ArrowRight, Save, Send } from 'lucide-react';
+import { Loader2, ArrowRight, Save, Send, Globe, FileEdit } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { normalizeId } from '@/lib/useAdminData';
@@ -44,7 +44,12 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
     const [saving, setSaving] = useState(false);
     const [sendPush, setSendPush] = useState(false);
 
-    // Initial Form State
+    // Initial Form State — a brand-new admin article defaults to `approved`
+    // (live) EXPLICITLY. The workflow <select> only *displayed* "approved" via
+    // `|| 'approved'` while form.status stayed undefined, so on save the value
+    // fell back to the DB column default (which could be pending → a silently
+    // hidden "published" article) AND the push-notify block never fired (its
+    // guard is status === 'approved'). Setting it here makes displayed = saved.
     const [form, setForm] = useState<ArticleFormData>({
         title: '',
         category: 'e-Devlet',
@@ -53,7 +58,8 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
         documents: [],
         steps: [],
         tips: [],
-        tags: []
+        tags: [],
+        status: 'approved',
     });
 
     // Fetch Data
@@ -234,28 +240,79 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
 
     if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={48} /></div>;
 
+    const isPublished = (form.status || 'approved') === 'approved';
+    const setStatus = (status: string) => {
+        setForm((f: ArticleFormData) => ({ ...f, status }));
+        // A draft never pushes — clear the toggle when leaving "published".
+        if (status !== 'approved') setSendPush(false);
+    };
+    const saveLabel = saving
+        ? 'جاري الحفظ...'
+        : isPublished
+            ? (sendPush ? 'نشر + إشعار' : 'نشر الآن')
+            : 'حفظ كمسودة';
+
     return (
-        <div className="p-6 max-w-5xl mx-auto pb-32">
-            <div className="mb-6">
-                <Link href="/admin/articles" className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 w-fit mb-4">
-                    <ArrowRight size={20} />
+        <div className="p-4 sm:p-5 max-w-5xl mx-auto pb-32">
+            <div className="mb-4">
+                <Link href="/admin/articles" className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 w-fit mb-3 text-sm">
+                    <ArrowRight size={18} />
                     <span className="font-bold">العودة للقائمة</span>
                 </Link>
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-white">
                         {isNew ? 'كتابة مقال جديد' : 'تعديل المقال'}
                     </h1>
+                    {/* Live status pill — always visible so the admin knows at a
+                        glance whether this article is public or a hidden draft. */}
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black ${
+                        isPublished
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                            : form.status === 'rejected'
+                                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                    }`}>
+                        {isPublished ? <Globe size={12} /> : <FileEdit size={12} />}
+                        {isPublished ? 'ظاهر للزوّار' : form.status === 'rejected' ? 'مرفوض' : 'مسودة — غير ظاهر'}
+                    </span>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-sm">
                 <ArticleEditor form={form} setForm={setForm} />
             </div>
 
-            {/* Sticky Save Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-4 z-50 md:pl-64 shadow-lg">
-                {isNew && (
-                    <label className="flex items-center gap-2 cursor-pointer mr-auto">
+            {/* Sticky Save Bar — publish state is front-and-center: a segmented
+                توgle picks live-vs-draft in one tap, the push option only shows
+                for a published article, and the button label states what will
+                actually happen. No more digging into a collapsed panel to know
+                if the article is live. */}
+            <div className="fixed bottom-0 left-0 right-0 px-3 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 sm:gap-3 z-50 md:pl-64 shadow-lg">
+                {/* Live / draft segmented control */}
+                <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1 mr-0 sm:mr-1">
+                    <button
+                        type="button"
+                        onClick={() => setStatus('approved')}
+                        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+                            isPublished ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                    >
+                        <Globe size={14} /> منشور
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setStatus('pending')}
+                        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
+                            !isPublished ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                    >
+                        <FileEdit size={14} /> مسودة
+                    </button>
+                </div>
+
+                {/* Push option — only meaningful for a live article. */}
+                {isPublished && (
+                    <label className="hidden sm:flex items-center gap-2 cursor-pointer">
                         <input
                             type="checkbox"
                             checked={sendPush}
@@ -263,26 +320,27 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                             className="w-4 h-4 rounded accent-emerald-600"
                         />
                         <Send size={14} className="text-emerald-600" />
-                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">إرسال إشعار push</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">إشعار للمتابعين</span>
                     </label>
                 )}
+
                 <button
                     onClick={() => router.back()}
-                    className="px-6 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    className="mr-auto px-4 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
                 >
                     إلغاء
                 </button>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className={`px-8 py-2 text-white rounded-xl font-bold shadow-lg flex items-center gap-2 ${
-                        isNew && sendPush
+                    className={`px-5 sm:px-7 py-2 text-white rounded-xl font-black shadow-lg flex items-center gap-2 text-sm disabled:opacity-60 ${
+                        isPublished
                             ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
-                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
+                            : 'bg-slate-600 hover:bg-slate-700 shadow-slate-600/20'
                     }`}
                 >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    {saving ? 'جاري الحفظ...' : isNew && sendPush ? 'نشر + إشعار' : 'حفظ ونشر'}
+                    {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                    {saveLabel}
                 </button>
             </div>
         </div>

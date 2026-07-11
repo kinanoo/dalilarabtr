@@ -16,7 +16,7 @@
  */
 
 import Link from 'next/link';
-import { ArrowRight, Sparkles, type LucideIcon } from 'lucide-react';
+import { ArrowRight, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export type AdminTheme = 'emerald' | 'blue' | 'rose' | 'amber' | 'violet' | 'cyan' | 'indigo' | 'red' | 'slate';
@@ -114,11 +114,11 @@ export default function AdminPageHeader({
     const t = THEME[theme];
 
     return (
-        <div className="mb-8">
+        <div className="mb-5">
             {!hideBack && (
                 <Link
                     href="/admin"
-                    className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors mb-4 group"
+                    className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors mb-3 group"
                 >
                     <ArrowRight size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                     <span className="font-bold">العودة للوحة</span>
@@ -126,20 +126,21 @@ export default function AdminPageHeader({
             )}
 
             <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-start gap-3">
-                    <div className={`p-3 ${t.iconBg} ${t.iconText} rounded-2xl shadow-sm`}>
-                        <Icon size={28} />
+                <div className="flex items-center gap-3">
+                    <div className={`p-2.5 ${t.iconBg} ${t.iconText} rounded-xl shadow-sm shrink-0`}>
+                        <Icon size={22} />
                     </div>
                     <div>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 ${t.eyebrowBg} ${t.eyebrowText} rounded-full text-[10px] font-black tracking-wider uppercase mb-1`}>
-                            <Sparkles size={10} />
-                            {eyebrow}
-                        </span>
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white leading-tight">
+                        {eyebrow && (
+                            <span className={`inline-flex items-center px-2 py-0.5 ${t.eyebrowBg} ${t.eyebrowText} rounded-full text-[10px] font-black tracking-wider uppercase mb-0.5`}>
+                                {eyebrow}
+                            </span>
+                        )}
+                        <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white leading-tight">
                             {title}
                         </h1>
                         {subtitle && (
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
                                 {subtitle}
                             </p>
                         )}
