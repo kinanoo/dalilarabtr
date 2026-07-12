@@ -424,6 +424,44 @@ html, body {
    Buttons & Interactive Elements
    ============================================ */
 
+.tap-feedback-pulse {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 2147483647;
+  transform: translate(-50%, -50%) scale(0.35);
+  background: rgba(16, 185, 129, 0.22);
+  border: 2px solid rgba(16, 185, 129, 0.72);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.28);
+  animation: tapFeedbackPulse 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+html.dark .tap-feedback-pulse {
+  background: rgba(45, 212, 191, 0.24);
+  border-color: rgba(94, 234, 212, 0.82);
+  box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.32);
+}
+
+@keyframes tapFeedbackPulse {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.35);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.34);
+  }
+  70% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) scale(3.4);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(4.1);
+    box-shadow: 0 0 0 14px rgba(16, 185, 129, 0);
+  }
+}
+
 /* Primary button */
 .btn-primary {
   @apply bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg;

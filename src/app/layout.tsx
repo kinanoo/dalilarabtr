@@ -38,6 +38,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SiteBackdrop from "@/components/SiteBackdrop";
 import ScrollRestoration from "@/components/ScrollRestoration";
+import TapFeedbackPulse from "@/components/TapFeedbackPulse";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
 
 // Wrapper that delays rendering until browser is idle (~2.5s after page load)
@@ -251,6 +252,7 @@ export default function RootLayout({
             (admin colours tuned for the light page). Colour boxes are CSS's
             job; this guard skips them. */}
         <ProseContrastGuard />
+        <TapFeedbackPulse />
         <ThemeProviderWrapper>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
