@@ -19,6 +19,7 @@ Disallow: /500
 Disallow: /login
 Disallow: /dashboard/
 Disallow: /bookmarks
+Disallow: /models/
 
 # ===========================================
 # 🚫 حظر زواحف الـSEO العدوانية (تستهلك الموارد بلا فائدة)

@@ -9,7 +9,6 @@ import {
     Settings,
     Database,
     LogOut,
-    Menu,
     Bell,
     Star,
     MessageSquare,
@@ -22,7 +21,8 @@ import {
     Bot,
     Coins,
     MapPin,
-    Palette
+    Palette,
+    Images
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -105,6 +105,7 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/services', label: 'الخدمات', icon: Briefcase },
                 { href: '/admin/articles', label: 'المقالات', icon: FileText },
                 { href: '/admin/updates', label: 'التحديثات والأخبار', icon: Megaphone },
+                { href: '/admin/models', label: 'موديلس', icon: Images },
             ]
         },
         {
