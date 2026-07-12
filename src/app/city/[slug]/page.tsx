@@ -275,7 +275,7 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                             <Link href="/tools/pharmacy" className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black px-4 py-2.5 transition-colors">
                                 <Pill size={16} /> صيدليات {city.ar} المناوبة الآن
                             </Link>
-                            <a href="https://www.turkiye.gov.tr/saglik-bakanligi-nobetci-eczane-sorgulama" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-black px-4 py-2.5 hover:border-emerald-300 transition-colors">
+                            <a href="https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-black px-4 py-2.5 hover:border-emerald-300 transition-colors">
                                 <ExternalLink size={15} /> القائمة الرسمية (e-Devlet)
                             </a>
                         </div>
