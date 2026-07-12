@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const country = searchParams.get('country') || 'Turkey';
 
     try {
-        // Use Istanbul timezone — Vercel servers run in UTC, but prayers are for Turkey
+        // Use Istanbul timezone regardless of the server/runtime timezone.
         const now = new Date();
         const parts = new Intl.DateTimeFormat('en-GB', {
             timeZone: 'Europe/Istanbul',

@@ -50,7 +50,7 @@ if (vapidPublicKey && vapidPrivateKey) {
 }
 
 // In-memory per-admin rate limit: max 10 push broadcasts per hour, per admin user.
-// Process-local — fine for a single Vercel function instance; a Redis-backed
+// Process-local — fine for this low-volume admin endpoint; a Redis-backed
 // limiter would be needed for cross-instance coverage, but for now this caps the
 // most common abuse (rapid mass notifications) without external deps.
 const PUSH_RATE_WINDOW_MS = 60 * 60 * 1000;

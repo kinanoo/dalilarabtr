@@ -1,5 +1,5 @@
 /**
- * One-shot Supabase data backup — Phase 0 of the Vercel → VPS migration.
+ * One-shot Supabase data backup utility.
  *
  * Why not pg_dump? Supabase's direct Postgres password isn't in our env;
  * we only have the service_role JWT. So this script uses the REST API

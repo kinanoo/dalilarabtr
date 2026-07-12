@@ -22,7 +22,7 @@ export const logger = {
     if (isDev) {
       console.error(...args);
     }
-    // In production: silent — errors go to Vercel logs automatically
+    // In production: silent — runtime errors are captured by platform logs.
     // No console.error to avoid exposing details in browser DevTools
   },
 

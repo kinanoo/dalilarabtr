@@ -225,7 +225,7 @@ export function sanitizeSearchQuery(query: string): string {
  * sanitizeHtmlContent — full HTML sanitizer for article/page bodies.
  *
  * Replaces the previous isomorphic-dompurify path. We swapped during the
- * Vercel → Cloudflare migration: DOMPurify needs a DOM (window or jsdom),
+ * Cloudflare runtime note: DOMPurify needs a DOM (window or jsdom),
  * which Cloudflare Workers does not provide. sanitize-html is pure JS over
  * htmlparser2 and runs on Node + Edge + Cloudflare + browser — same security
  * guarantees, no runtime dependency on a DOM.

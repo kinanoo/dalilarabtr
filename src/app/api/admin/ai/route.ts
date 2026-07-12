@@ -20,7 +20,7 @@ export const runtime = 'nodejs';
 
 /**
  * Local SchemaType + FunctionDeclarationsTool defs (replaces
- * @google/generative-ai SDK during Vercel → Cloudflare migration).
+ * @google/generative-ai SDK during the Cloudflare runtime migration).
  *
  * The Gemini REST API accepts these uppercase strings verbatim, so the
  * SDK's enum was always just a thin type-level alias. Keeping the same

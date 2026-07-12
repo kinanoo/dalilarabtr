@@ -65,7 +65,13 @@ export default function AmbientBackground() {
       <div className="absolute top-[30%] left-[20%] w-[50vw] h-[50vw] bg-indigo-200/[0.15] dark:bg-indigo-900/[0.1] rounded-full blur-[120px] animate-pulse-slow md:mix-blend-multiply md:dark:mix-blend-screen opacity-50 will-change-transform" />
 
       {/* 4. Noise Texture (Matte Finish) */}
-      <div className="absolute inset-0 opacity-[0.25]" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
+      <div
+        className="absolute inset-0 opacity-[0.16]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.18) 1px, transparent 0)',
+          backgroundSize: '18px 18px',
+        }}
+      />
 
       {/* 5. Keyframes Styles */}
       <style jsx global>{`

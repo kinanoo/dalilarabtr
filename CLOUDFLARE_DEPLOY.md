@@ -1,205 +1,48 @@
-> # ✅ الحالة: تمّ النقل — الموقع حيّ على Cloudflare (لا تتعامل مع ما تحت كأنه معلّق)
->
-> **بالعربي (للمالك):** dalilarabtr.com **منشور ويعمل الآن على Cloudflare Workers منذ ~21 يونيو 2026.**
-> الدليل: ترويسة الموقع ترجع `Server: cloudflare`، وكل تحديث للكود (push إلى `main`)
-> يُنشَر تلقائياً عبر **Cloudflare Workers Builds**. الوثيقة أدناه هي **دليل النقل التاريخي**
-> (كُتب *قبل* التنفيذ) — احتفظ به للمرجع فقط، ولا تنفّذه كأنه لم يتمّ.
->
-> **تصحيح مهم (مالي):** الموقع يعمل على **Cloudflare Workers Paid = ‏5$/شهر**، **وليس** الخطة
-> المجانية. السبب: حزمة الموقع ~3.9MB تتجاوز سقف الخطة المجانية (3MB)، فتمّت الترقية للمدفوعة
-> (سقف 10MB) يوم النقل. تجاهِل أي ذكر لـ"Free tier / بدون بطاقة" في الخطوات أدناه — يصف مساراً لم يُعتمَد.
->
-> **للنشر الآن:** لا خطوة يدوية — فقط `git push` إلى `main`، فيبني Cloudflare وينشر تلقائياً.
-> (البناء: `npm run cf:build` · النشر اليدوي عند اللزوم: `npx opennextjs-cloudflare deploy`.)
->
-> **EN summary:** Migration is DONE. Site is live on **Cloudflare Workers *Paid* ($5/mo)** since ~2026-06-21
-> (the Free tier's 3 MB bundle cap didn't fit the ~3.9 MB bundle). The guide below is the *historical*
-> pre-cutover runbook — reference only. Deploy today = push to `main`; Workers Builds auto-deploys.
+# Cloudflare deployment runbook
 
----
+dalilarabtr.com is deployed on Cloudflare Workers through OpenNext.
 
-# Deploying dalilarabtr.com to Cloudflare Workers
+Current production flow:
 
-Step-by-step guide for the Vercel → Cloudflare migration cutover. Written
-for the project owner; assumes no prior Cloudflare experience.
+1. Commit code to the repository.
+2. Push to `main`.
+3. Cloudflare Workers Builds runs the production build automatically.
+4. After the build succeeds, the change is live on `https://dalilarabtr.com`.
 
-> ⚠️ HISTORICAL — this migration was completed on 2026-06-21. Kept for reference.
-> The "Free tier / no credit card" notes below are superseded: the site runs on
-> **Workers Paid ($5/mo)**. See the status banner at the very top.
+Build settings expected in Cloudflare:
 
----
+- Build command: `npm install && npm run cf:build`
+- Deploy command: `npx wrangler deploy --no-bundle`
+- Root directory: repository root
+- Production branch: `main`
 
-## What you have when you arrive at this step
+Local commands:
 
-- All migration code is on `main` (Phases 1-5). Last commit: see `git log`.
-- `wrangler.toml` + `open-next.config.ts` live at the repo root, ready.
-- `npm run cf:build` script is wired up in `package.json`.
-- The Vercel deployment is paused/suspended. Ignore it — we replace it
-  end-to-end, then point the domain at Cloudflare and forget Vercel.
-
----
-
-## Step 1 — Create a Cloudflare account (3 min)
-
-1. Open https://dash.cloudflare.com/sign-up
-2. Use your Gmail (`abdalmajeed718@gmail.com`) — Cloudflare supports email +
-   password signup, no credit card required for the Free tier.
-3. Verify your email when the confirmation lands.
-4. Skip the "add a domain" prompt for now — we add the domain in Step 4.
-
-You're on the Free tier. For the dashboard limits relevant to us:
-- 100,000 Worker requests per day → ~3M/month (3× what Vercel Hobby gave you)
-- Unlimited bandwidth
-- Unlimited Workers
-- Unlimited static assets
-
----
-
-## Step 2 — Create the Worker via "Workers Builds" (Git integration)
-
-This is Cloudflare's Vercel-equivalent: connect a GitHub repo, every push
-triggers a build, every successful build deploys.
-
-1. In the Cloudflare dashboard sidebar: **Workers & Pages** → **Create**.
-2. Pick the **"Workers"** tab (not Pages — OpenNext outputs a Worker bundle).
-3. Click **Connect to Git** → **GitHub** → authorize Cloudflare to read your
-   repo list → select **`kinanoo/dalilarabtr`**.
-4. Worker name: leave as `dalilarabtr` (matches `name` in wrangler.toml).
-5. Production branch: **`main`**.
-
-Build settings (CRITICAL — wrong settings = failed build):
-- **Build command:** `npm install && npm run cf:build`
-- **Deploy command:** `npx wrangler deploy --no-bundle`
-- **Root directory:** leave empty
-
-Click **Save and Deploy**. The first build runs for ~3-5 minutes.
-
----
-
-## Step 3 — Add environment variables
-
-Cloudflare doesn't auto-import these — you set them once.
-
-Copy the values from `.env.pulled` in the repo (locally — never committed,
-per .gitignore). They are NOT listed here — GitHub's secret scanning will
-block any commit that pastes them into a tracked file.
-
-In Worker settings → **Variables and Secrets**, add these as **Secrets**
-(encrypted at rest, not visible in logs after you save):
-
-```
-SUPABASE_SERVICE_ROLE_KEY     = <from .env.pulled — line starting SUPABASE_SERVICE_ROLE_KEY>
-VAPID_PRIVATE_KEY              = <from .env.pulled — line starting VAPID_PRIVATE_KEY>
-GOOGLE_GEMINI_API_KEY          = <from .env.pulled — line starting GOOGLE_GEMINI_API_KEY>
-GOOGLE_CLIENT_ID               = <from .env.pulled — line starting GOOGLE_CLIENT_ID>
-GOOGLE_CLIENT_SECRET           = <from .env.pulled — line starting GOOGLE_CLIENT_SECRET>
-ADMIN_EMAIL                    = <your admin email>
+```bash
+npm run cf:build
+npm run cf:preview
+npm run cf:deploy
 ```
 
-Add these as plain text **Variables** (these are intentionally public — the
-`NEXT_PUBLIC_` prefix means Next.js inlines them into the browser bundle,
-so any visitor can see them in DevTools anyway):
+Runtime notes:
 
-```
-NEXT_PUBLIC_SUPABASE_URL       = <from .env.pulled>
-NEXT_PUBLIC_SUPABASE_ANON_KEY  = <from .env.pulled — anon JWT>
-NEXT_PUBLIC_SITE_URL           = https://dalilarabtr.com
-NEXT_PUBLIC_GA_ID              = <from .env.pulled — GA tracking id>
-NEXT_PUBLIC_GSC_VERIFICATION   = <from .env.pulled — Search Console token>
-NEXT_PUBLIC_VAPID_PUBLIC_KEY   = <from .env.pulled — VAPID public key>
-```
+- `wrangler.toml` is the source of truth for the Worker entry, compatibility flags, assets, and observability.
+- Secrets must live in Cloudflare Worker secrets, not in committed files.
+- Public values such as `NEXT_PUBLIC_SITE_URL` may be regular Cloudflare variables.
+- The site expects `NEXT_PUBLIC_SITE_URL=https://dalilarabtr.com`.
+- `nodejs_compat` must remain enabled because some API routes depend on Node-compatible APIs.
 
-The full list of env-var names is what matters here — Cloudflare needs the
-exact same names as the Vercel deployment had. Open `.env.pulled` in your
-editor side-by-side and copy each value into the matching Cloudflare field.
+Verification after deploy:
 
-Re-deploy after adding (Worker dashboard → Deployments → re-run latest).
-
----
-
-## Step 4 — Verify on the auto-generated subdomain
-
-Cloudflare gives you a free `*.workers.dev` URL (or similar). After deploy
-succeeds, open it and click around:
-
-- [ ] Homepage loads, hero + carousel render
-- [ ] An article page (`/article/turkey-work-visa-guide`) — full body shows
-- [ ] An admin page (sign in works — `/admin`)
-- [ ] AI assistant — sends a message, gets a reply
-- [ ] Push notification (admin → push broadcast — sends to your phone)
-- [ ] Image rendering — check article hero photos load directly from Supabase
-
-If any of these fail, capture the error from the browser console and
-the Worker's Logs tab (dashboard → Worker → Logs). The most likely
-issues are env-var typos or missing secrets.
-
----
-
-## Step 5 — Point dalilarabtr.com at Cloudflare
-
-This is the DNS cutover. Done once everything in Step 4 passes.
-
-1. In Cloudflare dashboard sidebar: **Workers & Pages** → your Worker →
-   **Settings** → **Domains & Routes**.
-2. **Add Custom Domain** → enter `dalilarabtr.com`.
-3. Cloudflare prompts you to add the domain to your account first if
-   it's not already. Follow the wizard — it'll show you nameservers to
-   set at your registrar.
-4. Go to your domain registrar (where you bought `dalilarabtr.com` —
-   GoDaddy / Namecheap / wherever). Find the DNS settings for the
-   domain. Replace the existing nameservers with the two Cloudflare
-   gave you.
-5. Wait. Nameserver propagation takes 1-24 hours typically.
-6. Once Cloudflare shows the domain as "Active", attach `dalilarabtr.com`
-   to the Worker. Also add `www.dalilarabtr.com` if you want both to work.
-
-Cloudflare auto-issues a TLS certificate within minutes of nameserver
-propagation. No manual cert renewal — Cloudflare handles it forever.
-
----
-
-## Step 6 — Verify dalilarabtr.com is now on Cloudflare
-
-```
-curl -sI https://dalilarabtr.com | grep -i "server\|cf-ray"
+```bash
+curl -sI https://dalilarabtr.com
+curl -s https://dalilarabtr.com/server-sitemap-index.xml
+curl -s https://dalilarabtr.com/robots.txt
 ```
 
-Expected output includes a `cf-ray` header — that proves the request hit
-Cloudflare, not Vercel. If `cf-ray` is missing, the DNS hasn't propagated
-yet to wherever you ran the command from — try again in an hour.
+Expected production headers include:
 
----
+- `Server: cloudflare`
+- `CF-RAY: ...`
 
-## Step 7 — Disconnect Vercel
-
-Once dalilarabtr.com serves from Cloudflare for ~24 hours with no errors:
-
-1. In Vercel: project → Settings → General → **Delete Project** (the
-   site is already paused; deleting just removes the deployment record).
-2. Cancel any remaining Vercel subscription (Account → Billing →
-   Cancel Plan → confirm).
-
-You now pay $0/month and Cloudflare serves all traffic.
-
----
-
-## What to do if something breaks
-
-- **Build fails in Cloudflare CI** — read the build log (Worker → Deployments
-  → click failed deploy → View build logs). Most common cause is a missing
-  env var that the build needs at compile time.
-- **Worker deploys but pages return 500** — check the Worker's Logs tab
-  for the runtime error. Pull the offending route open and check whether
-  it uses Node APIs not covered by `nodejs_compat`.
-- **Push notifications stop working** — verify `runtime = 'nodejs'` is
-  still on `src/app/api/admin/push/route.ts` and that `nodejs_compat`
-  is in `wrangler.toml`'s `compatibility_flags`.
-- **Site looks fine but auth doesn't persist** — Cloudflare's Workers
-  send cookies on a different domain than Vercel did during the testing
-  period (`*.workers.dev` vs `dalilarabtr.com`). Once Step 5 is done
-  and the domain matches, cookies work.
-
-Roll-back path: if Cloudflare is broken and Vercel is back online, just
-change the DNS nameservers at your registrar back to whatever they were
-before Step 5 — propagation undoes within an hour or two. Nothing in
-the code or DB has to change.
+If a deploy fails, inspect the Cloudflare Workers build log first, then the Worker runtime logs.

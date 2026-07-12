@@ -1,4 +1,4 @@
-# Cloudflare Workers / Pages config for dalilarabtr.com (Vercel → Cloudflare migration).
+# Cloudflare Workers config for dalilarabtr.com.
 #
 # Why this file exists: @opennextjs/cloudflare takes the Next.js build output
 # and wraps it as a Worker. wrangler reads THIS file to know how to bundle and

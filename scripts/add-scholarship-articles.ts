@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
-dotenv.config({ path: '.env.vercel' });
+dotenv.config({ path: '.env.pulled' });
+dotenv.config();
 
 import { createClient } from '@supabase/supabase-js';
 

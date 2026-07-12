@@ -3,11 +3,11 @@ import type { NextConfig } from "next";
 // Shared CSP directives (reused for global + admin)
 const cspBase = [
   "default-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://vercel.live",
-  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://grainy-gradients.vercel.app https://www.google.com https://www.transparenttextures.com https://vercel.live https://vercel.com https://*.vercel.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
-  "font-src 'self' data: https://vercel.live",
-  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel.live wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
-  "frame-src 'self' https://tckimlik.nvi.gov.tr https://vercel.live",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://www.google.com https://www.transparenttextures.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  "font-src 'self' data:",
+  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  "frame-src 'self' https://tckimlik.nvi.gov.tr",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -31,13 +31,13 @@ const DEV_EVAL = process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : '';
 // Global: unsafe-eval ONLY in dev (see DEV_EVAL); public prod pages don't need it.
 const cspGlobal = [
   ...cspBase,
-  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
+  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
 ].join('; ');
 
 // Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
 const cspAdmin = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
 ].join('; ');
 
 // Shared security headers (applied to all routes)
@@ -130,9 +130,8 @@ const nextConfig: NextConfig = {
 
   // 🖼️ Image optimization
   //
-  // unoptimized: true — required for Cloudflare Pages migration.
-  // Vercel's image optimizer is a Vercel-only runtime (a managed image
-  // CDN at /_next/image). Cloudflare Pages has no equivalent; if we leave
+  // unoptimized: true - required for the Cloudflare Workers/OpenNext runtime.
+  // This deployment does not run a compatible Next image optimizer; if we leave
   // optimization on, every <Image> renders a /_next/image URL that 404s.
   //
   // What changes for users:
@@ -148,9 +147,8 @@ const nextConfig: NextConfig = {
   //
   // remotePatterns + formats + deviceSizes + imageSizes are retained as
   // documentation of what URLs we expect and what sizes Supabase serves —
-  // they're ignored when unoptimized=true but useful if we ever flip
-  // back to a host that does image optimization (Vercel, self-hosted
-  // with an image service, etc).
+  // they're ignored when unoptimized=true but document the only external image
+  // host the site should load from.
   images: {
     unoptimized: true,
     remotePatterns: [

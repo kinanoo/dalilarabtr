@@ -10,7 +10,7 @@ import logger from '@/lib/logger';
  * Server-rendered metadata for SEO; the interactive list + ask form live in
  * QAClient so we can lazy-load the modal and avoid hydrating it on first
  * paint. ISR (10 min) keeps the page fresh enough that newly-answered
- * questions appear quickly without burning Vercel functions per visit.
+ * questions appear quickly without recomputing the page on every visit.
  *
  * The answered/featured questions are fetched here on the server and passed to
  * QAClient as initial props, so crawlers and first paint see the full Q&A

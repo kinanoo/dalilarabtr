@@ -186,7 +186,7 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        -- Prefer ip_country (from Vercel geo headers), fallback to timezone-based
+        -- Prefer ip_country (from platform geo headers), fallback to timezone-based
         COALESCE(
             NULLIF(ae.ip_country, ''),
             ae.meta->>'tz_country',

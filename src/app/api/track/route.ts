@@ -32,7 +32,7 @@ function hashIP(ip: string): string {
   return createHash('sha256').update(`${ip}:${daySalt}`).digest('hex').slice(0, 16);
 }
 
-// ─── Vercel Geo → Country Name ──────────────────────────────────────
+// ─── Cloudflare Geo → Country Name ──────────────────────────────────
 const COUNTRY_NAMES: Record<string, string> = {
   TR: 'Turkey', SY: 'Syria', LB: 'Lebanon', IQ: 'Iraq', JO: 'Jordan',
   PS: 'Palestine', EG: 'Egypt', SA: 'Saudi Arabia', AE: 'UAE', KW: 'Kuwait',
@@ -88,28 +88,18 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── Geolocation headers (Cloudflare) ───────────────────────────
-    // The site runs on Cloudflare Workers now, so the old x-vercel-ip-* headers
-    // are never present and server-side geo silently broke. cf-ipcountry is
-    // always available on Cloudflare. City/region require the "Add visitor
-    // location headers" Managed Transform to be enabled once in the dashboard
-    // (Rules → Transform Rules → Managed Transforms → cf-ipcity / cf-region).
-    // The x-vercel-ip-* names are kept as a harmless fallback for other hosts.
-    const countryCode =
-      req.headers.get('cf-ipcountry') ||
-      req.headers.get('x-vercel-ip-country') ||
-      '';
-    const city =
-      req.headers.get('cf-ipcity') ||
-      req.headers.get('x-vercel-ip-city') ||
-      '';
+    // cf-ipcountry is always available on Cloudflare. City/region require the
+    // "Add visitor location headers" Managed Transform to be enabled once in
+    // the dashboard (Rules → Transform Rules → Managed Transforms).
+    const countryCode = req.headers.get('cf-ipcountry') || '';
+    const city = req.headers.get('cf-ipcity') || '';
     const region =
       req.headers.get('cf-region') ||
       req.headers.get('cf-region-code') ||
-      req.headers.get('x-vercel-ip-country-region') ||
       '';
 
     const ip_country = COUNTRY_NAMES[countryCode] || countryCode || null;
-    // Cloudflare sends plain text; Vercel sent URL-encoded. Decode defensively.
+    // Decode defensively in case an upstream transform encodes location values.
     let ip_city: string | null = null;
     if (city) {
       try { ip_city = decodeURIComponent(city); } catch { ip_city = city; }

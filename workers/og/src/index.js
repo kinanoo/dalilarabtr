@@ -5,11 +5,10 @@ import cairoRegular from '../fonts/Cairo-Regular.ttf';
 /**
  * og.dalilarabtr.com — dynamic OpenGraph share-card generator.
  *
- * Restores the per-page branded share card the site had on Vercel (the old
- * /api/og route, dropped in the Cloudflare migration because @vercel/og is
- * Vercel-only). workers-og is the same Satori renderer compiled for the
- * Workers runtime, and the fonts + Arabic word-order fix + layout below are
- * carried over verbatim from the battle-tested old route.
+ * Standalone per-page branded share-card generator for Cloudflare Workers.
+ * workers-og provides a Satori-compatible renderer for the Workers runtime,
+ * and the fonts + Arabic word-order fix + layout below are kept here so the
+ * main app does not need to render OG images itself.
  *
  * GET /?title=<text>&category=<text>  →  1200×630 PNG
  * Responses are immutable-cached (same title ⇒ same image) and served from
