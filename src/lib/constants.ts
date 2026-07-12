@@ -3,7 +3,7 @@ import {
     FileText, Briefcase, HeartPulse, MapPin, Shield, BookOpen,
     FolderOpen, Building2, Smartphone, ShieldAlert, Calculator,
     UserCheck, Plane, FileCheck, Newspaper, Stamp, CalendarClock,
-    ScrollText, Link, BrainCircuit, Wallet, Coins, Banknote, Images
+    ScrollText, Link, BrainCircuit, Wallet, Coins, Banknote
 } from 'lucide-react';
 
 export const SERVICE_CATEGORIES = [
@@ -55,7 +55,6 @@ export const GUIDES_MENU = [
     { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen },
     { name: "أسئلة وأجوبة", href: "/qa", icon: BookOpen },
     { name: "نماذج جاهزة", href: "/forms", icon: FileText },
-    { name: "معرض النماذج", href: "/models", icon: Images },
     { name: "اطلب خدمة خاصة", href: "/request", icon: ScrollText },
 ];
 
@@ -74,7 +73,6 @@ export const SECTIONS_MENU = [
     { name: "الصحة والتأمين", href: "/health", icon: HeartPulse, desc: "SGK وMHRS والتأمين" },
     { name: "السكن", href: "/housing", icon: Home, desc: "الإيجار والعقود" },
     { name: "دليل المدن", href: "/city", icon: MapPin, desc: "خدمات كل مدينة" },
-    { name: "معرض النماذج", href: "/models", icon: Images, desc: "نماذج وأعمال مختارة" },
     { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen, desc: "إجابات موثّقة" },
 ] as const;
 

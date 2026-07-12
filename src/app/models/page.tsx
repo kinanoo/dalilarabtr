@@ -9,6 +9,7 @@ export const revalidate = 0;
 export const metadata: Metadata = {
   title: 'معرض النماذج',
   description: 'معرض دائم لنماذج مختارة من الأعمال والخدمات.',
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
   alternates: { canonical: `${SITE_CONFIG.siteUrl}/models` },
   openGraph: {
     title: 'معرض النماذج',
