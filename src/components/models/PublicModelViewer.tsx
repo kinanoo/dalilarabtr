@@ -54,7 +54,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
 
   const openAssets = useMemo(() => assets.filter((asset) => Boolean(asset.signedUrl)), [assets]);
   const activeAsset = activeIndex === null ? null : openAssets[activeIndex] || null;
-  const watermark = bundle.collection.watermark_text || 'موديلس';
+  const watermark = (bundle.collection.watermark_text || '').trim();
 
   useEffect(() => {
     if (activeIndex === null) return;
@@ -182,7 +182,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
                     loading={index < 3 ? 'eager' : 'lazy'}
                     onClick={() => openFullscreen(asset.id)}
                   />
-                  <Watermark text={watermark} />
+                  {watermark && <Watermark text={watermark} />}
                 </>
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-5 text-center">
@@ -265,7 +265,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
               alt={activeAsset.title || 'نموذج'}
               className="h-full w-full object-contain"
             />
-            <Watermark text={watermark} />
+            {watermark && <Watermark text={watermark} />}
           </div>
           <div className="absolute bottom-4 left-1/2 max-w-[92vw] -translate-x-1/2 rounded-full bg-white/10 px-4 py-2 text-center text-xs font-bold text-white">
             {activeAsset.title || `صورة ${activeIndex + 1}`} - {activeIndex + 1} / {openAssets.length}

@@ -160,9 +160,11 @@ export async function POST(request: Request) {
     const payload = {
       title,
       description: cleanOneLine(body?.description),
-      watermark_text: cleanText(body?.watermark_text, 80) || 'موديلس',
+      watermark_text: typeof body?.watermark_text === 'string' ? body.watermark_text.trim().slice(0, 80) : '',
       pin_hint: cleanOneLine(body?.pin_hint, 120),
       default_link_minutes: clampDefaultLinkMinutes(body?.default_link_minutes),
+      show_in_gallery: body?.show_in_gallery === true,
+      gallery_order: Number.isFinite(Number(body?.gallery_order)) ? Number(body.gallery_order) : 0,
       is_active: body?.is_active !== false,
     };
     const collectionPin = normalizeModelPin(body?.collection_pin);

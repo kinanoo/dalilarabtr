@@ -6,6 +6,8 @@ export type ModelCollection = {
   access_pin_hash: string | null;
   pin_hint: string | null;
   default_link_minutes: number;
+  show_in_gallery: boolean;
+  gallery_order: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -22,6 +24,7 @@ export type ModelAsset = {
   file_size: number | null;
   access_pin_hash: string | null;
   pin_hint: string | null;
+  show_in_gallery: boolean;
   sort_order: number;
   is_active: boolean;
   created_at: string;

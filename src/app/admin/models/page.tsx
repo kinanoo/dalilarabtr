@@ -12,6 +12,7 @@ import {
   Clock3,
   Copy,
   ExternalLink,
+  Globe2,
   Eye,
   Images,
   Link2,
@@ -44,11 +45,13 @@ const DURATION_PRESETS = [
 const DEFAULT_FORM = {
   title: '',
   description: '',
-  watermark_text: 'موديلس',
+  watermark_text: '',
   collection_pin: '',
   clear_collection_pin: false,
   pin_hint: '',
   default_link_minutes: 60 * 24 * 30,
+  show_in_gallery: false,
+  gallery_order: 0,
   is_active: true,
 };
 
@@ -109,12 +112,13 @@ export default function AdminModelsPage() {
   const stats = useMemo(() => {
     const imagesCount = collections.reduce((total, collection) => total + collection.assets.length, 0);
     const visibleCount = collections.filter((collection) => collection.is_active).length;
+    const galleryCount = collections.filter((collection) => collection.show_in_gallery).length;
     const lockedCount = collections.reduce((total, collection) => (
       total
       + (collection.access_pin_hash ? 1 : 0)
       + collection.assets.filter((asset) => asset.access_pin_hash).length
     ), 0);
-    return { imagesCount, lockedCount, visibleCount };
+    return { imagesCount, lockedCount, visibleCount, galleryCount };
   }, [collections]);
 
   const mainStatus = mainLink ? linkStatus(mainLink) : null;
@@ -133,11 +137,13 @@ export default function AdminModelsPage() {
     setForm({
       title: selected.title || '',
       description: selected.description || '',
-      watermark_text: selected.watermark_text || 'موديلس',
+      watermark_text: selected.watermark_text || '',
       collection_pin: '',
       clear_collection_pin: false,
       pin_hint: selected.pin_hint || '',
       default_link_minutes: selected.default_link_minutes || 60 * 24 * 30,
+      show_in_gallery: selected.show_in_gallery === true,
+      gallery_order: selected.gallery_order || 0,
       is_active: selected.is_active,
     });
     setMainDurationMinutes(selected.default_link_minutes || 60 * 24);
@@ -222,7 +228,8 @@ export default function AdminModelsPage() {
     try {
       for (const raw of Array.from(files)) {
         const compressed = await compressImage(raw, 3200, 0.94);
-        const watermarked = await watermarkModelImage(compressed, form.watermark_text || 'موديلس');
+        const watermarkText = form.watermark_text.trim();
+        const watermarked = watermarkText ? await watermarkModelImage(compressed, watermarkText) : compressed;
         const payload = new FormData();
         payload.append('collectionId', selected.id);
         payload.append('file', watermarked);
@@ -243,7 +250,7 @@ export default function AdminModelsPage() {
 
   async function updateAsset(
     assetId: string,
-    data: Partial<Pick<ModelAsset, 'title' | 'caption' | 'sort_order' | 'is_active' | 'pin_hint'>>,
+    data: Partial<Pick<ModelAsset, 'title' | 'caption' | 'sort_order' | 'is_active' | 'show_in_gallery' | 'pin_hint'>>,
     pin?: string,
     clearPin = false,
   ) {
@@ -539,9 +546,10 @@ export default function AdminModelsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Stat label="النماذج" value={collections.length} />
             <Stat label="ظاهرة" value={stats.visibleCount} />
+            <Stat label="بالمعرض" value={stats.galleryCount} />
             <Stat label="الصور" value={stats.imagesCount} />
             <Stat label="مقفولة" value={stats.lockedCount} />
           </div>
@@ -597,6 +605,11 @@ export default function AdminModelsPage() {
                         PIN
                       </span>
                     )}
+                    {collection.show_in_gallery && (
+                      <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
+                        معرض
+                      </span>
+                    )}
                   </span>
                 </button>
               ))}
@@ -639,10 +652,11 @@ export default function AdminModelsPage() {
                   </summary>
                   <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
                     <label className="space-y-1">
-                      <span className="text-xs font-black text-slate-500">العلامة المائية</span>
+                      <span className="text-xs font-black text-slate-500">العلامة المائية (اختياري)</span>
                       <input
                         value={form.watermark_text}
                         onChange={(e) => setForm((prev) => ({ ...prev, watermark_text: e.target.value }))}
+                        placeholder="اتركه فارغاً بدون علامة"
                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
                       />
                     </label>
@@ -685,6 +699,24 @@ export default function AdminModelsPage() {
                         className="h-4 w-4 accent-emerald-600"
                       />
                       النموذج فعال
+                    </label>
+                    <label className="flex items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-900/15 dark:text-cyan-200">
+                      <input
+                        type="checkbox"
+                        checked={form.show_in_gallery}
+                        onChange={(e) => setForm((prev) => ({ ...prev, show_in_gallery: e.target.checked }))}
+                        className="h-4 w-4 accent-cyan-600"
+                      />
+                      عرض في المعرض العام
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">ترتيب المعرض</span>
+                      <input
+                        type="number"
+                        value={form.gallery_order}
+                        onChange={(e) => setForm((prev) => ({ ...prev, gallery_order: Number(e.target.value) || 0 }))}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-cyan-500 dark:border-slate-700 dark:bg-slate-900"
+                      />
                     </label>
                     <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                       <input
@@ -793,6 +825,7 @@ export default function AdminModelsPage() {
                             <div className="absolute right-2 top-2 flex gap-1">
                               {!asset.is_active && <Badge tone="slate">مخفي</Badge>}
                               {asset.access_pin_hash && <Badge tone="amber">PIN</Badge>}
+                              {asset.show_in_gallery && <Badge tone="cyan">معرض</Badge>}
                             </div>
                           </div>
                           <div className="space-y-2 p-3">
@@ -850,6 +883,19 @@ export default function AdminModelsPage() {
                               >
                                 <Copy size={13} />
                                 رابط الصورة
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void updateAsset(asset.id, { show_in_gallery: !asset.show_in_gallery })}
+                                disabled={!asset.is_active}
+                                className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black disabled:opacity-40 ${
+                                  asset.show_in_gallery
+                                    ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300'
+                                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
+                                }`}
+                              >
+                                <Globe2 size={13} />
+                                {asset.show_in_gallery ? 'بالمعرض' : 'خارج المعرض'}
                               </button>
                               {asset.access_pin_hash && (
                                 <button
@@ -1148,9 +1194,11 @@ function Panel({
   );
 }
 
-function Badge({ tone, children }: { tone: 'slate' | 'amber'; children: React.ReactNode }) {
+function Badge({ tone, children }: { tone: 'slate' | 'amber' | 'cyan'; children: React.ReactNode }) {
   const cls = tone === 'amber'
     ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
-    : 'bg-slate-900/80 text-white dark:bg-slate-100 dark:text-slate-900';
+    : tone === 'cyan'
+      ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200'
+      : 'bg-slate-900/80 text-white dark:bg-slate-100 dark:text-slate-900';
   return <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${cls}`}>{children}</span>;
 }

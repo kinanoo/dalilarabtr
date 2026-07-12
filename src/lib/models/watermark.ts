@@ -1,4 +1,6 @@
-export async function watermarkModelImage(file: File, text = 'موديلس'): Promise<File> {
+export async function watermarkModelImage(file: File, text = ''): Promise<File> {
+  const label = text.trim();
+  if (!label) return file;
   if (!file.type.startsWith('image/')) return file;
   if (file.type === 'image/svg+xml' || file.type === 'image/gif' || file.type === 'image/avif') return file;
 
@@ -39,8 +41,8 @@ export async function watermarkModelImage(file: File, text = 'موديلس'): Pr
       ctx.lineWidth = Math.max(2, fontSize * 0.07);
       ctx.strokeStyle = 'rgba(15, 23, 42, 0.9)';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.strokeText(text, 0, 0);
-      ctx.fillText(text, 0, 0);
+      ctx.strokeText(label, 0, 0);
+      ctx.fillText(label, 0, 0);
       ctx.restore();
     }
 

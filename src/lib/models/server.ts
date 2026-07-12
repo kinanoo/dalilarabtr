@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { ModelAsset, ModelCollection, ModelLinkView, ModelShareLink } from '@/lib/models/types';
 import { hashModelShareToken, normalizeModelToken } from '@/lib/models/tokens';
+import logger from '@/lib/logger';
 
 export const PRIVATE_MODELS_BUCKET = 'private-models';
 
@@ -23,6 +24,21 @@ export type PublicModelBundle = {
   };
   link: Pick<ModelShareLink, 'id' | 'label' | 'expires_at' | 'view_count'>;
   assets: PublicModelAsset[];
+};
+
+export type PublicGalleryAsset = Pick<ModelAsset, 'id' | 'title' | 'caption' | 'sort_order'> & {
+  collectionId: string;
+  collectionTitle: string;
+  collectionDescription: string | null;
+  imageUrl: string | null;
+  isLocked: boolean;
+  pinHint: string | null;
+  createdAt: string;
+};
+
+export type PublicGalleryCollection = Pick<ModelCollection, 'id' | 'title' | 'description' | 'watermark_text' | 'gallery_order'> & {
+  isLocked: boolean;
+  assets: PublicGalleryAsset[];
 };
 
 export type PublicModelFailure = 'not_found' | 'expired' | 'revoked' | 'inactive' | 'empty' | 'view_limit';
@@ -174,6 +190,81 @@ export async function getPublicModelBundle(token: string): Promise<
       assets: signedAssets,
     },
   };
+}
+
+export async function getPublicModelsGallery(): Promise<PublicGalleryCollection[]> {
+  try {
+    const svc = getModelsServiceClient();
+    if (!svc) return [];
+
+    const { data: collections, error: collectionsError } = await svc
+      .from('model_collections')
+      .select('*')
+      .eq('is_active', true)
+      .eq('show_in_gallery', true)
+      .order('gallery_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .returns<ModelCollection[]>();
+    if (collectionsError) throw collectionsError;
+    if (!collections || collections.length === 0) return [];
+
+    const collectionIds = collections.map((collection) => collection.id);
+    const { data: assets, error: assetsError } = await svc
+      .from('model_assets')
+      .select('*')
+      .in('collection_id', collectionIds)
+      .eq('is_active', true)
+      .eq('show_in_gallery', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
+      .returns<ModelAsset[]>();
+    if (assetsError) throw assetsError;
+
+    const signedUrlSeconds = 3600;
+    const collectionsById = new Map(collections.map((collection) => [collection.id, collection]));
+    const signedAssets = await Promise.all((assets || []).map(async (asset) => {
+      const collection = collectionsById.get(asset.collection_id);
+      if (!collection) return null;
+      const isLocked = Boolean(collection.access_pin_hash || asset.access_pin_hash);
+      const imageUrl = isLocked ? null : await createModelAssetSignedUrl(svc, asset, signedUrlSeconds);
+      return {
+        id: asset.id,
+        title: asset.title,
+        caption: asset.caption,
+        sort_order: asset.sort_order,
+        collectionId: collection.id,
+        collectionTitle: collection.title,
+        collectionDescription: collection.description,
+        imageUrl,
+        isLocked,
+        pinHint: asset.pin_hint || collection.pin_hint,
+        createdAt: asset.created_at,
+      } satisfies PublicGalleryAsset;
+    }));
+
+    const assetsByCollection = new Map<string, PublicGalleryAsset[]>();
+    for (const asset of signedAssets) {
+      if (!asset) continue;
+      const current = assetsByCollection.get(asset.collectionId) || [];
+      current.push(asset);
+      assetsByCollection.set(asset.collectionId, current);
+    }
+
+    return collections
+      .map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        description: collection.description,
+        watermark_text: collection.watermark_text,
+        gallery_order: collection.gallery_order,
+        isLocked: Boolean(collection.access_pin_hash),
+        assets: assetsByCollection.get(collection.id) || [],
+      }))
+      .filter((collection) => collection.assets.length > 0);
+  } catch (err) {
+    logger.error('getPublicModelsGallery failed:', err);
+    return [];
+  }
 }
 
 export async function recordModelLinkView(args: {

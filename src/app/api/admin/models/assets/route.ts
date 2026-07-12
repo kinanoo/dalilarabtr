@@ -5,7 +5,7 @@ import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
-const ALLOWED = new Set(['title', 'caption', 'sort_order', 'is_active', 'pin_hint']);
+const ALLOWED = new Set(['title', 'caption', 'sort_order', 'is_active', 'show_in_gallery', 'pin_hint']);
 
 export async function PATCH(request: Request) {
   try {
@@ -22,7 +22,7 @@ export async function PATCH(request: Request) {
       if (!ALLOWED.has(key)) continue;
       if (key === 'title' || key === 'caption' || key === 'pin_hint') clean[key] = typeof value === 'string' ? value.trim().slice(0, 500) || null : null;
       else if (key === 'sort_order') clean[key] = Number.isFinite(Number(value)) ? Number(value) : 0;
-      else if (key === 'is_active') clean[key] = value !== false;
+      else if (key === 'is_active' || key === 'show_in_gallery') clean[key] = value !== false;
     }
 
     if (body?.clearPin === true) {
