@@ -148,6 +148,12 @@ const WORKER_RIGHTS_LINK: CrossLink = {
   icon: HeartHandshake,
 };
 
+const PROFESSIONS_LINK: CrossLink = {
+  href: '/article/professions-foreigners-turkey-2026',
+  label: 'اطّلع على قائمة المهن الممنوعة والمسموحة للأجانب في تركيا بالقوانين',
+  icon: ShieldAlert,
+};
+
 // Content hubs reachable from a code page via `category`.
 // Keys are normalized (lowercase, trimmed); Arabic aliases included.
 const HUB_LINKS: Record<string, CrossLink> = {
@@ -243,7 +249,7 @@ function getLinks(context: CrossLinksContext, category?: string): CrossLink[] {
       const cat = category?.trim().toLowerCase();
       if (cat === 'work' || cat === 'عمل' || cat === 'العمل') {
         // Ordered by work intent; the 6-link cap drops the generic tail.
-        links = [WORKER_RIGHTS_LINK, SALARY_LINK, SEVERANCE_LINK, COST_OF_LIVING_LINK, ...links];
+        links = [WORKER_RIGHTS_LINK, PROFESSIONS_LINK, SALARY_LINK, SEVERANCE_LINK, COST_OF_LIVING_LINK, ...links];
       } else if (cat === 'housing' || cat === 'سكن' || cat === 'السكن') {
         // Ordered by housing intent; getLinks caps at 6, so the generic tail
         // (services/tools) drops off once the topical links fill the list.
