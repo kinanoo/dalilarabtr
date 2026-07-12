@@ -14,12 +14,13 @@ import {
   ExternalLink,
   Eye,
   Images,
-  LockKeyhole,
   Link2,
   Loader2,
+  LockKeyhole,
   Plus,
   RefreshCw,
   Save,
+  Settings2,
   ShieldCheck,
   Trash2,
   UploadCloud,
@@ -87,13 +88,10 @@ export default function AdminModelsPage() {
   const [rotating, setRotating] = useState(false);
   const [assetPinDrafts, setAssetPinDrafts] = useState<Record<string, string>>({});
 
-  const selected = useMemo(
-    () => {
-      if (creatingNew) return null;
-      return collections.find((collection) => collection.id === selectedId) || collections[0] || null;
-    },
-    [collections, creatingNew, selectedId],
-  );
+  const selected = useMemo(() => {
+    if (creatingNew) return null;
+    return collections.find((collection) => collection.id === selectedId) || collections[0] || null;
+  }, [collections, creatingNew, selectedId]);
 
   const mainLink = useMemo(
     () => selected?.links.find((link) => link.link_kind === 'main' && !link.revoked_at)
@@ -106,6 +104,20 @@ export default function AdminModelsPage() {
     () => selected?.links.filter((link) => link.id !== mainLink?.id) || [],
     [mainLink?.id, selected],
   );
+
+  const stats = useMemo(() => {
+    const imagesCount = collections.reduce((total, collection) => total + collection.assets.length, 0);
+    const lockedCount = collections.reduce((total, collection) => (
+      total
+      + (collection.access_pin_hash ? 1 : 0)
+      + collection.assets.filter((asset) => asset.access_pin_hash).length
+    ), 0);
+    const linksCount = collections.reduce((total, collection) => total + collection.links.length, 0);
+    return { imagesCount, lockedCount, linksCount };
+  }, [collections]);
+
+  const mainStatus = mainLink ? linkStatus(mainLink) : null;
+  const activeTitle = creatingNew ? 'نموذج جديد' : selected?.title || 'اختر نموذجاً';
 
   useEffect(() => {
     if (creatingNew) return;
@@ -157,11 +169,13 @@ export default function AdminModelsPage() {
         body: JSON.stringify({ id: creatingNew ? undefined : selected?.id, ...form }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'فشل حفظ المجموعة');
-      toast.success('تم حفظ مجموعة النماذج');
+      if (!res.ok) throw new Error(data.error || 'فشل حفظ النموذج');
       if (data.mainLink?.url && creatingNew) {
         setGeneratedUrl(data.mainLink.url);
         await navigator.clipboard?.writeText(data.mainLink.url).catch(() => {});
+        toast.success('تم حفظ النموذج ونسخ رابطه');
+      } else {
+        toast.success('تم حفظ النموذج');
       }
       await loadModels();
       setCreatingNew(false);
@@ -173,23 +187,23 @@ export default function AdminModelsPage() {
     }
   }
 
-  async function createCollection() {
+  function createCollection() {
     setCreatingNew(true);
     setForm(DEFAULT_FORM);
     setSelectedId(null);
     setGeneratedUrl('');
-    toast.message('اكتب عنوان المجموعة ثم اضغط حفظ');
+    toast.message('اكتب العنوان ثم اضغط حفظ ونشر');
   }
 
   async function deleteCollection() {
     if (!selected) return;
-    if (!confirm('سيتم حذف المجموعة وكل الصور والروابط التابعة لها. هل أنت متأكد؟')) return;
+    if (!confirm('سيتم حذف النموذج وكل الصور والروابط التابعة له. هل أنت متأكد؟')) return;
     setSaving(true);
     try {
       const res = await fetch(`/api/admin/models?id=${encodeURIComponent(selected.id)}`, { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'فشل الحذف');
-      toast.success('تم حذف المجموعة');
+      toast.success('تم حذف النموذج');
       setCreatingNew(false);
       setSelectedId(null);
       await loadModels();
@@ -248,7 +262,7 @@ export default function AdminModelsPage() {
   }
 
   async function deleteAsset(assetId: string) {
-    if (!confirm('حذف الصورة من موديلس؟')) return;
+    if (!confirm('حذف الصورة من النموذج؟')) return;
     try {
       const res = await fetch(`/api/admin/models/assets?id=${encodeURIComponent(assetId)}`, { method: 'DELETE' });
       const body = await res.json().catch(() => ({}));
@@ -312,10 +326,10 @@ export default function AdminModelsPage() {
         setGeneratedUrl(url);
         await navigator.clipboard?.writeText(url).catch(() => {});
       }
-      toast.success('تم إنشاء الرابط الرئيسي ونسخه');
+      toast.success('تم إنشاء الرابط ونسخه');
       await loadModels();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'فشل إنشاء الرابط الرئيسي');
+      toast.error(err instanceof Error ? err.message : 'فشل إنشاء الرابط');
     } finally {
       setSaving(false);
     }
@@ -343,8 +357,8 @@ export default function AdminModelsPage() {
   async function rotateMainLinks(scope: 'selected' | 'all') {
     if (scope === 'selected' && !selected) return;
     const message = scope === 'all'
-      ? 'سيتم إلغاء كل الروابط الرئيسية القديمة لكل المجموعات وإنشاء روابط جديدة. هل أنت متأكد؟'
-      : 'سيتم إلغاء الرابط الرئيسي القديم لهذه المجموعة وإنشاء رابط جديد. هل أنت متأكد؟';
+      ? 'سيتم إلغاء الروابط الرئيسية القديمة لكل النماذج وإنشاء روابط جديدة. هل أنت متأكد؟'
+      : 'سيتم إلغاء الرابط الرئيسي القديم لهذا النموذج وإنشاء رابط جديد. هل أنت متأكد؟';
     if (!confirm(message)) return;
 
     setRotating(true);
@@ -406,16 +420,14 @@ export default function AdminModelsPage() {
     toast.success('تم نسخ الرابط');
   }
 
-  const mainStatus = mainLink ? linkStatus(mainLink) : null;
-
   return (
-    <div className="mx-auto max-w-7xl space-y-5 p-3 sm:p-6">
+    <div className="mx-auto max-w-6xl space-y-5 p-3 sm:p-6">
       <AdminPageHeader
         icon={Images}
         theme="cyan"
         title="موديلس"
-        eyebrow="نماذج خاصة"
-        subtitle="معرض صور خاص بروابط مؤقتة لا تظهر للعامة ولا لمحركات البحث"
+        eyebrow="نشر النماذج"
+        subtitle="أنشئ نموذجاً، ارفع صوره، ثم انسخ الرابط الخاص من مكان واحد."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -447,142 +459,171 @@ export default function AdminModelsPage() {
             </button>
             <button
               type="button"
-              onClick={() => void createCollection()}
+              onClick={createCollection}
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
             >
               <Plus size={15} />
-              مجموعة جديدة
+              نموذج جديد
             </button>
           </div>
         }
       />
 
       {loading ? (
-        <div className="flex min-h-[360px] items-center justify-center rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <Loader2 className="animate-spin text-emerald-500" size={32} />
         </div>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)]">
-          <aside className="space-y-3">
-            <div className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-black text-slate-800 dark:text-white">المجموعات</h2>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-500 dark:bg-slate-800">
-                  {collections.length}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {collections.length === 0 && (
-                  <p className="rounded-2xl bg-slate-50 p-4 text-center text-xs leading-6 text-slate-500 dark:bg-slate-800/60">
-                    لا توجد مجموعات بعد. أنشئ أول مجموعة نماذج.
-                  </p>
-                )}
-                {collections.map((collection) => (
-                  <button
-                    key={collection.id}
-                    type="button"
-                    onClick={() => { setCreatingNew(false); setSelectedId(collection.id); setGeneratedUrl(''); }}
-                    className={`w-full rounded-2xl border p-3 text-right transition-all ${
-                      selected?.id === collection.id
-                        ? 'border-emerald-400 bg-emerald-50 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100'
-                        : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="line-clamp-1 text-sm font-black">{collection.title}</span>
-                      <span className="text-[10px] font-bold text-slate-400">{collection.assets.length} صورة</span>
-                    </div>
-                    <div className="mt-1 text-[11px] text-slate-500">{collection.links.length} رابط</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
+        <>
+          <div className="grid gap-3 sm:grid-cols-4">
+            <Stat label="النماذج" value={collections.length} />
+            <Stat label="الصور" value={stats.imagesCount} />
+            <Stat label="الروابط" value={stats.linksCount} />
+            <Stat label="مقفولة" value={stats.lockedCount} />
+          </div>
 
-          <section className="space-y-5">
-            <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-              <div className="grid gap-3 md:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">عنوان المجموعة</span>
-                  <input
-                    value={form.title}
-                    onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="مثال: نماذج الشهادات"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">العلامة المائية</span>
-                  <input
-                    value={form.watermark_text}
-                    onChange={(e) => setForm((prev) => ({ ...prev, watermark_text: e.target.value }))}
-                    placeholder="موديلس"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  />
-                </label>
-                <label className="space-y-1 md:col-span-2">
-                  <span className="text-xs font-black text-slate-500">شرح بسطر واحد يظهر أعلى الرابط</span>
-                  <input
-                    value={form.description}
-                    onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                    maxLength={220}
-                    placeholder="مثال: نماذج شهادات جاهزة للمعادلة والتصديقات"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">PIN للنموذج كله</span>
-                  <input
-                    value={form.collection_pin}
-                    onChange={(e) => setForm((prev) => ({ ...prev, collection_pin: e.target.value, clear_collection_pin: false }))}
-                    placeholder={selected?.access_pin_hash ? 'قفل موجود - اكتب لتغييره' : 'اختياري'}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">تلميح PIN اختياري</span>
-                  <input
-                    value={form.pin_hint}
-                    onChange={(e) => setForm((prev) => ({ ...prev, pin_hint: e.target.value }))}
-                    placeholder="مثال: الرقم الذي أرسلناه لك"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-black text-slate-500">مدة الرابط الرئيسي الافتراضية</span>
-                  <select
-                    value={form.default_link_minutes}
-                    onChange={(e) => setForm((prev) => ({ ...prev, default_link_minutes: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                  >
-                    {DURATION_PRESETS.map((preset) => (
-                      <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
-                    ))}
-                    <option value={60 * 24 * 30}>30 يوم</option>
-                  </select>
-                </label>
-                <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300">
-                  <input
-                    type="checkbox"
-                    checked={form.clear_collection_pin}
-                    onChange={(e) => setForm((prev) => ({ ...prev, clear_collection_pin: e.target.checked, collection_pin: e.target.checked ? '' : prev.collection_pin }))}
-                    className="h-4 w-4 accent-emerald-600"
-                  />
-                  إزالة قفل النموذج
-                </label>
+          <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-black text-slate-900 dark:text-white">اختر النموذج</h2>
+                <p className="text-xs text-slate-500">كل نموذج له صوره ورابطه الخاص.</p>
               </div>
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <label className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300">
-                  <input
-                    type="checkbox"
-                    checked={form.is_active}
-                    onChange={(e) => setForm((prev) => ({ ...prev, is_active: e.target.checked }))}
-                    className="h-4 w-4 accent-emerald-600"
-                  />
-                  المجموعة فعالة
-                </label>
-                <div className="flex gap-2">
-                  {selected && (
+              <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-black text-slate-500 dark:bg-slate-800">
+                {activeTitle}
+              </span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {collections.length === 0 && !creatingNew && (
+                <div className="w-full rounded-xl border border-dashed border-slate-200 p-5 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
+                  ابدأ بإنشاء أول نموذج.
+                </div>
+              )}
+              {creatingNew && (
+                <button
+                  type="button"
+                  className="min-w-[220px] rounded-xl border border-emerald-400 bg-emerald-50 p-3 text-right text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100"
+                >
+                  <span className="block text-sm font-black">نموذج جديد</span>
+                  <span className="mt-1 block text-[11px] font-bold">اكتب بياناته ثم احفظ</span>
+                </button>
+              )}
+              {collections.map((collection) => (
+                <button
+                  key={collection.id}
+                  type="button"
+                  onClick={() => { setCreatingNew(false); setSelectedId(collection.id); setGeneratedUrl(''); }}
+                  className={`min-w-[230px] rounded-xl border p-3 text-right transition ${
+                    selected?.id === collection.id
+                      ? 'border-emerald-400 bg-emerald-50 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100'
+                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700'
+                  }`}
+                >
+                  <span className="line-clamp-1 text-sm font-black">{collection.title}</span>
+                  <span className="mt-1 block text-[11px] text-slate-500">
+                    {collection.assets.length} صورة / {collection.links.length} رابط
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+            <div className="space-y-5">
+              <Panel
+                number="1"
+                title="بيانات النموذج"
+                subtitle="العنوان والشرح المختصر فقط. الرابط الرئيسي يتولد تلقائياً عند الحفظ."
+              >
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="space-y-1 md:col-span-2">
+                    <span className="text-xs font-black text-slate-500">العنوان</span>
+                    <input
+                      value={form.title}
+                      onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                      placeholder="مثال: شهادة A2 لغة تركية"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                    />
+                  </label>
+                  <label className="space-y-1 md:col-span-2">
+                    <span className="text-xs font-black text-slate-500">شرح بسطر واحد</span>
+                    <input
+                      value={form.description}
+                      maxLength={220}
+                      onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                      placeholder="جملة قصيرة توضح النموذج"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                    />
+                  </label>
+                </div>
+
+                <details className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                  <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-black text-slate-700 dark:text-slate-200">
+                    <Settings2 size={16} />
+                    خيارات متقدمة
+                  </summary>
+                  <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">العلامة المائية</span>
+                      <input
+                        value={form.watermark_text}
+                        onChange={(e) => setForm((prev) => ({ ...prev, watermark_text: e.target.value }))}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">مدة الرابط الافتراضية</span>
+                      <select
+                        value={form.default_link_minutes}
+                        onChange={(e) => setForm((prev) => ({ ...prev, default_link_minutes: Number(e.target.value) }))}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                      >
+                        {DURATION_PRESETS.map((preset) => (
+                          <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
+                        ))}
+                        <option value={60 * 24 * 30}>30 يوم</option>
+                      </select>
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">PIN للنموذج كله</span>
+                      <input
+                        value={form.collection_pin}
+                        onChange={(e) => setForm((prev) => ({ ...prev, collection_pin: e.target.value, clear_collection_pin: false }))}
+                        placeholder={selected?.access_pin_hash ? 'قفل موجود - اكتب لتغييره' : 'اختياري'}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-xs font-black text-slate-500">تلميح PIN</span>
+                      <input
+                        value={form.pin_hint}
+                        onChange={(e) => setForm((prev) => ({ ...prev, pin_hint: e.target.value }))}
+                        placeholder="مثال: الرقم الذي أرسلناه لك"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={form.is_active}
+                        onChange={(e) => setForm((prev) => ({ ...prev, is_active: e.target.checked }))}
+                        className="h-4 w-4 accent-emerald-600"
+                      />
+                      النموذج فعال
+                    </label>
+                    <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={form.clear_collection_pin}
+                        onChange={(e) => setForm((prev) => ({ ...prev, clear_collection_pin: e.target.checked, collection_pin: e.target.checked ? '' : prev.collection_pin }))}
+                        className="h-4 w-4 accent-emerald-600"
+                      />
+                      إزالة قفل النموذج
+                    </label>
+                  </div>
+                </details>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  {selected ? (
                     <button
                       type="button"
                       onClick={() => void deleteCollection()}
@@ -592,7 +633,7 @@ export default function AdminModelsPage() {
                       <Trash2 size={16} />
                       حذف
                     </button>
-                  )}
+                  ) : <span />}
                   <button
                     type="button"
                     onClick={() => void saveCollection()}
@@ -600,60 +641,58 @@ export default function AdminModelsPage() {
                     className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
                   >
                     {saving ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
-                    حفظ
+                    حفظ ونشر
                   </button>
                 </div>
-              </div>
-            </div>
+              </Panel>
 
-            {selected && (
-              <>
-                <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-lg font-black text-slate-900 dark:text-white">الصور</h2>
-                      <p className="text-xs text-slate-500">ترفع الصور إلى تخزين خاص، وتظهر للمشاهد عبر الروابط الخاصة فقط.</p>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => void uploadFiles(e.target.files)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900"
-                    >
-                      {uploading ? <Loader2 className="animate-spin" size={17} /> : <UploadCloud size={17} />}
-                      رفع صور
-                    </button>
-                  </div>
-
+              {selected && (
+                <Panel
+                  number="2"
+                  title="الصور"
+                  subtitle="ارفع صورة واحدة أو عدة صور. الخيارات الخاصة بكل صورة موجودة تحتها."
+                  action={(
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => void uploadFiles(e.target.files)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900"
+                      >
+                        {uploading ? <Loader2 className="animate-spin" size={16} /> : <UploadCloud size={16} />}
+                        رفع صور
+                      </button>
+                    </>
+                  )}
+                >
                   {selected.assets.length === 0 ? (
-                    <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
+                    <div className="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
                       لا توجد صور بعد
                     </div>
                   ) : (
-                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                       {selected.assets.map((asset) => (
-                        <div key={asset.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                        <div key={asset.id} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
                           <div className="relative aspect-[4/3] bg-slate-200 dark:bg-slate-800">
                             {asset.preview_url ? (
                               <img src={asset.preview_url} alt={asset.title || ''} className="h-full w-full object-cover" />
                             ) : (
-                              <div className="flex h-full items-center justify-center text-slate-400">
+                              <div className="grid h-full place-items-center text-slate-400">
                                 <Images size={30} />
                               </div>
                             )}
-                            {!asset.is_active && (
-                              <div className="absolute inset-0 grid place-items-center bg-slate-950/60 text-sm font-black text-white">
-                                مخفية
-                              </div>
-                            )}
+                            <div className="absolute right-2 top-2 flex gap-1">
+                              {!asset.is_active && <Badge tone="slate">مخفي</Badge>}
+                              {asset.access_pin_hash && <Badge tone="amber">PIN</Badge>}
+                            </div>
                           </div>
                           <div className="space-y-2 p-3">
                             <input
@@ -662,28 +701,35 @@ export default function AdminModelsPage() {
                               placeholder="عنوان الصورة"
                               className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
                             />
-                            <input
-                              defaultValue={asset.pin_hint || ''}
-                              onBlur={(e) => void updateAsset(asset.id, { pin_hint: e.target.value })}
-                              placeholder="تلميح PIN للصورة"
-                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
-                            />
-                            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                              <input
-                                value={assetPinDrafts[asset.id] || ''}
-                                onChange={(e) => setAssetPinDrafts((prev) => ({ ...prev, [asset.id]: e.target.value }))}
-                                placeholder={asset.access_pin_hash ? 'قفل موجود - PIN جديد' : 'PIN للصورة'}
-                                className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => void updateAsset(asset.id, {}, assetPinDrafts[asset.id] || undefined)}
-                                disabled={!assetPinDrafts[asset.id]?.trim()}
-                                className="rounded-lg bg-slate-900 px-2 py-1.5 text-xs font-black text-white disabled:opacity-40 dark:bg-white dark:text-slate-900"
-                              >
-                                حفظ PIN
-                              </button>
-                            </div>
+                            <details className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                              <summary className="cursor-pointer px-2 py-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
+                                خيارات الصورة
+                              </summary>
+                              <div className="space-y-2 border-t border-slate-200 p-2 dark:border-slate-800">
+                                <input
+                                  defaultValue={asset.pin_hint || ''}
+                                  onBlur={(e) => void updateAsset(asset.id, { pin_hint: e.target.value })}
+                                  placeholder="تلميح PIN"
+                                  className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                                />
+                                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                                  <input
+                                    value={assetPinDrafts[asset.id] || ''}
+                                    onChange={(e) => setAssetPinDrafts((prev) => ({ ...prev, [asset.id]: e.target.value }))}
+                                    placeholder={asset.access_pin_hash ? 'PIN جديد' : 'PIN للصورة'}
+                                    className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => void updateAsset(asset.id, {}, assetPinDrafts[asset.id] || undefined)}
+                                    disabled={!assetPinDrafts[asset.id]?.trim()}
+                                    className="rounded-lg bg-slate-900 px-2 py-1.5 text-xs font-black text-white disabled:opacity-40 dark:bg-white dark:text-slate-900"
+                                  >
+                                    حفظ
+                                  </button>
+                                </div>
+                              </div>
+                            </details>
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <button
                                 type="button"
@@ -719,262 +765,282 @@ export default function AdminModelsPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </Panel>
+              )}
+            </div>
 
-                <div className="grid gap-5 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
-                  <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-300">
-                        <Link2 size={20} />
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-black text-slate-900 dark:text-white">الرابط الرئيسي العشوائي</h2>
-                        <p className="text-xs text-slate-500">يبقى ثابتاً حتى تدوّره، ويمكن تمديد صلاحيته بنفس الرابط.</p>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-900/15">
-                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                          <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
-                            {mainLink ? 'رابط المجموعة الحالي' : 'لا يوجد رابط رئيسي بعد'}
+            <div className="space-y-5">
+              {selected ? (
+                <>
+                  <Panel number="3" title="الرابط" subtitle="انسخ الرابط الرئيسي وأرسله للعميل.">
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-900/15">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">الرابط الرئيسي</span>
+                        {mainStatus && (
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${mainStatus.cls}`}>
+                            {mainStatus.label}
                           </span>
-                          {mainStatus && (
-                            <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${mainStatus.cls}`}>
-                              {mainStatus.label}
-                            </span>
-                          )}
-                        </div>
-                        {mainLink ? (
-                          <div className="space-y-3">
-                            <div className="flex gap-2">
-                              <input
-                                readOnly
-                                dir="ltr"
-                                value={mainLink.url || 'رابط قديم قبل الترقية - دوّر الرابط لإنشاء رابط قابل للنسخ'}
-                                className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-emerald-900/50 dark:bg-slate-950 dark:text-slate-200"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => void copyUrl(mainLink.url)}
-                                disabled={!mainLink.url}
-                                className="rounded-xl bg-emerald-600 px-3 text-white disabled:opacity-50"
-                                aria-label="نسخ الرابط الرئيسي"
-                              >
-                                <Copy size={16} />
-                              </button>
-                              {mainLink.url && (
-                                <a
-                                  href={mainLink.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="grid place-items-center rounded-xl bg-slate-900 px-3 text-white"
-                                  aria-label="فتح الرابط الرئيسي"
-                                >
-                                  <ExternalLink size={16} />
-                                </a>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-                              <span className="inline-flex items-center gap-1"><Clock3 size={12} /> ينتهي: {formatDate(mainLink.expires_at)}</span>
-                              <span className="inline-flex items-center gap-1"><Eye size={12} /> {mainLink.view_count} مشاهدة</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs leading-6 text-slate-600 dark:text-slate-300">
-                            أنشئ الرابط الرئيسي مرة واحدة، ثم استخدمه للنسخ والإرسال وتمديد الصلاحية.
-                          </p>
                         )}
                       </div>
-
-                      <div className="space-y-2">
-                        <span className="text-xs font-black text-slate-500">مدة الإتاحة عند التفعيل أو التدوير</span>
-                        <div className="grid grid-cols-4 gap-2">
-                          {DURATION_PRESETS.map((preset) => (
-                            <button
-                              key={preset.minutes}
-                              type="button"
-                              onClick={() => setMainDurationMinutes(preset.minutes)}
-                              className={`rounded-xl border px-2 py-2 text-xs font-black transition ${
-                                mainDurationMinutes === preset.minutes
-                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
-                                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950'
-                              }`}
-                            >
-                              {preset.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {mainLink ? (
-                          <button
-                            type="button"
-                            onClick={() => void extendLink(mainLink.id)}
-                            disabled={saving || selected.assets.length === 0}
-                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
-                          >
-                            {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
-                            تمديد بنفس الرابط
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => void createMainLink()}
-                            disabled={saving || selected.assets.length === 0}
-                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
-                          >
-                            {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
-                            إنشاء الرابط الرئيسي
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => void rotateMainLinks('selected')}
-                          disabled={rotating || selected.assets.length === 0}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-black text-white hover:bg-amber-600 disabled:opacity-50"
-                        >
-                          {rotating ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
-                          تدوير الرابط
-                        </button>
-                      </div>
-
-                      <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
-                        <h3 className="mb-1 text-sm font-black text-slate-900 dark:text-white">رابط مؤقت إضافي</h3>
-                        <p className="mb-3 text-xs text-slate-500">استخدمه إذا أردت رابطاً خاصاً بعميل معيّن بدون تغيير الرابط الرئيسي.</p>
-                      </div>
-                      <label className="space-y-1 block">
-                        <span className="text-xs font-black text-slate-500">تسمية الرابط داخلياً</span>
-                        <input
-                          value={linkForm.label}
-                          onChange={(e) => setLinkForm((prev) => ({ ...prev, label: e.target.value }))}
-                          placeholder="مثال: عميل أحمد"
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                        />
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <label className="space-y-1 block">
-                          <span className="text-xs font-black text-slate-500">المدة بالدقائق</span>
-                          <input
-                            type="number"
-                            min={5}
-                            value={linkForm.durationMinutes}
-                            onChange={(e) => setLinkForm((prev) => ({ ...prev, durationMinutes: Number(e.target.value) || 60 }))}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                          />
-                        </label>
-                        <label className="space-y-1 block">
-                          <span className="text-xs font-black text-slate-500">حد مشاهدات اختياري</span>
-                          <input
-                            type="number"
-                            min={1}
-                            value={linkForm.maxViews}
-                            onChange={(e) => setLinkForm((prev) => ({ ...prev, maxViews: e.target.value }))}
-                            placeholder="بدون حد"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-                          />
-                        </label>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => void generateLink()}
-                        disabled={saving || selected.assets.length === 0}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
-                      >
-                        {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
-                        توليد ونسخ الرابط
-                      </button>
-                      {generatedUrl && (
-                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-900/15">
-                          <p className="mb-2 text-xs font-black text-emerald-700 dark:text-emerald-300">الرابط الجديد</p>
+                      {mainLink ? (
+                        <div className="space-y-3">
                           <div className="flex gap-2">
                             <input
                               readOnly
                               dir="ltr"
-                              value={generatedUrl}
+                              value={mainLink.url || 'رابط قديم - دوّر الرابط لإنشاء رابط قابل للنسخ'}
                               className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-emerald-900/50 dark:bg-slate-950 dark:text-slate-200"
                             />
-                            <button onClick={() => void copyGenerated()} className="rounded-xl bg-emerald-600 px-3 text-white" aria-label="نسخ">
+                            <button
+                              type="button"
+                              onClick={() => void copyUrl(mainLink.url)}
+                              disabled={!mainLink.url}
+                              className="rounded-xl bg-emerald-600 px-3 text-white disabled:opacity-50"
+                              aria-label="نسخ"
+                            >
                               <Copy size={16} />
                             </button>
-                            <a href={generatedUrl} target="_blank" rel="noreferrer" className="grid place-items-center rounded-xl bg-slate-900 px-3 text-white" aria-label="فتح">
-                              <ExternalLink size={16} />
-                            </a>
+                            {mainLink.url && (
+                              <a href={mainLink.url} target="_blank" rel="noreferrer" className="grid place-items-center rounded-xl bg-slate-900 px-3 text-white" aria-label="فتح">
+                                <ExternalLink size={16} />
+                              </a>
+                            )}
                           </div>
+                          <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                            <span className="inline-flex items-center gap-1"><Clock3 size={12} /> ينتهي: {formatDate(mainLink.expires_at)}</span>
+                            <span className="inline-flex items-center gap-1"><Eye size={12} /> {mainLink.view_count} مشاهدة</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => void createMainLink()}
+                          disabled={saving || selected.assets.length === 0}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
+                          إنشاء الرابط الرئيسي
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-xs font-black text-slate-500">مدة التمديد أو التدوير</span>
+                      <div className="grid grid-cols-4 gap-2">
+                        {DURATION_PRESETS.map((preset) => (
+                          <button
+                            key={preset.minutes}
+                            type="button"
+                            onClick={() => setMainDurationMinutes(preset.minutes)}
+                            className={`rounded-xl border px-2 py-2 text-xs font-black transition ${
+                              mainDurationMinutes === preset.minutes
+                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                                : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {mainLink && (
+                        <button
+                          type="button"
+                          onClick={() => void extendLink(mainLink.id)}
+                          disabled={saving || selected.assets.length === 0}
+                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
+                          تمديد
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => void rotateMainLinks('selected')}
+                        disabled={rotating || selected.assets.length === 0}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-black text-white hover:bg-amber-600 disabled:opacity-50"
+                      >
+                        {rotating ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
+                        تدوير الرابط
+                      </button>
+                    </div>
+
+                    {generatedUrl && (
+                      <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-3 dark:border-cyan-900/50 dark:bg-cyan-900/15">
+                        <p className="mb-2 text-xs font-black text-cyan-700 dark:text-cyan-300">آخر رابط تم توليده</p>
+                        <div className="flex gap-2">
+                          <input
+                            readOnly
+                            dir="ltr"
+                            value={generatedUrl}
+                            className="min-w-0 flex-1 rounded-xl border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-cyan-900/50 dark:bg-slate-950 dark:text-slate-200"
+                          />
+                          <button onClick={() => void copyGenerated()} className="rounded-xl bg-cyan-600 px-3 text-white" aria-label="نسخ">
+                            <Copy size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </Panel>
+
+                  <details className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <summary className="flex cursor-pointer items-center gap-2 text-sm font-black text-slate-800 dark:text-white">
+                      <Link2 size={17} />
+                      رابط مؤقت وسجل المشاهدات
+                    </summary>
+                    <div className="mt-4 space-y-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <input
+                          value={linkForm.label}
+                          onChange={(e) => setLinkForm((prev) => ({ ...prev, label: e.target.value }))}
+                          placeholder="تسمية داخلية"
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                        />
+                        <input
+                          type="number"
+                          min={5}
+                          value={linkForm.durationMinutes}
+                          onChange={(e) => setLinkForm((prev) => ({ ...prev, durationMinutes: Number(e.target.value) || 60 }))}
+                          placeholder="المدة بالدقائق"
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                        />
+                        <input
+                          type="number"
+                          min={1}
+                          value={linkForm.maxViews}
+                          onChange={(e) => setLinkForm((prev) => ({ ...prev, maxViews: e.target.value }))}
+                          placeholder="حد مشاهدات اختياري"
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void generateLink()}
+                          disabled={saving || selected.assets.length === 0}
+                          className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          توليد رابط مؤقت
+                        </button>
+                      </div>
+
+                      {linkHistory.length === 0 ? (
+                        <p className="rounded-xl bg-slate-50 p-4 text-center text-xs font-bold text-slate-400 dark:bg-slate-950">
+                          لا توجد روابط أخرى.
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {linkHistory.map((link) => {
+                            const status = linkStatus(link);
+                            return (
+                              <div key={link.id} className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${status.cls}`}>
+                                        {status.label}
+                                      </span>
+                                      <span className="text-sm font-black text-slate-900 dark:text-white">
+                                        {link.label || 'رابط بدون تسمية'}
+                                      </span>
+                                    </div>
+                                    <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                                      <span>ينتهي: {formatDate(link.expires_at)}</span>
+                                      <span>{link.view_count} مشاهدة</span>
+                                      {link.max_views !== null && <span>الحد: {link.max_views}</span>}
+                                    </div>
+                                  </div>
+                                  {!link.revoked_at && new Date(link.expires_at).getTime() > Date.now() && (
+                                    <button
+                                      type="button"
+                                      onClick={() => void revokeLink(link.id)}
+                                      className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-black text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300"
+                                    >
+                                      <Ban size={13} />
+                                      إلغاء
+                                    </button>
+                                  )}
+                                </div>
+                                {link.views && link.views.length > 0 && (
+                                  <div className="mt-3 rounded-xl bg-slate-50 p-2 dark:bg-slate-950">
+                                    <p className="mb-1 text-[11px] font-black text-slate-500">آخر المشاهدات</p>
+                                    <div className="space-y-1">
+                                      {link.views.slice(0, 5).map((view) => (
+                                        <div key={view.id} className="flex items-center justify-between gap-2 text-[11px] text-slate-500">
+                                          <span>{formatDate(view.viewed_at)}</span>
+                                          <span>{simpleDevice(view.user_agent)}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
+                  </details>
+                </>
+              ) : (
+                <Panel number="3" title="الرابط" subtitle="سيظهر الرابط تلقائياً بعد حفظ النموذج.">
+                  <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
+                    احفظ النموذج أولاً، ثم ارفع الصور وانسخ الرابط.
                   </div>
-
-                  <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-                    <h2 className="mb-4 text-lg font-black text-slate-900 dark:text-white">سجل الروابط والمشاهدات</h2>
-                    {linkHistory.length === 0 ? (
-                      <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
-                        لا توجد روابط أخرى بعد
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {linkHistory.map((link) => {
-                          const status = linkStatus(link);
-                          return (
-                            <div key={link.id} className="rounded-2xl border border-slate-200 p-3 dark:border-slate-800">
-                              <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${status.cls}`}>
-                                      {status.label}
-                                    </span>
-                                    <span className="text-sm font-black text-slate-900 dark:text-white">
-                                      {link.label || 'رابط بدون تسمية'}
-                                    </span>
-                                    {link.link_kind === 'main' && (
-                                      <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
-                                        رابط رئيسي سابق
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-                                    <span className="inline-flex items-center gap-1"><Clock3 size={12} /> ينتهي: {formatDate(link.expires_at)}</span>
-                                    <span className="inline-flex items-center gap-1"><Eye size={12} /> {link.view_count} مشاهدة</span>
-                                    {link.max_views !== null && <span>الحد: {link.max_views}</span>}
-                                  </div>
-                                </div>
-                                {!link.revoked_at && new Date(link.expires_at).getTime() > Date.now() && (
-                                  <button
-                                    type="button"
-                                    onClick={() => void revokeLink(link.id)}
-                                    className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-black text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300"
-                                  >
-                                    <Ban size={13} />
-                                    إلغاء
-                                  </button>
-                                )}
-                              </div>
-                              {link.views && link.views.length > 0 && (
-                                <div className="mt-3 rounded-xl bg-slate-50 p-2 dark:bg-slate-950">
-                                  <p className="mb-1 text-[11px] font-black text-slate-500">آخر المشاهدات</p>
-                                  <div className="space-y-1">
-                                    {link.views.slice(0, 5).map((view) => (
-                                      <div key={view.id} className="flex items-center justify-between gap-2 text-[11px] text-slate-500">
-                                        <span>{formatDate(view.viewed_at)}</span>
-                                        <span>{simpleDevice(view.user_agent)}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
+                </Panel>
+              )}
+            </div>
           </section>
-        </div>
+        </>
       )}
     </div>
   );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="text-xs font-black text-slate-500">{label}</div>
+      <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">{value}</div>
+    </div>
+  );
+}
+
+function Panel({
+  number,
+  title,
+  subtitle,
+  action,
+  children,
+}: {
+  number: string;
+  title: string;
+  subtitle: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-50 text-sm font-black text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+            {number}
+          </span>
+          <div>
+            <h2 className="text-lg font-black text-slate-900 dark:text-white">{title}</h2>
+            <p className="text-xs leading-6 text-slate-500">{subtitle}</p>
+          </div>
+        </div>
+        {action}
+      </div>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
+function Badge({ tone, children }: { tone: 'slate' | 'amber'; children: React.ReactNode }) {
+  const cls = tone === 'amber'
+    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+    : 'bg-slate-900/80 text-white dark:bg-slate-100 dark:text-slate-900';
+  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${cls}`}>{children}</span>;
 }
