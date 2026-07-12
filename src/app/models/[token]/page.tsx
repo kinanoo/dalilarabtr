@@ -151,18 +151,18 @@ export default async function ModelSharePage({ params, searchParams }: Props) {
   const expiresAt = new Date(result.bundle.link.expires_at);
 
   return (
-    <main dir="rtl" className="min-h-screen bg-slate-50/80 px-4 py-8 dark:bg-slate-950">
+    <main dir="rtl" className="min-h-screen bg-slate-50/80 px-3 py-4 dark:bg-slate-950 sm:px-4 sm:py-8">
       <section className="mx-auto max-w-6xl">
-        <div className="mb-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:mb-6 sm:rounded-3xl">
           <div className="h-1 bg-gradient-to-l from-emerald-500 via-teal-500 to-cyan-500" />
-          <div className="p-5 sm:p-7">
+          <div className="p-4 sm:p-7">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 dark:bg-emerald-900/25 dark:text-emerald-300">
                   <Images size={14} />
                   موديلس
                 </div>
-                <h1 className="text-2xl font-black text-slate-950 dark:text-white sm:text-4xl">
+                <h1 className="text-xl font-black text-slate-950 dark:text-white sm:text-4xl">
                   {result.bundle.collection.title}
                 </h1>
                 {result.bundle.collection.description && (
@@ -181,7 +181,7 @@ export default async function ModelSharePage({ params, searchParams }: Props) {
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-start gap-2 rounded-2xl bg-amber-50 px-4 py-3 text-xs leading-6 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
+            <div className="mt-4 flex items-start gap-2 rounded-2xl bg-amber-50 px-3 py-3 text-xs leading-6 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200 sm:px-4">
               <AlertCircle size={16} className="mt-1 shrink-0" />
               عند انتهاء صلاحية الرابط لن تظهر هذه النماذج. اطلب رابطاً جديداً من المصدر عند الحاجة.
             </div>

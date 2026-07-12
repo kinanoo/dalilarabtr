@@ -190,7 +190,7 @@ export default function AdminLayout({
                 <MobileBottomNav onMore={() => setIsMobileOpen(true)} />
 
                 {/* AI Assistant — FAB + Overlay (hidden on /admin/ai-assistant page) */}
-                {!readOnly && pathname !== '/admin/ai-assistant' && !aiOpen && (
+                {!readOnly && pathname !== '/admin/ai-assistant' && pathname !== '/admin/models' && !aiOpen && (
                     <AIFab onClick={() => setAiOpen(true)} />
                 )}
                 {!readOnly && <AIAssistant isOpen={aiOpen} onClose={() => setAiOpen(false)} />}

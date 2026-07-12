@@ -125,12 +125,12 @@ export default function AdminPageHeader({
                 </Link>
             )}
 
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
+            <div className="grid min-w-0 gap-4 sm:flex sm:flex-wrap sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
                     <div className={`p-2.5 ${t.iconBg} ${t.iconText} rounded-xl shadow-sm shrink-0`}>
                         <Icon size={22} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         {eyebrow && (
                             <span className={`inline-flex items-center px-2 py-0.5 ${t.eyebrowBg} ${t.eyebrowText} rounded-full text-[10px] font-black tracking-wider uppercase mb-0.5`}>
                                 {eyebrow}
@@ -147,7 +147,7 @@ export default function AdminPageHeader({
                     </div>
                 </div>
 
-                {actions && <div className="flex items-center gap-2">{actions}</div>}
+                {actions && <div className="w-full min-w-0 max-w-full sm:w-auto">{actions}</div>}
             </div>
         </div>
     );

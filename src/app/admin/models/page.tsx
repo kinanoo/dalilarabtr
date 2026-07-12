@@ -769,7 +769,7 @@ export default function AdminModelsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5 p-3 sm:p-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-4 px-0 pb-16 pt-2 sm:space-y-5 sm:px-6 sm:pt-6">
       <AdminPageHeader
         icon={Images}
         theme="cyan"
@@ -777,11 +777,11 @@ export default function AdminModelsPage() {
         eyebrow="نشر النماذج"
         subtitle="النموذج هو ألبوم صور لخدمة أو كتاب أو شهادة. اكتب شرحاً قصيراً، ارفع الصور، ثم انسخ الرابط."
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid w-full min-w-0 grid-cols-2 gap-2 min-[430px]:grid-cols-3 sm:w-auto sm:flex sm:flex-wrap sm:items-center">
             <select
               value={bulkDurationMinutes}
               onChange={(e) => setBulkDurationMinutes(Number(e.target.value))}
-              className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-black text-slate-600 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              className="col-span-2 min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-black text-slate-600 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 min-[430px]:col-span-1"
               aria-label="مدة روابط الكل الجديدة"
             >
               {DURATION_PRESETS.map((preset) => (
@@ -792,33 +792,33 @@ export default function AdminModelsPage() {
               type="button"
               onClick={() => void rotateMainLinks('all')}
               disabled={rotating || collections.length === 0}
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-3 py-2 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-amber-500 px-2 py-2 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50 sm:px-3"
             >
               {rotating ? <Loader2 className="animate-spin" size={15} /> : <RefreshCw size={15} />}
-              تدوير روابط الكل
+              تدوير الكل
             </button>
             <button
               type="button"
               onClick={() => void setAllModelsVisible(false)}
               disabled={bulkVisibilityChanging || collections.length === 0}
-              className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-red-50 px-2 py-2 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300 sm:px-3"
             >
               {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Ban size={15} />}
-              إخفاء الكل
+              إخفاء
             </button>
             <button
               type="button"
               onClick={() => void setAllModelsVisible(true)}
               disabled={bulkVisibilityChanging || collections.length === 0}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-900/20 dark:text-emerald-300"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-50 px-2 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-900/20 dark:text-emerald-300 sm:px-3"
             >
               {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Eye size={15} />}
-              إظهار الكل
+              إظهار
             </button>
             <button
               type="button"
               onClick={() => void loadModels()}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:px-3"
             >
               <RefreshCw size={15} />
               تحديث
@@ -826,10 +826,10 @@ export default function AdminModelsPage() {
             <button
               type="button"
               onClick={createCollection}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-2 py-2 text-xs font-black text-white hover:bg-emerald-700 sm:px-3"
             >
               <Plus size={15} />
-              نموذج جديد
+              جديد
             </button>
           </div>
         }
@@ -857,7 +857,7 @@ export default function AdminModelsPage() {
             onSubmit={() => void quickPublish()}
           />
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
             <Stat label="النماذج" value={collections.length} />
             <Stat label="ظاهرة" value={stats.visibleCount} />
             <Stat label="بالمعرض" value={stats.galleryCount} />
@@ -865,7 +865,7 @@ export default function AdminModelsPage() {
             <Stat label="مقفولة" value={stats.lockedCount} />
           </div>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
@@ -886,7 +886,7 @@ export default function AdminModelsPage() {
               </div>
             </div>
 
-            <div className="mb-4 grid gap-2 lg:grid-cols-[minmax(240px,1fr)_auto]">
+            <div className="mb-4 grid min-w-0 gap-2 lg:grid-cols-[minmax(240px,1fr)_auto]">
               <label className="relative block">
                 <Search className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
                 <input
@@ -896,7 +896,7 @@ export default function AdminModelsPage() {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-10 text-sm font-bold outline-none focus:border-cyan-500 dark:border-slate-800 dark:bg-slate-950"
                 />
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2 min-[430px]:flex min-[430px]:flex-wrap">
                 {([
                   ['all', 'الكل'],
                   ['visible', 'ظاهرة'],
@@ -935,7 +935,7 @@ export default function AdminModelsPage() {
                 لا توجد صور تطابق البحث أو الفلتر الحالي.
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 min-[460px]:grid-cols-2 xl:grid-cols-4">
                 {filteredAdminGalleryItems.map((item) => (
                   <AdminGalleryCard
                     key={item.asset.id}
@@ -953,17 +953,39 @@ export default function AdminModelsPage() {
             )}
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
+          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
                 <h2 className="text-sm font-black text-slate-900 dark:text-white">اختر النموذج</h2>
                 <p className="text-xs text-slate-500">كل نموذج له صوره ورابطه الخاص.</p>
               </div>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-black text-slate-500 dark:bg-slate-800">
+              <span className="max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[11px] font-black text-slate-500 dark:bg-slate-800">
                 {activeTitle}
               </span>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <select
+              value={creatingNew ? '__new' : selected?.id || ''}
+              onChange={(e) => {
+                if (e.target.value === '__new') {
+                  createCollection();
+                  return;
+                }
+                setCreatingNew(false);
+                setSelectedId(e.target.value || null);
+                setGeneratedUrl('');
+              }}
+              className="mb-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-black text-slate-800 outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white sm:hidden"
+            >
+              {collections.length === 0 && !creatingNew && <option value="">لا توجد نماذج بعد</option>}
+              {creatingNew && <option value="__new">نموذج جديد</option>}
+              {collections.map((collection) => (
+                <option key={collection.id} value={collection.id}>
+                  {collection.title}
+                </option>
+              ))}
+            </select>
+
+            <div className="-mx-1 hidden max-w-full snap-x gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:thin] sm:flex">
               {collections.length === 0 && !creatingNew && (
                 <div className="w-full rounded-xl border border-dashed border-slate-200 p-5 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
                   ابدأ بإنشاء أول نموذج.
@@ -972,7 +994,7 @@ export default function AdminModelsPage() {
               {creatingNew && (
                 <button
                   type="button"
-                  className="min-w-[220px] rounded-xl border border-emerald-400 bg-emerald-50 p-3 text-right text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100"
+                  className="w-[min(76vw,220px)] shrink-0 snap-start rounded-xl border border-emerald-400 bg-emerald-50 p-3 text-right text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100"
                 >
                   <span className="block text-sm font-black">نموذج جديد</span>
                   <span className="mt-1 block text-[11px] font-bold">اكتب بياناته ثم احفظ</span>
@@ -983,7 +1005,7 @@ export default function AdminModelsPage() {
                   key={collection.id}
                   type="button"
                   onClick={() => { setCreatingNew(false); setSelectedId(collection.id); setGeneratedUrl(''); }}
-                  className={`min-w-[230px] rounded-xl border p-3 text-right transition ${
+                  className={`w-[min(78vw,230px)] shrink-0 snap-start rounded-xl border p-3 text-right transition ${
                     selected?.id === collection.id
                       ? 'border-emerald-400 bg-emerald-50 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100'
                       : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700'
@@ -1015,8 +1037,8 @@ export default function AdminModelsPage() {
             </div>
           </section>
 
-          <section className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-            <div className="space-y-5">
+          <section className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
+            <div className="min-w-0 space-y-5">
               <Panel
                 number="1"
                 title="بيانات النموذج"
@@ -1129,13 +1151,13 @@ export default function AdminModelsPage() {
                   </div>
                 </details>
 
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
                   {selected ? (
                     <button
                       type="button"
                       onClick={() => void deleteCollection()}
                       disabled={saving}
-                      className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-black text-red-600 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-black text-red-600 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300 sm:w-auto"
                     >
                       <Trash2 size={16} />
                       حذف
@@ -1145,7 +1167,7 @@ export default function AdminModelsPage() {
                     type="button"
                     onClick={() => void saveCollection()}
                     disabled={saving || !form.title.trim()}
-                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50 sm:w-auto"
                   >
                     {saving ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
                     حفظ ونشر
@@ -1172,7 +1194,7 @@ export default function AdminModelsPage() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 sm:w-auto"
                       >
                         {uploading ? <Loader2 className="animate-spin" size={16} /> : <UploadCloud size={16} />}
                         رفع صور
@@ -1182,7 +1204,7 @@ export default function AdminModelsPage() {
                     <button
                       type="button"
                       disabled
-                      className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-400 dark:bg-slate-800"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-black text-slate-400 dark:bg-slate-800 sm:w-auto"
                     >
                       <UploadCloud size={16} />
                       احفظ أولاً
@@ -1210,7 +1232,7 @@ export default function AdminModelsPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                       {selected.assets.map((asset) => (
                         <div
                           key={asset.id}
@@ -1219,7 +1241,7 @@ export default function AdminModelsPage() {
                         >
                           <div className="relative aspect-[4/3] bg-slate-200 dark:bg-slate-800">
                             {asset.preview_url ? (
-                              <img src={asset.preview_url} alt={asset.title || ''} className="h-full w-full object-cover" />
+                              <img src={asset.preview_url} alt={asset.title || ''} className="h-full w-full object-contain" />
                             ) : (
                               <div className="grid h-full place-items-center text-slate-400">
                                 <Images size={30} />
@@ -1267,56 +1289,56 @@ export default function AdminModelsPage() {
                                 </div>
                               </div>
                             </details>
-                            <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="grid grid-cols-2 gap-2 min-[460px]:flex min-[460px]:flex-wrap">
                               <button
                                 type="button"
                                 onClick={() => void updateAsset(asset.id, { is_active: !asset.is_active })}
-                                className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black ${
+                                className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-black ${
                                   asset.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
                                 }`}
                               >
                                 <Eye size={13} />
-                                {asset.is_active ? 'ظاهرة' : 'مخفية'}
+                                <span className="truncate">{asset.is_active ? 'ظاهرة' : 'مخفية'}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => void copyAssetShareUrl(asset.id)}
                                 disabled={!mainLink?.url || !asset.is_active}
-                                className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2 py-1 text-xs font-black text-cyan-700 hover:bg-cyan-100 disabled:opacity-40 dark:bg-cyan-900/20 dark:text-cyan-300"
+                                className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-cyan-50 px-2 py-1.5 text-xs font-black text-cyan-700 hover:bg-cyan-100 disabled:opacity-40 dark:bg-cyan-900/20 dark:text-cyan-300"
                               >
                                 <Copy size={13} />
-                                رابط الصورة
+                                <span className="truncate">رابط الصورة</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => void updateAsset(asset.id, { show_in_gallery: !asset.show_in_gallery })}
                                 disabled={!asset.is_active}
-                                className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black disabled:opacity-40 ${
+                                className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-black disabled:opacity-40 ${
                                   asset.show_in_gallery
                                     ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300'
                                     : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
                                 }`}
                               >
                                 <Globe2 size={13} />
-                                {asset.show_in_gallery ? 'بالمعرض' : 'خارج المعرض'}
+                                <span className="truncate">{asset.show_in_gallery ? 'بالمعرض' : 'خارج المعرض'}</span>
                               </button>
                               {asset.access_pin_hash && (
                                 <button
                                   type="button"
                                   onClick={() => void updateAsset(asset.id, {}, undefined, true)}
-                                  className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300"
+                                  className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-amber-50 px-2 py-1.5 text-xs font-black text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300"
                                 >
                                   <LockKeyhole size={13} />
-                                  إزالة القفل
+                                  <span className="truncate">إزالة القفل</span>
                                 </button>
                               )}
                               <button
                                 type="button"
                                 onClick={() => void deleteAsset(asset.id)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-xs font-black text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300"
+                                className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-red-50 px-2 py-1.5 text-xs font-black text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300"
                               >
                                 <Trash2 size={13} />
-                                حذف
+                                <span className="truncate">حذف</span>
                               </button>
                             </div>
                           </div>
@@ -1328,11 +1350,11 @@ export default function AdminModelsPage() {
               )}
             </div>
 
-            <div className="space-y-5">
+            <div className="min-w-0 space-y-5">
               {selected ? (
                 <>
                   <Panel number="3" title="الرابط" subtitle="انسخ الرابط الرئيسي وأرسله للعميل.">
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-900/15">
+                    <div className="min-w-0 overflow-hidden rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-900/15">
                       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                         <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">الرابط الرئيسي</span>
                         {mainStatus && (
@@ -1343,30 +1365,30 @@ export default function AdminModelsPage() {
                       </div>
                       {mainLink ? (
                         <div className="space-y-3">
-                          <div className="flex gap-2">
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
                             <input
                               readOnly
                               dir="ltr"
                               value={mainLink.url || 'رابط قديم - دوّر الرابط لإنشاء رابط قابل للنسخ'}
-                              className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-emerald-900/50 dark:bg-slate-950 dark:text-slate-200"
+                              className="col-span-2 min-w-0 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-emerald-900/50 dark:bg-slate-950 dark:text-slate-200 sm:col-span-1"
                             />
                             <button
                               type="button"
                               onClick={() => void copyUrl(mainLink.url)}
                               disabled={!mainLink.url}
-                              className="rounded-xl bg-emerald-600 px-3 text-white disabled:opacity-50"
+                              className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-emerald-600 text-white disabled:opacity-50 sm:w-10"
                               aria-label="نسخ"
                             >
                               <Copy size={16} />
                             </button>
                             {mainLink.url && (
-                              <a href={mainLink.url} target="_blank" rel="noreferrer" className="grid place-items-center rounded-xl bg-slate-900 px-3 text-white" aria-label="فتح">
+                              <a href={mainLink.url} target="_blank" rel="noreferrer" className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-slate-900 text-white sm:w-10" aria-label="فتح">
                                 <ExternalLink size={16} />
                               </a>
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-                            <span className="inline-flex items-center gap-1"><Clock3 size={12} /> ينتهي: {formatDate(mainLink.expires_at)}</span>
+                          <div className="grid gap-1 text-[11px] text-slate-500 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+                            <span className="inline-flex min-w-0 items-center gap-1"><Clock3 size={12} /> <span className="truncate">ينتهي: {formatDate(mainLink.expires_at)}</span></span>
                             <span className="inline-flex items-center gap-1"><Eye size={12} /> {mainLink.view_count} مشاهدة</span>
                           </div>
                         </div>
@@ -1385,7 +1407,7 @@ export default function AdminModelsPage() {
 
                     <div className="space-y-2">
                       <span className="text-xs font-black text-slate-500">مدة التمديد أو التدوير</span>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-4">
                         {DURATION_PRESETS.map((preset) => (
                           <button
                             key={preset.minutes}
@@ -1429,14 +1451,14 @@ export default function AdminModelsPage() {
                     {generatedUrl && (
                       <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-3 dark:border-cyan-900/50 dark:bg-cyan-900/15">
                         <p className="mb-2 text-xs font-black text-cyan-700 dark:text-cyan-300">آخر رابط تم توليده</p>
-                        <div className="flex gap-2">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                           <input
                             readOnly
                             dir="ltr"
                             value={generatedUrl}
-                            className="min-w-0 flex-1 rounded-xl border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-cyan-900/50 dark:bg-slate-950 dark:text-slate-200"
+                            className="col-span-2 min-w-0 rounded-xl border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-cyan-900/50 dark:bg-slate-950 dark:text-slate-200 sm:col-span-1"
                           />
-                          <button onClick={() => void copyGenerated()} className="rounded-xl bg-cyan-600 px-3 text-white" aria-label="نسخ">
+                          <button onClick={() => void copyGenerated()} className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-cyan-600 text-white sm:w-10" aria-label="نسخ">
                             <Copy size={16} />
                           </button>
                         </div>
@@ -1600,7 +1622,7 @@ function QuickPublishPanel({
   const canSubmit = Boolean(form.title.trim()) && files.length > 0 && !busy;
 
   return (
-    <section className="rounded-2xl border-2 border-emerald-200 bg-white p-4 shadow-sm dark:border-emerald-900/50 dark:bg-slate-900 sm:p-5">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-white to-emerald-50/35 p-3 shadow-sm dark:border-emerald-900/50 dark:from-slate-900 dark:to-emerald-950/10 sm:p-5">
       <input
         ref={fileInputRef}
         type="file"
@@ -1609,9 +1631,9 @@ function QuickPublishPanel({
         className="hidden"
         onChange={(e) => onFilesChange(e.target.files)}
       />
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-black text-slate-950 dark:text-white">
+      <div className="mb-4 grid gap-3 sm:flex sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-lg font-black text-slate-950 dark:text-white sm:text-xl">
             <UploadCloud className="text-emerald-600" size={22} />
             نشر سريع
           </h2>
@@ -1623,19 +1645,19 @@ function QuickPublishPanel({
           type="button"
           onClick={onPickFiles}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 sm:w-auto"
         >
           <UploadCloud size={17} />
           رفع صورة
         </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(260px,0.8fr)_minmax(0,1.2fr)]">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.2fr)]">
         <button
           type="button"
           onClick={onPickFiles}
           disabled={busy}
-          className="min-h-[220px] rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-3 text-right transition hover:border-emerald-400 disabled:opacity-60 dark:border-emerald-900/50 dark:bg-emerald-900/10"
+          className="min-h-[150px] rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/60 p-3 text-right transition hover:border-emerald-400 disabled:opacity-60 dark:border-emerald-900/50 dark:bg-emerald-900/10 sm:min-h-[220px]"
         >
           {previewUrls.length > 0 ? (
             <div className="grid h-full grid-cols-2 gap-2">
@@ -1663,7 +1685,7 @@ function QuickPublishPanel({
           )}
         </button>
 
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
             <label className="space-y-1 md:col-span-2">
               <span className="text-xs font-black text-slate-500">التسمية</span>
@@ -1753,11 +1775,11 @@ function QuickPublishPanel({
             </div>
           </details>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
             <div className="text-xs font-bold text-slate-500">
               {files.length > 0 ? `${files.length} صورة جاهزة للنشر` : 'لم يتم اختيار صور بعد'}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-2 min-[430px]:grid-cols-2 sm:flex sm:flex-wrap">
               {files.length > 0 && (
                 <button
                   type="button"
@@ -1772,7 +1794,7 @@ function QuickPublishPanel({
                 type="button"
                 onClick={onSubmit}
                 disabled={!canSubmit}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
                 حفظ ونشر
@@ -1808,20 +1830,20 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+      <div className="mb-4 grid gap-3 sm:flex sm:flex-wrap sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-50 text-sm font-black text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
             {number}
           </span>
-          <div>
-            <h2 className="text-lg font-black text-slate-900 dark:text-white">{title}</h2>
+          <div className="min-w-0">
+            <h2 className="text-base font-black text-slate-900 dark:text-white sm:text-lg">{title}</h2>
             <p className="text-xs leading-6 text-slate-500">{subtitle}</p>
           </div>
         </div>
-        {action}
+        {action && <div className="min-w-0 w-full sm:w-auto">{action}</div>}
       </div>
-      <div className="space-y-4">{children}</div>
+      <div className="min-w-0 space-y-4">{children}</div>
     </section>
   );
 }
@@ -1858,7 +1880,7 @@ function AdminGalleryCard({
         aria-label="فتح الصورة"
       >
         {item.asset.preview_url ? (
-          <img src={item.asset.preview_url} alt={item.asset.title || item.collection.title} className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]" />
+          <img src={item.asset.preview_url} alt={item.asset.title || item.collection.title} className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02]" />
         ) : (
           <div className="grid h-full place-items-center text-slate-400">
             <Images size={30} />
@@ -1976,7 +1998,7 @@ function AdminGalleryLightbox({
 }) {
   return (
     <div className="fixed inset-0 z-[80] bg-slate-950 text-white">
-      <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-3 bg-slate-950/85 px-3 py-3 backdrop-blur sm:px-5">
+      <div className="absolute inset-x-0 top-0 z-10 grid gap-3 bg-slate-950/85 px-3 py-3 backdrop-blur sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
         <div className="min-w-0">
           <h2 className="line-clamp-1 text-sm font-black sm:text-base">
             {item.asset.title || item.collection.title}
@@ -1985,7 +2007,7 @@ function AdminGalleryLightbox({
             {item.collection.title} · {position} / {total}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-5 gap-2 sm:flex sm:items-center">
           <button type="button" onClick={onCopyShare} disabled={!item.shareUrl} className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white disabled:opacity-40" aria-label="نسخ رابط العميل" title="نسخ رابط العميل">
             <Link2 size={17} />
           </button>

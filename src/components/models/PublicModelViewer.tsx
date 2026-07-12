@@ -153,16 +153,16 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-4 py-3 text-xs font-bold text-slate-500 shadow-sm dark:bg-slate-900/80 dark:text-slate-300">
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl bg-white/80 px-3 py-3 text-xs font-bold text-slate-500 shadow-sm dark:bg-slate-900/80 dark:text-slate-300 sm:px-4">
         <AlertCircle size={15} />
         الصور المفتوحة يمكن عرضها بكامل الشاشة. الصور المقفولة تُفتح فقط بالـ PIN الصحيح.
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={`grid gap-4 ${assets.length === 1 ? 'mx-auto max-w-5xl' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
         {assets.map((asset, index) => (
           <figure
             key={asset.id}
-            className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-900/10 dark:border-slate-800 dark:bg-slate-900"
+            className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-900/10 dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl"
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
               {asset.signedUrl ? (
@@ -178,7 +178,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
                   <img
                     src={asset.signedUrl}
                     alt={asset.title || `نموذج ${index + 1}`}
-                    className="h-full w-full cursor-zoom-in object-cover transition duration-500 group-hover:scale-[1.03]"
+                    className="h-full w-full cursor-zoom-in object-contain transition duration-500 group-hover:scale-[1.02]"
                     loading={index < 3 ? 'eager' : 'lazy'}
                     onClick={() => openFullscreen(asset.id)}
                   />
@@ -195,7 +195,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
                       <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-300">{asset.pinHint}</p>
                     )}
                   </div>
-                  <div className="flex w-full max-w-xs gap-2">
+                  <div className="grid w-full max-w-xs grid-cols-[minmax(0,1fr)_auto] gap-2">
                     <input
                       value={assetPins[asset.id] || ''}
                       onChange={(event) => setAssetPins((current) => ({ ...current, [asset.id]: event.target.value }))}

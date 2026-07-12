@@ -115,10 +115,10 @@ export default function ModelsGalleryClient({ collections }: Props) {
 
       <main>
         <section className="border-b border-[#d9c27b]/60">
-          <div className="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="mx-auto grid max-w-7xl gap-5 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <p className="text-sm font-black text-amber-600">المعرض</p>
-              <h2 className="mt-2 text-4xl font-black text-slate-950 dark:text-white sm:text-6xl">معرض القوالب</h2>
+              <h2 className="mt-2 text-3xl font-black text-slate-950 dark:text-white sm:text-6xl">معرض القوالب</h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-300">
                 استعرض مجموعة مختارة من النماذج الجاهزة والأعمال السابقة.
               </p>
@@ -178,11 +178,11 @@ export default function ModelsGalleryClient({ collections }: Props) {
               </div>
             </div>
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredItems.map((item, index) => (
                 <figure
                   key={item.id}
-                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
+                  className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
                     {item.imageUrl ? (
@@ -198,7 +198,7 @@ export default function ModelsGalleryClient({ collections }: Props) {
                         <img
                           src={item.imageUrl}
                           alt={item.title || item.collectionTitle}
-                          className="h-full w-full cursor-zoom-in object-cover transition duration-500 group-hover:scale-[1.03]"
+                          className="h-full w-full cursor-zoom-in object-contain transition duration-500 group-hover:scale-[1.02]"
                           loading={index < 8 ? 'eager' : 'lazy'}
                           onClick={() => openFullscreen(item.id)}
                         />
