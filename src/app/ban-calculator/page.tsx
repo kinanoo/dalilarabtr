@@ -1,5 +1,6 @@
 import BanCalculatorClient from './BanCalculatorClient';
 import ToolSchema from '@/components/ToolSchema';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -22,6 +23,7 @@ export default function BanCalculatorPage() {
         <>
             <ToolSchema tool="ban-calculator" />
             <BanCalculatorClient />
+            <ToolFooter toolId="ban-calculator" />
         </>
     );
 }

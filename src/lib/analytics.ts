@@ -44,6 +44,37 @@ export const trackWhatsAppMessageSent = (messageType: string) => {
 };
 
 // ============================================
+// 🛠️ Tool Usage Events
+// ============================================
+
+// Fires TWO signals when a visitor actually opens a tool:
+//   1. a GA event (immediate, for the GA funnel), and
+//   2. a row into analytics_events via /api/track (event_name='tool_use',
+//      meta.tool=<id>) — our own DB, so the owner can rank tools by real usage
+//      (aggregate: count where event_name='tool_use' group by meta->>'tool').
+// This is a distinct, higher-intent signal than a raw page view. Fire-and-forget:
+// never let a tracking failure affect the tool itself.
+export const trackToolUse = (toolId: string) => {
+    trackEvent('tool_use', 'tools', toolId);
+    if (typeof window === 'undefined') return;
+    try {
+        const body = JSON.stringify({
+            event_name: 'tool_use',
+            page_path: window.location.pathname,
+            meta: { tool: toolId },
+        });
+        // sendBeacon survives navigation away from the tool page; fetch is the fallback.
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/track', new Blob([body], { type: 'application/json' }));
+        } else {
+            fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+        }
+    } catch {
+        /* tracking must never throw into the UI */
+    }
+};
+
+// ============================================
 // 💼 Service Events
 // ============================================
 

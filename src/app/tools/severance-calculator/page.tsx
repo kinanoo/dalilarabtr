@@ -2,6 +2,7 @@ import SeveranceCalculatorClient from './SeveranceCalculatorClient';
 import ToolSchema, { getToolFaqs } from '@/components/ToolSchema';
 import ToolFaq from '@/components/ToolFaq';
 import RelatedFinanceTools from '@/components/RelatedFinanceTools';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -28,6 +29,7 @@ export default function SeveranceCalculatorPage() {
             <SeveranceCalculatorClient />
             <ToolFaq faqs={getToolFaqs('severance-calculator')} />
             <RelatedFinanceTools current="severance" />
+            <ToolFooter toolId="severance-calculator" />
         </>
     );
 }

@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import type { AdminCode } from '@/lib/types';
 import CodesClient from './CodesClient';
 import CodesLegalNote from '@/components/codes/CodesLegalNote';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { SITE_CONFIG } from '@/lib/config';
 import { normalizeLang, type Lang } from '@/lib/codesI18n';
 
@@ -91,6 +92,7 @@ export default async function CodesPage({ searchParams }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(definedTermSet) }} />
       <CodesClient initialCodes={initialCodes} lang={lang} />
       <CodesLegalNote />
+      {lang !== 'tr' && <ToolFooter toolId="codes" />}
     </>
   );
 }

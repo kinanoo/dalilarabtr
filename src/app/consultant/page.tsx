@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import ConsultantClient from './ConsultantClient';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default async function ConsultantPage() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
       <ConsultantClient initialComments={[]} initialScenarios={initialScenarios} />
+      <ToolFooter toolId="consultant" />
     </main>
   );
 }

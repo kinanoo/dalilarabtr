@@ -1,5 +1,6 @@
 import PharmacyClient from './PharmacyClient';
 import ToolSchema from '@/components/ToolSchema';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -24,6 +25,7 @@ export default function PharmacyPage() {
         <>
             <ToolSchema tool="pharmacy" />
             <PharmacyClient />
+            <ToolFooter toolId="pharmacy" />
         </>
     );
 }

@@ -1,5 +1,6 @@
 import KimlikClient from './KimlikClient';
 import ToolSchema from '@/components/ToolSchema';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -21,6 +22,7 @@ export default function KimlikCheckPage() {
         <>
             <ToolSchema tool="kimlik-checker" />
             <KimlikClient />
+            <ToolFooter toolId="kimlik-check" />
         </>
     );
 }

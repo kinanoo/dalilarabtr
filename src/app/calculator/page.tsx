@@ -4,6 +4,7 @@ import PageHero from '@/components/PageHero';
 import { Calculator, Receipt, ExternalLink, AlertTriangle } from 'lucide-react';
 import ToolSchema from '@/components/ToolSchema';
 import InlineRelatedArticles from '@/components/InlineRelatedArticles';
+import ToolFooter from '@/components/tools/ToolFooter';
 
 /*
  * Cost calculator — DISABLED on purpose.
@@ -82,6 +83,8 @@ export default function CalculatorPage() {
           <InlineRelatedArticles currentArticleId="" category="أنواع الإقامات" />
         </div>
       </div>
+
+      <ToolFooter toolId="calculator" />
     </>
   );
 }

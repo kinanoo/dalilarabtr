@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalComments';
 import RelatedArticles from '@/components/RelatedArticles';
+import ToolFooter from '@/components/tools/ToolFooter';
 import logger from '@/lib/logger';
 
 export const metadata: Metadata = {
@@ -81,6 +82,8 @@ export default async function ZonesPage() {
                 <UniversalComments entityType="zone" entityId="main-map" />
                 <RelatedArticles currentArticleId="" category="السكن والحياة" />
             </div>
+
+            <ToolFooter toolId="zones" />
         </main>
     );
 }

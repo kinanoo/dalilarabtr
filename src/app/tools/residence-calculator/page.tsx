@@ -1,5 +1,6 @@
 import ResidenceCalculatorClient from './ResidenceCalculatorClient';
 import ToolSchema from '@/components/ToolSchema';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -21,6 +22,7 @@ export default function ResidenceCalculatorPage() {
         <>
             <ToolSchema tool="residence-calculator" />
             <ResidenceCalculatorClient />
+            <ToolFooter toolId="residence-calculator" />
         </>
     );
 }

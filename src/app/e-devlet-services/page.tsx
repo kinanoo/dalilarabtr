@@ -3,6 +3,7 @@ import EDevletServicesHub from '@/components/EDevletServicesHub';
 import type { Article } from '@/lib/types';
 import { Metadata } from 'next';
 import ShareMenu from '@/components/ShareMenu';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { SITE_CONFIG } from '@/lib/config';
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default async function EDevletServicesPage() {
           variant="subtle"
         />
       </div>
+      <ToolFooter toolId="edevlet" />
     </main>
   );
 }

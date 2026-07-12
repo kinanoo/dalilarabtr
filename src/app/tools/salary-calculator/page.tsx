@@ -2,6 +2,7 @@ import SalaryCalculatorClient from './SalaryCalculatorClient';
 import ToolSchema, { getToolFaqs } from '@/components/ToolSchema';
 import ToolFaq from '@/components/ToolFaq';
 import RelatedFinanceTools from '@/components/RelatedFinanceTools';
+import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -30,6 +31,7 @@ export default function SalaryCalculatorPage() {
             <SalaryCalculatorClient />
             <ToolFaq faqs={getToolFaqs('salary-calculator')} />
             <RelatedFinanceTools current="salary" />
+            <ToolFooter toolId="salary-calculator" />
         </>
     );
 }
