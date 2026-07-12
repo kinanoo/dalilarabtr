@@ -1,7 +1,54 @@
 import PageHero from '@/components/PageHero';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ShieldCheck, Database, Bell, MessageCircle, UserRound, Trash2, AlertTriangle, Link as LinkIcon, Users, Clock } from 'lucide-react';
+import { ShieldCheck, Database, Bell, MessageCircle, UserRound, Trash2, AlertTriangle, Link as LinkIcon, Users, Clock, HelpCircle } from 'lucide-react';
+
+// Explicit yes/no answers to the questions people actually ask about their
+// data. Kept as plain strings so the same content feeds BOTH the visible
+// section and the FAQPage JSON-LD (Google requires the marked-up Q&A to be
+// visible on the page). Every answer reflects how the site truly works.
+const PRIVACY_FAQ: { q: string; a: string }[] = [
+  {
+    q: 'هل تجمعون اسمي؟',
+    a: 'لا نطلب اسمك لتصفّح الموقع. الاسم الوحيد الذي قد نخزّنه هو «اسم العرض» إن اخترتَ تسجيل الدخول بحساب غوغل (اختياري بالكامل). طلب الخدمة عبر واتساب لا يمرّ بخوادمنا أصلاً.',
+  },
+  {
+    q: 'هل تجمعون رقم هاتفي؟',
+    a: 'لا نجمعه ولا نخزّنه على خوادمنا. عند إرسال طلب عبر واتساب يظهر رقمك لفريقنا داخل واتساب فقط — كأي محادثة واتساب عادية — وذلك يخضع لسياسة واتساب لا لسياستنا. لا يوجد حقل «رقم هاتف» في أي نموذج على الموقع.',
+  },
+  {
+    q: 'هل تجمعون رقم الكملك؟',
+    a: 'لا، إطلاقاً. لا يوجد أي حقل لرقم الكملك في الموقع ولا نطلبه عبر أي نموذج عام. حتى أداة «فحص الكملك» تتحقّق من الرقم على جهازك محلياً ولا تُرسله إلينا.',
+  },
+  {
+    q: 'هل تستقبلون صور وثائق؟',
+    a: 'لا عبر الموقع — لا يوجد رفع ملفات في نموذج الطلب. أي وثيقة تشاركها تكون داخل محادثة واتساب بمبادرتك أنت وبعد الاتفاق فقط. لا ترسل أي صورة وثيقة قبل التواصل والتأكّد.',
+  },
+  {
+    q: 'أين تُخزَّن الطلبات؟',
+    a: 'لا تُخزَّن لدينا أصلاً. نموذج الطلب يفتح واتساب برسالة جاهزة على جهازك؛ لا نحتفظ بأي نسخة على خوادمنا. قاعدة بياناتنا (لدى Supabase) تخزّن فقط الحساب والتعليقات والاشتراكات إن استخدمتها بنفسك.',
+  },
+  {
+    q: 'من يستطيع الوصول إلى بياناتي؟',
+    a: 'محادثة واتساب: أنت وفريقنا فقط (بتشفير واتساب). الحساب والاشتراكات وبلاغات الأحياء: فريق إدارة دليل العرب فقط، ولأغراض التشغيل والدعم لا غير. تعليقاتك العامة: مرئية للجميع لأنك نشرتها علناً. لا معلنين ولا وسطاء بيانات ولا بيع لبياناتك.',
+  },
+  {
+    q: 'كم مدة الاحتفاظ بها؟',
+    a: 'الطلبات: صفر — لا تُخزَّن. الحساب والتعليقات والنشرة البريدية: تبقى ما دام حسابك/اشتراكك قائماً وتُحذف فور طلبك. اشتراك الإشعارات المعطّل: يُحذف تلقائياً. نحتفظ بالحد الأدنى وللمدة اللازمة للغرض فقط.',
+  },
+  {
+    q: 'كيف أطلب حذف بياناتي؟',
+    a: 'راسلنا عبر صفحة التواصل واطلب الحذف — ننفّذه دون شروط ودون إبطاء: حسابك، تعليقاتك، أو بريدك في النشرة. طلبات واتساب لا تحتاج حذفاً لأنها ليست مخزّنة عندنا.',
+  },
+  {
+    q: 'هل تستخدمون واتساب أو أطراف ثالثة؟',
+    a: 'نعم بشفافية: واتساب (لاستقبال الطلبات — يخضع لسياسته)، Supabase (قاعدة البيانات)، Cloudflare (الاستضافة والحماية، وقد تعالج عنوان IP تقنياً)، وغوغل (لتسجيل الدخول الاختياري وإحصاءات مجمّعة لا تحدّد هويتك). لا نستخدم أي أدوات تتبّع إعلانية.',
+  },
+  {
+    q: 'ما البيانات التي لا يجب إرسالها إلا عند الضرورة؟',
+    a: 'لا ترسل أبداً عبر نماذج عامة أو لأي شخص قبل التأكّد: رقم الكملك الكامل، صور جواز السفر أو الإقامة أو الهوية، بياناتك البنكية، أو كلمات المرور. شاركها فقط داخل واتساب وبعد اتفاق صريح ولمن تأكّدت أنه رقمنا الرسمي — ونحن لا نطلب أياً منها عبر الموقع.',
+  },
+];
 
 export const metadata: Metadata = {
   title: 'سياسة الخصوصية',
@@ -23,6 +70,20 @@ const SECTIONS = [
         الموقع منصة معلومات وإرشاد، ولا يتطلب تصفّحه إنشاء أي حساب أو تقديم أي بيانات شخصية.
         نجمع أقل قدر ممكن من البيانات، وفقط عندما ترسلها أنت بنفسك لغرض واضح.
       </p>
+    ),
+  },
+  {
+    icon: HelpCircle,
+    title: 'أسئلة صريحة عن بياناتك — إجابات مباشرة',
+    body: (
+      <dl className="space-y-2.5">
+        {PRIVACY_FAQ.map((f) => (
+          <div key={f.q} className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-3.5">
+            <dt className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">{f.q}</dt>
+            <dd className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{f.a}</dd>
+          </div>
+        ))}
+      </dl>
     ),
   },
   {
@@ -134,8 +195,19 @@ const SECTIONS = [
 ];
 
 export default function PrivacyPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: PRIVACY_FAQ.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
+
   return (
     <main className="flex flex-col min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <PageHero
         title="سياسة الخصوصية"
         description="بوضوح وبلا تعقيد: ما الذي نجمعه فعلاً، وما الذي لا نطلبه أبداً، وكيف تحذف بياناتك."

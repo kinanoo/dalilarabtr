@@ -118,6 +118,13 @@ const nextConfig: NextConfig = {
         destination: '/article/turkey-work-visa-guide',
         permanent: true,
       },
+      // Per-service request landing pages were removed — send any old
+      // /request/<serviceId> URL to the main request page (no 404s).
+      {
+        source: '/request/:service',
+        destination: '/request',
+        permanent: true,
+      },
     ];
   },
 
