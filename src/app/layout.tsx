@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from 'react';
+import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import "./globals.css";
 import "../styles/animations.css";
@@ -147,7 +147,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   // Google Analytics ID from environment variable
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -205,7 +205,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#10b981" />
 
         {/* Sitemap discovery */}
-        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+        <link rel="sitemap" type="application/xml" href="/server-sitemap-index.xml" />
 
         {/* RSS feed — picked up by feed readers (Feedly, NetNewsWire) and
             relay/automation tools (IFTTT/Zapier → Telegram, Slack, Discord).

@@ -255,20 +255,27 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-4 mt-6">
-          <button onClick={() => go(-1)} aria-label="السابق" className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:border-emerald-400 transition-all">
+          <button type="button" onClick={() => go(-1)} aria-label="السابق" className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:border-emerald-400 transition-all">
             <ChevronRight size={20} />
           </button>
           <div className="flex items-center gap-1.5" dir="ltr">
             {items.slice(0, Math.min(n, 9)).map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => { bump(); setActive(i); }}
                 aria-label={`بطاقة ${i + 1}`}
-                className={`rounded-full transition-all ${i === active ? 'w-6 h-2 bg-emerald-500' : 'w-2 h-2 bg-emerald-200 dark:bg-slate-700 hover:bg-emerald-300'}`}
-              />
+                aria-current={i === active ? 'true' : undefined}
+                className={`group relative h-8 w-8 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 ${i === active ? '-mx-1' : '-mx-3'}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-1/2 top-1/2 rounded-full transition-all -translate-x-1/2 -translate-y-1/2 ${i === active ? 'w-6 h-2 bg-emerald-500' : 'w-2 h-2 bg-emerald-200 dark:bg-slate-700 group-hover:bg-emerald-300'}`}
+                />
+              </button>
             ))}
           </div>
-          <button onClick={() => go(1)} aria-label="التالي" className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:border-emerald-400 transition-all">
+          <button type="button" onClick={() => go(1)} aria-label="التالي" className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:border-emerald-400 transition-all">
             <ChevronLeft size={20} />
           </button>
         </div>

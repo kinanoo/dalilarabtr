@@ -290,14 +290,6 @@ export function generateWebSiteSchema() {
     description: SITE_CONFIG.slogan,
     url: SITE_CONFIG.siteUrl,
     inLanguage: 'ar',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${SITE_CONFIG.siteUrl}/faq?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 

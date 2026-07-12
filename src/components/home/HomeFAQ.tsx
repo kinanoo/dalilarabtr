@@ -34,15 +34,18 @@ export default function HomeFAQ() {
                 <div className="space-y-2">
                     {TOP_FAQS.map((faq, index) => {
                         const isOpen = openId === faq.id;
+                        const answerId = `home-faq-answer-${faq.id}`;
                         return (
                             <div
                                 key={faq.id}
                                 className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-600 hover:-translate-y-0.5"
                             >
                                 <button
+                                    type="button"
                                     onClick={() => toggle(faq.id)}
                                     className="w-full flex items-start gap-3 p-4 text-right"
                                     aria-expanded={isOpen}
+                                    aria-controls={answerId}
                                 >
                                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center mt-0.5">
                                         {index + 1}
@@ -55,7 +58,7 @@ export default function HomeFAQ() {
                                         className={`flex-shrink-0 text-slate-400 mt-0.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                                     />
                                 </button>
-                                <div className={`grid transition-all duration-300 ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                                <div id={answerId} className={`grid transition-all duration-300 ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                                     <div className="overflow-hidden">
                                         <div className="px-4 pb-4 pr-13">
                                             <p className="text-sm text-slate-600 dark:text-slate-300 leading-loose">
