@@ -234,6 +234,32 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const gate = await requireAdmin();
+    if (!gate.ok) return gate.res;
+
+    const body = await request.json().catch(() => ({}));
+    if (body?.action !== 'set_all_active') {
+      return NextResponse.json({ error: 'unsupported_action' }, { status: 400 });
+    }
+
+    const isActive = body?.is_active === true;
+    const { data, error } = await gate.svc
+      .from('model_collections')
+      .update({ is_active: isActive })
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .select('id')
+      .returns<Array<{ id: string }>>();
+    if (error) throw error;
+
+    return NextResponse.json({ ok: true, count: data?.length || 0 });
+  } catch (err) {
+    logger.error('admin/models PATCH failed:', err);
+    return NextResponse.json({ error: 'models_bulk_update_failed' }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const gate = await requireAdmin();

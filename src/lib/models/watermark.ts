@@ -45,7 +45,7 @@ export async function watermarkModelImage(file: File, text = 'موديلس'): Pr
     }
 
     const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, 'image/webp', 0.9);
+      canvas.toBlob(resolve, 'image/webp', 0.95);
     });
     if (!blob) return file;
     return new File([blob], file.name.replace(/\.[^.]+$/, '.models.webp'), { type: 'image/webp' });

@@ -86,6 +86,7 @@ export default function AdminModelsPage() {
   const [mainDurationMinutes, setMainDurationMinutes] = useState(60 * 24);
   const [bulkDurationMinutes, setBulkDurationMinutes] = useState(60 * 24 * 2);
   const [rotating, setRotating] = useState(false);
+  const [bulkVisibilityChanging, setBulkVisibilityChanging] = useState(false);
   const [assetPinDrafts, setAssetPinDrafts] = useState<Record<string, string>>({});
 
   const selected = useMemo(() => {
@@ -107,13 +108,13 @@ export default function AdminModelsPage() {
 
   const stats = useMemo(() => {
     const imagesCount = collections.reduce((total, collection) => total + collection.assets.length, 0);
+    const visibleCount = collections.filter((collection) => collection.is_active).length;
     const lockedCount = collections.reduce((total, collection) => (
       total
       + (collection.access_pin_hash ? 1 : 0)
       + collection.assets.filter((asset) => asset.access_pin_hash).length
     ), 0);
-    const linksCount = collections.reduce((total, collection) => total + collection.links.length, 0);
-    return { imagesCount, lockedCount, linksCount };
+    return { imagesCount, lockedCount, visibleCount };
   }, [collections]);
 
   const mainStatus = mainLink ? linkStatus(mainLink) : null;
@@ -220,7 +221,7 @@ export default function AdminModelsPage() {
     const toastId = toast.loading(`جاري رفع ${files.length} صورة...`);
     try {
       for (const raw of Array.from(files)) {
-        const compressed = await compressImage(raw, 1800, 0.86);
+        const compressed = await compressImage(raw, 3200, 0.94);
         const watermarked = await watermarkModelImage(compressed, form.watermark_text || 'موديلس');
         const payload = new FormData();
         payload.append('collectionId', selected.id);
@@ -391,6 +392,29 @@ export default function AdminModelsPage() {
     }
   }
 
+  async function setAllModelsVisible(isActive: boolean) {
+    const message = isActive
+      ? 'سيتم إظهار كل النماذج للعملاء. هل أنت متأكد؟'
+      : 'سيتم إخفاء كل النماذج عن العملاء فوراً. هل أنت متأكد؟';
+    if (!confirm(message)) return;
+    setBulkVisibilityChanging(true);
+    try {
+      const res = await fetch('/api/admin/models', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_all_active', is_active: isActive }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'فشل تعديل ظهور النماذج');
+      toast.success(isActive ? 'تم إظهار كل النماذج' : 'تم إخفاء كل النماذج');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل تعديل ظهور النماذج');
+    } finally {
+      setBulkVisibilityChanging(false);
+    }
+  }
+
   async function revokeLink(id: string) {
     if (!confirm('إلغاء هذا الرابط فوراً؟')) return;
     try {
@@ -427,7 +451,7 @@ export default function AdminModelsPage() {
         theme="cyan"
         title="موديلس"
         eyebrow="نشر النماذج"
-        subtitle="أنشئ نموذجاً، ارفع صوره، ثم انسخ الرابط الخاص من مكان واحد."
+        subtitle="النموذج هو ألبوم صور لخدمة أو كتاب أو شهادة. اكتب شرحاً قصيراً، ارفع الصور، ثم انسخ الرابط."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <select
@@ -447,7 +471,25 @@ export default function AdminModelsPage() {
               className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-3 py-2 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50"
             >
               {rotating ? <Loader2 className="animate-spin" size={15} /> : <RefreshCw size={15} />}
-              تدوير الكل
+              تدوير روابط الكل
+            </button>
+            <button
+              type="button"
+              onClick={() => void setAllModelsVisible(false)}
+              disabled={bulkVisibilityChanging || collections.length === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300"
+            >
+              {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Ban size={15} />}
+              إخفاء الكل
+            </button>
+            <button
+              type="button"
+              onClick={() => void setAllModelsVisible(true)}
+              disabled={bulkVisibilityChanging || collections.length === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-900/20 dark:text-emerald-300"
+            >
+              {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Eye size={15} />}
+              إظهار الكل
             </button>
             <button
               type="button"
@@ -477,8 +519,8 @@ export default function AdminModelsPage() {
         <>
           <div className="grid gap-3 sm:grid-cols-4">
             <Stat label="النماذج" value={collections.length} />
+            <Stat label="ظاهرة" value={stats.visibleCount} />
             <Stat label="الصور" value={stats.imagesCount} />
-            <Stat label="الروابط" value={stats.linksCount} />
             <Stat label="مقفولة" value={stats.lockedCount} />
           </div>
 
@@ -521,6 +563,18 @@ export default function AdminModelsPage() {
                   <span className="line-clamp-1 text-sm font-black">{collection.title}</span>
                   <span className="mt-1 block text-[11px] text-slate-500">
                     {collection.assets.length} صورة / {collection.links.length} رابط
+                  </span>
+                  <span className="mt-2 flex flex-wrap gap-1">
+                    {!collection.is_active && (
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                        مخفي
+                      </span>
+                    )}
+                    {collection.access_pin_hash && (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+                        PIN
+                      </span>
+                    )}
                   </span>
                 </button>
               ))}
@@ -646,12 +700,12 @@ export default function AdminModelsPage() {
                 </div>
               </Panel>
 
-              {selected && (
+              {(selected || creatingNew) && (
                 <Panel
                   number="2"
-                  title="الصور"
-                  subtitle="ارفع صورة واحدة أو عدة صور. الخيارات الخاصة بكل صورة موجودة تحتها."
-                  action={(
+                  title="صور النموذج"
+                  subtitle={selected ? 'ارفع صورة واحدة أو عدة صور لنفس النموذج مثل الأمام والخلف والتفاصيل.' : 'مكان الصور هنا. احفظ بيانات النموذج أولاً، ثم سيظهر زر رفع الصور في هذا المكان.'}
+                  action={selected ? (
                     <>
                       <input
                         ref={fileInputRef}
@@ -671,11 +725,36 @@ export default function AdminModelsPage() {
                         رفع صور
                       </button>
                     </>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-400 dark:bg-slate-800"
+                    >
+                      <UploadCloud size={16} />
+                      احفظ أولاً
+                    </button>
                   )}
                 >
-                  {selected.assets.length === 0 ? (
-                    <div className="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
-                      لا توجد صور بعد
+                  {!selected ? (
+                    <div className="rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-8 text-center dark:border-emerald-900/50 dark:bg-emerald-900/10">
+                      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
+                        <UploadCloud size={24} />
+                      </div>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white">هنا تضيف صور النموذج</h3>
+                      <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-slate-500">
+                        اكتب العنوان والشرح واضغط حفظ ونشر. بعدها ارفع صورة واحدة أو عدة صور لنفس الخدمة، وتقدر تقفل صورة معينة أو تخفيها لاحقاً.
+                      </p>
+                    </div>
+                  ) : selected.assets.length === 0 ? (
+                    <div className="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
+                      <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                        <Images size={22} />
+                      </div>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white">لا توجد صور بعد</h3>
+                      <p className="mt-2 text-xs font-bold leading-6 text-slate-400">
+                        اضغط رفع صور لإضافة صورة أو عدة صور. كل الصور ستظهر للعميل داخل نفس الرابط.
+                      </p>
                     </div>
                   ) : (
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
