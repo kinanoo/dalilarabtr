@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
     MapPin, Briefcase, ShieldAlert, ArrowLeft, Building2, FileText,
     BadgeCheck, Landmark, ExternalLink, Home, CalendarClock,
+    Pill, AlertTriangle, IdCard,
 } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -66,7 +67,23 @@ async function getCityData(slug: string) {
         } catch { /* graceful */ }
     }
 
-    return { city, providers, closedCount: cityZones.length, districts, cityArticles };
+    // Kimlik + residence pages — every city visitor needs these, so surface the
+    // core كملك/إقامة guides for internal-link equity and topical depth.
+    let residenceArticles: { slug: string | null; title: string }[] = [];
+    if (supabase) {
+        try {
+            const { data } = await supabase
+                .from('articles')
+                .select('slug, title')
+                .eq('status', 'approved')
+                .or('title.ilike.%كملك%,title.ilike.%الإقامة%,title.ilike.%الحماية المؤقتة%,title.ilike.%تصريح الإقامة%')
+                .order('published_at', { ascending: false })
+                .limit(6);
+            residenceArticles = (data as { slug: string | null; title: string }[]) || [];
+        } catch { /* graceful */ }
+    }
+
+    return { city, providers, closedCount: cityZones.length, districts, cityArticles, residenceArticles };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -91,15 +108,26 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
     const { slug } = await params;
     const data = await getCityData(slug);
     if (!data) notFound();
-    const { city, providers, closedCount, districts, cityArticles } = data;
+    const { city, providers, closedCount, districts, cityArticles, residenceArticles } = data;
     const base = SITE_CONFIG.siteUrl;
     const topProviders = providers.slice(0, 8);
 
     const faqs = [
         { q: `كم عدد الأحياء المغلقة لتسجيل الأجانب في ${city.ar}؟`, a: closedCount > 0 ? `يوجد ${closedCount} حيّاً مغلقاً أمام تسجيل الأجانب في ${city.ar}، موزّعة على ${districts.length} منطقة. تحقّق دائماً أن الحيّ مفتوح قبل استئجار أو شراء سكن.` : `لا توجد أحياء مغلقة مسجّلة حالياً في ${city.ar} في قائمتنا. تحقّق دائماً قبل التسجيل.` },
         { q: `كم عدد مقدّمي الخدمات العرب في ${city.ar}؟`, a: providers.length > 0 ? `يضمّ دليل العرب ${providers.length} مقدّم خدمة عربيّ موثوق في ${city.ar} — أطباء ومحامون ومترجمون وعقارات وغيرها، مع تواصل مباشر عبر واتساب.` : `لا يوجد مقدّمو خدمات مسجّلون في ${city.ar} بعد — يمكن إضافة الخدمات مجاناً.` },
+        { q: `أين أجد صيدلية مناوبة في ${city.ar} الآن؟`, a: `استخدم أداة الصيدليات المناوبة في دليل العرب أو بوابة e-Devlet الرسمية، واختر ولاية ${city.ar} لعرض الصيدليات المفتوحة حالياً على مدار الساعة (nöbetçi eczane).` },
+        { q: `أين مديرية الهجرة والنفوس في ${city.ar}؟`, a: `لمعاملات الإقامة والكملك: راجع مديرية الهجرة (Göç İdaresi) بولاية ${city.ar} بعد حجز موعد عبر randevu.goc.gov.tr. ولمعاملات النفوس (الهوية ودفتر العائلة): مديرية النفوس (Nüfus Müdürlüğü) أو بوابة nvi.gov.tr.` },
         { q: `كيف أحجز موعد الإقامة (Randevu) في ${city.ar}؟`, a: `عبر بوابة دائرة الهجرة الرسمية randevu.goc.gov.tr — اختر ولاية ${city.ar} ونوع المعاملة ثم احجز أقرب موعد متاح.` },
         { q: `كيف أعرف إن كان الحيّ مفتوحاً لتسجيل الأجانب في ${city.ar}؟`, a: `استخدم أداة فحص الأحياء المغلقة في دليل العرب، أو استعلم رسمياً من دائرة الهجرة قبل توقيع عقد السكن.` },
+    ];
+
+    const localWarnings = [
+        closedCount > 0
+            ? `احذر توقيع عقد سكن في أحد الأحياء الـ${closedCount} المغلقة لتسجيل الأجانب في ${city.ar} — لن تستطيع تسجيل عنوانك (Adres) ولا استكمال معاملة الإقامة. تحقّق من الحيّ أولاً.`
+            : `تحقّق دائماً أن الحيّ مفتوح لتسجيل الأجانب في ${city.ar} قبل توقيع عقد السكن — التسجيل في حيّ مغلق يعطّل معاملة الإقامة.`,
+        `لا تدفع أي مبلغ لسمسار أو مكتب «معقّب» في ${city.ar} قبل رؤية الخدمة والاتفاق الموثّق — كثير من عمليات النصب تبدأ بدفعة مقدّمة ثم انقطاع.`,
+        `انتحال الصفة: لا جهة رسمية — ولا «دليل العرب» — تطلب رقم كملكك الكامل أو صور جوازك/إقامتك عبر الهاتف أو الرسائل. أي طلب كهذا احتيال.`,
+        `مواعيد الإقامة الرسمية في ${city.ar} تُحجز مجاناً عبر randevu.goc.gov.tr فقط — احذر من يبيعك «موعداً» مقابل مال.`,
     ];
 
     const jsonLd = {
@@ -234,6 +262,46 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                     </div>
                 </section>
 
+                {/* Pharmacies on duty */}
+                <section>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                        <Pill size={20} className="text-green-600" /> الصيدليات المناوبة في {city.ar}
+                    </h2>
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+                        <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed mb-4">
+                            لمعرفة أقرب صيدلية مناوبة (nöbetçi eczane) مفتوحة الآن في {city.ar} على مدار الساعة، افتح الأداة واختر ولاية {city.ar} — تعرض القائمة الرسمية المحدّثة يومياً مع العناوين وأرقام الهاتف.
+                        </p>
+                        <div className="flex flex-wrap gap-2.5">
+                            <Link href="/tools/pharmacy" className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black px-4 py-2.5 transition-colors">
+                                <Pill size={16} /> صيدليات {city.ar} المناوبة الآن
+                            </Link>
+                            <a href="https://www.turkiye.gov.tr/saglik-bakanligi-nobetci-eczane-sorgulama" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-black px-4 py-2.5 hover:border-emerald-300 transition-colors">
+                                <ExternalLink size={15} /> القائمة الرسمية (e-Devlet)
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Local warnings */}
+                <section>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                        <AlertTriangle size={20} className="text-red-500" /> تحذيرات محلية تهمّك في {city.ar}
+                    </h2>
+                    <ul className="space-y-2.5">
+                        {localWarnings.map((w, i) => (
+                            <li key={i} className="flex items-start gap-3 rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50/60 dark:bg-red-950/20 p-4">
+                                <AlertTriangle size={17} className="text-red-500 shrink-0 mt-0.5" />
+                                <span className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed">{w}</span>
+                            </li>
+                        ))}
+                    </ul>
+                    <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                        تعرّضت لمحاولة نصب في {city.ar}؟ راجع{' '}
+                        <Link href="/codes" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline">الأكواد الأمنية</Link>
+                        {' '}و<Link href="/consultant" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline">دليل المواقف</Link>.
+                    </p>
+                </section>
+
                 {/* Guides */}
                 <section>
                     <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
@@ -256,16 +324,17 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                     </div>
                 </section>
 
-                {/* Official links */}
+                {/* Immigration + civil registry + official links */}
                 <section>
                     <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
-                        <Landmark size={20} className="text-blue-500" /> روابط رسمية سريعة
+                        <Landmark size={20} className="text-blue-500" /> الهجرة والنفوس والروابط الرسمية في {city.ar}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
-                            { href: 'https://www.goc.gov.tr/', label: 'دائرة الهجرة (Göç İdaresi)', note: 'مواعيد وشؤون الإقامة' },
-                            { href: 'https://www.turkiye.gov.tr/', label: 'الحكومة الإلكترونية (e-Devlet)', note: 'الخدمات الرسمية' },
-                            { href: 'https://randevu.goc.gov.tr/', label: 'حجز موعد الإقامة (Randevu)', note: 'حجز موعد göç idaresi' },
+                            { href: 'https://randevu.goc.gov.tr/', label: 'حجز موعد الإقامة (Randevu)', note: `اختر ولاية ${city.ar} ثم نوع المعاملة` },
+                            { href: 'https://www.goc.gov.tr/', label: 'دائرة الهجرة (Göç İdaresi)', note: 'شؤون الإقامة والحماية المؤقتة' },
+                            { href: 'https://www.nvi.gov.tr/', label: 'مديرية النفوس والمواطنة (NVİ)', note: 'الهوية، دفتر العائلة، الكملك' },
+                            { href: 'https://www.turkiye.gov.tr/', label: 'الحكومة الإلكترونية (e-Devlet)', note: 'الخدمات الرسمية وتسجيل العنوان (Adres)' },
                             { href: '/important-links', label: 'كل الروابط والمنظمات', note: 'مصادر موثوقة إضافية', internal: true },
                         ].map((l) => (
                             l.internal ? (
@@ -283,6 +352,25 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                         ))}
                     </div>
                 </section>
+
+                {/* Kimlik + residence pages relevant to every city visitor */}
+                {residenceArticles.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                            <IdCard size={20} className="text-blue-500" /> صفحات مرتبطة بالكملك والإقامة
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {residenceArticles.map((a) => (
+                                <Link key={a.slug} href={`/article/${a.slug}`}
+                                    className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all">
+                                    <IdCard size={18} className="text-blue-500 shrink-0" />
+                                    <span className="font-bold text-sm text-slate-800 dark:text-slate-100 line-clamp-2 flex-1">{a.title}</span>
+                                    <ArrowLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* City-relevant articles — leverages the existing article base */}
                 {cityArticles.length > 0 && (
