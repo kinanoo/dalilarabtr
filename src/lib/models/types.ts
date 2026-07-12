@@ -26,6 +26,8 @@ export type ModelAsset = {
 export type ModelShareLink = {
   id: string;
   collection_id: string;
+  token: string | null;
+  link_kind: 'temporary' | 'main';
   label: string | null;
   expires_at: string;
   revoked_at: string | null;
@@ -43,4 +45,3 @@ export type ModelLinkView = {
   user_agent: string | null;
   referrer: string | null;
 };
-

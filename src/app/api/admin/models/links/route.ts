@@ -6,6 +6,8 @@ import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
+const LINK_SELECT = 'id, collection_id, token, link_kind, label, expires_at, revoked_at, max_views, view_count, last_viewed_at, created_at';
+
 function clampDurationMinutes(value: unknown): number {
   const raw = Number(value);
   if (!Number.isFinite(raw)) return 60;
@@ -38,21 +40,34 @@ export async function POST(request: Request) {
     const maxViews = Number.isFinite(Number(body?.maxViews)) && Number(body.maxViews) > 0
       ? Math.min(Math.round(Number(body.maxViews)), 100000)
       : null;
+    const linkKind = body?.linkKind === 'main' ? 'main' : 'temporary';
     const token = createModelShareToken();
     const tokenHash = await hashModelShareToken(token);
     const expiresAt = new Date(Date.now() + durationMinutes * 60_000).toISOString();
+
+    if (linkKind === 'main') {
+      const { error: revokeError } = await gate.svc
+        .from('model_share_links')
+        .update({ revoked_at: new Date().toISOString() })
+        .eq('collection_id', collectionId)
+        .eq('link_kind', 'main')
+        .is('revoked_at', null);
+      if (revokeError) throw revokeError;
+    }
 
     const { data: link, error } = await gate.svc
       .from('model_share_links')
       .insert({
         collection_id: collectionId,
+        token,
         token_hash: tokenHash,
-        label: cleanLabel(body?.label),
+        link_kind: linkKind,
+        label: cleanLabel(body?.label) || (linkKind === 'main' ? 'الرابط الرئيسي' : null),
         expires_at: expiresAt,
         max_views: maxViews,
         created_by: gate.userId,
       })
-      .select('id, collection_id, label, expires_at, revoked_at, max_views, view_count, last_viewed_at, created_at')
+      .select(LINK_SELECT)
       .single<ModelShareLink>();
     if (error) throw error;
 
@@ -76,11 +91,24 @@ export async function PATCH(request: Request) {
     const id = typeof body?.id === 'string' ? body.id : '';
     if (!id) return NextResponse.json({ error: 'id_required' }, { status: 400 });
 
+    if (body?.action === 'extend') {
+      const durationMinutes = clampDurationMinutes(body?.durationMinutes);
+      const expiresAt = new Date(Date.now() + durationMinutes * 60_000).toISOString();
+      const { data, error } = await gate.svc
+        .from('model_share_links')
+        .update({ expires_at: expiresAt, revoked_at: null })
+        .eq('id', id)
+        .select(LINK_SELECT)
+        .single<ModelShareLink>();
+      if (error) throw error;
+      return NextResponse.json({ link: data, url: data.token ? buildModelShareUrl(data.token) : null });
+    }
+
     const { data, error } = await gate.svc
       .from('model_share_links')
       .update({ revoked_at: new Date().toISOString() })
       .eq('id', id)
-      .select('id, collection_id, label, expires_at, revoked_at, max_views, view_count, last_viewed_at, created_at')
+      .select(LINK_SELECT)
       .single<ModelShareLink>();
     if (error) throw error;
 
@@ -90,4 +118,3 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'link_revoke_failed' }, { status: 500 });
   }
 }
-

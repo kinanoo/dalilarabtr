@@ -26,11 +26,18 @@ import {
 import { toast } from 'sonner';
 
 type AdminModelAsset = ModelAsset & { preview_url?: string | null };
-type AdminModelLink = ModelShareLink & { views?: ModelLinkView[] };
+type AdminModelLink = ModelShareLink & { views?: ModelLinkView[]; url?: string | null };
 type AdminModelCollection = ModelCollection & {
   assets: AdminModelAsset[];
   links: AdminModelLink[];
 };
+
+const DURATION_PRESETS = [
+  { label: 'ساعة', minutes: 60 },
+  { label: 'يوم', minutes: 60 * 24 },
+  { label: 'يومين', minutes: 60 * 24 * 2 },
+  { label: 'أسبوع', minutes: 60 * 24 * 7 },
+];
 
 const DEFAULT_FORM = {
   title: '',
@@ -63,21 +70,41 @@ export default function AdminModelsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [collections, setCollections] = useState<AdminModelCollection[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [creatingNew, setCreatingNew] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState('');
   const [linkForm, setLinkForm] = useState({ label: '', durationMinutes: 60, maxViews: '' });
+  const [mainDurationMinutes, setMainDurationMinutes] = useState(60 * 24);
+  const [bulkDurationMinutes, setBulkDurationMinutes] = useState(60 * 24 * 2);
+  const [rotating, setRotating] = useState(false);
 
   const selected = useMemo(
-    () => collections.find((collection) => collection.id === selectedId) || collections[0] || null,
-    [collections, selectedId],
+    () => {
+      if (creatingNew) return null;
+      return collections.find((collection) => collection.id === selectedId) || collections[0] || null;
+    },
+    [collections, creatingNew, selectedId],
+  );
+
+  const mainLink = useMemo(
+    () => selected?.links.find((link) => link.link_kind === 'main' && !link.revoked_at)
+      || selected?.links.find((link) => link.link_kind === 'main')
+      || null,
+    [selected],
+  );
+
+  const linkHistory = useMemo(
+    () => selected?.links.filter((link) => link.id !== mainLink?.id) || [],
+    [mainLink?.id, selected],
   );
 
   useEffect(() => {
+    if (creatingNew) return;
     if (selected && selected.id !== selectedId) setSelectedId(selected.id);
-  }, [selected, selectedId]);
+  }, [creatingNew, selected, selectedId]);
 
   useEffect(() => {
     if (!selected) {
@@ -116,12 +143,13 @@ export default function AdminModelsPage() {
       const res = await fetch('/api/admin/models', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selected?.id, ...form }),
+        body: JSON.stringify({ id: creatingNew ? undefined : selected?.id, ...form }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'فشل حفظ المجموعة');
       toast.success('تم حفظ مجموعة النماذج');
       await loadModels();
+      setCreatingNew(false);
       setSelectedId(data.collection?.id || selected?.id || null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل الحفظ');
@@ -131,6 +159,7 @@ export default function AdminModelsPage() {
   }
 
   async function createCollection() {
+    setCreatingNew(true);
     setForm(DEFAULT_FORM);
     setSelectedId(null);
     setGeneratedUrl('');
@@ -146,6 +175,7 @@ export default function AdminModelsPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'فشل الحذف');
       toast.success('تم حذف المجموعة');
+      setCreatingNew(false);
       setSelectedId(null);
       await loadModels();
     } catch (err) {
@@ -219,6 +249,7 @@ export default function AdminModelsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           collectionId: selected.id,
+          linkKind: 'temporary',
           label: linkForm.label,
           durationMinutes: linkForm.durationMinutes,
           maxViews: linkForm.maxViews ? Number(linkForm.maxViews) : null,
@@ -234,6 +265,94 @@ export default function AdminModelsPage() {
       toast.error(err instanceof Error ? err.message : 'فشل توليد الرابط');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function createMainLink() {
+    if (!selected) return;
+    setSaving(true);
+    setGeneratedUrl('');
+    try {
+      const res = await fetch('/api/admin/models/links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          collectionId: selected.id,
+          linkKind: 'main',
+          label: 'الرابط الرئيسي',
+          durationMinutes: mainDurationMinutes,
+          maxViews: null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'فشل إنشاء الرابط الرئيسي');
+      const url = typeof data.url === 'string' ? data.url : '';
+      if (url) {
+        setGeneratedUrl(url);
+        await navigator.clipboard?.writeText(url).catch(() => {});
+      }
+      toast.success('تم إنشاء الرابط الرئيسي ونسخه');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل إنشاء الرابط الرئيسي');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function extendLink(id: string) {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/models/links', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'extend', durationMinutes: mainDurationMinutes }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'فشل تمديد الرابط');
+      toast.success('تم تمديد صلاحية الرابط');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل تمديد الرابط');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function rotateMainLinks(scope: 'selected' | 'all') {
+    if (scope === 'selected' && !selected) return;
+    const message = scope === 'all'
+      ? 'سيتم إلغاء كل الروابط الرئيسية القديمة لكل المجموعات وإنشاء روابط جديدة. هل أنت متأكد؟'
+      : 'سيتم إلغاء الرابط الرئيسي القديم لهذه المجموعة وإنشاء رابط جديد. هل أنت متأكد؟';
+    if (!confirm(message)) return;
+
+    setRotating(true);
+    setGeneratedUrl('');
+    try {
+      const durationMinutes = scope === 'all' ? bulkDurationMinutes : mainDurationMinutes;
+      const res = await fetch('/api/admin/models/links/rotate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scope: scope === 'all' ? 'all' : 'selected',
+          collectionId: scope === 'selected' ? selected?.id : undefined,
+          durationMinutes,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'فشل تدوير الروابط');
+      const links = Array.isArray(data.links) ? data.links : [];
+      const firstUrl = links.find((link: { url?: string | null }) => link.url)?.url || '';
+      if (firstUrl && scope === 'selected') {
+        setGeneratedUrl(firstUrl);
+        await navigator.clipboard?.writeText(firstUrl).catch(() => {});
+      }
+      toast.success(scope === 'all' ? `تم تدوير ${links.length} رابط رئيسي` : 'تم تدوير الرابط ونسخه');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل تدوير الروابط');
+    } finally {
+      setRotating(false);
     }
   }
 
@@ -260,6 +379,14 @@ export default function AdminModelsPage() {
     toast.success('تم نسخ الرابط');
   }
 
+  async function copyUrl(url?: string | null) {
+    if (!url) return;
+    await navigator.clipboard?.writeText(url);
+    toast.success('تم نسخ الرابط');
+  }
+
+  const mainStatus = mainLink ? linkStatus(mainLink) : null;
+
   return (
     <div className="mx-auto max-w-7xl space-y-5 p-3 sm:p-6">
       <AdminPageHeader
@@ -269,7 +396,26 @@ export default function AdminModelsPage() {
         eyebrow="نماذج خاصة"
         subtitle="معرض صور خاص بروابط مؤقتة لا تظهر للعامة ولا لمحركات البحث"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={bulkDurationMinutes}
+              onChange={(e) => setBulkDurationMinutes(Number(e.target.value))}
+              className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-black text-slate-600 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              aria-label="مدة روابط الكل الجديدة"
+            >
+              {DURATION_PRESETS.map((preset) => (
+                <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => void rotateMainLinks('all')}
+              disabled={rotating || collections.length === 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-3 py-2 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50"
+            >
+              {rotating ? <Loader2 className="animate-spin" size={15} /> : <RefreshCw size={15} />}
+              تدوير الكل
+            </button>
             <button
               type="button"
               onClick={() => void loadModels()}
@@ -314,7 +460,7 @@ export default function AdminModelsPage() {
                   <button
                     key={collection.id}
                     type="button"
-                    onClick={() => { setSelectedId(collection.id); setGeneratedUrl(''); }}
+                    onClick={() => { setCreatingNew(false); setSelectedId(collection.id); setGeneratedUrl(''); }}
                     className={`w-full rounded-2xl border p-3 text-right transition-all ${
                       selected?.id === collection.id
                         ? 'border-emerald-400 bg-emerald-50 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100'
@@ -481,18 +627,128 @@ export default function AdminModelsPage() {
                   )}
                 </div>
 
-                <div className="grid gap-5 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+                <div className="grid gap-5 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
                   <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
                     <div className="mb-4 flex items-center gap-2">
                       <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-300">
                         <Link2 size={20} />
                       </div>
                       <div>
-                        <h2 className="text-lg font-black text-slate-900 dark:text-white">توليد رابط مؤقت</h2>
-                        <p className="text-xs text-slate-500">افتراضياً: ساعة واحدة، مفتوح لكل من يملك الرابط.</p>
+                        <h2 className="text-lg font-black text-slate-900 dark:text-white">الرابط الرئيسي العشوائي</h2>
+                        <p className="text-xs text-slate-500">يبقى ثابتاً حتى تدوّره، ويمكن تمديد صلاحيته بنفس الرابط.</p>
                       </div>
                     </div>
                     <div className="space-y-3">
+                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-900/15">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
+                            {mainLink ? 'رابط المجموعة الحالي' : 'لا يوجد رابط رئيسي بعد'}
+                          </span>
+                          {mainStatus && (
+                            <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${mainStatus.cls}`}>
+                              {mainStatus.label}
+                            </span>
+                          )}
+                        </div>
+                        {mainLink ? (
+                          <div className="space-y-3">
+                            <div className="flex gap-2">
+                              <input
+                                readOnly
+                                dir="ltr"
+                                value={mainLink.url || 'رابط قديم قبل الترقية - دوّر الرابط لإنشاء رابط قابل للنسخ'}
+                                className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-emerald-900/50 dark:bg-slate-950 dark:text-slate-200"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void copyUrl(mainLink.url)}
+                                disabled={!mainLink.url}
+                                className="rounded-xl bg-emerald-600 px-3 text-white disabled:opacity-50"
+                                aria-label="نسخ الرابط الرئيسي"
+                              >
+                                <Copy size={16} />
+                              </button>
+                              {mainLink.url && (
+                                <a
+                                  href={mainLink.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="grid place-items-center rounded-xl bg-slate-900 px-3 text-white"
+                                  aria-label="فتح الرابط الرئيسي"
+                                >
+                                  <ExternalLink size={16} />
+                                </a>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                              <span className="inline-flex items-center gap-1"><Clock3 size={12} /> ينتهي: {formatDate(mainLink.expires_at)}</span>
+                              <span className="inline-flex items-center gap-1"><Eye size={12} /> {mainLink.view_count} مشاهدة</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs leading-6 text-slate-600 dark:text-slate-300">
+                            أنشئ الرابط الرئيسي مرة واحدة، ثم استخدمه للنسخ والإرسال وتمديد الصلاحية.
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <span className="text-xs font-black text-slate-500">مدة الإتاحة عند التفعيل أو التدوير</span>
+                        <div className="grid grid-cols-4 gap-2">
+                          {DURATION_PRESETS.map((preset) => (
+                            <button
+                              key={preset.minutes}
+                              type="button"
+                              onClick={() => setMainDurationMinutes(preset.minutes)}
+                              className={`rounded-xl border px-2 py-2 text-xs font-black transition ${
+                                mainDurationMinutes === preset.minutes
+                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950'
+                              }`}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {mainLink ? (
+                          <button
+                            type="button"
+                            onClick={() => void extendLink(mainLink.id)}
+                            disabled={saving || selected.assets.length === 0}
+                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
+                            تمديد بنفس الرابط
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void createMainLink()}
+                            disabled={saving || selected.assets.length === 0}
+                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
+                            إنشاء الرابط الرئيسي
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => void rotateMainLinks('selected')}
+                          disabled={rotating || selected.assets.length === 0}
+                          className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-black text-white hover:bg-amber-600 disabled:opacity-50"
+                        >
+                          {rotating ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
+                          تدوير الرابط
+                        </button>
+                      </div>
+
+                      <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+                        <h3 className="mb-1 text-sm font-black text-slate-900 dark:text-white">رابط مؤقت إضافي</h3>
+                        <p className="mb-3 text-xs text-slate-500">استخدمه إذا أردت رابطاً خاصاً بعميل معيّن بدون تغيير الرابط الرئيسي.</p>
+                      </div>
                       <label className="space-y-1 block">
                         <span className="text-xs font-black text-slate-500">تسمية الرابط داخلياً</span>
                         <input
@@ -557,14 +813,14 @@ export default function AdminModelsPage() {
                   </div>
 
                   <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-                    <h2 className="mb-4 text-lg font-black text-slate-900 dark:text-white">الروابط والمشاهدات</h2>
-                    {selected.links.length === 0 ? (
+                    <h2 className="mb-4 text-lg font-black text-slate-900 dark:text-white">سجل الروابط والمشاهدات</h2>
+                    {linkHistory.length === 0 ? (
                       <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
-                        لا توجد روابط بعد
+                        لا توجد روابط أخرى بعد
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {selected.links.map((link) => {
+                        {linkHistory.map((link) => {
                           const status = linkStatus(link);
                           return (
                             <div key={link.id} className="rounded-2xl border border-slate-200 p-3 dark:border-slate-800">
@@ -577,6 +833,11 @@ export default function AdminModelsPage() {
                                     <span className="text-sm font-black text-slate-900 dark:text-white">
                                       {link.label || 'رابط بدون تسمية'}
                                     </span>
+                                    {link.link_kind === 'main' && (
+                                      <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
+                                        رابط رئيسي سابق
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
                                     <span className="inline-flex items-center gap-1"><Clock3 size={12} /> ينتهي: {formatDate(link.expires_at)}</span>

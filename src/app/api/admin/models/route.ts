@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/api/adminAuth';
 import { PRIVATE_MODELS_BUCKET } from '@/lib/models/server';
+import { buildModelShareUrl } from '@/lib/models/tokens';
 import type { ModelAsset, ModelCollection, ModelLinkView, ModelShareLink } from '@/lib/models/types';
 import logger from '@/lib/logger';
 
@@ -44,7 +45,7 @@ export async function GET() {
 
       const linkRes = await gate.svc
         .from('model_share_links')
-        .select('id, collection_id, label, expires_at, revoked_at, max_views, view_count, last_viewed_at, created_at')
+        .select('id, collection_id, token, link_kind, label, expires_at, revoked_at, max_views, view_count, last_viewed_at, created_at')
         .in('collection_id', collectionIds)
         .order('created_at', { ascending: false })
         .returns<ModelShareLink[]>();
@@ -80,6 +81,7 @@ export async function GET() {
           .filter((link) => link.collection_id === collection.id)
           .map((link) => ({
             ...link,
+            url: link.token ? buildModelShareUrl(link.token) : null,
             views: views.filter((view) => view.link_id === link.id),
           })),
       })),
