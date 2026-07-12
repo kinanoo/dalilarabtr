@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 type Props = {
   token: string;
   bundle: PublicModelBundle;
+  initialAssetId?: string | null;
 };
 
 function Watermark({ text }: { text: string }) {
@@ -37,8 +38,15 @@ function Watermark({ text }: { text: string }) {
   );
 }
 
-export default function PublicModelViewer({ token, bundle }: Props) {
-  const [assets, setAssets] = useState<PublicModelAsset[]>(bundle.assets);
+function prioritizeAsset(items: PublicModelAsset[], assetId?: string | null) {
+  if (!assetId) return items;
+  const index = items.findIndex((asset) => asset.id === assetId);
+  if (index <= 0) return items;
+  return [items[index], ...items.slice(0, index), ...items.slice(index + 1)];
+}
+
+export default function PublicModelViewer({ token, bundle, initialAssetId }: Props) {
+  const [assets, setAssets] = useState<PublicModelAsset[]>(() => prioritizeAsset(bundle.assets, initialAssetId));
   const [collectionPin, setCollectionPin] = useState('');
   const [assetPins, setAssetPins] = useState<Record<string, string>>({});
   const [unlocking, setUnlocking] = useState<string | null>(null);
@@ -76,7 +84,7 @@ export default function PublicModelViewer({ token, bundle }: Props) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'PIN غير صحيح');
-      setAssets(Array.isArray(data.assets) ? data.assets : assets);
+      setAssets(Array.isArray(data.assets) ? prioritizeAsset(data.assets, initialAssetId) : assets);
       setCollectionPin('');
       toast.success('تم فتح النماذج المتاحة');
     } catch (err) {

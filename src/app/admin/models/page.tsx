@@ -444,6 +444,28 @@ export default function AdminModelsPage() {
     toast.success('تم نسخ الرابط');
   }
 
+  function buildAssetShareUrl(assetId: string) {
+    if (!mainLink?.url) return null;
+    try {
+      const url = new URL(mainLink.url);
+      url.searchParams.set('asset', assetId);
+      return url.toString();
+    } catch {
+      const joiner = mainLink.url.includes('?') ? '&' : '?';
+      return `${mainLink.url}${joiner}asset=${encodeURIComponent(assetId)}`;
+    }
+  }
+
+  async function copyAssetShareUrl(assetId: string) {
+    const url = buildAssetShareUrl(assetId);
+    if (!url) {
+      toast.error('أنشئ الرابط الرئيسي أولاً');
+      return;
+    }
+    await navigator.clipboard?.writeText(url);
+    toast.success('تم نسخ رابط هذه الصورة');
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-5 p-3 sm:p-6">
       <AdminPageHeader
@@ -819,6 +841,15 @@ export default function AdminModelsPage() {
                               >
                                 <Eye size={13} />
                                 {asset.is_active ? 'ظاهرة' : 'مخفية'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void copyAssetShareUrl(asset.id)}
+                                disabled={!mainLink?.url || !asset.is_active}
+                                className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2 py-1 text-xs font-black text-cyan-700 hover:bg-cyan-100 disabled:opacity-40 dark:bg-cyan-900/20 dark:text-cyan-300"
+                              >
+                                <Copy size={13} />
+                                رابط الصورة
                               </button>
                               {asset.access_pin_hash && (
                                 <button

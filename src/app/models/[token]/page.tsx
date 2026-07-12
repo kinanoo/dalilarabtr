@@ -3,24 +3,102 @@ import { headers } from 'next/headers';
 import { AlertCircle, Clock3, Images, LockKeyhole } from 'lucide-react';
 import PublicModelViewer from '@/components/models/PublicModelViewer';
 import {
+  getPublicModelContext,
   getPublicModelBundle,
   hashVisitIp,
   recordModelLinkView,
   type PublicModelFailure,
 } from '@/lib/models/server';
+import { SITE_CONFIG } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 type Props = {
   params: Promise<{ token: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata(): Promise<Metadata> {
+function getRequestedAssetId(searchParams?: Record<string, string | string[] | undefined>): string | null {
+  const raw = searchParams?.asset || searchParams?.image || searchParams?.photo;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (!value) return null;
+  const clean = value.trim().replace(/[^A-Za-z0-9-]/g, '');
+  return clean || null;
+}
+
+function buildModelPageUrl(token: string, assetId?: string | null) {
+  const url = new URL(`/models/${encodeURIComponent(token)}`, SITE_CONFIG.siteUrl);
+  if (assetId) url.searchParams.set('asset', assetId);
+  return url.toString();
+}
+
+function buildModelPreviewImageUrl(token: string, assetId: string) {
+  const url = new URL(`/api/models/${encodeURIComponent(token)}/preview-image`, SITE_CONFIG.siteUrl);
+  url.searchParams.set('asset', assetId);
+  return url.toString();
+}
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const { token } = await params;
+  const search = searchParams ? await searchParams : undefined;
+  const requestedAssetId = getRequestedAssetId(search);
+  const pageUrl = buildModelPageUrl(token, requestedAssetId);
+  const fallbackTitle = 'موديلس - رابط خاص';
+  const fallbackDescription = 'صفحة نماذج خاصة مؤقتة.';
+  const fallbackImage = `${SITE_CONFIG.siteUrl}/og-banner.jpg`;
+
+  const context = await getPublicModelContext(token);
+  if (!context.ok) {
+    return {
+      title: fallbackTitle,
+      description: fallbackDescription,
+      robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+      openGraph: {
+        title: fallbackTitle,
+        description: fallbackDescription,
+        url: pageUrl,
+        type: 'website',
+        images: [{ url: fallbackImage, width: 1200, height: 630, alt: fallbackTitle }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: fallbackTitle,
+        description: fallbackDescription,
+        images: [fallbackImage],
+      },
+    };
+  }
+
+  const { collection, assets } = context;
+  const title = `${collection.title} - موديلس`;
+  const description = collection.description || 'نماذج خاصة مؤقتة للمعاينة.';
+  const previewAsset = collection.access_pin_hash
+    ? null
+    : requestedAssetId
+      ? assets.find((asset) => asset.id === requestedAssetId && !asset.access_pin_hash) || null
+      : assets.find((asset) => !asset.access_pin_hash);
+  const previewImage = previewAsset
+    ? buildModelPreviewImageUrl(token, previewAsset.id)
+    : fallbackImage;
+
   return {
-    title: 'موديلس - رابط خاص',
-    description: 'صفحة نماذج خاصة مؤقتة.',
+    title,
+    description,
     robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      type: 'website',
+      images: [{ url: previewImage, width: 1200, height: 630, alt: collection.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [previewImage],
+    },
   };
 }
 
@@ -53,8 +131,10 @@ function UnavailableState({ reason }: { reason: PublicModelFailure }) {
   );
 }
 
-export default async function ModelSharePage({ params }: Props) {
+export default async function ModelSharePage({ params, searchParams }: Props) {
   const { token } = await params;
+  const search = searchParams ? await searchParams : undefined;
+  const requestedAssetId = getRequestedAssetId(search);
   const result = await getPublicModelBundle(token);
 
   if (!result.ok) return <UnavailableState reason={result.reason} />;
@@ -108,7 +188,7 @@ export default async function ModelSharePage({ params }: Props) {
           </div>
         </div>
 
-        <PublicModelViewer token={token} bundle={result.bundle} />
+        <PublicModelViewer token={token} bundle={result.bundle} initialAssetId={requestedAssetId} />
       </section>
     </main>
   );
