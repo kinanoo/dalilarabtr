@@ -9,8 +9,11 @@ import { watermarkModelImage } from '@/lib/models/watermark';
 import type { ModelAsset, ModelCollection, ModelLinkView, ModelShareLink } from '@/lib/models/types';
 import {
   Ban,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Copy,
+  Download,
   ExternalLink,
   Globe2,
   Eye,
@@ -18,13 +21,17 @@ import {
   Link2,
   Loader2,
   LockKeyhole,
+  Maximize2,
+  Pencil,
   Plus,
   RefreshCw,
   Save,
+  Search,
   Settings2,
   ShieldCheck,
   Trash2,
   UploadCloud,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,6 +40,13 @@ type AdminModelLink = ModelShareLink & { views?: ModelLinkView[]; url?: string |
 type AdminModelCollection = ModelCollection & {
   assets: AdminModelAsset[];
   links: AdminModelLink[];
+};
+type AdminGalleryFilter = 'all' | 'visible' | 'hidden' | 'locked' | 'public';
+type AdminGalleryItem = {
+  asset: AdminModelAsset;
+  collection: AdminModelCollection;
+  shareUrl: string | null;
+  searchText: string;
 };
 
 const DURATION_PRESETS = [
@@ -75,6 +89,41 @@ function simpleDevice(userAgent?: string | null) {
   return 'كمبيوتر';
 }
 
+function appendAssetParam(baseUrl: string | null | undefined, assetId: string) {
+  if (!baseUrl) return null;
+  try {
+    const url = new URL(baseUrl);
+    url.searchParams.set('asset', assetId);
+    return url.toString();
+  } catch {
+    const joiner = baseUrl.includes('?') ? '&' : '?';
+    return `${baseUrl}${joiner}asset=${encodeURIComponent(assetId)}`;
+  }
+}
+
+function collectionMainLink(collection: AdminModelCollection) {
+  const now = Date.now();
+  return collection.links.find((link) => (
+    link.link_kind === 'main'
+    && !link.revoked_at
+    && new Date(link.expires_at).getTime() > now
+    && (link.max_views === null || link.view_count < link.max_views)
+  ))
+    || collection.links.find((link) => link.link_kind === 'main' && !link.revoked_at)
+    || collection.links.find((link) => link.link_kind === 'main')
+    || null;
+}
+
+function safeDownloadName(collection: AdminModelCollection, asset: AdminModelAsset) {
+  const ext = asset.storage_path.split('.').pop()?.replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'jpg';
+  const base = `${collection.title || 'model'}-${asset.title || 'image'}`
+    .replace(/[\\/:*?"<>|]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 110) || 'model-image';
+  return `${base}.${ext}`;
+}
+
 export default function AdminModelsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [collections, setCollections] = useState<AdminModelCollection[]>([]);
@@ -91,6 +140,9 @@ export default function AdminModelsPage() {
   const [rotating, setRotating] = useState(false);
   const [bulkVisibilityChanging, setBulkVisibilityChanging] = useState(false);
   const [assetPinDrafts, setAssetPinDrafts] = useState<Record<string, string>>({});
+  const [adminGalleryQuery, setAdminGalleryQuery] = useState('');
+  const [adminGalleryFilter, setAdminGalleryFilter] = useState<AdminGalleryFilter>('all');
+  const [activeGalleryAssetId, setActiveGalleryAssetId] = useState<string | null>(null);
 
   const selected = useMemo(() => {
     if (creatingNew) return null;
@@ -113,16 +165,54 @@ export default function AdminModelsPage() {
     const imagesCount = collections.reduce((total, collection) => total + collection.assets.length, 0);
     const visibleCount = collections.filter((collection) => collection.is_active).length;
     const galleryCount = collections.filter((collection) => collection.show_in_gallery).length;
+    const publicImagesCount = collections.reduce((total, collection) => total + collection.assets.filter((asset) => asset.show_in_gallery && asset.is_active).length, 0);
     const lockedCount = collections.reduce((total, collection) => (
       total
       + (collection.access_pin_hash ? 1 : 0)
       + collection.assets.filter((asset) => asset.access_pin_hash).length
     ), 0);
-    return { imagesCount, lockedCount, visibleCount, galleryCount };
+    return { imagesCount, lockedCount, visibleCount, galleryCount, publicImagesCount };
   }, [collections]);
 
   const mainStatus = mainLink ? linkStatus(mainLink) : null;
   const activeTitle = creatingNew ? 'نموذج جديد' : selected?.title || 'اختر نموذجاً';
+
+  const adminGalleryItems = useMemo<AdminGalleryItem[]>(() => collections.flatMap((collection) => {
+    const link = collectionMainLink(collection);
+    return collection.assets.map((asset) => ({
+      asset,
+      collection,
+      shareUrl: appendAssetParam(link?.url, asset.id),
+      searchText: [
+        collection.title,
+        collection.description,
+        asset.title,
+        asset.caption,
+        asset.pin_hint,
+      ].filter(Boolean).join(' ').toLowerCase(),
+    }));
+  }), [collections]);
+
+  const filteredAdminGalleryItems = useMemo(() => {
+    const needle = adminGalleryQuery.trim().toLowerCase();
+    return adminGalleryItems.filter((item) => {
+      const matchesQuery = !needle || item.searchText.includes(needle);
+      if (!matchesQuery) return false;
+      if (adminGalleryFilter === 'visible') return item.collection.is_active && item.asset.is_active;
+      if (adminGalleryFilter === 'hidden') return !item.collection.is_active || !item.asset.is_active;
+      if (adminGalleryFilter === 'locked') return Boolean(item.collection.access_pin_hash || item.asset.access_pin_hash);
+      if (adminGalleryFilter === 'public') return item.collection.show_in_gallery && item.asset.show_in_gallery && item.collection.is_active && item.asset.is_active;
+      return true;
+    });
+  }, [adminGalleryFilter, adminGalleryItems, adminGalleryQuery]);
+
+  const activeGalleryIndex = useMemo(
+    () => filteredAdminGalleryItems.findIndex((item) => item.asset.id === activeGalleryAssetId),
+    [activeGalleryAssetId, filteredAdminGalleryItems],
+  );
+  const activeGalleryItem = activeGalleryIndex >= 0
+    ? filteredAdminGalleryItems[activeGalleryIndex]
+    : adminGalleryItems.find((item) => item.asset.id === activeGalleryAssetId) || null;
 
   useEffect(() => {
     if (creatingNew) return;
@@ -452,15 +542,7 @@ export default function AdminModelsPage() {
   }
 
   function buildAssetShareUrl(assetId: string) {
-    if (!mainLink?.url) return null;
-    try {
-      const url = new URL(mainLink.url);
-      url.searchParams.set('asset', assetId);
-      return url.toString();
-    } catch {
-      const joiner = mainLink.url.includes('?') ? '&' : '?';
-      return `${mainLink.url}${joiner}asset=${encodeURIComponent(assetId)}`;
-    }
+    return appendAssetParam(mainLink?.url, assetId);
   }
 
   async function copyAssetShareUrl(assetId: string) {
@@ -471,6 +553,62 @@ export default function AdminModelsPage() {
     }
     await navigator.clipboard?.writeText(url);
     toast.success('تم نسخ رابط هذه الصورة');
+  }
+
+  async function copyAdminGalleryShareUrl(item: AdminGalleryItem) {
+    if (!item.shareUrl) {
+      toast.error('لا يوجد رابط رئيسي صالح لهذا النموذج. افتح النموذج ثم دوّر الرابط.');
+      return;
+    }
+    await navigator.clipboard?.writeText(item.shareUrl);
+    toast.success('تم نسخ رابط الصورة للعميل');
+  }
+
+  async function copyAdminGalleryImageUrl(item: AdminGalleryItem) {
+    if (!item.asset.preview_url) {
+      toast.error('الصورة غير متاحة حالياً');
+      return;
+    }
+    await navigator.clipboard?.writeText(item.asset.preview_url);
+    toast.success('تم نسخ رابط الصورة المؤقت');
+  }
+
+  async function downloadAdminGalleryAsset(item: AdminGalleryItem) {
+    if (!item.asset.preview_url) {
+      toast.error('الصورة غير متاحة حالياً');
+      return;
+    }
+    try {
+      const res = await fetch(item.asset.preview_url);
+      if (!res.ok) throw new Error('download_failed');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = safeDownloadName(item.collection, item.asset);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(item.asset.preview_url, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  function editAdminGalleryAsset(item: AdminGalleryItem) {
+    setCreatingNew(false);
+    setSelectedId(item.collection.id);
+    setGeneratedUrl('');
+    window.setTimeout(() => {
+      document.getElementById(`asset-editor-${item.asset.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+  }
+
+  function moveAdminGalleryViewer(direction: -1 | 1) {
+    if (filteredAdminGalleryItems.length === 0) return;
+    const current = activeGalleryIndex >= 0 ? activeGalleryIndex : 0;
+    const next = (current + direction + filteredAdminGalleryItems.length) % filteredAdminGalleryItems.length;
+    setActiveGalleryAssetId(filteredAdminGalleryItems[next]?.asset.id || null);
   }
 
   return (
@@ -553,6 +691,94 @@ export default function AdminModelsPage() {
             <Stat label="الصور" value={stats.imagesCount} />
             <Stat label="مقفولة" value={stats.lockedCount} />
           </div>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
+                  <Images size={20} />
+                  معرض الأدمن لكل الصور
+                </h2>
+                <p className="text-xs leading-6 text-slate-500">
+                  كل الصور المخزنة هنا، سواء كانت ظاهرة للزوار أو خاصة. افتح، انسخ، نزّل، أو انتقل للتعديل فوراً.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-[11px] font-black">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {filteredAdminGalleryItems.length} من {adminGalleryItems.length}
+                </span>
+                <span className="rounded-full bg-cyan-50 px-3 py-1 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
+                  {stats.publicImagesCount} صورة عامة
+                </span>
+              </div>
+            </div>
+
+            <div className="mb-4 grid gap-2 lg:grid-cols-[minmax(240px,1fr)_auto]">
+              <label className="relative block">
+                <Search className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                <input
+                  value={adminGalleryQuery}
+                  onChange={(e) => setAdminGalleryQuery(e.target.value)}
+                  placeholder="ابحث باسم النموذج أو الصورة أو الشرح..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-10 text-sm font-bold outline-none focus:border-cyan-500 dark:border-slate-800 dark:bg-slate-950"
+                />
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ['all', 'الكل'],
+                  ['visible', 'ظاهرة'],
+                  ['hidden', 'مخفية'],
+                  ['locked', 'مقفولة'],
+                  ['public', 'عامة'],
+                ] as Array<[AdminGalleryFilter, string]>).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setAdminGalleryFilter(value)}
+                    className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                      adminGalleryFilter === value
+                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {adminGalleryItems.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
+                <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                  <Images size={22} />
+                </div>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">لا توجد صور مخزنة بعد</h3>
+                <p className="mt-2 text-xs font-bold leading-6 text-slate-400">
+                  أنشئ نموذجاً وارفع صورة أو أكثر، وستظهر هنا تلقائياً.
+                </p>
+              </div>
+            ) : filteredAdminGalleryItems.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
+                لا توجد صور تطابق البحث أو الفلتر الحالي.
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {filteredAdminGalleryItems.map((item) => (
+                  <AdminGalleryCard
+                    key={item.asset.id}
+                    item={item}
+                    onOpen={() => setActiveGalleryAssetId(item.asset.id)}
+                    onCopyShare={() => void copyAdminGalleryShareUrl(item)}
+                    onCopyImage={() => void copyAdminGalleryImageUrl(item)}
+                    onDownload={() => void downloadAdminGalleryAsset(item)}
+                    onEdit={() => editAdminGalleryAsset(item)}
+                    onToggleActive={() => void updateAsset(item.asset.id, { is_active: !item.asset.is_active })}
+                    onToggleGallery={() => void updateAsset(item.asset.id, { show_in_gallery: !item.asset.show_in_gallery })}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -813,7 +1039,11 @@ export default function AdminModelsPage() {
                   ) : (
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                       {selected.assets.map((asset) => (
-                        <div key={asset.id} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                        <div
+                          key={asset.id}
+                          id={`asset-editor-${asset.id}`}
+                          className="scroll-mt-24 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"
+                        >
                           <div className="relative aspect-[4/3] bg-slate-200 dark:bg-slate-800">
                             {asset.preview_url ? (
                               <img src={asset.preview_url} alt={asset.title || ''} className="h-full w-full object-cover" />
@@ -1149,6 +1379,24 @@ export default function AdminModelsPage() {
           </section>
         </>
       )}
+
+      {activeGalleryItem && (
+        <AdminGalleryLightbox
+          item={activeGalleryItem}
+          position={activeGalleryIndex >= 0 ? activeGalleryIndex + 1 : 1}
+          total={filteredAdminGalleryItems.length || adminGalleryItems.length}
+          onClose={() => setActiveGalleryAssetId(null)}
+          onPrev={() => moveAdminGalleryViewer(-1)}
+          onNext={() => moveAdminGalleryViewer(1)}
+          onCopyShare={() => void copyAdminGalleryShareUrl(activeGalleryItem)}
+          onCopyImage={() => void copyAdminGalleryImageUrl(activeGalleryItem)}
+          onDownload={() => void downloadAdminGalleryAsset(activeGalleryItem)}
+          onEdit={() => {
+            editAdminGalleryAsset(activeGalleryItem);
+            setActiveGalleryAssetId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -1191,6 +1439,214 @@ function Panel({
       </div>
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+function AdminGalleryCard({
+  item,
+  onOpen,
+  onCopyShare,
+  onCopyImage,
+  onDownload,
+  onEdit,
+  onToggleActive,
+  onToggleGallery,
+}: {
+  item: AdminGalleryItem;
+  onOpen: () => void;
+  onCopyShare: () => void;
+  onCopyImage: () => void;
+  onDownload: () => void;
+  onEdit: () => void;
+  onToggleActive: () => void;
+  onToggleGallery: () => void;
+}) {
+  const isLocked = Boolean(item.collection.access_pin_hash || item.asset.access_pin_hash);
+  const isHidden = !item.collection.is_active || !item.asset.is_active;
+  const isPublic = item.collection.show_in_gallery && item.asset.show_in_gallery;
+
+  return (
+    <article className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="group relative block aspect-[4/3] w-full bg-slate-200 text-right dark:bg-slate-800"
+        aria-label="فتح الصورة"
+      >
+        {item.asset.preview_url ? (
+          <img src={item.asset.preview_url} alt={item.asset.title || item.collection.title} className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]" />
+        ) : (
+          <div className="grid h-full place-items-center text-slate-400">
+            <Images size={30} />
+          </div>
+        )}
+        <div className="absolute right-2 top-2 flex flex-wrap gap-1">
+          {isHidden && <Badge tone="slate">مخفي</Badge>}
+          {isLocked && <Badge tone="amber">PIN</Badge>}
+          {isPublic && <Badge tone="cyan">عام</Badge>}
+        </div>
+        <span className="absolute left-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-slate-950/70 text-white opacity-0 transition group-hover:opacity-100">
+          <Maximize2 size={15} />
+        </span>
+      </button>
+      <div className="space-y-3 p-3">
+        <div className="min-w-0">
+          <h3 className="line-clamp-1 text-sm font-black text-slate-900 dark:text-white">
+            {item.asset.title || item.collection.title}
+          </h3>
+          <p className="line-clamp-1 text-xs font-bold text-slate-500">{item.collection.title}</p>
+        </div>
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            type="button"
+            onClick={onCopyShare}
+            disabled={!item.shareUrl}
+            className="grid h-9 place-items-center rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 dark:bg-emerald-900/20 dark:text-emerald-300"
+            aria-label="نسخ رابط العميل"
+            title="نسخ رابط العميل"
+          >
+            <Link2 size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onCopyImage}
+            disabled={!item.asset.preview_url}
+            className="grid h-9 place-items-center rounded-lg bg-cyan-50 text-cyan-700 hover:bg-cyan-100 disabled:opacity-40 dark:bg-cyan-900/20 dark:text-cyan-300"
+            aria-label="نسخ رابط الصورة"
+            title="نسخ رابط الصورة المؤقت"
+          >
+            <Copy size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onDownload}
+            disabled={!item.asset.preview_url}
+            className="grid h-9 place-items-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-800 dark:text-slate-200"
+            aria-label="تنزيل الصورة"
+            title="تنزيل الصورة"
+          >
+            <Download size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="grid h-9 place-items-center rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300"
+            aria-label="تعديل الصورة"
+            title="تعديل الصورة"
+          >
+            <Pencil size={15} />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            onClick={onToggleActive}
+            className={`rounded-lg px-2 py-1.5 text-xs font-black ${
+              item.asset.is_active
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            {item.asset.is_active ? 'ظاهرة' : 'مخفية'}
+          </button>
+          <button
+            type="button"
+            onClick={onToggleGallery}
+            disabled={!item.asset.is_active}
+            className={`rounded-lg px-2 py-1.5 text-xs font-black disabled:opacity-40 ${
+              item.asset.show_in_gallery
+                ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300'
+                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
+            }`}
+          >
+            {item.asset.show_in_gallery ? 'في العام' : 'خاص'}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function AdminGalleryLightbox({
+  item,
+  position,
+  total,
+  onClose,
+  onPrev,
+  onNext,
+  onCopyShare,
+  onCopyImage,
+  onDownload,
+  onEdit,
+}: {
+  item: AdminGalleryItem;
+  position: number;
+  total: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onCopyShare: () => void;
+  onCopyImage: () => void;
+  onDownload: () => void;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[80] bg-slate-950 text-white">
+      <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-3 bg-slate-950/85 px-3 py-3 backdrop-blur sm:px-5">
+        <div className="min-w-0">
+          <h2 className="line-clamp-1 text-sm font-black sm:text-base">
+            {item.asset.title || item.collection.title}
+          </h2>
+          <p className="line-clamp-1 text-xs text-white/60">
+            {item.collection.title} · {position} / {total}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={onCopyShare} disabled={!item.shareUrl} className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white disabled:opacity-40" aria-label="نسخ رابط العميل" title="نسخ رابط العميل">
+            <Link2 size={17} />
+          </button>
+          <button type="button" onClick={onCopyImage} disabled={!item.asset.preview_url} className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-500 text-white disabled:opacity-40" aria-label="نسخ رابط الصورة" title="نسخ رابط الصورة">
+            <Copy size={17} />
+          </button>
+          <button type="button" onClick={onDownload} disabled={!item.asset.preview_url} className="grid h-10 w-10 place-items-center rounded-xl bg-white/12 text-white disabled:opacity-40" aria-label="تنزيل" title="تنزيل">
+            <Download size={17} />
+          </button>
+          <button type="button" onClick={onEdit} className="grid h-10 w-10 place-items-center rounded-xl bg-amber-500 text-white" aria-label="تعديل" title="تعديل">
+            <Pencil size={17} />
+          </button>
+          <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-xl bg-white/12 text-white" aria-label="إغلاق" title="إغلاق">
+            <X size={19} />
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onPrev}
+        className="absolute right-3 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/12 text-white backdrop-blur hover:bg-white/20"
+        aria-label="الصورة السابقة"
+      >
+        <ChevronRight size={22} />
+      </button>
+      <button
+        type="button"
+        onClick={onNext}
+        className="absolute left-3 top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/12 text-white backdrop-blur hover:bg-white/20"
+        aria-label="الصورة التالية"
+      >
+        <ChevronLeft size={22} />
+      </button>
+
+      <div className="flex h-full items-center justify-center px-3 py-20">
+        {item.asset.preview_url ? (
+          <img src={item.asset.preview_url} alt={item.asset.title || item.collection.title} className="max-h-full max-w-full object-contain" />
+        ) : (
+          <div className="grid place-items-center text-white/50">
+            <Images size={42} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
