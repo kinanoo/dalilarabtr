@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import PageHero from '@/components/PageHero';
 import { ShieldAlert, AlertTriangle, Info, CheckCircle, ArrowRight, Clock, Link2, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -28,7 +28,9 @@ type Props = {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
     const { code } = await params;
     const lang = normalizeLang((await searchParams).lang);
-    const decodedCode = decodeURIComponent(code).toUpperCase();
+    // Normalize the requested code: strip separators (space / dot / underscore
+    // / dash) and uppercase, so g87, G-87, "G 87" all resolve to the DB code G87.
+    const decodedCode = decodeURIComponent(code).replace(/[\s._-]/g, '').toUpperCase();
 
     if (!supabase) return { title: `Code ${decodedCode}` };
 
@@ -80,7 +82,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function CodeDetailPage({ params, searchParams }: Props) {
     const { code } = await params;
     const lang: Lang = normalizeLang((await searchParams).lang);
-    const decodedCode = decodeURIComponent(code).toUpperCase();
+    const rawCode = decodeURIComponent(code);
+    // Same normalization as generateMetadata so every spelling finds the row.
+    const decodedCode = rawCode.replace(/[\s._-]/g, '').toUpperCase();
     const ui = UI[lang];
 
     if (!supabase) return notFound();
@@ -96,6 +100,13 @@ export default async function CodeDetailPage({ params, searchParams }: Props) {
         .single();
 
     if (!item) return notFound();
+
+    // Canonicalize the URL: any separator/case variant (g87, G-87, "G 87")
+    // 308-redirects to the clean /codes/G87 — one indexable URL, and typed or
+    // externally-linked variants land on the page instead of a 404.
+    if (rawCode !== item.code) {
+        permanentRedirect(`/codes/${encodeURIComponent(item.code)}${lang === 'tr' ? '?lang=tr' : ''}`);
+    }
 
     // Fetch related codes' titles (bilingual) if available
     const relatedCodes: Array<{ code: string; title: string }> = [];
