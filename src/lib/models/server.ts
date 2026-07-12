@@ -10,11 +10,17 @@ export type ModelCollectionBundle = ModelCollection & {
 };
 
 export type PublicModelAsset = Pick<ModelAsset, 'id' | 'title' | 'caption' | 'sort_order'> & {
-  signedUrl: string;
+  signedUrl: string | null;
+  isLocked: boolean;
+  lockScope: 'collection' | 'asset' | null;
+  pinHint: string | null;
 };
 
 export type PublicModelBundle = {
-  collection: Pick<ModelCollection, 'id' | 'title' | 'description' | 'watermark_text'>;
+  collection: Pick<ModelCollection, 'id' | 'title' | 'description' | 'watermark_text'> & {
+    requiresPin: boolean;
+    pinHint: string | null;
+  };
   link: Pick<ModelShareLink, 'id' | 'label' | 'expires_at' | 'view_count'>;
   assets: PublicModelAsset[];
 };
@@ -53,8 +59,15 @@ export function isModelLinkCurrentlyValid(link: ModelShareLink): PublicModelFail
   return null;
 }
 
-export async function getPublicModelBundle(token: string): Promise<
-  { ok: true; bundle: PublicModelBundle } | { ok: false; reason: PublicModelFailure }
+export async function getPublicModelContext(token: string): Promise<
+  {
+    ok: true;
+    svc: NonNullable<ReturnType<typeof getModelsServiceClient>>;
+    link: ModelShareLink;
+    collection: ModelCollection;
+    assets: ModelAsset[];
+    signedUrlSeconds: number;
+  } | { ok: false; reason: PublicModelFailure }
 > {
   const svc = getModelsServiceClient();
   if (!svc) return { ok: false, reason: 'not_found' };
@@ -99,18 +112,43 @@ export async function getPublicModelBundle(token: string): Promise<
   );
   const signedUrlSeconds = Math.min(3600, remainingSeconds);
 
+  return { ok: true, svc, link, collection, assets, signedUrlSeconds };
+}
+
+export async function createModelAssetSignedUrl(
+  svc: NonNullable<ReturnType<typeof getModelsServiceClient>>,
+  asset: ModelAsset,
+  signedUrlSeconds: number,
+): Promise<string | null> {
+  const { data } = await svc.storage
+    .from(asset.storage_bucket || PRIVATE_MODELS_BUCKET)
+    .createSignedUrl(asset.storage_path, signedUrlSeconds);
+  return data?.signedUrl || null;
+}
+
+export async function getPublicModelBundle(token: string): Promise<
+  { ok: true; bundle: PublicModelBundle } | { ok: false; reason: PublicModelFailure }
+> {
+  const context = await getPublicModelContext(token);
+  if (!context.ok) return context;
+
+  const { svc, link, collection, assets, signedUrlSeconds } = context;
+  const collectionRequiresPin = Boolean(collection.access_pin_hash);
   const signedAssets: PublicModelAsset[] = [];
   for (const asset of assets) {
-    const { data } = await svc.storage
-      .from(asset.storage_bucket || PRIVATE_MODELS_BUCKET)
-      .createSignedUrl(asset.storage_path, signedUrlSeconds);
-    if (!data?.signedUrl) continue;
+    const assetRequiresPin = Boolean(asset.access_pin_hash);
+    const isLocked = collectionRequiresPin || assetRequiresPin;
+    const signedUrl = isLocked ? null : await createModelAssetSignedUrl(svc, asset, signedUrlSeconds);
+    if (!isLocked && !signedUrl) continue;
     signedAssets.push({
       id: asset.id,
       title: asset.title,
       caption: asset.caption,
       sort_order: asset.sort_order,
-      signedUrl: data.signedUrl,
+      signedUrl,
+      isLocked,
+      lockScope: collectionRequiresPin ? 'collection' : assetRequiresPin ? 'asset' : null,
+      pinHint: asset.pin_hint || collection.pin_hint,
     });
   }
 
@@ -124,6 +162,8 @@ export async function getPublicModelBundle(token: string): Promise<
         title: collection.title,
         description: collection.description,
         watermark_text: collection.watermark_text,
+        requiresPin: collectionRequiresPin,
+        pinHint: collection.pin_hint,
       },
       link: {
         id: link.id,

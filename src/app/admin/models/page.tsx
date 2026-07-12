@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Eye,
   Images,
+  LockKeyhole,
   Link2,
   Loader2,
   Plus,
@@ -43,6 +44,10 @@ const DEFAULT_FORM = {
   title: '',
   description: '',
   watermark_text: 'موديلس',
+  collection_pin: '',
+  clear_collection_pin: false,
+  pin_hint: '',
+  default_link_minutes: 60 * 24 * 30,
   is_active: true,
 };
 
@@ -80,6 +85,7 @@ export default function AdminModelsPage() {
   const [mainDurationMinutes, setMainDurationMinutes] = useState(60 * 24);
   const [bulkDurationMinutes, setBulkDurationMinutes] = useState(60 * 24 * 2);
   const [rotating, setRotating] = useState(false);
+  const [assetPinDrafts, setAssetPinDrafts] = useState<Record<string, string>>({});
 
   const selected = useMemo(
     () => {
@@ -115,8 +121,13 @@ export default function AdminModelsPage() {
       title: selected.title || '',
       description: selected.description || '',
       watermark_text: selected.watermark_text || 'موديلس',
+      collection_pin: '',
+      clear_collection_pin: false,
+      pin_hint: selected.pin_hint || '',
+      default_link_minutes: selected.default_link_minutes || 60 * 24 * 30,
       is_active: selected.is_active,
     });
+    setMainDurationMinutes(selected.default_link_minutes || 60 * 24);
   }, [selected]);
 
   const loadModels = useCallback(async () => {
@@ -148,6 +159,10 @@ export default function AdminModelsPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'فشل حفظ المجموعة');
       toast.success('تم حفظ مجموعة النماذج');
+      if (data.mainLink?.url && creatingNew) {
+        setGeneratedUrl(data.mainLink.url);
+        await navigator.clipboard?.writeText(data.mainLink.url).catch(() => {});
+      }
       await loadModels();
       setCreatingNew(false);
       setSelectedId(data.collection?.id || selected?.id || null);
@@ -211,15 +226,21 @@ export default function AdminModelsPage() {
     }
   }
 
-  async function updateAsset(assetId: string, data: Partial<Pick<ModelAsset, 'title' | 'caption' | 'sort_order' | 'is_active'>>) {
+  async function updateAsset(
+    assetId: string,
+    data: Partial<Pick<ModelAsset, 'title' | 'caption' | 'sort_order' | 'is_active' | 'pin_hint'>>,
+    pin?: string,
+    clearPin = false,
+  ) {
     try {
       const res = await fetch('/api/admin/models/assets', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: assetId, data }),
+        body: JSON.stringify({ id: assetId, data, pin, clearPin }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || 'فشل تعديل الصورة');
+      setAssetPinDrafts((prev) => ({ ...prev, [assetId]: '' }));
       await loadModels();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل تعديل الصورة');
@@ -500,13 +521,54 @@ export default function AdminModelsPage() {
                   />
                 </label>
                 <label className="space-y-1 md:col-span-2">
-                  <span className="text-xs font-black text-slate-500">وصف اختياري يظهر أعلى الرابط</span>
-                  <textarea
+                  <span className="text-xs font-black text-slate-500">شرح بسطر واحد يظهر أعلى الرابط</span>
+                  <input
                     value={form.description}
                     onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                    rows={3}
+                    maxLength={220}
+                    placeholder="مثال: نماذج شهادات جاهزة للمعادلة والتصديقات"
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
                   />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">PIN للنموذج كله</span>
+                  <input
+                    value={form.collection_pin}
+                    onChange={(e) => setForm((prev) => ({ ...prev, collection_pin: e.target.value, clear_collection_pin: false }))}
+                    placeholder={selected?.access_pin_hash ? 'قفل موجود - اكتب لتغييره' : 'اختياري'}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">تلميح PIN اختياري</span>
+                  <input
+                    value={form.pin_hint}
+                    onChange={(e) => setForm((prev) => ({ ...prev, pin_hint: e.target.value }))}
+                    placeholder="مثال: الرقم الذي أرسلناه لك"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-black text-slate-500">مدة الرابط الرئيسي الافتراضية</span>
+                  <select
+                    value={form.default_link_minutes}
+                    onChange={(e) => setForm((prev) => ({ ...prev, default_link_minutes: Number(e.target.value) }))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+                  >
+                    {DURATION_PRESETS.map((preset) => (
+                      <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
+                    ))}
+                    <option value={60 * 24 * 30}>30 يوم</option>
+                  </select>
+                </label>
+                <label className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={form.clear_collection_pin}
+                    onChange={(e) => setForm((prev) => ({ ...prev, clear_collection_pin: e.target.checked, collection_pin: e.target.checked ? '' : prev.collection_pin }))}
+                    className="h-4 w-4 accent-emerald-600"
+                  />
+                  إزالة قفل النموذج
                 </label>
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -550,7 +612,7 @@ export default function AdminModelsPage() {
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h2 className="text-lg font-black text-slate-900 dark:text-white">الصور</h2>
-                      <p className="text-xs text-slate-500">ترفع الصور إلى تخزين خاص، وتظهر للمشاهد عبر الرابط المؤقت فقط.</p>
+                      <p className="text-xs text-slate-500">ترفع الصور إلى تخزين خاص، وتظهر للمشاهد عبر الروابط الخاصة فقط.</p>
                     </div>
                     <input
                       ref={fileInputRef}
@@ -600,7 +662,29 @@ export default function AdminModelsPage() {
                               placeholder="عنوان الصورة"
                               className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
                             />
-                            <div className="flex items-center justify-between gap-2">
+                            <input
+                              defaultValue={asset.pin_hint || ''}
+                              onBlur={(e) => void updateAsset(asset.id, { pin_hint: e.target.value })}
+                              placeholder="تلميح PIN للصورة"
+                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                            />
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                              <input
+                                value={assetPinDrafts[asset.id] || ''}
+                                onChange={(e) => setAssetPinDrafts((prev) => ({ ...prev, [asset.id]: e.target.value }))}
+                                placeholder={asset.access_pin_hash ? 'قفل موجود - PIN جديد' : 'PIN للصورة'}
+                                className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void updateAsset(asset.id, {}, assetPinDrafts[asset.id] || undefined)}
+                                disabled={!assetPinDrafts[asset.id]?.trim()}
+                                className="rounded-lg bg-slate-900 px-2 py-1.5 text-xs font-black text-white disabled:opacity-40 dark:bg-white dark:text-slate-900"
+                              >
+                                حفظ PIN
+                              </button>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                               <button
                                 type="button"
                                 onClick={() => void updateAsset(asset.id, { is_active: !asset.is_active })}
@@ -611,6 +695,16 @@ export default function AdminModelsPage() {
                                 <Eye size={13} />
                                 {asset.is_active ? 'ظاهرة' : 'مخفية'}
                               </button>
+                              {asset.access_pin_hash && (
+                                <button
+                                  type="button"
+                                  onClick={() => void updateAsset(asset.id, {}, undefined, true)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300"
+                                >
+                                  <LockKeyhole size={13} />
+                                  إزالة القفل
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => void deleteAsset(asset.id)}

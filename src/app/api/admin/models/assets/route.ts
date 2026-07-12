@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/api/adminAuth';
+import { hashModelPin, isUsableModelPin, normalizeModelPin } from '@/lib/models/pin';
 import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
-const ALLOWED = new Set(['title', 'caption', 'sort_order', 'is_active']);
+const ALLOWED = new Set(['title', 'caption', 'sort_order', 'is_active', 'pin_hint']);
 
 export async function PATCH(request: Request) {
   try {
@@ -19,9 +20,22 @@ export async function PATCH(request: Request) {
     const clean: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(input)) {
       if (!ALLOWED.has(key)) continue;
-      if (key === 'title' || key === 'caption') clean[key] = typeof value === 'string' ? value.trim().slice(0, 500) || null : null;
+      if (key === 'title' || key === 'caption' || key === 'pin_hint') clean[key] = typeof value === 'string' ? value.trim().slice(0, 500) || null : null;
       else if (key === 'sort_order') clean[key] = Number.isFinite(Number(value)) ? Number(value) : 0;
       else if (key === 'is_active') clean[key] = value !== false;
+    }
+
+    if (body?.clearPin === true) {
+      clean.access_pin_hash = null;
+      clean.pin_hint = null;
+    } else {
+      const pin = normalizeModelPin(body?.pin);
+      if (pin) {
+        if (!isUsableModelPin(pin)) {
+          return NextResponse.json({ error: 'pin_too_short' }, { status: 400 });
+        }
+        clean.access_pin_hash = await hashModelPin(pin, id);
+      }
     }
 
     const { data, error } = await gate.svc
@@ -64,4 +78,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'asset_delete_failed' }, { status: 500 });
   }
 }
-

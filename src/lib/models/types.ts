@@ -3,6 +3,9 @@ export type ModelCollection = {
   title: string;
   description: string | null;
   watermark_text: string;
+  access_pin_hash: string | null;
+  pin_hint: string | null;
+  default_link_minutes: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -17,6 +20,8 @@ export type ModelAsset = {
   storage_path: string;
   mime_type: string | null;
   file_size: number | null;
+  access_pin_hash: string | null;
+  pin_hint: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;

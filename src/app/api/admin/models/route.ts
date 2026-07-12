@@ -1,17 +1,72 @@
 import { NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/api/adminAuth';
 import { PRIVATE_MODELS_BUCKET } from '@/lib/models/server';
-import { buildModelShareUrl } from '@/lib/models/tokens';
+import { buildModelShareUrl, createModelShareToken, hashModelShareToken } from '@/lib/models/tokens';
+import { hashModelPin, isUsableModelPin, normalizeModelPin } from '@/lib/models/pin';
 import type { ModelAsset, ModelCollection, ModelLinkView, ModelShareLink } from '@/lib/models/types';
 import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
+
+const LINK_SELECT = 'id, collection_id, token, link_kind, label, expires_at, revoked_at, max_views, view_count, last_viewed_at, created_at';
 
 function cleanText(value: unknown, max = 500): string | null {
   if (typeof value !== 'string') return null;
   const text = value.trim();
   if (!text) return null;
   return text.slice(0, max);
+}
+
+function cleanOneLine(value: unknown, max = 220): string | null {
+  if (typeof value !== 'string') return null;
+  const text = value.replace(/\s+/g, ' ').trim();
+  return text ? text.slice(0, max) : null;
+}
+
+function clampDefaultLinkMinutes(value: unknown): number {
+  const raw = Number(value);
+  if (!Number.isFinite(raw)) return 60 * 24 * 30;
+  return Math.max(5, Math.min(Math.round(raw), 60 * 24 * 30));
+}
+
+async function ensureMainModelLink(args: {
+  svc: SupabaseClient;
+  collectionId: string;
+  userId: string;
+  durationMinutes: number;
+}) {
+  const { data: existing, error: existingError } = await args.svc
+    .from('model_share_links')
+    .select(LINK_SELECT)
+    .eq('collection_id', args.collectionId)
+    .eq('link_kind', 'main')
+    .is('revoked_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle<ModelShareLink>();
+  if (existingError) throw existingError;
+  if (existing) return existing;
+
+  const token = createModelShareToken();
+  const tokenHash = await hashModelShareToken(token);
+  const expiresAt = new Date(Date.now() + args.durationMinutes * 60_000).toISOString();
+  const { data, error } = await args.svc
+    .from('model_share_links')
+    .insert({
+      collection_id: args.collectionId,
+      token,
+      token_hash: tokenHash,
+      link_kind: 'main',
+      label: 'الرابط الرئيسي',
+      expires_at: expiresAt,
+      max_views: null,
+      created_by: args.userId,
+    })
+    .select(LINK_SELECT)
+    .single<ModelShareLink>();
+  if (error) throw error;
+  return data;
 }
 
 export async function GET() {
@@ -104,18 +159,75 @@ export async function POST(request: Request) {
 
     const payload = {
       title,
-      description: cleanText(body?.description, 1000),
+      description: cleanOneLine(body?.description),
       watermark_text: cleanText(body?.watermark_text, 80) || 'موديلس',
+      pin_hint: cleanOneLine(body?.pin_hint, 120),
+      default_link_minutes: clampDefaultLinkMinutes(body?.default_link_minutes),
       is_active: body?.is_active !== false,
     };
+    const collectionPin = normalizeModelPin(body?.collection_pin);
+    const shouldClearPin = body?.clear_collection_pin === true;
 
-    const query = id
-      ? gate.svc.from('model_collections').update(payload).eq('id', id).select('*').single()
-      : gate.svc.from('model_collections').insert({ ...payload, created_by: gate.userId }).select('*').single();
+    let data: ModelCollection | null = null;
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return NextResponse.json({ collection: data });
+    if (id) {
+      const updatePayload: Record<string, unknown> = { ...payload };
+      if (shouldClearPin) {
+        updatePayload.access_pin_hash = null;
+        updatePayload.pin_hint = null;
+      } else if (collectionPin) {
+        if (!isUsableModelPin(collectionPin)) {
+          return NextResponse.json({ error: 'pin_too_short' }, { status: 400 });
+        }
+        updatePayload.access_pin_hash = await hashModelPin(collectionPin, id);
+      }
+
+      const res = await gate.svc
+        .from('model_collections')
+        .update(updatePayload)
+        .eq('id', id)
+        .select('*')
+        .single<ModelCollection>();
+      if (res.error) throw res.error;
+      data = res.data;
+    } else {
+      const res = await gate.svc
+        .from('model_collections')
+        .insert({ ...payload, created_by: gate.userId })
+        .select('*')
+        .single<ModelCollection>();
+      if (res.error) throw res.error;
+      data = res.data;
+
+      if (collectionPin) {
+        if (!isUsableModelPin(collectionPin)) {
+          return NextResponse.json({ error: 'pin_too_short' }, { status: 400 });
+        }
+        const pinRes = await gate.svc
+          .from('model_collections')
+          .update({ access_pin_hash: await hashModelPin(collectionPin, data.id) })
+          .eq('id', data.id)
+          .select('*')
+          .single<ModelCollection>();
+        if (pinRes.error) throw pinRes.error;
+        data = pinRes.data;
+      }
+    }
+
+    const mainLink = await ensureMainModelLink({
+      svc: gate.svc,
+      collectionId: data.id,
+      userId: gate.userId,
+      durationMinutes: data.default_link_minutes,
+    });
+
+    return NextResponse.json({
+      collection: data,
+      mainLink: {
+        ...mainLink,
+        url: mainLink.token ? buildModelShareUrl(mainLink.token) : null,
+      },
+    });
   } catch (err) {
     logger.error('admin/models POST failed:', err);
     return NextResponse.json({ error: 'models_save_failed' }, { status: 500 });

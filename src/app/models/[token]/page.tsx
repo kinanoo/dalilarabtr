@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-/* eslint-disable @next/next/no-img-element */
 import { headers } from 'next/headers';
 import { AlertCircle, Clock3, Images, LockKeyhole } from 'lucide-react';
+import PublicModelViewer from '@/components/models/PublicModelViewer';
 import {
   getPublicModelBundle,
   hashVisitIp,
@@ -50,23 +50,6 @@ function UnavailableState({ reason }: { reason: PublicModelFailure }) {
         </p>
       </div>
     </main>
-  );
-}
-
-function Watermark({ text }: { text: string }) {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
-      <div className="absolute inset-0 grid grid-cols-2 place-items-center gap-8 opacity-25">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <span
-            key={index}
-            className="-rotate-12 select-none whitespace-nowrap text-3xl font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
-          >
-            {text}
-          </span>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -125,34 +108,7 @@ export default async function ModelSharePage({ params }: Props) {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {result.bundle.assets.map((asset, index) => (
-            <figure
-              key={asset.id}
-              className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-900/10 dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <img
-                  src={asset.signedUrl}
-                  alt={asset.title || `نموذج ${index + 1}`}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                  loading={index < 3 ? 'eager' : 'lazy'}
-                />
-                <Watermark text={result.bundle.collection.watermark_text || 'موديلس'} />
-              </div>
-              {(asset.title || asset.caption) && (
-                <figcaption className="space-y-1 p-4">
-                  {asset.title && (
-                    <h2 className="text-sm font-black text-slate-900 dark:text-white">{asset.title}</h2>
-                  )}
-                  {asset.caption && (
-                    <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">{asset.caption}</p>
-                  )}
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
+        <PublicModelViewer token={token} bundle={result.bundle} />
       </section>
     </main>
   );
