@@ -48,6 +48,16 @@ type AdminGalleryItem = {
   shareUrl: string | null;
   searchText: string;
 };
+type QuickPublishForm = {
+  title: string;
+  description: string;
+  watermark_text: string;
+  collection_pin: string;
+  pin_hint: string;
+  default_link_minutes: number;
+  show_in_gallery: boolean;
+  is_active: boolean;
+};
 
 const DURATION_PRESETS = [
   { label: 'ساعة', minutes: 60 },
@@ -66,6 +76,17 @@ const DEFAULT_FORM = {
   default_link_minutes: 60 * 24 * 30,
   show_in_gallery: false,
   gallery_order: 0,
+  is_active: true,
+};
+
+const QUICK_PUBLISH_DEFAULT: QuickPublishForm = {
+  title: '',
+  description: '',
+  watermark_text: '',
+  collection_pin: '',
+  pin_hint: '',
+  default_link_minutes: 60 * 24 * 30,
+  show_in_gallery: false,
   is_active: true,
 };
 
@@ -124,12 +145,21 @@ function safeDownloadName(collection: AdminModelCollection, asset: AdminModelAss
   return `${base}.${ext}`;
 }
 
+function fileBaseName(name: string) {
+  return name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+}
+
 export default function AdminModelsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quickFileInputRef = useRef<HTMLInputElement>(null);
   const [collections, setCollections] = useState<AdminModelCollection[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [quickForm, setQuickForm] = useState<QuickPublishForm>(QUICK_PUBLISH_DEFAULT);
+  const [quickFiles, setQuickFiles] = useState<File[]>([]);
+  const [quickPreviewUrls, setQuickPreviewUrls] = useState<string[]>([]);
+  const [quickSaving, setQuickSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -256,6 +286,133 @@ export default function AdminModelsPage() {
   useEffect(() => {
     void loadModels();
   }, [loadModels]);
+
+  useEffect(() => {
+    const urls = quickFiles.slice(0, 4).map((file) => URL.createObjectURL(file));
+    setQuickPreviewUrls(urls);
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [quickFiles]);
+
+  function setQuickFilesFromInput(files: FileList | null) {
+    const images = Array.from(files || []).filter((file) => file.type.startsWith('image/'));
+    setQuickFiles(images);
+    if (!quickForm.title.trim() && images[0]) {
+      setQuickForm((prev) => ({ ...prev, title: fileBaseName(images[0].name) || prev.title }));
+    }
+  }
+
+  async function patchUploadedAsset(
+    assetId: string,
+    data: Partial<Pick<ModelAsset, 'title' | 'caption' | 'sort_order' | 'is_active' | 'show_in_gallery' | 'pin_hint'>>,
+    pin?: string,
+  ) {
+    const res = await fetch('/api/admin/models/assets', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: assetId, data, pin }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'فشل ضبط خيارات الصورة');
+  }
+
+  async function uploadImageToCollection(args: {
+    collectionId: string;
+    raw: File;
+    title: string;
+    watermarkText: string;
+    isActive: boolean;
+    showInGallery: boolean;
+  }) {
+    const compressed = await compressImage(args.raw, 3200, 0.94);
+    const watermarked = args.watermarkText
+      ? await watermarkModelImage(compressed, args.watermarkText)
+      : compressed;
+    const payload = new FormData();
+    payload.append('collectionId', args.collectionId);
+    payload.append('file', watermarked);
+    payload.append('title', args.title);
+    const res = await fetch('/api/admin/models/upload', { method: 'POST', body: payload });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `فشل رفع ${args.raw.name}`);
+    const asset = data.asset as AdminModelAsset | undefined;
+    if (!asset?.id) throw new Error('فشل حفظ بيانات الصورة');
+    if (!args.isActive || !args.showInGallery) {
+      await patchUploadedAsset(asset.id, {
+        is_active: args.isActive,
+        show_in_gallery: args.showInGallery,
+      });
+    }
+    return asset;
+  }
+
+  async function quickPublish() {
+    const title = quickForm.title.trim();
+    const description = quickForm.description.trim();
+    const watermarkText = quickForm.watermark_text.trim();
+    if (!title) {
+      toast.error('اكتب تسمية النموذج أولاً');
+      return;
+    }
+    if (quickFiles.length === 0) {
+      toast.error('اختر صورة واحدة على الأقل');
+      return;
+    }
+
+    setQuickSaving(true);
+    const toastId = toast.loading(`جاري نشر ${quickFiles.length} صورة...`);
+    try {
+      const res = await fetch('/api/admin/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          watermark_text: watermarkText,
+          collection_pin: quickForm.collection_pin,
+          pin_hint: quickForm.pin_hint,
+          default_link_minutes: quickForm.default_link_minutes,
+          show_in_gallery: quickForm.show_in_gallery,
+          gallery_order: 0,
+          is_active: quickForm.is_active,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'فشل إنشاء النموذج');
+      const collectionId = data.collection?.id as string | undefined;
+      if (!collectionId) throw new Error('فشل إنشاء النموذج');
+
+      for (let index = 0; index < quickFiles.length; index += 1) {
+        const raw = quickFiles[index];
+        await uploadImageToCollection({
+          collectionId,
+          raw,
+          title: quickFiles.length === 1 ? title : `${title} ${index + 1}`,
+          watermarkText,
+          isActive: quickForm.is_active,
+          showInGallery: quickForm.show_in_gallery,
+        });
+      }
+
+      const url = typeof data.mainLink?.url === 'string' ? data.mainLink.url : '';
+      if (url) {
+        setGeneratedUrl(url);
+        await navigator.clipboard?.writeText(url).catch(() => {});
+      }
+      toast.success(url ? 'تم النشر ونسخ الرابط' : 'تم النشر', { id: toastId });
+      setQuickForm(QUICK_PUBLISH_DEFAULT);
+      setQuickFiles([]);
+      if (quickFileInputRef.current) quickFileInputRef.current.value = '';
+      await loadModels();
+      setCreatingNew(false);
+      setSelectedId(collectionId);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل النشر', { id: toastId });
+    } finally {
+      setQuickSaving(false);
+    }
+  }
 
   async function saveCollection() {
     setSaving(true);
@@ -684,6 +841,22 @@ export default function AdminModelsPage() {
         </div>
       ) : (
         <>
+          <QuickPublishPanel
+            form={quickForm}
+            files={quickFiles}
+            previewUrls={quickPreviewUrls}
+            busy={quickSaving}
+            fileInputRef={quickFileInputRef}
+            onFormChange={(updates) => setQuickForm((prev) => ({ ...prev, ...updates }))}
+            onPickFiles={() => quickFileInputRef.current?.click()}
+            onFilesChange={setQuickFilesFromInput}
+            onClearFiles={() => {
+              setQuickFiles([]);
+              if (quickFileInputRef.current) quickFileInputRef.current.value = '';
+            }}
+            onSubmit={() => void quickPublish()}
+          />
+
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Stat label="النماذج" value={collections.length} />
             <Stat label="ظاهرة" value={stats.visibleCount} />
@@ -1398,6 +1571,217 @@ export default function AdminModelsPage() {
         />
       )}
     </div>
+  );
+}
+
+function QuickPublishPanel({
+  form,
+  files,
+  previewUrls,
+  busy,
+  fileInputRef,
+  onFormChange,
+  onPickFiles,
+  onFilesChange,
+  onClearFiles,
+  onSubmit,
+}: {
+  form: QuickPublishForm;
+  files: File[];
+  previewUrls: string[];
+  busy: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  onFormChange: (updates: Partial<QuickPublishForm>) => void;
+  onPickFiles: () => void;
+  onFilesChange: (files: FileList | null) => void;
+  onClearFiles: () => void;
+  onSubmit: () => void;
+}) {
+  const canSubmit = Boolean(form.title.trim()) && files.length > 0 && !busy;
+
+  return (
+    <section className="rounded-2xl border-2 border-emerald-200 bg-white p-4 shadow-sm dark:border-emerald-900/50 dark:bg-slate-900 sm:p-5">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => onFilesChange(e.target.files)}
+      />
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 text-xl font-black text-slate-950 dark:text-white">
+            <UploadCloud className="text-emerald-600" size={22} />
+            نشر سريع
+          </h2>
+          <p className="text-xs font-bold leading-6 text-slate-500">
+            ارفع صورة أو أكثر، اكتب التسمية، ثم احفظ وانسخ الرابط فوراً.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onPickFiles}
+          disabled={busy}
+          className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950"
+        >
+          <UploadCloud size={17} />
+          رفع صورة
+        </button>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(260px,0.8fr)_minmax(0,1.2fr)]">
+        <button
+          type="button"
+          onClick={onPickFiles}
+          disabled={busy}
+          className="min-h-[220px] rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-3 text-right transition hover:border-emerald-400 disabled:opacity-60 dark:border-emerald-900/50 dark:bg-emerald-900/10"
+        >
+          {previewUrls.length > 0 ? (
+            <div className="grid h-full grid-cols-2 gap-2">
+              {previewUrls.map((url, index) => (
+                <div key={url} className="relative overflow-hidden rounded-xl bg-white shadow-sm dark:bg-slate-950">
+                  <img src={url} alt={`صورة ${index + 1}`} className="h-full min-h-[96px] w-full object-cover" />
+                </div>
+              ))}
+              {files.length > previewUrls.length && (
+                <div className="grid min-h-[96px] place-items-center rounded-xl bg-white text-sm font-black text-slate-500 dark:bg-slate-950">
+                  +{files.length - previewUrls.length}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid h-full place-items-center py-8 text-center">
+              <div>
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
+                  <Images size={28} />
+                </div>
+                <div className="text-sm font-black text-slate-900 dark:text-white">اختر الصور</div>
+                <div className="mt-1 text-xs font-bold text-slate-500">صورة واحدة أو عدة صور لنفس النموذج</div>
+              </div>
+            </div>
+          )}
+        </button>
+
+        <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="space-y-1 md:col-span-2">
+              <span className="text-xs font-black text-slate-500">التسمية</span>
+              <input
+                value={form.title}
+                onChange={(e) => onFormChange({ title: e.target.value })}
+                placeholder="مثال: شهادة إسعافات أولية"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+              />
+            </label>
+            <label className="space-y-1 md:col-span-2">
+              <span className="text-xs font-black text-slate-500">شرح بسطر واحد</span>
+              <input
+                value={form.description}
+                maxLength={220}
+                onChange={(e) => onFormChange({ description: e.target.value })}
+                placeholder="مثال: نموذج شهادة تدريب قابلة للتوثيق"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-500">مدة الرابط</span>
+              <select
+                value={form.default_link_minutes}
+                onChange={(e) => onFormChange({ default_link_minutes: Number(e.target.value) })}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+              >
+                {DURATION_PRESETS.map((preset) => (
+                  <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
+                ))}
+                <option value={60 * 24 * 30}>30 يوم</option>
+              </select>
+            </label>
+            <label className="space-y-1">
+              <span className="text-xs font-black text-slate-500">العلامة المائية</span>
+              <input
+                value={form.watermark_text}
+                onChange={(e) => onFormChange({ watermark_text: e.target.value })}
+                placeholder="اختياري"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+              />
+            </label>
+          </div>
+
+          <details className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+            <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-black text-slate-700 dark:text-slate-200">
+              <Settings2 size={16} />
+              خيارات النشر
+            </summary>
+            <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
+              <label className="space-y-1">
+                <span className="text-xs font-black text-slate-500">PIN اختياري</span>
+                <input
+                  value={form.collection_pin}
+                  onChange={(e) => onFormChange({ collection_pin: e.target.value })}
+                  placeholder="كلمة سر للنموذج"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                />
+              </label>
+              <label className="space-y-1">
+                <span className="text-xs font-black text-slate-500">تلميح PIN</span>
+                <input
+                  value={form.pin_hint}
+                  onChange={(e) => onFormChange({ pin_hint: e.target.value })}
+                  placeholder="مثال: الرقم المرسل لك"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                />
+              </label>
+              <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={form.is_active}
+                  onChange={(e) => onFormChange({ is_active: e.target.checked })}
+                  className="h-4 w-4 accent-emerald-600"
+                />
+                يظهر لمن معه الرابط
+              </label>
+              <label className="flex items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-900/15 dark:text-cyan-200">
+                <input
+                  type="checkbox"
+                  checked={form.show_in_gallery}
+                  onChange={(e) => onFormChange({ show_in_gallery: e.target.checked })}
+                  className="h-4 w-4 accent-cyan-600"
+                />
+                إدراجه في المعرض العام
+              </label>
+            </div>
+          </details>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-xs font-bold text-slate-500">
+              {files.length > 0 ? `${files.length} صورة جاهزة للنشر` : 'لم يتم اختيار صور بعد'}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {files.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onClearFiles}
+                  disabled={busy}
+                  className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  مسح
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onSubmit}
+                disabled={!canSubmit}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {busy ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
+                حفظ ونشر
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
