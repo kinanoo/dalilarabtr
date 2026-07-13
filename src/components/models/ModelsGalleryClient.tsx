@@ -4,7 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import type { PublicGalleryAsset, PublicGalleryCollection } from '@/lib/models/server';
+import type { PublicGalleryCollection } from '@/lib/models/server';
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,17 +24,26 @@ type Props = {
   collections: PublicGalleryCollection[];
 };
 
-type GalleryItem = PublicGalleryAsset & {
+type GalleryGroup = PublicGalleryCollection & {
   watermarkText: string;
+  isLocked: boolean;
+  searchText: string;
 };
 
-function flattenCollections(collections: PublicGalleryCollection[]): GalleryItem[] {
-  return collections.flatMap((collection) => (
-    collection.assets.map((asset) => ({
-      ...asset,
-      watermarkText: (collection.watermark_text || '').trim(),
-    }))
-  ));
+function groupCollections(collections: PublicGalleryCollection[]): GalleryGroup[] {
+  return collections.map((collection) => ({
+    ...collection,
+    watermarkText: (collection.watermark_text || '').trim(),
+    isLocked: collection.isLocked || collection.assets.every((asset) => asset.isLocked),
+    searchText: [
+      collection.title,
+      collection.description,
+      ...collection.assets.flatMap((asset) => [
+        asset.title,
+        asset.caption,
+      ]),
+    ].filter(Boolean).join(' ').toLowerCase(),
+  }));
 }
 
 function Watermark({ text }: { text: string }) {
@@ -65,31 +74,31 @@ function prevIndex(index: number | null, length: number) {
 }
 
 export default function ModelsGalleryClient({ collections }: Props) {
-  const allItems = useMemo(() => flattenCollections(collections), [collections]);
+  const allGroups = useMemo(() => groupCollections(collections), [collections]);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterMode>('all');
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const filteredItems = useMemo(() => {
+  const filteredGroups = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return allItems.filter((item) => {
-      if (filter === 'open' && item.isLocked) return false;
-      if (filter === 'locked' && !item.isLocked) return false;
+    return allGroups.filter((group) => {
+      if (filter === 'open' && group.isLocked) return false;
+      if (filter === 'locked' && !group.isLocked) return false;
       if (!needle) return true;
-      return [
-        item.title,
-        item.caption,
-        item.collectionTitle,
-        item.collectionDescription,
-      ].some((value) => (value || '').toLowerCase().includes(needle));
+      return group.searchText.includes(needle);
     });
-  }, [allItems, filter, query]);
+  }, [allGroups, filter, query]);
 
-  const openItems = useMemo(() => filteredItems.filter((item) => item.imageUrl), [filteredItems]);
+  const openItems = useMemo(() => filteredGroups
+    .flatMap((group) => group.assets.map((asset) => ({
+      ...asset,
+      watermarkText: group.watermarkText,
+    })))
+    .filter((item) => item.imageUrl), [filteredGroups]);
   const activeItem = activeIndex === null ? null : openItems[activeIndex] || null;
 
-  function openFullscreen(itemId: string) {
-    const index = openItems.findIndex((item) => item.id === itemId);
+  function openFullscreen(groupId: string) {
+    const index = openItems.findIndex((item) => item.collectionId === groupId);
     if (index >= 0) setActiveIndex(index);
   }
 
@@ -124,7 +133,7 @@ export default function ModelsGalleryClient({ collections }: Props) {
               </p>
             </div>
             <div className="text-sm font-bold text-slate-400">
-              {filteredItems.length} نتيجة
+              {filteredGroups.length} نتيجة
             </div>
           </div>
         </section>
@@ -170,7 +179,7 @@ export default function ModelsGalleryClient({ collections }: Props) {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6">
-          {filteredItems.length === 0 ? (
+          {filteredGroups.length === 0 ? (
             <div className="grid min-h-[260px] place-items-center rounded-3xl border border-dashed border-slate-300 bg-white/70 text-center dark:border-slate-800 dark:bg-slate-900/70">
               <div>
                 <ImageIcon className="mx-auto text-slate-300" size={42} />
@@ -179,30 +188,51 @@ export default function ModelsGalleryClient({ collections }: Props) {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredItems.map((item, index) => (
+              {filteredGroups.map((group, index) => {
+                const previewAssets = group.assets.slice(0, 4);
+                const openAsset = group.assets.find((asset) => asset.imageUrl);
+                return (
                 <figure
-                  key={item.id}
+                  key={group.id}
                   className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
-                    {item.imageUrl ? (
+                    {openAsset ? (
                       <>
                         <button
                           type="button"
-                          onClick={() => openFullscreen(item.id)}
+                          onClick={() => openFullscreen(group.id)}
                           className="absolute left-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-xl bg-slate-950/70 text-white opacity-0 transition group-hover:opacity-100"
                           aria-label="عرض كامل"
                         >
                           <Maximize2 size={17} />
                         </button>
-                        <img
-                          src={item.imageUrl}
-                          alt={item.title || item.collectionTitle}
-                          className="h-full w-full cursor-zoom-in object-contain transition duration-500 group-hover:scale-[1.02]"
-                          loading={index < 8 ? 'eager' : 'lazy'}
-                          onClick={() => openFullscreen(item.id)}
-                        />
-                        {item.watermarkText && <Watermark text={item.watermarkText} />}
+                        <button
+                          type="button"
+                          onClick={() => openFullscreen(group.id)}
+                          className={`grid h-full w-full cursor-zoom-in gap-1 p-1 ${previewAssets.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}
+                        >
+                          {previewAssets.map((asset) => (
+                            <span key={asset.id} className="overflow-hidden rounded-lg bg-white dark:bg-slate-950">
+                              {asset.imageUrl ? (
+                                <img
+                                  src={asset.imageUrl}
+                                  alt={asset.title || group.title}
+                                  className="h-full min-h-0 w-full object-contain transition duration-500 group-hover:scale-[1.02]"
+                                  loading={index < 8 ? 'eager' : 'lazy'}
+                                />
+                              ) : (
+                                <span className="flex h-full items-center justify-center bg-slate-900/90 text-white">
+                                  <LockKeyhole size={22} />
+                                </span>
+                              )}
+                            </span>
+                          ))}
+                        </button>
+                        {group.watermarkText && <Watermark text={group.watermarkText} />}
+                        <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/75 px-3 py-1 text-[11px] font-black text-white">
+                          {group.assets.length} صور
+                        </span>
                       </>
                     ) : (
                       <div className="flex h-full flex-col items-center justify-center gap-3 bg-slate-900/90 p-5 text-center text-white">
@@ -210,20 +240,21 @@ export default function ModelsGalleryClient({ collections }: Props) {
                           <LockKeyhole size={26} />
                         </div>
                         <p className="text-sm font-black">محمي برمز PIN</p>
-                        {item.pinHint && <p className="text-xs leading-5 text-white/70">{item.pinHint}</p>}
+                        {group.assets[0]?.pinHint && <p className="text-xs leading-5 text-white/70">{group.assets[0].pinHint}</p>}
                       </div>
                     )}
                   </div>
                   <figcaption className="space-y-1 p-4">
                     <h3 className="line-clamp-1 text-sm font-black text-slate-950 dark:text-white">
-                      {item.title || item.collectionTitle}
+                      {group.title}
                     </h3>
                     <p className="line-clamp-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                      {item.caption || item.collectionDescription || item.collectionTitle}
+                      {group.description || `${group.assets.length} صور في نموذج واحد`}
                     </p>
                   </figcaption>
                 </figure>
-              ))}
+              );
+              })}
             </div>
           )}
         </section>

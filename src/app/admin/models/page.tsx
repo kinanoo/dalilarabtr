@@ -48,6 +48,12 @@ type AdminGalleryItem = {
   shareUrl: string | null;
   searchText: string;
 };
+type AdminGalleryGroup = {
+  collection: AdminModelCollection;
+  assets: AdminModelAsset[];
+  shareUrl: string | null;
+  searchText: string;
+};
 type QuickPublishForm = {
   title: string;
   description: string;
@@ -225,6 +231,27 @@ export default function AdminModelsPage() {
     }));
   }), [collections]);
 
+  const adminGalleryGroups = useMemo<AdminGalleryGroup[]>(() => collections
+    .filter((collection) => collection.assets.length > 0)
+    .map((collection) => {
+      const link = collectionMainLink(collection);
+      return {
+        collection,
+        assets: collection.assets,
+        shareUrl: link?.url || null,
+        searchText: [
+          collection.title,
+          collection.description,
+          collection.pin_hint,
+          ...collection.assets.flatMap((asset) => [
+            asset.title,
+            asset.caption,
+            asset.pin_hint,
+          ]),
+        ].filter(Boolean).join(' ').toLowerCase(),
+      };
+    }), [collections]);
+
   const filteredAdminGalleryItems = useMemo(() => {
     const needle = adminGalleryQuery.trim().toLowerCase();
     return adminGalleryItems.filter((item) => {
@@ -237,6 +264,19 @@ export default function AdminModelsPage() {
       return true;
     });
   }, [adminGalleryFilter, adminGalleryItems, adminGalleryQuery]);
+
+  const filteredAdminGalleryGroups = useMemo(() => {
+    const needle = adminGalleryQuery.trim().toLowerCase();
+    return adminGalleryGroups.filter((group) => {
+      const matchesQuery = !needle || group.searchText.includes(needle);
+      if (!matchesQuery) return false;
+      if (adminGalleryFilter === 'visible') return group.collection.is_active && group.assets.some((asset) => asset.is_active);
+      if (adminGalleryFilter === 'hidden') return !group.collection.is_active || group.assets.some((asset) => !asset.is_active);
+      if (adminGalleryFilter === 'locked') return Boolean(group.collection.access_pin_hash || group.assets.some((asset) => asset.access_pin_hash));
+      if (adminGalleryFilter === 'public') return group.collection.show_in_gallery && group.assets.some((asset) => asset.show_in_gallery && asset.is_active) && group.collection.is_active;
+      return true;
+    });
+  }, [adminGalleryFilter, adminGalleryGroups, adminGalleryQuery]);
 
   const activeGalleryIndex = useMemo(
     () => filteredAdminGalleryItems.findIndex((item) => item.asset.id === activeGalleryAssetId),
@@ -529,6 +569,88 @@ export default function AdminModelsPage() {
     }
   }
 
+  async function updateCollectionOptions(
+    collection: AdminModelCollection,
+    updates: Partial<Pick<ModelCollection, 'is_active' | 'show_in_gallery' | 'pin_hint'>>,
+    pin?: string,
+    clearPin = false,
+  ) {
+    const res = await fetch('/api/admin/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: collection.id,
+        title: collection.title,
+        description: collection.description || '',
+        watermark_text: collection.watermark_text || '',
+        pin_hint: updates.pin_hint ?? collection.pin_hint ?? '',
+        collection_pin: pin || '',
+        clear_collection_pin: clearPin,
+        default_link_minutes: collection.default_link_minutes,
+        show_in_gallery: updates.show_in_gallery ?? collection.show_in_gallery,
+        gallery_order: collection.gallery_order || 0,
+        is_active: updates.is_active ?? collection.is_active,
+        skip_main_link: true,
+      }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'فشل تعديل النموذج');
+  }
+
+  async function setAdminGalleryGroupActive(group: AdminGalleryGroup, isActive: boolean) {
+    try {
+      await updateCollectionOptions(group.collection, { is_active: isActive });
+      await Promise.all(group.assets.map((asset) => patchUploadedAsset(asset.id, { is_active: isActive })));
+      toast.success(isActive ? 'تم إظهار النموذج بكل صوره' : 'تم إخفاء النموذج بكل صوره');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل تعديل الظهور');
+    }
+  }
+
+  async function setAdminGalleryGroupPublic(group: AdminGalleryGroup, isPublic: boolean) {
+    try {
+      await updateCollectionOptions(group.collection, { show_in_gallery: isPublic });
+      await Promise.all(group.assets.map((asset) => patchUploadedAsset(asset.id, { show_in_gallery: isPublic })));
+      toast.success(isPublic ? 'تم إدراج النموذج في المعرض العام' : 'تم جعله خاصاً');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل تعديل المعرض');
+    }
+  }
+
+  async function toggleAdminGalleryGroupPin(group: AdminGalleryGroup) {
+    try {
+      if (group.collection.access_pin_hash) {
+        await updateCollectionOptions(group.collection, {}, undefined, true);
+        toast.success('تم إزالة قفل النموذج');
+        await loadModels();
+        return;
+      }
+      const pin = window.prompt('اكتب PIN لهذا النموذج بكل صوره');
+      if (!pin?.trim()) return;
+      await updateCollectionOptions(group.collection, {}, pin.trim());
+      toast.success('تم قفل النموذج');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل تعديل القفل');
+    }
+  }
+
+  async function deleteAdminGalleryGroup(group: AdminGalleryGroup) {
+    if (!confirm('حذف هذا النموذج وكل صوره وروابطه؟')) return;
+    try {
+      const res = await fetch(`/api/admin/models?id=${encodeURIComponent(group.collection.id)}`, { method: 'DELETE' });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || 'فشل حذف النموذج');
+      toast.success('تم حذف النموذج بكل صوره');
+      if (selectedId === group.collection.id) setSelectedId(null);
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل حذف النموذج');
+    }
+  }
+
   async function generateLink() {
     if (!selected) return;
     setSaving(true);
@@ -726,6 +848,15 @@ export default function AdminModelsPage() {
     toast.success('تم نسخ رابط الصورة للعميل');
   }
 
+  async function copyAdminGalleryGroupShareUrl(group: AdminGalleryGroup) {
+    if (!group.shareUrl) {
+      toast.error('لا يوجد رابط لهذا النموذج بعد. اضغط تعديل ثم أنشئ الرابط الرئيسي.');
+      return;
+    }
+    await navigator.clipboard?.writeText(group.shareUrl);
+    toast.success('تم نسخ رابط النموذج بكل صوره');
+  }
+
   async function copyAdminGalleryImageUrl(item: AdminGalleryItem) {
     if (!item.asset.preview_url) {
       toast.error('الصورة غير متاحة حالياً');
@@ -757,18 +888,6 @@ export default function AdminModelsPage() {
     }
   }
 
-  async function toggleAdminGalleryAssetPin(item: AdminGalleryItem) {
-    if (item.asset.access_pin_hash) {
-      await updateAsset(item.asset.id, {}, undefined, true);
-      toast.success('تم إزالة قفل الصورة');
-      return;
-    }
-    const pin = window.prompt('اكتب PIN لهذه الصورة');
-    if (!pin?.trim()) return;
-    await updateAsset(item.asset.id, {}, pin.trim());
-    toast.success('تم قفل الصورة');
-  }
-
   function editAdminGalleryAsset(item: AdminGalleryItem) {
     setCreatingNew(false);
     setSelectedId(item.collection.id);
@@ -777,6 +896,21 @@ export default function AdminModelsPage() {
       document.getElementById(`asset-editor-${item.asset.id}`)
         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 120);
+  }
+
+  function editAdminGalleryGroup(group: AdminGalleryGroup) {
+    setCreatingNew(false);
+    setSelectedId(group.collection.id);
+    setGeneratedUrl('');
+    window.setTimeout(() => {
+      document.getElementById('model-detail-editor')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  }
+
+  function openAdminGalleryGroup(group: AdminGalleryGroup) {
+    const firstVisibleAsset = group.assets.find((asset) => asset.preview_url) || group.assets[0];
+    if (firstVisibleAsset) setActiveGalleryAssetId(firstVisibleAsset.id);
   }
 
   function moveAdminGalleryViewer(direction: -1 | 1) {
@@ -892,15 +1026,15 @@ export default function AdminModelsPage() {
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
                   <Images size={20} />
-                  معرض الأدمن لكل الصور
+                  معرض النماذج
                 </h2>
                 <p className="text-xs leading-6 text-slate-500">
-                  كل الصور المخزنة هنا، سواء كانت ظاهرة للزوار أو خاصة. افتح، انسخ، نزّل، أو انتقل للتعديل فوراً.
+                  كل عمل يظهر كبطاقة واحدة، ولو داخله عدة صور يظهر كمعرض صغير برابط واحد.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 text-[11px] font-black">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  {filteredAdminGalleryItems.length} من {adminGalleryItems.length}
+                  {filteredAdminGalleryGroups.length} من {adminGalleryGroups.length}
                 </span>
                 <span className="rounded-full bg-cyan-50 px-3 py-1 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
                   {stats.publicImagesCount} صورة عامة
@@ -942,7 +1076,7 @@ export default function AdminModelsPage() {
               </div>
             </div>
 
-            {adminGalleryItems.length === 0 ? (
+            {adminGalleryGroups.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center dark:border-slate-800">
                 <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                   <Images size={22} />
@@ -952,25 +1086,23 @@ export default function AdminModelsPage() {
                   أنشئ نموذجاً وارفع صورة أو أكثر، وستظهر هنا تلقائياً.
                 </p>
               </div>
-            ) : filteredAdminGalleryItems.length === 0 ? (
+            ) : filteredAdminGalleryGroups.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
                 لا توجد صور تطابق البحث أو الفلتر الحالي.
               </div>
             ) : (
               <div className="grid gap-3 min-[460px]:grid-cols-2 xl:grid-cols-4">
-                {filteredAdminGalleryItems.map((item) => (
-                  <AdminGalleryCard
-                    key={item.asset.id}
-                    item={item}
-                    onOpen={() => setActiveGalleryAssetId(item.asset.id)}
-                    onCopyShare={() => void copyAdminGalleryShareUrl(item)}
-                    onCopyImage={() => void copyAdminGalleryImageUrl(item)}
-                    onDownload={() => void downloadAdminGalleryAsset(item)}
-                    onEdit={() => editAdminGalleryAsset(item)}
-                    onTogglePin={() => void toggleAdminGalleryAssetPin(item)}
-                    onDelete={() => void deleteAsset(item.asset.id)}
-                    onToggleActive={() => void updateAsset(item.asset.id, { is_active: !item.asset.is_active })}
-                    onToggleGallery={() => void updateAsset(item.asset.id, { show_in_gallery: !item.asset.show_in_gallery })}
+                {filteredAdminGalleryGroups.map((group) => (
+                  <AdminGalleryGroupCard
+                    key={group.collection.id}
+                    group={group}
+                    onOpen={() => openAdminGalleryGroup(group)}
+                    onCopyShare={() => void copyAdminGalleryGroupShareUrl(group)}
+                    onEdit={() => editAdminGalleryGroup(group)}
+                    onTogglePin={() => void toggleAdminGalleryGroupPin(group)}
+                    onDelete={() => void deleteAdminGalleryGroup(group)}
+                    onToggleActive={() => void setAdminGalleryGroupActive(group, !group.collection.is_active)}
+                    onToggleGallery={() => void setAdminGalleryGroupPublic(group, !group.collection.show_in_gallery)}
                   />
                 ))}
               </div>
@@ -1787,33 +1919,30 @@ function Panel({
   );
 }
 
-function AdminGalleryCard({
-  item,
+function AdminGalleryGroupCard({
+  group,
   onOpen,
   onCopyShare,
-  onCopyImage,
-  onDownload,
   onEdit,
   onTogglePin,
   onDelete,
   onToggleActive,
   onToggleGallery,
 }: {
-  item: AdminGalleryItem;
+  group: AdminGalleryGroup;
   onOpen: () => void;
   onCopyShare: () => void;
-  onCopyImage: () => void;
-  onDownload: () => void;
   onEdit: () => void;
   onTogglePin: () => void;
   onDelete: () => void;
   onToggleActive: () => void;
   onToggleGallery: () => void;
 }) {
-  const isLocked = Boolean(item.collection.access_pin_hash || item.asset.access_pin_hash);
-  const isAssetLocked = Boolean(item.asset.access_pin_hash);
-  const isHidden = !item.collection.is_active || !item.asset.is_active;
-  const isPublic = item.collection.show_in_gallery && item.asset.show_in_gallery;
+  const previewAssets = group.assets.slice(0, 4);
+  const isLocked = Boolean(group.collection.access_pin_hash || group.assets.some((asset) => asset.access_pin_hash));
+  const isCollectionLocked = Boolean(group.collection.access_pin_hash);
+  const isHidden = !group.collection.is_active || group.assets.every((asset) => !asset.is_active);
+  const isPublic = group.collection.show_in_gallery && group.assets.some((asset) => asset.show_in_gallery);
 
   return (
     <article className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-950">
@@ -1821,10 +1950,26 @@ function AdminGalleryCard({
         type="button"
         onClick={onOpen}
         className="group relative block aspect-[4/3] w-full bg-slate-200 text-right dark:bg-slate-800"
-        aria-label="فتح الصورة"
+        aria-label="فتح النموذج"
       >
-        {item.asset.preview_url ? (
-          <img src={item.asset.preview_url} alt={item.asset.title || item.collection.title} className="h-full w-full object-contain transition duration-200 group-hover:scale-[1.02]" />
+        {previewAssets.length > 0 ? (
+          <div className={`grid h-full w-full gap-1 p-1 ${previewAssets.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            {previewAssets.map((asset) => (
+              <div key={asset.id} className="overflow-hidden rounded-lg bg-white dark:bg-slate-900">
+                {asset.preview_url ? (
+                  <img
+                    src={asset.preview_url}
+                    alt={asset.title || group.collection.title}
+                    className="h-full min-h-0 w-full object-contain transition duration-200 group-hover:scale-[1.02]"
+                  />
+                ) : (
+                  <div className="grid h-full place-items-center text-slate-400">
+                    <Images size={24} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid h-full place-items-center text-slate-400">
             <Images size={30} />
@@ -1835,6 +1980,9 @@ function AdminGalleryCard({
           {isLocked && <Badge tone="amber">PIN</Badge>}
           {isPublic && <Badge tone="cyan">عام</Badge>}
         </div>
+        <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/75 px-2 py-1 text-[11px] font-black text-white">
+          {group.assets.length} صور
+        </span>
         <span className="absolute left-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-slate-950/70 text-white opacity-0 transition group-hover:opacity-100">
           <Maximize2 size={15} />
         </span>
@@ -1842,40 +1990,22 @@ function AdminGalleryCard({
       <div className="space-y-3 p-3">
         <div className="min-w-0">
           <h3 className="line-clamp-1 text-sm font-black text-slate-900 dark:text-white">
-            {item.asset.title || item.collection.title}
+            {group.collection.title}
           </h3>
-          <p className="line-clamp-1 text-xs font-bold text-slate-500">{item.collection.title}</p>
+          <p className="line-clamp-1 text-xs font-bold text-slate-500">
+            {group.collection.description || 'معرض واحد بعدة صور ورابط واحد'}
+          </p>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           <button
             type="button"
             onClick={onCopyShare}
-            disabled={!item.shareUrl}
+            disabled={!group.shareUrl}
             className="grid h-9 place-items-center rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 dark:bg-emerald-900/20 dark:text-emerald-300"
             aria-label="نسخ رابط العميل"
             title="نسخ رابط العميل"
           >
             <Link2 size={15} />
-          </button>
-          <button
-            type="button"
-            onClick={onCopyImage}
-            disabled={!item.asset.preview_url}
-            className="grid h-9 place-items-center rounded-lg bg-cyan-50 text-cyan-700 hover:bg-cyan-100 disabled:opacity-40 dark:bg-cyan-900/20 dark:text-cyan-300"
-            aria-label="نسخ رابط الصورة"
-            title="نسخ رابط الصورة المؤقت"
-          >
-            <Copy size={15} />
-          </button>
-          <button
-            type="button"
-            onClick={onDownload}
-            disabled={!item.asset.preview_url}
-            className="grid h-9 place-items-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-800 dark:text-slate-200"
-            aria-label="تنزيل الصورة"
-            title="تنزيل الصورة"
-          >
-            <Download size={15} />
           </button>
           <button
             type="button"
@@ -1890,12 +2020,12 @@ function AdminGalleryCard({
             type="button"
             onClick={onTogglePin}
             className={`grid h-9 place-items-center rounded-lg ${
-              isAssetLocked
+              isCollectionLocked
                 ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-200'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
             }`}
-            aria-label={isAssetLocked ? 'إزالة قفل الصورة' : 'قفل الصورة'}
-            title={isAssetLocked ? 'إزالة قفل الصورة' : 'قفل الصورة'}
+            aria-label={isCollectionLocked ? 'إزالة قفل النموذج' : 'قفل النموذج'}
+            title={isCollectionLocked ? 'إزالة قفل النموذج' : 'قفل النموذج'}
           >
             <LockKeyhole size={15} />
           </button>
@@ -1914,24 +2044,24 @@ function AdminGalleryCard({
             type="button"
             onClick={onToggleActive}
             className={`rounded-lg px-2 py-1.5 text-xs font-black ${
-              item.asset.is_active
+              group.collection.is_active
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {item.asset.is_active ? 'ظاهرة' : 'مخفية'}
+            {group.collection.is_active ? 'ظاهرة' : 'مخفية'}
           </button>
           <button
             type="button"
             onClick={onToggleGallery}
-            disabled={!item.asset.is_active}
+            disabled={!group.collection.is_active}
             className={`rounded-lg px-2 py-1.5 text-xs font-black disabled:opacity-40 ${
-              item.asset.show_in_gallery
+              group.collection.show_in_gallery
                 ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300'
                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {item.asset.show_in_gallery ? 'في العام' : 'خاص'}
+            {group.collection.show_in_gallery ? 'في العام' : 'خاص'}
           </button>
         </div>
       </div>
