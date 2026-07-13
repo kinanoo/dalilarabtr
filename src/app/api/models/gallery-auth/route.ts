@@ -1,4 +1,3 @@
-import { timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getClientIp, isRateLimited } from '@/lib/rate-limit';
 import {
@@ -6,14 +5,9 @@ import {
   MODELS_GALLERY_COOKIE,
   MODELS_GALLERY_SESSION_SECONDS,
 } from '@/lib/models/gallery-auth';
+import { verifyModelsGalleryPassword } from '@/lib/models/gallery-password';
 
 export const runtime = 'nodejs';
-
-function safeEqual(a: string, b: string) {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
-}
 
 function json(body: Record<string, unknown>, status: number) {
   return NextResponse.json(body, {
@@ -34,8 +28,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const expectedPassword = process.env.MODELS_GALLERY_PASSWORD?.trim() || '';
-  if (!expectedPassword || !process.env.MODELS_GALLERY_SESSION_SECRET?.trim()) {
+  if (!process.env.MODELS_GALLERY_SESSION_SECRET?.trim()) {
     return json({ error: 'المعرض غير متاح حالياً.' }, 503);
   }
 
@@ -46,11 +39,14 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => null);
   const password = typeof body?.password === 'string' ? body.password.trim() : '';
-  if (!password || password.length > 64 || !safeEqual(password, expectedPassword)) {
+  const passwordConfig = password && password.length <= 64
+    ? await verifyModelsGalleryPassword(password)
+    : null;
+  if (!passwordConfig) {
     return json({ error: 'كلمة السر غير صحيحة.' }, 401);
   }
 
-  const session = createModelsGallerySession();
+  const session = createModelsGallerySession(passwordConfig.passwordVersion);
   if (!session) return json({ error: 'المعرض غير متاح حالياً.' }, 503);
 
   const response = json({ ok: true }, 200);

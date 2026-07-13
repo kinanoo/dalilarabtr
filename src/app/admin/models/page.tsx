@@ -18,6 +18,7 @@ import {
   Globe2,
   Eye,
   Images,
+  KeyRound,
   Link2,
   Loader2,
   LockKeyhole,
@@ -222,6 +223,9 @@ export default function AdminModelsPage() {
   const [adminGalleryFilter, setAdminGalleryFilter] = useState<AdminGalleryFilter>('all');
   const [activeGalleryAssetId, setActiveGalleryAssetId] = useState<string | null>(null);
   const [copyingGroupId, setCopyingGroupId] = useState<string | null>(null);
+  const [galleryPassword, setGalleryPassword] = useState('');
+  const [galleryPasswordConfirm, setGalleryPasswordConfirm] = useState('');
+  const [galleryPasswordSaving, setGalleryPasswordSaving] = useState(false);
 
   const selected = useMemo(() => {
     if (creatingNew) return null;
@@ -1061,6 +1065,36 @@ export default function AdminModelsPage() {
     setActiveGalleryAssetId(filteredAdminGalleryItems[next]?.asset.id || null);
   }
 
+  async function changeGalleryPassword() {
+    const password = galleryPassword.trim();
+    if (password.length < 4) {
+      toast.error('كلمة السر يجب أن تكون 4 أحرف أو أرقام على الأقل');
+      return;
+    }
+    if (password !== galleryPasswordConfirm.trim()) {
+      toast.error('تأكيد كلمة السر غير مطابق');
+      return;
+    }
+
+    setGalleryPasswordSaving(true);
+    try {
+      const res = await fetch('/api/admin/models/gallery-password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'تعذر تغيير كلمة السر');
+      setGalleryPassword('');
+      setGalleryPasswordConfirm('');
+      toast.success('تم تغيير كلمة السر وإلغاء كل جلسات الدخول القديمة');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'تعذر تغيير كلمة السر');
+    } finally {
+      setGalleryPasswordSaving(false);
+    }
+  }
+
   return (
     <div className="mx-auto w-full min-w-0 max-w-6xl space-y-4 px-0 pb-16 pt-2 sm:space-y-5 sm:px-6 sm:pt-6">
       <AdminPageHeader
@@ -1126,6 +1160,48 @@ export default function AdminModelsPage() {
                   {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Eye size={15} />}
                   إظهار الكل
                 </button>
+                <div className="col-span-full grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-700 dark:bg-slate-950/50">
+                  <div className="flex items-start gap-2">
+                    <KeyRound className="mt-0.5 shrink-0 text-emerald-600" size={16} />
+                    <div className="min-w-0">
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-100">كلمة سر معرض الزوار</p>
+                      <p className="mt-0.5 text-[10px] font-bold leading-4 text-slate-500 dark:text-slate-400">
+                        الدخول صالح 6 ساعات. تغيير الكلمة يُخرج الجميع فوراً.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid gap-2 min-[430px]:grid-cols-2">
+                    <input
+                      type="password"
+                      value={galleryPassword}
+                      onChange={(event) => setGalleryPassword(event.target.value)}
+                      autoComplete="new-password"
+                      inputMode="numeric"
+                      maxLength={64}
+                      placeholder="كلمة السر الجديدة"
+                      className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                    />
+                    <input
+                      type="password"
+                      value={galleryPasswordConfirm}
+                      onChange={(event) => setGalleryPasswordConfirm(event.target.value)}
+                      autoComplete="new-password"
+                      inputMode="numeric"
+                      maxLength={64}
+                      placeholder="تأكيد كلمة السر"
+                      className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void changeGalleryPassword()}
+                    disabled={galleryPasswordSaving || !galleryPassword || !galleryPasswordConfirm}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                  >
+                    {galleryPasswordSaving ? <Loader2 className="animate-spin" size={15} /> : <ShieldCheck size={15} />}
+                    تغيير كلمة السر
+                  </button>
+                </div>
               </div>
             </details>
           </div>

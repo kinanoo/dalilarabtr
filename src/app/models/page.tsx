@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import ModelsGalleryClient from '@/components/models/ModelsGalleryClient';
 import ModelsGalleryGate from '@/components/models/ModelsGalleryGate';
 import { MODELS_GALLERY_COOKIE, verifyModelsGallerySession } from '@/lib/models/gallery-auth';
+import { getModelsGalleryPasswordConfig } from '@/lib/models/gallery-password';
 import { getPublicModelsGallery } from '@/lib/models/server';
 import { SITE_CONFIG } from '@/lib/config';
 
@@ -32,7 +33,10 @@ export const metadata: Metadata = {
 export default async function ModelsIndexPage() {
   const cookieStore = await cookies();
   const session = cookieStore.get(MODELS_GALLERY_COOKIE)?.value;
-  if (!verifyModelsGallerySession(session)) return <ModelsGalleryGate />;
+  const passwordConfig = await getModelsGalleryPasswordConfig();
+  if (!passwordConfig || !verifyModelsGallerySession(session, passwordConfig.passwordVersion)) {
+    return <ModelsGalleryGate />;
+  }
 
   const collections = await getPublicModelsGallery();
   return <ModelsGalleryClient collections={collections} />;
