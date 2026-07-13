@@ -23,7 +23,6 @@ import {
   LockKeyhole,
   Maximize2,
   Pencil,
-  Plus,
   RefreshCw,
   Save,
   Search,
@@ -533,16 +532,6 @@ export default function AdminModelsPage() {
     } finally {
       setSaving(false);
     }
-  }
-
-  function createCollection() {
-    setCreatingNew(false);
-    setSelectedId(null);
-    setGeneratedUrl('');
-    document.getElementById('model-quick-publish')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    quickFileInputRef.current?.click();
-    toast.message('ارفع صورة أو أكثر، اكتب التسمية، ثم احفظها دائماً');
   }
 
   async function deleteCollection() {
@@ -1082,24 +1071,14 @@ export default function AdminModelsPage() {
         subtitle="احفظ صور أعمالك كنماذج دائمة، ثم ولّد روابط العرض عند الحاجة."
         actions={
           <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-start sm:justify-end">
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <button
-                type="button"
-                onClick={() => void loadModels()}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-              >
-                <RefreshCw size={15} />
-                تحديث
-              </button>
-              <button
-                type="button"
-                onClick={createCollection}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
-              >
-                <Plus size={15} />
-                جديد
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => void loadModels()}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+            >
+              <RefreshCw size={15} />
+              تحديث
+            </button>
             <details className="group min-w-0 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 sm:min-w-[280px]">
               <summary className="inline-flex min-h-10 w-full cursor-pointer list-none items-center justify-center gap-2 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
                 <Settings2 size={15} />
@@ -1175,14 +1154,6 @@ export default function AdminModelsPage() {
             onSubmit={() => void quickPublish()}
           />
 
-          <div className="grid grid-cols-5 gap-1 sm:gap-2">
-            <Stat label="النماذج" value={collections.length} />
-            <Stat label="ظاهرة" value={stats.visibleCount} />
-            <Stat label="بالمعرض" value={stats.galleryCount} />
-            <Stat label="الصور" value={stats.imagesCount} />
-            <Stat label="مقفولة" value={stats.lockedCount} />
-          </div>
-
           <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1190,9 +1161,6 @@ export default function AdminModelsPage() {
                   <Images size={20} />
                   معرض النماذج
                 </h2>
-                <p className="text-xs leading-6 text-slate-500">
-                  كل عمل يظهر كبطاقة واحدة، ولو داخله عدة صور يظهر كمعرض صغير برابط واحد.
-                </p>
               </div>
               <div className="flex flex-wrap gap-2 text-[11px] font-black">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -1214,28 +1182,34 @@ export default function AdminModelsPage() {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-10 text-sm font-bold outline-none focus:border-cyan-500 dark:border-slate-800 dark:bg-slate-950"
                 />
               </label>
-              <div className="grid grid-cols-2 gap-2 min-[430px]:flex min-[430px]:flex-wrap">
-                {([
-                  ['all', 'الكل'],
-                  ['visible', 'ظاهرة'],
-                  ['hidden', 'مخفية'],
-                  ['locked', 'مقفولة'],
-                  ['public', 'عامة'],
-                ] as Array<[AdminGalleryFilter, string]>).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setAdminGalleryFilter(value)}
-                    className={`rounded-xl px-3 py-2 text-xs font-black transition ${
-                      adminGalleryFilter === value
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <details className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                <summary className="flex min-h-10 cursor-pointer items-center justify-center gap-2 px-3 text-xs font-black text-slate-700 dark:text-slate-200">
+                  <Settings2 size={15} />
+                  فلترة
+                </summary>
+                <div className="grid grid-cols-2 gap-2 border-t border-slate-200 p-2 dark:border-slate-800 min-[430px]:flex min-[430px]:flex-wrap">
+                  {([
+                    ['all', 'الكل'],
+                    ['visible', 'ظاهرة'],
+                    ['hidden', 'مخفية'],
+                    ['locked', 'مقفولة'],
+                    ['public', 'عامة'],
+                  ] as Array<[AdminGalleryFilter, string]>).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setAdminGalleryFilter(value)}
+                      className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                        adminGalleryFilter === value
+                          ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </details>
             </div>
 
             {adminGalleryGroups.length === 0 ? (
@@ -1858,9 +1832,10 @@ function QuickPublishPanel({
   onSubmit: () => void;
 }) {
   const canSubmit = Boolean(form.title.trim()) && files.length > 0 && !busy;
+  const hasFiles = files.length > 0;
 
   return (
-    <section id="model-quick-publish" className="min-w-0 scroll-mt-20 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-white to-emerald-50/35 p-3 shadow-sm dark:border-emerald-900/50 dark:from-slate-900 dark:to-emerald-950/10 sm:p-5">
+    <section id="model-quick-publish" className="min-w-0 scroll-mt-20 rounded-2xl border border-emerald-200 bg-white p-3 shadow-sm dark:border-emerald-900/50 dark:bg-slate-900">
       <input
         ref={fileInputRef}
         type="file"
@@ -1869,175 +1844,128 @@ function QuickPublishPanel({
         className="hidden"
         onChange={(e) => onFilesChange(e.target.files)}
       />
-      <div className="mb-4 grid gap-3 sm:flex sm:flex-wrap sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-lg font-black text-slate-950 dark:text-white sm:text-xl">
-            <UploadCloud className="text-emerald-600" size={22} />
-            حفظ سريع
-          </h2>
-          <p className="text-xs font-bold leading-6 text-slate-500">
-            ارفع صورة أو أكثر واحفظها دائماً في معرض الأدمن. الرابط تولّده لاحقاً عند الحاجة.
-          </p>
-        </div>
+
+      <div className="grid min-w-0 gap-2 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-end">
         <button
           type="button"
           onClick={onPickFiles}
           disabled={busy}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 sm:w-auto"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950"
         >
           <UploadCloud size={17} />
-          رفع صورة
+          {hasFiles ? `${files.length} صورة` : 'رفع صورة'}
         </button>
-      </div>
 
-      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.2fr)]">
+        <label className="min-w-0 space-y-1">
+          <span className="text-xs font-black text-slate-500">التسمية</span>
+          <input
+            value={form.title}
+            onChange={(e) => onFormChange({ title: e.target.value })}
+            placeholder="مثال: شهادة إسعافات أولية"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
+          />
+        </label>
+
         <button
           type="button"
-          onClick={onPickFiles}
-          disabled={busy}
-          className="min-h-[150px] rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/60 p-3 text-right transition hover:border-emerald-400 disabled:opacity-60 dark:border-emerald-900/50 dark:bg-emerald-900/10 sm:min-h-[220px]"
+          onClick={onSubmit}
+          disabled={!canSubmit}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
         >
-          {previewUrls.length > 0 ? (
-            <div className="grid h-full grid-cols-2 gap-2">
-              {previewUrls.map((url, index) => (
-                <div key={url} className="relative overflow-hidden rounded-xl bg-white shadow-sm dark:bg-slate-950">
-                  <img src={url} alt={`صورة ${index + 1}`} className="h-full min-h-[96px] w-full object-cover" />
-                </div>
-              ))}
-              {files.length > previewUrls.length && (
-                <div className="grid min-h-[96px] place-items-center rounded-xl bg-white text-sm font-black text-slate-500 dark:bg-slate-950">
-                  +{files.length - previewUrls.length}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="grid h-full place-items-center py-8 text-center">
-              <div>
-                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-300">
-                  <Images size={28} />
-                </div>
-                <div className="text-sm font-black text-slate-900 dark:text-white">اختر الصور</div>
-                <div className="mt-1 text-xs font-bold text-slate-500">صورة واحدة أو عدة صور لنفس العمل</div>
-              </div>
-            </div>
-          )}
+          {busy ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
+          حفظ دائم
         </button>
+      </div>
 
-        <div className="min-w-0 space-y-3">
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className="space-y-1 md:col-span-2">
-              <span className="text-xs font-black text-slate-500">التسمية</span>
-              <input
-                value={form.title}
-                onChange={(e) => onFormChange({ title: e.target.value })}
-                placeholder="مثال: شهادة إسعافات أولية"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-              />
-            </label>
-            <label className="space-y-1 md:col-span-2">
-              <span className="text-xs font-black text-slate-500">شرح بسطر واحد</span>
-              <input
-                value={form.description}
-                maxLength={220}
-                onChange={(e) => onFormChange({ description: e.target.value })}
-                placeholder="مثال: نموذج شهادة تدريب قابلة للتوثيق"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-              />
-            </label>
-            <label className="space-y-1 md:col-span-2">
-              <span className="text-xs font-black text-slate-500">العلامة المائية</span>
-              <input
-                value={form.watermark_text}
-                onChange={(e) => onFormChange({ watermark_text: e.target.value })}
-                placeholder="اختياري"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-              />
-            </label>
-          </div>
+      {hasFiles && (
+        <div className="mt-2 flex min-w-0 items-center gap-2 overflow-x-auto pb-1">
+          {previewUrls.map((url, index) => (
+            <div key={url} className="h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-950">
+              <img src={url} alt={`صورة ${index + 1}`} className="h-full w-full object-cover" />
+            </div>
+          ))}
+          {files.length > previewUrls.length && (
+            <span className="grid h-14 w-16 shrink-0 place-items-center rounded-lg bg-slate-100 text-xs font-black text-slate-500 dark:bg-slate-800">
+              +{files.length - previewUrls.length}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onClearFiles}
+            disabled={busy}
+            className="h-10 shrink-0 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300"
+          >
+            مسح
+          </button>
+        </div>
+      )}
 
-          <details className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
-            <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-black text-slate-700 dark:text-slate-200">
-              <Settings2 size={16} />
-              خيارات الحفظ والقفل
-            </summary>
-            <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
-              <label className="space-y-1">
-                <span className="text-xs font-black text-slate-500">PIN اختياري (4+)</span>
-                <input
-                  value={form.collection_pin}
-                  onChange={(e) => onFormChange({ collection_pin: e.target.value })}
-                  placeholder="4 أحرف أو أرقام على الأقل"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
-                />
-              </label>
-              <label className="space-y-1">
-                <span className="text-xs font-black text-slate-500">تلميح PIN</span>
-                <input
-                  value={form.pin_hint}
-                  onChange={(e) => onFormChange({ pin_hint: e.target.value })}
-                  placeholder="مثال: الرقم المرسل لك"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
-                />
-              </label>
-              <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={form.is_active}
-                  onChange={(e) => onFormChange({ is_active: e.target.checked })}
-                  className="h-4 w-4 accent-emerald-600"
-                />
-                محفوظة وفعالة
-              </label>
-              <label className="flex items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-900/15 dark:text-cyan-200">
-                <input
-                  type="checkbox"
-                  checked={form.show_in_gallery}
-                  onChange={(e) => onFormChange({ show_in_gallery: e.target.checked })}
-                  className="h-4 w-4 accent-cyan-600"
-                />
-                إدراجه في المعرض العام
-              </label>
-            </div>
-          </details>
-
-          <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="text-xs font-bold text-slate-500">
-              {files.length > 0 ? `${files.length} صورة جاهزة للحفظ` : 'لم يتم اختيار صور بعد'}
-            </div>
-            <div className="grid gap-2 min-[430px]:grid-cols-2 sm:flex sm:flex-wrap">
-              {files.length > 0 && (
-                <button
-                  type="button"
-                  onClick={onClearFiles}
-                  disabled={busy}
-                  className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300"
-                >
-                  مسح
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={onSubmit}
-                disabled={!canSubmit}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {busy ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
-                حفظ دائم
-              </button>
-            </div>
+      <details className="mt-2 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+        <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-black text-slate-700 dark:text-slate-200">
+          <Settings2 size={16} />
+          شرح وخيارات اختيارية
+        </summary>
+        <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
+          <label className="space-y-1 md:col-span-2">
+            <span className="text-xs font-black text-slate-500">شرح بسطر واحد</span>
+            <input
+              value={form.description}
+              maxLength={220}
+              onChange={(e) => onFormChange({ description: e.target.value })}
+              placeholder="اختياري"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">علامة مائية</span>
+            <input
+              value={form.watermark_text}
+              onChange={(e) => onFormChange({ watermark_text: e.target.value })}
+              placeholder="اختياري"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">PIN اختياري (4+)</span>
+            <input
+              value={form.collection_pin}
+              onChange={(e) => onFormChange({ collection_pin: e.target.value })}
+              placeholder="4 أحرف أو أرقام على الأقل"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-xs font-black text-slate-500">تلميح PIN</span>
+            <input
+              value={form.pin_hint}
+              onChange={(e) => onFormChange({ pin_hint: e.target.value })}
+              placeholder="اختياري"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
+            />
+          </label>
+          <div className="grid gap-2 min-[430px]:grid-cols-2 md:col-span-2">
+            <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={form.is_active}
+                onChange={(e) => onFormChange({ is_active: e.target.checked })}
+                className="h-4 w-4 accent-emerald-600"
+              />
+              فعالة
+            </label>
+            <label className="flex items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-900/15 dark:text-cyan-200">
+              <input
+                type="checkbox"
+                checked={form.show_in_gallery}
+                onChange={(e) => onFormChange({ show_in_gallery: e.target.checked })}
+                className="h-4 w-4 accent-cyan-600"
+              />
+              بالمعرض العام
+            </label>
           </div>
         </div>
-      </div>
+      </details>
     </section>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white px-1 py-1.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-xl sm:px-3 sm:py-2">
-      <div className="truncate text-[9px] font-black leading-3 text-slate-500 sm:text-xs sm:leading-4">{label}</div>
-      <div className="text-base font-black leading-5 text-slate-900 dark:text-white sm:text-xl sm:leading-6">{value}</div>
-    </div>
   );
 }
 
