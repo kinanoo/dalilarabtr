@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { isPrivateModelSharePath } from '@/lib/models/routes';
 
 /**
  * SiteBackdrop — a faint, fixed Istanbul photo behind ALL page content.
@@ -65,7 +66,7 @@ export default function SiteBackdrop() {
     return () => { alive = false; };
   }, []);
 
-  if (pathname.startsWith('/admin')) return null;
+  if (pathname.startsWith('/admin') || isPrivateModelSharePath(pathname)) return null;
 
   const c = cfg || DEFAULT_CFG;
   if (!c.enabled) return null;

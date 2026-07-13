@@ -7,13 +7,14 @@ import { SITE_CONFIG } from '@/lib/config';
 import { usePathname } from 'next/navigation';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { Wrench, Shield, Scale } from 'lucide-react';
+import { isPrivateModelSharePath } from '@/lib/models/routes';
 
 export default function Footer() {
   const pathname = usePathname();
   const { data: siteConfig } = useSiteConfig();
   const footerMenus = siteConfig?.footerMenus ?? { section1: [], section2: [] };
 
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || isPrivateModelSharePath(pathname)) return null;
 
   return (
     <>

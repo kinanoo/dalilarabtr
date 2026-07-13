@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { isPrivateModelSharePath } from '@/lib/models/routes';
 
 const INTERACTIVE_SELECTOR = [
   'a[href]',
@@ -23,7 +25,11 @@ function isDisabled(element: Element): boolean {
 }
 
 export default function TapFeedbackPulse() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    if (isPrivateModelSharePath(pathname)) return;
+
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
 
     function onPointerDown(event: PointerEvent) {
@@ -46,7 +52,7 @@ export default function TapFeedbackPulse() {
 
     document.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
     return () => document.removeEventListener('pointerdown', onPointerDown, { capture: true });
-  }, []);
+  }, [pathname]);
 
   return null;
 }

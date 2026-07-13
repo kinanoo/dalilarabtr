@@ -24,6 +24,7 @@ import NotificationBell from './notifications/NotificationBell';
 import UrgencyBanner from './UrgencyBanner';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { isPrivateModelSharePath } from '@/lib/models/routes';
 
 // Helper to map icon names to components.
 // "BrainCircuit" stays as a KEY (DB menu rows may still reference the name)
@@ -311,8 +312,8 @@ export default function Navbar() {
     setOpenSection(DRAWER_TOOLS.some((t) => t.href === pathname) ? 'tools' : 'sections');
   }, [isOpen, pathname]);
 
-  // Don't render on Admin pages (after all hooks)
-  if (pathname?.startsWith('/admin')) return null;
+  // Don't render on Admin pages or private model-share links (after all hooks).
+  if (pathname?.startsWith('/admin') || isPrivateModelSharePath(pathname)) return null;
 
   const mobileDrawer = portalTarget
     ? createPortal(
