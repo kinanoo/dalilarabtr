@@ -671,7 +671,7 @@ export default function AdminModelsPage() {
     try {
       await updateCollectionOptions(group.collection, { is_active: isActive });
       await Promise.all(group.assets.map((asset) => patchUploadedAsset(asset.id, { is_active: isActive })));
-      toast.success(isActive ? 'تم إظهار النموذج بكل صوره' : 'تم إخفاء النموذج بكل صوره');
+      toast.success(isActive ? 'تم تشغيل رابط العميل' : 'تم إيقاف رابط العميل');
       await loadModels();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل تعديل الظهور');
@@ -682,7 +682,7 @@ export default function AdminModelsPage() {
     try {
       await updateCollectionOptions(group.collection, { show_in_gallery: isPublic });
       await Promise.all(group.assets.map((asset) => patchUploadedAsset(asset.id, { show_in_gallery: isPublic })));
-      toast.success(isPublic ? 'تم إدراج النموذج في المعرض العام' : 'تم جعله خاصاً');
+      toast.success(isPublic ? 'تم إظهار النموذج في المعرض' : 'تمت إزالة النموذج من المعرض');
       await loadModels();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل تعديل المعرض');
@@ -1167,7 +1167,7 @@ export default function AdminModelsPage() {
                   {filteredAdminGalleryGroups.length} من {adminGalleryGroups.length}
                 </span>
                 <span className="rounded-full bg-cyan-50 px-3 py-1 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
-                  {stats.publicImagesCount} صورة عامة
+                  {stats.publicImagesCount} صورة في المعرض
                 </span>
               </div>
             </div>
@@ -1190,10 +1190,10 @@ export default function AdminModelsPage() {
                 <div className="grid grid-cols-2 gap-2 border-t border-slate-200 p-2 dark:border-slate-800 min-[430px]:flex min-[430px]:flex-wrap">
                   {([
                     ['all', 'الكل'],
-                    ['visible', 'ظاهرة'],
-                    ['hidden', 'مخفية'],
-                    ['locked', 'مقفولة'],
-                    ['public', 'عامة'],
+                    ['visible', 'الرابط يعمل'],
+                    ['hidden', 'الرابط متوقف'],
+                    ['locked', 'بكلمة سر'],
+                    ['public', 'في المعرض'],
                   ] as Array<[AdminGalleryFilter, string]>).map(([value, label]) => (
                     <button
                       key={value}
@@ -1951,7 +1951,7 @@ function QuickPublishPanel({
                 onChange={(e) => onFormChange({ is_active: e.target.checked })}
                 className="h-4 w-4 accent-emerald-600"
               />
-              فعالة
+              رابط العميل يعمل
             </label>
             <label className="flex items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-900/15 dark:text-cyan-200">
               <input
@@ -1960,7 +1960,7 @@ function QuickPublishPanel({
                 onChange={(e) => onFormChange({ show_in_gallery: e.target.checked })}
                 className="h-4 w-4 accent-cyan-600"
               />
-              بالمعرض العام
+              إظهار في المعرض
             </label>
           </div>
         </div>
@@ -2035,13 +2035,13 @@ function AdminGalleryGroupCard({
   const isCollectionLocked = Boolean(group.collection.access_pin_hash);
   const isFullyVisible = group.collection.is_active && activeCount === totalAssets && totalAssets > 0;
   const isPartlyVisible = group.collection.is_active && activeCount > 0 && activeCount < totalAssets;
-  const isHidden = !group.collection.is_active || activeCount === 0;
+  const isLinkStopped = !group.collection.is_active || activeCount === 0;
   const isFullyPublic = group.collection.is_active && group.collection.show_in_gallery && activeCount > 0 && publicCount === activeCount;
   const isPartlyPublic = group.collection.is_active && group.collection.show_in_gallery && publicCount > 0 && publicCount < activeCount;
   const nextActive = isFullyVisible ? false : true;
   const nextPublic = isFullyPublic ? false : true;
-  const visibilityLabel = isFullyVisible ? 'ظاهرة كلها' : isPartlyVisible ? 'ظاهرة جزئياً' : 'مخفية';
-  const publicLabel = isFullyPublic ? 'عام كله' : isPartlyPublic ? 'عام جزئي' : 'خاص';
+  const linkLabel = isFullyVisible ? 'الرابط يعمل' : isPartlyVisible ? 'بعض الصور متوقفة' : 'الرابط متوقف';
+  const galleryLabel = isFullyPublic ? 'في المعرض' : isPartlyPublic ? 'بعضها في المعرض' : 'خارج المعرض';
 
   return (
     <article className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-950">
@@ -2074,13 +2074,11 @@ function AdminGalleryGroupCard({
             <Images size={30} />
           </div>
         )}
-        <div className="absolute right-2 top-2 flex flex-wrap gap-1">
-          {isHidden && <Badge tone="slate">مخفي</Badge>}
-          {isPartlyVisible && <Badge tone="amber">ظهور جزئي</Badge>}
-          {isLocked && <Badge tone="amber">PIN</Badge>}
-          {isFullyPublic && <Badge tone="cyan">عام</Badge>}
-          {isPartlyPublic && <Badge tone="cyan">عام جزئي</Badge>}
-        </div>
+        {isLocked && (
+          <div className="absolute right-2 top-2">
+            <Badge tone="amber">بكلمة سر</Badge>
+          </div>
+        )}
         <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/75 px-2 py-1 text-[11px] font-black text-white">
           {group.assets.length} صور
         </span>
@@ -2106,9 +2104,6 @@ function AdminGalleryGroupCard({
           </h3>
           <p className="line-clamp-1 text-xs font-bold text-slate-500">
             {group.collection.description || 'معرض واحد بعدة صور ورابط واحد'}
-          </p>
-          <p className="mt-1 text-[11px] font-black text-slate-400">
-            {activeCount}/{totalAssets} ظاهرة · {publicCount}/{activeCount || totalAssets} عامة
           </p>
         </div>
         <div className="grid grid-cols-5 gap-1.5">
@@ -2171,6 +2166,7 @@ function AdminGalleryGroupCard({
           <button
             type="button"
             onClick={() => onToggleActive(nextActive)}
+            title={isFullyVisible ? 'اضغط لإيقاف رابط العميل' : 'اضغط لتشغيل رابط العميل'}
             className={`rounded-lg px-2 py-1.5 text-xs font-black ${
               isFullyVisible
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
@@ -2179,12 +2175,16 @@ function AdminGalleryGroupCard({
                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {visibilityLabel}
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <Link2 size={14} />
+              {linkLabel}
+            </span>
           </button>
           <button
             type="button"
             onClick={() => onToggleGallery(nextPublic)}
-            disabled={isHidden}
+            disabled={isLinkStopped}
+            title={isFullyPublic ? 'اضغط لإزالة النموذج من المعرض' : 'اضغط لإظهار النموذج في المعرض'}
             className={`rounded-lg px-2 py-1.5 text-xs font-black disabled:opacity-40 ${
               isFullyPublic
                 ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300'
@@ -2193,7 +2193,10 @@ function AdminGalleryGroupCard({
                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {publicLabel}
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <Images size={14} />
+              {galleryLabel}
+            </span>
           </button>
         </div>
       </div>
