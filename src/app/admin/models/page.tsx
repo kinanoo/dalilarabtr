@@ -176,7 +176,8 @@ export default function AdminModelsPage() {
 
   const selected = useMemo(() => {
     if (creatingNew) return null;
-    return collections.find((collection) => collection.id === selectedId) || collections[0] || null;
+    if (!selectedId) return null;
+    return collections.find((collection) => collection.id === selectedId) || null;
   }, [collections, creatingNew, selectedId]);
 
   const mainLink = useMemo(
@@ -205,7 +206,6 @@ export default function AdminModelsPage() {
   }, [collections]);
 
   const mainStatus = mainLink ? linkStatus(mainLink) : null;
-  const activeTitle = creatingNew ? 'نموذج جديد' : selected?.title || 'اختر نموذجاً';
 
   const adminGalleryItems = useMemo<AdminGalleryItem[]>(() => collections.flatMap((collection) => {
     const link = collectionMainLink(collection);
@@ -246,8 +246,10 @@ export default function AdminModelsPage() {
 
   useEffect(() => {
     if (creatingNew) return;
-    if (selected && selected.id !== selectedId) setSelectedId(selected.id);
-  }, [creatingNew, selected, selectedId]);
+    if (selectedId && !collections.some((collection) => collection.id === selectedId)) {
+      setSelectedId(null);
+    }
+  }, [collections, creatingNew, selectedId]);
 
   useEffect(() => {
     if (!selected) {
@@ -752,12 +754,25 @@ export default function AdminModelsPage() {
     }
   }
 
+  async function toggleAdminGalleryAssetPin(item: AdminGalleryItem) {
+    if (item.asset.access_pin_hash) {
+      await updateAsset(item.asset.id, {}, undefined, true);
+      toast.success('تم إزالة قفل الصورة');
+      return;
+    }
+    const pin = window.prompt('اكتب PIN لهذه الصورة');
+    if (!pin?.trim()) return;
+    await updateAsset(item.asset.id, {}, pin.trim());
+    toast.success('تم قفل الصورة');
+  }
+
   function editAdminGalleryAsset(item: AdminGalleryItem) {
     setCreatingNew(false);
     setSelectedId(item.collection.id);
     setGeneratedUrl('');
     window.setTimeout(() => {
-      document.getElementById(`asset-editor-${item.asset.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById(`asset-editor-${item.asset.id}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 120);
   }
 
@@ -945,6 +960,8 @@ export default function AdminModelsPage() {
                     onCopyImage={() => void copyAdminGalleryImageUrl(item)}
                     onDownload={() => void downloadAdminGalleryAsset(item)}
                     onEdit={() => editAdminGalleryAsset(item)}
+                    onTogglePin={() => void toggleAdminGalleryAssetPin(item)}
+                    onDelete={() => void deleteAsset(item.asset.id)}
                     onToggleActive={() => void updateAsset(item.asset.id, { is_active: !item.asset.is_active })}
                     onToggleGallery={() => void updateAsset(item.asset.id, { show_in_gallery: !item.asset.show_in_gallery })}
                   />
@@ -953,96 +970,23 @@ export default function AdminModelsPage() {
             )}
           </section>
 
-          <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="text-sm font-black text-slate-900 dark:text-white">اختر النموذج</h2>
-                <p className="text-xs text-slate-500">كل نموذج له صوره ورابطه الخاص.</p>
+          {!selected && !creatingNew ? (
+            <section className="rounded-2xl border border-dashed border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+                <Pencil size={22} />
               </div>
-              <span className="max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[11px] font-black text-slate-500 dark:bg-slate-800">
-                {activeTitle}
-              </span>
-            </div>
-            <select
-              value={creatingNew ? '__new' : selected?.id || ''}
-              onChange={(e) => {
-                if (e.target.value === '__new') {
-                  createCollection();
-                  return;
-                }
-                setCreatingNew(false);
-                setSelectedId(e.target.value || null);
-                setGeneratedUrl('');
-              }}
-              className="mb-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-black text-slate-800 outline-none focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white sm:hidden"
-            >
-              {collections.length === 0 && !creatingNew && <option value="">لا توجد نماذج بعد</option>}
-              {creatingNew && <option value="__new">نموذج جديد</option>}
-              {collections.map((collection) => (
-                <option key={collection.id} value={collection.id}>
-                  {collection.title}
-                </option>
-              ))}
-            </select>
-
-            <div className="-mx-1 hidden max-w-full snap-x gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:thin] sm:flex">
-              {collections.length === 0 && !creatingNew && (
-                <div className="w-full rounded-xl border border-dashed border-slate-200 p-5 text-center text-sm font-bold text-slate-400 dark:border-slate-800">
-                  ابدأ بإنشاء أول نموذج.
-                </div>
-              )}
-              {creatingNew && (
-                <button
-                  type="button"
-                  className="w-[min(76vw,220px)] shrink-0 snap-start rounded-xl border border-emerald-400 bg-emerald-50 p-3 text-right text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100"
-                >
-                  <span className="block text-sm font-black">نموذج جديد</span>
-                  <span className="mt-1 block text-[11px] font-bold">اكتب بياناته ثم احفظ</span>
-                </button>
-              )}
-              {collections.map((collection) => (
-                <button
-                  key={collection.id}
-                  type="button"
-                  onClick={() => { setCreatingNew(false); setSelectedId(collection.id); setGeneratedUrl(''); }}
-                  className={`w-[min(78vw,230px)] shrink-0 snap-start rounded-xl border p-3 text-right transition ${
-                    selected?.id === collection.id
-                      ? 'border-emerald-400 bg-emerald-50 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-100'
-                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700'
-                  }`}
-                >
-                  <span className="line-clamp-1 text-sm font-black">{collection.title}</span>
-                  <span className="mt-1 block text-[11px] text-slate-500">
-                    {collection.assets.length} صورة / {collection.links.length} رابط
-                  </span>
-                  <span className="mt-2 flex flex-wrap gap-1">
-                    {!collection.is_active && (
-                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-700 dark:bg-red-900/20 dark:text-red-300">
-                        مخفي
-                      </span>
-                    )}
-                    {collection.access_pin_hash && (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-                        PIN
-                      </span>
-                    )}
-                    {collection.show_in_gallery && (
-                      <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300">
-                        معرض
-                      </span>
-                    )}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
+              <h2 className="text-base font-black text-slate-900 dark:text-white">التعديل صار من الصورة نفسها</h2>
+              <p className="mx-auto mt-2 max-w-xl text-xs font-bold leading-6 text-slate-500">
+                اضغط تعديل على أي صورة من المعرض لفتح بياناتها ورابطها وصورها المرتبطة. لا توجد خطوة اختيار منفصلة.
+              </p>
+            </section>
+          ) : (
+          <section id="model-detail-editor" className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
             <div className="min-w-0 space-y-5">
               <Panel
                 number="1"
-                title="بيانات النموذج"
-                subtitle="العنوان والشرح المختصر فقط. الرابط الرئيسي يتولد تلقائياً عند الحفظ."
+                title="بيانات الرابط والألبوم"
+                subtitle="هذه البيانات تخص الصورة أو مجموعة الصور المرتبطة بنفس الرابط."
               >
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="space-y-1 md:col-span-2">
@@ -1095,7 +1039,7 @@ export default function AdminModelsPage() {
                       </select>
                     </label>
                     <label className="space-y-1">
-                      <span className="text-xs font-black text-slate-500">PIN للنموذج كله</span>
+                      <span className="text-xs font-black text-slate-500">PIN للألبوم كله</span>
                       <input
                         value={form.collection_pin}
                         onChange={(e) => setForm((prev) => ({ ...prev, collection_pin: e.target.value, clear_collection_pin: false }))}
@@ -1146,7 +1090,7 @@ export default function AdminModelsPage() {
                         onChange={(e) => setForm((prev) => ({ ...prev, clear_collection_pin: e.target.checked, collection_pin: e.target.checked ? '' : prev.collection_pin }))}
                         className="h-4 w-4 accent-emerald-600"
                       />
-                      إزالة قفل النموذج
+                      إزالة قفل الألبوم
                     </label>
                   </div>
                 </details>
@@ -1160,7 +1104,7 @@ export default function AdminModelsPage() {
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-black text-red-600 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300 sm:w-auto"
                     >
                       <Trash2 size={16} />
-                      حذف
+                      حذف الألبوم كله
                     </button>
                   ) : <span />}
                   <button
@@ -1178,8 +1122,8 @@ export default function AdminModelsPage() {
               {(selected || creatingNew) && (
                 <Panel
                   number="2"
-                  title="صور النموذج"
-                  subtitle={selected ? 'ارفع صورة واحدة أو عدة صور لنفس النموذج مثل الأمام والخلف والتفاصيل.' : 'مكان الصور هنا. احفظ بيانات النموذج أولاً، ثم سيظهر زر رفع الصور في هذا المكان.'}
+                  title="الصور المرتبطة"
+                  subtitle={selected ? 'كل صورة هنا لها خياراتها. استخدم هذا المكان فقط عند الحاجة لإضافة صور لنفس الرابط.' : 'احفظ البيانات أولاً، ثم ارفع الصور المرتبطة بهذا الرابط.'}
                   action={selected ? (
                     <>
                       <input
@@ -1216,7 +1160,7 @@ export default function AdminModelsPage() {
                       <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
                         <UploadCloud size={24} />
                       </div>
-                      <h3 className="text-sm font-black text-slate-900 dark:text-white">هنا تضيف صور النموذج</h3>
+                      <h3 className="text-sm font-black text-slate-900 dark:text-white">هنا تضيف الصور المرتبطة</h3>
                       <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-slate-500">
                         اكتب العنوان والشرح واضغط حفظ ونشر. بعدها ارفع صورة واحدة أو عدة صور لنفس الخدمة، وتقدر تقفل صورة معينة أو تخفيها لاحقاً.
                       </p>
@@ -1572,6 +1516,7 @@ export default function AdminModelsPage() {
               )}
             </div>
           </section>
+          )}
         </>
       )}
 
@@ -1855,6 +1800,8 @@ function AdminGalleryCard({
   onCopyImage,
   onDownload,
   onEdit,
+  onTogglePin,
+  onDelete,
   onToggleActive,
   onToggleGallery,
 }: {
@@ -1864,10 +1811,13 @@ function AdminGalleryCard({
   onCopyImage: () => void;
   onDownload: () => void;
   onEdit: () => void;
+  onTogglePin: () => void;
+  onDelete: () => void;
   onToggleActive: () => void;
   onToggleGallery: () => void;
 }) {
   const isLocked = Boolean(item.collection.access_pin_hash || item.asset.access_pin_hash);
+  const isAssetLocked = Boolean(item.asset.access_pin_hash);
   const isHidden = !item.collection.is_active || !item.asset.is_active;
   const isPublic = item.collection.show_in_gallery && item.asset.show_in_gallery;
 
@@ -1902,7 +1852,7 @@ function AdminGalleryCard({
           </h3>
           <p className="line-clamp-1 text-xs font-bold text-slate-500">{item.collection.title}</p>
         </div>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           <button
             type="button"
             onClick={onCopyShare}
@@ -1941,6 +1891,28 @@ function AdminGalleryCard({
             title="تعديل الصورة"
           >
             <Pencil size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onTogglePin}
+            className={`grid h-9 place-items-center rounded-lg ${
+              isAssetLocked
+                ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-200'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
+            }`}
+            aria-label={isAssetLocked ? 'إزالة قفل الصورة' : 'قفل الصورة'}
+            title={isAssetLocked ? 'إزالة قفل الصورة' : 'قفل الصورة'}
+          >
+            <LockKeyhole size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="grid h-9 place-items-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300"
+            aria-label="حذف الصورة"
+            title="حذف الصورة"
+          >
+            <Trash2 size={15} />
           </button>
         </div>
         <div className="grid grid-cols-2 gap-1.5">
