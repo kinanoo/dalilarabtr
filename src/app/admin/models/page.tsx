@@ -71,6 +71,8 @@ const DURATION_PRESETS = [
   { label: 'أسبوع', minutes: 60 * 24 * 7 },
 ];
 
+const SHOW_LEGACY_MODEL_EDITOR = false;
+
 const DEFAULT_FORM = {
   title: '',
   description: '',
@@ -534,11 +536,13 @@ export default function AdminModelsPage() {
   }
 
   function createCollection() {
-    setCreatingNew(true);
-    setForm(DEFAULT_FORM);
+    setCreatingNew(false);
     setSelectedId(null);
     setGeneratedUrl('');
-    toast.message('اكتب العنوان ثم اضغط حفظ ونشر');
+    document.getElementById('model-quick-publish')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    quickFileInputRef.current?.click();
+    toast.message('ارفع صورة أو أكثر، اكتب التسمية، ثم احفظها دائماً');
   }
 
   async function deleteCollection() {
@@ -584,6 +588,31 @@ export default function AdminModelsPage() {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  async function uploadFilesToCollection(collection: AdminModelCollection, files: FileList | null) {
+    const items = Array.from(files || []).filter((file) => file.type.startsWith('image/'));
+    if (items.length === 0) return;
+    setUploading(true);
+    const toastId = toast.loading(`جاري إضافة ${items.length} صورة إلى النموذج...`);
+    try {
+      for (const raw of items) {
+        await uploadImageToCollection({
+          collectionId: collection.id,
+          raw,
+          title: fileBaseName(raw.name) || collection.title,
+          watermarkText: collection.watermark_text || '',
+          isActive: collection.is_active,
+          showInGallery: collection.show_in_gallery,
+        });
+      }
+      toast.success('تمت إضافة الصور إلى نفس النموذج', { id: toastId });
+      await loadModels();
+    } catch (err) {
+      toast.error(modelAdminErrorMessage(err, 'فشل إضافة الصور'), { id: toastId });
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -989,24 +1018,46 @@ export default function AdminModelsPage() {
     }
   }
 
-  function editAdminGalleryAsset(item: AdminGalleryItem) {
-    setCreatingNew(false);
-    setSelectedId(item.collection.id);
-    setGeneratedUrl('');
-    window.setTimeout(() => {
-      document.getElementById(`asset-editor-${item.asset.id}`)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 120);
+  async function editAdminGalleryAsset(item: AdminGalleryItem) {
+    const title = window.prompt('تعديل عنوان الصورة', item.asset.title || item.collection.title || '');
+    if (title === null) return;
+    const hint = window.prompt('تلميح PIN للصورة (اختياري)', item.asset.pin_hint || '');
+    if (hint === null) return;
+    await updateAsset(item.asset.id, {
+      title: title.trim() || item.asset.title || item.collection.title,
+      pin_hint: hint.trim(),
+    });
   }
 
-  function editAdminGalleryGroup(group: AdminGalleryGroup) {
-    setCreatingNew(false);
-    setSelectedId(group.collection.id);
-    setGeneratedUrl('');
-    window.setTimeout(() => {
-      document.getElementById('model-detail-editor')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 120);
+  async function editAdminGalleryGroup(group: AdminGalleryGroup) {
+    const title = window.prompt('تعديل تسمية النموذج', group.collection.title || '');
+    if (title === null) return;
+    const description = window.prompt('تعديل الشرح المختصر', group.collection.description || '');
+    if (description === null) return;
+    try {
+      const res = await fetch('/api/admin/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: group.collection.id,
+          title: title.trim() || group.collection.title,
+          description: description.trim(),
+          watermark_text: group.collection.watermark_text || '',
+          pin_hint: group.collection.pin_hint || '',
+          default_link_minutes: group.collection.default_link_minutes,
+          show_in_gallery: group.collection.show_in_gallery,
+          gallery_order: group.collection.gallery_order || 0,
+          is_active: group.collection.is_active,
+          skip_main_link: true,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(modelAdminErrorMessage(body.error, 'فشل تعديل النموذج'));
+      toast.success('تم تعديل النموذج');
+      await loadModels();
+    } catch (err) {
+      toast.error(modelAdminErrorMessage(err, 'فشل تعديل النموذج'));
+    }
   }
 
   function openAdminGalleryGroup(group: AdminGalleryGroup) {
@@ -1210,7 +1261,8 @@ export default function AdminModelsPage() {
                     isCopying={copyingGroupId === group.collection.id}
                     onOpen={() => openAdminGalleryGroup(group)}
                     onCopyShare={() => void copyAdminGalleryGroupShareUrl(group)}
-                    onEdit={() => editAdminGalleryGroup(group)}
+                    onUploadFiles={(files) => void uploadFilesToCollection(group.collection, files)}
+                    onEdit={() => void editAdminGalleryGroup(group)}
                     onTogglePin={() => void toggleAdminGalleryGroupPin(group)}
                     onDelete={() => void deleteAdminGalleryGroup(group)}
                     onToggleActive={(nextActive) => void setAdminGalleryGroupActive(group, nextActive)}
@@ -1221,7 +1273,7 @@ export default function AdminModelsPage() {
             )}
           </section>
 
-          {(selected || creatingNew) && (
+          {SHOW_LEGACY_MODEL_EDITOR && (selected || creatingNew) && (
           <section id="model-detail-editor" className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
             <div className="min-w-0 space-y-5">
               <Panel
@@ -1773,7 +1825,7 @@ export default function AdminModelsPage() {
           onCopyImage={() => void copyAdminGalleryImageUrl(activeGalleryItem)}
           onDownload={() => void downloadAdminGalleryAsset(activeGalleryItem)}
           onEdit={() => {
-            editAdminGalleryAsset(activeGalleryItem);
+            void editAdminGalleryAsset(activeGalleryItem);
             setActiveGalleryAssetId(null);
           }}
         />
@@ -1808,7 +1860,7 @@ function QuickPublishPanel({
   const canSubmit = Boolean(form.title.trim()) && files.length > 0 && !busy;
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-white to-emerald-50/35 p-3 shadow-sm dark:border-emerald-900/50 dark:from-slate-900 dark:to-emerald-950/10 sm:p-5">
+    <section id="model-quick-publish" className="min-w-0 scroll-mt-20 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-b from-white to-emerald-50/35 p-3 shadow-sm dark:border-emerald-900/50 dark:from-slate-900 dark:to-emerald-950/10 sm:p-5">
       <input
         ref={fileInputRef}
         type="file"
@@ -2026,6 +2078,7 @@ function AdminGalleryGroupCard({
   isCopying,
   onOpen,
   onCopyShare,
+  onUploadFiles,
   onEdit,
   onTogglePin,
   onDelete,
@@ -2036,12 +2089,14 @@ function AdminGalleryGroupCard({
   isCopying: boolean;
   onOpen: () => void;
   onCopyShare: () => void;
+  onUploadFiles: (files: FileList | null) => void;
   onEdit: () => void;
   onTogglePin: () => void;
   onDelete: () => void;
   onToggleActive: (nextActive: boolean) => void;
   onToggleGallery: (nextPublic: boolean) => void;
 }) {
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const previewAssets = group.assets.slice(0, 4);
   const totalAssets = group.assets.length;
   const activeAssets = group.assets.filter((asset) => asset.is_active);
@@ -2106,6 +2161,17 @@ function AdminGalleryGroupCard({
         </span>
       </button>
       <div className="space-y-3 p-3">
+        <input
+          ref={uploadInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(event) => {
+            onUploadFiles(event.target.files);
+            event.currentTarget.value = '';
+          }}
+        />
         <div className="min-w-0">
           <h3 className="line-clamp-1 text-sm font-black text-slate-900 dark:text-white">
             {group.collection.title}
@@ -2117,7 +2183,7 @@ function AdminGalleryGroupCard({
             {activeCount}/{totalAssets} ظاهرة · {publicCount}/{activeCount || totalAssets} عامة
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-5 gap-1.5">
           <button
             type="button"
             onClick={onCopyShare}
@@ -2131,6 +2197,15 @@ function AdminGalleryGroupCard({
             title={group.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'}
           >
             {isCopying ? <Loader2 className="animate-spin" size={15} /> : <Link2 size={15} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => uploadInputRef.current?.click()}
+            className="grid h-9 place-items-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200"
+            aria-label="إضافة صور لنفس النموذج"
+            title="إضافة صور لنفس النموذج"
+          >
+            <UploadCloud size={15} />
           </button>
           <button
             type="button"
