@@ -54,7 +54,6 @@ type QuickPublishForm = {
   watermark_text: string;
   collection_pin: string;
   pin_hint: string;
-  default_link_minutes: number;
   show_in_gallery: boolean;
   is_active: boolean;
 };
@@ -85,7 +84,6 @@ const QUICK_PUBLISH_DEFAULT: QuickPublishForm = {
   watermark_text: '',
   collection_pin: '',
   pin_hint: '',
-  default_link_minutes: 60 * 24 * 30,
   show_in_gallery: false,
   is_active: true,
 };
@@ -93,6 +91,10 @@ const QUICK_PUBLISH_DEFAULT: QuickPublishForm = {
 function formatDate(value: string | null) {
   if (!value) return '-';
   return new Date(value).toLocaleString('tr-TR');
+}
+
+function durationLabel(minutes: number) {
+  return DURATION_PRESETS.find((preset) => preset.minutes === minutes)?.label || `${minutes} دقيقة`;
 }
 
 function linkStatus(link: AdminModelLink) {
@@ -354,7 +356,7 @@ export default function AdminModelsPage() {
     const description = quickForm.description.trim();
     const watermarkText = quickForm.watermark_text.trim();
     if (!title) {
-      toast.error('اكتب تسمية النموذج أولاً');
+      toast.error('اكتب تسمية الصورة أولاً');
       return;
     }
     if (quickFiles.length === 0) {
@@ -363,7 +365,7 @@ export default function AdminModelsPage() {
     }
 
     setQuickSaving(true);
-    const toastId = toast.loading(`جاري نشر ${quickFiles.length} صورة...`);
+    const toastId = toast.loading(`جاري حفظ ${quickFiles.length} صورة...`);
     try {
       const res = await fetch('/api/admin/models', {
         method: 'POST',
@@ -374,16 +376,16 @@ export default function AdminModelsPage() {
           watermark_text: watermarkText,
           collection_pin: quickForm.collection_pin,
           pin_hint: quickForm.pin_hint,
-          default_link_minutes: quickForm.default_link_minutes,
+          skip_main_link: true,
           show_in_gallery: quickForm.show_in_gallery,
           gallery_order: 0,
           is_active: quickForm.is_active,
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'فشل إنشاء النموذج');
+      if (!res.ok) throw new Error(data.error || 'فشل حفظ الصور');
       const collectionId = data.collection?.id as string | undefined;
-      if (!collectionId) throw new Error('فشل إنشاء النموذج');
+      if (!collectionId) throw new Error('فشل حفظ الصور');
 
       for (let index = 0; index < quickFiles.length; index += 1) {
         const raw = quickFiles[index];
@@ -397,20 +399,16 @@ export default function AdminModelsPage() {
         });
       }
 
-      const url = typeof data.mainLink?.url === 'string' ? data.mainLink.url : '';
-      if (url) {
-        setGeneratedUrl(url);
-        await navigator.clipboard?.writeText(url).catch(() => {});
-      }
-      toast.success(url ? 'تم النشر ونسخ الرابط' : 'تم النشر', { id: toastId });
+      setGeneratedUrl('');
+      toast.success('تم حفظ الصور دائماً في معرض الأدمن', { id: toastId });
       setQuickForm(QUICK_PUBLISH_DEFAULT);
       setQuickFiles([]);
       if (quickFileInputRef.current) quickFileInputRef.current.value = '';
       await loadModels();
       setCreatingNew(false);
-      setSelectedId(collectionId);
+      setSelectedId(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'فشل النشر', { id: toastId });
+      toast.error(err instanceof Error ? err.message : 'فشل الحفظ', { id: toastId });
     } finally {
       setQuickSaving(false);
     }
@@ -611,17 +609,17 @@ export default function AdminModelsPage() {
     }
   }
 
-  async function rotateMainLinks(scope: 'selected' | 'all') {
+  async function rotateMainLinks(scope: 'selected' | 'all', durationOverride?: number) {
     if (scope === 'selected' && !selected) return;
+    const durationMinutes = durationOverride ?? (scope === 'all' ? bulkDurationMinutes : mainDurationMinutes);
     const message = scope === 'all'
-      ? 'سيتم إلغاء الروابط الرئيسية القديمة لكل النماذج وإنشاء روابط جديدة. هل أنت متأكد؟'
-      : 'سيتم إلغاء الرابط الرئيسي القديم لهذا النموذج وإنشاء رابط جديد. هل أنت متأكد؟';
+      ? `سيتم إلغاء كل الروابط الرئيسية القديمة وإنشاء روابط جديدة مدتها ${durationLabel(durationMinutes)}. هل أنت متأكد؟`
+      : `سيتم إلغاء الرابط الرئيسي القديم لهذا الألبوم وإنشاء رابط جديد مدته ${durationLabel(durationMinutes)}. هل أنت متأكد؟`;
     if (!confirm(message)) return;
 
     setRotating(true);
     setGeneratedUrl('');
     try {
-      const durationMinutes = scope === 'all' ? bulkDurationMinutes : mainDurationMinutes;
       const res = await fetch('/api/admin/models/links/rotate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -646,6 +644,11 @@ export default function AdminModelsPage() {
     } finally {
       setRotating(false);
     }
+  }
+
+  function changeBulkRotationDuration(minutes: number) {
+    setBulkDurationMinutes(minutes);
+    void rotateMainLinks('all', minutes);
   }
 
   async function setAllModelsVisible(isActive: boolean) {
@@ -789,20 +792,24 @@ export default function AdminModelsPage() {
         icon={Images}
         theme="cyan"
         title="موديلس"
-        eyebrow="نشر النماذج"
-        subtitle="النموذج هو ألبوم صور لخدمة أو كتاب أو شهادة. اكتب شرحاً قصيراً، ارفع الصور، ثم انسخ الرابط."
+        eyebrow="حفظ النماذج"
+        subtitle="احفظ صور أعمالك كنماذج دائمة، ثم ولّد روابط العرض عند الحاجة."
         actions={
           <div className="grid w-full min-w-0 grid-cols-2 gap-2 min-[430px]:grid-cols-3 sm:w-auto sm:flex sm:flex-wrap sm:items-center">
-            <select
-              value={bulkDurationMinutes}
-              onChange={(e) => setBulkDurationMinutes(Number(e.target.value))}
-              className="col-span-2 min-h-10 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-black text-slate-600 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 min-[430px]:col-span-1"
-              aria-label="مدة روابط الكل الجديدة"
-            >
-              {DURATION_PRESETS.map((preset) => (
-                <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
-              ))}
-            </select>
+            <label className="col-span-2 grid gap-1 rounded-xl border border-amber-200 bg-amber-50 px-2 py-1.5 dark:border-amber-900/50 dark:bg-amber-900/15 min-[430px]:col-span-1">
+              <span className="text-[10px] font-black leading-none text-amber-700 dark:text-amber-300">اختيار المدة يدوّر الكل</span>
+              <select
+                value={bulkDurationMinutes}
+                onChange={(e) => changeBulkRotationDuration(Number(e.target.value))}
+                disabled={rotating || collections.length === 0}
+                className="min-h-5 bg-transparent text-xs font-black text-amber-900 outline-none disabled:opacity-50 dark:text-amber-100"
+                aria-label="اختر مدة لتدوير كل الروابط وإلغاء القديمة"
+              >
+                {DURATION_PRESETS.map((preset) => (
+                  <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
+                ))}
+              </select>
+            </label>
             <button
               type="button"
               onClick={() => void rotateMainLinks('all')}
@@ -872,7 +879,7 @@ export default function AdminModelsPage() {
             onSubmit={() => void quickPublish()}
           />
 
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
+          <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 sm:gap-2">
             <Stat label="النماذج" value={collections.length} />
             <Stat label="ظاهرة" value={stats.visibleCount} />
             <Stat label="بالمعرض" value={stats.galleryCount} />
@@ -1580,10 +1587,10 @@ function QuickPublishPanel({
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-lg font-black text-slate-950 dark:text-white sm:text-xl">
             <UploadCloud className="text-emerald-600" size={22} />
-            نشر سريع
+            حفظ سريع
           </h2>
           <p className="text-xs font-bold leading-6 text-slate-500">
-            ارفع صورة أو أكثر، اكتب التسمية، ثم احفظ وانسخ الرابط فوراً.
+            ارفع صورة أو أكثر واحفظها دائماً في معرض الأدمن. الرابط تولّده لاحقاً عند الحاجة.
           </p>
         </div>
         <button
@@ -1624,7 +1631,7 @@ function QuickPublishPanel({
                   <Images size={28} />
                 </div>
                 <div className="text-sm font-black text-slate-900 dark:text-white">اختر الصور</div>
-                <div className="mt-1 text-xs font-bold text-slate-500">صورة واحدة أو عدة صور لنفس النموذج</div>
+                <div className="mt-1 text-xs font-bold text-slate-500">صورة واحدة أو عدة صور لنفس العمل</div>
               </div>
             </div>
           )}
@@ -1651,20 +1658,7 @@ function QuickPublishPanel({
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
               />
             </label>
-            <label className="space-y-1">
-              <span className="text-xs font-black text-slate-500">مدة الرابط</span>
-              <select
-                value={form.default_link_minutes}
-                onChange={(e) => onFormChange({ default_link_minutes: Number(e.target.value) })}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
-              >
-                {DURATION_PRESETS.map((preset) => (
-                  <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
-                ))}
-                <option value={60 * 24 * 30}>30 يوم</option>
-              </select>
-            </label>
-            <label className="space-y-1">
+            <label className="space-y-1 md:col-span-2">
               <span className="text-xs font-black text-slate-500">العلامة المائية</span>
               <input
                 value={form.watermark_text}
@@ -1678,7 +1672,7 @@ function QuickPublishPanel({
           <details className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
             <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm font-black text-slate-700 dark:text-slate-200">
               <Settings2 size={16} />
-              خيارات النشر
+              خيارات الحفظ والقفل
             </summary>
             <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
               <label className="space-y-1">
@@ -1686,7 +1680,7 @@ function QuickPublishPanel({
                 <input
                   value={form.collection_pin}
                   onChange={(e) => onFormChange({ collection_pin: e.target.value })}
-                  placeholder="كلمة سر للنموذج"
+                  placeholder="كلمة سر لهذه الصور"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
                 />
               </label>
@@ -1706,7 +1700,7 @@ function QuickPublishPanel({
                   onChange={(e) => onFormChange({ is_active: e.target.checked })}
                   className="h-4 w-4 accent-emerald-600"
                 />
-                يظهر لمن معه الرابط
+                محفوظة وفعالة
               </label>
               <label className="flex items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-900/15 dark:text-cyan-200">
                 <input
@@ -1722,7 +1716,7 @@ function QuickPublishPanel({
 
           <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
             <div className="text-xs font-bold text-slate-500">
-              {files.length > 0 ? `${files.length} صورة جاهزة للنشر` : 'لم يتم اختيار صور بعد'}
+              {files.length > 0 ? `${files.length} صورة جاهزة للحفظ` : 'لم يتم اختيار صور بعد'}
             </div>
             <div className="grid gap-2 min-[430px]:grid-cols-2 sm:flex sm:flex-wrap">
               {files.length > 0 && (
@@ -1742,7 +1736,7 @@ function QuickPublishPanel({
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
               >
                 {busy ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
-                حفظ ونشر
+                حفظ دائم
               </button>
             </div>
           </div>
@@ -1754,9 +1748,9 @@ function QuickPublishPanel({
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="text-xs font-black text-slate-500">{label}</div>
-      <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">{value}</div>
+    <div className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-3">
+      <div className="truncate text-[10px] font-black leading-4 text-slate-500 sm:text-xs">{label}</div>
+      <div className="text-lg font-black leading-6 text-slate-900 dark:text-white sm:text-xl">{value}</div>
     </div>
   );
 }

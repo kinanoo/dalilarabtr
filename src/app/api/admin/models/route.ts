@@ -156,6 +156,7 @@ export async function POST(request: Request) {
     const id = cleanText(body?.id, 80);
     const title = cleanText(body?.title, 160);
     if (!title) return NextResponse.json({ error: 'title_required' }, { status: 400 });
+    const skipMainLink = body?.skip_main_link === true;
 
     const payload = {
       title,
@@ -216,7 +217,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const mainLink = await ensureMainModelLink({
+    const mainLink = skipMainLink ? null : await ensureMainModelLink({
       svc: gate.svc,
       collectionId: data.id,
       userId: gate.userId,
@@ -225,10 +226,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       collection: data,
-      mainLink: {
+      mainLink: mainLink ? {
         ...mainLink,
         url: mainLink.token ? buildModelShareUrl(mainLink.token) : null,
-      },
+      } : null,
     });
   } catch (err) {
     logger.error('admin/models POST failed:', err);
