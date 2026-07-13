@@ -130,6 +130,12 @@ function appendAssetParam(baseUrl: string | null | undefined, assetId: string) {
   }
 }
 
+function modelAdminErrorMessage(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  if (message === 'pin_too_short') return 'PIN يجب أن يكون 4 أحرف أو أرقام على الأقل';
+  return message || fallback;
+}
+
 async function copyTextToClipboard(text: string) {
   try {
     if (navigator.clipboard?.writeText) {
@@ -240,9 +246,18 @@ export default function AdminModelsPage() {
 
   const stats = useMemo(() => {
     const imagesCount = collections.reduce((total, collection) => total + collection.assets.length, 0);
-    const visibleCount = collections.filter((collection) => collection.is_active).length;
-    const galleryCount = collections.filter((collection) => collection.show_in_gallery).length;
-    const publicImagesCount = collections.reduce((total, collection) => total + collection.assets.filter((asset) => asset.show_in_gallery && asset.is_active).length, 0);
+    const visibleCount = collections.filter((collection) => (
+      collection.is_active && collection.assets.some((asset) => asset.is_active)
+    )).length;
+    const galleryCount = collections.filter((collection) => (
+      collection.is_active
+      && collection.show_in_gallery
+      && collection.assets.some((asset) => asset.is_active && asset.show_in_gallery)
+    )).length;
+    const publicImagesCount = collections.reduce((total, collection) => {
+      if (!collection.is_active || !collection.show_in_gallery) return total;
+      return total + collection.assets.filter((asset) => asset.show_in_gallery && asset.is_active).length;
+    }, 0);
     const lockedCount = collections.reduce((total, collection) => (
       total
       + (collection.access_pin_hash ? 1 : 0)
@@ -396,7 +411,7 @@ export default function AdminModelsPage() {
       body: JSON.stringify({ id: assetId, data, pin }),
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || 'فشل ضبط خيارات الصورة');
+    if (!res.ok) throw new Error(modelAdminErrorMessage(body.error, 'فشل ضبط خيارات الصورة'));
   }
 
   async function uploadImageToCollection(args: {
@@ -461,7 +476,7 @@ export default function AdminModelsPage() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'فشل حفظ الصور');
+      if (!res.ok) throw new Error(modelAdminErrorMessage(data.error, 'فشل حفظ الصور'));
       const collectionId = data.collection?.id as string | undefined;
       if (!collectionId) throw new Error('فشل حفظ الصور');
 
@@ -486,7 +501,7 @@ export default function AdminModelsPage() {
       setCreatingNew(false);
       setSelectedId(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'فشل الحفظ', { id: toastId });
+      toast.error(modelAdminErrorMessage(err, 'فشل الحفظ'), { id: toastId });
     } finally {
       setQuickSaving(false);
     }
@@ -501,7 +516,7 @@ export default function AdminModelsPage() {
         body: JSON.stringify({ id: creatingNew ? undefined : selected?.id, ...form }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'فشل حفظ النموذج');
+      if (!res.ok) throw new Error(modelAdminErrorMessage(data.error, 'فشل حفظ النموذج'));
       if (data.mainLink?.url && creatingNew) {
         setGeneratedUrl(data.mainLink.url);
         await copyTextWithToast(data.mainLink.url, 'تم حفظ النموذج ونسخ رابطه');
@@ -512,7 +527,7 @@ export default function AdminModelsPage() {
       setCreatingNew(false);
       setSelectedId(data.collection?.id || selected?.id || null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'فشل الحفظ');
+      toast.error(modelAdminErrorMessage(err, 'فشل الحفظ'));
     } finally {
       setSaving(false);
     }
@@ -585,11 +600,11 @@ export default function AdminModelsPage() {
         body: JSON.stringify({ id: assetId, data, pin, clearPin }),
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || 'فشل تعديل الصورة');
+      if (!res.ok) throw new Error(modelAdminErrorMessage(body.error, 'فشل تعديل الصورة'));
       setAssetPinDrafts((prev) => ({ ...prev, [assetId]: '' }));
       await loadModels();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'فشل تعديل الصورة');
+      toast.error(modelAdminErrorMessage(err, 'فشل تعديل الصورة'));
     }
   }
 
@@ -631,7 +646,7 @@ export default function AdminModelsPage() {
       }),
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || 'فشل تعديل النموذج');
+    if (!res.ok) throw new Error(modelAdminErrorMessage(body.error, 'فشل تعديل النموذج'));
   }
 
   async function setAdminGalleryGroupActive(group: AdminGalleryGroup, isActive: boolean) {
@@ -664,7 +679,7 @@ export default function AdminModelsPage() {
         await loadModels();
         return;
       }
-      const pin = window.prompt('اكتب PIN لهذا النموذج بكل صوره');
+      const pin = window.prompt('اكتب PIN لهذا النموذج بكل صوره (4 أحرف أو أرقام على الأقل)');
       if (!pin?.trim()) return;
       await updateCollectionOptions(group.collection, {}, pin.trim());
       toast.success('تم قفل النموذج');
@@ -1015,64 +1030,74 @@ export default function AdminModelsPage() {
         eyebrow="حفظ النماذج"
         subtitle="احفظ صور أعمالك كنماذج دائمة، ثم ولّد روابط العرض عند الحاجة."
         actions={
-          <div className="grid w-full min-w-0 grid-cols-2 gap-2 min-[430px]:grid-cols-3 sm:w-auto sm:flex sm:flex-wrap sm:items-center">
-            <label className="col-span-2 grid gap-1 rounded-xl border border-amber-200 bg-amber-50 px-2 py-1.5 dark:border-amber-900/50 dark:bg-amber-900/15 min-[430px]:col-span-1">
-              <span className="text-[10px] font-black leading-none text-amber-700 dark:text-amber-300">اختيار المدة يدوّر الكل</span>
-              <select
-                value={bulkDurationMinutes}
-                onChange={(e) => changeBulkRotationDuration(Number(e.target.value))}
-                disabled={rotating || collections.length === 0}
-                className="min-h-5 bg-transparent text-xs font-black text-amber-900 outline-none disabled:opacity-50 dark:text-amber-100"
-                aria-label="اختر مدة لتدوير كل الروابط وإلغاء القديمة"
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-start sm:justify-end">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <button
+                type="button"
+                onClick={() => void loadModels()}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
               >
-                {DURATION_PRESETS.map((preset) => (
-                  <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              onClick={() => void rotateMainLinks('all')}
-              disabled={rotating || collections.length === 0}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-amber-500 px-2 py-2 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50 sm:px-3"
-            >
-              {rotating ? <Loader2 className="animate-spin" size={15} /> : <RefreshCw size={15} />}
-              تدوير الكل
-            </button>
-            <button
-              type="button"
-              onClick={() => void setAllModelsVisible(false)}
-              disabled={bulkVisibilityChanging || collections.length === 0}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-red-50 px-2 py-2 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300 sm:px-3"
-            >
-              {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Ban size={15} />}
-              إخفاء
-            </button>
-            <button
-              type="button"
-              onClick={() => void setAllModelsVisible(true)}
-              disabled={bulkVisibilityChanging || collections.length === 0}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-50 px-2 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-900/20 dark:text-emerald-300 sm:px-3"
-            >
-              {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Eye size={15} />}
-              إظهار
-            </button>
-            <button
-              type="button"
-              onClick={() => void loadModels()}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:px-3"
-            >
-              <RefreshCw size={15} />
-              تحديث
-            </button>
-            <button
-              type="button"
-              onClick={createCollection}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-2 py-2 text-xs font-black text-white hover:bg-emerald-700 sm:px-3"
-            >
-              <Plus size={15} />
-              جديد
-            </button>
+                <RefreshCw size={15} />
+                تحديث
+              </button>
+              <button
+                type="button"
+                onClick={createCollection}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
+              >
+                <Plus size={15} />
+                جديد
+              </button>
+            </div>
+            <details className="group min-w-0 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 sm:min-w-[280px]">
+              <summary className="inline-flex min-h-10 w-full cursor-pointer list-none items-center justify-center gap-2 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
+                <Settings2 size={15} />
+                إجراءات عامة
+              </summary>
+              <div className="grid gap-2 border-t border-slate-200 p-2 dark:border-slate-800 min-[430px]:grid-cols-2">
+                <label className="col-span-full grid gap-1 rounded-xl border border-amber-200 bg-amber-50 px-2 py-1.5 dark:border-amber-900/50 dark:bg-amber-900/15">
+                  <span className="text-[10px] font-black leading-none text-amber-700 dark:text-amber-300">مدة تدوير كل الروابط</span>
+                  <select
+                    value={bulkDurationMinutes}
+                    onChange={(e) => changeBulkRotationDuration(Number(e.target.value))}
+                    disabled={rotating || collections.length === 0}
+                    className="min-h-6 bg-transparent text-xs font-black text-amber-900 outline-none disabled:opacity-50 dark:text-amber-100"
+                    aria-label="اختر مدة لتدوير كل الروابط وإلغاء القديمة"
+                  >
+                    {DURATION_PRESETS.map((preset) => (
+                      <option key={preset.minutes} value={preset.minutes}>{preset.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void rotateMainLinks('all')}
+                  disabled={rotating || collections.length === 0}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-amber-500 px-2 py-2 text-xs font-black text-white hover:bg-amber-600 disabled:opacity-50"
+                >
+                  {rotating ? <Loader2 className="animate-spin" size={15} /> : <RefreshCw size={15} />}
+                  تدوير الكل
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void setAllModelsVisible(false)}
+                  disabled={bulkVisibilityChanging || collections.length === 0}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-red-50 px-2 py-2 text-xs font-black text-red-700 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-300"
+                >
+                  {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Ban size={15} />}
+                  إخفاء الكل
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void setAllModelsVisible(true)}
+                  disabled={bulkVisibilityChanging || collections.length === 0}
+                  className="col-span-full inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-50 px-2 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-900/20 dark:text-emerald-300"
+                >
+                  {bulkVisibilityChanging ? <Loader2 className="animate-spin" size={15} /> : <Eye size={15} />}
+                  إظهار الكل
+                </button>
+              </div>
+            </details>
           </div>
         }
       />
@@ -1099,7 +1124,7 @@ export default function AdminModelsPage() {
             onSubmit={() => void quickPublish()}
           />
 
-          <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 sm:gap-2">
+          <div className="grid grid-cols-5 gap-1 sm:gap-2">
             <Stat label="النماذج" value={collections.length} />
             <Stat label="ظاهرة" value={stats.visibleCount} />
             <Stat label="بالمعرض" value={stats.galleryCount} />
@@ -1188,25 +1213,15 @@ export default function AdminModelsPage() {
                     onEdit={() => editAdminGalleryGroup(group)}
                     onTogglePin={() => void toggleAdminGalleryGroupPin(group)}
                     onDelete={() => void deleteAdminGalleryGroup(group)}
-                    onToggleActive={() => void setAdminGalleryGroupActive(group, !group.collection.is_active)}
-                    onToggleGallery={() => void setAdminGalleryGroupPublic(group, !group.collection.show_in_gallery)}
+                    onToggleActive={(nextActive) => void setAdminGalleryGroupActive(group, nextActive)}
+                    onToggleGallery={(nextPublic) => void setAdminGalleryGroupPublic(group, nextPublic)}
                   />
                 ))}
               </div>
             )}
           </section>
 
-          {!selected && !creatingNew ? (
-            <section className="rounded-2xl border border-dashed border-slate-200 bg-white p-5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
-                <Pencil size={22} />
-              </div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">التعديل صار من الصورة نفسها</h2>
-              <p className="mx-auto mt-2 max-w-xl text-xs font-bold leading-6 text-slate-500">
-                اضغط تعديل على أي صورة من المعرض لفتح بياناتها ورابطها وصورها المرتبطة. لا توجد خطوة اختيار منفصلة.
-              </p>
-            </section>
-          ) : (
+          {(selected || creatingNew) && (
           <section id="model-detail-editor" className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
             <div className="min-w-0 space-y-5">
               <Panel
@@ -1265,11 +1280,11 @@ export default function AdminModelsPage() {
                       </select>
                     </label>
                     <label className="space-y-1">
-                      <span className="text-xs font-black text-slate-500">PIN للألبوم كله</span>
+                      <span className="text-xs font-black text-slate-500">PIN للألبوم كله (4+)</span>
                       <input
                         value={form.collection_pin}
                         onChange={(e) => setForm((prev) => ({ ...prev, collection_pin: e.target.value, clear_collection_pin: false }))}
-                        placeholder={selected?.access_pin_hash ? 'قفل موجود - اكتب لتغييره' : 'اختياري'}
+                        placeholder={selected?.access_pin_hash ? 'قفل موجود - اكتب PIN جديد 4 أحرف أو أكثر' : '4 أحرف أو أرقام على الأقل'}
                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
                       />
                     </label>
@@ -1445,7 +1460,7 @@ export default function AdminModelsPage() {
                                   <input
                                     value={assetPinDrafts[asset.id] || ''}
                                     onChange={(e) => setAssetPinDrafts((prev) => ({ ...prev, [asset.id]: e.target.value }))}
-                                    placeholder={asset.access_pin_hash ? 'PIN جديد' : 'PIN للصورة'}
+                                    placeholder={asset.access_pin_hash ? 'PIN جديد (4+)' : 'PIN للصورة (4+)'}
                                     className="min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950"
                                   />
                                   <button
@@ -1895,11 +1910,11 @@ function QuickPublishPanel({
             </summary>
             <div className="grid gap-3 border-t border-slate-200 p-3 dark:border-slate-800 md:grid-cols-2">
               <label className="space-y-1">
-                <span className="text-xs font-black text-slate-500">PIN اختياري</span>
+                <span className="text-xs font-black text-slate-500">PIN اختياري (4+)</span>
                 <input
                   value={form.collection_pin}
                   onChange={(e) => onFormChange({ collection_pin: e.target.value })}
-                  placeholder="كلمة سر لهذه الصور"
+                  placeholder="4 أحرف أو أرقام على الأقل"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-900"
                 />
               </label>
@@ -1967,9 +1982,9 @@ function QuickPublishPanel({
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-3">
-      <div className="truncate text-[10px] font-black leading-4 text-slate-500 sm:text-xs">{label}</div>
-      <div className="text-lg font-black leading-6 text-slate-900 dark:text-white sm:text-xl">{value}</div>
+    <div className="rounded-lg border border-slate-200 bg-white px-1 py-1.5 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:rounded-xl sm:px-3 sm:py-2">
+      <div className="truncate text-[9px] font-black leading-3 text-slate-500 sm:text-xs sm:leading-4">{label}</div>
+      <div className="text-base font-black leading-5 text-slate-900 dark:text-white sm:text-xl sm:leading-6">{value}</div>
     </div>
   );
 }
@@ -2024,14 +2039,26 @@ function AdminGalleryGroupCard({
   onEdit: () => void;
   onTogglePin: () => void;
   onDelete: () => void;
-  onToggleActive: () => void;
-  onToggleGallery: () => void;
+  onToggleActive: (nextActive: boolean) => void;
+  onToggleGallery: (nextPublic: boolean) => void;
 }) {
   const previewAssets = group.assets.slice(0, 4);
+  const totalAssets = group.assets.length;
+  const activeAssets = group.assets.filter((asset) => asset.is_active);
+  const activeCount = activeAssets.length;
+  const publicAssets = activeAssets.filter((asset) => asset.show_in_gallery);
+  const publicCount = group.collection.is_active && group.collection.show_in_gallery ? publicAssets.length : 0;
   const isLocked = Boolean(group.collection.access_pin_hash || group.assets.some((asset) => asset.access_pin_hash));
   const isCollectionLocked = Boolean(group.collection.access_pin_hash);
-  const isHidden = !group.collection.is_active || group.assets.every((asset) => !asset.is_active);
-  const isPublic = group.collection.show_in_gallery && group.assets.some((asset) => asset.show_in_gallery);
+  const isFullyVisible = group.collection.is_active && activeCount === totalAssets && totalAssets > 0;
+  const isPartlyVisible = group.collection.is_active && activeCount > 0 && activeCount < totalAssets;
+  const isHidden = !group.collection.is_active || activeCount === 0;
+  const isFullyPublic = group.collection.is_active && group.collection.show_in_gallery && activeCount > 0 && publicCount === activeCount;
+  const isPartlyPublic = group.collection.is_active && group.collection.show_in_gallery && publicCount > 0 && publicCount < activeCount;
+  const nextActive = isFullyVisible ? false : true;
+  const nextPublic = isFullyPublic ? false : true;
+  const visibilityLabel = isFullyVisible ? 'ظاهرة كلها' : isPartlyVisible ? 'ظاهرة جزئياً' : 'مخفية';
+  const publicLabel = isFullyPublic ? 'عام كله' : isPartlyPublic ? 'عام جزئي' : 'خاص';
 
   return (
     <article className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-950">
@@ -2066,8 +2093,10 @@ function AdminGalleryGroupCard({
         )}
         <div className="absolute right-2 top-2 flex flex-wrap gap-1">
           {isHidden && <Badge tone="slate">مخفي</Badge>}
+          {isPartlyVisible && <Badge tone="amber">ظهور جزئي</Badge>}
           {isLocked && <Badge tone="amber">PIN</Badge>}
-          {isPublic && <Badge tone="cyan">عام</Badge>}
+          {isFullyPublic && <Badge tone="cyan">عام</Badge>}
+          {isPartlyPublic && <Badge tone="cyan">عام جزئي</Badge>}
         </div>
         <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/75 px-2 py-1 text-[11px] font-black text-white">
           {group.assets.length} صور
@@ -2083,6 +2112,9 @@ function AdminGalleryGroupCard({
           </h3>
           <p className="line-clamp-1 text-xs font-bold text-slate-500">
             {group.collection.description || 'معرض واحد بعدة صور ورابط واحد'}
+          </p>
+          <p className="mt-1 text-[11px] font-black text-slate-400">
+            {activeCount}/{totalAssets} ظاهرة · {publicCount}/{activeCount || totalAssets} عامة
           </p>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
@@ -2135,26 +2167,30 @@ function AdminGalleryGroupCard({
         <div className="grid grid-cols-2 gap-1.5">
           <button
             type="button"
-            onClick={onToggleActive}
+            onClick={() => onToggleActive(nextActive)}
             className={`rounded-lg px-2 py-1.5 text-xs font-black ${
-              group.collection.is_active
+              isFullyVisible
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                : isPartlyVisible
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {group.collection.is_active ? 'ظاهرة' : 'مخفية'}
+            {visibilityLabel}
           </button>
           <button
             type="button"
-            onClick={onToggleGallery}
-            disabled={!group.collection.is_active}
+            onClick={() => onToggleGallery(nextPublic)}
+            disabled={isHidden}
             className={`rounded-lg px-2 py-1.5 text-xs font-black disabled:opacity-40 ${
-              group.collection.show_in_gallery
+              isFullyPublic
                 ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/20 dark:text-cyan-300'
+                : isPartlyPublic
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >
-            {group.collection.show_in_gallery ? 'في العام' : 'خاص'}
+            {publicLabel}
           </button>
         </div>
       </div>

@@ -43,6 +43,13 @@ function prioritizeAsset(items: PublicModelAsset[], assetId?: string | null) {
   return [items[index], ...items.slice(0, index), ...items.slice(index + 1)];
 }
 
+function pinErrorMessage(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  if (message === 'invalid_pin') return 'PIN غير صحيح';
+  if (message === 'too_many_pin_attempts') return 'محاولات كثيرة. انتظر قليلاً ثم جرّب مرة أخرى.';
+  return message || fallback;
+}
+
 function LockedPanel({
   title,
   hint,
@@ -132,7 +139,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
       setCollectionPin('');
       toast.success('تم فتح النماذج المتاحة');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'تعذر فتح النموذج');
+      toast.error(pinErrorMessage(err, 'تعذر فتح النموذج'));
     } finally {
       setUnlocking(null);
     }
@@ -154,7 +161,7 @@ export default function PublicModelViewer({ token, bundle, initialAssetId }: Pro
       setAssetPins((current) => ({ ...current, [assetId]: '' }));
       toast.success('تم فتح الصورة');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'تعذر فتح الصورة');
+      toast.error(pinErrorMessage(err, 'تعذر فتح الصورة'));
     } finally {
       setUnlocking(null);
     }

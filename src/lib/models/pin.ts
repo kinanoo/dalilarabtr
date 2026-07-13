@@ -2,8 +2,16 @@ export function normalizeModelPin(pin: unknown): string {
   return typeof pin === 'string' ? pin.trim() : '';
 }
 
+export const MODEL_PIN_MIN_LENGTH = 4;
+const MODEL_PIN_LEGACY_MIN_LENGTH = 3;
+const MODEL_PIN_MAX_LENGTH = 80;
+
 export function isUsableModelPin(pin: string): boolean {
-  return pin.length >= 3 && pin.length <= 80;
+  return pin.length >= MODEL_PIN_MIN_LENGTH && pin.length <= MODEL_PIN_MAX_LENGTH;
+}
+
+function isVerifiableModelPin(pin: string): boolean {
+  return pin.length >= MODEL_PIN_LEGACY_MIN_LENGTH && pin.length <= MODEL_PIN_MAX_LENGTH;
 }
 
 export async function hashModelPin(pin: string, scopeId: string): Promise<string> {
@@ -21,6 +29,6 @@ export async function verifyModelPin(args: {
   expectedHash: string | null;
 }): Promise<boolean> {
   const pin = normalizeModelPin(args.pin);
-  if (!args.expectedHash || !isUsableModelPin(pin)) return false;
+  if (!args.expectedHash || !isVerifiableModelPin(pin)) return false;
   return hashModelPin(pin, args.scopeId).then((hash) => hash === args.expectedHash);
 }
