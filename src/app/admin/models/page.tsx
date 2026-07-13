@@ -130,17 +130,50 @@ function appendAssetParam(baseUrl: string | null | undefined, assetId: string) {
   }
 }
 
-function collectionMainLink(collection: AdminModelCollection) {
+async function copyTextToClipboard(text: string) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fall back below for mobile browsers that block the Clipboard API.
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '0';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    return document.execCommand('copy');
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+async function copyTextWithToast(text: string, successMessage: string) {
+  const copied = await copyTextToClipboard(text);
+  if (copied) {
+    toast.success(successMessage);
+    return true;
+  }
+  toast.error('تعذر النسخ تلقائياً. افتح الرابط وانسخه يدوياً.');
+  return false;
+}
+
+function collectionActiveMainLink(collection: AdminModelCollection) {
   const now = Date.now();
   return collection.links.find((link) => (
     link.link_kind === 'main'
     && !link.revoked_at
     && new Date(link.expires_at).getTime() > now
     && (link.max_views === null || link.view_count < link.max_views)
-  ))
-    || collection.links.find((link) => link.link_kind === 'main' && !link.revoked_at)
-    || collection.links.find((link) => link.link_kind === 'main')
-    || null;
+  )) || null;
 }
 
 function safeDownloadName(collection: AdminModelCollection, asset: AdminModelAsset) {
@@ -181,6 +214,7 @@ export default function AdminModelsPage() {
   const [adminGalleryQuery, setAdminGalleryQuery] = useState('');
   const [adminGalleryFilter, setAdminGalleryFilter] = useState<AdminGalleryFilter>('all');
   const [activeGalleryAssetId, setActiveGalleryAssetId] = useState<string | null>(null);
+  const [copyingGroupId, setCopyingGroupId] = useState<string | null>(null);
 
   const selected = useMemo(() => {
     if (creatingNew) return null;
@@ -192,6 +226,10 @@ export default function AdminModelsPage() {
     () => selected?.links.find((link) => link.link_kind === 'main' && !link.revoked_at)
       || selected?.links.find((link) => link.link_kind === 'main')
       || null,
+    [selected],
+  );
+  const activeMainLink = useMemo(
+    () => (selected ? collectionActiveMainLink(selected) : null),
     [selected],
   );
 
@@ -216,7 +254,7 @@ export default function AdminModelsPage() {
   const mainStatus = mainLink ? linkStatus(mainLink) : null;
 
   const adminGalleryItems = useMemo<AdminGalleryItem[]>(() => collections.flatMap((collection) => {
-    const link = collectionMainLink(collection);
+    const link = collectionActiveMainLink(collection);
     return collection.assets.map((asset) => ({
       asset,
       collection,
@@ -234,7 +272,7 @@ export default function AdminModelsPage() {
   const adminGalleryGroups = useMemo<AdminGalleryGroup[]>(() => collections
     .filter((collection) => collection.assets.length > 0)
     .map((collection) => {
-      const link = collectionMainLink(collection);
+      const link = collectionActiveMainLink(collection);
       return {
         collection,
         assets: collection.assets,
@@ -466,8 +504,7 @@ export default function AdminModelsPage() {
       if (!res.ok) throw new Error(data.error || 'فشل حفظ النموذج');
       if (data.mainLink?.url && creatingNew) {
         setGeneratedUrl(data.mainLink.url);
-        await navigator.clipboard?.writeText(data.mainLink.url).catch(() => {});
-        toast.success('تم حفظ النموذج ونسخ رابطه');
+        await copyTextWithToast(data.mainLink.url, 'تم حفظ النموذج ونسخ رابطه');
       } else {
         toast.success('تم حفظ النموذج');
       }
@@ -670,8 +707,7 @@ export default function AdminModelsPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'فشل توليد الرابط');
       setGeneratedUrl(data.url);
-      await navigator.clipboard?.writeText(data.url).catch(() => {});
-      toast.success('تم توليد الرابط ونسخه');
+      await copyTextWithToast(data.url, 'تم توليد الرابط ونسخه');
       await loadModels();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل توليد الرابط');
@@ -701,9 +737,10 @@ export default function AdminModelsPage() {
       const url = typeof data.url === 'string' ? data.url : '';
       if (url) {
         setGeneratedUrl(url);
-        await navigator.clipboard?.writeText(url).catch(() => {});
+        await copyTextWithToast(url, 'تم إنشاء الرابط ونسخه');
+      } else {
+        toast.success('تم إنشاء الرابط');
       }
-      toast.success('تم إنشاء الرابط ونسخه');
       await loadModels();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل إنشاء الرابط');
@@ -757,9 +794,10 @@ export default function AdminModelsPage() {
       const firstUrl = links.find((link: { url?: string | null }) => link.url)?.url || '';
       if (firstUrl && scope === 'selected') {
         setGeneratedUrl(firstUrl);
-        await navigator.clipboard?.writeText(firstUrl).catch(() => {});
+        await copyTextWithToast(firstUrl, 'تم تدوير الرابط ونسخه');
+      } else {
+        toast.success(scope === 'all' ? `تم تدوير ${links.length} رابط رئيسي` : 'تم تدوير الرابط');
       }
-      toast.success(scope === 'all' ? `تم تدوير ${links.length} رابط رئيسي` : 'تم تدوير الرابط ونسخه');
       await loadModels();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'فشل تدوير الروابط');
@@ -813,48 +851,97 @@ export default function AdminModelsPage() {
     }
   }
 
+  async function ensureCollectionMainShareUrl(collection: AdminModelCollection) {
+    const activeLink = collectionActiveMainLink(collection);
+    if (activeLink?.url) return activeLink.url;
+
+    const durationMinutes = Number.isFinite(Number(collection.default_link_minutes)) && Number(collection.default_link_minutes) > 0
+      ? Number(collection.default_link_minutes)
+      : 60 * 24 * 30;
+    const res = await fetch('/api/admin/models/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        collectionId: collection.id,
+        linkKind: 'main',
+        label: 'الرابط الرئيسي',
+        durationMinutes,
+        maxViews: null,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'فشل إنشاء رابط النموذج');
+    const url = typeof data.url === 'string' ? data.url : '';
+    if (!url) throw new Error('لم يتم إرجاع رابط صالح');
+    return url;
+  }
+
   async function copyGenerated() {
     if (!generatedUrl) return;
-    await navigator.clipboard?.writeText(generatedUrl);
-    toast.success('تم نسخ الرابط');
+    await copyTextWithToast(generatedUrl, 'تم نسخ الرابط');
   }
 
-  async function copyUrl(url?: string | null) {
-    if (!url) return;
-    await navigator.clipboard?.writeText(url);
-    toast.success('تم نسخ الرابط');
-  }
-
-  function buildAssetShareUrl(assetId: string) {
-    return appendAssetParam(mainLink?.url, assetId);
+  async function copySelectedMainShareUrl() {
+    if (!selected) return;
+    try {
+      const createdNow = !activeMainLink?.url;
+      const url = await ensureCollectionMainShareUrl(selected);
+      setGeneratedUrl(url);
+      await copyTextWithToast(url, createdNow ? 'تم إنشاء الرابط ونسخه' : 'تم نسخ الرابط');
+      if (createdNow) await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل نسخ الرابط');
+    }
   }
 
   async function copyAssetShareUrl(assetId: string) {
-    const url = buildAssetShareUrl(assetId);
-    if (!url) {
-      toast.error('أنشئ الرابط الرئيسي أولاً');
-      return;
+    try {
+      const baseUrl = selected ? await ensureCollectionMainShareUrl(selected) : null;
+      const url = appendAssetParam(baseUrl, assetId);
+      if (!url) {
+        toast.error('تعذر إنشاء رابط هذه الصورة');
+        return;
+      }
+      setGeneratedUrl(baseUrl || '');
+      await copyTextWithToast(url, 'تم نسخ رابط هذه الصورة');
+      await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل نسخ رابط الصورة');
     }
-    await navigator.clipboard?.writeText(url);
-    toast.success('تم نسخ رابط هذه الصورة');
   }
 
   async function copyAdminGalleryShareUrl(item: AdminGalleryItem) {
-    if (!item.shareUrl) {
-      toast.error('لا يوجد رابط رئيسي صالح لهذا النموذج. افتح النموذج ثم دوّر الرابط.');
-      return;
+    try {
+      const baseUrl = item.shareUrl ? null : await ensureCollectionMainShareUrl(item.collection);
+      const url = item.shareUrl || appendAssetParam(baseUrl, item.asset.id);
+      if (!url) {
+        toast.error('تعذر إنشاء رابط هذه الصورة');
+        return;
+      }
+      if (baseUrl) setGeneratedUrl(baseUrl);
+      await copyTextWithToast(url, item.shareUrl ? 'تم نسخ رابط الصورة للعميل' : 'تم إنشاء الرابط ونسخ رابط الصورة');
+      if (baseUrl) await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل نسخ رابط الصورة');
     }
-    await navigator.clipboard?.writeText(item.shareUrl);
-    toast.success('تم نسخ رابط الصورة للعميل');
   }
 
   async function copyAdminGalleryGroupShareUrl(group: AdminGalleryGroup) {
-    if (!group.shareUrl) {
-      toast.error('لا يوجد رابط لهذا النموذج بعد. اضغط تعديل ثم أنشئ الرابط الرئيسي.');
-      return;
+    setCopyingGroupId(group.collection.id);
+    try {
+      const createdNow = !group.shareUrl;
+      const url = group.shareUrl || await ensureCollectionMainShareUrl(group.collection);
+      setGeneratedUrl(url);
+      await copyTextWithToast(
+        url,
+        createdNow ? 'تم إنشاء رابط النموذج ونسخه' : 'تم نسخ رابط النموذج بكل صوره',
+      );
+      if (createdNow) await loadModels();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'فشل نسخ رابط النموذج');
+    } finally {
+      setCopyingGroupId(null);
     }
-    await navigator.clipboard?.writeText(group.shareUrl);
-    toast.success('تم نسخ رابط النموذج بكل صوره');
   }
 
   async function copyAdminGalleryImageUrl(item: AdminGalleryItem) {
@@ -862,8 +949,7 @@ export default function AdminModelsPage() {
       toast.error('الصورة غير متاحة حالياً');
       return;
     }
-    await navigator.clipboard?.writeText(item.asset.preview_url);
-    toast.success('تم نسخ رابط الصورة المؤقت');
+    await copyTextWithToast(item.asset.preview_url, 'تم نسخ رابط الصورة المؤقت');
   }
 
   async function downloadAdminGalleryAsset(item: AdminGalleryItem) {
@@ -1096,6 +1182,7 @@ export default function AdminModelsPage() {
                   <AdminGalleryGroupCard
                     key={group.collection.id}
                     group={group}
+                    isCopying={copyingGroupId === group.collection.id}
                     onOpen={() => openAdminGalleryGroup(group)}
                     onCopyShare={() => void copyAdminGalleryGroupShareUrl(group)}
                     onEdit={() => editAdminGalleryGroup(group)}
@@ -1386,7 +1473,7 @@ export default function AdminModelsPage() {
                               <button
                                 type="button"
                                 onClick={() => void copyAssetShareUrl(asset.id)}
-                                disabled={!mainLink?.url || !asset.is_active}
+                                disabled={!asset.is_active}
                                 className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-cyan-50 px-2 py-1.5 text-xs font-black text-cyan-700 hover:bg-cyan-100 disabled:opacity-40 dark:bg-cyan-900/20 dark:text-cyan-300"
                               >
                                 <Copy size={13} />
@@ -1452,20 +1539,20 @@ export default function AdminModelsPage() {
                             <input
                               readOnly
                               dir="ltr"
-                              value={mainLink.url || 'رابط قديم - دوّر الرابط لإنشاء رابط قابل للنسخ'}
+                              value={activeMainLink?.url || (mainLink.url ? 'الرابط الحالي غير فعال - اضغط نسخ لإنشاء رابط جديد' : 'لا يوجد رابط فعال')}
                               className="col-span-2 min-w-0 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-700 dark:border-emerald-900/50 dark:bg-slate-950 dark:text-slate-200 sm:col-span-1"
                             />
                             <button
                               type="button"
-                              onClick={() => void copyUrl(mainLink.url)}
-                              disabled={!mainLink.url}
+                              onClick={() => void copySelectedMainShareUrl()}
+                              disabled={saving || selected.assets.length === 0}
                               className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-emerald-600 text-white disabled:opacity-50 sm:w-10"
-                              aria-label="نسخ"
+                              aria-label={activeMainLink?.url ? 'نسخ' : 'إنشاء ونسخ'}
                             >
                               <Copy size={16} />
                             </button>
-                            {mainLink.url && (
-                              <a href={mainLink.url} target="_blank" rel="noreferrer" className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-slate-900 text-white sm:w-10" aria-label="فتح">
+                            {activeMainLink?.url && (
+                              <a href={activeMainLink.url} target="_blank" rel="noreferrer" className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-slate-900 text-white sm:w-10" aria-label="فتح">
                                 <ExternalLink size={16} />
                               </a>
                             )}
@@ -1921,6 +2008,7 @@ function Panel({
 
 function AdminGalleryGroupCard({
   group,
+  isCopying,
   onOpen,
   onCopyShare,
   onEdit,
@@ -1930,6 +2018,7 @@ function AdminGalleryGroupCard({
   onToggleGallery,
 }: {
   group: AdminGalleryGroup;
+  isCopying: boolean;
   onOpen: () => void;
   onCopyShare: () => void;
   onEdit: () => void;
@@ -2000,12 +2089,16 @@ function AdminGalleryGroupCard({
           <button
             type="button"
             onClick={onCopyShare}
-            disabled={!group.shareUrl}
-            className="grid h-9 place-items-center rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40 dark:bg-emerald-900/20 dark:text-emerald-300"
-            aria-label="نسخ رابط العميل"
-            title="نسخ رابط العميل"
+            disabled={isCopying}
+            className={`grid h-9 place-items-center rounded-lg disabled:opacity-60 ${
+              group.shareUrl
+                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300'
+                : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-300'
+            }`}
+            aria-label={group.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'}
+            title={group.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'}
           >
-            <Link2 size={15} />
+            {isCopying ? <Loader2 className="animate-spin" size={15} /> : <Link2 size={15} />}
           </button>
           <button
             type="button"
@@ -2104,7 +2197,7 @@ function AdminGalleryLightbox({
           </p>
         </div>
         <div className="grid grid-cols-5 gap-2 sm:flex sm:items-center">
-          <button type="button" onClick={onCopyShare} disabled={!item.shareUrl} className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white disabled:opacity-40" aria-label="نسخ رابط العميل" title="نسخ رابط العميل">
+          <button type="button" onClick={onCopyShare} disabled={!item.asset.is_active} className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white disabled:opacity-40" aria-label={item.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'} title={item.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'}>
             <Link2 size={17} />
           </button>
           <button type="button" onClick={onCopyImage} disabled={!item.asset.preview_url} className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-500 text-white disabled:opacity-40" aria-label="نسخ رابط الصورة" title="نسخ رابط الصورة">
