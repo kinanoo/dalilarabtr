@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert } from '@/lib/adminApi';
 import { useRouter } from 'next/navigation';
 import { ArticleEditor } from '@/components/admin/editors/ArticleEditor';
 import { Loader2, ArrowRight, Save, Send, Globe, FileEdit } from 'lucide-react';
@@ -144,9 +145,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 payload.slug = payload.id;
             }
 
-            const { error } = await supabase
-                .from('articles')
-                .upsert(payload);
+            const { error } = await adminUpsert('articles', payload);
 
             if (error) throw error;
 

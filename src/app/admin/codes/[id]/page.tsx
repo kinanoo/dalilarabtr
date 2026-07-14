@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert } from '@/lib/adminApi';
 import { useRouter } from 'next/navigation';
 import { CodeEditor } from '@/components/admin/editors/CodeEditor';
 import { Loader2, ArrowRight, Save } from 'lucide-react';
@@ -97,9 +98,7 @@ export default function CodeEditPage({ params }: { params: Promise<{ id: string 
                 return;
             }
 
-            const { error } = await supabase
-                .from('security_codes')
-                .upsert(payload);
+            const { error } = await adminUpsert('security_codes', payload);
 
             if (error) throw error;
 

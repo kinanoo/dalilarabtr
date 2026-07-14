@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert } from '@/lib/adminApi';
 import { useRouter } from 'next/navigation';
 import { ScenarioEditor } from '@/components/admin/editors/ScenarioEditor';
 import { Loader2, ArrowRight, Save } from 'lucide-react';
@@ -99,9 +100,7 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
                 return;
             }
 
-            const { error } = await supabase
-                .from('consultant_scenarios')
-                .upsert(payload);
+            const { error } = await adminUpsert('consultant_scenarios', payload);
 
             if (error) throw error;
 

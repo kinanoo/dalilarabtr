@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import { MessageSquare, AlertTriangle, CheckCircle2, Trash2, ArrowRight, Loader2, MessageCircle, Send } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { extractErrorMessage } from '@/lib/errors';
@@ -67,8 +68,7 @@ export default function AdminCommunityPage() {
 
     const handleApprove = async (id: string) => {
         if (!confirm('هل تريد نشر هذا التعليق؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('comments').update({ status: 'approved' }).eq('id', id);
+        const { error } = await adminUpdate('comments', { status: 'approved' }, id);
         if (error) {
             toast.error('فشل النشر: ' + error.message);
         } else {
@@ -79,8 +79,7 @@ export default function AdminCommunityPage() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('حذف هذا التعليق؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('comments').delete().eq('id', id);
+        const { error } = await adminDelete('comments', id);
         if (error) {
             toast.error('فشل الحذف: ' + error.message);
         } else {
@@ -90,10 +89,9 @@ export default function AdminCommunityPage() {
     };
 
     const convertToUpdate = async (comment: Comment) => {
-        if (!supabase) return;
         setConverting(comment.id);
         try {
-            const { error } = await supabase.from('updates').insert({
+            const { error } = await adminInsert('updates', {
                 title: `تصحيح: ${comment.author_name}`,
                 content: comment.content,
                 type: 'news',
@@ -102,7 +100,7 @@ export default function AdminCommunityPage() {
             });
             if (error) throw error;
             // Auto-approve the source comment (best-effort — non-critical if fails)
-            const { error: approveError } = await supabase.from('comments').update({ status: 'approved' }).eq('id', comment.id);
+            const { error: approveError } = await adminUpdate('comments', { status: 'approved' }, comment.id);
             if (approveError) logger.warn('Auto-approve comment failed:', approveError.message);
             toast.success('✅ تم إنشاء التحديث ونشره مباشرة');
             fetchComments();
@@ -114,9 +112,9 @@ export default function AdminCommunityPage() {
     };
 
     const handleReply = async (comment: Comment) => {
-        if (!supabase || !replyContent.trim()) return;
+        if (!replyContent.trim()) return;
         const entityId = comment.entity_id || comment.page_slug || '';
-        const { error } = await supabase.from('comments').insert({
+        const { error } = await adminInsert('comments', {
             parent_id: comment.id,
             entity_type: comment.entity_type,
             entity_id: entityId,

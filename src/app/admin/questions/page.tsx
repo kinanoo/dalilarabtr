@@ -21,6 +21,7 @@ import {
     Star,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate, adminDelete } from '@/lib/adminApi';
 import { toast } from 'sonner';
 
 type Status = 'pending' | 'answered' | 'rejected' | 'spam';
@@ -95,15 +96,12 @@ export default function AdminQuestionsPage() {
         setBusy(id);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            const { error } = await supabase
-                .from('questions')
-                .update({
-                    answer: text,
-                    status: 'answered',
-                    answered_by: user?.id || null,
-                    answered_at: new Date().toISOString(),
-                })
-                .eq('id', id);
+            const { error } = await adminUpdate('questions', {
+                answer: text,
+                status: 'answered',
+                answered_by: user?.id || null,
+                answered_at: new Date().toISOString(),
+            }, id);
             if (error) {
                 toast.error('فشل النشر: ' + error.message);
             } else {
@@ -120,10 +118,9 @@ export default function AdminQuestionsPage() {
     }
 
     async function changeStatus(id: string, status: Status) {
-        if (!supabase) return;
         setBusy(id);
         try {
-            await supabase.from('questions').update({ status }).eq('id', id);
+            await adminUpdate('questions', { status }, id);
             await load();
         } finally {
             setBusy(null);
@@ -131,10 +128,9 @@ export default function AdminQuestionsPage() {
     }
 
     async function toggleFeatured(id: string, current: boolean) {
-        if (!supabase) return;
         setBusy(id);
         try {
-            await supabase.from('questions').update({ is_featured: !current }).eq('id', id);
+            await adminUpdate('questions', { is_featured: !current }, id);
             await load();
         } finally {
             setBusy(null);
@@ -142,11 +138,10 @@ export default function AdminQuestionsPage() {
     }
 
     async function remove(id: string) {
-        if (!supabase) return;
         if (!confirm('حذف السؤال نهائياً؟ لا يمكن التراجع.')) return;
         setBusy(id);
         try {
-            await supabase.from('questions').delete().eq('id', id);
+            await adminDelete('questions', id);
             await load();
         } finally {
             setBusy(null);

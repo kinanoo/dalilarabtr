@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert, adminDelete } from '@/lib/adminApi';
 import { Star, Trash2, MessageCircle, AlertTriangle, FileWarning, CheckCircle2, ArrowRight, Eye } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { toast } from 'sonner';
@@ -105,10 +106,9 @@ export default function AdminReviewsPage() {
 
     // ── Reviews ──────────────────────────────────────────────
     const handleDeleteReview = async (id: string) => {
-        if (!supabase) return;
         // Optimistic: remove immediately
         setReviews(prev => prev.filter(r => r.id !== id));
-        const { error } = await supabase.from('service_reviews').delete().eq('id', id);
+        const { error } = await adminDelete('service_reviews', id);
         if (!error) {
             toast.success('تم حذف التقييم');
         } else {
@@ -118,10 +118,10 @@ export default function AdminReviewsPage() {
     };
 
     const handleReply = async (reviewId: string) => {
-        if (!supabase || !replyContent.trim()) return;
-        const { error } = await supabase.from('review_replies').insert([{
+        if (!replyContent.trim()) return;
+        const { error } = await adminInsert('review_replies', {
             review_id: reviewId, author_name: 'الإدارة', content: replyContent, is_official: true
-        }]);
+        });
         if (!error) {
             toast.success('تم إرسال الرد');
             // إشعار للمقيّم عند رد الإدارة

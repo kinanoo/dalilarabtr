@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate } from '@/lib/adminApi';
 import { toast } from 'sonner';
 import {
     Star, Search, Loader2, Megaphone, Save, ExternalLink, BadgeCheck,
@@ -68,12 +69,11 @@ export default function MonetizationPage() {
     useEffect(() => { loadProviders(); loadBanner(); }, [loadProviders, loadBanner]);
 
     const toggleFeatured = async (p: Provider) => {
-        if (!supabase) return;
         const next = !p.is_featured;
         setSavingId(p.id);
         // Optimistic
         setProviders((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_featured: next } : x)));
-        const { error } = await supabase.from('service_providers').update({ is_featured: next }).eq('id', p.id);
+        const { error } = await adminUpdate('service_providers', { is_featured: next }, p.id);
         setSavingId(null);
         if (error) {
             setProviders((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_featured: !next } : x)));

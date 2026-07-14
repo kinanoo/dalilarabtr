@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert } from '@/lib/adminApi';
 import { useRouter } from 'next/navigation';
 import { FaqEditor } from '@/components/admin/editors/FaqEditor';
 import { Loader2, ArrowRight, Save } from 'lucide-react';
@@ -63,9 +64,7 @@ export default function FaqEditPage({ params }: { params: Promise<{ id: string }
             const payload = { ...form };
             if (isNew) delete payload.id;
 
-            const { error } = await supabase
-                .from('faqs')
-                .upsert(payload);
+            const { error } = await adminUpsert('faqs', payload);
 
             if (error) throw error;
 

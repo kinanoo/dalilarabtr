@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate } from '@/lib/adminApi';
 import { CheckCircle, XCircle, Clock, User, Phone, MapPin, FileText, Briefcase, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -117,12 +118,7 @@ export default function RequestsPage() {
                     updateData.is_verified = true; // Auto verify services on approval
                 }
 
-                if (!supabase) throw new Error('Supabase client not initialized');
-
-                const { error } = await supabase
-                    .from(table)
-                    .update(updateData)
-                    .eq('id', item.id);
+                const { error } = await adminUpdate(table, updateData, item.id);
 
                 if (error) throw error;
             },

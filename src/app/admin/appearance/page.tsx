@@ -7,6 +7,7 @@ import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import AdminCard from '@/components/admin/AdminCard';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert } from '@/lib/adminApi';
 import type { BackdropConfig } from '@/components/SiteBackdrop';
 
 const DEFAULT_CFG: BackdropConfig = {
@@ -50,11 +51,10 @@ export default function AdminAppearancePage() {
   const removeImage = (url: string) => setCfg((c) => ({ ...c, images: c.images.filter((i) => i !== url) }));
 
   const save = async () => {
-    if (!supabase) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from('site_settings').upsert({ id: 1, backdrop: cfg }, { onConflict: 'id' });
-      if (error) throw error;
+      const { error } = await adminUpsert('site_settings', { id: 1, backdrop: cfg }, 'id');
+      if (error) throw new Error(error.message);
       toast.success('تم الحفظ — تظهر على الموقع خلال دقيقة (حدّث الصفحة بـ Ctrl+Shift+R).');
     } catch (e) {
       toast.error('فشل الحفظ: ' + (e instanceof Error ? e.message : String(e)));
