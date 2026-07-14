@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert, adminUpsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import { Bell, HelpCircle, Loader2, Trash2, Edit, Lock, Send, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { LATEST_UPDATES } from '@/lib/constants';
@@ -64,7 +65,7 @@ export function UpdatesManager() {
                 link: formData.link?.trim() || null,
                 image: formData.image?.trim() || null,
             };
-            const { error } = await supabase.from('updates').upsert(editingId ? { ...payload, id: editingId } : payload);
+            const { error } = await adminUpsert('updates', editingId ? { ...payload, id: editingId } : payload);
 
             if (error) {
                 toast.error('فشل الحفظ: ' + error.message);
@@ -107,8 +108,7 @@ export function UpdatesManager() {
         const toastId = toast.loading(`جاري حذف: ${title || 'التحديث'}...`);
 
 
-        if (!supabase) return;
-        const { error } = await supabase.from('updates').delete().eq('id', id);
+        const { error } = await adminDelete('updates', id);
 
         if (error) {
             logger.error('❌ Delete failed:', error);
@@ -123,8 +123,7 @@ export function UpdatesManager() {
     // Show/hide a published update without deleting it (active=false hides it
     // from visitors but keeps it editable/restorable).
     const toggleActive = async (id: string, current: boolean) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('updates').update({ active: !current }).eq('id', id);
+        const { error } = await adminUpdate('updates', { active: !current }, id);
         if (error) { toast.error('فشل التحديث: ' + error.message); return; }
         toast.success(current ? 'تم التعطيل (مخفيّ عن الزوّار)' : 'تم التفعيل');
         fetchUpdates();
@@ -283,8 +282,7 @@ export function FAQManager() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!supabase) return;
-        const { error } = await supabase.from('faqs').insert([formData]);
+        const { error } = await adminInsert('faqs', formData);
         if (!error) {
             toast.success('تم إضافة السؤال!');
             setFormData({ category: 'general', question: '', answer: '', active: true });
@@ -294,8 +292,7 @@ export function FAQManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('faqs').delete().eq('id', id);
+        const { error } = await adminDelete('faqs', id);
         if (error) {
             logger.error('Delete FAQ Error:', error);
             toast.error('فشل الحذف: ' + error.message);

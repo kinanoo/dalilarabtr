@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate } from '@/lib/adminApi';
 import { Edit, Trash2, ChevronLeft, ChevronRight, Loader2, Search, Plus, ToggleLeft, ToggleRight, List, LayoutGrid, Table2 } from 'lucide-react';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
@@ -165,15 +166,12 @@ export function DataTable({
     }
 
     async function handleToggle(id: string, currentValue: boolean) {
-        if (!supabase || !toggleField) return;
+        if (!toggleField) return;
         if (pendingRows.has(id)) return;
 
         markPending(id, true);
         try {
-            const { error } = await supabase
-                .from(tableName)
-                .update({ [toggleField]: !currentValue })
-                .eq(idField, id);
+            const { error } = await adminUpdate(tableName, { [toggleField]: !currentValue }, id, idField);
             if (error) throw error;
             toast.success(currentValue ? 'تم التعطيل' : 'تم التفعيل');
             fetchData();

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert, adminDelete } from '@/lib/adminApi';
 import { Trash2, Plus, Star, MessageCircle } from 'lucide-react';
 
 export default function TestimonialsManager() {
@@ -27,9 +28,8 @@ export default function TestimonialsManager() {
 
     async function handleAdd() {
         if (!newReview.name || !newReview.content) return;
-        if (!supabase) return;
 
-        const { error } = await supabase.from('site_testimonials').insert([newReview]);
+        const { error } = await adminInsert('site_testimonials', newReview);
         if (!error) {
             setNewReview({ name: '', role: '', location: '', content: '', rating: 5, is_active: true });
             fetchReviews();
@@ -37,9 +37,8 @@ export default function TestimonialsManager() {
     }
 
     async function handleDelete(id: string) {
-        if (!supabase) return;
         if (!confirm('هل أنت متأكد من الحذف؟')) return;
-        const { error } = await supabase.from('site_testimonials').delete().eq('id', id);
+        const { error } = await adminDelete('site_testimonials', id);
         if (!error) fetchReviews();
     }
 

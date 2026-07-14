@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert, adminDelete } from '@/lib/adminApi';
 import {
     Plane, FileText, ShieldAlert, Smartphone, ArrowLeft,
     Edit, Plus, ArrowRight, Layout, FolderOpen, Save, Loader2,
@@ -278,8 +279,7 @@ function HeroEditor({ onBack }: { onBack: () => void }) {
     }, []);
 
     const save = async () => {
-        if (!supabase) return;
-        const { error } = await supabase.from('site_settings').upsert({ id: 1, ...form });
+        const { error } = await adminUpsert('site_settings', { id: 1, ...form });
         if (!error) { showToast('تم الحفظ', 'success'); onBack(); }
     }
 
@@ -346,17 +346,15 @@ function CardEditor({ cardId, onBack }: { cardId: string, onBack: () => void }) 
     }, [cardId]);
 
     const save = async () => {
-        if (!supabase) return;
         const payload = isNew ? form : { ...form, id: cardId };
-        const { error } = await supabase.from('home_cards').upsert(payload as any); // Cast for flexibility
+        const { error } = await adminUpsert('home_cards', payload);
         if (!error) { showToast('تم الحفظ', 'success'); onBack(); }
         else showToast(error.message, 'error');
     }
 
     const deleteCard = async () => {
         if (!confirm('حذف؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('home_cards').delete().eq('id', cardId);
+        const { error } = await adminDelete('home_cards', cardId);
         if (error) { showToast('فشل الحذف: ' + error.message, 'error'); return; }
         showToast('تم الحذف', 'success');
         onBack();
@@ -482,9 +480,8 @@ function ArticleEditor({ articleId, categoryContext, onBack }: { articleId: stri
 
     const save = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!supabase) return;
         const payload = { ...form, id: form.id || normalizeId(form.title) };
-        const { error } = await supabase.from('articles').upsert(payload);
+        const { error } = await adminUpsert('articles', payload);
         if (!error) {
             // Trigger ISR revalidation so the homepage carousel +
             // article page pick up the change immediately instead of

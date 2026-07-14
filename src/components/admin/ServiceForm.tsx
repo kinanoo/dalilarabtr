@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert } from '@/lib/adminApi';
 import { Upload, Plus, Save, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import logger from '@/lib/logger';
 import { watermarkImage } from '@/lib/watermark';
@@ -67,19 +68,13 @@ export default function ServiceForm() {
             }
 
             // 2. Insert Data
-            if (!supabase) throw new Error('Supabase client not initialized');
-
-            const { error: insertError } = await supabase
-                .from('service_providers')
-                .insert([
-                    {
-                        ...formData,
-                        image: imageUrl,
-                        rating: 5.0, // Default start
-                        review_count: 0,
-                        is_verified: true // Admin added = Verified
-                    }
-                ]);
+            const { error: insertError } = await adminInsert('service_providers', {
+                ...formData,
+                image: imageUrl,
+                rating: 5.0, // Default start
+                review_count: 0,
+                is_verified: true // Admin added = Verified
+            });
 
             if (insertError) throw insertError;
 

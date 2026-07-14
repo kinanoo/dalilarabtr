@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { AnalystEngine, Insight } from '@/lib/AnalystEngine';
 import { Play, CheckCircle, AlertTriangle, MapPin, ArrowRight, Loader2, Sparkles, BrainCircuit, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate } from '@/lib/adminApi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useRouter } from 'next/navigation';
@@ -43,13 +44,13 @@ export function AnalystDashboard() {
     }
 
     async function handleIgnore(id?: string) {
-        if (!id || !supabase) return;
+        if (!id) return;
 
         // Optimistic update
         setInsights(prev => prev.filter(i => i.id !== id));
 
         // Update DB — log error but don't revert (optimistic is fine for UX)
-        const { error } = await supabase.from('analyst_insights').update({ is_resolved: true }).eq('id', id);
+        const { error } = await adminUpdate('analyst_insights', { is_resolved: true }, id);
         if (error) logger.error('handleIgnore error:', error.message);
     }
 

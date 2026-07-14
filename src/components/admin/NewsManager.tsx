@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import {
   Newspaper, Loader2, Trash2, Pencil, Send, Eye, EyeOff, Pin, X,
 } from 'lucide-react';
@@ -204,9 +205,9 @@ export default function NewsManager() {
 
       // Try the full payload first; if the new columns are missing in the DB,
       // retry with the base columns only and point the admin at the migration.
-      let { error } = await supabase.from('updates').upsert(fullPayload);
+      let { error } = await adminUpsert('updates', fullPayload);
       if (error && isMissingColumnError(error)) {
-        const retry = await supabase.from('updates').upsert(basePayload);
+        const retry = await adminUpsert('updates', basePayload);
         error = retry.error;
         if (!error) toast.warning(MIGRATION_TOAST, { description: MIGRATION_FILE });
       }
@@ -248,9 +249,8 @@ export default function NewsManager() {
 
   const handleDelete = async (u: DBUpdate) => {
     if (!confirm(`حذف «${u.title}» نهائياً؟`)) return;
-    if (!supabase) return;
     const toastId = toast.loading('جاري الحذف...');
-    const { error } = await supabase.from('updates').delete().eq('id', u.id);
+    const { error } = await adminDelete('updates', u.id);
     if (error) {
       logger.error('Delete update failed:', error);
       toast.error('فشل الحذف: ' + error.message, { id: toastId });
@@ -264,8 +264,7 @@ export default function NewsManager() {
   // Show/hide without deleting — active=false hides the item from visitors
   // but keeps it editable/restorable.
   const toggleActive = async (u: DBUpdate) => {
-    if (!supabase) return;
-    const { error } = await supabase.from('updates').update({ active: !u.active }).eq('id', u.id);
+    const { error } = await adminUpdate('updates', { active: !u.active }, u.id);
     if (error) { toast.error('فشل التحديث: ' + error.message); return; }
     toast.success(u.active ? 'أُخفي عن الزوّار' : 'أصبح ظاهراً');
     fetchUpdates();

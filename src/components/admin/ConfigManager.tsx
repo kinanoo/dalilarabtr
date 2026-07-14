@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate, adminUpsert, adminDelete } from '@/lib/adminApi';
 import { Settings, Menu, Layers, Save, Loader2, RefreshCw, Trash2, Edit, Check, X, Bot, Plus, Zap, Eye, EyeOff, AlertTriangle, BarChart3, MessageSquare, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,8 +55,7 @@ export default function ConfigManager() {
     };
 
     const handleSaveMenu = async (id: string) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('site_menus').update(menuForm).eq('id', id);
+        const { error } = await adminUpdate('site_menus', menuForm, id);
         if (error) { toast.error('فشل الحفظ: ' + error.message); return; }
         toast.success('تم حفظ الرابط');
         setEditingMenu(null);
@@ -64,8 +64,7 @@ export default function ConfigManager() {
 
     const handleDeleteMenu = async (id: string) => {
         if (!confirm('حذف هذا الرابط؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('site_menus').delete().eq('id', id);
+        const { error } = await adminDelete('site_menus', id);
         if (error) { toast.error('فشل الحذف: ' + error.message); return; }
         toast.success('تم حذف الرابط');
         fetchMenus();
@@ -81,8 +80,7 @@ export default function ConfigManager() {
     };
 
     const handleSaveCategory = async (slug: string) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('service_categories').update(catForm).eq('slug', slug);
+        const { error } = await adminUpdate('service_categories', catForm, slug, 'slug');
         if (error) { toast.error('فشل الحفظ: ' + error.message); return; }
         toast.success('تم حفظ التصنيف');
         setEditingCategory(null);
@@ -90,8 +88,7 @@ export default function ConfigManager() {
     };
 
     const toggleCatStatus = async (slug: string, current: boolean) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('service_categories').update({ active: !current }).eq('slug', slug);
+        const { error } = await adminUpdate('service_categories', { active: !current }, slug, 'slug');
         if (error) { toast.error('فشل التحديث: ' + error.message); return; }
         toast.success(current ? 'تم تعطيل التصنيف' : 'تم تفعيل التصنيف');
         fetchCategories();
@@ -688,10 +685,9 @@ function GeneralSettingsForm() {
     }
 
     async function saveSettings() {
-        if (!supabase) return;
         setLoading(true);
         // Ensure ID 1 exists
-        const { error } = await supabase.from('site_settings').upsert({ id: 1, ...settings });
+        const { error } = await adminUpsert('site_settings', { id: 1, ...settings });
         if (!error) toast.success('تم الحفظ بنجاح');
         else toast.error('فشل الحفظ: ' + error.message);
         setLoading(false);

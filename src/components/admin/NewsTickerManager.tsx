@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import { Trash2, Plus, CheckCircle, XCircle, Newspaper } from 'lucide-react';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
@@ -40,16 +41,14 @@ export default function NewsTickerManager() {
             toast.error('يرجى كتابة نص الخبر');
             return;
         }
-        if (!supabase) return;
-
         const maxPriority = items.length > 0 ? Math.max(...items.map(i => i.priority)) : 0;
 
-        const { error } = await supabase.from('news_ticker').insert([{
+        const { error } = await adminInsert('news_ticker', {
             text: newItem.text.trim(),
             link: newItem.link.trim() || null,
             is_active: newItem.is_active,
             priority: maxPriority + 1,
-        }]);
+        });
 
         if (!error) {
             toast.success('تم إضافة الخبر بنجاح');
@@ -62,11 +61,7 @@ export default function NewsTickerManager() {
     }
 
     async function toggleActive(id: string, currentState: boolean) {
-        if (!supabase) return;
-        const { error } = await supabase
-            .from('news_ticker')
-            .update({ is_active: !currentState })
-            .eq('id', id);
+        const { error } = await adminUpdate('news_ticker', { is_active: !currentState }, id);
 
         if (!error) {
             fetchItems();
@@ -75,10 +70,9 @@ export default function NewsTickerManager() {
     }
 
     async function handleDelete(id: string) {
-        if (!supabase) return;
         if (!confirm('هل أنت متأكد من حذف هذا الخبر من الشريط؟ لا يمكن التراجع.')) return;
         const toastId = toast.loading('جاري الحذف...');
-        const { error } = await supabase.from('news_ticker').delete().eq('id', id);
+        const { error } = await adminDelete('news_ticker', id);
 
         if (!error) {
             toast.success('تم حذف الخبر', { id: toastId });

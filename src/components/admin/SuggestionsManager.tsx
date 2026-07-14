@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminUpdate, adminDelete } from '@/lib/adminApi';
 import { MessageSquare, CheckCircle, XCircle, Trash2, Clock, Mail } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
@@ -38,8 +39,7 @@ export default function SuggestionsManager() {
     };
 
     const updateStatus = async (id: string, status: string) => {
-        if (!supabase) return;
-        const { error } = await supabase.from('content_suggestions').update({ status }).eq('id', id);
+        const { error } = await adminUpdate('content_suggestions', { status }, id);
         if (!error) {
             showToast('تم تحديث الحالة', 'success');
             setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
@@ -50,8 +50,7 @@ export default function SuggestionsManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('حذف هذا الاقتراح؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('content_suggestions').delete().eq('id', id);
+        const { error } = await adminDelete('content_suggestions', id);
         if (!error) {
             showToast('تم الحذف بنجاح', 'success');
             setSuggestions(prev => prev.filter(s => s.id !== id));

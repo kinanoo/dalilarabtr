@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { adminInsert, adminDelete } from '@/lib/adminApi';
 import { Globe, Loader2, Trash2, Plus, ExternalLink, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,8 +33,7 @@ export function SourcesManager() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!supabase) return;
-        const { error } = await supabase.from('official_sources').insert([formData]);
+        const { error } = await adminInsert('official_sources', formData);
         if (!error) {
             toast.success('تمت الإضافة بنجاح');
             setFormData({ name: '', url: '', description: '', is_official: true, active: true });
@@ -43,8 +43,7 @@ export function SourcesManager() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('حذف؟')) return;
-        if (!supabase) return;
-        const { error } = await supabase.from('official_sources').delete().eq('id', id);
+        const { error } = await adminDelete('official_sources', id);
         if (error) { toast.error('فشل الحذف: ' + error.message); return; }
         toast.success('تم حذف المصدر');
         fetchSources();
