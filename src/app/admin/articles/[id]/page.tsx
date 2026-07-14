@@ -289,7 +289,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                 Below xl the bar sits ABOVE the admin MobileBottomNav (h-16 +
                 safe-area, z-[70]) — anchoring at bottom-0 put it UNDER the nav,
                 which completely hid the save button on phones. */}
-            <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] xl:bottom-0 left-0 right-0 px-3 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2 sm:gap-3 z-50 md:pl-64 shadow-lg">
+            <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] xl:bottom-0 left-0 right-0 px-3 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2 sm:gap-3 z-50 xl:pr-72 shadow-lg">
                 {/* Live / draft segmented control */}
                 <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1 mr-0 sm:mr-1">
                     <button

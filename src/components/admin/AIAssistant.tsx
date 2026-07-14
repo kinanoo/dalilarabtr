@@ -727,14 +727,16 @@ export function AIFab({ onClick, lifted = false }: { onClick: () => void; lifted
       onClick={onClick}
       className={`fixed z-[150] w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center hover:shadow-2xl hover:shadow-blue-600/40 hover:scale-105 active:scale-95 transition-all left-6 ${
         lifted
-          ? 'bottom-[calc(188px_+_env(safe-area-inset-bottom))]'
-          : 'bottom-[calc(88px_+_env(safe-area-inset-bottom))]'
-      } xl:bottom-[calc(24px_+_env(safe-area-inset-bottom))]`}
+          ? 'bottom-[calc(188px_+_env(safe-area-inset-bottom))] xl:bottom-[calc(88px_+_env(safe-area-inset-bottom))]'
+          : 'bottom-[calc(88px_+_env(safe-area-inset-bottom))] xl:bottom-[calc(24px_+_env(safe-area-inset-bottom))]'
+      }`}
       title="المساعد الذكي"
     >
       <Bot size={24} />
-      {/* Pulse ring */}
-      <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping" style={{ animationDuration: '3s' }} />
+      {/* Pulse ring — decorative only; animate-ping scales it to ~2x, and a
+          transformed element still hit-tests at its scaled bounds, so without
+          pointer-events-none it swallows clicks ~28px around the FAB. */}
+      <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping pointer-events-none" style={{ animationDuration: '3s' }} />
     </motion.button>
   );
 }

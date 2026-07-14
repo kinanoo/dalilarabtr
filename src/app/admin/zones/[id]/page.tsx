@@ -102,7 +102,7 @@ export default function ZoneEditPage({ params }: { params: Promise<{ id: string 
 
             {/* Sticky Save Bar — below xl it sits ABOVE the admin MobileBottomNav
                 (h-16 + safe-area, z-[70]); bottom-0 would hide it under the nav. */}
-            <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] xl:bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-4 z-50 md:pl-64 shadow-lg">
+            <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] xl:bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-4 z-50 xl:pr-72 shadow-lg">
                 <button
                     onClick={() => router.back()}
                     className="px-6 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
