@@ -19,7 +19,15 @@ export default function ProviderAvatar({ name, image, className }: { name: strin
     return (
         <div className={`relative overflow-hidden shadow-sm ${className || 'w-14 h-14 rounded-2xl'}`}>
             {showImage ? (
-                <Image src={image} alt={name} fill className="object-cover" sizes="56px" onError={() => setErr(true)} />
+                <Image
+                    src={image}
+                    alt={name}
+                    fill
+                    className="object-cover"
+                    sizes="56px"
+                    referrerPolicy="no-referrer"
+                    onError={() => setErr(true)}
+                />
             ) : (
                 <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(name)} text-white font-black`}>
                     {initials(name)}

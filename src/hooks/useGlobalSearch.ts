@@ -104,7 +104,7 @@ export function useGlobalSearch() {
   const [isSearching, setIsSearching] = useState(false);
 
   const debounceTime = useMemo(() => getOptimalDebounceTime(), []);
-  const { index: searchIndex } = useSearchIndex();
+  const { index: searchIndex } = useSearchIndex(query.trim().length >= 2);
 
   // Load recent searches on mount
   useEffect(() => {
@@ -161,6 +161,13 @@ export function useGlobalSearch() {
         const searchTokens = originalTokens.length > 0 ? originalTokens : [trimmed];
 
         const updateQuery = searchTokens.map((t) => `title.ilike.%${t}%,content.ilike.%${t}%`).join(',');
+        const articleOrQuery = searchTokens
+          .flatMap((t) => [
+            `title.ilike.%${t}%`,
+            `intro.ilike.%${t}%`,
+            `details.ilike.%${t}%`,
+          ])
+          .join(',');
         const questionOrQuery = searchTokens.map((t) => `question.ilike.%${t}%,answer.ilike.%${t}%`).join(',');
         const nameOrQuery = searchTokens.map((t) => `name.ilike.%${t}%`).join(',');
         const professionOrQuery = searchTokens.map((t) => `profession.ilike.%${t}%`).join(',');
@@ -175,6 +182,7 @@ export function useGlobalSearch() {
         const codeOrQuery = codeOrParts.join(',');
 
         const responses = await Promise.allSettled([
+          supabase.from('articles').select('id, slug, title, category, intro').or(articleOrQuery).order('published_at', { ascending: false }).limit(8),
           supabase.from('service_providers').select('id, name, profession').eq('status', 'approved').or(`${nameOrQuery},${professionOrQuery}`).limit(5),
           supabase.from('faqs').select('id, question, answer').or(questionOrQuery).limit(5),
           supabase.from('updates').select('id, title, date, content').eq('active', true).or(updateQuery).limit(5),
@@ -182,11 +190,30 @@ export function useGlobalSearch() {
           supabase.from('security_codes').select('code, title, description').or(codeOrQuery).limit(5),
         ]);
 
-        const [servicesRes, faqsRes, updatesRes, sourcesRes, codesRes] = responses.map((r) =>
+        const [articlesRes, servicesRes, faqsRes, updatesRes, sourcesRes, codesRes] = responses.map((r) =>
           r.status === 'fulfilled' ? r.value : { data: [] }
         );
 
         const newResults: SearchResult[] = [];
+
+        if (articlesRes?.data) {
+          articlesRes.data.forEach((a: any) => {
+            const searchable = `${a.title} ${a.category || ''} ${a.intro || ''}`;
+            const stats = calculateRelevance(searchable, searchTokens, expandedTokens);
+            newResults.push({
+              id: `art-${a.id}`,
+              title: a.title,
+              type: 'مقال',
+              url: `/article/${a.slug || a.id}`,
+              icon: FileText,
+              desc: a.category || (a.intro ? a.intro.replace(/<[^>]*>/g, '').slice(0, 80) : ''),
+              typeKey: 'article',
+              haystack: normalizeArabic(searchable),
+              _score: stats.score,
+              _matchedTokens: stats.matchedTokens,
+            } as any);
+          });
+        }
 
         if (servicesRes?.data) {
           servicesRes.data.forEach((s: any) => {

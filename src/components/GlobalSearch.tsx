@@ -12,11 +12,17 @@ import { useEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
-import { useGlobalSearch, saveRecentSearch, getRecentSearches } from '@/hooks/useGlobalSearch';
+import { useGlobalSearch, saveRecentSearch } from '@/hooks/useGlobalSearch';
 import { PopularSuggestions, AutocompleteSuggestions } from '@/components/search/SearchSuggestions';
 import SearchResultsDropdown from '@/components/search/SearchResultsDropdown';
 
-export default function GlobalSearch({ variant = 'default' }: { variant?: 'default' | 'hero' }) {
+export default function GlobalSearch({
+  variant = 'default',
+  autoFocus = false,
+}: {
+  variant?: 'default' | 'hero';
+  autoFocus?: boolean;
+}) {
   const {
     query, setQuery, debouncedQuery,
     isOpen, setIsOpen,
@@ -29,6 +35,12 @@ export default function GlobalSearch({ variant = 'default' }: { variant?: 'defau
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isHero = variant === 'hero';
+
+  useEffect(() => {
+    if (!autoFocus) return;
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocus]);
 
   // Click outside to close
   useEffect(() => {

@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 const cspBase = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://www.google-analytics.com https://www.google.com https://www.transparenttextures.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://lh3.googleusercontent.com https://www.google-analytics.com https://www.google.com https://www.transparenttextures.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "font-src 'self' data:",
   "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com wss://*.pusher.com https://static.cloudflareinsights.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "frame-src 'self' https://tckimlik.nvi.gov.tr",
@@ -158,6 +158,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
@@ -189,7 +195,6 @@ const nextConfig: NextConfig = {
   // 🔕 Hide dev indicator
   devIndicators: ({ buildActivity: false } as unknown) as NextConfig['devIndicators'],
 
-  // @ts-ignore - Explicitly requested by next.js warning for local cross-origin
   allowedDevOrigins: ['http://192.168.18.3:3000', '192.168.18.3:3000'],
 };
 

@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  FileText, Bell, File, Briefcase, BrainCircuit,
+  FileText, Briefcase, BrainCircuit,
   MapPin, Calculator, ShieldAlert, BookOpen, UserCheck, HeartPulse, Plane
 } from 'lucide-react';
-import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import { normalizeArabic } from '@/lib/arabicSearch';
 import logger from '@/lib/logger';
@@ -276,20 +275,6 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
   },
 ];
 
-/**
- * فهرس النماذج
- */
-function buildFormsIndex(): SearchIndexItem[] {
-  return []; // Remote
-}
-
-/**
- * فهرس التحديثات/الأخبار
- */
-function buildUpdatesIndex(): SearchIndexItem[] {
-  return []; // Remote
-}
-
 // ============================================
 // 🎯 الفهرس الموحد (Unified Index)
 // ============================================
@@ -302,73 +287,11 @@ function buildUpdatesIndex(): SearchIndexItem[] {
 // 📦 أنواع البيانات (Types)
 // ...
 
-/**
- * تجريد HTML من النص (للفهرسة)
- */
-function stripHtml(html: string): string {
-  if (!html) return '';
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-/**
- * جلب مقالات من قاعدة البيانات (Client-Side Indexing)
- * يجلب البيانات الضرورية للبحث الشامل
- */
-interface ArticleRow {
-  id: string;
-  slug: string;
-  title: string;
-  category: string;
-  intro: string | null;
-  details: string | null;
-  steps: string[] | null;
-  tips: string[] | null;
-  published_at: string | null;
-}
-
 interface ScenarioRow {
   id: string;
   title: string;
   description: string | null;
   category: string | null;
-}
-
-async function fetchArticlesIndex(): Promise<SearchIndexItem[]> {
-  if (!supabase) return [];
-
-  try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('id, slug, title, category, intro, details, steps, tips, published_at')
-      .order('published_at', { ascending: false });
-
-    if (error) throw error;
-    if (!data) return [];
-
-    return (data as ArticleRow[]).map((a) => {
-      const parts = [
-        a.title,
-        a.intro || '',
-        a.category,
-        stripHtml(a.details || ''),
-        ...(Array.isArray(a.steps) ? a.steps : []),
-        ...(Array.isArray(a.tips) ? a.tips : [])
-      ];
-      return {
-        id: `art-${a.id}`,
-        title: a.title,
-        type: 'مقال',
-        typeKey: 'article',
-        desc: a.category,
-        url: `/article/${a.slug || a.id}`,
-        icon: FileText,
-        haystack: normalizeArabic(parts.join(' '))
-      };
-    });
-  } catch (err) {
-    logger.warn('Failed to fetch articles index:', err);
-    return [];
-  }
 }
 
 /**
@@ -421,53 +344,51 @@ export function getStaticSearchIndex(): SearchIndexItem[] {
  * Hook للبحث الموحد (يجمع بين الثابت والديناميكي)
  * هذا هو الهوك الذي يجب استخدامه في مكونات البحث
  */
-let _cachedDynamicArticles: SearchIndexItem[] | null = null;
 let _cachedDynamicScenarios: SearchIndexItem[] | null = null;
-let _isFetchingDynamicIndex = false;
+let _dynamicScenariosPromise: Promise<SearchIndexItem[]> | null = null;
 
-export function useSearchIndex() {
+export function useSearchIndex(enabled = true) {
   const [index, setIndex] = useState<SearchIndexItem[]>(getStaticSearchIndex());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     async function loadDynamicIndex() {
-      // Check cache first
-      if (_cachedDynamicArticles && _cachedDynamicScenarios) {
-        mergeDynamicData(_cachedDynamicArticles, _cachedDynamicScenarios);
+      if (_cachedDynamicScenarios !== null) {
+        mergeDynamicData(_cachedDynamicScenarios);
         setLoading(false);
         return;
       }
 
-      if (_isFetchingDynamicIndex) return; // Prevent concurrent duplicate fetches
-      _isFetchingDynamicIndex = true;
-
+      setLoading(true);
       try {
-        const [articles, scenarios] = await Promise.all([
-          fetchArticlesIndex(),
-          fetchScenariosIndex()
-        ]);
-
-        _cachedDynamicArticles = articles;
+        if (!_dynamicScenariosPromise) {
+          _dynamicScenariosPromise = fetchScenariosIndex().finally(() => {
+            _dynamicScenariosPromise = null;
+          });
+        }
+        const scenarios = await _dynamicScenariosPromise;
         _cachedDynamicScenarios = scenarios;
-        mergeDynamicData(articles, scenarios);
+        mergeDynamicData(scenarios);
       } finally {
-        _isFetchingDynamicIndex = false;
         setLoading(false);
       }
     }
 
-    function mergeDynamicData(articles: SearchIndexItem[], scenarios: SearchIndexItem[]) {
+    function mergeDynamicData(scenarios: SearchIndexItem[]) {
       setIndex(prev => {
         const currentIds = new Set(prev.map(i => i.id));
-        const newArticles = articles.filter(a => !currentIds.has(a.id));
-        newArticles.forEach(a => currentIds.add(a.id));
         const newScenarios = scenarios.filter(s => !currentIds.has(s.id));
-        return [...prev, ...newArticles, ...newScenarios];
+        return [...prev, ...newScenarios];
       });
     }
 
     loadDynamicIndex();
-  }, []);
+  }, [enabled]);
 
   return { index, loading };
 }
@@ -512,7 +433,6 @@ export function isLowEndDevice(): boolean {
   if (cores <= 2) return true;
 
   // فحص الذاكرة إن كانت متاحة (Chrome فقط)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memory = (navigator as any).deviceMemory;
   if (memory && memory <= 2) return true;
 
@@ -529,7 +449,6 @@ export function getOptimalDebounceTime(): number {
   if (typeof navigator === 'undefined') return 150;
 
   const cores = navigator.hardwareConcurrency || 4;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memory = (navigator as any).deviceMemory;
 
   // جهاز ضعيف جداً

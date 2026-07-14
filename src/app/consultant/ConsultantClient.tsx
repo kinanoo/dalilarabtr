@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
   CheckCircle, AlertTriangle, FileText, RefreshCw, ShieldAlert, Lightbulb,
   ArrowLeft, Gavel, HeartPulse, Plane, Building2, GraduationCap, Scale,
-  Landmark, FileCheck, Wallet, Home, ChevronRight, Briefcase, Printer, Users, Baby, Search, X, MessageCircle
+  Landmark, FileCheck, Wallet, Home, ChevronRight, Briefcase, Printer, Users, Search, X, MessageCircle
 } from 'lucide-react';
 
 import ToolSchema from '@/components/ToolSchema';
@@ -18,11 +18,11 @@ import UniversalComments from '@/components/community/UniversalComments';
 
 import { useAdminScenarios } from '@/lib/useAdminData';
 import { fetchRemoteArticleDataById } from '@/lib/remoteData';
-import { getOfficialSourceUrls, isAllowedOfficialUrl } from '@/lib/externalLinks';
+import { isAllowedOfficialUrl } from '@/lib/externalLinks';
 import { SITE_CONFIG } from '@/lib/config';
 
 import type { Article, PlanResult } from '@/lib/types';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios';
 
 type Props = {
@@ -66,10 +66,10 @@ const mapArticleToPlan = (article: Article, key: string, scenario: PlanResult): 
   };
 };
 
-export default function ConsultantClient({ initialComments = [], initialScenarios = [] }: Props) {
+export default function ConsultantClient({ initialScenarios = [] }: Props) {
   const hasSeed = initialScenarios.length > 0;
   // Skip the client table pull when the server already seeded the catalogue.
-  const { scenarios, loading: scenariosLoading } = useAdminScenarios(hasSeed);
+  const { scenarios } = useAdminScenarios(hasSeed);
 
   // Create a map for quick lookup by ID. Prefer the server seed; fall back to
   // the client hook when no seed was provided (e.g. build-time fetch failed).
@@ -179,57 +179,79 @@ export default function ConsultantClient({ initialComments = [], initialScenario
 
   // ...
 
-  const loadScenario = async (key: string) => {
-    setLoading(true);
+  const loadScenario = useCallback(async (key: string) => {
+    const bundledResult = SCENARIOS[key] || null;
 
-    // 1. Fetch Dynamic from New DB Table (Primary Source)
-    if (!supabase) return;
-    const { data: scenarioData, error } = await supabase
-      .from('consultant_scenarios')
-      .select('*')
-      .eq('id', key)
-      .single();
-
-    if (scenarioData) {
-      setResult({
-        id: scenarioData.id,
-        title: scenarioData.title,
-        risk: scenarioData.risk as any,
-        desc: scenarioData.description,
-        steps: scenarioData.steps || [],
-        docs: scenarioData.docs || [],
-        cost: scenarioData.cost || '',
-        legal: scenarioData.legal || '',
-        tip: scenarioData.tip || '',
-        lastUpdate: scenarioData.updated_at,
-        link: scenarioData.link,
-        articleId: scenarioData.article_id,
-        kbQuery: scenarioData.kb_query,
-        sources: scenarioData.sources || []
-      });
-    } else {
-      // 2. Fallback to Old Article Fetch or Static (Legacy Support)
-      const dynamicData = await fetchRemoteArticleDataById(key).catch(() => null);
-      if (dynamicData) {
-        const emptyScenario: PlanResult = { id: key, title: '', risk: 'medium', desc: '', steps: [], docs: [], cost: '', legal: '', tip: '', lastUpdate: '', link: '', articleId: '', kbQuery: '', sources: [] };
-        setResult(mapArticleToPlan(dynamicData, key, emptyScenario));
-      } else if (SCENARIOS[key]) {
-        setResult(SCENARIOS[key]);
-      } else {
-        // Not found anywhere
-        setResult(null);
+    // Known scenarios open immediately. The database refresh below can replace
+    // the bundled copy, but it must never hold the visible result hostage.
+    setLoading(!bundledResult);
+    if (bundledResult) {
+      setResult(bundledResult);
+      setStep(4);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', `/consultant?scenario=${key}`);
       }
     }
 
-    setLoading(false);
-    setStep(4);
+    try {
+      // The bundled catalogue is the immediate fallback. A fresh database row,
+      // when available, replaces it without making the page depend on Supabase.
+      let nextResult: PlanResult | null = bundledResult;
 
-    // Update browser URL for deep linking and sharing
-    if (typeof window !== 'undefined') {
-      const newUrl = `/consultant?scenario=${key}`;
-      window.history.replaceState({}, '', newUrl);
+      if (supabase) {
+        const response = await withTimeout(
+          supabase
+            .from('consultant_scenarios')
+            .select('*')
+            .eq('id', key)
+            .maybeSingle(),
+          6000
+        );
+        const scenarioData = response?.data;
+
+        if (scenarioData) {
+          nextResult = {
+            id: scenarioData.id,
+            title: scenarioData.title,
+            risk: scenarioData.risk as PlanResult['risk'],
+            desc: scenarioData.description,
+            steps: scenarioData.steps || [],
+            docs: scenarioData.docs || [],
+            cost: scenarioData.cost || '',
+            legal: scenarioData.legal || '',
+            tip: scenarioData.tip || '',
+            lastUpdate: scenarioData.updated_at,
+            link: scenarioData.link,
+            articleId: scenarioData.article_id,
+            kbQuery: scenarioData.kb_query,
+            sources: scenarioData.sources || []
+          };
+        } else if (!nextResult) {
+          // Legacy links may point directly to an article ID instead of a
+          // scenario. Keep that compatibility, but cap the wait as well.
+          const dynamicData = await withTimeout(
+            fetchRemoteArticleDataById(key).catch(() => null),
+            5000
+          );
+          if (dynamicData) {
+            const emptyScenario: PlanResult = { id: key, title: '', risk: 'medium', desc: '', steps: [], docs: [], cost: '', legal: '', tip: '', lastUpdate: '', link: '', articleId: '', kbQuery: '', sources: [] };
+            nextResult = mapArticleToPlan(dynamicData, key, emptyScenario);
+          }
+        }
+      }
+
+      setResult(nextResult);
+      setStep(nextResult ? 4 : 1);
+
+      if (nextResult && typeof window !== 'undefined') {
+        window.history.replaceState({}, '', `/consultant?scenario=${key}`);
+      }
+    } finally {
+      // Never leave the visitor behind a permanent spinner, even if the
+      // network is unavailable or a database response is malformed.
+      setLoading(false);
     }
-  };
+  }, [SCENARIOS]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -246,7 +268,7 @@ export default function ConsultantClient({ initialComments = [], initialScenario
 
     loadScenario(scenarioKey);
     setActiveTab('steps');
-  }, []);
+  }, [loadScenario]);
 
   const processLogic = (key: string) => {
     // Check if key is actually a direct URL (simple heuristic)
@@ -1273,7 +1295,7 @@ export default function ConsultantClient({ initialComments = [], initialScenario
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
                       <strong>تنبيه:</strong> المعلومات الواردة هنا لأغراض توجيهية فقط ولا تُشكّل استشارة قانونية رسمية.
                       القوانين والرسوم تتغير دورياً — تحقق دائماً من الجهة الرسمية المختصة قبل اتخاذ أي إجراء.{' '}
-                      <a href="/disclaimer" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">إخلاء المسؤولية الكامل</a>
+                      <Link href="/disclaimer" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">إخلاء المسؤولية الكامل</Link>
                     </p>
                   </div>
 
