@@ -11,8 +11,7 @@ const AmbientBackground = lazy(() => import('@/components/ui/AmbientBackground')
 // dragged supabase into the CRITICAL path of every page; lazy-loading it here
 // keeps the visual while moving that cost after hydration.
 const SiteBackdrop = lazy(() => import('@/components/SiteBackdrop'));
-const AnalyticsTracker = lazy(() => import('@/components/analytics/AnalyticsTracker').then(m => ({ default: m.AnalyticsTracker })));
-const ConversionEvents = lazy(() => import('@/components/analytics/ConversionEvents').then(m => ({ default: m.ConversionEvents })));
+const ConsentAwareAnalytics = lazy(() => import('@/components/ConsentAwareAnalytics'));
 const NotificationManager = lazy(() => import('@/components/NotificationManager'));
 const CopyProtection = lazy(() => import('@/components/ui/CopyProtection'));
 const ServiceWorkerRegister = lazy(() => import('@/components/pwa/ServiceWorkerRegister'));
@@ -49,8 +48,7 @@ export default function DeferredExtras() {
   return (
     <Suspense fallback={null}>
       <SiteBackdrop />
-      <AnalyticsTracker />
-      <ConversionEvents />
+      <ConsentAwareAnalytics />
       <CopyProtection />
       <BodyImageGallery />
       <ProseContrastGuard />

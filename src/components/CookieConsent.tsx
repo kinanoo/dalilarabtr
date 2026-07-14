@@ -1,107 +1,82 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Cookie, X } from 'lucide-react';
-
-const STORAGE_KEY = 'cookie_consent_accepted';
-const DISMISS_KEY = 'cookie_consent_dismissed_at';
-const DISMISS_COOLDOWN = 7 * 24 * 60 * 60 * 1000; // 7 days
+import { getAnalyticsConsent, setAnalyticsConsent } from '@/lib/consent';
 
 export default function CookieConsent() {
     const [isVisible, setIsVisible] = useState(false);
     const pathname = usePathname();
 
     useEffect(() => {
-        // Don't show on admin pages
-        if (pathname?.startsWith('/admin')) return;
-
-        try {
-            const accepted = localStorage.getItem(STORAGE_KEY);
-            if (accepted) return;
-
-            // Check if dismissed within cooldown period
-            const dismissedAt = localStorage.getItem(DISMISS_KEY);
-            if (dismissedAt && Date.now() - parseInt(dismissedAt, 10) < DISMISS_COOLDOWN) return;
-
-            // Delay showing for better UX (let page load first)
-            const timer = setTimeout(() => setIsVisible(true), 2000);
-            return () => clearTimeout(timer);
-        } catch {
-            // localStorage unavailable
+        if (pathname.startsWith('/admin')) {
+            setIsVisible(false);
+            return;
         }
+
+        setIsVisible(getAnalyticsConsent() === 'unknown');
     }, [pathname]);
 
-    const handleAccept = () => {
-        try {
-            localStorage.setItem(STORAGE_KEY, Date.now().toString());
-        } catch { /* ignore */ }
+    const choose = (choice: 'granted' | 'denied') => {
+        setAnalyticsConsent(choice);
         setIsVisible(false);
-    };
-
-    const handleDismiss = () => {
-        setIsVisible(false);
-        try {
-            localStorage.setItem(DISMISS_KEY, Date.now().toString());
-        } catch { /* ignore */ }
     };
 
     return (
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ y: 100, opacity: 0 }}
+                    initial={{ y: 60, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-[420px] z-[9999]
-                               bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700
-                               rounded-2xl shadow-2xl p-5"
+                    exit={{ y: 60, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed bottom-3 left-3 right-3 z-[9999] border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-auto sm:right-4 sm:w-[410px]"
                     role="dialog"
-                    aria-label="موافقة على الكوكيز"
+                    aria-modal="true"
+                    aria-label="إعدادات الخصوصية"
                 >
                     <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 bg-emerald-100 dark:bg-emerald-900/40 p-2 rounded-full">
-                            <Cookie className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <div className="shrink-0 rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/40">
+                            <Cookie className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-1">
-                                نستخدم ملفات تعريف الارتباط
-                            </h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                                نستخدم الكوكيز وأدوات التحليل لتحسين تجربتك. لا نجمع بيانات شخصية.
-                                اطّلع على{' '}
-                                <a href="/privacy" className="text-emerald-600 dark:text-emerald-400 underline hover:no-underline">
+                        <div className="min-w-0 flex-1">
+                            <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">خصوصيتك أولاً</h3>
+                            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                                نستخدم ملفات ضرورية لتشغيل الموقع. لن نفعّل أدوات قياس الزيارات إلا بعد موافقتك.{' '}
+                                <Link href="/privacy" className="font-bold text-emerald-700 underline dark:text-emerald-400">
                                     سياسة الخصوصية
-                                </a>
+                                </Link>
                             </p>
 
-                            <div className="flex items-center gap-2 mt-3">
+                            <div className="mt-3 grid grid-cols-2 gap-2">
                                 <button
-                                    onClick={handleAccept}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold
-                                               px-4 py-2 rounded-lg transition-colors"
+                                    type="button"
+                                    onClick={() => choose('granted')}
+                                    className="min-h-11 bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700"
                                 >
-                                    موافق
+                                    السماح بالتحليلات
                                 </button>
                                 <button
-                                    onClick={handleDismiss}
-                                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300
-                                               px-3 py-2 transition-colors"
+                                    type="button"
+                                    onClick={() => choose('denied')}
+                                    className="min-h-11 border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                                 >
-                                    لاحقاً
+                                    الضرورية فقط
                                 </button>
                             </div>
                         </div>
 
                         <button
-                            onClick={handleDismiss}
-                            className="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 min-w-11 min-h-11 flex items-center justify-center"
-                            aria-label="إغلاق"
+                            type="button"
+                            onClick={() => choose('denied')}
+                            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                            aria-label="استخدام الملفات الضرورية فقط وإغلاق الرسالة"
                         >
-                            <X className="w-4 h-4" />
+                            <X className="h-4 w-4" />
                         </button>
                     </div>
                 </motion.div>

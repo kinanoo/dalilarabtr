@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import { getSupabaseImageUrl } from '@/lib/supabaseImage';
 
 // Coloured-initials avatar with a real onError fallback: if a provider's photo
 // URL 404s, we swap to the gradient initials instead of leaving a broken-image
@@ -14,19 +15,36 @@ function gradFor(s: string) { let h = 0; for (const c of s || '?') h = (h * 31 +
 function initials(name: string) { return (name || '؟').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join(''); }
 
 export default function ProviderAvatar({ name, image, className }: { name: string; image: string | null; className?: string }) {
+    const optimizedSource = useMemo(
+        () => image ? getSupabaseImageUrl(image, { width: 128, height: 128 }) : null,
+        [image],
+    );
+    const [source, setSource] = useState<string | null>(optimizedSource);
     const [err, setErr] = useState(false);
-    const showImage = image && !err;
+
+    useEffect(() => {
+        setSource(optimizedSource);
+        setErr(false);
+    }, [optimizedSource]);
+
+    const showImage = source && !err;
     return (
         <div className={`relative overflow-hidden shadow-sm ${className || 'w-14 h-14 rounded-2xl'}`}>
             {showImage ? (
                 <Image
-                    src={image}
+                    src={source}
                     alt={name}
                     fill
                     className="object-cover"
                     sizes="56px"
                     referrerPolicy="no-referrer"
-                    onError={() => setErr(true)}
+                    onError={() => {
+                        if (image && source !== image) {
+                            setSource(image);
+                        } else {
+                            setErr(true);
+                        }
+                    }}
                 />
             ) : (
                 <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(name)} text-white font-black`}>

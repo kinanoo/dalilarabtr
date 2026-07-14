@@ -11,6 +11,7 @@ import UniversalComments from '@/components/community/UniversalComments';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { categorySlugForName } from '@/lib/serviceCategories';
+import { getSupabaseImageUrl } from '@/lib/supabaseImage';
 
 export const revalidate = 60;
 
@@ -88,6 +89,9 @@ export default async function ServiceDetailsPage(
     // Real row id for entity refs (ratings/comments); slug (if any) for URLs.
     const realId: string = provider.id;
     const canonicalId: string = provider.slug || provider.id;
+    const providerImageUrl = provider.image
+        ? getSupabaseImageUrl(provider.image, { width: 384, height: 384, quality: 78 })
+        : null;
 
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
     // Include this listing's link so the provider sees the client came from
@@ -191,8 +195,8 @@ export default async function ServiceDetailsPage(
                     <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
                         {/* Avatar */}
                         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl shrink-0 overflow-hidden relative flex items-center justify-center -mt-16 sm:-mt-20 z-30">
-                            {provider.image ? (
-                                <Image src={provider.image} alt={provider.name} fill className="object-cover" />
+                            {providerImageUrl ? (
+                                <Image src={providerImageUrl} alt={provider.name} fill className="object-cover" sizes="(min-width: 640px) 160px, 128px" />
                             ) : (
                                 <Briefcase size={48} className="text-slate-300" />
                             )}
@@ -297,7 +301,7 @@ export default async function ServiceDetailsPage(
                             >
                                 <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden relative flex items-center justify-center">
                                     {r.image ? (
-                                        <Image src={r.image} alt={r.name} fill className="object-cover" sizes="56px" />
+                                        <Image src={getSupabaseImageUrl(r.image, { width: 128, height: 128 })} alt={r.name} fill className="object-cover" sizes="56px" />
                                     ) : (
                                         <Briefcase size={22} className="text-slate-300" />
                                     )}

@@ -10,7 +10,6 @@ import CityFilter from '@/components/services/CityFilter';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
 import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
-import ServiceProviderPopup from '@/components/services/ServiceProviderPopup';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import logger from '@/lib/logger';
 
@@ -46,7 +45,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
   const PER_PAGE = 15;
 
   // --- Category Mapping for Legacy Support ---
-  const CATEGORY_MAPPING: Record<string, string[]> = {
+  const CATEGORY_MAPPING = useMemo<Record<string, string[]>>(() => ({
     'طبيب': ['طبيب', 'Health', 'health', 'doctor', 'Doctor', 'medical'],
     'محامي': ['محامي', 'Lawyer', 'lawyer', 'legal', 'Legal'],
     'مترجم': ['مترجم', 'Translation', 'translation', 'Translator', 'translator'],
@@ -59,7 +58,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
     'شحن': ['شحن', 'Cargo', 'cargo', 'shipping'],
     'سياحة': ['سياحة', 'Tourism', 'tourism', 'travel'],
     'خدمات عامة': ['خدمات عامة', 'General', 'general', 'other'],
-  };
+  }), []);
 
   // --- Fallback fetch (only when the server seed is empty) ---
   // Runs at most once. With a healthy seed this never touches the network.
@@ -106,7 +105,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
     const dbCategories = Array.from(new Set(rawData.map((d: any) => d.category).filter(Boolean))) as string[];
     const newCats = dbCategories.filter(c => !knownValues.has(c.toLowerCase()));
     return { availableCities: cities.sort(), cityCounts: counts, totalCount: rawData.length, extraCategories: newCats.sort() };
-  }, [rawData]);
+  }, [rawData, CATEGORY_MAPPING]);
 
   // The displayed list — category + search + city applied client-side over the
   // full seed (mirrors the old server query: category = exact `.in()` variants,
@@ -129,7 +128,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
       list = list.filter((d: any) => d.city === activeCity);
     }
     return list;
-  }, [rawData, activeCategory, searchQuery, activeCity]);
+  }, [rawData, activeCategory, searchQuery, activeCity, CATEGORY_MAPPING]);
 
   // /services builds its list client-side, so on a hard refresh the browser's
   // scroll restoration overshoots the (briefly short) page and jumps to the
@@ -498,9 +497,6 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
           </Link>
         </div>
       </section>
-
-      {/* Popup Notification */}
-      <ServiceProviderPopup />
 
       {/* Image Modal */}
       {previewImage && (

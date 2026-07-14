@@ -28,7 +28,6 @@ const tajawal = IBM_Plex_Sans_Arabic({
   preload: true,
 });
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
-import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import LatinDigits from "@/components/LatinDigits";
 import ChunkReloadGuard from "@/components/ChunkReloadGuard";
 import { SEO_KEYWORDS } from "@/lib/keywords";
@@ -43,9 +42,6 @@ const LazyGroup = dynamic(() => import("@/components/ui/LazyGroup"));
 
 // All non-critical components in one deferred bundle (loaded after idle)
 const DeferredExtras = dynamic(() => import("@/components/DeferredExtras"));
-
-// Web Vitals — reports LCP, FID, CLS, FCP, TTFB, INP to Google Analytics
-const WebVitals = dynamic(() => import('@/components/WebVitals').then(m => ({ default: m.WebVitals })));
 
 // ============================================
 // 🔧 إعدادات الموقع - غيّر هذه القيم حسب موقعك
@@ -147,9 +143,6 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  // Google Analytics ID from environment variable
-  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning className={`${cairo.variable} ${tajawal.variable}`}>
       <head>
@@ -221,12 +214,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://api.aladhan.com" />
         <link rel="dns-prefetch" href="https://api.aladhan.com" />
 
-        {/* Google Analytics */}
-        {GA_ID && <GoogleAnalytics />}
       </head>
       <body suppressHydrationWarning className={`font-cairo bg-surface-light dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
-        {/* Web Vitals — reports LCP, CLS, INP to Google Analytics */}
-        {GA_ID && <WebVitals />}
         {/* Structured Data — in body to prevent Next.js head duplication */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />

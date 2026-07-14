@@ -20,14 +20,18 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.7): 
 
     return new Promise((resolve) => {
         const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
         img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
             const canvas = document.createElement('canvas');
             let { width, height } = img;
 
-            // Scale down only when wider than maxWidth — never upscale.
-            if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
+            // Cap the longest edge so portrait photos are reduced as well.
+            const longestEdge = Math.max(width, height);
+            if (longestEdge > maxWidth) {
+                const ratio = maxWidth / longestEdge;
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
             }
 
             canvas.width = width;
@@ -49,7 +53,10 @@ export async function compressImage(file: File, maxWidth = 800, quality = 0.7): 
                 quality,
             );
         };
-        img.onerror = () => resolve(file);
-        img.src = URL.createObjectURL(file);
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(file);
+        };
+        img.src = objectUrl;
     });
 }

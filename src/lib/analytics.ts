@@ -1,3 +1,5 @@
+import { hasAnalyticsConsent } from '@/lib/consent';
+
 // ============================================
 // 📊 Google Analytics Helper Functions
 // ============================================
@@ -22,7 +24,7 @@ export const trackEvent = (
     label?: string,
     value?: number
 ) => {
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (hasAnalyticsConsent() && window.gtag) {
         window.gtag('event', action, {
             event_category: category,
             event_label: label,
@@ -55,6 +57,7 @@ export const trackWhatsAppMessageSent = (messageType: string) => {
 // This is a distinct, higher-intent signal than a raw page view. Fire-and-forget:
 // never let a tracking failure affect the tool itself.
 export const trackToolUse = (toolId: string) => {
+    if (!hasAnalyticsConsent()) return;
     trackEvent('tool_use', 'tools', toolId);
     if (typeof window === 'undefined') return;
     try {
@@ -151,7 +154,7 @@ export const trackNotificationDismiss = () => {
 // ============================================
 
 export const trackConversion = (conversionType: string, value?: number) => {
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (hasAnalyticsConsent() && window.gtag) {
         window.gtag('event', 'conversion', {
             send_to: conversionType,
             value: value,
@@ -164,7 +167,7 @@ export const trackConversion = (conversionType: string, value?: number) => {
 // ============================================
 
 export const setUserProperty = (propertyName: string, value: string) => {
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (hasAnalyticsConsent() && window.gtag) {
         window.gtag('set', 'user_properties', {
             [propertyName]: value,
         });
@@ -176,7 +179,7 @@ export const setUserProperty = (propertyName: string, value: string) => {
 // ============================================
 
 export const trackPageView = (url: string) => {
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (hasAnalyticsConsent() && window.gtag) {
         window.gtag('event', 'page_view', {
             page_path: url,
         });
