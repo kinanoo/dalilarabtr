@@ -36,7 +36,6 @@ import ProseContrastGuard from "@/components/article/ProseContrastGuard";
 import { SEO_KEYWORDS } from "@/lib/keywords";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import SiteBackdrop from "@/components/SiteBackdrop";
 import ScrollRestoration from "@/components/ScrollRestoration";
 import TapFeedbackPulse from "@/components/TapFeedbackPulse";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
@@ -256,8 +255,11 @@ export default function RootLayout({
         <ThemeProviderWrapper>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
-            {/* Faint Istanbul photo behind everything (z-0); content is z-10. */}
-            <SiteBackdrop />
+            {/* Faint Istanbul photo behind everything (z-0, fixed) now mounts
+                from DeferredExtras: it imports the full supabase-js client for
+                its DB config, and importing it statically here put ~63KB gz of
+                supabase into the critical path of EVERY page. Its z-0/fixed
+                positioning is unaffected by DOM order within this container. */}
             <div className="relative z-10">
               <Navbar />
               <div id="main-content">
