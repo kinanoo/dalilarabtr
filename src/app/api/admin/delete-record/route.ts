@@ -17,6 +17,15 @@ const ALLOWED_TABLES = [
     'banners',
     'comments',
     'service_reviews',
+    // Managers migrated off direct client-side deletes (anon key + RLS):
+    'updates',
+    'news_ticker',
+    'official_sources',
+    'home_cards',
+    'content_suggestions',
+    'site_testimonials',
+    'site_menus',
+    'questions',
 ];
 
 export async function POST(request: NextRequest) {
