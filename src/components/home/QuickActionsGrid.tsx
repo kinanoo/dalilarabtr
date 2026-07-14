@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Sparkles, BrainCircuit, FolderOpen, UserCheck, ShieldAlert, MapPin, Calculator, FileText, HeartPulse, Link as LinkIcon, Plane, Smartphone } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
 import { QUICK_ACTIONS } from '@/lib/constants';
 
 const ICONS: Record<string, any> = {
@@ -47,8 +46,11 @@ export default function QuickActionsGrid() {
     useEffect(() => {
         async function fetchActions() {
             // NOTE: Disabled because 'home_cards' table doesn't exist yet, causing 404 errors.
-            // Re-enable this when the table is created. e.g:
+            // Re-enable this when the table is created (import getSupabase from
+            // '@/lib/supabaseLazy' — NOT the static client — to keep supabase-js
+            // out of the homepage first load). e.g:
             /*
+            const supabase = await getSupabase();
             if (!supabase) return;
             const { data } = await supabase
                 .from('home_cards')

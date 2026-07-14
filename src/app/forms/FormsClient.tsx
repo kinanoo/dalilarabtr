@@ -3,7 +3,7 @@
 import PageHero from '@/components/PageHero';
 import { useAdminForms } from '@/lib/useAdminData';
 import { FileText, Download, Shield, ExternalLink } from 'lucide-react';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import type { AdminForm } from '@/lib/types';
 
 

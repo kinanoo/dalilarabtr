@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';

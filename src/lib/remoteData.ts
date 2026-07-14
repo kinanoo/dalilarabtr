@@ -1,6 +1,9 @@
 import { SITE_CONFIG } from '@/lib/config';
 import { SERVICES_LIST } from '@/lib/constants';
-import { supabase } from '@/lib/supabaseClient';
+// Lazy supabase: the Navbar calls fetchRemoteUpdatesVersion() on every page,
+// so a static supabaseClient import here was site-wide first-load weight.
+// Each fetcher awaits the client instead; all call sites are already async.
+import { getSupabase } from '@/lib/supabaseLazy';
 import { Briefcase } from 'lucide-react';
 import type { Article } from '@/lib/types';
 
@@ -148,6 +151,7 @@ function readDemoArticles(): RemoteArticleRow[] {
 }
 
 export async function fetchRemoteArticles(): Promise<Array<{ id: string; article: Article }> | null> {
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!isDemoMode()) return null;
     const rows = readDemoArticles().filter((a) => a.active !== false);
@@ -182,6 +186,7 @@ export async function fetchRemoteUpdates(): Promise<RuntimeUpdate[] | null> {
   if (updatesPromise) return updatesPromise;
 
   updatesPromise = (async () => {
+    const supabase = await getSupabase();
     if (!supabase) return isDemoMode() ? readDemoUpdates().filter((u) => u.active !== false) : null;
     const { data, error } = await supabase
       .from('updates')
@@ -211,6 +216,7 @@ export async function fetchRemoteArticleById(id: string): Promise<RemoteArticleR
   const safeId = (id || '').trim();
   if (!safeId) return null;
 
+  const supabase = await getSupabase();
   if (!supabase) {
     if (!isDemoMode()) return null;
     const found = readDemoArticles().find((a) => a.id === safeId && a.active !== false);
@@ -276,6 +282,7 @@ function readDemoDefaultWhatsApp(): string | null {
 }
 
 export async function fetchRemoteServices(): Promise<RemoteServiceRow[] | null> {
+  const supabase = await getSupabase();
   if (!supabase) return isDemoMode() ? readDemoServices() : null;
   const { data, error } = await supabase
     .from('services')
@@ -287,6 +294,7 @@ export async function fetchRemoteServices(): Promise<RemoteServiceRow[] | null> 
 }
 
 export async function fetchDefaultWhatsApp(): Promise<string | null> {
+  const supabase = await getSupabase();
   if (!supabase) return isDemoMode() ? readDemoDefaultWhatsApp() : null;
   const { data, error } = await supabase
     .from('site_settings')

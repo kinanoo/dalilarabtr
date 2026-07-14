@@ -1,5 +1,8 @@
 import useSWR from 'swr';
-import { supabase } from '@/lib/supabaseClient';
+// Lazy supabase: useResource backs the useAdmin* hooks used by big public
+// client pages (/codes, /consultant, /directory, /forms, /sources). A static
+// supabaseClient import here put supabase-js in each page's first-load JS.
+import { getSupabase } from '@/lib/supabaseLazy';
 import logger from '@/lib/logger';
 
 /**
@@ -22,7 +25,9 @@ export function useResource<T extends { id: string; active?: boolean }>(
     fallbackData?: any[]
 ) {
     const fetcher = async () => {
-        if (!tableName || !supabase) return [];
+        if (!tableName) return [];
+        const supabase = await getSupabase();
+        if (!supabase) return [];
 
         try {
             const controller = new AbortController();

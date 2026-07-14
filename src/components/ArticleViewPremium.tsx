@@ -13,7 +13,7 @@ import InlineRelatedArticles from './InlineRelatedArticles';
 
 import { deobfuscate, isObfuscated } from '@/lib/security';
 import DOMPurify from '@/lib/sanitize';
-import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/useAdminData';
+import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/articleMeta';
 import ArticleTOC from './article/ArticleTOC';
 import ReadingProgressBar from './article/ReadingProgressBar';
 import ArticleHeroImage from './article/ArticleHeroImage';

@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { fetchUserBadgeStats, getPrimaryBadge, type Badge } from '@/lib/api/badges';
 import logger from '@/lib/logger';
 
-interface UniversalCommentsProps {
+export interface UniversalCommentsProps {
     entityType: 'article' | 'service' | 'update' | 'scenario' | 'zone';
     entityId: string;
     title?: string;

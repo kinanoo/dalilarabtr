@@ -19,7 +19,9 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+// Lazy supabase — the ticker renders on the homepage first load; a static
+// supabaseClient import here kept supabase-js in the home first-load JS.
+import { getSupabase } from '@/lib/supabaseLazy';
 
 interface Rate { value: number; change: number }
 type RatesResp = { ok?: boolean; rates?: Record<string, Rate | null> };
@@ -72,6 +74,8 @@ export default function NewsTicker() {
         async function load() {
             const rateEntries: Entry[] = [];
             const newsEntries: Entry[] = [];
+
+            const supabase = await getSupabase();
 
             // Admin on/off switch (site_settings.ticker_enabled). Defaults to
             // shown when the column is missing (pre-migration) or the read fails.

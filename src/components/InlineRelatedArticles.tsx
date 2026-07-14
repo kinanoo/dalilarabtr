@@ -3,14 +3,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseLazy';
 
 export default function InlineRelatedArticles({ currentArticleId, category }: { currentArticleId: string; category: string }) {
     const [articles, setArticles] = useState<any[]>([]);
 
     useEffect(() => {
         async function fetch() {
-            if (!supabase || !category) return;
+            if (!category) return;
+            // Lazy client — keeps supabase-js out of the article first load.
+            const supabase = await getSupabase();
+            if (!supabase) return;
             const { data } = await supabase
                 .from('articles')
                 .select('id, slug, title, intro')

@@ -1,4 +1,6 @@
-import { supabase } from '../supabaseClient';
+// Lazy supabase: NotificationBell (→ this module) renders in the Navbar on
+// every page; a static supabaseClient import here was site-wide weight.
+import { getSupabase } from '@/lib/supabaseLazy';
 import logger from '@/lib/logger';
 
 // ============================================
@@ -60,6 +62,7 @@ export function markGlobalAsSeenUpTo(createdAt: string): void {
 
 /** Mark all personal notifications as read in DB */
 export async function markPersonalAsRead(userId: string): Promise<void> {
+    const supabase = await getSupabase();
     if (!supabase) return;
     await supabase
         .from('notifications')
@@ -70,6 +73,7 @@ export async function markPersonalAsRead(userId: string): Promise<void> {
 
 /** Mark a single personal notification as read in DB */
 export async function markOneAsRead(notificationId: string): Promise<void> {
+    const supabase = await getSupabase();
     if (!supabase) return;
     await supabase
         .from('notifications')
@@ -86,6 +90,7 @@ export async function fetchAllNotifications(
     limit = 30,
     userId?: string | null,
 ): Promise<Notification[]> {
+    const supabase = await getSupabase();
     if (!supabase) return [];
 
     const lastSeen = getLastSeen();

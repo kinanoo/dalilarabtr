@@ -8,7 +8,7 @@ import ToolSchema from '@/components/ToolSchema';
 import ShareMenu from '@/components/ShareMenu';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import CodesLangToggle from '@/components/codes/CodesLangToggle';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import RelatedArticles from '@/components/RelatedArticles';
 import CodesLegalNote from '@/components/codes/CodesLegalNote';

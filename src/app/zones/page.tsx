@@ -3,7 +3,7 @@ import ToolSchema from '@/components/ToolSchema';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import RelatedArticles from '@/components/RelatedArticles';
 import ToolFooter from '@/components/tools/ToolFooter';
 import logger from '@/lib/logger';

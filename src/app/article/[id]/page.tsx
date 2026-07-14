@@ -9,7 +9,7 @@ import ArticleHydratedView from '@/components/ArticleHydratedView';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import RelatedArticles from '@/components/RelatedArticles';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import { stripHtml } from '@/lib/stripHtml';

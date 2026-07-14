@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, ArrowRight, Bell, Megaphone, AlertTriangle, Info } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseLazy';
 import { usePathname } from 'next/navigation';
 
 // Which storage remembers a dismissal.
@@ -31,6 +31,9 @@ export default function UrgencyBanner() {
 
     useEffect(() => {
         async function fetchBanner() {
+            // Lazy client — this banner mounts inside the fixed header on
+            // every page; a static supabase import here was first-load weight.
+            const supabase = await getSupabase();
             if (!supabase) return;
 
             const { data } = await supabase

@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
+// Lazy supabase — keeps supabase-js out of the /zones first-load JS.
+import { getSupabase } from '@/lib/supabaseLazy';
 
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
@@ -102,6 +103,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
       setLoading(true);
       setLoadError(null);
       try {
+        const supabase = await getSupabase();
         if (!supabase) throw new Error('Supabase client not initialized');
 
         let allRows: any[] = [];

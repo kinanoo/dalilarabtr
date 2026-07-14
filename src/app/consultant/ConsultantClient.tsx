@@ -13,7 +13,7 @@ import ToolSchema from '@/components/ToolSchema';
 import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import BookmarkButton from '@/components/BookmarkButton';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 
 
 import { useAdminScenarios } from '@/lib/useAdminData';
@@ -22,7 +22,10 @@ import { isAllowedOfficialUrl } from '@/lib/externalLinks';
 import { SITE_CONFIG } from '@/lib/config';
 
 import type { Article, PlanResult } from '@/lib/types';
-import { supabase, withTimeout } from '@/lib/supabaseClient';
+// Lazy supabase — keeps supabase-js out of the /consultant first-load JS.
+// withTimeout comes from its own module for the same reason.
+import { getSupabase } from '@/lib/supabaseLazy';
+import { withTimeout } from '@/lib/withTimeout';
 import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios';
 
 type Props = {
@@ -198,6 +201,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
       // when available, replaces it without making the page depend on Supabase.
       let nextResult: PlanResult | null = bundledResult;
 
+      const supabase = await getSupabase();
       if (supabase) {
         const response = await withTimeout(
           supabase

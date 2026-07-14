@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle, ExternalLink } from 'lucide-react';
-import UniversalComments from '@/components/community/UniversalComments';
+import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';

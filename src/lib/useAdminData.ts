@@ -400,7 +400,9 @@ export function useAdminTools() {
 
 // useSWR supports dynamic keys: key = slug ? ['article', slug] : null
 import useSWR from 'swr';
-import { supabase } from '@/lib/supabaseClient';
+// Lazy supabase — this module is imported by public client pages (/codes,
+// /consultant, /category, ...); a static import here was first-load weight.
+import { getSupabase } from '@/lib/supabaseLazy';
 
 export function useAdminArticle(slug: string) {
   const fetcher = async () => {
@@ -413,6 +415,7 @@ export function useAdminArticle(slug: string) {
     //   foundArticle = ARTICLES[normalizedSlug];
     // }
     // 2. DB
+    const supabase = await getSupabase();
     if (supabase) {
       const { data } = await supabase.from('articles').select('*').eq('id', normalizedSlug).single();
       if (data) {
@@ -472,23 +475,10 @@ export function isNewContent(dateStr: string): boolean {
   return diffDays <= 7;
 }
 
-export function isRecentlyUpdated(dateStr: string, days = 30): boolean {
-  if (!dateStr) return false;
-  const diff = (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24);
-  return diff >= 0 && diff <= days;
-}
-
-export function estimateReadingTime(article: { intro?: string; details?: string; steps?: string[]; tips?: string[] }): number {
-  const text = [article.intro, article.details, ...(article.steps || []), ...(article.tips || [])].filter(Boolean).join(' ');
-  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(wordCount / 200));
-}
-
-export function formatViewCount(views: number): string {
-  if (views >= 1000000) return `${(views / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
-  if (views >= 1000) return `${(views / 1000).toFixed(1).replace(/\.0$/, '')}K`;
-  return String(views);
-}
+// Moved to '@/lib/articleMeta' (zero-import module) so article display
+// components don't pull this whole file into their chunk. Re-exported here
+// for backward compatibility with existing importers.
+export { isRecentlyUpdated, estimateReadingTime, formatViewCount } from '@/lib/articleMeta';
 
 export function formatDate(dateStr: string): string {
   if (!dateStr) return '';

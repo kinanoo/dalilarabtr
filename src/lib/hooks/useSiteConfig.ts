@@ -1,7 +1,10 @@
 import useSWR from 'swr';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseLazy';
 
 async function fetchSiteConfig() {
+  // Lazy client: this hook renders in Navbar + Footer (every page), so a
+  // static supabaseClient import here would sit in every first load.
+  const supabase = await getSupabase();
   if (!supabase) return { footerMenus: { section1: [], section2: [] }, tools: [] };
 
   const [menusRes, toolsRes] = await Promise.all([

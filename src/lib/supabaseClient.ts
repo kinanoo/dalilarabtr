@@ -1,6 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
-import logger from '@/lib/logger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -79,16 +78,7 @@ export function getAnonClient(): SupabaseClient | null {
   return window[ANON_KEY];
 }
 
-/**
- * Race a promise against a timeout. Returns fallback value on timeout.
- * Use for server-side Supabase queries to prevent pages from hanging.
- */
-export function withTimeout<T>(promise: PromiseLike<T> | Promise<T>, ms = 8000): Promise<T | null> {
-  return Promise.race([
-    Promise.resolve(promise),
-    new Promise<null>(resolve => setTimeout(() => {
-      logger.warn(`Supabase query timed out after ${ms}ms`);
-      return resolve(null);
-    }, ms)),
-  ]);
-}
+// Moved to '@/lib/withTimeout' so client components can use it WITHOUT
+// statically importing this module (= all of supabase-js). Re-exported here
+// for backward compatibility with existing (mostly server-side) importers.
+export { withTimeout } from '@/lib/withTimeout';

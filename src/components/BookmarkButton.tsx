@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Star, LogIn, X, Bookmark } from 'lucide-react';
 import { useBookmarks } from '@/hooks/useBookmarks';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseLazy';
 import Link from 'next/link';
 
 interface BookmarkButtonProps {
@@ -21,9 +21,12 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
     const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
-        if (!supabase) return;
-        supabase.auth.getSession().then(({ data }) => {
-            setIsGuest(!data.session?.user);
+        // Lazy client — keeps supabase-js out of the article page's first load.
+        getSupabase().then((supabase) => {
+            if (!supabase) return;
+            supabase.auth.getSession().then(({ data }) => {
+                setIsGuest(!data.session?.user);
+            });
         });
     }, []);
 

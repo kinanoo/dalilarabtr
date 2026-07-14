@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { AuthUser } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseLazy';
 
 // Module-level shared auth state — single getUser() call + single onAuthStateChange
 let sharedUser: AuthUser | null | undefined = undefined; // undefined=loading, null=no user
@@ -10,20 +10,27 @@ let initialized = false;
 const subscribers = new Set<(user: AuthUser | null) => void>();
 
 function initAuth() {
-    if (initialized || !supabase) {
-        if (!supabase) sharedUser = null;
-        return;
-    }
+    if (initialized) return;
     initialized = true;
 
-    supabase.auth.getSession().then(({ data }) => {
-        sharedUser = data.session?.user ?? null;
-        subscribers.forEach(cb => cb(sharedUser!));
-    });
+    // Lazy import keeps supabase-js out of the first-load JS: useAuth is in
+    // the Navbar (= every page), so a static import here was site-wide weight.
+    getSupabase().then((supabase) => {
+        if (!supabase) {
+            sharedUser = null;
+            subscribers.forEach(cb => cb(null));
+            return;
+        }
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-        sharedUser = session?.user ?? null;
-        subscribers.forEach(cb => cb(sharedUser!));
+        supabase.auth.getSession().then(({ data }) => {
+            sharedUser = data.session?.user ?? null;
+            subscribers.forEach(cb => cb(sharedUser!));
+        });
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            sharedUser = session?.user ?? null;
+            subscribers.forEach(cb => cb(sharedUser!));
+        });
     });
 }
 
