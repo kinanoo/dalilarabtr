@@ -1,7 +1,24 @@
 # Deploying dalilarabtr.com to Cloudflare Workers
 
+> ## ✅ تمّ النقل — الموقع حيّ على Cloudflare Workers
+>
+> **الحالة (يوليو 2026):** `dalilarabtr.com` منشور ويعمل على **Cloudflare
+> Workers** منذ حوالي يونيو 2026. لم يعد على Vercel. الخطوات أدناه **مرجع
+> تاريخي** لعملية النقل الأصلية — وليست مهمّة معلّقة عليك تنفيذها.
+>
+> **ملاحظة عن التكلفة:** حجم حزمة الـ Worker (~3.9MB) يتجاوز سقف الخطة
+> المجانية (3MB مضغوطة)، لذا **الأرجح** أن المشروع على خطة **Workers Paid
+> (~5$/شهر، سقف 10MB)**، لا على الخطة المجانية. هذا استنتاج من حجم الحزمة —
+> راجِع فاتورة Cloudflare الفعلية للتأكيد. (النص القديم أدناه يقول "مجاني بدون
+> بطاقة" — تجاهله، فهو غير دقيق لهذا الإعداد.)
+
 Step-by-step guide for the Vercel → Cloudflare migration cutover. Written
 for the project owner; assumes no prior Cloudflare experience.
+
+**Historical note:** this file was written *before* the cutover to describe
+the plan. The migration has since been completed — the site runs on
+Cloudflare Workers. Kept for reference and for the troubleshooting section
+at the bottom, which still applies to the live Worker.
 
 ---
 
