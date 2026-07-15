@@ -105,62 +105,43 @@ export async function fetchComments(entityType: string, entityId: string) {
 export async function postComment(payload: {
     entity_type: string;
     entity_id: string;
-    author_name: string;
+    author_name: string; // ignored server-side — identity comes from the session
     content: string;
-    email?: string;
     is_correction?: boolean;
     parent_id?: string;
-    user_id?: string;
+    user_id?: string; // ignored server-side — identity comes from the session
 }) {
-    if (!supabase) return { data: null, error: 'Supabase not initialized' };
-
-    // Block reserved admin-like names (only for anonymous / non-logged-in users)
-    if (!payload.user_id && isReservedName(payload.author_name)) {
-        return { data: null, error: { message: 'هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.' } };
-    }
-
-    // Basic content moderation gate: reject obvious profanity before queuing.
-    if (containsProfanity(payload.content) || containsProfanity(payload.author_name)) {
+    // Quick client-side profanity gate for instant feedback (the server
+    // re-checks — never trust the client).
+    if (containsProfanity(payload.content)) {
         return { data: null, error: { message: 'يحتوي النص على كلمات غير لائقة. يرجى تعديل التعليق.' } };
     }
 
-    // Destructure user_id out so it's not spread into insert when absent
-    const { user_id, ...rest } = payload;
-    // Normalize entity_id: always decode so IDs are stored consistently
-    const normalizedId = decodeURIComponent(rest.entity_id);
-    const insertObj: Record<string, string | boolean | undefined> = {
-        ...rest,
-        entity_id: normalizedId,
-        page_slug: normalizedId, // backward compat
-        // Enter the moderation queue. Public reads (fetchComments) only return
-        // status='approved' OR is_official, so new posts stay hidden until an
-        // admin approves them in /admin/community.
-        status: 'pending',
-    };
-    // Only include user_id if provided (column may not exist yet)
-    if (user_id) {
-        insertObj.user_id = user_id;
+    // Comments are written through the server: the comments table RLS rejects
+    // direct browser inserts (members used to get a raw red RLS error toast).
+    // The route verifies the cookie session, derives the author name from the
+    // member profile, and queues the comment as 'pending' for moderation.
+    try {
+        const res = await fetch('/api/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                entity_type: payload.entity_type,
+                entity_id: payload.entity_id,
+                content: payload.content,
+                parent_id: payload.parent_id,
+                is_correction: payload.is_correction === true,
+            }),
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({} as { error?: string }));
+            return { data: null, error: { message: data.error || 'فشل إرسال التعليق' } };
+        }
+        return { data: true, error: null };
+    } catch (err) {
+        logger.error('postComment failed:', err);
+        return { data: null, error: { message: 'تعذّر الاتصال — تحقق من الشبكة وأعد المحاولة' } };
     }
-
-    const { data, error } = await supabase
-        .from('comments')
-        .insert([insertObj])
-        .select()
-        .single();
-
-    // If insert failed and we included user_id, retry without it
-    // (user_id column may not exist yet if migration hasn't been run)
-    if (error && user_id) {
-        delete insertObj.user_id;
-        const { data: retryData, error: retryError } = await supabase
-            .from('comments')
-            .insert([insertObj])
-            .select()
-            .single();
-        return { data: retryData, error: retryError };
-    }
-
-    return { data, error };
 }
 
 export async function updateComment(
