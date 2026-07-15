@@ -233,7 +233,15 @@ function buildJsonLd(args: {
       },
     },
     articleSection: args.categoryName,
-    ...(args.articleBody && { articleBody: args.articleBody }),
+    // articleBody is deliberately NOT emitted. It duplicated the ENTIRE article
+    // (intro + details + steps + tips) into an inline <script> — measured: the
+    // body appeared 4x in the HTML and inline scripts were 47% of the page, and
+    // parsing that blob on the main thread pushed the LCP element (the article
+    // text itself) to a 2.7s render delay on throttled mobile.
+    // It buys nothing: articleBody is not required or recommended by Google for
+    // Article rich results (headline/image/datePublished/dateModified/author
+    // are), and Google reads the real body from the DOM anyway. wordCount is
+    // still derived from it server-side below.
     ...(wordCount > 0 && { wordCount }),
     ...(args.keywords && args.keywords.length > 0 && { keywords: args.keywords.join(', ') }),
     // ImageObject (not a bare URL) is Google's preferred shape for Article
