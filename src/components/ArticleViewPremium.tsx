@@ -12,7 +12,6 @@ import Breadcrumbs from './Breadcrumbs';
 import InlineRelatedArticles from './InlineRelatedArticles';
 
 import { deobfuscate, isObfuscated } from '@/lib/security';
-import DOMPurify from '@/lib/sanitize';
 import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/articleMeta';
 import ArticleTOC from './article/ArticleTOC';
 import ReadingProgressBar from './article/ReadingProgressBar';
@@ -48,15 +47,22 @@ export default function ArticleView({ article, slug, initialComments, children }
   }, [slug]);
 
 
-  // 🛡️ فك تشفير المحتوى المحمي
-  const safeDetails = useMemo(() => {
-    const raw = isObfuscated(article.details) ? deobfuscate(article.details) : article.details;
-    return DOMPurify.sanitize(raw);
-  }, [article.details]);
-  const safeIntro = useMemo(() => {
-    const raw = isObfuscated(article.intro) ? deobfuscate(article.intro) : article.intro;
-    return DOMPurify.sanitize(raw);
-  }, [article.intro]);
+  // 🛡️ المحتوى يصل من الخادم مفكوك التشفير ومعقَّماً — انظر prepareHtml في
+  // app/article/[id]/page.tsx.
+  //
+  // Keeping the sanitizer OUT of this client component is what drops
+  // sanitize-html (+ htmlparser2 / entities, ~93KB gz) from the article page's
+  // first-load JS. It used to run on every visitor's device to clean HTML that
+  // only ever comes from our own DB — pure waste on the critical path, and it
+  // ran identically during SSR anyway.
+  //
+  // ⚠️ Order matters and is enforced server-side: deobfuscate THEN sanitize.
+  // Sanitizing an obfuscated blob would pass junk through, and decoding after
+  // that would yield raw, unsanitized HTML.
+  // ⚠️ Only render this component with data from that server page; any new
+  // caller MUST sanitize `details`/`intro` before passing them in.
+  const safeDetails = article.details || '';
+  const safeIntro = article.intro || '';
 
   // All article images (hero + the ones embedded in the body), deduped, WITH
   // their captions (figcaption, falling back to alt) — review found the first

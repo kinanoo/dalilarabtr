@@ -13,10 +13,32 @@ import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import RelatedArticles from '@/components/RelatedArticles';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import { stripHtml } from '@/lib/stripHtml';
+import { sanitizeHtmlContent } from '@/lib/sanitize';
+import { deobfuscate, isObfuscated } from '@/lib/security';
 
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 export const dynamicParams = true;
+
+/**
+ * prepareHtml — decode + sanitize an article body field ON THE SERVER.
+ *
+ * ORDER IS A SECURITY REQUIREMENT: deobfuscate FIRST, then sanitize. Some
+ * bodies are stored obfuscated; sanitizing the encoded blob would pass junk
+ * through the whitelist untouched, and decoding it afterwards would hand raw,
+ * unsanitized HTML to dangerouslySetInnerHTML.
+ *
+ * This pair used to run inside ArticleViewPremium (a client component), which
+ * shipped sanitize-html + htmlparser2 + entities (~93KB gzip) to every reader
+ * just to clean HTML authored in our own admin — and it ran identically during
+ * SSR anyway. Sanitizing once here (per ISR render, not per visitor) keeps the
+ * exact same guarantee and takes the library off the article critical path.
+ */
+function prepareHtml(raw?: string | null): string {
+  if (!raw) return '';
+  const decoded = isObfuscated(raw) ? deobfuscate(raw) : raw;
+  return sanitizeHtmlContent(decoded);
+}
 
 // Helper to fetch article (DB -> Static Fallback)
 async function fetchArticleData(slug: string) {
@@ -52,8 +74,9 @@ async function fetchArticleData(slug: string) {
         seoDescription: data.seo_description || '',
         seoKeywords: data.seo_keywords || [],
         category: data.category,
-        intro: data.intro || '',
-        details: data.details || '',
+        // Decoded + sanitized here so the client never needs the sanitizer.
+        intro: prepareHtml(data.intro),
+        details: prepareHtml(data.details),
         steps: data.steps || [],
         tips: data.tips || [],
         documents: data.documents || [],
