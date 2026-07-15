@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, ThumbsUp, Reply, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
-import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, isReservedName, type Comment } from '@/lib/api/comments';
+import Link from 'next/link';
+import { MessageSquare, AlertTriangle, Send, CheckCircle2, Lock, LogIn, UserPlus, ThumbsUp, Reply, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
+import { fetchComments, postComment, toggleCommentLike, updateComment, deleteComment, type Comment } from '@/lib/api/comments';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchUserBadgeStats, getPrimaryBadge, type Badge } from '@/lib/api/badges';
@@ -305,8 +306,18 @@ function CommentItem({
                 </div>
             </div>
 
-            {/* Inline Reply Form */}
-            {isReplyActive && depth === 0 && (
+            {/* Inline Reply Form — members only; guests get a login invite */}
+            {isReplyActive && depth === 0 && !currentUserId && (
+                <div className="mt-2 mr-6 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <Lock size={12} /> الرد على التعليقات للأعضاء فقط
+                    </p>
+                    <Link href="/login" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
+                        <LogIn size={12} /> تسجيل الدخول
+                    </Link>
+                </div>
+            )}
+            {isReplyActive && depth === 0 && currentUserId && (
                 <form
                     onSubmit={handleReplySubmit}
                     className="mt-2 mr-6 flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700"
@@ -458,6 +469,12 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     };
 
     const handleSubmitReply = async (parentId: string, replyContent: string) => {
+        // Members only — the DB rejects anonymous inserts anyway; this guard
+        // keeps that from ever surfacing as a raw error toast.
+        if (!currentUserId) {
+            toast.error('سجّل دخولك أولاً لتتمكن من الرد.');
+            return;
+        }
         setSubmittingReply(true);
         const { error } = await postComment({
             entity_type: entityType,
@@ -486,8 +503,10 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
         e.preventDefault();
         if (!content.trim()) return;
 
-        if (!isLoggedIn && isReservedName(name)) {
-            toast.error('هذا الاسم محجوز للإدارة. يرجى اختيار اسم آخر.');
+        // Members only — mirrors the login-invite card that replaces the form
+        // for guests; kept as a guard in case of stale auth state.
+        if (!isLoggedIn) {
+            toast.error('سجّل دخولك أولاً لتتمكن من التعليق.');
             return;
         }
 
@@ -585,7 +604,36 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                 )}
             </div>
 
-            {/* Post Form */}
+            {/* Post Form — members only. Guests get a login invite instead of a
+                form: anonymous inserts are rejected by the DB and used to
+                surface as a raw red error toast on submit. */}
+            {!isLoggedIn ? (
+                <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 text-center">
+                    <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <MessageSquare size={22} className="text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <h4 className="font-bold text-slate-900 dark:text-white mb-1">التعليقات للأعضاء فقط</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+                        سجّل دخولك للمشاركة في النقاش — التسجيل مجاني ولا يستغرق دقيقة.
+                    </p>
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <Link
+                            href="/login"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 active:scale-95 text-sm shadow-lg shadow-emerald-600/20"
+                        >
+                            <LogIn size={16} />
+                            تسجيل الدخول
+                        </Link>
+                        <Link
+                            href="/join"
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 active:scale-95 text-sm hover:border-emerald-400"
+                        >
+                            <UserPlus size={16} />
+                            إنشاء حساب
+                        </Link>
+                    </div>
+                </div>
+            ) : (
             <form
                 onSubmit={handleSubmit}
                 className="bg-slate-50 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 focus-within:ring-2 focus-within:ring-emerald-500 transition-all"
@@ -600,18 +648,10 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
 
                 <div className="bg-white dark:bg-slate-900 p-3 rounded-b-xl border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
                     <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                        {isLoggedIn ? (
-                            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2 rounded-lg text-sm text-emerald-700 dark:text-emerald-300 font-bold flex-1">
-                                <Lock size={13} />
-                                {name}
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-300 font-medium flex-1">
-                                <Lock size={13} className="text-slate-400" />
-                                <span>{name}</span>
-                                <span className="text-[10px] text-slate-400 mr-auto">(هوية مجهولة ثابتة)</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2 rounded-lg text-sm text-emerald-700 dark:text-emerald-300 font-bold flex-1">
+                            <Lock size={13} />
+                            {name}
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -638,6 +678,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                     </div>
                 </div>
             </form>
+            )}
         </section>
     );
 }
