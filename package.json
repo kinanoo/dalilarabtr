@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@monaco-editor/react": "^4.7.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/typography": "^0.5.19",

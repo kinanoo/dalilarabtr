@@ -34,10 +34,19 @@ const cspGlobal = [
   `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
 ].join('; ');
 
-// Admin: WITH unsafe-eval (required by Monaco Editor in StaticPageEditor)
+// Admin: same strict script-src as the public site — 'unsafe-eval' in PROD is
+// gone. Its only stated reason was Monaco Editor in StaticPageEditor, and that
+// component was dead code (nothing imported it, it was in no built bundle);
+// both it and the @monaco-editor/react dependency are now deleted. No remaining
+// dependency evals: TipTap/ProseMirror, Leaflet, framer-motion, date-fns don't,
+// and our own src has no eval()/new Function(). unsafe-eval is a serious XSS
+// amplifier, so keeping it for a deleted component would be a hole for nothing.
+// DEV_EVAL still grants it under `next dev` for React Fast Refresh only.
+// If a future admin feature genuinely needs eval, prefer a nonce/hash over
+// re-opening unsafe-eval site-wide for /admin.
 const cspAdmin = [
   ...cspBase,
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
 ].join('; ');
 
 // Shared security headers (applied to all routes)
