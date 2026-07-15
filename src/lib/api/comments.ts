@@ -120,7 +120,7 @@ export async function postComment(payload: {
     // Comments are written through the server: the comments table RLS rejects
     // direct browser inserts (members used to get a raw red RLS error toast).
     // The route verifies the cookie session, derives the author name from the
-    // member profile, and queues the comment as 'pending' for moderation.
+    // member profile, and publishes immediately (social-media style).
     try {
         const res = await fetch('/api/comments', {
             method: 'POST',

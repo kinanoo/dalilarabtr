@@ -13,8 +13,10 @@ const COMMENT_ENTITY_TYPES = ['article', 'service', 'update', 'scenario', 'zone'
  * Creates a comment — members only. The comments table RLS rejects direct
  * browser inserts, so this is THE write path. The author identity (user_id +
  * display name) is derived server-side from the cookie session and the
- * member profile — the client cannot spoof a name. New comments enter the
- * moderation queue (status 'pending') exactly as before.
+ * member profile — the client cannot spoof a name. Comments publish
+ * IMMEDIATELY (social-media style, owner's choice 2026-07-16): the profanity
+ * filter is the only automatic gate, and the admin deletes abusive comments
+ * manually from /admin/community.
  */
 export async function POST(request: NextRequest) {
     const clientIp = getClientIp(request);
@@ -89,7 +91,7 @@ export async function POST(request: NextRequest) {
         content,
         parent_id: parentId,
         is_correction: body?.is_correction === true,
-        status: 'pending',
+        status: 'approved',
         user_id: user.id,
     });
     if (error) return NextResponse.json({ error: 'فشل إرسال التعليق' }, { status: 500 });

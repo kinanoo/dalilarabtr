@@ -485,12 +485,11 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             return;
         }
 
-        // New replies enter the moderation queue (status: 'pending') and stay
-        // hidden until an admin approves them, so we do NOT optimistically
-        // splice the reply into the visible tree. Notification handled by the
-        // DB trigger (notify_on_new_comment).
-        toast.success('تم إرسال ردك وسيظهر بعد مراجعته.');
+        // Replies publish immediately (social-media style) — reload the tree
+        // so the new reply shows up right away.
+        toast.success('تم نشر ردك.');
         setActiveReplyId(null);
+        loadComments();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -520,12 +519,13 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
             return;
         }
 
-        // Comment is queued for moderation (status: 'pending') and stays hidden
-        // until an admin approves it in /admin/community, so we do NOT
-        // optimistically prepend it to the visible list.
-        toast.success('تم إرسال تعليقك وسيظهر بعد مراجعته.');
+        // Comments publish immediately (social-media style) — reload the list
+        // so the new comment shows up right away. The admin removes abusive
+        // ones manually from /admin/community.
+        toast.success('تم نشر تعليقك.');
         setContent('');
         setIsCorrection(false);
+        loadComments();
     };
 
     const handleEditComment = async (commentId: string, newContent: string) => {
