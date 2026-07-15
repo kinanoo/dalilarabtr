@@ -2256,7 +2256,7 @@ export async function POST(request: NextRequest) {
           };
 
           let apiUrl: string;
-          let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
           if (isAnthropic) {
             apiUrl = 'https://api.anthropic.com/v1/messages';

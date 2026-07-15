@@ -67,7 +67,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     } catch { /* best-effort */ }
 
     const title = `${cat.labelAr} عرب في تركيا — ${cat.blurb} | دليل العرب`;
-    const description = `دليل ${cat.labelAr} العرب الموثوقين في تركيا: ${POPULAR_CITIES.slice(0, 4).join('، ')} وغيرها. ${count > 0 ? `${count} ` : ''}${cat.blurb} — تواصل مباشر عبر واتساب.`;
+    const description = `دليل ${cat.labelAr} العرب في تركيا: ${POPULAR_CITIES.slice(0, 4).join('، ')} وغيرها. ${count > 0 ? `${count} ` : ''}${cat.blurb} — تواصل مباشر عبر واتساب.`;
 
     return {
         title,
@@ -107,7 +107,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                 '@id': `${pageUrl}#directory`,
                 url: pageUrl,
                 name: `${cat.labelAr} عرب في تركيا`,
-                description: `دليل ${cat.labelAr} العرب الموثوقين في تركيا.`,
+                description: `دليل ${cat.labelAr} العرب في تركيا.`,
                 inLanguage: 'ar',
                 mainEntity: {
                     '@type': 'ItemList',
@@ -155,7 +155,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> عرب في تركيا
                     </h1>
                     <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                        {cat.blurb} موثوقون في {POPULAR_CITIES.slice(0, 4).join('، ')} وكل المدن. تواصل مباشر عبر واتساب أو اتصال.
+                        {cat.blurb} في {POPULAR_CITIES.slice(0, 4).join('، ')} وكل المدن. تواصل مباشر عبر واتساب أو اتصال.
                     </p>
                 </div>
             </section>

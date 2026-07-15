@@ -18,6 +18,7 @@
 
 import { Mail, BellRing, FileCheck2 } from 'lucide-react';
 import NewsletterForm from '@/components/NewsletterForm';
+import Link from 'next/link';
 
 interface Props {
     tone?: 'hero' | 'compact';
@@ -74,14 +75,17 @@ export default function NewsletterCard({ tone = 'compact', source = 'unknown' }:
                     </li>
                     <li className="flex items-center gap-1.5">
                         <Mail size={14} className="text-emerald-600 dark:text-emerald-400" />
-                        إلغاء الاشتراك بنقرة واحدة
+                        إلغاء سهل في أي وقت
                     </li>
                 </ul>
 
                 <NewsletterForm source={source} />
 
                 <p className={`${isHero ? 'mt-4' : 'mt-3'} text-[11px] text-slate-400 dark:text-slate-500`}>
-                    لن نشارك بريدك مع أي طرف ثالث. تحترم نشرتنا قانون حماية البيانات التركي KVKK رقم 6698.
+                    لن نشارك بريدك مع أي طرف ثالث. تحترم نشرتنا قانون حماية البيانات التركي KVKK رقم 6698.{' '}
+                    <Link href="/newsletter/unsubscribe" className="font-bold text-emerald-700 underline dark:text-emerald-400">
+                        إلغاء الاشتراك
+                    </Link>
                 </p>
             </div>
         </section>

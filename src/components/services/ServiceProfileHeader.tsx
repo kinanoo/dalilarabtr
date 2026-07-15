@@ -3,6 +3,7 @@
 import { CheckCircle2, MapPin, Share2, Star } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
 
 // === Type Definitions ===
 interface Service {
@@ -28,7 +29,7 @@ export default function ServiceProfileHeader({ service }: HeaderProps) {
             try {
                 await navigator.share({
                     title: service.name,
-                    text: `تحقق من بروفايل ${service.name} على دليل العرب في تركيا`,
+                    text: `اطّلع على ملف ${service.name} على دليل العرب في تركيا`,
                     url,
                 });
             } catch {
@@ -75,7 +76,13 @@ export default function ServiceProfileHeader({ service }: HeaderProps) {
                                 <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                                     {service.name}
                                     {service.is_verified && (
-                                        <CheckCircle2 className="text-blue-500 fill-blue-50" size={24} />
+                                        <span
+                                            className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-black text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                                            title={SERVICE_VERIFICATION_EXPLANATION}
+                                        >
+                                            <CheckCircle2 className="text-blue-500" size={16} aria-hidden="true" />
+                                            {SERVICE_VERIFICATION_LABEL}
+                                        </span>
                                     )}
                                 </h1>
                                 <p className="text-slate-500 dark:text-slate-400 font-medium text-lg mt-1">

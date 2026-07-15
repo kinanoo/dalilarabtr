@@ -41,10 +41,10 @@ function useCardsPerPage(): number {
 
 export default function HomeUpdates({ updates }: { updates: Update[] }) {
     const sectionRef = useScrollReveal<HTMLElement>();
-    if (!updates || updates.length === 0) return null;
+    const safeUpdates = updates || [];
 
     const cardsPerPage = useCardsPerPage();
-    const totalPages = Math.ceil(updates.length / cardsPerPage);
+    const totalPages = Math.max(1, Math.ceil(safeUpdates.length / cardsPerPage));
 
     const [currentPage, setCurrentPage] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
@@ -56,7 +56,7 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
     // actually READ what they navigated to.
     const [pausedUntil, setPausedUntil] = useState(0);
 
-    const newCount = updates.filter(u => isNewContent(u.sortDate || u.date)).length;
+    const newCount = safeUpdates.filter(u => isNewContent(u.sortDate || u.date)).length;
 
     useEffect(() => {
         if (currentPage >= totalPages) setCurrentPage(Math.max(0, totalPages - 1));
@@ -110,7 +110,8 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
             // reading direction = goNext. Same as LTR mathematically;
             // we keep this as-is because mobile swipe gestures match
             // the visual content direction (CSS handles direction).
-            diff < 0 ? goNext() : goPrev();
+            if (diff < 0) goNext();
+            else goPrev();
         }
     }, [goNext, goPrev]);
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -119,6 +120,8 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
         if (e.key === 'ArrowLeft') goNext();
         else if (e.key === 'ArrowRight') goPrev();
     }, [goNext, goPrev]);
+
+    if (safeUpdates.length === 0) return null;
 
     const cardWidthPercent = 100 / cardsPerPage;
     const gapPx = 12;
@@ -218,7 +221,7 @@ export default function HomeUpdates({ updates }: { updates: Update[] }) {
                             transform: `translateX(calc(${currentPage * 100}% + ${currentPage * gapPx}px))`,
                         }}
                     >
-                        {updates.map((update, index) => {
+                        {safeUpdates.map((update, index) => {
                             const pageOfCard = Math.floor(index / cardsPerPage);
                             const isActive = pageOfCard === currentPage;
                             return (

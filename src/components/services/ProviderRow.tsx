@@ -4,6 +4,7 @@ import { canonicalCity } from '@/lib/turkishCities';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 import type { ProviderCardData } from './ProviderCard';
+import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
 
 /**
  * ProviderRow — compact, scannable single-row layout for the "list" view of
@@ -20,8 +21,12 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
             <Link href={href} className="relative shrink-0" aria-label={p.name}>
                 <ProviderAvatar name={p.name} image={p.image} className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl" />
                 {p.is_verified && (
-                    <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm">
-                        <BadgeCheck size={14} className="text-blue-500" />
+                    <span
+                        className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm"
+                        title={SERVICE_VERIFICATION_EXPLANATION}
+                        aria-label={`${SERVICE_VERIFICATION_LABEL}: ${SERVICE_VERIFICATION_EXPLANATION}`}
+                    >
+                        <BadgeCheck size={14} className="text-blue-500" aria-hidden="true" />
                     </span>
                 )}
             </Link>

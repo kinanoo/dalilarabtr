@@ -1,23 +1,33 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTypescript from 'eslint-config-next/typescript';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-    ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default defineConfig([
+    ...nextVitals,
+    ...nextTypescript,
     {
         rules: {
-            "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-unused-vars": "warn",
-            "react/no-unescaped-entities": "off"
-        }
-    }
-];
-
-export default eslintConfig;
+            '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-unused-vars': 'warn',
+            'react/no-unescaped-entities': 'off',
+            // Next 16 enables the React Compiler advisory rules. The existing
+            // application predates those rules, so keep them visible without
+            // turning advisory refactors into release-blocking errors.
+            'react-hooks/set-state-in-effect': 'warn',
+            'react-hooks/immutability': 'warn',
+            'react-hooks/static-components': 'warn',
+            'react-hooks/purity': 'warn',
+            'react-hooks/refs': 'warn',
+        },
+    },
+    globalIgnores([
+        '.next/**',
+        '.open-next/**',
+        'open-next/**',
+        'out/**',
+        'build/**',
+        'scripts/**',
+        'tools/**',
+        'next-env.d.ts',
+    ]),
+]);

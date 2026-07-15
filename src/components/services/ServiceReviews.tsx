@@ -220,8 +220,8 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <h4 className="font-bold text-slate-900 dark:text-white">{review.client_name}</h4>
-                                                    <span className="flex items-center gap-1 text-[10px] bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-bold border border-green-100 dark:border-green-800">
-                                                        <CheckCircle2 size={10} /> موثوق
+                                                    <span className="flex items-center gap-1 text-[10px] bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-bold border border-green-100 dark:border-green-800" title="راجعت الإدارة محتوى التقييم قبل نشره؛ لا تعني الشارة التحقق من عملية شراء.">
+                                                        <CheckCircle2 size={10} /> مراجَع
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-1">

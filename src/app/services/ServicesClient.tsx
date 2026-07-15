@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Sparkles } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Sparkles, Info } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
@@ -12,6 +12,7 @@ import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import logger from '@/lib/logger';
+import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
 
 export default function ServicesClient({ initialServices = [] }: { initialServices?: any[] }) {
   // The server (page.tsx) fetches the FULL approved directory once, ISR-cached,
@@ -212,7 +213,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
           </h1>
 
           <p className="text-base text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
-            أطباء، محامون، مترجمون، عقارات، تأمين وشحن — مهنيّون عرب موثوقون في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
+            أطباء، محامون، مترجمون، عقارات، تأمين وشحن — مقدمو خدمات عرب في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
           </p>
 
           {/* Search Bar */}
@@ -291,10 +292,14 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3 text-sm shadow-sm">
             <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><Briefcase size={15} className="text-emerald-600" /><span className="tabular-nums font-black">{stats.total}</span> مهنيّ وخدمة</span>
             <span className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
-            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><BadgeCheck size={15} className="text-blue-500" /><span className="tabular-nums font-black">{stats.verified}</span> موثّق</span>
+            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200" title={SERVICE_VERIFICATION_EXPLANATION}><BadgeCheck size={15} className="text-blue-500" /><span className="tabular-nums font-black">{stats.verified}</span> {SERVICE_VERIFICATION_LABEL}</span>
             <span className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
             <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><MapPin size={15} className="text-gov-red" /><span className="tabular-nums font-black">{stats.cities}</span> مدينة</span>
           </div>
+          <p className="mt-2 flex items-start justify-center gap-1.5 text-center text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+            <Info size={13} className="mt-0.5 shrink-0 text-blue-500" aria-hidden="true" />
+            {SERVICE_VERIFICATION_EXPLANATION}
+          </p>
         </div>
       )}
 
@@ -318,8 +323,8 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
                 <div className="relative">
                   <ProviderAvatar name={r.name} image={r.image} className="w-12 h-12 rounded-xl" />
                   {r.is_verified && (
-                    <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm">
-                      <BadgeCheck size={13} className="text-blue-500" />
+                    <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm" title={SERVICE_VERIFICATION_EXPLANATION} aria-label={`${SERVICE_VERIFICATION_LABEL}: ${SERVICE_VERIFICATION_EXPLANATION}`}>
+                      <BadgeCheck size={13} className="text-blue-500" aria-hidden="true" />
                     </span>
                   )}
                 </div>

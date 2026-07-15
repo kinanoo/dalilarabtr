@@ -38,11 +38,11 @@ export default function Footer() {
 
             {/* القسم 1: عن الموقع */}
             <div className="sm:col-span-2 lg:pe-10">
-              <h3 className="font-black text-2xl mb-3 leading-tight">
+              <h2 className="font-black text-2xl mb-3 leading-tight">
                 <Link href="/" className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent hover:from-emerald-300 hover:to-cyan-300 transition-all">
                   {SITE_CONFIG.name}
                 </Link>
-              </h3>
+              </h2>
               <p className="text-sm leading-relaxed mb-6 text-slate-400">
                 {SITE_CONFIG.slogan}. منصتك الموثوقة للمعلومات القانونية والخدمية في تركيا.
               </p>
@@ -51,7 +51,7 @@ export default function Footer() {
 
             {/* القسم 2: أقسام تهمك (Dynamic) */}
             <div>
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-emerald-500 before:rounded-full">أقسام تهمك</h3>
+              <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-emerald-500 before:rounded-full">أقسام تهمك</h2>
               <ul className="space-y-2.5 text-sm">
                 {footerMenus.section1.length > 0 ? footerMenus.section1.map((item) => (
                   <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
@@ -80,10 +80,10 @@ export default function Footer() {
 
             {/* القسم 3: أدوات ذكية (Dynamic) */}
             <div>
-              <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-cyan-400 before:rounded-full">
+              <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-cyan-400 before:rounded-full">
                 <Wrench size={18} className="text-cyan-400" />
                 أدوات ذكية
-              </h3>
+              </h2>
               <ul className="space-y-2.5 text-sm">
                 {footerMenus.section2.length > 0 ? footerMenus.section2.map((item) => (
                   <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
@@ -140,6 +140,12 @@ export default function Footer() {
                 </Link>
                 <Link href="/disclaimer" className="hover:text-emerald-400 transition-colors">
                   إخلاء المسؤولية
+                </Link>
+                <Link href="/copyright" className="hover:text-emerald-400 transition-colors">
+                  حقوق النشر
+                </Link>
+                <Link href="/newsletter/unsubscribe" className="hover:text-emerald-400 transition-colors">
+                  إلغاء النشرة
                 </Link>
                 <Link href="/contact" className="hover:text-emerald-400 transition-colors">
                   تواصل

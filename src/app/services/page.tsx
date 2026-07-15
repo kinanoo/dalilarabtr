@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     alternates: { canonical: '/services' },
     openGraph: {
         title: 'دليل الخدمات العربية في تركيا',
-        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات عرب موثوقين في كل مدن تركيا.',
+        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات عرب في كل مدن تركيا.',
         url: `${SITE_CONFIG.siteUrl}/services`,
         type: 'website',
         images: ['/og-banner.jpg'],
@@ -137,7 +137,7 @@ export default async function ServicesPage() {
                 '@id': `${base}/services#directory`,
                 url: `${base}/services`,
                 name: 'دليل الخدمات والمهن العربية في تركيا',
-                description: 'دليل مقدّمي الخدمات العرب الموثوقين في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
+                description: 'دليل مقدّمي الخدمات العرب في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
                 inLanguage: 'ar',
                 isPartOf: { '@id': `${base}/#organization` },
                 mainEntity: itemList,
