@@ -306,18 +306,9 @@ function CommentItem({
                 </div>
             </div>
 
-            {/* Inline Reply Form — members only; guests get a login invite */}
-            {isReplyActive && depth === 0 && !currentUserId && (
-                <div className="mt-2 mr-6 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                        <Lock size={12} /> الرد على التعليقات للأعضاء فقط
-                    </p>
-                    <Link href="/login" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
-                        <LogIn size={12} /> تسجيل الدخول
-                    </Link>
-                </div>
-            )}
-            {isReplyActive && depth === 0 && currentUserId && (
+            {/* Inline Reply Form — opening it is gated in the parent: guests
+                get the login modal instead of an active reply box */}
+            {isReplyActive && depth === 0 && (
                 <form
                     onSubmit={handleReplySubmit}
                     className="mt-2 mr-6 flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700"
@@ -390,6 +381,9 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
     const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
     const [submittingReply, setSubmittingReply] = useState(false);
     const [badgeCache, setBadgeCache] = useState<Record<string, Badge | null>>({});
+    // Members-only writing: guests see comments and the composer normally, but
+    // any write intent (focus the box, hit send, tap reply) opens this modal.
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
         loadComments();
@@ -592,7 +586,10 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                             currentUserId={currentUserId}
                             isAdmin={isAdmin}
                             activeReplyId={activeReplyId}
-                            onReply={setActiveReplyId}
+                            onReply={(id) => {
+                                if (!currentUserId) { setShowLoginModal(true); return; }
+                                setActiveReplyId(id);
+                            }}
                             onCancelReply={() => setActiveReplyId(null)}
                             onSubmitReply={handleSubmitReply}
                             onEdit={handleEditComment}
@@ -604,33 +601,34 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                 )}
             </div>
 
-            {/* Post Form — members only. Guests get a login invite instead of a
-                form: anonymous inserts are rejected by the DB and used to
-                surface as a raw red error toast on submit. */}
+            {/* Post Form. Guests see the composer normally (comments stay
+                readable and the page looks alive), but any write intent opens
+                the login modal — anonymous inserts are rejected by the DB and
+                used to surface as a raw red error toast on submit. */}
             {!isLoggedIn ? (
-                <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 text-center">
-                    <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <MessageSquare size={22} className="text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <h4 className="font-bold text-slate-900 dark:text-white mb-1">التعليقات للأعضاء فقط</h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
-                        سجّل دخولك للمشاركة في النقاش — التسجيل مجاني ولا يستغرق دقيقة.
-                    </p>
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                        <Link
-                            href="/login"
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 active:scale-95 text-sm shadow-lg shadow-emerald-600/20"
+                <div
+                    onClick={() => setShowLoginModal(true)}
+                    className="bg-slate-50 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all cursor-pointer"
+                >
+                    <textarea
+                        readOnly
+                        value=""
+                        onChange={() => {}}
+                        onFocus={(e) => { e.target.blur(); setShowLoginModal(true); }}
+                        className="w-full bg-transparent p-4 min-h-[100px] outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400 resize-none rounded-t-xl cursor-pointer"
+                        placeholder="اكتب تعليقك هنا..."
+                    />
+                    <div className="bg-white dark:bg-slate-900 p-3 rounded-b-xl border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-3 items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                            <Lock size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            التعليق للأعضاء — سجّل دخولك للمشاركة
+                        </div>
+                        <button
+                            type="button"
+                            className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 flex items-center gap-2 transition-colors"
                         >
-                            <LogIn size={16} />
-                            تسجيل الدخول
-                        </Link>
-                        <Link
-                            href="/join"
-                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 px-5 rounded-xl transition-all flex items-center gap-2 active:scale-95 text-sm hover:border-emerald-400"
-                        >
-                            <UserPlus size={16} />
-                            إنشاء حساب
-                        </Link>
+                            <Send size={16} /> إرسال
+                        </button>
                     </div>
                 </div>
             ) : (
@@ -678,6 +676,61 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                     </div>
                 </div>
             </form>
+            )}
+
+            {/* Login-required modal — same pattern as the star-rating gate */}
+            {showLoginModal && (
+                <div
+                    className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowLoginModal(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full text-center animate-in zoom-in-95 slide-in-from-bottom-2 duration-300 relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setShowLoginModal(false)}
+                            className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-400"
+                            aria-label="إغلاق"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <MessageSquare size={28} className="text-emerald-600 dark:text-emerald-400" />
+                        </div>
+
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                            التعليق للأعضاء فقط
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
+                            سجّل دخولك لتتمكن من كتابة تعليق والمشاركة في النقاش — التسجيل مجاني ولا يستغرق دقيقة.
+                        </p>
+
+                        <div className="flex flex-col gap-2">
+                            <Link
+                                href="/login"
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                            >
+                                <LogIn size={18} />
+                                تسجيل الدخول
+                            </Link>
+                            <Link
+                                href="/join"
+                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 hover:border-emerald-400"
+                            >
+                                <UserPlus size={16} />
+                                إنشاء حساب جديد
+                            </Link>
+                            <button
+                                onClick={() => setShowLoginModal(false)}
+                                className="w-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-bold py-2 px-4 rounded-xl transition-colors text-sm"
+                            >
+                                ليس الآن
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </section>
     );
