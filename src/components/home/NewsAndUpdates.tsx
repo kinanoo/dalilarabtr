@@ -71,21 +71,23 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   }, [n, bump]);
 
   // Auto-advance newest -> oldest every 5s — a "the site is live" heartbeat.
-  // The rail first does a one-time 3s right→left sway hint on load (CSS, see
-  // the `news-sway` class below), so we hold the first advance until that
-  // finishes — the first card change lands at ~8s, then every 5s. Skips while
-  // hovered, just after a manual move, or when the visitor prefers reduced
-  // motion.
+  // Owner request (2026-07-17): the rail must sit COMPLETELY STILL right
+  // after a page load/refresh — the old on-load sway hint is gone, and the
+  // FIRST visible motion is the first card advance at ~4.5s. After that,
+  // one advance every 5s. Skips while hovered, just after a manual move, or
+  // when the visitor prefers reduced motion.
   useEffect(() => {
     if (n <= 1) return;
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
     let id: ReturnType<typeof setInterval> | undefined;
+    const advance = () => {
+      if (hoverPaused || Date.now() < pausedUntil.current) return;
+      setActive((a) => (a + 1) % n);
+    };
     const start = setTimeout(() => {
-      id = setInterval(() => {
-        if (hoverPaused || Date.now() < pausedUntil.current) return;
-        setActive((a) => (a + 1) % n);
-      }, 5000);
-    }, 3000);
+      advance(); // first motion, ~4.5s after load
+      id = setInterval(advance, 5000);
+    }, 4500);
     return () => { clearTimeout(start); if (id) clearInterval(id); };
   }, [n, hoverPaused]);
 
@@ -197,7 +199,11 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
           role="region"
           aria-label="بطاقات الأخبار والإعلانات — اسحب للتنقّل"
         >
-          <div className="news-sway absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
+          {/* news-sway (the one-time on-load sway hint) was REMOVED on owner
+              request 2026-07-17: any motion right after page load reads as
+              "the site is jumping around". The rail now sits perfectly still
+              until the first auto-advance (~4.5s — see the effect above). */}
+          <div className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
             {items.map((it, i) => {
               const eo = wrap(i - active + dragFrac); // live effective offset
               const abs = Math.abs(eo);

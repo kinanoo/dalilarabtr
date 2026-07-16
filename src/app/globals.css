@@ -583,20 +583,9 @@ html.dark .card-hover:hover {
   }
 }
 
-/* News & announcements carousel — one-time right→left sway hint on load, a
-   gentle nudge telling the reader the rail moves. Honoured only when the
-   visitor hasn't asked to reduce motion. */
-@keyframes newsSway {
-  0%   { transform: translateX(0); }
-  18%  { transform: translateX(12px); }
-  42%  { transform: translateX(-12px); }
-  64%  { transform: translateX(7px); }
-  82%  { transform: translateX(-3px); }
-  100% { transform: translateX(0); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .news-sway { animation: newsSway 3s ease-in-out 1 both; }
-}
+/* newsSway (the news rail's one-time on-load sway hint) was removed on owner
+   request 2026-07-17 — no motion right after page load; the rail's first
+   visible motion is its first auto-advance (~4.5s, see NewsAndUpdates). */
 
 /* 🎨 Hero Background Animations */
 @keyframes gradientSlide {
