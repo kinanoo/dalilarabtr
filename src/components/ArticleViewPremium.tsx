@@ -1,9 +1,33 @@
-'use client';
+// SERVER COMPONENT — deliberately no 'use client'.
+//
+// The article body (intro + details + steps/tips/documents/fees/warning) used
+// to be rendered by this file as a CLIENT component, which meant Next
+// serialized the entire article — tens of KB of HTML — into the inline RSC
+// payload (self.__next_f.push) as props, so every reader downloaded and
+// parsed the body TWICE (DOM + flight). Measured on a live article: inline
+// scripts were ~41% of the page and the LCP element (the prose text itself)
+// sat behind a 2.7s render delay on throttled mobile.
+//
+// Now the prose is emitted here, on the server, exactly once. The genuinely
+// interactive bits are small client islands that receive tiny props (slug,
+// image URLs, counts) — NEVER the article HTML:
+//   - ReadingProgressBar   (scroll progress, no props)
+//   - ArticleTOC           (scroll-spy; reads headings from the DOM)
+//   - ArticleViews         (view-counter POST + count chip)
+//   - PrintButton          (window.print)
+//   - ArticleCompletedBadge(localStorage checklist relic)
+//   - ShareMenu / BookmarkButton / ArticleHeroImage / ArticleHeroGallery /
+//     InlineRelatedArticles (pre-existing islands, unchanged)
+//
+// ⚠️ Content contract: `intro`/`details` arrive DECODED + SANITIZED and
+// steps/tips/documents/fees/warning arrive DECODED from the server page
+// (see prepareHtml/decodeText in app/article/[id]/page.tsx — order there is
+// a security requirement: deobfuscate THEN sanitize). Any new caller MUST do
+// the same before passing content in; nothing here re-sanitizes.
 
-import { useEffect, useMemo, useState, useRef } from 'react';
-import type { Article } from '@/lib/types'; // Only Type
+import type { ArticleStep } from '@/lib/types';
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, ListOrdered, Printer, Sparkles, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, Eye, RefreshCw, ShieldCheck } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ListOrdered, Sparkles, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
@@ -11,200 +35,106 @@ import { SITE_CONFIG, CATEGORY_SLUGS, TAG_LABELS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
 import InlineRelatedArticles from './InlineRelatedArticles';
 
-import { deobfuscate, isObfuscated } from '@/lib/security';
-import { estimateReadingTime, isRecentlyUpdated, formatViewCount } from '@/lib/articleMeta';
+import { estimateReadingTime, isRecentlyUpdated } from '@/lib/articleMeta';
 import ArticleTOC from './article/ArticleTOC';
 import ReadingProgressBar from './article/ReadingProgressBar';
 import ArticleHeroImage from './article/ArticleHeroImage';
 import ArticleHeroGallery from './article/ArticleHeroGallery';
+import ArticleViews from './article/ArticleViews';
+import PrintButton from './article/PrintButton';
+import ArticleCompletedBadge from './article/ArticleCompletedBadge';
 
-export default function ArticleView({ article, slug, initialComments, children }: { article: Article, slug: string, initialComments?: any[], children?: React.ReactNode }) {
-  const [checkedItems, setCheckedItems] = useState<number[]>([]);
-  const [showDetails, setShowDetails] = useState(false);
-  const [views, setViews] = useState<number | null>(null);
-  const summaryRef = useRef<HTMLDivElement>(null);
+/** Everything the article view renders. All text fields are already decoded
+    (and intro/details sanitized) server-side — see the contract above. */
+export type ArticleViewData = {
+  title: string;
+  category: string;
+  lastUpdate: string;
+  intro: string;
+  details: string;
+  steps: ArticleStep[];
+  tips: string[];
+  documents: string[];
+  fees?: string;
+  warning?: string;
+  source?: string;
+  image?: string;
+  tags?: string[];
+};
+
+// All article images (hero + the ones embedded in the body), deduped, WITH
+// their captions (figcaption, falling back to alt) — review found the first
+// version dropped the admin-authored step captions entirely. When there are
+// 2+, the top shows a gallery instead of a single hero so readers see the
+// whole illustrated guide up front.
+function extractHeroImages(heroSrc: string | undefined, details: string): { src: string; caption: string }[] {
+  const out: { src: string; caption: string }[] = [];
+  const idx = new Map<string, number>();
+  const push = (src?: string | null, caption = '') => {
+    if (!src || !src.startsWith('http')) return;
+    const at = idx.get(src);
+    if (at != null) {
+      // Same image seen again with a real caption — keep the caption.
+      if (caption && !out[at].caption) out[at].caption = caption;
+      return;
+    }
+    idx.set(src, out.length);
+    out.push({ src, caption });
+  };
+  push(heroSrc);
+  // Figures first: they carry the step captions.
+  const figs = details.match(/<figure[\s\S]*?<\/figure>/gi) || [];
+  for (const block of figs) {
+    const src = block.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1];
+    const cap =
+      block.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() ||
+      block.match(/<img[^>]+alt=["']([^"']*)["']/i)?.[1] || '';
+    if (src) push(src, cap);
+  }
+  // Then bare images outside figures (alt as caption).
+  const noFigs = details.replace(/<figure[\s\S]*?<\/figure>/gi, '');
+  const imgRe = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = imgRe.exec(noFigs))) {
+    const alt = m[0].match(/alt=["']([^"']*)["']/i)?.[1] || '';
+    push(m[1], alt);
+  }
+  return out;
+}
+
+// When the top gallery shows all images, strip them out of the body so they
+// aren't duplicated (the editor wraps uploads in <figure>; also catch bare
+// <img>). Below the 2-image threshold the body is untouched.
+function stripGalleryImages(details: string, heroImageCount: number): string {
+  if (heroImageCount < 2) return details;
+  let out = details
+    // Drop only figures that wrap an uploaded (http) image — those moved to
+    // the top gallery. A figure without an http image is left untouched.
+    .replace(/<figure[\s\S]*?<\/figure>/gi, (m) => (/<img[^>]+src=["']https?:/i.test(m) ? '' : m))
+    // Drop standalone http images too; any non-http image stays in the body
+    // (it isn't in the gallery either, so it can never vanish).
+    .replace(/<img[^>]+src=["']https?:[^>]*>/gi, '')
+    // The in-body image carousels shipped with a "اسحب للتنقّل" hint line —
+    // meaningless once the images moved to the top gallery.
+    .replace(/<p[^>]*>[^<]*اسحب للتنقّل[^<]*<\/p>/gi, '');
+  // Sweep the now-empty wrappers the stripping leaves behind (carousel divs,
+  // emptied links/paragraphs). A few passes handle shallow nesting.
+  for (let i = 0; i < 3; i++) {
+    const next = out.replace(/<(div|p|a|span)\b[^>]*>\s*<\/\1>/gi, '');
+    if (next === out) break;
+    out = next;
+  }
+  return out;
+}
+
+export default function ArticleView({ article, slug, children }: { article: ArticleViewData, slug: string, children?: React.ReactNode }) {
   const officialSources = getOfficialSourceUrls(article.source);
-  const readingTime = estimateReadingTime(article);
+  const stepTexts = article.steps.map((s) => [s.title, s.description].filter(Boolean).join(' '));
+  const readingTime = estimateReadingTime({ intro: article.intro, details: article.details, steps: stepTexts, tips: article.tips });
   const recentlyUpdated = isRecentlyUpdated(article.lastUpdate);
 
-  // Track article view + fetch count
-  useEffect(() => {
-    const key = `article_viewed_${slug}`;
-    const lastViewed = localStorage.getItem(key);
-    const now = Date.now();
-    const shouldTrack = !lastViewed || (now - Number(lastViewed)) > 60 * 1000; // 60 sec cooldown
-
-    fetch(`/api/articles/view`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ articleId: slug, track: shouldTrack }),
-    })
-      .then(r => r.json())
-      .then(d => { if (d.views != null) setViews(d.views); })
-      .catch(() => { /* view tracking is non-critical — silent fail is intentional */ });
-
-    if (shouldTrack) localStorage.setItem(key, String(now));
-  }, [slug]);
-
-
-  // 🛡️ المحتوى يصل من الخادم مفكوك التشفير ومعقَّماً — انظر prepareHtml في
-  // app/article/[id]/page.tsx.
-  //
-  // Keeping the sanitizer OUT of this client component is what drops
-  // sanitize-html (+ htmlparser2 / entities, ~93KB gz) from the article page's
-  // first-load JS. It used to run on every visitor's device to clean HTML that
-  // only ever comes from our own DB — pure waste on the critical path, and it
-  // ran identically during SSR anyway.
-  //
-  // ⚠️ Order matters and is enforced server-side: deobfuscate THEN sanitize.
-  // Sanitizing an obfuscated blob would pass junk through, and decoding after
-  // that would yield raw, unsanitized HTML.
-  // ⚠️ Only render this component with data from that server page; any new
-  // caller MUST sanitize `details`/`intro` before passing them in.
-  const safeDetails = article.details || '';
-  const safeIntro = article.intro || '';
-
-  // All article images (hero + the ones embedded in the body), deduped, WITH
-  // their captions (figcaption, falling back to alt) — review found the first
-  // version dropped the admin-authored step captions entirely. When there are
-  // 2+, the top shows a gallery instead of a single hero so readers see the
-  // whole illustrated guide up front.
-  const heroImages = useMemo(() => {
-    const out: { src: string; caption: string }[] = [];
-    const idx = new Map<string, number>();
-    const push = (src?: string | null, caption = '') => {
-      if (!src || !src.startsWith('http')) return;
-      const at = idx.get(src);
-      if (at != null) {
-        // Same image seen again with a real caption — keep the caption.
-        if (caption && !out[at].caption) out[at].caption = caption;
-        return;
-      }
-      idx.set(src, out.length);
-      out.push({ src, caption });
-    };
-    push(article.image);
-    // Figures first: they carry the step captions.
-    const figs = safeDetails.match(/<figure[\s\S]*?<\/figure>/gi) || [];
-    for (const block of figs) {
-      const src = block.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1];
-      const cap =
-        block.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() ||
-        block.match(/<img[^>]+alt=["']([^"']*)["']/i)?.[1] || '';
-      if (src) push(src, cap);
-    }
-    // Then bare images outside figures (alt as caption).
-    const noFigs = safeDetails.replace(/<figure[\s\S]*?<\/figure>/gi, '');
-    const imgRe = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-    let m: RegExpExecArray | null;
-    while ((m = imgRe.exec(noFigs))) {
-      const alt = m[0].match(/alt=["']([^"']*)["']/i)?.[1] || '';
-      push(m[1], alt);
-    }
-    return out;
-  }, [article.image, safeDetails]);
-
-  // When the top gallery shows all images, strip them out of the body so they
-  // aren't duplicated (the editor wraps uploads in <figure>; also catch bare
-  // <img>). Below the 2-image threshold the body is untouched.
-  const bodyDetails = useMemo(() => {
-    if (heroImages.length < 2) return safeDetails;
-    let out = safeDetails
-      // Drop only figures that wrap an uploaded (http) image — those moved to
-      // the top gallery. A figure without an http image is left untouched.
-      .replace(/<figure[\s\S]*?<\/figure>/gi, (m) => (/<img[^>]+src=["']https?:/i.test(m) ? '' : m))
-      // Drop standalone http images too; any non-http image stays in the body
-      // (it isn't in the gallery either, so it can never vanish).
-      .replace(/<img[^>]+src=["']https?:[^>]*>/gi, '')
-      // The in-body image carousels shipped with a "اسحب للتنقّل" hint line —
-      // meaningless once the images moved to the top gallery.
-      .replace(/<p[^>]*>[^<]*اسحب للتنقّل[^<]*<\/p>/gi, '');
-    // Sweep the now-empty wrappers the stripping leaves behind (carousel divs,
-    // emptied links/paragraphs). A few passes handle shallow nesting.
-    for (let i = 0; i < 3; i++) {
-      const next = out.replace(/<(div|p|a|span)\b[^>]*>\s*<\/\1>/gi, '');
-      if (next === out) break;
-      out = next;
-    }
-    return out;
-  }, [safeDetails, heroImages.length]);
-  const safeDocuments = useMemo(() => (article.documents || []).map((d: string) => isObfuscated(d) ? deobfuscate(d) : d), [article.documents]);
-  // Steps come in two historical shapes:
-  //   - legacy: plain strings (whole step in one line)
-  //   - new:    objects { title, description } — title is the headline,
-  //             description is a one-line elaboration shown underneath
-  // We normalize both to { title, description? } here so the renderer
-  // doesn't have to branch. Strings that look obfuscated still get decoded;
-  // object fields are passed through (security.ts helpers assume strings,
-  // so we only invoke them on strings).
-  type StepObj = { title: string; description?: string };
-  const safeSteps = useMemo<StepObj[]>(() => {
-    return (article.steps || []).map((s: unknown): StepObj => {
-      if (typeof s === 'string') {
-        const decoded = isObfuscated(s) ? deobfuscate(s) : s;
-        return { title: decoded };
-      }
-      if (s && typeof s === 'object') {
-        const obj = s as { title?: unknown; description?: unknown };
-        return {
-          title: typeof obj.title === 'string' ? obj.title : '',
-          description: typeof obj.description === 'string' ? obj.description : undefined,
-        };
-      }
-      return { title: String(s ?? '') };
-    });
-  }, [article.steps]);
-  const safeTips = useMemo(() => (article.tips || []).map((t: string) => isObfuscated(t) ? deobfuscate(t) : t), [article.tips]);
-  const safeFees = useMemo(() => article.fees && isObfuscated(article.fees) ? deobfuscate(article.fees) : article.fees, [article.fees]);
-  const safeWarning = useMemo(() => article.warning && isObfuscated(article.warning) ? deobfuscate(article.warning) : article.warning, [article.warning]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`progress-${slug}`);
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        setCheckedItems(parsed);
-      }
-    } catch {
-      // ignore
-    }
-  }, [slug]);
-
-  const toggleItem = (index: number) => {
-    let newItems;
-    if (checkedItems.includes(index)) {
-      newItems = checkedItems.filter(i => i !== index);
-    } else {
-      newItems = [...checkedItems, index];
-    }
-    setCheckedItems(newItems);
-    localStorage.setItem(`progress-${slug}`, JSON.stringify(newItems));
-  };
-
-  // دالة تبديل التفاصيل مع التمرير السلس
-  const handleToggleDetails = () => {
-    if (showDetails) {
-      // عند الإخفاء: نخفي أولاً ثم نمرر للقسم
-      setShowDetails(false);
-      // انتظر حتى ينتهي الإخفاء ثم مرر للقسم
-      setTimeout(() => {
-        summaryRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }, 100);
-    } else {
-      setShowDetails(true);
-    }
-  };
-
-  // Internal related articles logic removed in favor of external component
-
-
-  const progress = (article.documents?.length || 0)
-    ? Math.round((checkedItems.length / (article.documents?.length || 0)) * 100)
-    : 0;
+  const heroImages = extractHeroImages(article.image, article.details);
+  const bodyDetails = stripGalleryImages(article.details, heroImages.length);
 
   return (
     <>
@@ -272,11 +202,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                       <RefreshCw size={11} /> محدّث
                     </span>
                   )}
-                  {progress === 100 && (
-                    <span className="bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full flex items-center gap-1 animate-in fade-in zoom-in uppercase tracking-wide shadow-md shadow-green-900/40">
-                      <CheckCircle size={12} /> مكتمل
-                    </span>
-                  )}
+                  <ArticleCompletedBadge slug={slug} documentsCount={article.documents.length} />
                 </div>
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black mb-4 lg:mb-6 leading-[1.5] drop-shadow-lg">{article.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-slate-400 text-sm font-medium">
@@ -289,9 +215,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                   </Link>
                   <span className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400" /> راجعته الهيئة · آخر تحديث: {article.lastUpdate}</span>
                   <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>
-                  {views != null && views > 0 && (
-                    <span className="flex items-center gap-2"><Eye size={14} /> {formatViewCount(views)}</span>
-                  )}
+                  <ArticleViews slug={slug} />
                   {officialSources.length > 0 && (
                     <a href={officialSources[0]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors border-b border-transparent hover:border-emerald-400 pb-0.5">
                       <ExternalLink size={14} /> المصدر الرسمي
@@ -309,13 +233,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                       url={`${SITE_CONFIG.siteUrl}/article/${slug}`}
                       variant="glass"
                     />
-                    <button
-                      type="button"
-                      onClick={() => { try { window.print(); } catch { } }}
-                      className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-white/10"
-                    >
-                      <Printer size={14} /> <span className="hidden sm:inline">طباعة</span>
-                    </button>
+                    <PrintButton />
                   </div>
                 </div>
 
@@ -393,7 +311,6 @@ export default function ArticleView({ article, slug, initialComments, children }
 
               {/* ✅ ملخص الإجراء — accent stripe on right (RTL) + gradient surface */}
               <div
-                ref={summaryRef}
                 className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm scroll-mt-20"
               >
                 <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-80" />
@@ -408,7 +325,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                 {/* 👇 الجزء الظاهر دائماً - العنوان/المقدمة */}
                 <div
                   className="prose-content text-slate-700 dark:text-slate-100 font-medium"
-                  dangerouslySetInnerHTML={{ __html: safeIntro }}
+                  dangerouslySetInnerHTML={{ __html: article.intro }}
                 />
 
 
@@ -442,7 +359,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                         أهم الأوراق
                       </div>
                       <ul className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
-                        {safeDocuments.slice(0, 5).map((doc, i) => (
+                        {article.documents.slice(0, 5).map((doc, i) => (
                           <li key={i} className="flex gap-3">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></div>
                             <span className="leading-relaxed font-medium">{doc}</span>
@@ -460,7 +377,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                         الخطة السريعة
                       </div>
                       <ol className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
-                        {safeSteps.slice(0, 5).map((step, i) => (
+                        {article.steps.slice(0, 5).map((step, i) => (
                           <li key={i} className="flex gap-3">
                             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-black flex-shrink-0 mt-0.5 shadow-sm shadow-blue-500/30 tabular-nums" dir="ltr">{i + 1}</span>
                             <div className="leading-relaxed flex-1 min-w-0">
@@ -482,7 +399,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                       <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 shrink-0">
                         <AlertTriangle size={18} />
                       </span>
-                      <p className="leading-relaxed pt-1.5">{safeWarning}</p>
+                      <p className="leading-relaxed pt-1.5">{article.warning}</p>
                     </div>
                   )}
                 </div>
@@ -507,7 +424,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                         رسوم رسمية
                       </span>
                       <h3 className="text-primary-100/85 text-sm mb-1 font-bold">التكلفة التقديرية</h3>
-                      <p className="text-xl lg:text-2xl font-black tracking-wide break-words">{safeFees}</p>
+                      <p className="text-xl lg:text-2xl font-black tracking-wide break-words">{article.fees}</p>
                     </div>
                   </div>
                   <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-4 translate-y-4 pointer-events-none">
@@ -517,7 +434,7 @@ export default function ArticleView({ article, slug, initialComments, children }
               )}
 
               {/* النصائح الذهبية — RTL right accent + gradient */}
-              {safeTips.length > 0 && (
+              {article.tips.length > 0 && (
                 <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/15 dark:to-amber-900/5 border border-amber-200 dark:border-amber-900/30 p-6 rounded-2xl">
                   <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-amber-400 to-amber-500 opacity-80" />
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-200/60 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
@@ -531,7 +448,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                     نصائح ذهبية
                   </h3>
                   <ul className="space-y-3">
-                    {safeTips.map((tip, i) => (
+                    {article.tips.map((tip, i) => (
                       <li key={i} className="flex gap-3 text-amber-800 dark:text-amber-200 font-medium text-sm">
                         <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-200/70 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-[10px] font-black flex-shrink-0 mt-0.5 tabular-nums" dir="ltr">{i + 1}</span>
                         <span className="leading-relaxed">{tip}</span>
@@ -550,7 +467,7 @@ export default function ArticleView({ article, slug, initialComments, children }
                     <ChevronDown size={14} className="mr-auto transition-transform group-open:rotate-180" />
                   </summary>
                   <div className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                    <p className="mb-2"><strong>تنبيه هام:</strong> {safeWarning || 'المعلومات الواردة في هذا الدليل هي لأغراض استرشادية فقط وقد تتغير القوانين في أي وقت.'}</p>
+                    <p className="mb-2"><strong>تنبيه هام:</strong> {article.warning || 'المعلومات الواردة في هذا الدليل هي لأغراض استرشادية فقط وقد تتغير القوانين في أي وقت.'}</p>
                     <p>نحن نبذل قصارى جهدنا لضمان دقة المعلومات، ولكننا لا نتحمل مسؤولية أي إجراءات يتم اتخاذها بناءً على هذا المحتوى دون استشارة قانونية مختصة. يرجى دائماً مراجعة المصادر الرسمية.</p>
                     <p className="mt-2 font-semibold text-slate-600 dark:text-slate-300">لسنا محامين ولا تابعين لأي جهة حكومية، ولا نطلب مالاً ولا نَعِد بنتيجة.</p>
                   </div>

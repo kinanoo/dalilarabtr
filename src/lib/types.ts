@@ -20,6 +20,12 @@ export interface Article {
 
 export type ArticleData = Article;
 
+// Normalized article step. Steps exist in two historical DB shapes — legacy
+// plain strings and new { title, description } objects. The article page
+// normalizes both to this shape ON THE SERVER (see fetchArticleData) so
+// renderers never branch on shape and the raw variants never reach a client.
+export type ArticleStep = { title: string; description?: string };
+
 export interface AdminArticle extends Article {
     id: string;
     slug?: string;

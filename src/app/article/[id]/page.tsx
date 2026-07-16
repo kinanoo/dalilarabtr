@@ -5,9 +5,10 @@
 // } from '@/lib/schemaOrg';
 
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
-import ArticleHydratedView from '@/components/ArticleHydratedView';
+import ArticleView from '@/components/ArticleViewPremium';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { ArticleStep } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import RelatedArticles from '@/components/RelatedArticles';
@@ -38,6 +39,40 @@ function prepareHtml(raw?: string | null): string {
   if (!raw) return '';
   const decoded = isObfuscated(raw) ? deobfuscate(raw) : raw;
   return sanitizeHtmlContent(decoded);
+}
+
+// Plain-text fields (steps/tips/documents/fees/warning) are rendered as React
+// text, never dangerouslySetInnerHTML, so they only need decoding — no
+// sanitizer. Decoding used to happen inside the client ArticleViewPremium;
+// it moved here so the client never receives the raw variants (the view is a
+// server component now and its islands get no article content at all).
+function decodeText(raw?: string | null): string {
+  if (!raw) return '';
+  return isObfuscated(raw) ? deobfuscate(raw) : raw;
+}
+
+// Steps come in two historical shapes:
+//   - legacy: plain strings (whole step in one line)
+//   - new:    objects { title, description } — title is the headline,
+//             description is a one-line elaboration shown underneath
+// Normalize both to { title, description? } here so renderers (and the HowTo
+// schema below) never branch on shape. Strings that look obfuscated still get
+// decoded; object fields pass through (security.ts helpers assume strings).
+function normalizeSteps(raw: unknown): ArticleStep[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((s: unknown): ArticleStep => {
+    if (typeof s === 'string') {
+      return { title: decodeText(s) };
+    }
+    if (s && typeof s === 'object') {
+      const obj = s as { title?: unknown; description?: unknown };
+      return {
+        title: typeof obj.title === 'string' ? obj.title : '',
+        description: typeof obj.description === 'string' ? obj.description : undefined,
+      };
+    }
+    return { title: String(s ?? '') };
+  });
 }
 
 // Helper to fetch article (DB -> Static Fallback)
@@ -77,11 +112,11 @@ async function fetchArticleData(slug: string) {
         // Decoded + sanitized here so the client never needs the sanitizer.
         intro: prepareHtml(data.intro),
         details: prepareHtml(data.details),
-        steps: data.steps || [],
-        tips: data.tips || [],
-        documents: data.documents || [],
-        warning: data.warning || '',
-        fees: data.fees || '',
+        steps: normalizeSteps(data.steps),
+        tips: ((data.tips || []) as string[]).map((t) => decodeText(t)),
+        documents: ((data.documents || []) as string[]).map((d) => decodeText(d)),
+        warning: decodeText(data.warning),
+        fees: decodeText(data.fees),
         source: data.source || '',
         image: data.image || '',
         // Original publish date — kept SEPARATE from lastUpdate so the Article
@@ -429,7 +464,10 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
   const canonicalSlug = article.slug || params.id;
   const url = `${SITE_CONFIG.siteUrl}/article/${canonicalSlug}`;
   const categorySlug = getCategorySlugFromName(article.category);
-  const articleBody = [article.intro, article.details, ...(article.steps || []), ...(article.tips || [])].filter(Boolean).join(' ');
+  // Steps are normalized objects now — flatten each back to plain text for
+  // wordCount + the HowTo schema (same text a legacy string step carried).
+  const stepTexts = article.steps.map((s) => [s.title, s.description].filter(Boolean).join(' ')).filter(Boolean);
+  const articleBody = [article.intro, article.details, ...stepTexts, ...(article.tips || [])].filter(Boolean).join(' ');
   const keywords = buildArticleKeywords({
     slug: params.id,
     title: article.title,
@@ -461,7 +499,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     keywords,
     image: article.image || `${SITE_CONFIG.siteUrl}/og-banner.jpg`,
     source: article.source,
-    steps: article.steps,
+    steps: stepTexts,
     stepImages,
   });
 
@@ -483,12 +521,17 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
       {jsonLd.howTo && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.howTo) }} />
       )}
-      <ArticleHydratedView articleData={article} slug={params.id}>
+      {/* Server component — the article body renders HERE, once, as HTML.
+          Passing it into a client component instead would serialize the whole
+          body a second time into the inline RSC payload (self.__next_f) and
+          push the LCP text behind that parse — the exact regression this
+          split removed. Interactivity lives in small islands inside. */}
+      <ArticleView article={article} slug={params.id}>
         {/* "Didn't understand? message us on WhatsApp" — on every article
             (not the services directory, which has its own contact buttons). */}
         <AskOnWhatsApp topic={article.title} />
         <UniversalComments entityType="article" entityId={params.id} />
-      </ArticleHydratedView>
+      </ArticleView>
       {/* Related Articles — internal linking helps SEO + keeps users on site */}
       <RelatedArticles currentArticleId={params.id} category={article.category} />
     </main>
