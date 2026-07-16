@@ -61,14 +61,25 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { event_name, page_path, visitor_id, session_id, duration_seconds, meta, analytics_consent } = body;
+    const { event_name, page_path, duration_seconds, meta, analytics_consent } = body;
 
-    // Every first-party analytics caller must explicitly confirm that the
-    // visitor granted analytics consent. This server-side gate prevents a
-    // future component from accidentally recording an event before consent.
-    if (analytics_consent !== true) {
-      return NextResponse.json({ ok: true, filtered: 'consent' });
-    }
+    // Two-tier consent model (owner decision 2026-07-16 — the previous hard
+    // reject made the dashboard blind to ~half the real traffic overnight):
+    //   consented      → event stored WITH visitor_id/session_id (returning-
+    //                    visitor stats work across sessions).
+    //   not consented  → event still COUNTS, but fully anonymised: identifiers
+    //                    are stripped server-side no matter what the client
+    //                    sent (defense in depth — a buggy/malicious client
+    //                    cannot attach an ID to a non-consented visitor).
+    // Anonymous uniqueness comes from ip_hash below, which is salted and
+    // rotates DAILY, so no visitor is recognisable across days. The dashboard
+    // RPCs already count uniques via COALESCE(ip_hash, visitor_id), so both
+    // tiers aggregate correctly. Cookieless aggregate counting is the
+    // Plausible/Cloudflare-Analytics model; identifying analytics (GA) stays
+    // strictly consent-gated client-side.
+    const consented = analytics_consent === true;
+    const visitor_id = consented ? body.visitor_id : null;
+    const session_id = consented ? body.session_id : null;
 
     if (!event_name) {
       return NextResponse.json({ error: 'missing event_name' }, { status: 400 });
@@ -124,6 +135,10 @@ export async function POST(req: NextRequest) {
     };
     // Remove old 'country' key to avoid confusion
     delete enrichedMeta.country;
+
+    // Transparency marker: lets any future audit separate anonymous aggregate
+    // rows from consented ones directly in the data.
+    if (!consented) enrichedMeta.anon = true;
 
     // ─── Insert into analytics_events ───────────────────────────────
     if (!supabase) {
