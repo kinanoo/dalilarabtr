@@ -6,6 +6,47 @@ const LEGACY_DISMISSED_KEY = 'cookie_consent_dismissed_at';
 
 export type AnalyticsConsent = 'granted' | 'denied' | 'unknown';
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
+function deleteAnalyticsCookies(): void {
+    if (typeof document === 'undefined') return;
+
+    const cookieNames = document.cookie
+        .split(';')
+        .map((cookie) => cookie.split('=')[0]?.trim())
+        .filter((name): name is string => Boolean(name))
+        .filter((name) => name === '_ga' || name === '_gid' || name.startsWith('_ga_') || name.startsWith('_gat'));
+
+    const hostname = window.location.hostname;
+    const rootDomain = hostname.split('.').slice(-2).join('.');
+    const domains = Array.from(new Set([hostname, `.${hostname}`, rootDomain, `.${rootDomain}`]));
+
+    for (const name of cookieNames) {
+        document.cookie = `${name}=; Max-Age=0; path=/; SameSite=Lax`;
+        for (const domain of domains) {
+            document.cookie = `${name}=; Max-Age=0; path=/; domain=${domain}; SameSite=Lax`;
+        }
+    }
+}
+
+function applyAnalyticsConsent(consent: Exclude<AnalyticsConsent, 'unknown'>): void {
+    const analyticsWindow = window as Window & { gtag?: (...args: unknown[]) => void };
+    const analyticsFlags = window as unknown as Record<string, unknown>;
+    const granted = consent === 'granted';
+
+    if (GA_ID) analyticsFlags[`ga-disable-${GA_ID}`] = !granted;
+    analyticsWindow.gtag?.('consent', 'update', {
+        analytics_storage: granted ? 'granted' : 'denied',
+    });
+
+    if (!granted) {
+        window.localStorage.removeItem('visitor_id');
+        window.sessionStorage.removeItem('session_id');
+        window.sessionStorage.removeItem('session_start');
+        deleteAnalyticsCookies();
+    }
+}
+
 export function getAnalyticsConsent(): AnalyticsConsent {
     if (typeof window === 'undefined') return 'unknown';
 
@@ -40,6 +81,8 @@ export function setAnalyticsConsent(consent: Exclude<AnalyticsConsent, 'unknown'
     } catch {
         // The event still updates the current page when storage fails.
     }
+
+    applyAnalyticsConsent(consent);
 
     window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: consent }));
 }

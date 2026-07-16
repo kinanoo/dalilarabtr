@@ -61,7 +61,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { event_name, page_path, visitor_id, session_id, duration_seconds, meta } = body;
+    const { event_name, page_path, visitor_id, session_id, duration_seconds, meta, analytics_consent } = body;
+
+    // Every first-party analytics caller must explicitly confirm that the
+    // visitor granted analytics consent. This server-side gate prevents a
+    // future component from accidentally recording an event before consent.
+    if (analytics_consent !== true) {
+      return NextResponse.json({ ok: true, filtered: 'consent' });
+    }
 
     if (!event_name) {
       return NextResponse.json({ error: 'missing event_name' }, { status: 400 });

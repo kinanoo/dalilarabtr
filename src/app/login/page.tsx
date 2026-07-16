@@ -86,7 +86,7 @@ export default function LoginPage() {
                         <h2 className="text-3xl font-black mb-6 leading-tight text-slate-900 dark:text-white">مزايا العودة للمنصة</h2>
                         <ul className="space-y-6">
                             {[
-                                { icon: <ShieldCheck size={24} className="text-emerald-600 dark:text-emerald-400" />, title: 'أمان وخصوصية تامة', desc: 'جميع بياناتك واستشاراتك محفوظة بأعلى معايير التشفير.' },
+                                { icon: <ShieldCheck size={24} className="text-emerald-600 dark:text-emerald-400" />, title: 'تحكم واضح ببياناتك', desc: 'نحفظ البيانات اللازمة للحساب والميزات التي تختار استخدامها فقط.' },
                                 { icon: <AlertCircle size={24} className="text-amber-600 dark:text-amber-400" />, title: 'إشعارات حصرية', desc: 'تلقَ تنبيهات بأحدث القوانين، الأخبار، والتغييرات التي تهمك.' },
                                 { icon: <LogIn size={24} className="text-blue-600 dark:text-blue-400" />, title: 'تواصل سريع ومباشر', desc: 'ردود أسرع على استشاراتك وسهولة في التواصل مع الخبراء.' },
                             ].map((item, idx) => (

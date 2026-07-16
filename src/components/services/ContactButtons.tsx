@@ -3,6 +3,7 @@
 import { PhoneCall, MessageCircle } from 'lucide-react';
 import type { ProviderCardData } from './ProviderCard';
 import { SITE_CONFIG } from '@/lib/config';
+import { hasAnalyticsConsent } from '@/lib/consent';
 
 /**
  * Contact actions (WhatsApp + call) with click tracking. Logs a
@@ -12,10 +13,13 @@ import { SITE_CONFIG } from '@/lib/config';
  * navigation to WhatsApp / the dialer.
  */
 function trackContact(p: ProviderCardData, channel: 'whatsapp' | 'call') {
+    if (!hasAnalyticsConsent()) return;
+
     try {
         const payload = JSON.stringify({
             event_name: 'service_contact',
             page_path: typeof location !== 'undefined' ? location.pathname : '/services',
+            analytics_consent: true,
             visitor_id: localStorage.getItem('visitor_id') || undefined,
             session_id: sessionStorage.getItem('session_id') || undefined,
             meta: { provider_id: p.id, provider_name: p.name, channel, profession: p.profession || undefined, city: p.city || undefined },

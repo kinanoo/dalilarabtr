@@ -47,7 +47,7 @@ export default function CookieConsent() {
                             <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">خصوصيتك أولاً</h3>
                             <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                                 نستخدم ملفات ضرورية لتشغيل الموقع. لن نفعّل أدوات قياس الزيارات إلا بعد موافقتك.{' '}
-                                <Link href="/privacy" className="font-bold text-emerald-700 underline dark:text-emerald-400">
+                                <Link href="/privacy#privacy-controls" className="font-bold text-emerald-700 underline dark:text-emerald-400">
                                     سياسة الخصوصية
                                 </Link>
                             </p>

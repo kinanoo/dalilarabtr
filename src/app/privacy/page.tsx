@@ -1,195 +1,206 @@
-import PageHero from '@/components/PageHero';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ShieldCheck, Database, Bell, MessageCircle, UserRound, Trash2, AlertTriangle, Link as LinkIcon, Users, Clock, HelpCircle } from 'lucide-react';
+import {
+  AlertTriangle,
+  BarChart3,
+  Clock,
+  Database,
+  Globe2,
+  KeyRound,
+  MessageCircle,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from 'lucide-react';
+import PageHero from '@/components/PageHero';
+import PrivacyControls from '@/components/privacy/PrivacyControls';
 
-// Explicit yes/no answers to the questions people actually ask about their
-// data. Kept as plain strings so the same content feeds BOTH the visible
-// section and the FAQPage JSON-LD (Google requires the marked-up Q&A to be
-// visible on the page). Every answer reflects how the site truly works.
 const PRIVACY_FAQ: { q: string; a: string }[] = [
   {
-    q: 'هل تجمعون اسمي؟',
-    a: 'لا نطلب اسمك لتصفّح الموقع. الاسم الوحيد الذي قد نخزّنه هو «اسم العرض» إن اخترتَ تسجيل الدخول بحساب غوغل (اختياري بالكامل). طلب الخدمة عبر واتساب لا يمرّ بخوادمنا أصلاً.',
+    q: 'هل أحتاج إلى تقديم بيانات لتصفّح الموقع؟',
+    a: 'لا. التصفّح العام لا يحتاج إلى حساب. قد تُعالج بيانات اتصال تقنية لازمة للحماية وتشغيل الموقع، ولا تعمل تحليلات الاستخدام الاختيارية قبل موافقتك.',
   },
   {
-    q: 'هل تجمعون رقم هاتفي؟',
-    a: 'لا نجمعه ولا نخزّنه على خوادمنا. عند إرسال طلب عبر واتساب يظهر رقمك لفريقنا داخل واتساب فقط — كأي محادثة واتساب عادية — وذلك يخضع لسياسة واتساب لا لسياستنا. لا يوجد حقل «رقم هاتف» في أي نموذج على الموقع.',
+    q: 'ما الذي يُحفظ عند إنشاء حساب؟',
+    a: 'تدير Supabase جلسة الحساب، ونحفظ البريد الإلكتروني واسم العرض والصورة الشخصية التي يرسلها مزوّد تسجيل الدخول، إضافة إلى المحتوى الذي تختار نشره أو حفظه في حسابك.',
   },
   {
-    q: 'هل تجمعون رقم الكملك؟',
-    a: 'لا، إطلاقاً. لا يوجد أي حقل لرقم الكملك في الموقع ولا نطلبه عبر أي نموذج عام. حتى أداة «فحص الكملك» تتحقّق من الرقم على جهازك محلياً ولا تُرسله إلينا.',
+    q: 'هل تحفظون طلب الخدمة الذي أكتبه؟',
+    a: 'نموذج طلب الخدمة يجهّز رسالة على جهازك ثم يفتح واتساب. لا يحفظ الموقع نسخة من نص الطلب، لكن الرسالة التي ترسلها لاحقاً تخضع لسياسة واتساب.',
   },
   {
-    q: 'هل تستقبلون صور وثائق؟',
-    a: 'لا عبر الموقع — لا يوجد رفع ملفات في نموذج الطلب. أي وثيقة تشاركها تكون داخل محادثة واتساب بمبادرتك أنت وبعد الاتفاق فقط. لا ترسل أي صورة وثيقة قبل التواصل والتأكّد.',
+    q: 'هل تحفظون رقم هاتفي أو رقم الكملك؟',
+    a: 'لا يوجد في النماذج العامة حقل لرقم الهاتف أو الكملك، ولا نخزنهما في قاعدة الموقع. لا ترسل وثائق أو كلمات مرور أو بيانات بنكية في التعليقات أو الأسئلة العامة.',
   },
   {
-    q: 'أين تُخزَّن الطلبات؟',
-    a: 'لا تُخزَّن لدينا أصلاً. نموذج الطلب يفتح واتساب برسالة جاهزة على جهازك؛ لا نحتفظ بأي نسخة على خوادمنا. قاعدة بياناتنا (لدى Supabase) تخزّن فقط الحساب والتعليقات والاشتراكات إن استخدمتها بنفسك.',
+    q: 'هل يمكنني إيقاف التحليلات بعد السماح بها؟',
+    a: 'نعم. يمكنك تغيير الاختيار في قسم إعدادات الخصوصية في هذه الصفحة. عند الرفض يتوقف التتبع الاختياري ونحذف معرّفات التحليلات التي يستطيع الموقع الوصول إليها من المتصفح.',
   },
   {
-    q: 'من يستطيع الوصول إلى بياناتي؟',
-    a: 'محادثة واتساب: أنت وفريقنا فقط (بتشفير واتساب). الحساب والاشتراكات وبلاغات الأحياء: فريق إدارة دليل العرب فقط، ولأغراض التشغيل والدعم لا غير. تعليقاتك العامة: مرئية للجميع لأنك نشرتها علناً. لا معلنين ولا وسطاء بيانات ولا بيع لبياناتك.',
-  },
-  {
-    q: 'كم مدة الاحتفاظ بها؟',
-    a: 'الطلبات: صفر — لا تُخزَّن. الحساب والتعليقات والنشرة البريدية: تبقى ما دام حسابك/اشتراكك قائماً وتُحذف فور طلبك. اشتراك الإشعارات المعطّل: يُحذف تلقائياً. نحتفظ بالحد الأدنى وللمدة اللازمة للغرض فقط.',
-  },
-  {
-    q: 'كيف أطلب حذف بياناتي؟',
-    a: 'راسلنا عبر صفحة التواصل واطلب الحذف — ننفّذه دون شروط ودون إبطاء: حسابك، تعليقاتك، أو بريدك في النشرة. طلبات واتساب لا تحتاج حذفاً لأنها ليست مخزّنة عندنا.',
-  },
-  {
-    q: 'هل تستخدمون واتساب أو أطراف ثالثة؟',
-    a: 'نعم بشفافية: واتساب (لاستقبال الطلبات — يخضع لسياسته)، Supabase (قاعدة البيانات)، Cloudflare (الاستضافة والحماية، وقد تعالج عنوان IP تقنياً)، وغوغل (لتسجيل الدخول الاختياري وإحصاءات مجمّعة لا تحدّد هويتك). لا نستخدم أي أدوات تتبّع إعلانية.',
-  },
-  {
-    q: 'ما البيانات التي لا يجب إرسالها إلا عند الضرورة؟',
-    a: 'لا ترسل أبداً عبر نماذج عامة أو لأي شخص قبل التأكّد: رقم الكملك الكامل، صور جواز السفر أو الإقامة أو الهوية، بياناتك البنكية، أو كلمات المرور. شاركها فقط داخل واتساب وبعد اتفاق صريح ولمن تأكّدت أنه رقمنا الرسمي — ونحن لا نطلب أياً منها عبر الموقع.',
+    q: 'كيف أطلب نسخة من بياناتي أو تصحيحها أو حذفها؟',
+    a: 'أرسل الطلب عبر صفحة التواصل وحدد البريد المرتبط بالحساب ونوع الطلب. قد نطلب خطوة تحقق لحماية الحساب، ثم نعالج الطلب ضمن المدة التي يحددها القانون المطبق.',
   },
 ];
 
 export const metadata: Metadata = {
-  title: 'سياسة الخصوصية',
-  description: 'ما البيانات التي يجمعها موقع دليل العرب فعلياً، أين تُخزَّن، ما الذي لا نطلبه أبداً، وكيف تطلب حذف بياناتك.',
+  title: 'سياسة الخصوصية وإعداداتها',
+  description: 'بيان واضح للبيانات التي يعالجها دليل العرب، أغراض استخدامها، الجهات المستلمة، مدد الاحتفاظ، وحقوق المستخدم وإعدادات التحليلات.',
   alternates: { canonical: '/privacy' },
 };
-
-// Static legal page — every statement here reflects how the site actually
-// works in code (request form goes to WhatsApp and is not stored, push
-// subscriptions are anonymous, accounts are optional, etc.). Keep this file
-// in sync with reality when features change.
 
 const SECTIONS = [
   {
     icon: ShieldCheck,
-    title: 'المبدأ العام',
+    title: 'المسؤول عن البيانات ونطاق السياسة',
     body: (
-      <p>
-        الموقع منصة معلومات وإرشاد، ولا يتطلب تصفّحه إنشاء أي حساب أو تقديم أي بيانات شخصية.
-        نجمع أقل قدر ممكن من البيانات، وفقط عندما ترسلها أنت بنفسك لغرض واضح.
-      </p>
-    ),
-  },
-  {
-    icon: HelpCircle,
-    title: 'أسئلة صريحة عن بياناتك — إجابات مباشرة',
-    body: (
-      <dl className="space-y-2.5">
-        {PRIVACY_FAQ.map((f) => (
-          <div key={f.q} className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 p-3.5">
-            <dt className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">{f.q}</dt>
-            <dd className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{f.a}</dd>
-          </div>
-        ))}
-      </dl>
-    ),
-  },
-  {
-    icon: MessageCircle,
-    title: 'طلبات الخدمة — لا تُخزَّن لدينا',
-    body: (
-      <p>
-        نموذج «طلب خدمة» لا يحفظ بياناتك على خوادمنا إطلاقاً: عند الضغط على «إرسال» يفتح تطبيق
-        واتساب على جهازك برسالة جاهزة، والتواصل يجري هناك مباشرة. ما تكتبه في النموذج يبقى على
-        جهازك حتى ترسله أنت عبر واتساب، وتخضع تلك المحادثة لسياسة خصوصية واتساب.
-        لا نطلب أي دفعة مسبقة عبر النموذج، ولا نطلب صور وثائقك قبل التواصل والاتفاق.
-      </p>
-    ),
-  },
-  {
-    icon: UserRound,
-    title: 'الحساب الاختياري',
-    body: (
-      <p>
-        إن اخترت تسجيل الدخول (عبر حساب غوغل)، نخزّن بريدك الإلكتروني واسم العرض لتشغيل ميزات
-        حسابك: لوحة التحكم، الإشعارات الشخصية، والتعليقات. التسجيل اختياري بالكامل، وكل محتوى
-        الموقع متاح بدونه.
-      </p>
-    ),
-  },
-  {
-    icon: Bell,
-    title: 'إشعارات المتصفح (Push)',
-    body: (
-      <p>
-        عند تفعيل الإشعارات يخزَّن «اشتراك المتصفح» فقط — وهو عنوان تقني مشفَّر يصدره متصفحك —
-        دون اسم أو بريد أو أي هوية. إلغاء الاشتراك متاح في أي وقت من إعدادات المتصفح نفسه،
-        وتُحذف الاشتراكات المعطّلة تلقائياً.
-      </p>
+      <div className="space-y-2">
+        <p>
+          إدارة موقع «دليل العرب والسوريين في تركيا» هي الجهة المسؤولة عن معالجة البيانات داخل هذا الموقع.
+          تشمل هذه السياسة صفحات الموقع وحسابات الأعضاء والنشرة والأسئلة والتقييمات ومعرض النماذج.
+        </p>
+        <p>
+          للاستفسار أو لممارسة حق متعلق ببياناتك، استخدم{' '}
+          <Link href="/contact" className="font-bold text-emerald-700 hover:underline dark:text-emerald-400">صفحة التواصل</Link>
+          {' '}واختر «استفسار عام»، ثم اكتب أن الرسالة تخص الخصوصية.
+        </p>
+      </div>
     ),
   },
   {
     icon: Database,
-    title: 'ما الذي يُخزَّن فعلاً، وأين',
+    title: 'البيانات التي نعالجها فعلياً',
     body: (
-      <ul className="list-disc ps-5 space-y-2">
-        <li>التعليقات والأسئلة التي تنشرها بحسابك، وتقييمات «هل أفادك المقال؟» (مجهولة الهوية).</li>
-        <li>بلاغات حالة الأحياء في أداة المناطق، والبريد الإلكتروني إن اشتركت بالنشرة.</li>
-        <li>تفضيلات واجهة بسيطة (الوضع الليلي، آخر الأخبار المقروءة) في التخزين المحلي لمتصفحك — لا تغادر جهازك.</li>
-        <li>تُستضاف قاعدة البيانات لدى Supabase والموقع لدى Cloudflare، وقد تعالج Cloudflare عناوين IP تقنياً لأغراض الحماية من الهجمات وإحصاءات مجمّعة لا تحدد هويتك.</li>
-        <li>لا نستخدم أدوات تتبّع إعلانية، ولا نبيع أو نشارك أي بيانات مع أي جهة تجارية.</li>
+      <ul className="list-disc space-y-2 ps-5">
+        <li><strong>الحساب:</strong> البريد الإلكتروني، اسم العرض، الصورة الشخصية، معرّف الحساب، وبيانات الجلسة عند تسجيل الدخول.</li>
+        <li><strong>المحتوى الذي ترسله:</strong> التعليقات والأسئلة وسياقها والاسم أو البريد الاختياري، التقييمات والبلاغات والملاحظات المرتبطة بها.</li>
+        <li><strong>النشرة والإشعارات:</strong> البريد الإلكتروني ومصدر الاشتراك، أو اشتراك المتصفح التقني اللازم لإرسال الإشعار.</li>
+        <li><strong>الأمان والتشغيل:</strong> عنوان الاتصال الذي يراه مزوّد الاستضافة، سجلات الأخطاء، ومعرّف IP مجزأ في بعض النماذج لمنع التكرار والإساءة.</li>
+        <li><strong>روابط النماذج الخاصة:</strong> وقت المشاهدة، معرّف IP مجزأ، نوع المتصفح، والصفحة المحيلة لحساب المشاهدات وحماية الرابط.</li>
+        <li><strong>التفضيلات المحلية:</strong> مثل المظهر وآخر ما قرأت واختيار الخصوصية؛ تبقى في متصفحك ما لم تكن لازمة لمزامنة ميزة طلبتها.</li>
       </ul>
+    ),
+  },
+  {
+    icon: BarChart3,
+    title: 'التحليلات الاختيارية',
+    body: (
+      <div className="space-y-2">
+        <p>
+          لا تعمل تحليلات الموقع الداخلية ولا Google Analytics قبل اختيار «السماح بالتحليلات».
+          بعد الموافقة قد نقيس الصفحة والمسار المحيل وحجم الشاشة ونوع الجهاز والمتصفح والنظام واللغة والأداء والتفاعلات العامة.
+        </p>
+        <p>
+          ننشئ معرّف زائر ومعرّف جلسة، ونخزن تجزئة مختصرة لعنوان IP تتغير يومياً مع بلد أو مدينة تقريبية يرسلها Cloudflare.
+          لا نستخدم هذه البيانات لإنشاء إعلانات موجهة ولا نبيعها. سحب الموافقة يوقف القياس اللاحق ولا يؤثر في استخدام الموقع.
+        </p>
+      </div>
+    ),
+  },
+  {
+    icon: KeyRound,
+    title: 'الملفات والتخزين في المتصفح',
+    body: (
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[620px] border-collapse text-start text-xs sm:text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 dark:border-slate-700">
+              <th className="p-2 text-start">الاسم أو النوع</th>
+              <th className="p-2 text-start">الغرض</th>
+              <th className="p-2 text-start">المدة</th>
+              <th className="p-2 text-start">الحالة</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr><td className="p-2 font-mono">Supabase auth</td><td className="p-2">جلسة تسجيل الدخول</td><td className="p-2">مدة الجلسة أو حتى تسجيل الخروج</td><td className="p-2">ضروري للحساب</td></tr>
+            <tr><td className="p-2 font-mono">dalil_models_gallery_access</td><td className="p-2">تذكر فتح معرض النماذج المحمي</td><td className="p-2">6 ساعات</td><td className="p-2">ضروري عند فتح المعرض</td></tr>
+            <tr><td className="p-2 font-mono">dalil_analytics_consent</td><td className="p-2">حفظ اختيار الخصوصية</td><td className="p-2">حتى تغييره أو مسح المتصفح</td><td className="p-2">ضروري لحفظ القرار</td></tr>
+            <tr><td className="p-2 font-mono">visitor_id / session_id</td><td className="p-2">إحصاء الزيارات والجلسات</td><td className="p-2">حتى السحب أو مسح التخزين / نهاية الجلسة</td><td className="p-2">اختياري</td></tr>
+            <tr><td className="p-2 font-mono">_ga / _ga_*</td><td className="p-2">Google Analytics</td><td className="p-2">بحسب إعداد Google، وقد تصل إلى سنتين</td><td className="p-2">اختياري</td></tr>
+          </tbody>
+        </table>
+      </div>
+    ),
+  },
+  {
+    icon: MessageCircle,
+    title: 'طلبات الخدمة وواتساب',
+    body: (
+      <p>
+        ما تكتبه في نموذج طلب الخدمة لا يُرسل إلى قاعدة الموقع؛ يفتح واتساب برسالة جاهزة على جهازك.
+        عندما تختار إرسالها تصبح المحادثة بينك وبين الجهة المستلمة عبر واتساب وتخضع لشروط Meta/WhatsApp.
+        لا ترسل وثيقة أو معلومة حساسة قبل التأكد من الرقم والغرض والحاجة إليها.
+      </p>
     ),
   },
   {
     icon: Users,
-    title: 'من يستطيع الوصول إلى بياناتك',
+    title: 'لماذا نعالج البيانات ومن يستلمها',
     body: (
-      <ul className="list-disc ps-5 space-y-2">
-        <li><strong>محادثة واتساب</strong>: يراها أنت وفريقنا فقط، وتخضع لتشفير واتساب من طرف إلى طرف.</li>
-        <li><strong>حسابك ونشرتك البريدية وبلاغات الأحياء</strong>: لا يطّلع عليها إلا فريق تحرير وإدارة دليل العرب، وفقط لأغراض التشغيل والإشراف والدعم — لا أكثر.</li>
-        <li><strong>تعليقاتك وأسئلتك العامة</strong>: مرئية للجميع بطبيعتها لأنك نشرتها علناً على الموقع.</li>
-        <li><strong>مزوّدو الاستضافة</strong> (Supabase لقاعدة البيانات، Cloudflare للموقع) يعالجون البيانات تقنياً بصفتهم منفّذين لخدمتنا وضمن سياساتهم، لا لاستخدامهم الخاص.</li>
-        <li><strong>لا نمنح أي وصول</strong> لمعلنين أو وسطاء بيانات أو أي جهة تجارية، ولا نبيع بياناتك إطلاقاً.</li>
-      </ul>
+      <div className="space-y-3">
+        <p>
+          نعالج البيانات لتشغيل الحساب والميزات التي طلبتها، نشر المحتوى الذي أرسلته، إدارة الاشتراكات، منع الاحتيال، حماية الموقع،
+          والقياس الاختياري لتحسينه. يستند ذلك، بحسب الحالة، إلى طلبك للخدمة أو موافقتك أو التزام قانوني أو مصلحة مشروعة لا تتغلب على حقوقك.
+        </p>
+        <ul className="list-disc space-y-2 ps-5">
+          <li><strong>Supabase:</strong> الحساب وقاعدة البيانات والتخزين.</li>
+          <li><strong>Cloudflare:</strong> الاستضافة والتوصيل والحماية وسجلات الاتصال التقنية.</li>
+          <li><strong>Google:</strong> تسجيل الدخول، والتحليلات فقط بعد الموافقة.</li>
+          <li><strong>Meta/WhatsApp:</strong> فقط عندما تختار فتح واتساب أو إرسال رسالة.</li>
+        </ul>
+        <p>
+          قد تعالج هذه الجهات البيانات خارج بلد إقامتك وفق بنيتها وسياساتها. لا نمنح البيانات لمعلنين أو وسطاء بيانات،
+          ولا نبيعها. التعليقات والأسئلة المقبولة للنشر تكون عامة بطبيعتها، أما البريد الاختياري في السؤال فلا يظهر للزوار.
+        </p>
+      </div>
     ),
   },
   {
     icon: Clock,
-    title: 'مدة الاحتفاظ بالبيانات',
+    title: 'مدة الاحتفاظ',
     body: (
-      <ul className="list-disc ps-5 space-y-2">
-        <li><strong>طلبات الخدمة</strong>: لا تُحفظ لدينا أصلاً — تذهب مباشرةً إلى واتساب، فلا مدة احتفاظ على خوادمنا.</li>
-        <li><strong>الحساب والتعليقات والنشرة البريدية</strong>: تبقى ما دام حسابك/اشتراكك قائماً، وتُحذف فور طلبك ذلك أو حذفك لحسابك.</li>
-        <li><strong>اشتراك الإشعارات</strong>: يبقى حتى تُلغيه من متصفحك، وتُحذف الاشتراكات المعطّلة تلقائياً.</li>
-        <li><strong>تفضيلات الواجهة</strong> (الوضع الليلي، آخر ما قرأت): على جهازك فقط حتى تمسح بيانات المتصفح.</li>
-        <li>نحتفظ بالحد الأدنى وللمدة اللازمة للغرض فقط؛ ومتى زال الغرض أو طلبت الحذف، نحذف دون إبطاء.</li>
+      <ul className="list-disc space-y-2 ps-5">
+        <li>يبقى الحساب وملفه ومحتواه ما دام الحساب قائماً أو إلى أن يُحذف المحتوى أو نقبل طلب الحذف.</li>
+        <li>يبقى بريد النشرة حتى إلغاء الاشتراك، وتوجد صفحة مستقلة تنفذ الإلغاء والحذف.</li>
+        <li>تبقى الأسئلة والتعليقات والتقييمات والبلاغات ما دامت منشورة أو لازمة للإشراف والتوثيق، ثم تُحذف أو تُفصل عن الحساب عند زوال الغرض.</li>
+        <li>تُراجع سجلات الأمان والمشاهدات والتحليلات دورياً، وتُحذف أو تُجمّع عندما لا تعود لازمة للقياس أو منع إساءة الاستخدام.</li>
+        <li>قد تبقى نسخة محدودة مدة إضافية في النسخ الاحتياطية أو عند وجود التزام قانوني أو نزاع، ثم تُزال وفق دورة الحذف.</li>
       </ul>
     ),
   },
   {
     icon: Trash2,
-    title: 'حقوقك: الاطلاع والحذف',
+    title: 'حقوقك وطلبات الخصوصية',
     body: (
-      <p>
-        يمكنك في أي وقت طلب حذف حسابك أو تعليقاتك أو بريدك من النشرة — راسلنا عبر{' '}
-        <Link href="/contact" className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline">صفحة التواصل</Link>{' '}
-        وسننفّذ الطلب دون شروط. البيانات تبقى محفوظة حتى تطلب حذفها أو يُحذف الغرض الذي جُمعت له.
-      </p>
+      <div className="space-y-2">
+        <p>
+          وفق القانون المطبق، يمكنك طلب معرفة ما إذا كنا نعالج بياناتك، والحصول على معلومات أو نسخة منها، وتصحيحها أو حذفها،
+          والاعتراض على بعض أوجه المعالجة، وسحب الموافقة دون أثر رجعي. يمكنك أيضاً إلغاء النشرة مباشرةً من{' '}
+          <Link href="/newsletter/unsubscribe" className="font-bold text-emerald-700 hover:underline dark:text-emerald-400">صفحة إلغاء الاشتراك</Link>.
+        </p>
+        <p>
+          أرسل طلبك عبر <Link href="/contact" className="font-bold text-emerald-700 hover:underline dark:text-emerald-400">صفحة التواصل</Link>.
+          سنطلب فقط ما يلزم للتحقق من أن البيانات تخصك، ثم نجيب ضمن المدة القانونية. يمكنك كذلك تقديم شكوى إلى{' '}
+          <a href="https://www.kvkk.gov.tr/" target="_blank" rel="noopener noreferrer" className="font-bold text-emerald-700 hover:underline dark:text-emerald-400">
+            هيئة حماية البيانات الشخصية التركية (KVKK)
+          </a>.
+        </p>
+      </div>
     ),
   },
   {
     icon: AlertTriangle,
-    title: 'ما لا نطلبه أبداً — احذر المنتحلين',
+    title: 'بيانات حساسة وروابط خارجية',
     body: (
-      <p>
-        لا نطلب أبداً: كلمات مرور، رقم الكملك الكامل عبر نماذج عامة، صور وثائق عبر الموقع، أو أي
-        دفعة مالية قبل تواصل واتفاق صريح. أي شخص يراسلك مدّعياً أنه «دليل العرب» ويطلب ذلك فهو
-        منتحل — تواصلنا الرسمي يجري حصراً عبر قنوات الموقع المعلنة.
-      </p>
-    ),
-  },
-  {
-    icon: LinkIcon,
-    title: 'الروابط الخارجية',
-    body: (
-      <p>
-        نُحيل كثيراً إلى مواقع حكومية رسمية (مثل goc.gov.tr وe-Devlet) ومصادر خارجية. سياسات
-        الخصوصية في تلك المواقع تخصّها هي، ولا نتحمل مسؤوليتها. راجع أيضاً{' '}
-        <Link href="/disclaimer" className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline">إخلاء المسؤولية</Link>.
-      </p>
+      <div className="space-y-2">
+        <p>
+          لا تنشر في التعليقات أو الأسئلة العامة كلمات مرور أو بيانات بنكية أو رقم كملك كامل أو صور هوية وجواز.
+          الموقع يتضمن روابط لمصادر حكومية وخدمات خارجية، وتطبق عليها سياسات تلك الجهات عند مغادرة موقعنا.
+        </p>
+        <p>
+          للمعلومات المتعلقة بدقة المحتوى وحدود المسؤولية راجع{' '}
+          <Link href="/disclaimer" className="font-bold text-emerald-700 hover:underline dark:text-emerald-400">إخلاء المسؤولية</Link>.
+        </p>
+      </div>
     ),
   },
 ];
@@ -198,36 +209,55 @@ export default function PrivacyPage() {
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: PRIVACY_FAQ.map((f) => ({
+    mainEntity: PRIVACY_FAQ.map((item) => ({
       '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a },
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
     })),
   };
 
   return (
-    <main className="flex flex-col min-h-screen">
+    <main className="flex min-h-screen flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <PageHero
         title="سياسة الخصوصية"
-        description="بوضوح وبلا تعقيد: ما الذي نجمعه فعلاً، وما الذي لا نطلبه أبداً، وكيف تحذف بياناتك."
+        description="ما الذي نعالجه فعلياً، ولماذا، وكيف تتحكم ببياناتك واختيار التحليلات."
       />
 
-      <div className="max-w-4xl mx-auto px-4 pt-8 pb-12 space-y-4 text-slate-700 dark:text-slate-200 leading-relaxed w-full">
-        {SECTIONS.map((s) => (
-          <section key={s.title} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-            <h2 className="flex items-center gap-2.5 text-lg font-bold text-slate-900 dark:text-slate-50 mb-3">
-              <span className="grid place-items-center w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 shrink-0">
-                <s.icon size={16} />
+      <div className="mx-auto w-full max-w-4xl space-y-4 px-4 pb-12 pt-8 leading-relaxed text-slate-700 dark:text-slate-200">
+        <PrivacyControls />
+
+        {SECTIONS.map((section) => (
+          <section key={section.title} className="border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+            <h2 className="mb-3 flex items-center gap-2.5 text-lg font-bold text-slate-900 dark:text-slate-50">
+              <span className="grid h-8 w-8 shrink-0 place-items-center bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300">
+                <section.icon size={16} />
               </span>
-              {s.title}
+              {section.title}
             </h2>
-            <div className="text-sm sm:text-[15px]">{s.body}</div>
+            <div className="text-sm sm:text-[15px]">{section.body}</div>
           </section>
         ))}
 
-        <p className="text-center text-xs text-slate-400 dark:text-slate-500 pt-4">
-          آخر تحديث لسياسة الخصوصية: يوليو 2026 — تُحدَّث هذه الصفحة كلما تغيّرت طريقة تعاملنا مع البيانات.
+        <section className="border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+          <h2 className="mb-3 flex items-center gap-2.5 text-lg font-bold text-slate-900 dark:text-slate-50">
+            <span className="grid h-8 w-8 shrink-0 place-items-center bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300">
+              <Globe2 size={16} />
+            </span>
+            أسئلة شائعة
+          </h2>
+          <dl className="divide-y divide-slate-100 dark:divide-slate-800">
+            {PRIVACY_FAQ.map((item) => (
+              <div key={item.q} className="py-3 first:pt-0 last:pb-0">
+                <dt className="mb-1 text-sm font-bold text-slate-800 dark:text-slate-100">{item.q}</dt>
+                <dd className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">{item.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <p className="pt-4 text-center text-xs text-slate-400 dark:text-slate-500">
+          آخر تحديث: 16 يوليو 2026. نحدّث هذه الصفحة عند تغيير طريقة معالجة البيانات.
         </p>
       </div>
     </main>

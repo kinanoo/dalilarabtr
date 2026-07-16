@@ -82,9 +82,13 @@ export default function NewsletterCard({ tone = 'compact', source = 'unknown' }:
                 <NewsletterForm source={source} />
 
                 <p className={`${isHero ? 'mt-4' : 'mt-3'} text-[11px] text-slate-400 dark:text-slate-500`}>
-                    لن نشارك بريدك مع أي طرف ثالث. تحترم نشرتنا قانون حماية البيانات التركي KVKK رقم 6698.{' '}
+                    بالاشتراك توافق على استخدام بريدك لإرسال النشرة، ويمكنك التوقف في أي وقت. راجع{' '}
+                    <Link href="/privacy" className="font-bold text-emerald-700 underline dark:text-emerald-400">
+                        سياسة الخصوصية
+                    </Link>
+                    {' '}أو{' '}
                     <Link href="/newsletter/unsubscribe" className="font-bold text-emerald-700 underline dark:text-emerald-400">
-                        إلغاء الاشتراك
+                        ألغِ الاشتراك
                     </Link>
                 </p>
             </div>

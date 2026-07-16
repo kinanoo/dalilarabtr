@@ -64,6 +64,7 @@ export const trackToolUse = (toolId: string) => {
         const body = JSON.stringify({
             event_name: 'tool_use',
             page_path: window.location.pathname,
+            analytics_consent: true,
             meta: { tool: toolId },
         });
         // sendBeacon survives navigation away from the tool page; fetch is the fallback.

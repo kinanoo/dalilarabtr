@@ -52,7 +52,7 @@ async function trackEvent(payload: Record<string, any>) {
         await fetch('/api/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({ ...payload, analytics_consent: true }),
             keepalive: true, // Ensures request completes even if page unloads
         });
     } catch {

@@ -135,8 +135,8 @@ export default function Footer() {
                 <Link href="/about" className="hover:text-emerald-400 transition-colors font-bold text-slate-300 py-1">
                   من نحن
                 </Link>
-                <Link href="/privacy" className="hover:text-emerald-400 transition-colors">
-                  الخصوصية
+                <Link href="/privacy#privacy-controls" className="hover:text-emerald-400 transition-colors">
+                  الخصوصية وإعداداتها
                 </Link>
                 <Link href="/disclaimer" className="hover:text-emerald-400 transition-colors">
                   إخلاء المسؤولية
