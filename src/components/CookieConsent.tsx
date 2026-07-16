@@ -3,9 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Cookie, X } from 'lucide-react';
 import { getAnalyticsConsent, setAnalyticsConsent } from '@/lib/consent';
+
+// No framer-motion here ON PURPOSE. This banner mounts for every visitor who
+// hasn't answered consent yet — i.e. on effectively every first visit — and it
+// was the only always-loaded public component importing framer, dragging the
+// whole animation runtime (~46KB gz) into the early lazy chunk that executes
+// around LCP time on throttled mobile. The slide-up entrance is pure CSS
+// (tailwindcss-animate, same classes the admin pages already use); exit is an
+// instant unmount, which reads fine for a dismissal.
 
 export default function CookieConsent() {
     const [isVisible, setIsVisible] = useState(false);
@@ -26,14 +33,10 @@ export default function CookieConsent() {
     };
 
     return (
-        <AnimatePresence>
+        <>
             {isVisible && (
-                <motion.div
-                    initial={{ y: 60, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 60, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="fixed bottom-3 left-3 right-3 z-[9999] border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-auto sm:right-4 sm:w-[410px]"
+                <div
+                    className="fixed bottom-3 left-3 right-3 z-[9999] border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-auto sm:right-4 sm:w-[410px] animate-in slide-in-from-bottom-4 fade-in duration-300"
                     role="dialog"
                     aria-modal="true"
                     aria-label="إعدادات الخصوصية"
@@ -79,8 +82,8 @@ export default function CookieConsent() {
                             <X className="h-4 w-4" />
                         </button>
                     </div>
-                </motion.div>
+                </div>
             )}
-        </AnimatePresence>
+        </>
     );
 }
