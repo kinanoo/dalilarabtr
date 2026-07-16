@@ -4,6 +4,11 @@ import { LockKeyhole, ShieldCheck } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import PrivacyControls from '@/components/privacy/PrivacyControls';
 
+// Keep this policy uncached so a privacy wording change is visible
+// immediately instead of reusing an older deployment's static page.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: 'سياسة الخصوصية وإعداداتها',
   description: 'ملخص واضح ومختصر عن البيانات والخصوصية وإعدادات التحليلات في دليل العرب.',
