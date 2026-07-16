@@ -58,8 +58,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, ArrowLeft, Calendar, Tag } from 'lucide-react';
+
+// No framer-motion here ON PURPOSE (JS-diet round 4): this carousel sits in
+// the HOMEPAGE critical graph, and it was the last always-loaded public
+// consumer of the animation runtime. The fade+rise swap is now a 400ms CSS
+// keyframe on the keyed article node — same look, zero library.
 
 /**
  * Theme = the per-article color palette.
@@ -351,12 +355,24 @@ function stripHtml(html: string | null, max = 160): string {
     return text.slice(0, max - 1).trim() + '…';
 }
 
-const DISPLAY_MS = 5000;  // article visible duration
+const DISPLAY_MS = 5000;      // article visible duration once the cycle runs
+// Owner request (2026-07-17): the strip must sit COMPLETELY STILL right after
+// a page load/refresh — no progress-bar fill, no swap — because instant motion
+// on arrival reads as "too much movement". The first visible motion (the
+// active segment starting to fill) begins only after this hold; the first
+// article swap follows DISPLAY_MS later.
+const INITIAL_HOLD_MS = 4500;
 
 export default function FeaturedNewsCarousel({ articles }: Props) {
     const [index, setIndex] = useState(0);
     const [paused, setPaused] = useState(false);
     const [reducedMotion, setReducedMotion] = useState(false);
+    // false during the post-load hold: segments static, rotation off.
+    const [started, setStarted] = useState(false);
+    // Becomes true on the first swap — the CSS entrance animation is applied
+    // only to ROTATED-IN articles, never to the initial SSR'd one (animating
+    // the first paint is exactly the impression the owner asked to remove).
+    const [hasRotated, setHasRotated] = useState(false);
 
     // Detect reduced-motion preference
     useEffect(() => {
@@ -368,17 +384,25 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
         return () => mq.removeEventListener('change', onChange);
     }, []);
 
-    // Rotation engine — advance every DISPLAY_MS unless paused.
+    // Post-load hold — everything stays still until it elapses.
     useEffect(() => {
         if (articles.length <= 1) return;
-        if (paused) return;
+        const t = setTimeout(() => setStarted(true), INITIAL_HOLD_MS);
+        return () => clearTimeout(t);
+    }, [articles.length]);
+
+    // Rotation engine — advance every DISPLAY_MS once started, unless paused.
+    useEffect(() => {
+        if (articles.length <= 1) return;
+        if (!started || paused) return;
 
         const timer = setTimeout(() => {
+            setHasRotated(true);
             setIndex((i) => (i + 1) % articles.length);
         }, DISPLAY_MS);
 
         return () => clearTimeout(timer);
-    }, [index, paused, articles.length]);
+    }, [index, started, paused, articles.length]);
 
     if (articles.length === 0) return null;
 
@@ -480,12 +504,15 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                     <div
                                         className="h-full bg-white origin-right"
                                         style={
-                                            isActive
+                                            isActive && started
                                                 ? {
                                                       animation: `seg-fill ${DISPLAY_MS}ms linear forwards`,
                                                       animationPlayState: paused ? 'paused' : 'running',
                                                   }
                                                 : {
+                                                      // During the post-load hold the active segment sits
+                                                      // EMPTY and motionless — the fill starting is the
+                                                      // first motion the visitor sees, ~4.5s after load.
                                                       width: isPast ? '100%' : '0%',
                                                   }
                                         }
@@ -496,15 +523,16 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                     </div>
                 )}
 
-                {/* ──────── Article content — AnimatePresence handles
-                    fade+slight-rise transition keyed on slug ───────── */}
-                <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
+                {/* ──────── Article content — keyed remount + CSS fade/rise.
+                    The key change swaps the node; the fnc-item-in keyframe
+                    (400ms, ease-out) fades the new story in from +8px —
+                    the same quiet editorial swap AnimatePresence used to do,
+                    without shipping framer-motion. Applied only after the
+                    first rotation so the initial SSR'd story NEVER animates
+                    on page load (owner request). ─────────────────────── */}
+                    <div
                         key={articleKey || index}
-                        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-                        transition={{ duration: reducedMotion ? 0 : 0.4, ease: 'easeOut' }}
+                        className={hasRotated && !reducedMotion ? 'fnc-item-in' : undefined}
                     >
                         <Link href={href} className="block group">
                             {/* Meta row — compact one-liner: badge + date +
@@ -568,8 +596,7 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                 <ArrowLeft size={14} />
                             </div>
                         </Link>
-                    </motion.div>
-                </AnimatePresence>
+                    </div>
             </div>
 
             {/* Local keyframes — segment progress fill (right-to-left in
@@ -580,6 +607,11 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                     from { width: 0%; }
                     to   { width: 100%; }
                 }
+                @keyframes fnc-in {
+                    from { opacity: 0; transform: translateY(8px); }
+                    to   { opacity: 1; transform: none; }
+                }
+                .fnc-item-in { animation: fnc-in 400ms ease-out both; }
             `}} />
         </section>
     );
