@@ -26,6 +26,10 @@ const ALLOWED_TABLES = [
     'site_testimonials',
     'site_menus',
     'questions',
+    // Bell notifications — the admin had NO way to remove a notification once a
+    // trigger or the notify pipeline created it (a test row sat in every user's
+    // bell for 18h). Managed from /admin/notifications.
+    'notifications',
 ];
 
 export async function POST(request: NextRequest) {
