@@ -78,8 +78,14 @@ export async function POST(req: NextRequest) {
     // Plausible/Cloudflare-Analytics model; identifying analytics (GA) stays
     // strictly consent-gated client-side.
     const consented = analytics_consent === true;
-    const visitor_id = consented ? body.visitor_id : null;
-    const session_id = consented ? body.session_id : null;
+    // '' (not null): the live analytics_events table rejects null ids (a
+    // constraint that predates the repo's migration files — verified by three
+    // isolation POSTs: any null-id insert fails regardless of consent). Empty
+    // string carries the same meaning and the dashboard RPCs already treat it
+    // correctly: daily/weekly uniques key on COALESCE(ip_hash, ...) and the
+    // strict all-time unique explicitly filters visitor_id <> ''.
+    const visitor_id = consented ? (body.visitor_id || '') : '';
+    const session_id = consented ? (body.session_id || '') : '';
 
     if (!event_name) {
       return NextResponse.json({ error: 'missing event_name' }, { status: 400 });
