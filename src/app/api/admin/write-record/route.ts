@@ -53,11 +53,6 @@ const RULES: Record<string, Rule> = {
     official_sources: { ops: ['insert'], columns: ['name', 'url', 'description', 'is_official', 'active'] },
     site_testimonials: { ops: ['insert'], columns: ['name', 'role', 'location', 'content', 'rating', 'is_active'] },
     content_suggestions: { ops: ['update'], columns: ['status'] },
-    // Bell notifications: admin may only flip visibility. The bell query filters
-    // `is_active = true`, so setting it false hides a row from every reader
-    // instantly without destroying the record. Title/message/link are written by
-    // the trigger + notify pipeline and must stay untouched.
-    notifications: { ops: ['update'], columns: ['is_active'] },
     analyst_insights: { ops: ['update'], columns: ['is_resolved'] },
     comments: {
         ops: ['insert', 'update'],

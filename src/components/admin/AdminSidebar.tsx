@@ -116,7 +116,6 @@ export function AdminSidebar({ collapsed = false, onToggle, onLogout, currentVie
                 { href: '/admin/questions', label: 'أسئلة الزوّار', icon: MessageSquare },
                 { href: '/admin/faqs', label: 'الأسئلة الشائعة', icon: HelpCircle },
                 { href: '/admin/push-broadcast', label: 'بثّ إشعار فوري', icon: Megaphone },
-                { href: '/admin/notifications', label: 'إدارة الإشعارات', icon: Bell },
                 { href: '/admin/members', label: 'الأعضاء', icon: Users },
             ]
         },
