@@ -45,6 +45,14 @@
   to { transform: translateY(0); }
 }
 
+/* Cookie-consent banner entrance — replaces the framer-motion
+   y:60/opacity spring so the banner doesn't need framer at all. */
+@keyframes consentSlideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-consent-in { animation: consentSlideUp 0.2s ease-out; }
+
 @keyframes slideInLeft {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }

@@ -2,8 +2,15 @@
 
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Toaster } from 'sonner';
 import { isPrivateModelSharePath } from '@/lib/models/routes';
+
+// Toaster is lazy for the same reason as SiteBackdrop below: DeferredExtras'
+// own module chunk ships in the INITIAL page scripts (next/dynamic only
+// splits it, it doesn't defer it), so a static `import { Toaster } from
+// 'sonner'` put ~10KB gz of sonner into every first load. toast() calls
+// fired before the lazy Toaster mounts are queued by sonner's global store
+// and appear once it does.
+const Toaster = lazy(() => import('sonner').then((m) => ({ default: m.Toaster })));
 
 const AmbientBackground = lazy(() => import('@/components/ui/AmbientBackground'));
 // SiteBackdrop is pure decoration but imports the full supabase-js client
@@ -42,7 +49,11 @@ export default function DeferredExtras() {
   }, []);
 
   if (isPrivateModelSharePath(pathname)) {
-    return <Toaster position="bottom-center" richColors />;
+    return (
+      <Suspense fallback={null}>
+        <Toaster position="bottom-center" richColors />
+      </Suspense>
+    );
   }
 
   return (

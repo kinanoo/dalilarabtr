@@ -20,7 +20,7 @@ import { ThemeToggle } from './ThemeToggle';
 import PrayerPopover from './PrayerPopover';
 import NavDropdown from './NavDropdown';
 import NavMegaMenu from './NavMegaMenu';
-import NotificationBell from './notifications/NotificationBell';
+import NotificationBell from './notifications/NotificationBellLazy';
 import UrgencyBanner from './UrgencyBanner';
 import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { useAuth } from '@/lib/hooks/useAuth';

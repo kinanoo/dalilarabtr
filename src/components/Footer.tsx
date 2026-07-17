@@ -1,23 +1,32 @@
-'use client';
-
+// SERVER COMPONENT — deliberately no 'use client'.
+//
+// The footer is ~160 lines of static links and trust badges; it was a client
+// component only for usePathname() (hide on /admin) and useSiteConfig() (the
+// DB footer-menu override). Both concerns moved into tiny islands —
+// FooterGate and FooterMenuSection — so the bulk of this tree ships as HTML
+// with zero hydration cost. The fallback link lists below render on the
+// server and are passed to FooterMenuSection as children: they appear in the
+// initial HTML exactly as before and never enter the client bundle.
+//
+// Every footer Link is prefetch={false}: footer links are below the fold and
+// low-intent, so speculative route prefetching is pure waste for them.
+// NOTE (2026-07-17): under Lighthouse mobile emulation the /consultant route's
+// chunks (~110KB: framer + the scenarios dataset) still get fetched on article
+// views even with this flag — the trigger is somewhere in Next 16's
+// touch/mobile-conditional prefetching, not this link specifically (desktop-UA
+// Chrome never fetches them, before or after). The durable fix is making the
+// consultant route itself thin (lazy-import consultant-scenarios, drop framer
+// from ConsultantClient) — tracked as a follow-up.
 import React from 'react';
 import Link from 'next/link';
-import SocialLinks from './SocialLinks';
 import { SITE_CONFIG } from '@/lib/config';
-import { usePathname } from 'next/navigation';
-import { useSiteConfig } from '@/lib/hooks/useSiteConfig';
 import { Wrench, Shield, Scale } from 'lucide-react';
-import { isPrivateModelSharePath } from '@/lib/models/routes';
+import FooterGate from './footer/FooterGate';
+import FooterMenuSection from './footer/FooterMenuSection';
 
 export default function Footer() {
-  const pathname = usePathname();
-  const { data: siteConfig } = useSiteConfig();
-  const footerMenus = siteConfig?.footerMenus ?? { section1: [], section2: [] };
-
-  if (pathname?.startsWith('/admin') || isPrivateModelSharePath(pathname)) return null;
-
   return (
-    <>
+    <FooterGate>
       <footer className="relative bg-slate-950 text-slate-300 mt-auto overflow-hidden">
         {/* Decorative top accent — gradient line that anchors the footer
             visually to the page above it. Replaces the flat border-slate-800
@@ -39,42 +48,37 @@ export default function Footer() {
             {/* القسم 1: عن الموقع */}
             <div className="sm:col-span-2 lg:pe-10">
               <h2 className="font-black text-2xl mb-3 leading-tight">
-                <Link href="/" className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent hover:from-emerald-300 hover:to-cyan-300 transition-all">
+                <Link prefetch={false} href="/" className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent hover:from-emerald-300 hover:to-cyan-300 transition-all">
                   {SITE_CONFIG.name}
                 </Link>
               </h2>
               <p className="text-sm leading-relaxed mb-6 text-slate-400">
                 {SITE_CONFIG.slogan}. منصتك الموثوقة للمعلومات القانونية والخدمية في تركيا.
               </p>
-              <SocialLinks />
             </div>
 
             {/* القسم 2: أقسام تهمك (Dynamic) */}
             <div>
               <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-emerald-500 before:rounded-full">أقسام تهمك</h2>
               <ul className="space-y-2.5 text-sm">
-                {footerMenus.section1.length > 0 ? footerMenus.section1.map((item) => (
-                  <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
-                )) : (
-                  // Default Fallback — includes the 5 section hubs so they're
-                  // always reachable from this persistent footer surface.
-                  // Residence points to /residence (NOT /category/residence)
-                  // to match CrossLinks and the standalone residence hub's
-                  // canonical, so link equity isn't split across two URLs.
-                  <>
-                    <li><Link href="/articles" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📰 أحدث المقالات</Link></li>
-                    <li><Link href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📂 الدليل الشامل</Link></li>
-                    <li><Link href="/city" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏙️ دليل المدن</Link></li>
-                    <li><Link href="/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 دليل الإقامات</Link></li>
-                    <li><Link href="/work" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💼 دليل العمل</Link></li>
-                    <li><Link href="/education" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🎓 دليل التعليم</Link></li>
-                    <li><Link href="/housing" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏠 دليل السكن</Link></li>
-                    <li><Link href="/health" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🩺 دليل الصحة والتأمين</Link></li>
-                    <li><Link href="/e-devlet-services" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📱 خدمات e-Devlet</Link></li>
-                    <li><Link href="/category/syrians" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏢 خدمات السوريين</Link></li>
-                    <li><Link href="/forms" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📝 نماذج وعقود جاهزة</Link></li>
-                  </>
-                )}
+                <FooterMenuSection section="section1">
+                  {/* Default Fallback — includes the 5 section hubs so they're
+                      always reachable from this persistent footer surface.
+                      Residence points to /residence (NOT /category/residence)
+                      to match CrossLinks and the standalone residence hub's
+                      canonical, so link equity isn't split across two URLs. */}
+                  <li><Link prefetch={false} href="/articles" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📰 أحدث المقالات</Link></li>
+                  <li><Link prefetch={false} href="/directory" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📂 الدليل الشامل</Link></li>
+                  <li><Link prefetch={false} href="/city" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏙️ دليل المدن</Link></li>
+                  <li><Link prefetch={false} href="/residence" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📄 دليل الإقامات</Link></li>
+                  <li><Link prefetch={false} href="/work" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💼 دليل العمل</Link></li>
+                  <li><Link prefetch={false} href="/education" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🎓 دليل التعليم</Link></li>
+                  <li><Link prefetch={false} href="/housing" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏠 دليل السكن</Link></li>
+                  <li><Link prefetch={false} href="/health" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🩺 دليل الصحة والتأمين</Link></li>
+                  <li><Link prefetch={false} href="/e-devlet-services" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📱 خدمات e-Devlet</Link></li>
+                  <li><Link prefetch={false} href="/category/syrians" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏢 خدمات السوريين</Link></li>
+                  <li><Link prefetch={false} href="/forms" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📝 نماذج وعقود جاهزة</Link></li>
+                </FooterMenuSection>
               </ul>
             </div>
 
@@ -85,24 +89,20 @@ export default function Footer() {
                 أدوات ذكية
               </h2>
               <ul className="space-y-2.5 text-sm">
-                {footerMenus.section2.length > 0 ? footerMenus.section2.map((item) => (
-                  <li key={item.id}><Link href={item.href} className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">{item.label}</Link></li>
-                )) : (
-                  // Default Fallback
-                  <>
-                    <li key="f1"><Link href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧭 دليل المواقف</Link></li>
-                    <li key="f2"><Link href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧮 حاسبة منع الدخول</Link></li>
-                    <li key="f3"><Link href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🛡️ فحص الأكواد الأمنية</Link></li>
-                    <li key="f4"><Link href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🆔 فحص قيد الكملك</Link></li>
-                    <li key="f4b"><Link href="/tools/residence-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📅 حاسبة أيام الإقامة والغياب</Link></li>
-                    <li key="f4a"><Link href="/tools/currency" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💱 أسعار الصرف ومحوّل العملات</Link></li>
-                    <li key="f4c"><Link href="/tools/salary-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💵 حاسبة الراتب الصافي والإجمالي</Link></li>
-                    <li key="f4d"><Link href="/tools/severance-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🪙 حاسبة تعويض نهاية الخدمة</Link></li>
-                    <li key="f4e"><Link href="/tools/rent-increase-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏠 حاسبة زيادة الإيجار القانونية</Link></li>
-                    <li key="f5"><Link href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💰 حاسبة تكاليف الإقامة</Link></li>
-                    <li key="f6"><Link href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🗺️ خريطة المناطق المحظورة</Link></li>
-                  </>
-                )}
+                <FooterMenuSection section="section2">
+                  {/* Default Fallback */}
+                  <li key="f1"><Link prefetch={false} href="/consultant" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧭 دليل المواقف</Link></li>
+                  <li key="f2"><Link prefetch={false} href="/ban-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🧮 حاسبة منع الدخول</Link></li>
+                  <li key="f3"><Link prefetch={false} href="/codes" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🛡️ فحص الأكواد الأمنية</Link></li>
+                  <li key="f4"><Link prefetch={false} href="/tools/kimlik-check" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🆔 فحص قيد الكملك</Link></li>
+                  <li key="f4b"><Link prefetch={false} href="/tools/residence-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📅 حاسبة أيام الإقامة والغياب</Link></li>
+                  <li key="f4a"><Link prefetch={false} href="/tools/currency" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💱 أسعار الصرف ومحوّل العملات</Link></li>
+                  <li key="f4c"><Link prefetch={false} href="/tools/salary-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💵 حاسبة الراتب الصافي والإجمالي</Link></li>
+                  <li key="f4d"><Link prefetch={false} href="/tools/severance-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🪙 حاسبة تعويض نهاية الخدمة</Link></li>
+                  <li key="f4e"><Link prefetch={false} href="/tools/rent-increase-calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏠 حاسبة زيادة الإيجار القانونية</Link></li>
+                  <li key="f5"><Link prefetch={false} href="/calculator" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">💰 حاسبة تكاليف الإقامة</Link></li>
+                  <li key="f6"><Link prefetch={false} href="/zones" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🗺️ خريطة المناطق المحظورة</Link></li>
+                </FooterMenuSection>
               </ul>
             </div>
 
@@ -132,22 +132,22 @@ export default function Footer() {
               </p>
 
               <div className="flex flex-wrap justify-center md:justify-start gap-x-5 gap-y-2">
-                <Link href="/about" className="hover:text-emerald-400 transition-colors font-bold text-slate-300 py-1">
+                <Link prefetch={false} href="/about" className="hover:text-emerald-400 transition-colors font-bold text-slate-300 py-1">
                   من نحن
                 </Link>
-                <Link href="/privacy#privacy-controls" className="hover:text-emerald-400 transition-colors">
+                <Link prefetch={false} href="/privacy#privacy-controls" className="hover:text-emerald-400 transition-colors">
                   الخصوصية وإعداداتها
                 </Link>
-                <Link href="/disclaimer" className="hover:text-emerald-400 transition-colors">
+                <Link prefetch={false} href="/disclaimer" className="hover:text-emerald-400 transition-colors">
                   إخلاء المسؤولية
                 </Link>
-                <Link href="/copyright" className="hover:text-emerald-400 transition-colors">
+                <Link prefetch={false} href="/copyright" className="hover:text-emerald-400 transition-colors">
                   حقوق النشر
                 </Link>
-                <Link href="/newsletter/unsubscribe" className="hover:text-emerald-400 transition-colors">
+                <Link prefetch={false} href="/newsletter/unsubscribe" className="hover:text-emerald-400 transition-colors">
                   إلغاء النشرة
                 </Link>
-                <Link href="/contact" className="hover:text-emerald-400 transition-colors">
+                <Link prefetch={false} href="/contact" className="hover:text-emerald-400 transition-colors">
                   تواصل
                 </Link>
               </div>
@@ -158,6 +158,6 @@ export default function Footer() {
           </div>
         </div>
       </footer>
-    </>
+    </FooterGate>
   );
 }
