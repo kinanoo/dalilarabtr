@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import useSWR from 'swr';
 // Lazy supabase: useResource backs the useAdmin* hooks used by big public
 // client pages (/codes, /consultant, /directory, /forms, /sources). A static
@@ -71,7 +72,21 @@ export function useResource<T extends { id: string; active?: boolean }>(
     // Merge Logic
     // If remoteData is undefined (loading), we can show static (optimistic) or wait
     // Strategy: Always show static + whatever we have from remote
-    const combinedData = merger(staticData, remoteData || []);
+    //
+    // Identity contract: the returned array is memoized on `remoteData` ONLY.
+    // SWR keeps `remoteData`'s identity stable between revalidations, so
+    // consumers can safely put `data` (or callbacks derived from it) in
+    // useEffect/useMemo/useCallback deps. Without this memo, a fresh array is
+    // built every render — worst when the fetch is skipped (key null →
+    // remoteData undefined → `|| []` is a new array each time) — which looped
+    // a URL-param effect on /consultant into endless Supabase queries.
+    // `staticData` and `merger` are deliberately NOT deps: call sites pass
+    // inline literals/closures (new identity per render) whose CONTENT is
+    // render-stable (derived from module constants). Keying on them would
+    // defeat the memo. If a call site ever makes staticData/merger genuinely
+    // dynamic, it must funnel that dynamism through remoteData or key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const combinedData = useMemo(() => merger(staticData, remoteData || []), [remoteData]);
 
     return {
         data: combinedData,

@@ -289,12 +289,14 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
     if (!scenarioKey) return;
     // Removed strict check: if (!SCENARIOS[scenarioKey]) return;
 
-    // Already showing this scenario → nothing to load. Without this bail the
-    // effect (which re-fires whenever loadScenario's identity changes — the
-    // scenarios hook returns a fresh array per render) loops forever on any
-    // ?scenario= URL: endless single-row refetches + the active tab snapping
-    // back to 'steps'. When the result is still null (e.g. a hardcoded-only
-    // deep link before the lazy catalogue lands) the retry is wanted.
+    // Already showing this scenario → nothing to load. useResource now
+    // memoizes its array so loadScenario's identity only changes for real
+    // reasons (the lazy catalogue landing, a fresh scenarios fetch) — but
+    // each of those still re-runs this effect, so the bail stays as
+    // defense-in-depth against re-loading (single-row refetch + the active
+    // tab snapping back to 'steps'). When the result is still null (e.g. a
+    // hardcoded-only deep link before the lazy catalogue lands) the retry
+    // is wanted.
     if (result?.id === scenarioKey) return;
 
     loadScenario(scenarioKey);
