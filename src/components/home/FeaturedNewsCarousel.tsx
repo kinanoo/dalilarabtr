@@ -506,7 +506,10 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                                         style={
                                             isActive && started
                                                 ? {
-                                                      animation: `seg-fill ${DISPLAY_MS}ms linear forwards`,
+                                                      animationName: 'seg-fill',
+                                                      animationDuration: `${DISPLAY_MS}ms`,
+                                                      animationTimingFunction: 'linear',
+                                                      animationFillMode: 'forwards',
                                                       animationPlayState: paused ? 'paused' : 'running',
                                                   }
                                                 : {

@@ -62,28 +62,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { event_name, page_path, duration_seconds, meta, analytics_consent } = body;
-
-    // Two-tier consent model (owner decision 2026-07-16 — the previous hard
-    // reject made the dashboard blind to ~half the real traffic overnight):
-    //   consented      → event stored WITH visitor_id/session_id (returning-
-    //                    visitor stats work across sessions).
-    //   not consented  → event still COUNTS, but fully anonymised: identifiers
-    //                    are stripped server-side no matter what the client
-    //                    sent (defense in depth — a buggy/malicious client
-    //                    cannot attach an ID to a non-consented visitor).
-    // Anonymous uniqueness comes from ip_hash below, which is salted and
-    // rotates DAILY, so no visitor is recognisable across days. The dashboard
-    // RPCs already count uniques via COALESCE(ip_hash, visitor_id), so both
-    // tiers aggregate correctly. Cookieless aggregate counting is the
-    // Plausible/Cloudflare-Analytics model; identifying analytics (GA) stays
-    // strictly consent-gated client-side.
     const consented = analytics_consent === true;
-    // '' (not null): the live analytics_events table rejects null ids (a
-    // constraint that predates the repo's migration files — verified by three
-    // isolation POSTs: any null-id insert fails regardless of consent). Empty
-    // string carries the same meaning and the dashboard RPCs already treat it
-    // correctly: daily/weekly uniques key on COALESCE(ip_hash, ...) and the
-    // strict all-time unique explicitly filters visitor_id <> ''.
+
+    // Without consent, retain only aggregate traffic counts. Stable browser
+    // identifiers are removed server-side even if a client sends them.
     const visitor_id = consented ? (body.visitor_id || '') : '';
     const session_id = consented ? (body.session_id || '') : '';
 
@@ -142,8 +124,6 @@ export async function POST(req: NextRequest) {
     // Remove old 'country' key to avoid confusion
     delete enrichedMeta.country;
 
-    // Transparency marker: lets any future audit separate anonymous aggregate
-    // rows from consented ones directly in the data.
     if (!consented) enrichedMeta.anon = true;
 
     // ─── Insert into analytics_events ───────────────────────────────

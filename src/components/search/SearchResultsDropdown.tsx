@@ -8,7 +8,6 @@
 
 import Link from 'next/link';
 import { Search, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { SearchResult } from '@/lib/searchIndex';
 
 type SearchResultsDropdownProps = {
@@ -25,10 +24,7 @@ export default function SearchResultsDropdown({
   onResultClick,
 }: SearchResultsDropdownProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
+    <div
       role="listbox"
       aria-label="نتائج البحث"
       aria-live="polite"
@@ -85,6 +81,6 @@ export default function SearchResultsDropdown({
           </p>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

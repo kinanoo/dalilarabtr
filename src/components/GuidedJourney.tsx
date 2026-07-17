@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { type LucideIcon, Sparkles, ChevronDown, Plane, GraduationCap, Briefcase, Users, HeartPulse, PlaneTakeoff, FileText, UserCheck, BookOpen, Home, Scale, Smartphone, Stamp, HeartHandshake, Map, MapPin, LifeBuoy, Crown, Car, FileSearch, ShieldCheck, CreditCard, Building2, Baby, Globe, AlertTriangle, Landmark } from 'lucide-react';
+import { type LucideIcon, ChevronDown, Plane, GraduationCap, Briefcase, Users, HeartPulse, PlaneTakeoff, FileText, UserCheck, BookOpen, Home, Scale, Smartphone, Stamp, HeartHandshake, Map, MapPin, LifeBuoy, Crown, Car, FileSearch, ShieldCheck, CreditCard, Building2, Baby, Globe, AlertTriangle, Landmark } from 'lucide-react';
 import Link from 'next/link';
 
 // ============================================
@@ -102,67 +102,60 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
 
 export default function GuidedJourney() {
     const [openId, setOpenId] = useState<string | null>(null);
+    const activeGroup = JOURNEY_GROUPS.find(group => group.id === openId);
 
     const toggle = (id: string) => {
         setOpenId(prev => prev === id ? null : id);
     };
 
     return (
-        <section className="pt-2 pb-6 px-4">
-            <div className="max-w-7xl mx-auto">
-                {/* Section heading */}
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center justify-center gap-2">
-                        <Sparkles className="text-amber-500" size={24} />
-                        كيف يمكننا مساعدتك اليوم؟
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        اختر حالتك لنقودك إلى المعلومات الصحيحة مباشرة
-                    </p>
-                </div>
-
-                {/* Accordion Groups */}
-                <div className="space-y-3">
-                    {JOURNEY_GROUPS.map((group) => {
-                        const isOpen = openId === group.id;
-                        return (
-                            <div key={group.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
-                                {/* Header — clickable */}
-                                <button
-                                    type="button"
-                                    onClick={() => toggle(group.id)}
-                                    className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${isOpen ? group.headerBg : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
-                                >
-                                    <div className={`w-9 h-9 rounded-xl ${group.headerBg} flex items-center justify-center shrink-0`}>
-                                        <group.icon size={18} className={group.headerText} />
-                                    </div>
-                                    <div className="text-right flex-1">
-                                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-                                            {group.title}
-                                        </h3>
-                                        <p className="text-xs text-slate-400 dark:text-slate-500">{group.cards.length} خدمة</p>
-                                    </div>
-                                    <ChevronDown
-                                        size={20}
-                                        className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
-
-                                {/* Collapsible content — only render cards when open to reduce DOM size */}
-                                {isOpen && (
-                                    <div className="px-4 pb-4 pt-2 animate-in fade-in duration-200">
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                                            {group.cards.map((card) => (
-                                                <CardItem key={card.id} card={card} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+        <section className="pb-6" aria-label="اختر وضعك في تركيا">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                {JOURNEY_GROUPS.map((group) => {
+                    const isOpen = openId === group.id;
+                    const panelId = `journey-panel-${group.id}`;
+                    return (
+                        <button
+                            key={group.id}
+                            type="button"
+                            onClick={() => toggle(group.id)}
+                            aria-expanded={isOpen}
+                            aria-controls={panelId}
+                            className={`min-h-24 flex items-center gap-2.5 rounded-lg border px-3 py-3 text-start transition-colors ${isOpen
+                                ? `${group.headerBg} border-current ${group.headerText}`
+                                : 'border-slate-200 bg-white text-slate-800 hover:border-emerald-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-emerald-700'
+                            }`}
+                        >
+                            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${group.headerBg}`}>
+                                <group.icon size={18} className={group.headerText} aria-hidden="true" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-bold leading-relaxed">{group.title}</span>
+                                <span className="block text-[11px] text-slate-500 dark:text-slate-400">{group.cards.length} موضوع</span>
+                            </span>
+                            <ChevronDown
+                                size={18}
+                                aria-hidden="true"
+                                className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                            />
+                        </button>
+                    );
+                })}
             </div>
+
+            {activeGroup && (
+                <div
+                    id={`journey-panel-${activeGroup.id}`}
+                    className="mt-4 border-t border-slate-200 pt-4 animate-in fade-in duration-200 dark:border-slate-800"
+                >
+                    <h3 className="sr-only">{activeGroup.title}</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                        {activeGroup.cards.map((card) => (
+                            <CardItem key={card.id} card={card} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
@@ -173,7 +166,7 @@ function CardItem({ card }: { card: JourneyCard }) {
     return (
         <Link
             href={card.href}
-            className="card-stagger group relative flex flex-col items-center text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3.5 border border-slate-100 dark:border-slate-700/50 hover:shadow-md hover:-translate-y-0.5 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300 overflow-hidden"
+            className="card-stagger group relative flex min-h-32 flex-col items-center overflow-hidden rounded-lg border border-slate-200 bg-white p-3.5 text-center transition-colors hover:border-emerald-400 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-600"
         >
             {/* Top gradient bar */}
             <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${card.color} opacity-60 group-hover:opacity-100 transition-opacity`} />

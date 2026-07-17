@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, HelpCircle, ArrowLeft } from 'lucide-react';
+import { ChevronDown, HelpCircle, ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 
@@ -29,6 +29,10 @@ export default function HomeFAQ() {
                         <ArrowLeft size={14} />
                     </Link>
                 </div>
+
+                <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+                    آخر تحقق: <time dateTime="2026-07-17">17 يوليو 2026</time>. المعلومات العامة لا تغني عن مراجعة الجهة الرسمية في حالتك.
+                </p>
 
                 {/* FAQ List */}
                 <div className="space-y-2">
@@ -64,6 +68,21 @@ export default function HomeFAQ() {
                                             <p className="text-sm text-slate-600 dark:text-slate-300 leading-loose">
                                                 {faq.answer}
                                             </p>
+                                            <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
+                                                <Link href={faq.detailHref} className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400">
+                                                    الدليل التفصيلي
+                                                    <ArrowLeft size={13} aria-hidden="true" />
+                                                </Link>
+                                                <a
+                                                    href={faq.sourceUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 font-bold text-sky-700 hover:text-sky-800 dark:text-sky-400"
+                                                >
+                                                    المصدر: {faq.sourceLabel}
+                                                    <ExternalLink size={12} aria-hidden="true" />
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

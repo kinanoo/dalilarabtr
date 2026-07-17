@@ -126,7 +126,7 @@ export default function Footer() {
 
           {/* الحقوق - Bottom */}
           <div className="border-t border-slate-800/60 pt-6 mt-0">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
               <p>
                 © {new Date().getFullYear()} <span className="text-slate-300 font-bold">{SITE_CONFIG.name}</span> — جميع الحقوق محفوظة.
               </p>

@@ -184,7 +184,13 @@ export default function NewsTicker() {
                 <div className="flex-1 overflow-hidden">
                     <div
                         className="flex items-center w-max will-change-transform"
-                        style={{ animation: `ticker-scroll ${duration}s linear infinite`, animationPlayState: isPaused ? 'paused' : 'running' }}
+                        style={{
+                            animationName: 'ticker-scroll',
+                            animationDuration: `${duration}s`,
+                            animationTimingFunction: 'linear',
+                            animationIterationCount: 'infinite',
+                            animationPlayState: isPaused ? 'paused' : 'running',
+                        }}
                     >
                         <div ref={copyRef} className="flex items-center whitespace-nowrap shrink-0">
                             {perCopy.map(renderItem)}

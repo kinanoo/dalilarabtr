@@ -24,7 +24,7 @@ export const trackEvent = (
     label?: string,
     value?: number
 ) => {
-    if (hasAnalyticsConsent() && window.gtag) {
+    if (typeof window !== 'undefined' && hasAnalyticsConsent() && window.gtag) {
         window.gtag('event', action, {
             event_category: category,
             event_label: label,
@@ -57,14 +57,10 @@ export const trackWhatsAppMessageSent = (messageType: string) => {
 // This is a distinct, higher-intent signal than a raw page view. Fire-and-forget:
 // never let a tracking failure affect the tool itself.
 export const trackToolUse = (toolId: string) => {
-    // GA half (cookies) stays consent-gated — trackEvent checks consent itself.
+    // Google Analytics remains consent-gated through trackEvent.
     trackEvent('tool_use', 'tools', toolId);
     if (typeof window === 'undefined') return;
     try {
-        // First-party half counts for EVERYONE: which tool was opened is
-        // aggregate product data with no identifier attached here. The server
-        // strips visitor/session ids on non-consented events anyway; sending
-        // the consent flag truthfully lets it store the row as anonymous.
         const body = JSON.stringify({
             event_name: 'tool_use',
             page_path: window.location.pathname,

@@ -12,6 +12,7 @@ import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { categorySlugForName } from '@/lib/serviceCategories';
 import { getSupabaseImageUrl } from '@/lib/supabaseImage';
+import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
 
 export const revalidate = 60;
 
@@ -264,7 +265,9 @@ export default async function ServiceDetailsPage(
                         {provider.is_verified && (
                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-300 py-4 rounded-xl font-bold flex items-center justify-center gap-3">
                                 <ShieldCheck size={24} />
-                                عضو موثق ومرخص
+                                <span title={SERVICE_VERIFICATION_EXPLANATION}>
+                                    {SERVICE_VERIFICATION_LABEL} من إدارة الدليل
+                                </span>
                             </div>
                         )}
                     </div>

@@ -549,7 +549,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                                 </span>
                                 <span className="flex-1 min-w-0">
                                     <span className="block text-sm font-black text-emerald-900 dark:text-emerald-100">دليل العرب الكامل في {title}</span>
-                                    <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">مقدّمو خدمات موثوقون · الإقامة والأوراق · روابط رسمية</span>
+                                    <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">مقدّمو خدمات · الإقامة والأوراق · روابط رسمية</span>
                                 </span>
                                 <ArrowRight size={18} className="text-emerald-500 shrink-0 group-hover:-translate-x-1 transition-transform" />
                             </Link>

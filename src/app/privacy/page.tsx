@@ -35,6 +35,9 @@ export default function PrivacyPage() {
           <p className="mt-2 text-sm leading-7 sm:text-[15px]">
             ما تكتبه في نموذج طلب الخدمة لا يُحفظ في قاعدة الموقع؛ يفتح على جهازك لإرساله عبر واتساب فقط إذا اخترت ذلك.
           </p>
+          <p className="mt-2 text-sm leading-7 sm:text-[15px]">
+            نسجّل إحصاءات زيارات مجمّعة لتحسين الموقع، أما التحليلات الإضافية فلا تعمل إلا إذا سمحت بها.
+          </p>
         </section>
 
         <PrivacyControls />
@@ -54,7 +57,7 @@ export default function PrivacyPage() {
         </section>
 
         <p className="pt-3 text-center text-xs text-slate-400 dark:text-slate-500">
-          آخر تحديث: 16 يوليو 2026.
+          آخر تحديث: 17 يوليو 2026.
         </p>
       </div>
     </main>

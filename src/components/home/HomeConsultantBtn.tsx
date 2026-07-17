@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * HomeConsultantBtn — the primary CTA under the homepage hero search.
  *
@@ -17,14 +15,13 @@ import { ArrowLeft } from 'lucide-react';
 export default function HomeConsultantBtn() {
     return (
         <div className="flex flex-col items-center justify-center gap-3">
-            <Link href="/consultant">
-                <button
-                    type="button"
-                    className="group relative px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-2xl hover:shadow-emerald-400/50 transition-all duration-300 hover:scale-[1.04] active:scale-95 flex items-center gap-2"
-                >
-                    <span>ابدأ مع دليل المواقف</span>
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                </button>
+            <Link
+                href="/consultant"
+                prefetch={false}
+                className="group relative flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 active:bg-emerald-800"
+            >
+                <span>ابدأ مع دليل المواقف</span>
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
             </Link>
         </div>
     );

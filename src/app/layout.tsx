@@ -6,25 +6,15 @@ import "../styles/animations.css";
 import "../styles/dark-mode.css";
 import { IBM_Plex_Sans_Arabic } from 'next/font/google';
 
-// IBM Plex Sans Arabic — a famous, official, global Arabic typeface (IBM's
-// open-source corporate font). Clean, modern, government-grade legibility.
-// Replaces Cairo/Tajawal site-wide while KEEPING the same CSS variable names
-// (--font-cairo for body, --font-tajawal for headings) so every existing
-// `font-cairo` class + heading rule keeps working — only the glyphs change.
+// One shared font declaration serves body copy and headings. A second call for
+// the same family duplicated font files in the critical path.
 const cairo = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
-  weight: ['400', '500', '600', '700'],
+  // Regular and bold cover the site hierarchy; intermediate weights are
+  // synthesized by the browser instead of downloading four extra font files.
+  weight: ['400', '700'],
   display: 'swap',
   variable: '--font-cairo',
-  preload: true,
-});
-
-// Same family, heavier weights, for headings (routed via --font-tajawal).
-const tajawal = IBM_Plex_Sans_Arabic({
-  subsets: ['arabic'],
-  weight: ['600', '700'],
-  display: 'swap',
-  variable: '--font-tajawal',
   preload: true,
 });
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
@@ -144,7 +134,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className={`${cairo.variable} ${tajawal.variable}`}>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={cairo.variable}>
       <head>
         {/*
          * esbuild `--keep-names` polyfill.
@@ -211,9 +201,6 @@ export default function RootLayout({
         {/* Preconnect to external services for faster loading */}
         <link rel="preconnect" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
         <link rel="dns-prefetch" href="https://bcgwbffwzdlzlyjvlyhr.supabase.co" />
-        <link rel="preconnect" href="https://api.aladhan.com" />
-        <link rel="dns-prefetch" href="https://api.aladhan.com" />
-
       </head>
       <body suppressHydrationWarning className={`font-cairo bg-surface-light dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
         {/* Structured Data — in body to prevent Next.js head duplication */}

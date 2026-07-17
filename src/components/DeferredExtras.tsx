@@ -47,7 +47,6 @@ export default function DeferredExtras() {
 
   return (
     <Suspense fallback={null}>
-      <SiteBackdrop />
       <ConsentAwareAnalytics />
       <CopyProtection />
       <BodyImageGallery />
@@ -59,6 +58,7 @@ export default function DeferredExtras() {
       <Toaster position="bottom-center" richColors />
       {backgroundReady && (
         <>
+          {isDesktop && <SiteBackdrop />}
           <NotificationManager />
           <ServiceWorkerRegister />
           <PWAInstallPrompt />

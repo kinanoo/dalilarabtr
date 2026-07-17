@@ -46,12 +46,12 @@ export default function PrivacyControls() {
                         إعدادات الخصوصية
                     </h2>
                     <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                        الملفات الضرورية تعمل لتشغيل الموقع. التحليلات اختيارية ويمكنك تغيير قرارك في أي وقت.
+                        تعمل إحصاءات زيارات مجمّعة لتحسين الموقع. ويمكنك السماح بالتحليلات الإضافية أو إيقافها في أي وقت.
                     </p>
                 </div>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="اختيار استخدام التحليلات">
+            <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="اختيار مستوى التحليلات">
                 <button
                     type="button"
                     role="radio"
@@ -63,7 +63,7 @@ export default function PrivacyControls() {
                             : 'border-slate-200 text-slate-700 hover:border-emerald-300 dark:border-slate-700 dark:text-slate-200'
                     }`}
                 >
-                    <span className="flex items-center gap-2"><ShieldCheck size={17} /> الضرورية فقط</span>
+                    <span className="flex items-center gap-2"><ShieldCheck size={17} /> إحصاءات مجمّعة فقط</span>
                     {choice === 'denied' && <Check size={17} aria-hidden="true" />}
                 </button>
                 <button
@@ -77,7 +77,7 @@ export default function PrivacyControls() {
                             : 'border-slate-200 text-slate-700 hover:border-emerald-300 dark:border-slate-700 dark:text-slate-200'
                     }`}
                 >
-                    <span className="flex items-center gap-2"><BarChart3 size={17} /> السماح بالتحليلات</span>
+                    <span className="flex items-center gap-2"><BarChart3 size={17} /> السماح بالتحليلات الإضافية</span>
                     {choice === 'granted' && <Check size={17} aria-hidden="true" />}
                 </button>
             </div>
@@ -86,10 +86,10 @@ export default function PrivacyControls() {
                 {saved
                     ? 'تم حفظ اختيارك.'
                     : choice === 'unknown'
-                        ? 'لم تحدد اختيارك بعد، لذلك تبقى التحليلات متوقفة.'
+                        ? 'تعمل الإحصاءات المجمّعة فقط إلى أن تختار السماح بالتحليلات الإضافية.'
                         : choice === 'granted'
                             ? 'التحليلات الاختيارية مسموحة حالياً.'
-                            : 'التحليلات الاختيارية متوقفة حالياً.'}
+                            : 'تعمل الإحصاءات المجمّعة فقط، والتحليلات الإضافية متوقفة.'}
             </p>
         </section>
     );

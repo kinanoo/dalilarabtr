@@ -4,22 +4,6 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { BREAKPOINTS } from '@/lib/breakpoints';
 
-// ─── Two modes (see ConsentAwareAnalytics for the policy) ────────────────────
-//
-// anonymous=false (visitor granted consent):
-//   full mode — stable visitor_id (localStorage) + session_id (sessionStorage)
-//   are generated and attached, so returning-visitor stats work.
-//
-// anonymous=true (no consent yet / denied):
-//   cookieless aggregate mode — NO identifier is created or read on the
-//   device: no visitor_id, no session_id, nothing written to storage. Events
-//   still count ("a page was viewed", "a session lasted N seconds") with
-//   aggregate dimensions (device/browser/os/screen/referrer/language).
-//   Server-side uniqueness uses the daily-rotating salted ip_hash, so a
-//   visitor cannot be recognised across days. The `analytics_consent` flag is
-//   sent truthfully; the server strips any identifiers on non-consented
-//   events as defense in depth.
-
 function getOrCreate(key: string, storage: Storage): string {
     let val = storage.getItem(key);
     if (!val) {
@@ -88,29 +72,19 @@ export function AnalyticsTracker({ anonymous = false }: { anonymous?: boolean })
         if (typeof window === 'undefined') return;
 
         if (!anonymous) {
-            // Stable visitor ID (persists across sessions in localStorage)
             visitorIdRef.current = getOrCreate('visitor_id', localStorage);
-            // Session ID (resets when tab/browser is closed, uses sessionStorage)
             sessionIdRef.current = getOrCreate('session_id', sessionStorage);
         } else {
-            // Anonymous mode: no identifiers, and nothing written to storage.
             visitorIdRef.current = '';
             sessionIdRef.current = '';
         }
 
-        // Session start: in-memory only for anonymous visitors (a timestamp in
-        // sessionStorage is not an identifier, but keeping storage untouched
-        // makes "nothing is stored on your device" literally true).
-        if (!anonymous) {
-            const storedStart = sessionStorage.getItem('session_start');
-            if (!storedStart) {
-                sessionStartRef.current = Date.now();
-                sessionStorage.setItem('session_start', String(sessionStartRef.current));
-            } else {
-                sessionStartRef.current = parseInt(storedStart);
-            }
+        const storedStart = anonymous ? null : sessionStorage.getItem('session_start');
+        if (storedStart) {
+            sessionStartRef.current = parseInt(storedStart);
         } else {
             sessionStartRef.current = Date.now();
+            if (!anonymous) sessionStorage.setItem('session_start', String(sessionStartRef.current));
         }
 
         const sendSessionEnd = () => {

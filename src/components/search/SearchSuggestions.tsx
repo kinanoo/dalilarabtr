@@ -7,7 +7,6 @@
 'use client';
 
 import { Search, ArrowLeft, TrendingUp, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { POPULAR_SEARCHES } from '@/hooks/useGlobalSearch';
 
 type SearchSuggestionsProps = {
@@ -18,20 +17,13 @@ type SearchSuggestionsProps = {
   onSuggestionClick: (text: string) => void;
 };
 
-const dropdownAnimation = {
-  initial: { opacity: 0, y: -10 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-};
-
 /** Popular & Recent searches (shown when input focused, no query) */
 export function PopularSuggestions({
   recentSearches,
   onSuggestionClick,
 }: Pick<SearchSuggestionsProps, 'recentSearches' | 'onSuggestionClick'>) {
   return (
-    <motion.div
-      {...dropdownAnimation}
+    <div
       className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
     >
       {/* Recent searches */}
@@ -79,7 +71,7 @@ export function PopularSuggestions({
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -89,8 +81,7 @@ export function AutocompleteSuggestions({
   onSuggestionClick,
 }: Pick<SearchSuggestionsProps, 'suggestions' | 'onSuggestionClick'>) {
   return (
-    <motion.div
-      {...dropdownAnimation}
+    <div
       className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
     >
       <div className="py-1">
@@ -107,6 +98,6 @@ export function AutocompleteSuggestions({
           </button>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

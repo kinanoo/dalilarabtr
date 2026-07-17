@@ -11,7 +11,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
 import { useGlobalSearch, saveRecentSearch } from '@/hooks/useGlobalSearch';
 import { PopularSuggestions, AutocompleteSuggestions } from '@/components/search/SearchSuggestions';
 import SearchResultsDropdown from '@/components/search/SearchResultsDropdown';
@@ -154,7 +153,7 @@ export default function GlobalSearch({
           <button
             type="submit"
             aria-label="بحث"
-            className="absolute inset-y-1.5 end-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-6 rounded-full font-bold shadow-lg transform active:scale-95 transition-all z-20 flex items-center justify-center"
+            className="absolute inset-y-1.5 end-1.5 bg-emerald-700 hover:bg-emerald-600 text-white px-6 rounded-full font-bold shadow-lg transform active:scale-95 transition-all z-20 flex items-center justify-center"
           >
             بحث
           </button>
@@ -177,22 +176,20 @@ export default function GlobalSearch({
         {isOpen && results.length === 0 && query.length > 0 && 'لا توجد نتائج'}
       </div>
 
-      <AnimatePresence>
-        {/* Popular + Recent (no query, input focused) */}
-        {showSuggestions && !isOpen && query.length === 0 && (
-          <PopularSuggestions recentSearches={recentSearches} onSuggestionClick={handleSuggestionClick} />
-        )}
+      {/* Popular + Recent (no query, input focused) */}
+      {showSuggestions && !isOpen && query.length === 0 && (
+        <PopularSuggestions recentSearches={recentSearches} onSuggestionClick={handleSuggestionClick} />
+      )}
 
-        {/* Autocomplete (typing, before results) */}
-        {showSuggestions && query.length >= 1 && suggestions.length > 0 && !isOpen && (
-          <AutocompleteSuggestions suggestions={suggestions} onSuggestionClick={handleSuggestionClick} />
-        )}
+      {/* Autocomplete (typing, before results) */}
+      {showSuggestions && query.length >= 1 && suggestions.length > 0 && !isOpen && (
+        <AutocompleteSuggestions suggestions={suggestions} onSuggestionClick={handleSuggestionClick} />
+      )}
 
-        {/* Search Results */}
-        {isOpen && (results.length > 0 || query.length > 0) && (
-          <SearchResultsDropdown results={results} query={query} isSearching={isSearching} onResultClick={handleResultClick} />
-        )}
-      </AnimatePresence>
+      {/* Search Results */}
+      {isOpen && (results.length > 0 || query.length > 0) && (
+        <SearchResultsDropdown results={results} query={query} isSearching={isSearching} onResultClick={handleResultClick} />
+      )}
     </div>
   );
 }
