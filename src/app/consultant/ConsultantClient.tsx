@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle, AlertTriangle, FileText, RefreshCw, ShieldAlert, Lightbulb,
@@ -26,7 +25,6 @@ import type { Article, PlanResult } from '@/lib/types';
 // withTimeout comes from its own module for the same reason.
 import { getSupabase } from '@/lib/supabaseLazy';
 import { withTimeout } from '@/lib/withTimeout';
-import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios';
 
 type Props = {
   initialComments?: any[]; // Keep any for comments flexible
@@ -74,13 +72,26 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
   // Skip the client table pull when the server already seeded the catalogue.
   const { scenarios } = useAdminScenarios(hasSeed);
 
+  // The hardcoded fallback catalogue is a 212KB source module (~60KB gz
+  // chunk), so it loads after mount instead of riding in the route's
+  // first-load JS. DB rows (seed or hook) cover the UI until it lands.
+  const [bundledScenarios, setBundledScenarios] = useState<Record<string, PlanResult>>({});
+  useEffect(() => {
+    let mounted = true;
+    import('@/lib/consultant-scenarios').then(
+      (m) => { if (mounted) setBundledScenarios(m.CONSULTANT_SCENARIOS); },
+      () => { /* offline/chunk error — DB scenarios keep the page usable */ }
+    );
+    return () => { mounted = false; };
+  }, []);
+
   // Create a map for quick lookup by ID. Prefer the server seed; fall back to
   // the client hook when no seed was provided (e.g. build-time fetch failed).
   const SCENARIOS = useMemo(() => {
-    const map: Record<string, PlanResult> = { ...CONSULTANT_SCENARIOS };
+    const map: Record<string, PlanResult> = { ...bundledScenarios };
     (hasSeed ? initialScenarios : scenarios).forEach((s: PlanResult) => map[s.id] = s);
     return map;
-  }, [scenarios, initialScenarios, hasSeed]);
+  }, [scenarios, initialScenarios, hasSeed, bundledScenarios]);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -182,7 +193,13 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
 
   // ...
 
+  // Monotonic call id: loadScenario re-fires when the lazy catalogue lands
+  // (SCENARIOS identity changes re-run the URL effect below), and the earlier
+  // call's slow DB/article fallback must not clobber the newer call's result.
+  const loadSeq = useRef(0);
+
   const loadScenario = useCallback(async (key: string) => {
+    const seq = ++loadSeq.current;
     const bundledResult = SCENARIOS[key] || null;
 
     // Known scenarios open immediately. The database refresh below can replace
@@ -244,6 +261,8 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
         }
       }
 
+      if (seq !== loadSeq.current) return;
+
       setResult(nextResult);
       setStep(nextResult ? 4 : 1);
 
@@ -253,7 +272,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
     } finally {
       // Never leave the visitor behind a permanent spinner, even if the
       // network is unavailable or a database response is malformed.
-      setLoading(false);
+      if (seq === loadSeq.current) setLoading(false);
     }
   }, [SCENARIOS]);
 
@@ -268,11 +287,19 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
     }
 
     if (!scenarioKey) return;
-    // Removed strict check: if (!SCENARIOS[scenarioKey]) return; 
+    // Removed strict check: if (!SCENARIOS[scenarioKey]) return;
+
+    // Already showing this scenario → nothing to load. Without this bail the
+    // effect (which re-fires whenever loadScenario's identity changes — the
+    // scenarios hook returns a fresh array per render) loops forever on any
+    // ?scenario= URL: endless single-row refetches + the active tab snapping
+    // back to 'steps'. When the result is still null (e.g. a hardcoded-only
+    // deep link before the lazy catalogue lands) the retry is wanted.
+    if (result?.id === scenarioKey) return;
 
     loadScenario(scenarioKey);
     setActiveTab('steps');
-  }, [loadScenario]);
+  }, [loadScenario, result]);
 
   const processLogic = (key: string) => {
     // Check if key is actually a direct URL (simple heuristic)
@@ -374,14 +401,13 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
 
           {/* Progress Bar */}
           <div className="bg-slate-50 dark:bg-slate-800 h-2 w-full">
-            <motion.div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-600" initial={{ width: 0 }} animate={{ width: `${(step / 3) * 100}%` }} />
+            <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-600 transition-[width] duration-500 ease-out" style={{ width: `${(step / 3) * 100}%` }} />
           </div>
 
           <div className="px-3 sm:px-5 md:px-10 pt-4 sm:pt-5 md:pt-6 pb-4 sm:pb-6 flex-grow flex flex-col justify-start">
-            <AnimatePresence mode="wait">
               {/* Step 1 */}
               {step === 1 && (
-                <motion.div key="q1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4 sm:space-y-6">
+                <div className="animate-fadeInUp space-y-4 sm:space-y-6">
                   <div className="text-center">
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
                       ما هي <span className="text-emerald-600 dark:text-emerald-400">صفتك القانونية؟</span>
@@ -498,12 +524,12 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                       </div>
                     );
                   })()}
-                </motion.div>
+                </div>
               )}
 
               {/* Step 2 */}
               {step === 2 && (
-                <motion.div key="q2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-4 sm:space-y-6">
+                <div className="animate-consult-step-in space-y-4 sm:space-y-6">
                   <div className="text-center">
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 leading-tight">
                       ما هو <span className="text-emerald-600 dark:text-emerald-400">المجال؟</span>
@@ -594,12 +620,12 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                   <button onClick={() => setStep(1)} className="text-slate-400 font-bold block mx-auto mt-4 hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2">
                     <ArrowLeft size={16} /> عودة للخلف
                   </button>
-                </motion.div>
+                </div>
               )}
 
               {/* Step 3 */}
               {step === 3 && !loading && (
-                <motion.div key="q3" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="space-y-3 sm:space-y-5">
+                <div className="animate-consult-step-in space-y-3 sm:space-y-5">
                   <div className="text-center">
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">حدد الطلب بدقة</h2>
                   </div>
@@ -1127,7 +1153,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                   <button onClick={() => setStep(2)} className="text-slate-400 font-bold block mx-auto mt-4 hover:text-slate-600 dark:hover:text-slate-200 transition flex items-center gap-2">
                     <ArrowLeft size={16} /> عودة للخلف
                   </button>
-                </motion.div>
+                </div>
               )}
 
               {/* Step 4 - Results */}
@@ -1153,7 +1179,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
               )}
 
               {step === 4 && shownResult && (
-                <motion.div key="res" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col h-full">
+                <div className="animate-consult-result-in flex flex-col h-full">
                   <div className="mb-6 sm:mb-8 text-center bg-slate-50 dark:bg-slate-800 p-4 sm:p-6 rounded-xl sm:rounded-3xl border border-slate-100 dark:border-slate-700 relative">
                     {/* Tools for Result Card */}
 
@@ -1330,16 +1356,15 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                       </Link>
                     )}
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {loading && (
-                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center py-16 sm:py-20">
+                <div className="animate-fadeIn text-center py-16 sm:py-20">
                   <RefreshCw className="animate-spin mx-auto text-emerald-500 mb-4 sm:mb-6" size={40} />
                   <h3 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">جاري تحليل البيانات...</h3>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
           </div>
 
 

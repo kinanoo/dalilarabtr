@@ -53,6 +53,20 @@
 }
 .animate-consent-in { animation: consentSlideUp 0.2s ease-out; }
 
+/* Consultant wizard step entrances — replace the framer-motion
+   AnimatePresence transitions (exits dropped: instant swap). */
+@keyframes consultStepIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-consult-step-in { animation: consultStepIn 0.3s ease-out; }
+
+@keyframes consultResultIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-consult-result-in { animation: consultResultIn 0.3s ease-out; }
+
 @keyframes slideInLeft {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
