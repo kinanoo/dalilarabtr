@@ -13,6 +13,7 @@ import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 
 const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
+import { getInitialTicker } from '@/lib/tickerServer';
 
 // Components
 import HeroSection from '@/components/home/HeroSection';
@@ -188,7 +189,7 @@ export const metadata: Metadata = {
 // ============================================
 
 export default async function Home() {
-  const [updates, guides] = await Promise.all([getUpdates(), getFeaturedGuides()]);
+  const [updates, guides, ticker] = await Promise.all([getUpdates(), getFeaturedGuides(), getInitialTicker()]);
 
   const homeFaqSchema = {
     '@context': 'https://schema.org',
@@ -207,8 +208,9 @@ export default async function Home() {
     <main className="flex flex-col min-h-screen font-cairo bg-transparent selection:bg-emerald-200 dark:selection:bg-emerald-700">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqSchema) }} />
 
-      {/* News Ticker — homepage only */}
-      <NewsTicker />
+      {/* News Ticker — homepage only. Seeded with SERVER-computed rates + news so
+          it renders full on first paint (no empty bar / pop-in flicker). */}
+      <NewsTicker initialEntries={ticker.entries} initialHidden={ticker.hidden} />
 
       {/* 1. HERO SECTION (Client) */}
       <HeroSection>

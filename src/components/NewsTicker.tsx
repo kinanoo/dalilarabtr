@@ -22,65 +22,32 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 // Lazy supabase — the ticker renders on the homepage first load; a static
 // supabaseClient import here kept supabase-js in the home first-load JS.
 import { getSupabase } from '@/lib/supabaseLazy';
+import { fmt, repeatCount, ratesToEntries, toLatinDigits, type Entry } from '@/lib/tickerShared';
+import type { Rates } from '@/lib/rates';
 
-interface Rate { value: number; change: number }
-type RatesResp = { ok?: boolean; rates?: Record<string, Rate | null> };
+type RatesResp = { ok?: boolean; rates?: Rates };
 
-type Entry =
-    | { kind: 'news'; id: string; text: string; link?: string }
-    | { kind: 'rate'; id: string; label: string; value: string; unit: string; change: number };
-
-const RATE_ITEMS: { key: string; label: string; unit: string; dec: number }[] = [
-    { key: 'usd', label: 'دولار', unit: '₺', dec: 2 },
-    { key: 'eur', label: 'يورو', unit: '₺', dec: 2 },
-    { key: 'sar', label: 'ريال سعودي', unit: '₺', dec: 2 },
-    { key: 'gold', label: 'غرام ذهب', unit: '₺', dec: 0 },
-    { key: 'goldOz', label: 'أونصة ذهب', unit: '$', dec: 0 },
-    { key: 'sypUsd', label: 'الدولار مقابل السوري', unit: 'ل.س', dec: 0 },
-    { key: 'sypTry', label: 'التركي مقابل السوري', unit: 'ل.س', dec: 2 },
-];
-
-const EASTERN_DIGITS = /[٠-٩۰-۹]/g;
-function toLatinDigits(s: string): string {
-    return s.replace(EASTERN_DIGITS, (ch) => {
-        const code = ch.charCodeAt(0);
-        if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
-        if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0);
-        return ch;
-    });
-}
-function fmt(n: number, dec: number): string {
-    return Number(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
-}
-
-// Repeat the entries enough times inside ONE copy so a copy is always wider than
-// the viewport (otherwise a short list would leave a gap between the two copies).
-function repeatCount(n: number): number {
-    if (n <= 2) return 6;
-    if (n <= 4) return 4;
-    if (n <= 8) return 2;
-    return 1;
-}
-
-export default function NewsTicker() {
-    const [entries, setEntries] = useState<Entry[]>([]);
+export default function NewsTicker({ initialEntries = [], initialHidden = false }: {
+    initialEntries?: Entry[];
+    initialHidden?: boolean;
+}) {
+    // Seed from the SERVER-computed entries so the strip paints FULL on the very
+    // first frame — no empty dark bar, no client round-trip, no pop-in flicker.
+    const [entries, setEntries] = useState<Entry[]>(initialEntries);
     const copyRef = useRef<HTMLDivElement>(null);
     const [duration, setDuration] = useState(30);
     const [isPaused, setIsPaused] = useState(false);
-    // `hidden` = admin turned the strip OFF (site_settings.ticker_enabled=false):
-    // only then do we collapse it entirely. `ready` = the width has been measured
-    // and the marquee may reveal + start. Splitting these two off the empty-vs-
-    // -loaded state is what removes the on-refresh jank: the bar reserves its
-    // fixed height from first paint (no layout shift when data arrives), and the
-    // scroll animation never starts at the wrong duration and restarts (the flash).
-    const [hidden, setHidden] = useState(false);
+    // `hidden` = admin turned the strip OFF (ticker_enabled=false): only then do
+    // we collapse it entirely. `ready` gates the scroll animation start. Seeding
+    // both from the server keeps SSR and first client render identical.
+    const [hidden, setHidden] = useState(initialHidden);
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
         let alive = true;
 
         async function load() {
-            const rateEntries: Entry[] = [];
+            let rateEntries: Entry[] = [];
             const newsEntries: Entry[] = [];
 
             const supabase = await getSupabase();
@@ -101,17 +68,7 @@ export default function NewsTicker() {
             try {
                 const r = await fetch('/api/rates');
                 const d = (await r.json()) as RatesResp;
-                if (d.ok && d.rates) {
-                    for (const it of RATE_ITEMS) {
-                        const rate = d.rates[it.key];
-                        if (rate) {
-                            rateEntries.push({
-                                kind: 'rate', id: `rate-${it.key}`, label: it.label,
-                                value: fmt(rate.value, it.dec), unit: it.unit, change: rate.change,
-                            });
-                        }
-                    }
-                }
+                if (d.ok && d.rates) rateEntries = ratesToEntries(d.rates);
             } catch { /* rates unavailable → ticker still shows news */ }
 
             try {
@@ -129,7 +86,11 @@ export default function NewsTicker() {
                 }
             } catch { /* news unavailable → ticker still shows rates */ }
 
-            if (alive) setEntries([...rateEntries, ...newsEntries]);
+            // Only replace the server-seeded content when the refresh actually
+            // produced something — a transient fetch failure must not blank the
+            // strip that already rendered with SSR data.
+            const next = [...rateEntries, ...newsEntries];
+            if (alive && next.length > 0) setEntries(next);
         }
 
         load();
@@ -137,20 +98,16 @@ export default function NewsTicker() {
         return () => { alive = false; clearInterval(id); };
     }, []);
 
-    // Measure ONE copy's width to set the scroll duration, THEN reveal + start
-    // the animation (ready=true). Measuring before the animation starts means
-    // the duration is correct from the first frame, so it never restarts
-    // mid-scroll (the visible flicker). The content is rendered but invisible
-    // (opacity 0) during this ~1 frame so scrollWidth is measurable.
+    // Measure ONE copy's width to set the scroll duration, then start the
+    // animation (ready=true). Done in the mount effect body (no timer) so it
+    // fires reliably right after the first paint: the content is already
+    // visible (server-seeded), the duration is correct BEFORE the scroll
+    // begins, so the marquee starts once cleanly with no restart flash.
     useEffect(() => {
         if (!copyRef.current || entries.length === 0) return;
-        const t = setTimeout(() => {
-            if (!copyRef.current) return;
-            const copyWidth = copyRef.current.scrollWidth;
-            setDuration(Math.max(15, copyWidth / 70));
-            setReady(true);
-        }, 60);
-        return () => clearTimeout(t);
+        const w = copyRef.current.scrollWidth;
+        if (w > 0) setDuration(Math.max(15, w / 70));
+        setReady(true);
     }, [entries]);
 
     // Admin explicitly disabled the strip → render nothing at all.
@@ -204,10 +161,12 @@ export default function NewsTicker() {
                             animationDuration: `${duration}s`,
                             animationTimingFunction: 'linear',
                             animationIterationCount: 'infinite',
-                            // Stay paused + invisible until the width is measured, then
-                            // reveal and run — one clean start, no duration-restart flash.
+                            // Content is visible the instant it exists (server-seeded on
+                            // first paint, or faded in if it arrives client-side later).
+                            // The SCROLL only starts once the width is measured (`ready`),
+                            // so it begins once at the correct duration — no restart flash.
                             animationPlayState: ready && !isPaused ? 'running' : 'paused',
-                            opacity: ready ? 1 : 0,
+                            opacity: entries.length > 0 ? 1 : 0,
                             transition: 'opacity 300ms ease',
                         }}
                     >
