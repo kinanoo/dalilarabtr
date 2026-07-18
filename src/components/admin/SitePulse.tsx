@@ -18,7 +18,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users, Eye, TrendingUp, TrendingDown, Activity, Globe, RefreshCw,
-    FileText, Share2, MapPin, Clock, Smartphone, ChevronDown, UserPlus, Repeat,
+    FileText, Share2, MapPin, Clock, Smartphone, ChevronDown, Repeat, Flame, Info,
 } from 'lucide-react';
 
 interface Stats {
@@ -30,9 +30,17 @@ interface Stats {
 }
 interface Comparison { visitors_change_pct?: number }
 interface Row { label: string; value: number }
-interface PeriodInsight { new_visitors?: number; returning_visitors?: number; page_views?: number }
+interface PeriodInsight {
+    page_views?: number;
+    active_visitors?: number;
+    returning_visitors?: number;
+    one_day_visitors?: number;
+    engaged_visitors?: number;
+}
 interface TopPage { page_path: string; views: number | string; uniques?: number | string }
 interface Insights {
+    tracking_since?: string;
+    today?: PeriodInsight;
     week?: PeriodInsight;
     month?: PeriodInsight;
     top_pages_week?: TopPage[];
@@ -73,6 +81,40 @@ const pageLabel = (p: string) => PAGE_LABELS[p] || p;
 const sourceLabel = (s: string) => SOURCE_LABELS[s] || s;
 const deviceLabel = (d: string) => DEVICE_LABELS[d] || d;
 const flag = (c: string) => FLAGS[c] || '🌐';
+
+// One period (week / month) of visitor behaviour: page views, unique visitors,
+// returning (2+ distinct days), and engaged (5+ views). All from the v2
+// get_visitor_insights RPC. Returning + engaged answer "how many people come
+// back" — the metrics the daily-rotated fingerprint could never report.
+function PeriodCard({ title, data }: { title: string; data?: PeriodInsight }) {
+    const metrics = [
+        { label: 'مشاهدات الصفحات', value: data?.page_views, icon: Eye, cls: 'text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30' },
+        { label: 'زوّار (فريدون)', value: data?.active_visitors, icon: Users, cls: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
+        { label: 'عادوا (يوم ثانٍ+)', value: data?.returning_visitors, icon: Repeat, cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30' },
+        { label: 'مكثفون (5+ صفحات)', value: data?.engaged_visitors, icon: Flame, cls: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30' },
+    ];
+    return (
+        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+            <h3 className="text-xs font-black text-slate-700 dark:text-slate-200 mb-3">{title}</h3>
+            <div className="grid grid-cols-2 gap-2">
+                {metrics.map((m, i) => {
+                    const Icon = m.icon;
+                    return (
+                        <div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 px-2.5 py-2">
+                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0 ${m.cls}`}>
+                                <Icon size={13} />
+                            </span>
+                            <div className="min-w-0">
+                                <div className="text-base font-black text-slate-900 dark:text-white tabular-nums leading-none">{fmt(m.value)}</div>
+                                <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">{m.label}</div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 
 function MiniPanel({ title, icon: Icon, accent, rows, prefix, action }: {
     title: string;
@@ -253,29 +295,19 @@ export default function SitePulse() {
                     </button>
                     {showDetails && (
                         <div className="space-y-2 sm:space-y-3">
-                            {/* New vs returning — one compact strip, week + month */}
-                            {insights && (
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                                    {[
-                                        { label: 'زوار جدد', sub: 'آخر 7 أيام', value: insights.week?.new_visitors, icon: UserPlus, cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30' },
-                                        { label: 'زوار عائدون', sub: 'آخر 7 أيام', value: insights.week?.returning_visitors, icon: Repeat, cls: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
-                                        { label: 'زوار جدد', sub: 'آخر 30 يوم', value: insights.month?.new_visitors, icon: UserPlus, cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30' },
-                                        { label: 'زوار عائدون', sub: 'آخر 30 يوم', value: insights.month?.returning_visitors, icon: Repeat, cls: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
-                                    ].map((c, i) => {
-                                        const Icon = c.icon;
-                                        return (
-                                            <div key={i} className="flex items-center gap-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 shadow-sm">
-                                                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${c.cls}`}>
-                                                    <Icon size={15} />
-                                                </span>
-                                                <div className="min-w-0">
-                                                    <div className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-none">{fmt(c.value)}</div>
-                                                    <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">{c.label} · {c.sub}</div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                            {/* Visitor behaviour — week + month side by side, each with the
+                                four honest metrics from get_visitor_insights v2. */}
+                            {insights && (insights.week || insights.month) && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                    <PeriodCard title="آخر 7 أيام" data={insights.week} />
+                                    <PeriodCard title="آخر 30 يوم" data={insights.month} />
                                 </div>
+                            )}
+                            {insights?.tracking_since && (
+                                <p className="flex items-start gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                                    <Info size={12} className="shrink-0 mt-0.5" />
+                                    <span>«العائدون» = زوّار ظهروا في يومين مختلفين على الأقل (عادوا فعلاً). التتبّع الدقيق للزائر بدأ {insights.tracking_since}؛ لذلك يرتفع رقم العائدين تدريجياً كلما تراكمت الأيام.</span>
+                                </p>
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                                 <MiniPanel
