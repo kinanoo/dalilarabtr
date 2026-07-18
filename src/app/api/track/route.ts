@@ -24,12 +24,16 @@ function isBot(ua: string): boolean {
   return BOT_PATTERNS.some((p) => p.test(ua));
 }
 
-// ─── IP Hashing (privacy-preserving) ────────────────────────────────
-// Daily salt rotation so the same IP gets a different hash each day
-// This prevents long-term IP tracking while allowing daily uniqueness
-function hashIP(ip: string): string {
-  const daySalt = new Date().toISOString().split('T')[0]; // e.g. "2026-03-01"
-  return createHash('sha256').update(`${ip}:${daySalt}`).digest('hex').slice(0, 16);
+// ─── Stable visitor fingerprint ─────────────────────────────────────
+// sha256(ip | user-agent | fixed salt). Deliberately NOT day-rotated: the
+// owner needs new-vs-returning visitors per week/month, which requires the
+// same person to hash to the same key across days. Nothing is stored on the
+// visitor's device and the raw IP never reaches the database — only this
+// one-way truncated hash. Env can override the salt, but a hardcoded default
+// is required because plain-text Worker vars get wiped on every deploy.
+const VISITOR_SALT = process.env.ANALYTICS_VISITOR_SALT || 'dalilarabtr-visitors-v1';
+function hashIP(ip: string, ua: string): string {
+  return createHash('sha256').update(`${ip}|${ua}|${VISITOR_SALT}`).digest('hex').slice(0, 16);
 }
 
 // ─── Cloudflare Geo → Country Name ──────────────────────────────────
@@ -83,15 +87,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, filtered: 'admin' });
     }
 
-    // ─── Extract real IP (Cloudflare-trusted, not the spoofable XFF) ──
-    const ip = getClientIp(req);
-    const ip_hash = ip !== 'unknown' ? hashIP(ip) : null;
-
     // ─── Bot filter ─────────────────────────────────────────────────
     const ua = req.headers.get('user-agent') || '';
     if (isBot(ua)) {
       return NextResponse.json({ ok: true, filtered: 'bot' });
     }
+
+    // ─── Extract real IP (Cloudflare-trusted, not the spoofable XFF) ──
+    const ip = getClientIp(req);
+    const ip_hash = ip !== 'unknown' ? hashIP(ip, ua) : null;
 
     // ─── Geolocation headers (Cloudflare) ───────────────────────────
     // cf-ipcountry is always available on Cloudflare. City/region require the

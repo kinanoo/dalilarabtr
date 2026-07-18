@@ -18,7 +18,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
     Users, Eye, TrendingUp, TrendingDown, Activity, Globe, RefreshCw,
-    FileText, Share2, MapPin, Clock, Smartphone, ChevronDown,
+    FileText, Share2, MapPin, Clock, Smartphone, ChevronDown, UserPlus, Repeat,
 } from 'lucide-react';
 
 interface Stats {
@@ -30,6 +30,14 @@ interface Stats {
 }
 interface Comparison { visitors_change_pct?: number }
 interface Row { label: string; value: number }
+interface PeriodInsight { new_visitors?: number; returning_visitors?: number; page_views?: number }
+interface TopPage { page_path: string; views: number | string; uniques?: number | string }
+interface Insights {
+    week?: PeriodInsight;
+    month?: PeriodInsight;
+    top_pages_week?: TopPage[];
+    top_pages_month?: TopPage[];
+}
 
 function fmt(n: number | undefined): string {
     if (n == null) return '—';
@@ -66,12 +74,13 @@ const sourceLabel = (s: string) => SOURCE_LABELS[s] || s;
 const deviceLabel = (d: string) => DEVICE_LABELS[d] || d;
 const flag = (c: string) => FLAGS[c] || '🌐';
 
-function MiniPanel({ title, icon: Icon, accent, rows, prefix }: {
+function MiniPanel({ title, icon: Icon, accent, rows, prefix, action }: {
     title: string;
     icon: React.ElementType;
     accent: string;
     rows: Row[];
     prefix?: (label: string) => string;
+    action?: React.ReactNode;
 }) {
     const max = Math.max(1, ...rows.map((r) => r.value));
     return (
@@ -81,6 +90,7 @@ function MiniPanel({ title, icon: Icon, accent, rows, prefix }: {
                     <Icon size={14} />
                 </span>
                 <h3 className="text-xs font-black text-slate-700 dark:text-slate-200">{title}</h3>
+                {action && <div className="ms-auto">{action}</div>}
             </div>
             {rows.length === 0 ? (
                 <p className="text-[11px] text-slate-400 py-2">لا بيانات بعد</p>
@@ -109,6 +119,8 @@ export default function SitePulse() {
     const [stats, setStats] = useState<Stats | null>(null);
     const [cmp, setCmp] = useState<Comparison | null>(null);
     const [pages, setPages] = useState<Row[]>([]);
+    const [insights, setInsights] = useState<Insights | null>(null);
+    const [pagesPeriod, setPagesPeriod] = useState<'week' | 'month'>('week');
     const [sources, setSources] = useState<Row[]>([]);
     const [countries, setCountries] = useState<Row[]>([]);
     const [devices, setDevices] = useState<Row[]>([]);
@@ -134,11 +146,13 @@ export default function SitePulse() {
         if (!supabase) { setLoading(false); return; }
         if (silent) setRefreshing(true); else setLoading(true);
         const rpc = (name: string) => supabase!.rpc(name);
-        const [s, c, p, r, co, dv] = await Promise.allSettled([
+        const [s, c, p, r, co, dv, vi] = await Promise.allSettled([
             rpc('get_dashboard_stats'), rpc('get_period_comparison'),
             rpc('get_top_pages'), rpc('get_referrer_stats'),
             rpc('get_country_stats'), rpc('get_device_stats'),
+            rpc('get_visitor_insights'),
         ]);
+        if (vi.status === 'fulfilled' && vi.value.data) setInsights(vi.value.data as Insights);
         if (s.status === 'fulfilled' && s.value.data) setStats(s.value.data as Stats);
         if (c.status === 'fulfilled' && c.value.data) setCmp(c.value.data as Comparison);
         if (p.status === 'fulfilled' && Array.isArray(p.value.data))
@@ -161,6 +175,13 @@ export default function SitePulse() {
 
     const growth = cmp?.visitors_change_pct;
     const growthUp = (growth ?? 0) >= 0;
+
+    // Week/month toggled top pages from get_visitor_insights; falls back to the
+    // legacy 30-day get_top_pages list until the owner runs the new migration.
+    const insightTop = pagesPeriod === 'week' ? insights?.top_pages_week : insights?.top_pages_month;
+    const insightPages: Row[] | null = insightTop && insightTop.length
+        ? insightTop.map((x) => ({ label: pageLabel(x.page_path), value: Number(x.views) }))
+        : null;
 
     const cards = [
         { key: 'now', label: 'الزوار الآن', value: fmt(stats?.active_users_now), sub: 'نشط آخر 5 دقائق', icon: Activity, cls: 'from-emerald-500 to-teal-600', live: true },
@@ -231,11 +252,55 @@ export default function SitePulse() {
                         {showDetails ? 'إخفاء تفاصيل الزوّار' : 'تفاصيل الزوّار (صفحات · مصادر · دول · أجهزة)'}
                     </button>
                     {showDetails && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                            <MiniPanel title="أكثر الصفحات زيارة" icon={FileText} accent="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" rows={pages} />
-                            <MiniPanel title="من أين أتى الزوار" icon={Share2} accent="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" rows={sources} />
-                            <MiniPanel title="الدول" icon={MapPin} accent="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" rows={countries} prefix={(c) => flag(c)} />
-                            <MiniPanel title="الأجهزة" icon={Smartphone} accent="bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" rows={devices} />
+                        <div className="space-y-2 sm:space-y-3">
+                            {/* New vs returning — one compact strip, week + month */}
+                            {insights && (
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                                    {[
+                                        { label: 'زوار جدد', sub: 'آخر 7 أيام', value: insights.week?.new_visitors, icon: UserPlus, cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30' },
+                                        { label: 'زوار عائدون', sub: 'آخر 7 أيام', value: insights.week?.returning_visitors, icon: Repeat, cls: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
+                                        { label: 'زوار جدد', sub: 'آخر 30 يوم', value: insights.month?.new_visitors, icon: UserPlus, cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30' },
+                                        { label: 'زوار عائدون', sub: 'آخر 30 يوم', value: insights.month?.returning_visitors, icon: Repeat, cls: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' },
+                                    ].map((c, i) => {
+                                        const Icon = c.icon;
+                                        return (
+                                            <div key={i} className="flex items-center gap-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 shadow-sm">
+                                                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${c.cls}`}>
+                                                    <Icon size={15} />
+                                                </span>
+                                                <div className="min-w-0">
+                                                    <div className="text-lg font-black text-slate-900 dark:text-white tabular-nums leading-none">{fmt(c.value)}</div>
+                                                    <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">{c.label} · {c.sub}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                                <MiniPanel
+                                    title="أكثر الصفحات زيارة"
+                                    icon={FileText}
+                                    accent="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                                    rows={insightPages ?? pages}
+                                    action={insights ? (
+                                        <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden text-[10px] font-black">
+                                            {(['week', 'month'] as const).map((p) => (
+                                                <button
+                                                    key={p}
+                                                    onClick={() => setPagesPeriod(p)}
+                                                    className={`px-2 py-0.5 transition-colors ${pagesPeriod === p ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-emerald-600'}`}
+                                                >
+                                                    {p === 'week' ? 'أسبوع' : 'شهر'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : undefined}
+                                />
+                                <MiniPanel title="من أين أتى الزوار" icon={Share2} accent="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" rows={sources} />
+                                <MiniPanel title="الدول" icon={MapPin} accent="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" rows={countries} prefix={(c) => flag(c)} />
+                                <MiniPanel title="الأجهزة" icon={Smartphone} accent="bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" rows={devices} />
+                            </div>
                         </div>
                     )}
                 </>
