@@ -50,8 +50,22 @@ export default function TapFeedbackPulse() {
       window.setTimeout(() => pulse.remove(), 620);
     }
 
-    document.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
-    return () => document.removeEventListener('pointerdown', onPointerDown, { capture: true });
+    // The ripple only matters once the user taps (always post-load), so attach
+    // at browser idle instead of during the post-hydration effect flush — keeps
+    // this off the critical main-thread window on weak devices.
+    const w = window as unknown as {
+      requestIdleCallback?: (c: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (i: number) => void;
+    };
+    const attach = () => document.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
+    const idleId = w.requestIdleCallback
+      ? w.requestIdleCallback(attach, { timeout: 2000 })
+      : window.setTimeout(attach, 200);
+    return () => {
+      if (w.cancelIdleCallback) w.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId);
+      document.removeEventListener('pointerdown', onPointerDown, { capture: true });
+    };
   }, [pathname]);
 
   return null;

@@ -21,7 +21,11 @@ import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGu
 import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
 import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
 import GuidedJourney from '@/components/GuidedJourney';
-import { QuickActionsGrid, HomeFAQ } from '@/components/home/LazyBelowFold';
+// QuickActionsGrid + HomeFAQ are now Server Components (native markup, zero
+// client JS) so they're imported directly — the old client `dynamic()` wrappers
+// in LazyBelowFold only code-split them, they still hydrated on first load.
+import QuickActionsGrid from '@/components/home/QuickActionsGrid';
+import HomeFAQ from '@/components/home/HomeFAQ';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import { Sparkles, Wrench, MessageCircleQuestion, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -69,11 +73,13 @@ async function getUpdates() {
           .order('created_at', { ascending: false })
           .limit(5),
       ]),
-      8000, // 8 second timeout
+      2500, // 2.5s timeout — cap how long a cold regeneration can block the
+            // document. On weak networks/cold isolates the page renders without
+            // the updates rail rather than hanging on a slow Supabase round-trip.
     );
 
     if (!result) {
-      logger.warn('getUpdates: Supabase timeout (8s) — rendering without updates');
+      logger.warn('getUpdates: Supabase timeout (2.5s) — rendering without updates');
       return [];
     }
 
@@ -136,7 +142,7 @@ async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
         .contains('tags', ['دليل'])
         .order('created_at', { ascending: false })
         .limit(12),
-      8000,
+      2500,
     );
     if (!res || !res.data) return [];
     return res.data

@@ -1,17 +1,18 @@
-'use client';
-
-import { useState } from 'react';
 import { ChevronDown, HelpCircle, ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 
+/**
+ * HomeFAQ — Server Component (zero client JS).
+ *
+ * Was a `'use client'` island whose ONLY interactivity was accordion
+ * open/close via useState. Native `<details>/<summary>` gives the same
+ * expand/collapse with no JavaScript, so this now renders as pure server
+ * HTML — removing a hydrated island (and its icons) from the homepage's
+ * first-load work while keeping the SSR content + SEO identical. The chevron
+ * rotates via the CSS `[open]` state on the parent <details>.
+ */
 export default function HomeFAQ() {
-    const [openId, setOpenId] = useState<string | null>(null);
-
-    const toggle = (id: string) => {
-        setOpenId(prev => prev === id ? null : id);
-    };
-
     return (
         <section className="px-4 py-8">
             <div className="max-w-4xl mx-auto">
@@ -34,61 +35,47 @@ export default function HomeFAQ() {
                     آخر تحقق: <time dateTime="2026-07-17">17 يوليو 2026</time>. المعلومات العامة لا تغني عن مراجعة الجهة الرسمية في حالتك.
                 </p>
 
-                {/* FAQ List */}
+                {/* FAQ List — native <details> per item, no JS */}
                 <div className="space-y-2">
-                    {TOP_FAQS.map((faq, index) => {
-                        const isOpen = openId === faq.id;
-                        const answerId = `home-faq-answer-${faq.id}`;
-                        return (
-                            <div
-                                key={faq.id}
-                                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-600 hover:-translate-y-0.5"
-                            >
-                                <button
-                                    type="button"
-                                    onClick={() => toggle(faq.id)}
-                                    className="w-full flex items-start gap-3 p-4 text-right"
-                                    aria-expanded={isOpen}
-                                    aria-controls={answerId}
-                                >
-                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center mt-0.5">
-                                        {index + 1}
-                                    </span>
-                                    <span className="flex-1 text-sm font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
-                                        {faq.question}
-                                    </span>
-                                    <ChevronDown
-                                        size={18}
-                                        className={`flex-shrink-0 text-slate-400 mt-0.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
-                                <div id={answerId} className={`grid transition-all duration-300 ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                                    <div className="overflow-hidden">
-                                        <div className="px-4 pb-4 pr-13">
-                                            <p className="text-sm text-slate-600 dark:text-slate-300 leading-loose">
-                                                {faq.answer}
-                                            </p>
-                                            <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
-                                                <Link href={faq.detailHref} className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400">
-                                                    الدليل التفصيلي
-                                                    <ArrowLeft size={13} aria-hidden="true" />
-                                                </Link>
-                                                <a
-                                                    href={faq.sourceUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 font-bold text-sky-700 hover:text-sky-800 dark:text-sky-400"
-                                                >
-                                                    المصدر: {faq.sourceLabel}
-                                                    <ExternalLink size={12} aria-hidden="true" />
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
+                    {TOP_FAQS.map((faq, index) => (
+                        <details
+                            key={faq.id}
+                            className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-600 open:border-emerald-400 dark:open:border-emerald-600"
+                        >
+                            <summary className="w-full flex items-start gap-3 p-4 text-right cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                                    {index + 1}
+                                </span>
+                                <span className="flex-1 text-sm font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
+                                    {faq.question}
+                                </span>
+                                <ChevronDown
+                                    size={18}
+                                    className="flex-shrink-0 text-slate-400 mt-0.5 transition-transform duration-200 group-open:rotate-180"
+                                />
+                            </summary>
+                            <div className="px-4 pb-4 pr-13">
+                                <p className="text-sm text-slate-600 dark:text-slate-300 leading-loose">
+                                    {faq.answer}
+                                </p>
+                                <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
+                                    <Link href={faq.detailHref} className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400">
+                                        الدليل التفصيلي
+                                        <ArrowLeft size={13} aria-hidden="true" />
+                                    </Link>
+                                    <a
+                                        href={faq.sourceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 font-bold text-sky-700 hover:text-sky-800 dark:text-sky-400"
+                                    >
+                                        المصدر: {faq.sourceLabel}
+                                        <ExternalLink size={12} aria-hidden="true" />
+                                    </a>
                                 </div>
                             </div>
-                        );
-                    })}
+                        </details>
+                    ))}
                 </div>
             </div>
         </section>

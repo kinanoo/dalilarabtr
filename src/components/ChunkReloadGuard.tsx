@@ -56,9 +56,25 @@ export default function ChunkReloadGuard() {
             }
         };
 
-        window.addEventListener('error', onError);
-        window.addEventListener('unhandledrejection', onRejection);
+        // Register at browser idle rather than in the post-hydration effect
+        // flush — these guard against chunk 404s on SOFT NAVIGATION (a later
+        // <Link> click), never the first paint, so a ~sub-second delay costs
+        // nothing but keeps the listeners off the critical hydration task.
+        const w = window as unknown as {
+            requestIdleCallback?: (c: () => void, o?: { timeout: number }) => number;
+            cancelIdleCallback?: (i: number) => void;
+        };
+        const attach = () => {
+            window.addEventListener('error', onError);
+            window.addEventListener('unhandledrejection', onRejection);
+        };
+        const idleId = w.requestIdleCallback
+            ? w.requestIdleCallback(attach, { timeout: 2000 })
+            : window.setTimeout(attach, 200);
+
         return () => {
+            if (w.cancelIdleCallback) w.cancelIdleCallback(idleId);
+            else window.clearTimeout(idleId);
             window.removeEventListener('error', onError);
             window.removeEventListener('unhandledrejection', onRejection);
         };

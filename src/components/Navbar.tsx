@@ -17,7 +17,7 @@ import {
   LayoutGrid, Wrench, type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import PrayerPopover from './PrayerPopover';
+import PrayerPopover from './PrayerPopoverLazy';
 import NavDropdown from './NavDropdown';
 import NavMegaMenu from './NavMegaMenu';
 import NotificationBell from './notifications/NotificationBellLazy';

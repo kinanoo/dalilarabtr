@@ -3,98 +3,141 @@
 /**
  * LatinDigits — site-wide Eastern-Arabic → Latin digit normalizer.
  *
- * Why this exists: the site has Eastern-Arabic digits (٠-٩) scattered
- * everywhere — hardcoded in JSX strings, baked into article content from
- * the DB, written by editors in markdown intros, formatted via Intl
- * APIs with the ar-EG locale, etc. The user wants a hard guarantee
- * that NO number ever renders in Eastern-Arabic form on this site.
+ * The site has Eastern-Arabic digits (٠-٩) scattered everywhere — hardcoded in
+ * JSX, baked into DB article content, produced by Intl with the ar locale. The
+ * owner wants a hard guarantee that NO number ever renders in Eastern-Arabic
+ * form. Doing it by hand in source + DB is fragile; this normalizes the
+ * rendered DOM instead.
  *
- * Doing this by hand-replacing every string in source + DB is fragile —
- * the next published article would re-introduce the problem. Instead
- * this component runs once on the client after hydration:
- *
- *   1. Walks every text node currently in <body> and replaces any
- *      Eastern-Arabic digit codepoint (U+0660..U+0669) with the
- *      matching Latin digit (U+0030..U+0039).
- *
- *   2. Attaches a MutationObserver so any text added later (article
- *      ISR refresh, client-side fetches, route changes, modals) is
- *      normalized the moment it appears in the DOM.
- *
- * It does NOT mutate the underlying React state — only the rendered
- * text nodes. React will re-render with the original digits when state
- * changes, then this observer fires again. Net cost: one walk per text
- * node mutation, which is microseconds even on slow phones.
- *
- * Mounted globally from app/layout.tsx so it covers every page.
+ * PERFORMANCE (why it's written this way):
+ * The first version walked the whole <body> recursively and synchronously in
+ * the mount effect, then kept a body-wide MutationObserver reacting per
+ * mutation. On weak Android phones that full walk ran as one uninterruptible
+ * long task at the exact moment the page became interactive — a visible
+ * multi-second freeze on top of the ~1MB JS hydration. This version keeps the
+ * same digit guarantee but never blocks:
+ *   1. Uses a native TreeWalker (SHOW_TEXT) instead of JS recursion over every
+ *      element — the browser enumerates only text nodes, far cheaper.
+ *   2. Runs the initial sweep at requestIdleCallback, chunked (~500 nodes per
+ *      slice, rescheduling the rest) so it can never become one long task.
+ *   3. Attaches the MutationObserver only AFTER the first sweep, and coalesces
+ *      its work into a single idle batch instead of reacting synchronously.
  */
 
 import { useEffect } from 'react';
 
-const ARABIC_DIGIT_RE = /[٠-٩۰-۹]/g;
+const ARABIC_DIGIT_RE = /[٠-٩۰-۹]/;
+const ARABIC_DIGIT_RE_G = /[٠-٩۰-۹]/g;
 
 function arabicToLatin(s: string): string {
-    return s.replace(ARABIC_DIGIT_RE, (ch) => {
+    return s.replace(ARABIC_DIGIT_RE_G, (ch) => {
         const code = ch.charCodeAt(0);
-        // U+0660-U+0669 → 0-9
-        if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
-        // U+06F0-U+06F9 → 0-9 (Persian/Urdu digits — same conversion)
-        if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0);
+        if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660); // Arabic-Indic
+        if (code >= 0x06f0 && code <= 0x06f9) return String(code - 0x06f0); // Extended (Persian/Urdu)
         return ch;
     });
 }
 
-function normalizeNode(node: Node): void {
-    if (node.nodeType === Node.TEXT_NODE) {
-        const txt = node.nodeValue || '';
-        if (ARABIC_DIGIT_RE.test(txt)) {
-            // Re-test required because the regex has the /g flag and
-            // lastIndex sticks between calls. The replace below is
-            // independent of the test's lastIndex but we still reset it
-            // by re-reading the value through arabicToLatin.
-            ARABIC_DIGIT_RE.lastIndex = 0;
-            node.nodeValue = arabicToLatin(txt);
-        }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-        // Skip script/style — their text content isn't visible numbers.
-        const tag = (node as Element).tagName;
-        if (tag === 'SCRIPT' || tag === 'STYLE') return;
-        // Recurse into children
-        node.childNodes.forEach(normalizeNode);
+/** Normalize a single text node in place if it contains Eastern digits. */
+function normalizeTextNode(node: Node): void {
+    const txt = node.nodeValue;
+    if (txt && ARABIC_DIGIT_RE.test(txt)) {
+        node.nodeValue = arabicToLatin(txt);
     }
 }
+
+type IdleId = number;
+const scheduleIdle: (cb: () => void) => IdleId =
+    (typeof window !== 'undefined' && 'requestIdleCallback' in window)
+        ? (cb) => (window as unknown as { requestIdleCallback: (c: () => void, o?: { timeout: number }) => number }).requestIdleCallback(cb, { timeout: 2000 })
+        : (cb) => window.setTimeout(cb, 200);
+const cancelIdle: (id: IdleId) => void =
+    (typeof window !== 'undefined' && 'cancelIdleCallback' in window)
+        ? (id) => (window as unknown as { cancelIdleCallback: (i: number) => void }).cancelIdleCallback(id)
+        : (id) => window.clearTimeout(id);
 
 export default function LatinDigits() {
     useEffect(() => {
         if (typeof document === 'undefined') return;
 
-        // Initial sweep — handles the SSR'd content.
-        normalizeNode(document.body);
+        let cancelled = false;
+        let sweepId: IdleId | null = null;
+        let flushId: IdleId | null = null;
+        let obs: MutationObserver | null = null;
 
-        // Continuous sweep — anything React (or any other script) adds to
-        // the DOM after this point gets normalized too. We listen for
-        // node-add AND character-data changes so both new elements and
-        // text replacements are caught.
-        const obs = new MutationObserver((mutations) => {
-            for (const m of mutations) {
-                if (m.type === 'characterData' && m.target.nodeType === Node.TEXT_NODE) {
-                    const txt = m.target.nodeValue || '';
-                    if (ARABIC_DIGIT_RE.test(txt)) {
-                        ARABIC_DIGIT_RE.lastIndex = 0;
-                        m.target.nodeValue = arabicToLatin(txt);
-                    }
+        // A TreeWalker that visits only text nodes, skipping SCRIPT/STYLE.
+        const makeWalker = (root: Node) =>
+            document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(n) {
+                    const parent = n.parentNode as Element | null;
+                    const tag = parent?.nodeName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                },
+            });
+
+        // Chunked initial sweep — process ~500 text nodes per idle slice so a
+        // huge DOM never produces one long task.
+        const startSweep = () => {
+            const walker = makeWalker(document.body);
+            const step = () => {
+                if (cancelled) return;
+                let count = 0;
+                let node = walker.nextNode();
+                while (node) {
+                    normalizeTextNode(node);
+                    if (++count >= 500) break;
+                    node = walker.nextNode();
                 }
-                m.addedNodes.forEach(normalizeNode);
+                if (node) {
+                    sweepId = scheduleIdle(step); // more nodes remain
+                } else {
+                    startObserver(); // done — now watch for future changes
+                }
+            };
+            step();
+        };
+
+        // Observe DOM changes AFTER the first sweep. Coalesce all pending
+        // mutations into one idle batch instead of normalizing synchronously
+        // per mutation (which used to churn during ticker/coverflow updates).
+        const pending: Node[] = [];
+        const flush = () => {
+            flushId = null;
+            if (cancelled) return;
+            const batch = pending.splice(0, pending.length);
+            for (const root of batch) {
+                if (root.nodeType === Node.TEXT_NODE) {
+                    normalizeTextNode(root);
+                } else if (root.nodeType === Node.ELEMENT_NODE) {
+                    const el = root as Element;
+                    if (el.nodeName === 'SCRIPT' || el.nodeName === 'STYLE') continue;
+                    const walker = makeWalker(el);
+                    for (let n = walker.nextNode(); n; n = walker.nextNode()) normalizeTextNode(n);
+                    normalizeTextNode(el); // el itself is not visited by SHOW_TEXT walker
+                }
             }
-        });
+        };
+        const startObserver = () => {
+            if (cancelled) return;
+            obs = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    if (m.type === 'characterData') pending.push(m.target);
+                    m.addedNodes.forEach((n) => pending.push(n));
+                }
+                if (pending.length && flushId == null) flushId = scheduleIdle(flush);
+            });
+            obs.observe(document.body, { childList: true, characterData: true, subtree: true });
+        };
 
-        obs.observe(document.body, {
-            childList: true,
-            characterData: true,
-            subtree: true,
-        });
+        sweepId = scheduleIdle(startSweep);
 
-        return () => obs.disconnect();
+        return () => {
+            cancelled = true;
+            if (sweepId != null) cancelIdle(sweepId);
+            if (flushId != null) cancelIdle(flushId);
+            obs?.disconnect();
+        };
     }, []);
 
     return null;

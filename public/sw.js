@@ -1,39 +1,99 @@
-// Service worker — push notifications ONLY. No page/RSC/asset caching.
+// Service worker — push notifications + SAFE static-asset caching.
 //
-// WHY NO FETCH/CACHE HANDLER:
-// A previous version cached navigations/assets. On a frequently-redeployed
-// Cloudflare Worker that made the SW serve a STALE page or RSC payload during a
-// soft (client-side) navigation — which is invisible to curl (curl bypasses the
-// SW) and produced the "click a link → stuck on the loading skeleton, refresh
-// fixes it" bug, with NO JavaScript error (so a ChunkLoadError guard never
-// fired). Removing the caching layer means the browser always goes to the
-// network (Cloudflare's own edge cache still serves fast), so the SW can never
-// hand back stale content. Push notifications are unaffected.
+// CACHING POLICY (why it's safe this time):
+// A previous version cached NAVIGATIONS/RSC and served a STALE page on soft
+// client-side navigation → the "click a link → stuck on the loading skeleton,
+// refresh fixes it" bug (invisible to curl, no JS error). We do NOT do that.
 //
-// The version below force-activates and DELETES every old cache so any browser
-// still running the old caching SW is healed on its next load.
+// This SW caches ONLY immutable, content-hashed build assets under
+// `/_next/static/…` (JS chunks, CSS, fonts). Their filenames contain a content
+// hash, so a new deploy emits NEW filenames → a cache-first hit can NEVER be
+// stale (the old name is simply never requested again). Navigations, RSC
+// (`?_rsc=` / Accept: text/x-component), API calls, Supabase, and anything else
+// go straight to the network — never intercepted, never cached. That keeps the
+// page/RSC always fresh (Cloudflare's edge already serves those fast) while
+// letting a repeat visit / PWA cold-launch load all the heavy JS from disk
+// cache instantly instead of re-downloading ~257KB over a weak mobile network
+// (the cause of the multi-second logo splash when opening the installed app).
 
-const CACHE_NAME = 'daleel-arab-v4-push-only';
+const PUSH_VERSION = 'daleel-arab-v5-push';
+// STABLE across deploys on purpose: content-hashed assets stay valid forever,
+// so persisting this cache between deploys is what makes repeat launches fast.
+const STATIC_CACHE = 'daleel-static-v1';
+// Bound the cache so orphaned assets from prior builds can't grow it forever.
+// ~96 entries comfortably holds one build's chunks/css/fonts; older entries
+// (oldest insertion first) are evicted and harmlessly re-fetched if needed.
+const MAX_ENTRIES = 96;
 
-// Install: take over as soon as possible, no pre-caching.
+// Fire-and-forget LRU trim: delete the oldest entries beyond MAX_ENTRIES.
+// cache.keys() returns requests in insertion order, so the front is oldest.
+function trimStaticCache(cache) {
+    cache.keys().then((keys) => {
+        const overflow = keys.length - MAX_ENTRIES;
+        for (let i = 0; i < overflow; i++) cache.delete(keys[i]);
+    }).catch(() => {});
+}
+
+// Install: activate immediately, no pre-caching (assets are cached on first use).
 self.addEventListener('install', () => {
     self.skipWaiting();
 });
 
-// Activate: wipe EVERY cache the old SW created (no exceptions), then claim all
-// open tabs so the stale-serving SW stops controlling them immediately.
+// Activate: delete any legacy caches EXCEPT our static-asset cache, then claim
+// open tabs. Keeping STATIC_CACHE across deploys preserves the speed win;
+// everything else (old push-only caches, the old navigation cache) is wiped.
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
-            .then((names) => Promise.all(names.map((n) => caches.delete(n))))
+            .then((names) => Promise.all(
+                names.filter((n) => n !== STATIC_CACHE).map((n) => caches.delete(n))
+            ))
             .then(() => self.clients.claim())
     );
 });
 
-// NOTE: intentionally NO 'fetch' listener. The browser handles every request
-// directly against the network/edge — nothing is intercepted or cached here.
+// ─── Fetch: cache-first for immutable build assets ONLY ─────────────────────
+self.addEventListener('fetch', (event) => {
+    const req = event.request;
 
-// ─── Push Notifications ───────────────────────────────────────────────────
+    // Only ever touch GET. Everything else (POST /api/track, etc.) passes through.
+    if (req.method !== 'GET') return;
+
+    let url;
+    try { url = new URL(req.url); } catch { return; }
+
+    // Same-origin only.
+    if (url.origin !== self.location.origin) return;
+
+    // HARD EXCLUDES — must always hit the network, never cached:
+    //  • RSC payloads for soft navigations (this was the stale-page bug).
+    //  • Any navigation request (the HTML document itself).
+    if (url.searchParams.has('_rsc')) return;
+    if (req.mode === 'navigate') return;
+    const accept = req.headers.get('accept') || '';
+    if (accept.includes('text/x-component')) return;
+
+    // ONLY cache immutable, content-hashed build output. These filenames change
+    // on every deploy, so a cache hit is guaranteed fresh.
+    if (!url.pathname.startsWith('/_next/static/')) return;
+
+    event.respondWith(
+        caches.open(STATIC_CACHE).then((cache) =>
+            cache.match(req).then((hit) => {
+                if (hit) return hit;
+                return fetch(req).then((res) => {
+                    // Only cache a clean, complete response.
+                    if (res && res.status === 200 && res.type === 'basic') {
+                        cache.put(req, res.clone()).then(() => trimStaticCache(cache));
+                    }
+                    return res;
+                }).catch(() => hit); // offline + not cached → let it fail naturally
+            })
+        )
+    );
+});
+
+// ─── Push Notifications ─────────────────────────────────────────────────────
 self.addEventListener('push', function (event) {
     if (!(self.Notification && self.Notification.permission === 'granted')) return;
 
@@ -80,3 +140,6 @@ self.addEventListener('notificationclick', function (event) {
         })
     );
 });
+
+// Referenced so bundlers/linters keep the constant; documents the push cache id.
+void PUSH_VERSION;
