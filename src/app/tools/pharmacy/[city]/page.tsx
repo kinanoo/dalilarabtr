@@ -12,10 +12,13 @@ import {
     PHARMACY_CITIES, pharmacyCityBySlug, dutyMapUrl, OFFICIAL_EDEVLET_PHARMACY,
 } from '@/lib/pharmacyCities';
 
-// Fully static: the data is a compile-time constant and every action is an
-// outbound link (map / official chamber / e-Devlet) — no fetches, no JS state.
-export const dynamic = 'force-static';
-export const dynamicParams = false;
+// The data is a compile-time constant and every action is an outbound link
+// (map / official chamber / e-Devlet). ISR + dynamicParams=true (not
+// force-static + dynamicParams=false) because that's the only prerendered
+// dynamic-route shape @opennextjs/cloudflare actually serves on Workers —
+// /city/[slug] proved it; the force-static variant 404s in production.
+export const revalidate = 86400;
+export const dynamicParams = true;
 
 export function generateStaticParams() {
     return PHARMACY_CITIES.map((c) => ({ city: c.slug }));
