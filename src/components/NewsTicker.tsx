@@ -67,6 +67,14 @@ export default function NewsTicker() {
     const copyRef = useRef<HTMLDivElement>(null);
     const [duration, setDuration] = useState(30);
     const [isPaused, setIsPaused] = useState(false);
+    // `hidden` = admin turned the strip OFF (site_settings.ticker_enabled=false):
+    // only then do we collapse it entirely. `ready` = the width has been measured
+    // and the marquee may reveal + start. Splitting these two off the empty-vs-
+    // -loaded state is what removes the on-refresh jank: the bar reserves its
+    // fixed height from first paint (no layout shift when data arrives), and the
+    // scroll animation never starts at the wrong duration and restarts (the flash).
+    const [hidden, setHidden] = useState(false);
+    const [ready, setReady] = useState(false);
 
     useEffect(() => {
         let alive = true;
@@ -83,9 +91,10 @@ export default function NewsTicker() {
                 if (supabase) {
                     const { data, error } = await supabase.from('site_settings').select('ticker_enabled').limit(1).maybeSingle();
                     if (!error && data && (data as { ticker_enabled?: boolean }).ticker_enabled === false) {
-                        if (alive) setEntries([]);
+                        if (alive) setHidden(true); // admin OFF → collapse entirely
                         return;
                     }
+                    if (alive) setHidden(false); // enabled (or column missing) → keep the reserved bar
                 }
             } catch { /* default shown */ }
 
@@ -128,18 +137,24 @@ export default function NewsTicker() {
         return () => { alive = false; clearInterval(id); };
     }, []);
 
-    // Duration from ONE copy's width. 180 px/s ≈ 50% faster than the old 120.
+    // Measure ONE copy's width to set the scroll duration, THEN reveal + start
+    // the animation (ready=true). Measuring before the animation starts means
+    // the duration is correct from the first frame, so it never restarts
+    // mid-scroll (the visible flicker). The content is rendered but invisible
+    // (opacity 0) during this ~1 frame so scrollWidth is measurable.
     useEffect(() => {
         if (!copyRef.current || entries.length === 0) return;
         const t = setTimeout(() => {
             if (!copyRef.current) return;
             const copyWidth = copyRef.current.scrollWidth;
             setDuration(Math.max(15, copyWidth / 70));
-        }, 120);
+            setReady(true);
+        }, 60);
         return () => clearTimeout(t);
     }, [entries]);
 
-    if (entries.length === 0) return null;
+    // Admin explicitly disabled the strip → render nothing at all.
+    if (hidden) return null;
 
     const cycles = repeatCount(entries.length);
     const perCopy: Entry[] = Array.from({ length: cycles }, () => entries).flat();
@@ -189,7 +204,11 @@ export default function NewsTicker() {
                             animationDuration: `${duration}s`,
                             animationTimingFunction: 'linear',
                             animationIterationCount: 'infinite',
-                            animationPlayState: isPaused ? 'paused' : 'running',
+                            // Stay paused + invisible until the width is measured, then
+                            // reveal and run — one clean start, no duration-restart flash.
+                            animationPlayState: ready && !isPaused ? 'running' : 'paused',
+                            opacity: ready ? 1 : 0,
+                            transition: 'opacity 300ms ease',
                         }}
                     >
                         <div ref={copyRef} className="flex items-center whitespace-nowrap shrink-0">

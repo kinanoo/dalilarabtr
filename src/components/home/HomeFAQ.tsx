@@ -54,7 +54,7 @@ export default function HomeFAQ() {
                                     className="flex-shrink-0 text-slate-400 mt-0.5 transition-transform duration-200 group-open:rotate-180"
                                 />
                             </summary>
-                            <div className="px-4 pb-4 pr-13">
+                            <div className="px-4 pb-4 pr-12">
                                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-loose">
                                     {faq.answer}
                                 </p>

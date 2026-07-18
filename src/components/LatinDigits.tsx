@@ -65,16 +65,52 @@ export default function LatinDigits() {
         let flushId: IdleId | null = null;
         let obs: MutationObserver | null = null;
 
+        const isSkippedParent = (n: Node): boolean => {
+            const tag = n.parentNode?.nodeName;
+            return tag === 'SCRIPT' || tag === 'STYLE';
+        };
+
         // A TreeWalker that visits only text nodes, skipping SCRIPT/STYLE.
         const makeWalker = (root: Node) =>
             document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
                 acceptNode(n) {
-                    const parent = n.parentNode as Element | null;
-                    const tag = parent?.nodeName;
-                    if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
-                    return NodeFilter.FILTER_ACCEPT;
+                    return isSkippedParent(n) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
                 },
             });
+
+        // Coalesce all pending mutations into one idle batch instead of
+        // normalizing synchronously per mutation (which used to churn during
+        // ticker/coverflow updates).
+        const pending: Node[] = [];
+        const flush = () => {
+            flushId = null;
+            if (cancelled) return;
+            const batch = pending.splice(0, pending.length);
+            for (const root of batch) {
+                if (root.nodeType === Node.TEXT_NODE) {
+                    if (!isSkippedParent(root)) normalizeTextNode(root); // same exclusion as the walker
+                } else if (root.nodeType === Node.ELEMENT_NODE) {
+                    const el = root as Element;
+                    if (el.nodeName === 'SCRIPT' || el.nodeName === 'STYLE') continue;
+                    const walker = makeWalker(el);
+                    for (let n = walker.nextNode(); n; n = walker.nextNode()) normalizeTextNode(n);
+                }
+            }
+        };
+
+        // Attach the observer BEFORE the sweep starts, so any text mutated
+        // during the (possibly multi-slice) sweep is buffered in `pending` and
+        // flushed — no region can be both already-walked and unobserved. The
+        // sweep's own normalize() writes are idempotent (a re-check on Latin
+        // text is a cheap no-op), so double-processing is harmless.
+        obs = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                if (m.type === 'characterData') pending.push(m.target);
+                m.addedNodes.forEach((n) => pending.push(n));
+            }
+            if (pending.length && flushId == null) flushId = scheduleIdle(flush);
+        });
+        obs.observe(document.body, { childList: true, characterData: true, subtree: true });
 
         // Chunked initial sweep — process ~500 text nodes per idle slice so a
         // huge DOM never produces one long task.
@@ -89,45 +125,9 @@ export default function LatinDigits() {
                     if (++count >= 500) break;
                     node = walker.nextNode();
                 }
-                if (node) {
-                    sweepId = scheduleIdle(step); // more nodes remain
-                } else {
-                    startObserver(); // done — now watch for future changes
-                }
+                if (node) sweepId = scheduleIdle(step); // more nodes remain
             };
             step();
-        };
-
-        // Observe DOM changes AFTER the first sweep. Coalesce all pending
-        // mutations into one idle batch instead of normalizing synchronously
-        // per mutation (which used to churn during ticker/coverflow updates).
-        const pending: Node[] = [];
-        const flush = () => {
-            flushId = null;
-            if (cancelled) return;
-            const batch = pending.splice(0, pending.length);
-            for (const root of batch) {
-                if (root.nodeType === Node.TEXT_NODE) {
-                    normalizeTextNode(root);
-                } else if (root.nodeType === Node.ELEMENT_NODE) {
-                    const el = root as Element;
-                    if (el.nodeName === 'SCRIPT' || el.nodeName === 'STYLE') continue;
-                    const walker = makeWalker(el);
-                    for (let n = walker.nextNode(); n; n = walker.nextNode()) normalizeTextNode(n);
-                    normalizeTextNode(el); // el itself is not visited by SHOW_TEXT walker
-                }
-            }
-        };
-        const startObserver = () => {
-            if (cancelled) return;
-            obs = new MutationObserver((mutations) => {
-                for (const m of mutations) {
-                    if (m.type === 'characterData') pending.push(m.target);
-                    m.addedNodes.forEach((n) => pending.push(n));
-                }
-                if (pending.length && flushId == null) flushId = scheduleIdle(flush);
-            });
-            obs.observe(document.body, { childList: true, characterData: true, subtree: true });
         };
 
         sweepId = scheduleIdle(startSweep);
