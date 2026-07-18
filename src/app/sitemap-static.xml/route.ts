@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { TR_CITIES } from '@/lib/turkishCities';
+import { PHARMACY_CITIES } from '@/lib/pharmacyCities';
 
 /**
  * Sitemap — الصفحات الثابتة (About, Contact, Privacy, etc.)
@@ -27,6 +28,8 @@ const staticPages = [
   { path: '/tools', priority: 0.7 },
   { path: '/tools/kimlik-check', priority: 0.8 },
   { path: '/tools/pharmacy', priority: 0.7 },
+  // Per-city duty-pharmacy pages (targets «صيدلية مناوبة [مدينة]» demand).
+  ...PHARMACY_CITIES.map((c) => ({ path: `/tools/pharmacy/${c.slug}`, priority: 0.75 })),
   { path: '/tools/residence-calculator', priority: 0.8 },
   { path: '/tools/salary-calculator', priority: 0.8 },
   { path: '/tools/severance-calculator', priority: 0.8 },

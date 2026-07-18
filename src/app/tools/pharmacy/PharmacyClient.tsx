@@ -9,23 +9,23 @@ import CrossLinks from '@/components/seo/CrossLinks';
 
 const OFFICIAL_EDEVLET = 'https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama';
 
-// Major provinces most searched by Arab/Syrian residents (Turkish name for the
-// map query + Arabic display). Rendered as visible text → long-tail SEO for
-// «صيدلية مناوبة [مدينة]», and each opens a live map of on-duty pharmacies.
-const CITIES: { tr: string; ar: string }[] = [
-    { tr: 'İstanbul', ar: 'إسطنبول' }, { tr: 'Gaziantep', ar: 'غازي عنتاب' },
-    { tr: 'Mersin', ar: 'مرسين' }, { tr: 'Adana', ar: 'أضنة' },
-    { tr: 'Hatay', ar: 'هاتاي (أنطاكية)' }, { tr: 'Bursa', ar: 'بورصة' },
-    { tr: 'Ankara', ar: 'أنقرة' }, { tr: 'İzmir', ar: 'إزمير' },
-    { tr: 'Şanlıurfa', ar: 'شانلي أورفا' }, { tr: 'Konya', ar: 'قونية' },
-    { tr: 'Kayseri', ar: 'قيصري' }, { tr: 'Kilis', ar: 'كلّس' },
-    { tr: 'Kahramanmaraş', ar: 'كهرمان مرعش' }, { tr: 'Malatya', ar: 'ملاطية' },
-    { tr: 'Kocaeli', ar: 'كوجالي' }, { tr: 'Antalya', ar: 'أنطاليا' },
-    { tr: 'Mardin', ar: 'ماردين' }, { tr: 'Sakarya', ar: 'سكاريا' },
+// Major provinces most searched by Arab/Syrian residents. Slugs must match
+// src/lib/pharmacyCities.ts — each links to the dedicated indexable city page
+// (/tools/pharmacy/[city]) which carries the live map + the official chamber
+// list for that province. Kept as a slim {slug, ar} copy so the districts
+// dataset stays out of this client bundle.
+const CITIES: { slug: string; ar: string }[] = [
+    { slug: 'istanbul', ar: 'إسطنبول' }, { slug: 'gaziantep', ar: 'غازي عنتاب' },
+    { slug: 'mersin', ar: 'مرسين' }, { slug: 'adana', ar: 'أضنة' },
+    { slug: 'hatay', ar: 'هاتاي (أنطاكية)' }, { slug: 'bursa', ar: 'بورصة' },
+    { slug: 'ankara', ar: 'أنقرة' }, { slug: 'izmir', ar: 'إزمير' },
+    { slug: 'sanliurfa', ar: 'شانلي أورفا' }, { slug: 'konya', ar: 'قونية' },
+    { slug: 'kayseri', ar: 'قيصري' }, { slug: 'kilis', ar: 'كلّس' },
+    { slug: 'kahramanmaras', ar: 'كهرمان مرعش' }, { slug: 'malatya', ar: 'ملاطية' },
+    { slug: 'kocaeli', ar: 'كوجالي' }, { slug: 'antalya', ar: 'أنطاليا' },
+    { slug: 'mardin', ar: 'ماردين' }, { slug: 'sakarya', ar: 'سكاريا' },
+    { slug: 'osmaniye', ar: 'عثمانية' },
 ];
-
-const cityMapUrl = (tr: string) =>
-    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Nöbetçi Eczane ${tr}`)}`;
 
 function nearMe() {
     // "Near me now": open a live map of on-duty pharmacies around the user's
@@ -115,19 +115,17 @@ export default function PharmacyPage() {
                             </span>
                             الصيدلية المناوبة حسب المدينة
                         </h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">اختر مدينتك لعرض الصيدليات المناوبة القريبة عليها على الخريطة الآن.</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">اختر مدينتك: خريطة مباشرة، القائمة الرسمية اليومية لغرفة الصيادلة، والمناطق حيّاً حيّاً.</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {CITIES.map((c) => (
-                                <a
-                                    key={c.tr}
-                                    href={cityMapUrl(c.tr)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Link
+                                    key={c.slug}
+                                    href={`/tools/pharmacy/${c.slug}`}
                                     className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-sm transition-all"
                                 >
                                     <MapPin size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{c.ar}</span>
-                                </a>
+                                </Link>
                             ))}
                         </div>
                     </div>
