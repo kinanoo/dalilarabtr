@@ -200,12 +200,18 @@ export default function ArticleTOC({ contentSelector }: Props) {
             </div>
 
             <style jsx global>{`
+                /* Landing flash — a warm amber "highlighter" sweep that stands
+                   out against the site's emerald-green theme so the reader
+                   clearly sees which heading they jumped to. Amber reads on
+                   both light and dark backgrounds; the 3px bar sits on the
+                   start (right, RTL) edge as a reading-side marker. */
                 @keyframes tocFlash {
-                    0% { background-color: rgba(16, 185, 129, 0.18); }
-                    100% { background-color: transparent; }
+                    0%   { background-color: rgba(245, 158, 11, 0.30); box-shadow: 4px 0 0 0 rgba(245, 158, 11, 0.95); }
+                    70%  { background-color: rgba(245, 158, 11, 0.22); box-shadow: 4px 0 0 0 rgba(245, 158, 11, 0.75); }
+                    100% { background-color: transparent; box-shadow: 4px 0 0 0 rgba(245, 158, 11, 0); }
                 }
                 .toc-flash {
-                    animation: tocFlash 1.2s ease-out;
+                    animation: tocFlash 1.6s ease-out;
                     border-radius: 8px;
                 }
             `}</style>
