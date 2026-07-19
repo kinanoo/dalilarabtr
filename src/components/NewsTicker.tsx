@@ -27,6 +27,13 @@ import type { Rates } from '@/lib/rates';
 
 type RatesResp = { ok?: boolean; rates?: Rates };
 
+// A stable signature of the entries' VISIBLE content — used to skip re-rendering
+// the marquee when a refresh produced identical data (a new array with the same
+// values must not swap the DOM and re-resolve the scroll transform).
+function entriesSig(list: Entry[]): string {
+    return list.map((e) => (e.kind === 'rate' ? `${e.id}:${e.value}:${e.change}` : `${e.id}:${e.text}`)).join('|');
+}
+
 export default function NewsTicker({ initialEntries = [], initialHidden = false }: {
     initialEntries?: Entry[];
     initialHidden?: boolean;
@@ -42,6 +49,15 @@ export default function NewsTicker({ initialEntries = [], initialHidden = false 
     // both from the server keeps SSR and first client render identical.
     const [hidden, setHidden] = useState(initialHidden);
     const [ready, setReady] = useState(false);
+    // Was the strip already seeded with real content by the SERVER? If so we do
+    // NOT run the mount refetch — the seed is fresh and re-fetching /api/rates
+    // (a different, generally-fresher cache than the ISR-baked page) would swap
+    // in slightly different values mid-scroll, changing the copy width, which
+    // re-resolves the `translateX(50%)` transform and SNAPS the marquee sideways
+    // on every load. `lastSig` dedupes the 5-min refresh so it only ever
+    // re-renders when the values genuinely changed.
+    const seededRef = useRef(initialEntries.length > 0);
+    const lastSigRef = useRef(entriesSig(initialEntries));
 
     useEffect(() => {
         let alive = true;
@@ -86,14 +102,23 @@ export default function NewsTicker({ initialEntries = [], initialHidden = false 
                 }
             } catch { /* news unavailable → ticker still shows rates */ }
 
-            // Only replace the server-seeded content when the refresh actually
-            // produced something — a transient fetch failure must not blank the
-            // strip that already rendered with SSR data.
+            // Replace the content ONLY when the refresh produced something AND
+            // the values actually changed — a new array with identical values
+            // must not re-render (it would re-resolve the scroll transform), and
+            // a transient fetch failure must not blank the SSR-seeded strip.
             const next = [...rateEntries, ...newsEntries];
-            if (alive && next.length > 0) setEntries(next);
+            if (!next.length) return;
+            const sig = entriesSig(next);
+            if (alive && sig !== lastSigRef.current) {
+                lastSigRef.current = sig;
+                setEntries(next);
+            }
         }
 
-        load();
+        // Skip the mount fetch when the SERVER already seeded fresh content — it
+        // adds zero freshness on first paint and only reintroduces the sideways
+        // snap. Keep the 5-min interval for ongoing freshness.
+        if (!seededRef.current) load();
         const id = setInterval(load, 5 * 60 * 1000);
         return () => { alive = false; clearInterval(id); };
     }, []);

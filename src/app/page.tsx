@@ -7,12 +7,15 @@
 
 export const revalidate = 300; // Cache for 5 minutes (ISR)
 
-import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 
-const NewsTicker = dynamic(() => import("@/components/NewsTicker"));
+// Static import (NOT next/dynamic). The ticker is above the fold and already
+// server-rendered with its data; a dynamic() lazy boundary deferred its
+// hydration to a second pass, so the marquee started scrolling late — static
+// import hydrates it in the initial pass with the rest of the page.
+import NewsTicker from '@/components/NewsTicker';
 import { getInitialTicker } from '@/lib/tickerServer';
 
 // Components
