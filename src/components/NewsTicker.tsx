@@ -99,12 +99,17 @@ export default function NewsTicker({ initialEntries = [], initialHidden = false 
     }, []);
 
     // Measure ONE copy's width to set the scroll duration, then start the
-    // animation (ready=true). Done in the mount effect body (no timer) so it
-    // fires reliably right after the first paint: the content is already
-    // visible (server-seeded), the duration is correct BEFORE the scroll
-    // begins, so the marquee starts once cleanly with no restart flash.
+    // animation — exactly ONCE. Re-measuring on later entries changes (the 5-min
+    // rates/news refresh) would reassign `animationDuration` on a RUNNING CSS
+    // animation, which restarts it from 0 — the visible "jumps back / replays"
+    // the owner reported. Measuring once keeps the marquee flowing continuously:
+    // both copies always render the same `perCopy`, so they stay equal-width and
+    // the -50% loop keeps aligning even when the rate values update in place.
+    const measuredRef = useRef(false);
     useEffect(() => {
-        if (!copyRef.current || entries.length === 0) return;
+        if (measuredRef.current) return;                       // already measured — never restart
+        if (!copyRef.current || entries.length === 0) return;  // wait until content exists
+        measuredRef.current = true;
         const w = copyRef.current.scrollWidth;
         if (w > 0) setDuration(Math.max(15, w / 70));
         setReady(true);
