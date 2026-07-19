@@ -119,11 +119,23 @@ export default function ArticleTOC({ contentSelector }: Props) {
     function jump(id: string) {
         const el = document.getElementById(id);
         if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Collapse the TOC card FIRST, then scroll. The card sits in the flow
+        // ABOVE the article body, so collapsing it lifts every heading up by the
+        // card's expanded height. If we scrolled first (old order), the smooth
+        // scroll aimed at the heading's pre-collapse position and then the
+        // collapse pulled the heading up — so it overshot and landed BELOW the
+        // target ("ينزلني لتحت اكتر"). Closing first, then scrolling on the next
+        // couple of frames (after React commits the collapse and the browser
+        // relayouts), targets the heading's SETTLED position — it lands exactly
+        // on the heading (scroll-mt-24 keeps it clear of the fixed header).
         setMobileOpen(false);
-        // Brief highlight so the user sees where they landed
-        el.classList.add('toc-flash');
-        setTimeout(() => el.classList.remove('toc-flash'), 1200);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const target = document.getElementById(id);
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            target.classList.add('toc-flash');
+            setTimeout(() => target.classList.remove('toc-flash'), 1200);
+        }));
     }
 
     return (
