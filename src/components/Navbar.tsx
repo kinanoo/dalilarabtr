@@ -220,19 +220,30 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Measure the navbar's rendered height so the spacer below it
-  // (which keeps page content from jumping under the now-fixed
-  // header) is always exactly the right size. Resize observer so
-  // the spacer follows the navbar even when nav reflows on
-  // breakpoint changes (mobile/desktop, dark/light theme switch).
-  const [navHeight, setNavHeight] = useState(56);
+  // Measure the navbar's rendered height so the spacer below it (which keeps
+  // page content from jumping under the now-fixed header) is always exactly the
+  // right size.
+  //
+  // Default = the REAL no-banner height: the nav row is a constant `h-12`
+  // (48px) + the 1px `border-b` = 49px. The old default was 56 (a stale value
+  // from when the row was `h-14`), so on EVERY load the ResizeObserver
+  // corrected 56 → 49 and the whole page (ticker, hero, and the navbar's gold
+  // accent line at its bottom edge) jumped ~7px — the "الخط الذهبي يرمش"
+  // flicker. With the default already correct, the no-banner case (the common
+  // one) has ZERO correction, so nothing shifts. Measure the BORDER box (via
+  // getBoundingClientRect, includes the border) so the spacer clears the whole
+  // header; the observer still follows real changes (a banner appearing,
+  // breakpoint/theme reflow).
+  const [navHeight, setNavHeight] = useState(49);
   useEffect(() => {
     const el = navRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver((entries) => {
-      const h = entries[0]?.contentRect?.height;
-      if (h && h > 0) setNavHeight(Math.ceil(h));
-    });
+    const measure = () => {
+      const h = el.getBoundingClientRect().height;
+      if (h && h > 0) setNavHeight(Math.round(h));
+    };
+    measure(); // correct immediately if the SSR default is off (e.g. a banner)
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
