@@ -1,11 +1,7 @@
 import { Metadata } from 'next';
-import type { ElementType } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import {
-    Briefcase, MapPin, ArrowRight, Stethoscope, Scale, Languages, Home as HomeIcon,
-    GraduationCap, Sparkles, ShieldCheck, Car, UtensilsCrossed, Package, Plane, Wrench,
-} from 'lucide-react';
+import { Briefcase, MapPin, ArrowRight, CheckCircle2, AlertTriangle, ChevronLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 import logger from '@/lib/logger';
@@ -14,16 +10,10 @@ import ProviderCard, { type ProviderCardData } from '@/components/services/Provi
 import {
     SERVICE_CATEGORIES, POPULAR_CITIES, categoryBySlug, type ServiceCategory,
 } from '@/lib/serviceCategories';
+import { catIcon } from '@/lib/serviceCategoryIcons';
 import { cityBySlug, citySlugForName } from '@/lib/turkishCities';
 
 export const revalidate = 600;
-
-// Per-profession icon for the landing-page hero.
-const CAT_ICONS: Record<string, ElementType> = {
-    doctors: Stethoscope, lawyers: Scale, translators: Languages, 'real-estate': HomeIcon,
-    education: GraduationCap, beauty: Sparkles, insurance: ShieldCheck, cars: Car,
-    restaurants: UtensilsCrossed, cargo: Package, tourism: Plane, general: Wrench,
-};
 
 export function generateStaticParams() {
     return SERVICE_CATEGORIES.map((c) => ({ slug: c.slug }));
@@ -74,7 +64,9 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
         description,
         keywords: cat.keywords,
         alternates: { canonical: `/services/category/${cat.slug}` },
-        robots: count === 0 ? { index: false, follow: true } : undefined,
+        // Always indexable: every category page now carries an evergreen guide
+        // (how to choose / what to verify), so it's useful content even with
+        // zero providers listed yet — not a thin page.
         openGraph: { title, description, url: `${SITE_CONFIG.siteUrl}/services/category/${cat.slug}`, type: 'website', images: ['/og-banner.jpg'] },
     };
 }
@@ -87,7 +79,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     const providers = await fetchProviders(cat);
     // Cities that actually have providers in this profession → crawlable links.
     const cityChips = Array.from(new Set(providers.map((p) => citySlugForName(p.city)).filter(Boolean))) as string[];
-    const Icon = CAT_ICONS[cat.slug] || Briefcase;
+    const Icon = catIcon(cat.slug);
     const base = SITE_CONFIG.siteUrl;
     const pageUrl = `${base}/services/category/${cat.slug}`;
 
@@ -174,6 +166,42 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         {providers.map((p) => <ProviderCard key={p.id} p={p} />)}
                     </div>
                 )}
+
+                {/* Evergreen guide — makes the page useful (and indexable) even
+                    with zero providers; real "how to choose / what to verify"
+                    advice, not fabricated claims. */}
+                <div className={`${providers.length > 0 ? 'mt-12 pt-8 border-t border-slate-200 dark:border-slate-800' : 'mt-2'}`}>
+                    <div className="max-w-3xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-sm">
+                        <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400"><Icon size={17} /></span>
+                            كيف تختار {cat.labelAr} في تركيا؟
+                        </h2>
+                        <p className="text-sm sm:text-[15px] leading-7 text-slate-600 dark:text-slate-300 mb-5">{cat.guide.intro}</p>
+                        <ul className="space-y-2.5">
+                            {cat.guide.checklist.map((item, i) => (
+                                <li key={i} className="flex items-start gap-2.5 text-sm leading-6 text-slate-700 dark:text-slate-200">
+                                    <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        {cat.guide.note && (
+                            <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/70 dark:border-amber-800/40 px-4 py-3 text-[13px] leading-6 font-bold text-amber-800 dark:text-amber-200">
+                                <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                                <span>{cat.guide.note}</span>
+                            </p>
+                        )}
+                        {cat.guide.related && cat.guide.related.length > 0 && (
+                            <div className="mt-5 flex flex-wrap gap-2">
+                                {cat.guide.related.map((r) => (
+                                    <Link key={r.href} href={r.href} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
+                                        <ChevronLeft size={14} /> {r.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 {/* Same profession by city — crawlable internal links */}
                 {cityChips.length > 0 && (

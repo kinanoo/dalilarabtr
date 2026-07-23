@@ -6,6 +6,8 @@ import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRigh
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalCity } from '@/lib/turkishCities';
+import { SERVICE_CATEGORIES, CATEGORY_VARIANTS } from '@/lib/serviceCategories';
+import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
 import ProviderCard from '@/components/services/ProviderCard';
@@ -45,21 +47,11 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
   const [page, setPage] = useState(1);
   const PER_PAGE = 15;
 
-  // --- Category Mapping for Legacy Support ---
-  const CATEGORY_MAPPING = useMemo<Record<string, string[]>>(() => ({
-    'طبيب': ['طبيب', 'Health', 'health', 'doctor', 'Doctor', 'medical'],
-    'محامي': ['محامي', 'Lawyer', 'lawyer', 'legal', 'Legal'],
-    'مترجم': ['مترجم', 'Translation', 'translation', 'Translator', 'translator'],
-    'عقارات': ['عقارات', 'Real Estate', 'real_estate', 'housing'],
-    'تعليم': ['تعليم', 'Education', 'education', 'student'],
-    'تجميل': ['تجميل', 'Beauty', 'beauty', 'cosmetics'],
-    'تأمين': ['تأمين', 'Insurance', 'insurance'],
-    'سيارات': ['سيارات', 'Cars', 'cars', 'automotive'],
-    'مطاعم': ['مطاعم', 'Restaurants', 'restaurants', 'food'],
-    'شحن': ['شحن', 'Cargo', 'cargo', 'shipping'],
-    'سياحة': ['سياحة', 'Tourism', 'tourism', 'travel'],
-    'خدمات عامة': ['خدمات عامة', 'General', 'general', 'other'],
-  }), []);
+  // --- Category Mapping ---
+  // Canonical Arabic category → every DB spelling it might hold, derived from
+  // the shared taxonomy (src/lib/serviceCategories.ts) so this filter, the
+  // landing pages, and the sitemap never drift. Module constant = stable ref.
+  const CATEGORY_MAPPING = CATEGORY_VARIANTS;
 
   // --- Fallback fetch (only when the server seed is empty) ---
   // Runs at most once. With a healthy seed this never touches the network.
@@ -256,18 +248,9 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
             <div className="flex flex-wrap justify-center gap-1.5">
               {[
                 { id: 'all', label: 'الكل' },
-                { id: 'طبيب', label: 'أطباء' },
-                { id: 'محامي', label: 'محامون' },
-                { id: 'مترجم', label: 'مترجمون' },
-                { id: 'عقارات', label: 'عقارات' },
-                { id: 'تعليم', label: 'طلاب' },
-                { id: 'تجميل', label: 'تجميل' },
-                { id: 'تأمين', label: 'تأمين' },
-                { id: 'سيارات', label: 'سيارات' },
-                { id: 'مطاعم', label: 'مطاعم' },
-                { id: 'شحن', label: 'شحن' },
-                { id: 'سياحة', label: 'سياحة' },
-                { id: 'خدمات عامة', label: 'عامة' },
+                // Quick-filter chips = the most-searched professions; the full
+                // taxonomy is browsable in the "كل المهن" grid below.
+                ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
                 ...extraCategories.map(c => ({ id: c, label: c })),
               ].map(cat => (
                 <button
@@ -474,6 +457,36 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
             )}
           </>
         )}
+      </section>
+
+      {/* Browse every profession — crawlable links to each landing page (each
+          carries its own guide), and a full directory for users. Rendered in
+          the server HTML so Google discovers all category pages from /services. */}
+      <section className="max-w-screen-2xl mx-auto px-4 pb-4 w-full">
+        <div className="flex items-center gap-2 mb-4">
+          <Briefcase size={18} className="text-emerald-600" />
+          <h2 className="text-base font-black text-slate-800 dark:text-slate-100">تصفّح كل المهن والخدمات</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          {SERVICE_CATEGORIES.map((c) => {
+            const Icon = catIcon(c.slug);
+            return (
+              <Link
+                key={c.slug}
+                href={`/services/category/${c.slug}`}
+                className="group flex items-center gap-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all"
+              >
+                <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                  <Icon size={17} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100 leading-tight truncate">{c.labelAr}</span>
+                  <span className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-tight truncate">{c.blurb}</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       {/* Bottom CTA */}

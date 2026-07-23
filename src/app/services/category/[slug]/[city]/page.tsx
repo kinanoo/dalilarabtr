@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { ArrowRight, MapPin, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 import logger from '@/lib/logger';
@@ -139,6 +139,25 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                         {providers.map((p) => <ProviderCard key={p.id} p={p} />)}
                     </div>
                 )}
+
+                {/* Compact evergreen guide — same practical advice as the
+                    profession landing, scoped to this city. */}
+                <div className={providers.length > 0 ? 'mt-12 pt-8 border-t border-slate-200 dark:border-slate-800' : 'mt-2'}>
+                    <div className="max-w-3xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                        <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-3">
+                            كيف تختار {cat.labelAr} في {cityObj.ar}؟
+                        </h2>
+                        <p className="text-sm leading-7 text-slate-600 dark:text-slate-300 mb-4">{cat.guide.intro}</p>
+                        <ul className="space-y-2.5">
+                            {cat.guide.checklist.map((item, i) => (
+                                <li key={i} className="flex items-start gap-2.5 text-sm leading-6 text-slate-700 dark:text-slate-200">
+                                    <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
 
                 {/* Same profession in other cities — crawlable internal links */}
                 <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
