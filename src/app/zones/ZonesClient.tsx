@@ -605,7 +605,11 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
                         return (
                           <Link
                             key={`${zone.c}-${zone.d}-${zone.n}-${idx}`}
-                            href={`/zones/${encodeURIComponent(zone.n)}`}
+                            // Carry the province + district: neighbourhood names
+                            // repeat across provinces, and the name alone would
+                            // resolve to an arbitrary row — showing "open" for a
+                            // neighbourhood that is closed where the reader lives.
+                            href={`/zones/${encodeURIComponent(zone.n)}?city=${encodeURIComponent(zone.c)}&district=${encodeURIComponent(zone.d)}`}
                             className={`rounded-xl border p-4 flex items-center justify-between gap-3 transition cursor-pointer ${styles.border} ${styles.bg}`}
                           >
                             <div className="text-right min-w-0 flex-1">

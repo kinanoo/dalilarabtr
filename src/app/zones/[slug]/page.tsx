@@ -15,7 +15,26 @@ export const revalidate = 600;
 
 type Props = {
     params: Promise<{ slug: string }>;
+    // Neighbourhood NAMES REPEAT across provinces — "CUMHURİYET MAHALLESİ"
+    // exists in 20 different rows. Looking a name up on its own therefore
+    // returns an arbitrary row and can show "open" for a neighbourhood that is
+    // closed where the reader actually lives, which is a housing-contract-level
+    // mistake. Callers that know the context (the /zones search results) pass
+    // ?city=&district= so the exact row is resolved. The canonical URL stays the
+    // bare path, so this adds no duplicate URLs.
+    searchParams?: Promise<{ city?: string; district?: string }>;
 };
+
+/** Narrow a neighbourhood lookup to one province/district when known. */
+function withPlace<T extends { ilike: (col: string, val: string) => T }>(
+    q: T,
+    place: { city?: string; district?: string },
+): T {
+    let out = q;
+    if (place.city) out = out.ilike('city', place.city);
+    if (place.district) out = out.ilike('district', place.district);
+    return out;
+}
 
 type Zone = {
     id: string;
@@ -30,17 +49,23 @@ type Zone = {
 };
 
 // 1. Metadata Generation
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
+    const place = (await searchParams) || {};
 
     if (!supabase) return { title: `منطقة ${decodedSlug}` };
 
-    // Try finding by neighborhood
-    const { data: exactZone } = await supabase
-        .from('zones')
-        .select('neighborhood, city, district, status')
-        .ilike('neighborhood', decodedSlug)
+    // Try finding by neighborhood — narrowed to the caller's province/district
+    // when known, so the title never announces the status of a same-named
+    // neighbourhood in a different city.
+    const { data: exactZone } = await withPlace(
+        supabase
+            .from('zones')
+            .select('neighborhood, city, district, status')
+            .ilike('neighborhood', decodedSlug),
+        place,
+    )
         .limit(1)
         .single();
 
@@ -265,9 +290,10 @@ function StatusSection({
 }
 
 // 2. Page Component
-export default async function ZoneDetailPage({ params }: Props) {
+export default async function ZoneDetailPage({ params, searchParams }: Props) {
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
+    const place = (await searchParams) || {};
 
     if (!supabase) return notFound();
 
@@ -297,15 +323,35 @@ export default async function ZoneDetailPage({ params }: Props) {
     }
     const slugNorm = tnorm(decodedSlug);
 
-    // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ")
+    // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ").
+    //    Names REPEAT across provinces, so we fetch every match instead of
+    //    picking one. If the caller passed ?city=&district= (search results) or
+    //    the name is genuinely unique, we land on one row and show its status.
+    //    Otherwise we must NOT assert a single status — we list every match with
+    //    its province/district so the reader picks their own. Showing one
+    //    arbitrary row here previously reported "open" for a neighbourhood that
+    //    is closed in 16 of its 20 provinces.
     {
-        const { data } = await supabase
-            .from('zones')
-            .select(ZONE_COLS)
-            .ilike('neighborhood', decodedSlug)
-            .limit(1)
-            .single();
-        if (data) { singleItem = data as Zone; viewType = 'single'; }
+        const { data } = await withPlace(
+            supabase.from('zones').select(ZONE_COLS).ilike('neighborhood', decodedSlug),
+            place,
+        ).limit(60);
+        const matches = (data || []) as Zone[];
+        if (matches.length === 1) {
+            singleItem = matches[0];
+            viewType = 'single';
+        } else if (matches.length > 1) {
+            viewType = 'city';           // grouped list, split by district
+            // The grouped view labels each section by `district`; for a repeated
+            // neighbourhood the PROVINCE is the part that disambiguates, so fold
+            // it into the label — otherwise two same-named districts in
+            // different provinces would still be indistinguishable.
+            groupItems = matches.map((z) => ({
+                ...z,
+                district: z.city && z.district ? `${z.district} — ${z.city}` : (z.district || z.city),
+            }));
+            title = matches[0].neighborhood;
+        }
     }
 
     // 2. Try DISTRICT (e.g., "Fatih")
