@@ -82,7 +82,13 @@ async function fetchArticleData(slug: string) {
     const decoded = decodeURIComponent(slug);
 
     // Try by slug (short English URL) first — filter status at DB level
-    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status';
+    // `tags` is required by the tag-chip renderer in ArticleViewPremium, which
+    // is guarded by Array.isArray(article.tags). Omitting the column here meant
+    // the guard never passed, so NO article rendered a single /tag/ link while
+    // sitemap-tags.xml kept submitting those hubs to Google — every tag page was
+    // an orphan. It is also the only topical (non-boilerplate) internal link an
+    // article carries.
+    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, tags';
 
     let { data } = await supabase
       .from('articles')

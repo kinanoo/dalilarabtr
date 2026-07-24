@@ -52,8 +52,14 @@ export async function GET() {
             }
             // Single-use tags are usually typos or one-off — drop them so
             // Google doesn't crawl 70 thin landing pages with one card each.
+            // Raised 2 → 3 alongside making article tag chips render: linking a
+            // page and submitting it for indexing are separate decisions. A
+            // two-article tag page is a fine navigation target but is still thin
+            // as a search result, and thin submitted URLs are what feeds the
+            // "crawled – currently not indexed" bucket. Two-article tags stay
+            // reachable and indexable; they're just not pushed at Google.
             entries = Array.from(buckets.entries())
-                .filter(([, v]) => v.count >= 2)
+                .filter(([, v]) => v.count >= 3)
                 .map(([tag, v]) => ({ tag, count: v.count, lastSeen: v.lastSeen || new Date().toISOString() }));
         } catch {
             // ignore — emit empty sitemap rather than 500

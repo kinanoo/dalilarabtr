@@ -73,7 +73,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     // answer — the body lists them all, so the title says so too.
     if (found.length > 1) {
         const closed = found.filter((z) => z.status === 'closed').length;
-        const listTitle = `أحياء باسم ${found[0].neighborhood} في ${found.length} مواقع — تحقّق من ولايتك`;
+        // Arabic number agreement: 3-10 take the plural (مواقع), 11+ take the
+        // accusative singular (موقعاً).
+        const placeWord = found.length <= 10 ? 'مواقع' : 'موقعاً';
+        const listTitle = `أحياء باسم ${found[0].neighborhood} في ${found.length} ${placeWord} — تحقّق من ولايتك`;
         return {
             title: listTitle,
             description: `اسم «${found[0].neighborhood}» يتكرّر في ${found.length} حياً بولايات مختلفة، ${closed} منها مغلق أمام تسجيل عناوين الأجانب. اختر ولايتك ومنطقتك لمعرفة الحالة الصحيحة.`,
