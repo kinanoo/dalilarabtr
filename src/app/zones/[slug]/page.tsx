@@ -59,16 +59,34 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     // Try finding by neighborhood — narrowed to the caller's province/district
     // when known, so the title never announces the status of a same-named
     // neighbourhood in a different city.
-    const { data: exactZone } = await withPlace(
+    const { data: nameMatches } = await withPlace(
         supabase
             .from('zones')
             .select('neighborhood, city, district, status')
             .ilike('neighborhood', decodedSlug),
         place,
-    )
-        .limit(1)
-        .single();
+    ).limit(60);
+    const found = (nameMatches || []) as { neighborhood: string; city: string; district: string; status: string | null }[];
 
+    // Same name in several provinces and no ?city=&district= to disambiguate:
+    // the title must NOT announce one province's status as if it were the
+    // answer — the body lists them all, so the title says so too.
+    if (found.length > 1) {
+        const closed = found.filter((z) => z.status === 'closed').length;
+        const listTitle = `أحياء باسم ${found[0].neighborhood} في ${found.length} مواقع — تحقّق من ولايتك`;
+        return {
+            title: listTitle,
+            description: `اسم «${found[0].neighborhood}» يتكرّر في ${found.length} حياً بولايات مختلفة، ${closed} منها مغلق أمام تسجيل عناوين الأجانب. اختر ولايتك ومنطقتك لمعرفة الحالة الصحيحة.`,
+            alternates: { canonical: `/zones/${encodeURIComponent(found[0].neighborhood)}` },
+            robots: { index: false, follow: true },
+            openGraph: {
+                title: listTitle,
+                images: [{ url: getOgImage(undefined, { title: listTitle }), width: 1200, height: 630, alt: listTitle }],
+            },
+        };
+    }
+
+    const exactZone = found[0];
     if (exactZone) {
         const isClosed = exactZone.status === 'closed';
         const zoneTitle = isClosed
