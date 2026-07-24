@@ -30,10 +30,15 @@ export default function ConsentAwareAnalytics() {
     return (
         <Suspense fallback={null}>
             <AnalyticsTracker anonymous={!consented} />
+            {/* Core Web Vitals run for EVERY visitor, consent or not: they are
+                anonymous numbers about the site's own speed (LCP/CLS/INP), carry
+                no visitor or session id, and store nothing on the device. Gating
+                them behind consent blinded us to the performance of the low-end
+                and slow-network users who need it most. GA stays gated below. */}
+            <WebVitals />
             {consented && (
                 <>
                     <GoogleAnalytics />
-                    <WebVitals />
                     <ConversionEvents />
                 </>
             )}
