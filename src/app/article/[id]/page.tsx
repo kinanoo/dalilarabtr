@@ -129,7 +129,11 @@ async function fetchArticleData(slug: string) {
         // schema can emit an accurate datePublished (was wrongly equal to
         // dateModified, making every edited article look freshly published).
         createdAt: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : '',
-        lastUpdate: (data.last_update || data.created_at) ? new Date(data.last_update || data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+        lastUpdate: (data.last_update || data.created_at) ? new Date(data.last_update || data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        // Carried through to the tag chips in ArticleViewPremium. This mapper
+        // builds a NEW object, so selecting the column is not enough — a field
+        // omitted here never reaches the view.
+        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
       };
     }
   }
