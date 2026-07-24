@@ -507,7 +507,7 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
             انضم إلى دليل العرب وقدّم خدمتك لجمهور عربي واسع في تركيا.
           </p>
           <Link
-            href="/join"
+            href="/services/add"
             className="inline-flex items-center gap-2 bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-emerald-700 hover:scale-105 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
           >
             <Briefcase size={20} />
