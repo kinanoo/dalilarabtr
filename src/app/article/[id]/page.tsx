@@ -10,6 +10,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { ArticleStep } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import RelatedArticles from '@/components/RelatedArticles';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
@@ -20,6 +21,47 @@ import { deobfuscate, isObfuscated } from '@/lib/security';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 export const dynamicParams = true;
+
+/**
+ * Without this, every article view re-rendered from scratch and re-queried
+ * Supabase — verified live: article pages answered
+ * `Cache-Control: private, no-cache, no-store`, while every route that DOES
+ * declare generateStaticParams (/city/[slug], /tools/pharmacy/[city],
+ * /services/category/[slug]) answered with `s-maxage`. On this
+ * OpenNext/Workers deployment the correlation is exact: a dynamic segment with
+ * no known params is treated as fully dynamic and `revalidate` alone never
+ * engages. Articles are the site's main organic landing pages, so that was one
+ * database read per visitor on the busiest section — the largest single
+ * contributor to the Supabase egress overage, and it grew with traffic.
+ *
+ * `dynamicParams` stays true, so an article published after the last build
+ * still renders on demand rather than 404ing; it just isn't prerendered until
+ * the next deploy. Returning [] on any failure degrades to today's behaviour
+ * instead of failing the build.
+ */
+export async function generateStaticParams() {
+    try {
+        if (!supabase) return [];
+        const { data, error } = await supabase
+            .from('articles')
+            .select('id, slug')
+            .eq('status', 'approved')
+            .not('active', 'is', false)
+            .limit(1000);
+        if (error) {
+            logger.error('article generateStaticParams failed:', error);
+            return [];
+        }
+        // The route resolves by slug first and falls back to id, so prerender
+        // whichever value the canonical URL actually uses.
+        return (data || [])
+            .map((a: { id: string; slug: string | null }) => ({ id: a.slug || a.id }))
+            .filter((p) => Boolean(p.id));
+    } catch (e) {
+        logger.error('article generateStaticParams threw:', e);
+        return [];
+    }
+}
 
 /**
  * prepareHtml — decode + sanitize an article body field ON THE SERVER.
