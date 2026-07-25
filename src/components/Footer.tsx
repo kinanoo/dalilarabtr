@@ -78,6 +78,13 @@ export default function Footer() {
                   <li><Link prefetch={false} href="/e-devlet-services" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📱 خدمات e-Devlet</Link></li>
                   <li><Link prefetch={false} href="/category/syrians" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">🏢 خدمات السوريين</Link></li>
                   <li><Link prefetch={false} href="/forms" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">📝 نماذج وعقود جاهزة</Link></li>
+                  {/* /qa was completely orphaned — sitemapped at priority 0.8
+                      with not one internal link anywhere in src/, so the only
+                      way in was a search result. The footer is the right home:
+                      it is the persistent surface that already carries the
+                      other section hubs. (Distinct from /faq: /faq is a static
+                      FAQ page, /qa is the ask-a-question archive.) */}
+                  <li><Link prefetch={false} href="/qa" className="hover:text-emerald-400 transition-colors flex items-center gap-2 py-1">❓ الأسئلة والأجوبة</Link></li>
                 </FooterMenuSection>
               </ul>
             </div>

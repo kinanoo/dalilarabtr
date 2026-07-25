@@ -16,32 +16,30 @@ export async function GET() {
 
   if (supabase) {
     try {
-      // `status='approved'` alone is not enough: an article can be approved and
-      // still switched off with `is_active=false`, and three of them were being
-      // handed to Google. The column is `is_active` (see sql/supabase_schema.sql)
-      // and `not.is.false` — rather than `eq(true)` — keeps rows whose flag is
-      // NULL, matching the `is_active !== false` test used everywhere else.
+      // `status='approved'` is the ONLY filter here, deliberately.
       //
-      // Note this only stops *submitting* the URLs; it does not deindex them.
-      // The pages still answer 200 by design, so if removal is ever the real
-      // intent it needs a 301 or a 410 as a separate, deliberate decision.
+      // An `is_active` filter was added to also withhold switched-off articles.
+      // It emptied this sitemap outright — verified live, `<urlset>` came back
+      // with zero URLs, so every article was withheld from Google for as long as
+      // the edge cache held that response. PostgREST fails the entire request
+      // when a filtered column is absent, and `is_active` is absent from
+      // `articles`: it broke /directory's query in exactly the same way. The
+      // checked-in schema for this table names the flag `active`
+      // (src/lib/complete_db_setup.sql), and the admin article editor strips
+      // `active` from its payload as a "non-DB key" — so the two schema files in
+      // this repo disagree and neither is trustworthy for this column.
       //
-      // FAILSAFE (added after this shipped): filtering on `is_active` emptied
-      // the sitemap completely — verified live, `<urlset>` came back with zero
-      // URLs, i.e. every article was withheld from Google. The same column
-      // broke /directory's query the same way, so `articles.is_active` does not
-      // behave as the checked-in schema says, and PostgREST fails the WHOLE
-      // request when a filtered column is missing. An empty sitemap is far
-      // worse than submitting three switched-off articles, so the filter is now
-      // attempted and dropped on error.
-      const base = () =>
-        supabase!.from('articles').select('id, slug, last_update').eq('status', 'approved');
-
-      let res = await base().not('is_active', 'is', false);
-      if (res.error) {
-        logger.error('sitemap-articles: is_active filter failed, retrying without it', res.error);
-        res = await base();
-      }
+      // Do not re-add a visibility filter here until the live column is
+      // confirmed in Supabase, and never without checking the row count after
+      // deploy. Withholding every article is a far worse failure than listing a
+      // few switched-off ones — and listing them causes no harm on its own,
+      // since removing a URL from a sitemap does not deindex it anyway (that
+      // needs a 301 or 410, a separate deliberate decision).
+      const res = await supabase
+        .from('articles')
+        .select('id, slug, last_update')
+        .eq('status', 'approved');
+      if (res.error) logger.error('sitemap-articles: query failed', res.error);
       articles = res.data || [];
       // Never publish an empty sitemap on a site with hundreds of articles —
       // that is a stronger (and wrong) signal than publishing nothing new.
