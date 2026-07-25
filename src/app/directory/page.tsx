@@ -33,21 +33,15 @@ export default async function DirectoryPage() {
     let articlesRes: { data: any[] | null; error: any } = { data: null, error: null };
     let scenariosRes: { data: any[] | null; error: any } = { data: null, error: null };
 
-    // `is_active` is NOT selected from `articles`, deliberately. Asking for it
-    // is what made this hub render zero links: PostgREST fails the whole select
-    // when a listed column is absent, and the same column later emptied
-    // sitemap-articles.xml outright. The checked-in schema names this table's
-    // flag `active` (src/lib/complete_db_setup.sql) while another schema file
-    // says `is_active`, and the admin article editor strips `active` as a
-    // "non-DB key" — the repo contradicts itself, so neither name is trusted
-    // here until the live column is confirmed in Supabase.
-    //
-    // `consultant_scenarios` keeps its `is_active` — that table's flag is real
-    // and is written by the admin scenario editor.
+    // The visibility flag on `articles` is `active` — NOT `is_active`, which
+    // does not exist and is what made this hub render zero links (PostgREST
+    // fails the whole select when a listed column is absent). Confirmed against
+    // the live database; see the same note in sitemap-articles.xml.
+    // `consultant_scenarios` genuinely does use `is_active`.
     try {
       articlesRes = await db
         .from('articles')
-        .select('id, slug, title, category, last_update, created_at, image, status')
+        .select('id, slug, title, category, last_update, created_at, image, status, active')
         .eq('status', 'approved')
         .order('created_at', { ascending: false })
         .limit(DIRECTORY_ARTICLE_LIMIT);
@@ -67,10 +61,10 @@ export default async function DirectoryPage() {
     }
 
     try {
-      // No is_active filter on articles: the column is not selected (see above),
-      // so this test could only ever compare `undefined !== false` and pass
-      // everything. Leaving it in would read as a working visibility gate.
+      // `active !== false` (not `=== true`) so a NULL flag counts as visible,
+      // matching the column's `default true`.
       const articleRows = (articlesRes.data ?? [])
+        .filter((a: any) => a.active !== false)
         .map((a: any): DirectoryArticle => ({
           slug: a.slug || a.id,
           title: a.title,
