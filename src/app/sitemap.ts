@@ -77,8 +77,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.9,
     },
-    // NOTE: /dictionary intentionally NOT listed — it 307-redirects to
-    // /directory (already listed above). Sitemaps should carry final URLs only.
+    // NOTE: /dictionary intentionally NOT listed — next.config.ts 308-redirects
+    // it to /directory (already listed above). Sitemaps carry final URLs only.
     {
       url: `${baseUrl}/calculator`,
       changeFrequency: 'monthly',

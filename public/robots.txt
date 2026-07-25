@@ -7,16 +7,17 @@
 # تحديداً ويتجاهل مجموعة "*"، فتُصبح كل قواعد Disallow أدناه بلا مفعول له.
 
 # جميع محركات البحث — السماح بالزحف عدا المسارات التقنية/المحمية
+# لا تحجب /_next/ : جوجل يحتاج ملفات CSS و JavaScript لرسم الصفحة، وحجبها
+# يخالف إرشاداته المعلنة. ولا تحجب المسارات التي تحمل noindex أصلاً — إمّا
+# noindex وإمّا حجب في robots، لا الاثنان معاً.
 User-agent: *
 Allow: /
-Disallow: /_next/
 Disallow: /api/
 Disallow: /admin/
 Disallow: /*.json$
 Disallow: /*?utm_*
 Disallow: /404
 Disallow: /500
-Disallow: /login
 Disallow: /dashboard/
 Disallow: /bookmarks
 Disallow: /models/

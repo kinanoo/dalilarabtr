@@ -137,6 +137,16 @@ const nextConfig: NextConfig = {
         destination: '/request',
         permanent: true,
       },
+      // /dictionary was a page whose whole body was `redirect('/directory')`.
+      // On this deployment an in-render redirect() answers 200 with a meta
+      // refresh and no canonical — a soft-404 shape, not a redirect. Config
+      // level redirects DO emit a real 308 here, so the page was deleted and
+      // the mapping lives here instead.
+      {
+        source: '/dictionary',
+        destination: '/directory',
+        permanent: true,
+      },
     ];
   },
 
