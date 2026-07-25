@@ -128,6 +128,21 @@ const nextConfig: NextConfig = {
       },
       // …and page 1 has exactly one home: /articles.
       { source: '/articles/page/1', destination: '/articles', permanent: true },
+      // Duplicate consolidation, wave 1. Selected by MEASURED body overlap
+      // (distinct-word intersection between each pair), not by title
+      // similarity: 88%, 80%, 79%, 74% and 73% respectively. Same-topic pairs
+      // that measured 32-36% overlap — family-reunion-syrians, travel-permit-2026,
+      // birth-registration-turkey — were deliberately left alone; they read like
+      // duplicates by title but are separate procedures.
+      // The unique content of the three lm-alshaml fragments (the sworn
+      // translation → notary → apostille chain, passport and bank-statement
+      // windows, where to apply, who is excluded) was merged into the parent
+      // article first, so nothing is lost behind these redirects.
+      { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
+      { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
+      { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      { source: '/article/turkish-citizenship-syrians', destination: '/article/citizenship-syrians', permanent: true },
+      { source: '/article/school-registration', destination: '/article/school-registration-turkey', permanent: true },
       // Duplicate pair with reversed slugs, both thin, both competing for the
       // same query. kimlik-update-data was the weaker of the two AND stated the
       // address-change deadline as "45 days" — the law (5490, md. 50-51, and
