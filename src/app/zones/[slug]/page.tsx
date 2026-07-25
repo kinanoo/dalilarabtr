@@ -13,6 +13,47 @@ import { citySlugForName } from '@/lib/turkishCities';
 
 export const revalidate = 600;
 
+/**
+ * Prerender the CITY and DISTRICT hubs only.
+ *
+ * Without this the route answered `Cache-Control: private, no-cache, no-store`
+ * — verified live — so every visit re-ran the full zones query. On this
+ * OpenNext/Workers deployment a dynamic segment with no known params is treated
+ * as fully dynamic and the declared `revalidate` never engages; the routes that
+ * DO declare generateStaticParams all answer with `s-maxage`. Zones is the
+ * site's strongest cluster, so this was its busiest pages paying a ~1,166-row
+ * read per visitor.
+ *
+ * Neighbourhood pages are deliberately NOT prerendered: there are ~1,166 of
+ * them, they are noindex thin pages, and building them all would dominate the
+ * build for no ranking gain. `dynamicParams` (default true) keeps them working
+ * on demand, exactly as today.
+ */
+export async function generateStaticParams() {
+    try {
+        if (!supabase) return [];
+        const seen = new Set<string>();
+        let from = 0;
+        const step = 1000;
+        for (;;) {
+            const { data, error } = await supabase
+                .from('zones')
+                .select('city, district')
+                .range(from, from + step - 1);
+            if (error || !data || data.length === 0) break;
+            for (const z of data as { city?: string; district?: string }[]) {
+                if (z.city) seen.add(z.city);
+                if (z.district) seen.add(z.district);
+            }
+            if (data.length < step) break;
+            from += step;
+        }
+        return [...seen].map((slug) => ({ slug }));
+    } catch {
+        return []; // degrade to on-demand rendering rather than fail the build
+    }
+}
+
 // A district hub is only worth an internal link once it holds at least this
 // many neighbourhoods — the same threshold sitemap-zones.xml uses to decide
 // which hubs to submit. Keep the two in step.
