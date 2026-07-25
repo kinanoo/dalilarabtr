@@ -53,6 +53,15 @@ export async function generateMetadata(props: { params: Promise<{ n: string }> }
     const page = parsePage(n);
     if (!page) return { title: 'الصفحة غير موجودة', robots: { index: false, follow: false } };
 
+    // Past the end of the archive, mark it noindex. The page below also calls
+    // notFound(), but an in-render notFound() answers 200 on this
+    // OpenNext/Workers deployment (same reason /codes/<bad-code> does), so the
+    // status code cannot be relied on to keep an empty list out of the index —
+    // the robots tag can.
+    if (page > (await pageCount())) {
+        return { title: 'الصفحة غير موجودة', robots: { index: false, follow: false } };
+    }
+
     const url = `${SITE_CONFIG.siteUrl}/articles/page/${page}`;
     return {
         title: `أحدث المقالات والأدلة — صفحة ${page}`,
