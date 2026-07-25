@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 /**
  * Sitemap — المقالات
@@ -24,14 +25,29 @@ export async function GET() {
       // Note this only stops *submitting* the URLs; it does not deindex them.
       // The pages still answer 200 by design, so if removal is ever the real
       // intent it needs a 301 or a 410 as a separate, deliberate decision.
-      const { data } = await supabase
-        .from('articles')
-        .select('id, slug, last_update')
-        .eq('status', 'approved')
-        .not('is_active', 'is', false);
-      articles = data || [];
-    } catch {
-      // Fail silently — return empty sitemap
+      //
+      // FAILSAFE (added after this shipped): filtering on `is_active` emptied
+      // the sitemap completely — verified live, `<urlset>` came back with zero
+      // URLs, i.e. every article was withheld from Google. The same column
+      // broke /directory's query the same way, so `articles.is_active` does not
+      // behave as the checked-in schema says, and PostgREST fails the WHOLE
+      // request when a filtered column is missing. An empty sitemap is far
+      // worse than submitting three switched-off articles, so the filter is now
+      // attempted and dropped on error.
+      const base = () =>
+        supabase!.from('articles').select('id, slug, last_update').eq('status', 'approved');
+
+      let res = await base().not('is_active', 'is', false);
+      if (res.error) {
+        logger.error('sitemap-articles: is_active filter failed, retrying without it', res.error);
+        res = await base();
+      }
+      articles = res.data || [];
+      // Never publish an empty sitemap on a site with hundreds of articles —
+      // that is a stronger (and wrong) signal than publishing nothing new.
+      if (!articles.length) logger.error('sitemap-articles: query returned zero rows');
+    } catch (e) {
+      logger.error('sitemap-articles: fetch threw', e);
     }
   }
 
