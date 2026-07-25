@@ -113,6 +113,29 @@ const nextConfig: NextConfig = {
   // 🔀 301 Redirects (old Arabic slugs → English)
   async redirects() {
     return [
+      // Archive pagination moved from ?page=N to real paths (/articles/page/N)
+      // so the route can be prerendered — reading searchParams forces dynamic
+      // rendering and cost a Supabase query per visit. These keep every old
+      // link and any already-indexed ?page= URL pointing at one canonical
+      // address. Declared here rather than with redirect() in the page: an
+      // in-render redirect returns 200 on this deployment, config redirects
+      // correctly return 308.
+      {
+        source: '/articles',
+        has: [{ type: 'query', key: 'page', value: '(?<n>\\d+)' }],
+        destination: '/articles/page/:n',
+        permanent: true,
+      },
+      // …and page 1 has exactly one home: /articles.
+      { source: '/articles/page/1', destination: '/articles', permanent: true },
+      // Codes index: Turkish edition moved from ?lang=tr to /codes/tr, same
+      // reason. hreflang on both pages now points at these paths.
+      {
+        source: '/codes',
+        has: [{ type: 'query', key: 'lang', value: 'tr' }],
+        destination: '/codes/tr',
+        permanent: true,
+      },
       {
         source: '/article/%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%AA%D9%82%D8%AF%D9%8A%D9%85-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D8%AC%D9%86%D8%B3%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D8%B1%D9%83%D9%8A%D8%A9-%D8%B9%D8%A8%D8%B1-%D8%A7%D9%84%D8%B2%D9%88%D8%A7%D8%AC-%D9%84%D9%84%D8%B3%D9%88%D8%B1%D9%8A%D9%8A%D9%86-%D9%81%D9%8A-%D8%BA%D8%A7%D8%B2%D9%8A-%D8%B9%D9%86%D8%AA%D8%A7%D8%A8',
         destination: '/article/turkish-citizenship-marriage-syrians-gaziantep',
