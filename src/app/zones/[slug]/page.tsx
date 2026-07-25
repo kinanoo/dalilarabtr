@@ -13,6 +13,11 @@ import { citySlugForName } from '@/lib/turkishCities';
 
 export const revalidate = 600;
 
+// A district hub is only worth an internal link once it holds at least this
+// many neighbourhoods — the same threshold sitemap-zones.xml uses to decide
+// which hubs to submit. Keep the two in step.
+const MIN_ROWS_PER_DISTRICT_LINK = 3;
+
 type Props = {
     params: Promise<{ slug: string }>;
     // Neighbourhood NAMES REPEAT across provinces — "CUMHURİYET MAHALLESİ"
@@ -319,6 +324,11 @@ export default async function ZoneDetailPage({ params, searchParams }: Props) {
     if (!supabase) return notFound();
 
     let viewType: 'single' | 'district' | 'city' = 'single';
+    // True only when the slug resolved to a real province. Step 1 also sets
+    // viewType='city' for a neighbourhood name that repeats across provinces,
+    // and there `district` has the province folded into the label — so that
+    // case must not be mistaken for a province hub.
+    let isCityHub = false;
     let singleItem: Zone | null = null;
     let groupItems: Zone[] = [];
     let title = '';
@@ -396,6 +406,7 @@ export default async function ZoneDetailPage({ params, searchParams }: Props) {
             .ilike('city', decodedSlug);
         if (data && data.length > 0) {
             viewType = 'city';
+            isCityHub = true;
             groupItems = data as Zone[];
             title = data[0].city;
         }
@@ -429,6 +440,7 @@ export default async function ZoneDetailPage({ params, searchParams }: Props) {
                     .eq('city', resolvedCity);
                 if (data && data.length > 0) {
                     viewType = 'city';
+                    isCityHub = true;
                     groupItems = data as Zone[];
                     title = (data[0] as Zone).city;
                 }
@@ -697,6 +709,59 @@ export default async function ZoneDetailPage({ params, searchParams }: Props) {
                             Icon={Clock}
                         />
                     </div>
+
+                    {/* District index — one link per district in this province.
+                        The district hubs (/zones/{district}) are submitted in
+                        sitemap-zones.xml but nothing on the site linked to them,
+                        so every one of them was an orphan: offered to Google
+                        for indexing with zero inbound internal links.
+
+                        Threshold is the same ≥3 rows the sitemap uses — a
+                        district holding one or two neighbourhoods is a thin,
+                        near-duplicate page, and aiming crawl budget at those is
+                        exactly what feeds "crawled – currently not indexed".
+                        Counting within this province is stricter than the
+                        sitemap's global per-name count, so every link emitted
+                        here is a URL the sitemap already submits.
+
+                        Deliberately placed BELOW the status sections rather than
+                        above them: this cluster is the site's strongest, and the
+                        city view already carries a hub link, three stat chips and
+                        a banner ahead of the data. */}
+                    {isCityHub && (() => {
+                        const counts = new Map<string, number>();
+                        for (const z of groupItems) {
+                            if (z.district) counts.set(z.district, (counts.get(z.district) || 0) + 1);
+                        }
+                        const districtLinks = [...counts.entries()]
+                            .filter(([, n]) => n >= MIN_ROWS_PER_DISTRICT_LINK)
+                            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'));
+                        // With a single district the index would just repeat the
+                        // page you are already on.
+                        if (districtLinks.length < 2) return null;
+                        return (
+                            <nav className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm" aria-label={`مناطق ${title}`}>
+                                <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
+                                    <MapPin size={16} className="text-emerald-600" /> كل مناطق {title}
+                                </h2>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                                    افتح صفحة المنطقة لترى حالة أحيائها وحدها.
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {districtLinks.map(([district, n]) => (
+                                        <Link
+                                            key={district}
+                                            href={`/zones/${encodeURIComponent(district)}`}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors"
+                                        >
+                                            {district}
+                                            <span className="text-slate-400 dark:text-slate-500 font-normal tabular-nums"> ({n.toLocaleString('en-US')})</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </nav>
+                        );
+                    })()}
 
                     {/* Cross-links — curated internal links for SEO */}
                     <div className="mt-8">

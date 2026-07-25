@@ -8,13 +8,16 @@ import logger from '@/lib/logger';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import ProviderCard, { type ProviderCardData } from '@/components/services/ProviderCard';
 import { categoryBySlug, type ServiceCategory } from '@/lib/serviceCategories';
-import { cityBySlug, citySlugForName, TR_CITIES, type TRCity } from '@/lib/turkishCities';
+import { cityBySlug, citySlugForName, type TRCity } from '@/lib/turkishCities';
 
 export const revalidate = 600;
 
 interface Row extends ProviderCardData { category: string | null; }
 
-async function fetchProviders(cat: ServiceCategory, city: TRCity): Promise<Row[]> {
+// Every approved provider in this profession, across all cities. The page needs
+// the unfiltered set twice over: once narrowed to this city for the listing,
+// and once as a whole to work out which sibling cities are worth linking to.
+async function fetchCategoryProviders(cat: ServiceCategory): Promise<Row[]> {
     try {
         if (!supabase) return [];
         const { data } = await supabase
@@ -24,12 +27,25 @@ async function fetchProviders(cat: ServiceCategory, city: TRCity): Promise<Row[]
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
             .order('rating', { ascending: false });
-        // Match the city across all its spellings (case-insensitive) — no data rewrite.
-        return ((data as Row[]) || []).filter((p) => citySlugForName(p.city) === city.slug);
+        return (data as Row[]) || [];
     } catch (e) {
         logger.error('category+city providers fetch failed:', e);
         return [];
     }
+}
+
+// Match the city across all its spellings (case-insensitive) — no data rewrite.
+function providersInCity(rows: Row[], city: TRCity): Row[] {
+    return rows.filter((p) => citySlugForName(p.city) === city.slug);
+}
+
+// Sibling cities that actually have a provider in this profession. This page
+// sets robots:noindex when it has no providers, so linking a fixed slice of
+// TR_CITIES meant every one of these pages pointed at ~11 URLs it declares
+// unindexable itself. Never link to a URL you mark noindex.
+function siblingCitySlugs(rows: Row[], current: TRCity): string[] {
+    const slugs = rows.map((p) => citySlugForName(p.city)).filter(Boolean) as string[];
+    return Array.from(new Set(slugs)).filter((s) => s !== current.slug);
 }
 
 export async function generateMetadata(props: { params: Promise<{ slug: string; city: string }> }): Promise<Metadata> {
@@ -38,7 +54,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string; 
     const cityObj = cityBySlug(city);
     if (!cat || !cityObj) return { title: 'الصفحة غير موجودة', robots: { index: false, follow: false } };
 
-    const providers = await fetchProviders(cat, cityObj);
+    const providers = providersInCity(await fetchCategoryProviders(cat), cityObj);
     const title = `${cat.labelAr} عرب في ${cityObj.ar} | دليل العرب`;
     const description = `${cat.labelAr} ${cat.blurb} يتحدّثون العربية في ${cityObj.ar}، تركيا. ${providers.length > 0 ? `${providers.length} ` : ''}مهنيّ — تواصل مباشر عبر واتساب أو اتصال.`;
 
@@ -58,7 +74,9 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
     const cityObj = cityBySlug(city);
     if (!cat || !cityObj) notFound();
 
-    const providers = await fetchProviders(cat, cityObj);
+    const allInCategory = await fetchCategoryProviders(cat);
+    const providers = providersInCity(allInCategory, cityObj);
+    const siblingCities = siblingCitySlugs(allInCategory, cityObj);
     const base = SITE_CONFIG.siteUrl;
     const pageUrl = `${base}/services/category/${cat.slug}/${cityObj.slug}`;
 
@@ -166,11 +184,14 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                     </h2>
                     <div className="flex flex-wrap gap-2">
                         <Link href={`/services/category/${cat.slug}`} className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">كل المدن</Link>
-                        {TR_CITIES.filter((c) => c.slug !== cityObj.slug).slice(0, 12).map((c) => (
-                            <Link key={c.slug} href={`/services/category/${cat.slug}/${c.slug}`} className="px-4 py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
-                                {cat.labelAr} في {c.ar}
-                            </Link>
-                        ))}
+                        {siblingCities.map((cs) => {
+                            const co = cityBySlug(cs);
+                            return co ? (
+                                <Link key={cs} href={`/services/category/${cat.slug}/${cs}`} className="px-4 py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
+                                    {cat.labelAr} في {co.ar}
+                                </Link>
+                            ) : null;
+                        })}
                     </div>
                 </div>
 

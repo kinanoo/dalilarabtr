@@ -274,6 +274,56 @@ export default async function ArticlesIndexPage(props: { searchParams: Promise<{
                         )}
                     </nav>
                 )}
+
+                {/* ── Numbered pages ──
+                    Prev/next alone put the oldest articles 14 clicks from the
+                    first page, which is far past the depth a crawler will
+                    normally follow — the tail of the archive was effectively
+                    unreachable. This row exposes the first page, the last page
+                    and a window around the current one, so every page is at
+                    most two hops away. rel=prev/next above is untouched. */}
+                {totalPages > 1 && (
+                    <nav className="flex flex-wrap items-center justify-center gap-1.5 mt-4" aria-label="أرقام الصفحات">
+                        {(() => {
+                            const WINDOW = 2;
+                            const shown = new Set<number>([1, totalPages]);
+                            for (let p = page - WINDOW; p <= page + WINDOW; p++) {
+                                if (p >= 1 && p <= totalPages) shown.add(p);
+                            }
+                            const pages = [...shown].sort((a, b) => a - b);
+                            const out: React.ReactNode[] = [];
+                            let prev = 0;
+                            for (const p of pages) {
+                                if (prev && p - prev > 1) {
+                                    out.push(
+                                        <span key={`gap-${p}`} className="px-1 text-sm text-slate-400 select-none">…</span>,
+                                    );
+                                }
+                                out.push(
+                                    p === page ? (
+                                        <span
+                                            key={p}
+                                            aria-current="page"
+                                            className="min-w-9 text-center px-3 py-2 rounded-lg bg-emerald-600 text-white font-black text-sm tabular-nums select-none"
+                                        >
+                                            {p}
+                                        </span>
+                                    ) : (
+                                        <Link
+                                            key={p}
+                                            href={p === 1 ? '/articles' : `/articles?page=${p}`}
+                                            className="min-w-9 text-center px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm tabular-nums hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                                        >
+                                            {p}
+                                        </Link>
+                                    ),
+                                );
+                                prev = p;
+                            }
+                            return out;
+                        })()}
+                    </nav>
+                )}
             </section>
         </main>
     );

@@ -17,7 +17,10 @@
 //   - PrintButton          (window.print)
 //   - ArticleCompletedBadge(localStorage checklist relic)
 //   - ShareMenu / BookmarkButton / ArticleHeroImage / ArticleHeroGallery /
-//     InlineRelatedArticles (pre-existing islands, unchanged)
+//     (pre-existing islands, unchanged)
+// The mid-article "قد يهمك أيضاً" block is NOT an island any more: it is
+// InlineRelatedArticlesServer, fetched on the server so its links are in the
+// initial HTML.
 //
 // ⚠️ Content contract: `intro`/`details` arrive DECODED + SANITIZED and
 // steps/tips/documents/fees/warning arrive DECODED from the server page
@@ -33,7 +36,7 @@ import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
 import { SITE_CONFIG, CATEGORY_SLUGS, TAG_LABELS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
-import InlineRelatedArticles from './InlineRelatedArticles';
+import InlineRelatedArticlesServer from './InlineRelatedArticlesServer';
 
 import { estimateReadingTime, isRecentlyUpdated } from '@/lib/articleMeta';
 import ArticleTOC from './article/ArticleTOC';
@@ -408,7 +411,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
 
 
               {/* قد يهمك أيضاً — Mid-article related articles */}
-              <InlineRelatedArticles currentArticleId={slug} category={article.category} />
+              <InlineRelatedArticlesServer currentArticleId={slug} category={article.category} />
 
               {/* التكلفة — accent stripe + light orb */}
               {article.fees && (

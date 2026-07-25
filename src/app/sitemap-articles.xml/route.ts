@@ -15,10 +15,20 @@ export async function GET() {
 
   if (supabase) {
     try {
+      // `status='approved'` alone is not enough: an article can be approved and
+      // still switched off with `is_active=false`, and three of them were being
+      // handed to Google. The column is `is_active` (see sql/supabase_schema.sql)
+      // and `not.is.false` — rather than `eq(true)` — keeps rows whose flag is
+      // NULL, matching the `is_active !== false` test used everywhere else.
+      //
+      // Note this only stops *submitting* the URLs; it does not deindex them.
+      // The pages still answer 200 by design, so if removal is ever the real
+      // intent it needs a 301 or a 410 as a separate, deliberate decision.
       const { data } = await supabase
         .from('articles')
         .select('id, slug, last_update')
-        .eq('status', 'approved');
+        .eq('status', 'approved')
+        .not('is_active', 'is', false);
       articles = data || [];
     } catch {
       // Fail silently — return empty sitemap
