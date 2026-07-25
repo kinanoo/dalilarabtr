@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import ZoneFocus from '@/components/zones/ZoneFocus';
 import { notFound } from 'next/navigation';
 import PageHero from '@/components/PageHero';
 import { MapPin, ArrowRight, AlertTriangle, CheckCircle2, XCircle, Clock, Sparkles } from 'lucide-react';
@@ -61,26 +63,23 @@ const MIN_ROWS_PER_DISTRICT_LINK = 3;
 
 type Props = {
     params: Promise<{ slug: string }>;
-    // Neighbourhood NAMES REPEAT across provinces — "CUMHURİYET MAHALLESİ"
-    // exists in 20 different rows. Looking a name up on its own therefore
-    // returns an arbitrary row and can show "open" for a neighbourhood that is
-    // closed where the reader actually lives, which is a housing-contract-level
-    // mistake. Callers that know the context (the /zones search results) pass
-    // ?city=&district= so the exact row is resolved. The canonical URL stays the
-    // bare path, so this adds no duplicate URLs.
-    searchParams?: Promise<{ city?: string; district?: string }>;
 };
 
-/** Narrow a neighbourhood lookup to one province/district when known. */
-function withPlace<T extends { ilike: (col: string, val: string) => T }>(
-    q: T,
-    place: { city?: string; district?: string },
-): T {
-    let out = q;
-    if (place.city) out = out.ilike('city', place.city);
-    if (place.district) out = out.ilike('district', place.district);
-    return out;
-}
+// NOTE ON ?city=&district=
+// Neighbourhood NAMES REPEAT across provinces — "CUMHURİYET MAHALLESİ" exists
+// in 20 different rows — so looking a name up on its own returns an arbitrary
+// row and can show "open" for a neighbourhood that is closed where the reader
+// actually lives. That is a housing-contract-level mistake, and the fix is that
+// this page NEVER asserts one row when several match: it renders them all,
+// each labelled with its own district and province.
+//
+// The /zones search results still append ?city=&district= to say which one the
+// reader meant, but it is resolved in the BROWSER by <ZoneFocus>, not here.
+// Reading `searchParams` in this server component would force the whole route
+// to render dynamically, and this page runs a ~1,166-row Supabase query — that
+// was one full table read per visit on the site's strongest cluster. Keeping it
+// client-side lets the route stay prerendered and cached while the reader still
+// lands on their own district.
 
 type Zone = {
     id: string;
@@ -95,23 +94,20 @@ type Zone = {
 };
 
 // 1. Metadata Generation
-export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
-    const place = (await searchParams) || {};
 
     if (!supabase) return { title: `منطقة ${decodedSlug}` };
 
-    // Try finding by neighborhood — narrowed to the caller's province/district
-    // when known, so the title never announces the status of a same-named
-    // neighbourhood in a different city.
-    const { data: nameMatches } = await withPlace(
-        supabase
-            .from('zones')
-            .select('neighborhood, city, district, status')
-            .ilike('neighborhood', decodedSlug),
-        place,
-    ).limit(60);
+    // Try finding by neighborhood. Every match is fetched, never just the first:
+    // when the name repeats across provinces the title must say so rather than
+    // announce one province's status as if it were the answer.
+    const { data: nameMatches } = await supabase
+        .from('zones')
+        .select('neighborhood, city, district, status')
+        .ilike('neighborhood', decodedSlug)
+        .limit(60);
     const found = (nameMatches || []) as { neighborhood: string; city: string; district: string; status: string | null }[];
 
     // Same name in several provinces and no ?city=&district= to disambiguate:
@@ -327,7 +323,12 @@ function StatusSection({
             {districts.length > 1 ? (
                 <div className="space-y-6">
                     {districts.map(([district, zones]) => (
-                        <div key={district}>
+                        // data-district lets <ZoneFocus> find and highlight the
+                        // group the visitor actually asked for, reading
+                        // ?city=&district= on the CLIENT. Doing it server-side
+                        // would mean reading searchParams, which forces the
+                        // whole route dynamic and costs a full DB read per view.
+                        <div key={district} data-district={district}>
                             {/* SectionDivider — replaces the inline h3 + small
                                 count pill. The divider draws a horizontal rule
                                 across the section with the district name +
@@ -357,10 +358,9 @@ function StatusSection({
 }
 
 // 2. Page Component
-export default async function ZoneDetailPage({ params, searchParams }: Props) {
+export default async function ZoneDetailPage({ params }: Props) {
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
-    const place = (await searchParams) || {};
 
     if (!supabase) return notFound();
 
@@ -404,10 +404,11 @@ export default async function ZoneDetailPage({ params, searchParams }: Props) {
     //    arbitrary row here previously reported "open" for a neighbourhood that
     //    is closed in 16 of its 20 provinces.
     {
-        const { data } = await withPlace(
-            supabase.from('zones').select(ZONE_COLS).ilike('neighborhood', decodedSlug),
-            place,
-        ).limit(60);
+        const { data } = await supabase
+            .from('zones')
+            .select(ZONE_COLS)
+            .ilike('neighborhood', decodedSlug)
+            .limit(60);
         const matches = (data || []) as Zone[];
         if (matches.length === 1) {
             singleItem = matches[0];
@@ -630,6 +631,13 @@ export default async function ZoneDetailPage({ params, searchParams }: Props) {
 
         return (
             <main className="min-h-screen bg-white dark:bg-slate-950 font-cairo">
+                {/* Reads ?city=&district= in the BROWSER and jumps the reader to
+                    their own district. Kept off the server so this route stays
+                    prerendered — see the note on Props. Suspense is required
+                    around useSearchParams or the whole route opts out again. */}
+                <Suspense fallback={null}>
+                    <ZoneFocus />
+                </Suspense>
                 {/* JSON-LD for Google: Dataset + BreadcrumbList. Both surface
                     rich SERP features (Dataset Search inclusion + breadcrumb
                     trail on the result card). */}
