@@ -128,6 +128,17 @@ const nextConfig: NextConfig = {
       },
       // …and page 1 has exactly one home: /articles.
       { source: '/articles/page/1', destination: '/articles', permanent: true },
+      // Duplicate pair with reversed slugs, both thin, both competing for the
+      // same query. kimlik-update-data was the weaker of the two AND stated the
+      // address-change deadline as "45 days" — the law (5490, md. 50-51, and
+      // md. 8 for foreigners) says twenty WORKING days, so a reader trusting it
+      // would miss the window and be fined. It is retired into the surviving
+      // article, which now carries the corrected figure with its source.
+      {
+        source: '/article/kimlik-update-data',
+        destination: '/article/kimlik-data-update',
+        permanent: true,
+      },
       // Codes index: Turkish edition moved from ?lang=tr to /codes/tr, same
       // reason. hreflang on both pages now points at these paths.
       {
