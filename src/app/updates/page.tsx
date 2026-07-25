@@ -1,5 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabaseClient';
 import UpdatesClient from './UpdatesClient';
 
 export const revalidate = 60;
@@ -9,13 +8,13 @@ export const revalidate = 60;
 // query tolerant: the optional editorial columns (category, summary,
 // source_url, source_name, pinned) come through once the migration has run,
 // and the query still succeeds while they don't exist yet.
+// Uses the plain anon client, NOT a cookie-bound server client. This query is a
+// public read (`active = true`) with no per-user component, and reading
+// `cookies()` forces Next to render the whole route dynamically — verified
+// live, this page answered `Cache-Control: private, no-cache, no-store`, so the
+// declared `revalidate = 60` never engaged and every visit re-queried Supabase.
 async function getInitialUpdates() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  if (!supabase) return [];
 
   const { data } = await supabase
     .from('updates')

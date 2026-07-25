@@ -24,13 +24,12 @@ export const metadata: Metadata = {
 
 export const revalidate = 60; // Revalidate every minute
 
-type Props = { searchParams: Promise<{ q?: string }> };
-
-export default async function FAQPage({ searchParams }: Props) {
-  // Deep-link query (?q=…) read on the SERVER — passing it down as a prop
-  // (instead of useSearchParams in the client) keeps the whole page
-  // server-rendered: crawlers see all questions, not a Suspense fallback.
-  const initialQuery = (await searchParams).q || '';
+export default async function FAQPage() {
+  // The ?q= deep link is read in the BROWSER by FAQClientNew. Reading
+  // searchParams here forced the whole route to render dynamically — verified
+  // live, this page answered `Cache-Control: private, no-cache, no-store`, so
+  // `revalidate = 60` never engaged and every visit re-queried Supabase for
+  // the FAQ list. Crawlers still get every question in the server HTML.
   // 1. Static Data (600+ questions)
   const staticData = getFAQData();
 
@@ -155,7 +154,7 @@ export default async function FAQPage({ searchParams }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <FAQClientNew staticData={mergedData} totalCount={totalCount} initialQuery={initialQuery} />
+      <FAQClientNew staticData={mergedData} totalCount={totalCount} />
       <div className="flex justify-center py-6">
         <ShareMenu
           title="الأسئلة الشائعة — دليل العرب في تركيا"
