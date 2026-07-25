@@ -67,8 +67,10 @@ export default async function DirectoryPage() {
     }
 
     try {
+      // No is_active filter on articles: the column is not selected (see above),
+      // so this test could only ever compare `undefined !== false` and pass
+      // everything. Leaving it in would read as a working visibility gate.
       const articleRows = (articlesRes.data ?? [])
-        .filter((a: any) => a.is_active !== false)
         .map((a: any): DirectoryArticle => ({
           slug: a.slug || a.id,
           title: a.title,
