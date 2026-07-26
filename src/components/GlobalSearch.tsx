@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGlobalSearch, saveRecentSearch } from '@/hooks/useGlobalSearch';
@@ -49,17 +49,18 @@ export default function GlobalSearch({
   const router = useRouter();
   const isHero = variant === 'hero';
 
-  useEffect(() => {
+  // A layout effect, not an effect + rAF: this runs after the DOM is in place
+  // but BEFORE the browser paints, so the visitor never sees a frame where the
+  // field they were typing in has lost focus. This component only ever arrives
+  // through a dynamic import, so it never renders on the server.
+  useLayoutEffect(() => {
     if (!autoFocus) return;
-    const frame = requestAnimationFrame(() => {
-      const el = inputRef.current;
-      if (!el) return;
-      el.focus();
-      // Put the caret after the carried-over text, not before it.
-      const end = el.value.length;
-      try { el.setSelectionRange(end, end); } catch { /* type=search rejects this in some engines */ }
-    });
-    return () => cancelAnimationFrame(frame);
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    // Put the caret after the carried-over text, not before it.
+    const end = el.value.length;
+    try { el.setSelectionRange(end, end); } catch { /* type=search rejects this in some engines */ }
   }, [autoFocus]);
 
   // Click outside to close

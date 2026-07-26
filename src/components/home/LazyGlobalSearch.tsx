@@ -45,6 +45,7 @@ export default function LazyGlobalSearch() {
   // Whether they had engaged with the field, so we know to restore focus.
   const engaged = useRef(false);
   const loading = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(() => {
     if (loading.current) return;
@@ -69,6 +70,24 @@ export default function LazyGlobalSearch() {
     }
     const t = setTimeout(load, 1200);
     return () => clearTimeout(t);
+  }, [load]);
+
+  // This field is server-rendered, so someone can start typing into it before
+  // React has hydrated — and `onChange` cannot have fired yet, so the buffer
+  // is still empty. Without this, the real field (which is controlled) would
+  // mount with an empty value and wipe what they wrote. On a slow phone that
+  // window is seconds wide.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    if (el.value) {
+      buffered.current = el.value;
+      engaged.current = true;
+      load();
+    } else if (document.activeElement === el) {
+      engaged.current = true;
+      load();
+    }
   }, [load]);
 
   if (GlobalSearch) {
@@ -103,6 +122,7 @@ export default function LazyGlobalSearch() {
         </div>
 
         <input
+          ref={inputRef}
           type="search"
           aria-label={HERO_ARIA_LABEL}
           placeholder={HERO_PLACEHOLDER}
