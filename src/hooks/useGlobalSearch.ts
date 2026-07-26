@@ -50,15 +50,18 @@ export const POPULAR_SEARCHES = [
 
 /** Priority map for result type ordering (lower = better) */
 const TYPE_PRIORITY: Record<string, number> = {
-  'أداة': 1,
-  'خدمة دولات': 2,
-  'مقال': 3,
-  'استشارة ذكية': 4,
-  'سؤال وجواب': 5,
-  'خدمة': 6,
-  'مصدر': 7,
-  'صفحة': 8,
-  'تحديث': 9,
+  // «موقع رسمي» outranks everything: a "where is X" query has exactly one
+  // useful answer (the place + its map link), so when scores tie it wins.
+  'موقع رسمي': 1,
+  'أداة': 2,
+  'خدمة دولات': 3,
+  'مقال': 4,
+  'استشارة ذكية': 5,
+  'سؤال وجواب': 6,
+  'خدمة': 7,
+  'مصدر': 8,
+  'صفحة': 9,
+  'تحديث': 10,
 };
 
 /** Relevance scorer for remote results */
@@ -272,6 +275,7 @@ export function useGlobalSearch() {
 
     const { originalTokens, expandedTokens } = intelligentTokenize(trimmed);
     const needle = normalizeArabic(trimmed);
+    const originalTokenSet = new Set(originalTokens.map(normalizeArabic));
     const scored: Array<SearchResult & { _score: number }> = [];
 
     const maybeAdd = (item: SearchIndexItem) => {
@@ -296,6 +300,14 @@ export function useGlobalSearch() {
           const hasSynonymMatch = expandedTokens.some((exp) => {
             if (exp === token) return false;
             const expNorm = normalizeArabic(exp);
+            // `expandedTokens` is a flat set that ALSO contains every other
+            // query token, so without this guard an unmatched token was
+            // credited whenever any *other* token matched — which made
+            // "all tokens matched" (+40) fire for almost everything.
+            // «القنصلية السورية في عينتاب» then scored the İstanbul consulate
+            // as a full match too, and it won the tie on list order.
+            // Only true dictionary synonyms may stand in for a missing token.
+            if (originalTokenSet.has(expNorm)) return false;
             return expNorm.length >= 2 && (item.haystack.includes(expNorm) || titleNorm.includes(expNorm));
           });
           if (hasSynonymMatch) matchedTokens++;
@@ -334,6 +346,10 @@ export function useGlobalSearch() {
           desc: item.desc,
           url: item.url,
           icon: item.icon,
+          // Carried through so «موقع رسمي» results keep their one-tap Maps
+          // action in the dropdown — dropping it here is what made the map
+          // button disappear from results.
+          mapUrl: item.mapUrl,
           _score: Math.max(score, matchedTokens * 8),
           _matchedTokens: matchedTokens,
         } as any);
