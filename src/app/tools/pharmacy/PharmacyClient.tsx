@@ -66,7 +66,15 @@ function openDutyMap() {
     );
 }
 
-export default function PharmacyPage() {
+/**
+ * `faqs` comes from getToolFaqs('pharmacy') in the server page — the SAME array
+ * that feeds the FAQPage JSON-LD. Never hardcode Q&A here: this page used to,
+ * and the result was a rewrite of the visible answers that left a factual error
+ * ("duty pharmacies run 24/7") alive in the structured data, which is the copy
+ * Google actually reads. Google also requires the markup to match what the
+ * visitor sees.
+ */
+export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string; answer: string }> }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo flex flex-col">
 
@@ -233,26 +241,9 @@ export default function PharmacyPage() {
                             أسئلة شائعة عن الصيدليات المناوبة
                         </h2>
                         <div className="space-y-3">
-                            <PharmacyFaq
-                                question="كيف أعرف الصيدلية المناوبة في منطقتي الآن؟"
-                                answer="افتح رابط وزارة الصحة الرسمي أعلاه، ثم اختر الولاية (İl) والمنطقة (İlçe). ستظهر لك أسماء الصيدليات المناوبة مع عناوينها وأرقام هواتفها ووقت بداية المناوبة ونهايتها. الخدمة مجانية ولا تحتاج تسجيل دخول."
-                            />
-                            <PharmacyFaq
-                                question="ما هي ساعات عمل الصيدلية المناوبة؟"
-                                answer="لكل مناوبة وقت بداية ووقت نهاية محدّدان، وهما يختلفان من منطقة إلى أخرى — وليسا موحّدَين في كل تركيا. لذلك اقرأ التوقيت المكتوب بجانب اسم الصيدلية في القائمة الرسمية بدل الافتراض، خصوصاً إذا كنت ستذهب في ساعة مبكرة أو متأخرة جداً."
-                            />
-                            <PharmacyFaq
-                                question="هل تعرضون قائمة الصيدليات المناوبة على موقعكم؟"
-                                answer="لا. قائمة المناوبة تتغيّر يومياً في كل منطقة من مناطق تركيا، ولا نملك ترخيصاً بإعادة نشرها. لذلك نوجّهك إلى المصدر الرسمي مباشرة بدل أن نعرض لك قائمة قد تكون قديمة — وفي أمر يخصّ الدواء، القائمة القديمة أسوأ من عدمها."
-                            />
-                            <PharmacyFaq
-                                question="هل أحتاج حساب e-Devlet لمعرفة الصيدلية المناوبة؟"
-                                answer="لا. خدمة الاستعلام عن الصيدليات المناوبة متاحة للجميع بدون تسجيل دخول وبدون رسوم — فقط افتح الرابط واختر ولايتك ومنطقتك."
-                            />
-                            <PharmacyFaq
-                                question="ما الفرق بين البوابة الرسمية وغرفة الصيادلة في مدينتي؟"
-                                answer="كلاهما مصدر رسمي. البوابة الحكومية تغطّي الولايات الـ81 كلها، أما غرفة الصيادلة (Eczacı Odası) فتخصّ محافظتك وحدها وغالباً تكون صفحتها أسرع وأوضح. تجد رابط غرفة محافظتك في صفحة مدينتك أعلاه."
-                            />
+                            {faqs.map((f) => (
+                                <PharmacyFaq key={f.question} question={f.question} answer={f.answer} />
+                            ))}
                         </div>
                     </div>
 

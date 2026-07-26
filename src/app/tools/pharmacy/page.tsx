@@ -1,5 +1,5 @@
 import PharmacyClient from './PharmacyClient';
-import ToolSchema from '@/components/ToolSchema';
+import ToolSchema, { getToolFaqs } from '@/components/ToolSchema';
 import ToolFooter from '@/components/tools/ToolFooter';
 import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
@@ -30,7 +30,9 @@ export default function PharmacyPage() {
     return (
         <>
             <ToolSchema tool="pharmacy" />
-            <PharmacyClient />
+            {/* One FAQ source for both the JSON-LD above and the visible section
+                inside the client — see the note on TOOLS_DATA['pharmacy']. */}
+            <PharmacyClient faqs={getToolFaqs('pharmacy')} />
             <ToolFooter toolId="pharmacy" />
         </>
     );
