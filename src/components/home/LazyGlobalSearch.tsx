@@ -1,48 +1,123 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
+import {
+  HERO_ARIA_LABEL,
+  HERO_FIELD,
+  HERO_FORM,
+  HERO_GLOW,
+  HERO_ICON_WRAP,
+  HERO_PLACEHOLDER,
+  HERO_SUBMIT,
+  HERO_WRAPPER,
+} from '@/components/search/heroSearchStyles';
 
-const GlobalSearch = dynamic(() => import('@/components/GlobalSearch'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full max-w-xl mx-auto">
-      <div className="relative">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-30" />
-        <input
-          disabled
-          placeholder="ماذا تريد أن تعرف اليوم؟ (إقامة، قانون...)"
-          className="w-full py-4 ps-12 pe-24 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl text-slate-800 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500 text-lg shadow-2xl ring-1 ring-slate-200 dark:ring-white/10 relative z-10 border-0 outline-none"
-        />
-      </div>
-    </div>
-  ),
-});
+type GlobalSearchModule = typeof import('@/components/GlobalSearch');
+type GlobalSearchComponent = GlobalSearchModule['default'];
 
+/**
+ * The homepage search field, without the wait.
+ *
+ * The search logic is heavy — the Supabase client, the tokenizer, the synonym
+ * table — so it stays out of the homepage's first load. What changed is HOW it
+ * arrives. This used to render a <button>; clicking it started the download,
+ * showed a third, differently-sized placeholder, and only then handed over a
+ * usable field. The owner saw the box freeze, blink, change shape, and finally
+ * accept typing about a second later.
+ *
+ * Now:
+ *   • the placeholder is a real <input> — focusable and typeable from the
+ *     first paint, wearing the exact classes the real field wears;
+ *   • the chunk is fetched during idle time, long before anyone clicks;
+ *   • the swap happens only once the module has actually arrived, so there is
+ *     no intermediate loading state to flash;
+ *   • anything typed in the meantime is carried across, caret at the end.
+ *
+ * On the usual path the swap lands while the page is still idle and nobody
+ * ever sees it happen.
+ */
 export default function LazyGlobalSearch() {
-  const [active, setActive] = useState(false);
-  const preload = useCallback(() => {
-    void import('@/components/GlobalSearch');
+  const [GlobalSearch, setGlobalSearch] = useState<GlobalSearchComponent | null>(null);
+
+  // What the visitor typed before the real component was ready.
+  const buffered = useRef('');
+  // Whether they had engaged with the field, so we know to restore focus.
+  const engaged = useRef(false);
+  const loading = useRef(false);
+
+  const load = useCallback(() => {
+    if (loading.current) return;
+    loading.current = true;
+    import('@/components/GlobalSearch')
+      .then((m) => setGlobalSearch(() => m.default))
+      .catch(() => {
+        // Let a later interaction retry rather than stranding the field.
+        loading.current = false;
+      });
   }, []);
 
-  if (active) {
-    return <GlobalSearch variant="hero" autoFocus />;
+  // Fetch while the browser is idle. requestIdleCallback is absent on Safari,
+  // where a short timeout keeps the behaviour the same.
+  useEffect(() => {
+    const ric = (window as unknown as {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    }).requestIdleCallback;
+    if (ric) {
+      const id = ric(load, { timeout: 2500 });
+      return () => (window as unknown as { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(load, 1200);
+    return () => clearTimeout(t);
+  }, [load]);
+
+  if (GlobalSearch) {
+    return (
+      <GlobalSearch
+        variant="hero"
+        autoFocus={engaged.current}
+        initialQuery={buffered.current}
+      />
+    );
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => setActive(true)}
-      onFocus={() => setActive(true)}
-      onPointerEnter={preload}
-      onTouchStart={preload}
-      aria-label="ماذا تريد أن تعرف اليوم؟ افتح البحث في الموقع"
-      className="group relative mx-auto flex w-full max-w-xl items-center rounded-full bg-white/90 py-4 ps-5 pe-3 text-start text-lg text-slate-500 shadow-2xl ring-1 ring-slate-200 transition-shadow hover:ring-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:bg-slate-900/80 dark:text-slate-400 dark:ring-white/10"
-    >
-      <Search size={22} className="me-3 shrink-0 text-slate-500 transition-colors group-hover:text-emerald-600 dark:text-slate-400" />
-      <span className="min-w-0 flex-1 truncate">ماذا تريد أن تعرف اليوم؟</span>
-      <span className="ms-3 shrink-0 rounded-full bg-emerald-700 px-5 py-2 text-sm font-bold text-white">بحث</span>
-    </button>
+    <div className={HERO_WRAPPER}>
+      <form
+        role="search"
+        className={HERO_FORM}
+        onSubmit={(e) => {
+          // Nothing can be searched until the logic lands; keep the page put.
+          e.preventDefault();
+          engaged.current = true;
+          load();
+        }}
+      >
+        <div className={HERO_GLOW} />
+
+        <div className={HERO_ICON_WRAP}>
+          <Search
+            className="text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
+            size={22}
+          />
+        </div>
+
+        <input
+          type="search"
+          aria-label={HERO_ARIA_LABEL}
+          placeholder={HERO_PLACEHOLDER}
+          defaultValue={buffered.current}
+          onFocus={() => { engaged.current = true; load(); }}
+          onPointerEnter={load}
+          onTouchStart={load}
+          onChange={(e) => { buffered.current = e.target.value; engaged.current = true; load(); }}
+          className={HERO_FIELD}
+        />
+
+        <button type="submit" aria-label="بحث" className={HERO_SUBMIT}>
+          بحث
+        </button>
+      </form>
+    </div>
   );
 }

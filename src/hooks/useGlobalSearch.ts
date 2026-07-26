@@ -114,9 +114,15 @@ function calculateRelevance(
   return { score, matchedTokens };
 }
 
-export function useGlobalSearch() {
-  const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+/**
+ * @param initialQuery text the visitor already typed into the placeholder
+ *   field that stood here while this module downloaded. Seeding BOTH the live
+ *   and the debounced query means their first search fires immediately instead
+ *   of waiting out another debounce they never asked for.
+ */
+export function useGlobalSearch(initialQuery = '') {
+  const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [isOpen, setIsOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);

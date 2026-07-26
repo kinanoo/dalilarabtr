@@ -87,13 +87,21 @@ h1, h2, h3, h4, h5, h6,
    Several interactive elements (primary nav links, dropdown triggers)
    use Tailwind's `outline-none` to drop the mouse-focus ring — which also
    erased the KEYBOARD focus ring. This restores a clear, consistent
-   emerald ring for keyboard users only (:focus-visible never fires on a
-   mouse click). Unlayered so it overrides the layered `outline-none`
-   utility on those elements. */
+   emerald ring for those elements.
+
+   NOTE — this rule must NEVER set `border-radius`. It used to, and that
+   one line reshaped the whole site: `:focus-visible` and `.rounded-full`
+   have identical specificity, this file is emitted after the utilities,
+   so a flat 4px silently overrode every rounded corner the moment an
+   element took focus. And ":focus-visible fires for keyboard users only"
+   is not true of text fields — browsers always treat a focused text
+   input as focus-visible, even when it was clicked. So the homepage
+   search went from a pill to a sharp-cornered box on click. `outline`
+   already follows the element's own border-radius; there is nothing to
+   fix up here. */
 :focus-visible {
   outline: 2px solid #10b981;
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 /* ============================================
