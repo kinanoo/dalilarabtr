@@ -21,6 +21,7 @@ type Row = {
     excerpt: string | null;
     last_update: string | null;
     created_at: string | null;
+    published_at: string | null;
     category: string | null;
     image: string | null;
     image_url: string | null;
@@ -28,10 +29,22 @@ type Row = {
 
 const stripHtml = (s?: string | null) => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
-function isNew(created?: string | null): boolean {
-    if (!created) return false;
-    const t = new Date(created).getTime();
+function isNew(published?: string | null): boolean {
+    if (!published) return false;
+    const t = new Date(published).getTime();
     return Number.isFinite(t) && Date.now() - t < 7 * 86_400_000;
+}
+
+/**
+ * True when the guide was revised meaningfully after it was published, so the
+ * card can say "عُدّل" instead of implying the publish date is the whole story.
+ * A same-day touch is not a revision worth flagging.
+ */
+function isRevised(published?: string | null, lastUpdate?: string | null): boolean {
+    if (!published || !lastUpdate) return false;
+    const p = new Date(published).getTime();
+    const u = new Date(lastUpdate).getTime();
+    return Number.isFinite(p) && Number.isFinite(u) && u - p >= 86_400_000;
 }
 
 export default async function ArticlesIndex({ page }: { page: number }) {
@@ -42,10 +55,20 @@ export default async function ArticlesIndex({ page }: { page: number }) {
     let total = 0;
     if (supabase) {
         try {
+            // Order by publish date, NOT created_at. `created_at` is when the row
+            // was first inserted — for 228 of 354 articles that differs from when
+            // the guide actually went live (drafts approved later, seeded rows),
+            // so a freshly published guide could land pages deep in the archive.
+            // created_at stays as the tiebreaker for same-day publishes.
+            // `.not('active','is',false)` keeps retired duplicates out: they are
+            // switched off, 308-redirected in next.config, and were still being
+            // counted here (the hub advertised 354 while only 348 are live).
             const { data, count } = await supabase
                 .from('articles')
-                .select('id, slug, title, intro, excerpt, last_update, created_at, category, image, image_url', { count: 'exact' })
+                .select('id, slug, title, intro, excerpt, last_update, created_at, published_at, category, image, image_url', { count: 'exact' })
                 .eq('status', 'approved')
+                .not('active', 'is', false)
+                .order('published_at', { ascending: false })
                 .order('created_at', { ascending: false })
                 .range(from, to);
             rows = (data as Row[]) || [];
@@ -138,7 +161,8 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                             const slug = a.slug || a.id;
                             const img = a.image_url || a.image;
                             const hasImg = !!img && img.startsWith('http');
-                            const fresh = isNew(a.created_at);
+                            const fresh = isNew(a.published_at);
+                            const revised = !fresh && isRevised(a.published_at, a.last_update);
                             const summary = stripHtml(a.intro) || stripHtml(a.excerpt);
                             return (
                                 <Link
@@ -179,6 +203,11 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                                                         جديد
                                                     </span>
                                                 )}
+                                                {revised && (
+                                                    <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                                        عُدّل حديثاً
+                                                    </span>
+                                                )}
                                                 {a.category && (
                                                     <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full">
                                                         {a.category}
@@ -196,10 +225,13 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                                         </p>
 
                                         <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
-                                            {a.last_update && (
-                                                <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1" title="آخر تحديث">
+                                            {(a.last_update || a.published_at) && (
+                                                <span
+                                                    className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1"
+                                                    title={revised ? 'آخر تعديل على هذا الدليل' : 'تاريخ النشر'}
+                                                >
                                                     <Calendar size={11} />
-                                                    {a.last_update}
+                                                    {revised ? `عُدّل ${a.last_update}` : (a.published_at || a.last_update)}
                                                 </span>
                                             )}
                                             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 group-hover:gap-2.5 transition-all mr-auto">
