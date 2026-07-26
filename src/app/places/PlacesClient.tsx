@@ -57,9 +57,16 @@ function PlaceCard({ place }: { place: OfficialPlace }) {
                     <span className="block text-sm font-black text-slate-900 dark:text-slate-100 leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                         {place.ar}
                     </span>
+                    {/* The address when we have one — more actionable on a list
+                        than the Turkish name, which the detail page still shows. */}
                     <span className="block text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5" dir="ltr" lang="tr">
-                        {place.tr}
+                        {place.contact?.address || place.tr}
                     </span>
+                    {place.missionType === 'honorary' && (
+                        <span className="inline-block mt-1 text-[10px] font-black text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded-full px-2 py-0.5">
+                            فخرية — لا تُصدر جوازات
+                        </span>
+                    )}
                 </span>
                 <ChevronLeft size={16} className="text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 shrink-0" />
             </Link>

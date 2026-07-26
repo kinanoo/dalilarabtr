@@ -12,21 +12,38 @@
 // page, is reachable from the global search box, and is one tap from Google
 // Maps.
 //
-// THE HONESTY RULE (read before adding data)
-// ------------------------------------------
-// We do NOT store street addresses or coordinates. Consulates relocate, Göç
-// İdaresi branches move, offices split — a hard-coded address becomes a wrong
-// address, and sending someone across İstanbul to a building that moved is
-// worse than not answering. Instead every place carries a `mapQuery`: the
-// official institution name as Google Maps knows it. The link opens a LIVE
-// Maps search, so whatever Maps shows today — the current pin, the current
-// phone number, the current opening hours, the reviews — is what the visitor
-// gets. That is what "الموقع الحقيقي المحدّث" means in practice.
+// BOTH HALVES, ON PURPOSE (read before adding data)
+// -------------------------------------------------
+// Every place carries a `mapQuery`: its official institution name as Google
+// Maps knows it. Specific missions may ALSO carry a verified `contact` — street
+// address, phone, counter hours, and the date we checked them.
 //
-// Consequence: only add a place you are confident actually exists. A map query
-// for a mission that was never opened resolves to noise, and noise is exactly
-// what this module is meant to remove. Uncertain entries are left out on
-// purpose (see the comments in ARAB_MISSIONS / INTL_MISSIONS).
+// Why both:
+//   • A stored address is what a person actually uses. They read it, copy it,
+//     send it to a driver, check it the night before. Official addresses are
+//     stable — many sit unchanged for years — so refusing to store them just to
+//     stay theoretically safe costs the visitor real convenience.
+//   • A live name search is what stays correct. When a mission does move, Maps
+//     knows before we do. So every page also offers «الموقع تغيّر؟ ابحث بالاسم
+//     في جوجل», and the stored address is always stamped with `verifiedOn` so
+//     the visitor can judge it instead of trusting it blindly.
+//
+// The rules that keep this honest:
+//   1. NEVER invent an address. No entry is better than a wrong one — sending
+//      someone across İstanbul to the wrong building is the failure mode we are
+//      guarding against. `contact` is optional precisely so gaps stay gaps.
+//   2. Record `verifiedOn` + `source` for every address, and re-check rather
+//      than re-guess. Sources that disagree (see jordan) mean NO stored address.
+//   3. Only add a mission you are confident exists. A map query for a mission
+//      that was never opened resolves to noise.
+//   4. `honorary: true` on a consulate post is not cosmetic. An honorary consul
+//      cannot issue passports or legalise documents; labelling one as a full
+//      consulate sends people after a passport to an office that cannot make
+//      one. Mark it, and the UI warns.
+//
+// Class-of-office pages (kind: 'nearby') never store an address — "the Nüfus
+// offices in İstanbul" is dozens of branches, and the useful answer is the one
+// nearest the visitor, which only a live search can give.
 //
 // TWO SHAPES OF PLACE
 // -------------------
@@ -434,6 +451,49 @@ export const officeKindById = (id: string): OfficeKind | undefined =>
 // country, verify the mission before you add the city — see the honesty rule
 // at the top of this file.
 
+/**
+ * A stored, human-readable location for a specific mission.
+ *
+ * We DO store street addresses (they change once every few years, not weekly,
+ * and a visible address is what people copy, send to a driver, or check before
+ * they leave the house). What we do NOT do is present a stored address as the
+ * only truth:
+ *   • `verifiedOn` is shown on the page, so the visitor judges its freshness.
+ *   • Every page also carries a «الموقع تغيّر؟ ابحث بالاسم في جوجل» link that
+ *     runs a live Maps search by the official name — the escape hatch for the
+ *     day the mission moves and we have not caught up yet.
+ *   • A mission with no verified address simply omits this block and falls back
+ *     to the live search. Never guess an address to fill the gap.
+ *
+ * `source` records where the value came from so the next maintainer can
+ * re-check it instead of re-researching from zero.
+ */
+export interface PlaceContact {
+    /** Street address as published, in Turkish — the form a taxi driver reads. */
+    address: string;
+    /** Landline in local format; rendered as a tel: link. */
+    phone?: string;
+    /** Published counter hours, e.g. 'الاثنين–الجمعة 09:30–15:00'. */
+    hours?: string;
+    /** ISO date (YYYY-MM-DD) this was last checked. Shown to the visitor. */
+    verifiedOn: string;
+    /** Where it was checked — a domain or 'cross-checked directories'. */
+    source: string;
+}
+
+/** One consulate of one country in one city. */
+interface ConsulatePost {
+    city: string;
+    /**
+     * Honorary consulate (Fahri Konsolosluk). This matters a lot in practice:
+     * an honorary consul cannot issue passports or legalise documents, so
+     * sending a passport-seeker there wastes their day. Labelled explicitly.
+     */
+    honorary?: boolean;
+    contact?: PlaceContact;
+    officialUrl?: string;
+}
+
 interface MissionCountry {
     /** slug base, e.g. 'syria' → syria-consulate-istanbul */
     id: string;
@@ -446,53 +506,296 @@ interface MissionCountry {
     flag: string;
     /** Has an embassy in Ankara. */
     embassy: boolean;
-    /** City slugs hosting a Consulate General. */
-    consulates: string[];
+    /** Verified details of the Ankara embassy, when we have them. */
+    embassyContact?: PlaceContact;
+    embassyUrl?: string;
+    /** Consulate posts, by city. */
+    consulates: ConsulatePost[];
     /** Extra search spellings. */
     aliases?: string[];
 }
 
+// Addresses below were gathered on 2026-07-26 by cross-checking the Turkish
+// consulate directories against each mission's own site where it has one. They
+// are the province + district + street form the missions themselves publish.
+// Missions with no entry here deliberately carry no address — the page falls
+// back to the live Maps search rather than showing a guess.
+const V = '2026-07-26';
+const DIRS = 'مقارنة أدلة القنصليات التركية';
+
 /** الدول العربية — الجهة الأكثر بحثاً عند العرب في تركيا. */
 const ARAB_MISSIONS: MissionCountry[] = [
-    { id: 'syria', countryAr: 'سوريا', adjAr: 'السورية', tr: 'Suriye', flag: '🇸🇾', embassy: true, consulates: ['istanbul', 'gaziantep'], aliases: ['سوري', 'syrian', 'suriye konsoloslugu'] },
-    { id: 'egypt', countryAr: 'مصر', adjAr: 'المصرية', tr: 'Mısır', flag: '🇪🇬', embassy: true, consulates: ['istanbul'], aliases: ['مصري', 'egypt', 'egyptian', 'misir'] },
-    { id: 'saudi', countryAr: 'السعودية', adjAr: 'السعودية', tr: 'Suudi Arabistan', flag: '🇸🇦', embassy: true, consulates: ['istanbul'], aliases: ['سعودي', 'saudi', 'المملكة العربية السعودية', 'suudi'] },
-    { id: 'iraq', countryAr: 'العراق', adjAr: 'العراقية', tr: 'Irak', flag: '🇮🇶', embassy: true, consulates: ['istanbul'], aliases: ['عراقي', 'iraq', 'iraqi'] },
-    { id: 'jordan', countryAr: 'الأردن', adjAr: 'الأردنية', tr: 'Ürdün', flag: '🇯🇴', embassy: true, consulates: ['istanbul'], aliases: ['اردني', 'أردني', 'jordan', 'urdun'] },
-    { id: 'lebanon', countryAr: 'لبنان', adjAr: 'اللبنانية', tr: 'Lübnan', flag: '🇱🇧', embassy: true, consulates: ['istanbul'], aliases: ['لبناني', 'lebanon', 'lubnan'] },
-    { id: 'palestine', countryAr: 'فلسطين', adjAr: 'الفلسطينية', tr: 'Filistin', flag: '🇵🇸', embassy: true, consulates: ['istanbul'], aliases: ['فلسطيني', 'palestine', 'filistin'] },
-    { id: 'yemen', countryAr: 'اليمن', adjAr: 'اليمنية', tr: 'Yemen', flag: '🇾🇪', embassy: true, consulates: ['istanbul'], aliases: ['يمني', 'yemen'] },
-    { id: 'sudan', countryAr: 'السودان', adjAr: 'السودانية', tr: 'Sudan', flag: '🇸🇩', embassy: true, consulates: ['istanbul'], aliases: ['سوداني', 'sudan'] },
-    { id: 'libya', countryAr: 'ليبيا', adjAr: 'الليبية', tr: 'Libya', flag: '🇱🇾', embassy: true, consulates: ['istanbul'], aliases: ['ليبي', 'libya'] },
-    { id: 'morocco', countryAr: 'المغرب', adjAr: 'المغربية', tr: 'Fas', flag: '🇲🇦', embassy: true, consulates: ['istanbul'], aliases: ['مغربي', 'morocco', 'fas'] },
-    { id: 'tunisia', countryAr: 'تونس', adjAr: 'التونسية', tr: 'Tunus', flag: '🇹🇳', embassy: true, consulates: ['istanbul'], aliases: ['تونسي', 'tunisia', 'tunus'] },
-    { id: 'algeria', countryAr: 'الجزائر', adjAr: 'الجزائرية', tr: 'Cezayir', flag: '🇩🇿', embassy: true, consulates: ['istanbul'], aliases: ['جزائري', 'algeria', 'cezayir'] },
-    { id: 'kuwait', countryAr: 'الكويت', adjAr: 'الكويتية', tr: 'Kuveyt', flag: '🇰🇼', embassy: true, consulates: ['istanbul'], aliases: ['كويتي', 'kuwait', 'kuveyt'] },
-    { id: 'qatar', countryAr: 'قطر', adjAr: 'القطرية', tr: 'Katar', flag: '🇶🇦', embassy: true, consulates: ['istanbul'], aliases: ['قطري', 'qatar', 'katar'] },
-    { id: 'uae', countryAr: 'الإمارات', adjAr: 'الإماراتية', tr: 'Birleşik Arap Emirlikleri', flag: '🇦🇪', embassy: true, consulates: ['istanbul'], aliases: ['اماراتي', 'الامارات', 'uae', 'emirates', 'dubai', 'bae'] },
-    { id: 'bahrain', countryAr: 'البحرين', adjAr: 'البحرينية', tr: 'Bahreyn', flag: '🇧🇭', embassy: true, consulates: ['istanbul'], aliases: ['بحريني', 'bahrain', 'bahreyn'] },
+    {
+        id: 'syria', countryAr: 'سوريا', adjAr: 'السورية', tr: 'Suriye', flag: '🇸🇾',
+        embassy: true, aliases: ['سوري', 'syrian', 'suriye konsoloslugu'],
+        consulates: [
+            {
+                city: 'istanbul',
+                contact: {
+                    address: 'Maçka Cad., Ralli Apt. No: 59, Kat: 3, Teşvikiye, Şişli, İstanbul',
+                    phone: '0212 232 71 10',
+                    hours: 'الاثنين–الجمعة 09:30–15:00',
+                    verifiedOn: V, source: DIRS,
+                },
+            },
+            {
+                city: 'gaziantep',
+                contact: {
+                    address: 'Alleben Mah., Kemal Köker Cad. No: 16, Şahinbey, Gaziantep',
+                    phone: '0342 232 60 47',
+                    hours: 'الاثنين–الجمعة 08:30–15:00',
+                    verifiedOn: V, source: DIRS,
+                },
+            },
+        ],
+    },
+    {
+        id: 'egypt', countryAr: 'مصر', adjAr: 'المصرية', tr: 'Mısır', flag: '🇪🇬',
+        embassy: true, aliases: ['مصري', 'egypt', 'egyptian', 'misir'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Cevdetpaşa Cad. No: 12, Bebek, Beşiktaş, 34330 İstanbul',
+                phone: '0212 324 21 33',
+                hours: 'الاثنين–الجمعة 10:00–16:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'saudi', countryAr: 'السعودية', adjAr: 'السعودية', tr: 'Suudi Arabistan', flag: '🇸🇦',
+        embassy: true, aliases: ['سعودي', 'saudi', 'المملكة العربية السعودية', 'suudi'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Konaklar Mah., Çamlık Cad., Akasyalı Sok. No: 6, 4. Levent, Beşiktaş, İstanbul',
+                phone: '0212 281 91 40',
+                hours: 'الاثنين–الجمعة 09:00–15:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'iraq', countryAr: 'العراق', adjAr: 'العراقية', tr: 'Irak', flag: '🇮🇶',
+        embassy: true, aliases: ['عراقي', 'iraq', 'iraqi'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Esentepe Mah., Hikaye Sok. No: 3, 34394 Şişli, İstanbul',
+                phone: '0212 299 67 29',
+                hours: 'الاثنين–الجمعة 09:00–16:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'jordan', countryAr: 'الأردن', adjAr: 'الأردنية', tr: 'Ürdün', flag: '🇯🇴',
+        embassy: true, aliases: ['اردني', 'أردني', 'jordan', 'urdun'],
+        // Honorary post. Directories disagree on its address (Kalıpçı Sok. vs
+        // Büyükdere Cad.), so no address is stored — the live search wins.
+        consulates: [{ city: 'istanbul', honorary: true }],
+    },
+    {
+        id: 'lebanon', countryAr: 'لبنان', adjAr: 'اللبنانية', tr: 'Lübnan', flag: '🇱🇧',
+        embassy: true, aliases: ['لبناني', 'lebanon', 'lubnan'],
+        consulates: [{
+            city: 'istanbul',
+            officialUrl: 'http://istanbul.mfa.gov.lb/turkey/turkish/contact-us',
+            contact: {
+                address: 'Teşvikiye Mah., Hüsrev Gerede Cad. No: 106, Şişli, İstanbul',
+                phone: '0212 236 13 65',
+                hours: 'الاثنين–الجمعة 09:00–15:00',
+                verifiedOn: V, source: 'istanbul.mfa.gov.lb',
+            },
+        }],
+    },
+    {
+        id: 'palestine', countryAr: 'فلسطين', adjAr: 'الفلسطينية', tr: 'Filistin', flag: '🇵🇸',
+        embassy: true, embassyUrl: 'https://www.embassyofpalestine.org.tr/tr-tr',
+        aliases: ['فلسطيني', 'palestine', 'filistin'],
+        consulates: [{
+            city: 'istanbul',
+            officialUrl: 'https://consulateofpalestine.com.tr/',
+            contact: {
+                address: 'Topçular Mah., Topçular Cad. No: 40, Eyüpsultan, İstanbul',
+                phone: '0212 493 34 70',
+                hours: 'الاثنين–الجمعة 08:30–15:30',
+                verifiedOn: V, source: 'consulateofpalestine.com.tr',
+            },
+        }],
+    },
+    {
+        id: 'yemen', countryAr: 'اليمن', adjAr: 'اليمنية', tr: 'Yemen', flag: '🇾🇪',
+        embassy: true, embassyUrl: 'https://yemenembassytr.org/',
+        aliases: ['يمني', 'yemen'],
+        consulates: [{
+            city: 'istanbul', honorary: true,
+            contact: {
+                address: 'Halaskargazi Cad., Uygar Apt. No: 43, Kat: 5, Harbiye, Şişli, İstanbul',
+                phone: '0212 233 31 17',
+                verifiedOn: V, source: 'yemenembassytr.org',
+            },
+        }],
+    },
+    {
+        id: 'sudan', countryAr: 'السودان', adjAr: 'السودانية', tr: 'Sudan', flag: '🇸🇩',
+        embassy: true, aliases: ['سوداني', 'sudan'],
+        consulates: [{
+            city: 'istanbul',
+            officialUrl: 'https://sudanist.com/',
+            contact: {
+                address: 'Levent Mah., Menekşeli Sok. No: 16, 1. Levent, 34330 Beşiktaş, İstanbul',
+                phone: '0212 281 74 41',
+                hours: 'الاثنين–الجمعة 09:00–15:30',
+                verifiedOn: V, source: 'sudanist.com',
+            },
+        }],
+    },
+    {
+        id: 'libya', countryAr: 'ليبيا', adjAr: 'الليبية', tr: 'Libya', flag: '🇱🇾',
+        embassy: true, aliases: ['ليبي', 'libya'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Gümüşsuyu Mah., İnönü Cad., Miralay Şefik Bey Sok. No: 3, Beyoğlu, İstanbul',
+                phone: '0212 251 81 00',
+                hours: 'الاثنين–الجمعة 10:00–16:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'morocco', countryAr: 'المغرب', adjAr: 'المغربية', tr: 'Fas', flag: '🇲🇦',
+        embassy: true, aliases: ['مغربي', 'morocco', 'fas'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Levazım Mah., Korukent Sitesi, Beyaz Köşk No: 46/2, Beşiktaş, İstanbul',
+                phone: '0212 258 15 98',
+                hours: 'الاثنين–الجمعة 09:00–16:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'tunisia', countryAr: 'تونس', adjAr: 'التونسية', tr: 'Tunus', flag: '🇹🇳',
+        embassy: true, aliases: ['تونسي', 'tunisia', 'tunus'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Esentepe Mah., Keskin Kalem Sok. No: 31, Şişli, İstanbul',
+                phone: '0212 217 41 56',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'algeria', countryAr: 'الجزائر', adjAr: 'الجزائرية', tr: 'Cezayir', flag: '🇩🇿',
+        embassy: true, aliases: ['جزائري', 'algeria', 'cezayir'],
+        consulates: [{
+            city: 'istanbul',
+            officialUrl: 'https://cgistanbul.mfa.gov.dz/tr/contact',
+            contact: {
+                address: 'Gazeteciler Sitesi, 23 Temmuz Meydanı No: 7, 34394 Şişli, İstanbul',
+                phone: '0212 356 95 16',
+                hours: 'الاثنين–الجمعة 09:00–17:00',
+                verifiedOn: V, source: 'cgistanbul.mfa.gov.dz',
+            },
+        }],
+    },
+    {
+        id: 'kuwait', countryAr: 'الكويت', adjAr: 'الكويتية', tr: 'Kuveyt', flag: '🇰🇼',
+        embassy: true, embassyUrl: 'http://kuwaitembassy.org.tr/',
+        aliases: ['كويتي', 'kuwait', 'kuveyt'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Akat Mah., Cebeci Cad. No: 22, Beşiktaş, İstanbul',
+                phone: '0212 351 18 88',
+                hours: 'الاثنين–الجمعة 09:00–15:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'qatar', countryAr: 'قطر', adjAr: 'القطرية', tr: 'Katar', flag: '🇶🇦',
+        embassy: true, aliases: ['قطري', 'qatar', 'katar'],
+        consulates: [{
+            city: 'istanbul',
+            contact: {
+                address: 'Yeniköy Mah., İstinye Mevkii, Balbandere Cad., Hilpark Suites No: 2, 34464 Sarıyer, İstanbul',
+                phone: '0212 229 99 55',
+                hours: 'الاثنين–الجمعة 09:00–15:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
+    {
+        id: 'uae', countryAr: 'الإمارات', adjAr: 'الإماراتية', tr: 'Birleşik Arap Emirlikleri', flag: '🇦🇪',
+        embassy: true, aliases: ['اماراتي', 'الامارات', 'uae', 'emirates', 'dubai', 'bae'],
+        consulates: [{
+            city: 'istanbul',
+            officialUrl: 'https://www.mofa.gov.ae/tr-tr/missions/istanbul',
+            contact: {
+                address: 'Konaklar Mah., Meşeli Sok. No: 11, 4. Levent, Beşiktaş, 34330 İstanbul',
+                phone: '0212 317 92 57',
+                hours: 'الاثنين–الجمعة 09:00–16:00',
+                verifiedOn: V, source: 'mofa.gov.ae',
+            },
+        }],
+    },
+    {
+        id: 'bahrain', countryAr: 'البحرين', adjAr: 'البحرينية', tr: 'Bahreyn', flag: '🇧🇭',
+        embassy: true, aliases: ['بحريني', 'bahrain', 'bahreyn'],
+        consulates: [{
+            city: 'istanbul', honorary: true,
+            contact: {
+                address: 'Fahrettin Kerim Gökay Cad. No: 36, Altunizade, Üsküdar, İstanbul',
+                hours: 'الاثنين–الجمعة 09:00–15:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
     { id: 'oman', countryAr: 'عُمان', adjAr: 'العُمانية', tr: 'Umman', flag: '🇴🇲', embassy: true, consulates: [], aliases: ['عمان', 'سلطنة عمان', 'oman', 'umman'] },
-    { id: 'somalia', countryAr: 'الصومال', adjAr: 'الصومالية', tr: 'Somali', flag: '🇸🇴', embassy: true, consulates: ['istanbul'], aliases: ['صومالي', 'somalia'] },
+    {
+        id: 'somalia', countryAr: 'الصومال', adjAr: 'الصومالية', tr: 'Somali', flag: '🇸🇴',
+        embassy: true, embassyUrl: 'https://ankara.mfa.gov.so/',
+        aliases: ['صومالي', 'somalia'],
+        consulates: [{
+            city: 'istanbul', honorary: true,
+            contact: {
+                address: 'Çobançeşme Mah., Kalender Sok. No: 8, Bahçelievler, İstanbul',
+                phone: '0212 452 20 15',
+                hours: 'الاثنين–الجمعة 09:00–17:00',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
+    },
     { id: 'mauritania', countryAr: 'موريتانيا', adjAr: 'الموريتانية', tr: 'Moritanya', flag: '🇲🇷', embassy: true, consulates: [], aliases: ['موريتاني', 'mauritania', 'moritanya'] },
     { id: 'djibouti', countryAr: 'جيبوتي', adjAr: 'الجيبوتية', tr: 'Cibuti', flag: '🇩🇯', embassy: true, consulates: [], aliases: ['جيبوتي', 'djibouti', 'cibuti'] },
 ];
 
-/** سفارات وقنصليات أجنبية — مطلوبة بكثرة لطلبات التأشيرات والهجرة. */
+/**
+ * سفارات وقنصليات أجنبية — مطلوبة بكثرة لطلبات التأشيرات والهجرة.
+ * No stored addresses yet: these are next in line for the same verification
+ * pass the Arab missions above got. Until then their pages open the live Maps
+ * search, which already answers "where is it" correctly.
+ */
 const INTL_MISSIONS: MissionCountry[] = [
-    { id: 'usa', countryAr: 'أمريكا', adjAr: 'الأمريكية', tr: 'Amerika Birleşik Devletleri', flag: '🇺🇸', embassy: true, consulates: ['istanbul'], aliases: ['امريكا', 'الولايات المتحدة', 'usa', 'us', 'america', 'abd'] },
-    { id: 'uk', countryAr: 'بريطانيا', adjAr: 'البريطانية', tr: 'Birleşik Krallık', flag: '🇬🇧', embassy: true, consulates: ['istanbul'], aliases: ['بريطانيا', 'انجلترا', 'المملكة المتحدة', 'uk', 'britain', 'england', 'ingiltere'] },
-    { id: 'germany', countryAr: 'ألمانيا', adjAr: 'الألمانية', tr: 'Almanya', flag: '🇩🇪', embassy: true, consulates: ['istanbul', 'izmir', 'antalya'], aliases: ['المانيا', 'germany', 'almanya', 'deutschland'] },
-    { id: 'france', countryAr: 'فرنسا', adjAr: 'الفرنسية', tr: 'Fransa', flag: '🇫🇷', embassy: true, consulates: ['istanbul'], aliases: ['فرنسا', 'france', 'fransa'] },
-    { id: 'netherlands', countryAr: 'هولندا', adjAr: 'الهولندية', tr: 'Hollanda', flag: '🇳🇱', embassy: true, consulates: ['istanbul'], aliases: ['هولندا', 'netherlands', 'holland', 'hollanda'] },
-    { id: 'italy', countryAr: 'إيطاليا', adjAr: 'الإيطالية', tr: 'İtalya', flag: '🇮🇹', embassy: true, consulates: ['istanbul', 'izmir'], aliases: ['ايطاليا', 'italy', 'italya'] },
-    { id: 'spain', countryAr: 'إسبانيا', adjAr: 'الإسبانية', tr: 'İspanya', flag: '🇪🇸', embassy: true, consulates: ['istanbul'], aliases: ['اسبانيا', 'spain', 'ispanya'] },
-    { id: 'greece', countryAr: 'اليونان', adjAr: 'اليونانية', tr: 'Yunanistan', flag: '🇬🇷', embassy: true, consulates: ['istanbul', 'izmir'], aliases: ['اليونان', 'greece', 'yunanistan'] },
-    { id: 'sweden', countryAr: 'السويد', adjAr: 'السويدية', tr: 'İsveç', flag: '🇸🇪', embassy: true, consulates: ['istanbul'], aliases: ['السويد', 'sweden', 'isvec'] },
-    { id: 'canada', countryAr: 'كندا', adjAr: 'الكندية', tr: 'Kanada', flag: '🇨🇦', embassy: true, consulates: ['istanbul'], aliases: ['كندا', 'canada', 'kanada'] },
-    { id: 'russia', countryAr: 'روسيا', adjAr: 'الروسية', tr: 'Rusya', flag: '🇷🇺', embassy: true, consulates: ['istanbul', 'antalya'], aliases: ['روسيا', 'russia', 'rusya'] },
-    { id: 'iran', countryAr: 'إيران', adjAr: 'الإيرانية', tr: 'İran', flag: '🇮🇷', embassy: true, consulates: ['istanbul'], aliases: ['ايران', 'iran'] },
-    { id: 'azerbaijan', countryAr: 'أذربيجان', adjAr: 'الأذربيجانية', tr: 'Azerbaycan', flag: '🇦🇿', embassy: true, consulates: ['istanbul'], aliases: ['اذربيجان', 'azerbaijan', 'azerbaycan'] },
-    { id: 'pakistan', countryAr: 'باكستان', adjAr: 'الباكستانية', tr: 'Pakistan', flag: '🇵🇰', embassy: true, consulates: ['istanbul'], aliases: ['باكستان', 'pakistan'] },
+    { id: 'usa', countryAr: 'أمريكا', adjAr: 'الأمريكية', tr: 'Amerika Birleşik Devletleri', flag: '🇺🇸', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['امريكا', 'الولايات المتحدة', 'usa', 'us', 'america', 'abd'] },
+    { id: 'uk', countryAr: 'بريطانيا', adjAr: 'البريطانية', tr: 'Birleşik Krallık', flag: '🇬🇧', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['بريطانيا', 'انجلترا', 'المملكة المتحدة', 'uk', 'britain', 'england', 'ingiltere'] },
+    { id: 'germany', countryAr: 'ألمانيا', adjAr: 'الألمانية', tr: 'Almanya', flag: '🇩🇪', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'izmir' }, { city: 'antalya' }], aliases: ['المانيا', 'germany', 'almanya', 'deutschland'] },
+    { id: 'france', countryAr: 'فرنسا', adjAr: 'الفرنسية', tr: 'Fransa', flag: '🇫🇷', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['فرنسا', 'france', 'fransa'] },
+    { id: 'netherlands', countryAr: 'هولندا', adjAr: 'الهولندية', tr: 'Hollanda', flag: '🇳🇱', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['هولندا', 'netherlands', 'holland', 'hollanda'] },
+    { id: 'italy', countryAr: 'إيطاليا', adjAr: 'الإيطالية', tr: 'İtalya', flag: '🇮🇹', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'izmir' }], aliases: ['ايطاليا', 'italy', 'italya'] },
+    { id: 'spain', countryAr: 'إسبانيا', adjAr: 'الإسبانية', tr: 'İspanya', flag: '🇪🇸', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['اسبانيا', 'spain', 'ispanya'] },
+    { id: 'greece', countryAr: 'اليونان', adjAr: 'اليونانية', tr: 'Yunanistan', flag: '🇬🇷', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'izmir' }], aliases: ['اليونان', 'greece', 'yunanistan'] },
+    { id: 'sweden', countryAr: 'السويد', adjAr: 'السويدية', tr: 'İsveç', flag: '🇸🇪', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['السويد', 'sweden', 'isvec'] },
+    { id: 'canada', countryAr: 'كندا', adjAr: 'الكندية', tr: 'Kanada', flag: '🇨🇦', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['كندا', 'canada', 'kanada'] },
+    { id: 'russia', countryAr: 'روسيا', adjAr: 'الروسية', tr: 'Rusya', flag: '🇷🇺', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'antalya' }], aliases: ['روسيا', 'russia', 'rusya'] },
+    { id: 'iran', countryAr: 'إيران', adjAr: 'الإيرانية', tr: 'İran', flag: '🇮🇷', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['ايران', 'iran'] },
+    { id: 'azerbaijan', countryAr: 'أذربيجان', adjAr: 'الأذربيجانية', tr: 'Azerbaycan', flag: '🇦🇿', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['اذربيجان', 'azerbaijan', 'azerbaycan'] },
+    { id: 'pakistan', countryAr: 'باكستان', adjAr: 'الباكستانية', tr: 'Pakistan', flag: '🇵🇰', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['باكستان', 'pakistan'] },
 ];
 
 // ============================================================================
@@ -529,8 +832,14 @@ export interface OfficialPlace {
     officeKindId?: string;
     /** Missions only — splits the hub into «عربية» / «أجنبية». */
     region?: 'arab' | 'intl';
-    /** Missions only. */
-    missionType?: 'embassy' | 'consulate';
+    /** Missions only. `honorary` cannot issue passports — surfaced in the UI. */
+    missionType?: 'embassy' | 'consulate' | 'honorary';
+    /**
+     * Verified street address / phone / hours, when we have them. Absent means
+     * "we have no address we can stand behind" — the page then leads with the
+     * live Maps search instead of a guess.
+     */
+    contact?: PlaceContact;
 }
 
 function buildMissionPlaces(list: MissionCountry[], region: 'arab' | 'intl'): OfficialPlace[] {
@@ -566,34 +875,54 @@ function buildMissionPlaces(list: MissionCountry[], region: 'arab' | 'intl'): Of
                 flag: m.flag,
                 region,
                 missionType: 'embassy',
+                officialUrl: m.embassyUrl,
+                contact: m.embassyContact,
             });
         }
 
-        for (const citySlug of m.consulates) {
-            const city = placeCityBySlug(citySlug);
+        for (const post of m.consulates) {
+            const city = placeCityBySlug(post.city);
             if (!city) continue;
+
+            // An honorary consul is a local representative, not a career
+            // diplomat with a passport counter. Saying so up front is the whole
+            // point — «القنصلية اليمنية» sent someone after a passport to an
+            // office that cannot issue one.
+            const trName = post.honorary
+                ? `${m.tr} Fahri Konsolosluğu`
+                : `${m.tr} Başkonsolosluğu`;
+
             out.push({
                 slug: `${m.id}-consulate-${city.slug}`,
                 kind: 'single',
                 groupId,
-                ar: `القنصلية ${m.adjAr} في ${city.ar}`,
-                shortAr: `القنصلية ${m.adjAr}`,
-                tr: `${m.tr} Başkonsolosluğu`,
+                ar: post.honorary
+                    ? `القنصلية الفخرية ${m.adjAr} في ${city.ar}`
+                    : `القنصلية ${m.adjAr} في ${city.ar}`,
+                shortAr: post.honorary
+                    ? `القنصلية الفخرية ${m.adjAr}`
+                    : `القنصلية ${m.adjAr}`,
+                tr: trName,
                 citySlug: city.slug,
                 cityAr: city.ar,
                 cityTr: city.tr,
-                mapQuery: `${m.tr} Başkonsolosluğu ${city.tr}`,
-                what: `المعاملات القنصلية لمواطني ${m.countryAr} في ${city.ar}: الجوازات، الوثائق، الوكالات، والتصديق.`,
+                mapQuery: `${trName} ${city.tr}`,
+                what: post.honorary
+                    ? `قنصلية فخرية: تقدّم معلومات ومساعدة محدودة، ولا تُصدر جوازات ولا وثائق رسمية ولا تصدّق أوراقاً. للمعاملات الرسمية لمواطني ${m.countryAr} راجع السفارة في أنقرة.`
+                    : `المعاملات القنصلية لمواطني ${m.countryAr} في ${city.ar}: الجوازات، الوثائق، الوكالات، والتصديق.`,
                 aliases: [
                     ...sharedAliases, ...city.aliases,
                     'قنصلية', 'القنصلية', 'قنصليه', 'القنصليه', 'consulate',
                     'konsolosluk', 'baskonsolosluk', 'başkonsolosluk',
                     `قنصلية ${m.countryAr}`, `القنصلية ${m.adjAr}`,
+                    ...(post.honorary ? ['فخرية', 'قنصلية فخرية', 'fahri', 'fahri konsolosluk', 'honorary'] : []),
                 ],
                 icon: Landmark,
                 flag: m.flag,
                 region,
-                missionType: 'consulate',
+                missionType: post.honorary ? 'honorary' : 'consulate',
+                officialUrl: post.officialUrl,
+                contact: post.contact,
             });
         }
     }
@@ -668,17 +997,39 @@ export const placesInCity = (citySlug: string): OfficialPlace[] =>
 // 🔗 روابط الخرائط — the whole point
 // ============================================================================
 
+const mapsSearch = (q: string) =>
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+
 /**
- * LIVE Google-Maps search for the place. Deliberately a search (not a
- * lat/lng pin): whatever Maps knows today — the current address, phone,
- * opening hours — is what opens, so the answer can't go stale on our side.
+ * What Google Maps should be asked for. Two options, on purpose:
+ *   • With a stored address → name + street address. That geocodes to the exact
+ *     building, which is the whole benefit of storing the address: no guessing
+ *     between three similarly-named pins.
+ *   • Without one → the official name alone, a live search Maps resolves itself.
  */
+const mapTarget = (place: OfficialPlace): string =>
+    place.contact ? `${place.tr}, ${place.contact.address}` : place.mapQuery;
+
+/** Opens the place on Google Maps — precise when we have the address. */
 export const placeMapUrl = (place: OfficialPlace): string =>
-    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.mapQuery)}`;
+    mapsSearch(mapTarget(place));
 
 /** Turn-by-turn directions from wherever the visitor is standing. */
 export const placeDirectionsUrl = (place: OfficialPlace): string =>
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.mapQuery)}`;
+    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapTarget(place))}`;
+
+/**
+ * The escape hatch, and the other half of the deal: a LIVE Maps search by the
+ * official name only, ignoring anything we stored. This is what a visitor taps
+ * when the mission has moved and our address is behind — Maps knows before we
+ * do. Every place page shows it; pages with a stored address show it as the
+ * «الموقع تغيّر؟» fallback.
+ */
+export const placeNameSearchUrl = (place: OfficialPlace): string =>
+    mapsSearch(place.mapQuery);
+
+/** True when we have an address we can stand behind for this place. */
+export const hasStoredAddress = (place: OfficialPlace): boolean => Boolean(place.contact);
 
 // ============================================================================
 // 🔍 مدخلات البحث — feeds the global search box
@@ -706,11 +1057,20 @@ export function buildPlacesSearchEntries(): PlaceSearchEntry[] {
     return OFFICIAL_PLACES.map((p) => ({
         id: `place-${p.slug}`,
         title: p.ar,
-        desc: p.kind === 'nearby'
-            ? `اعرض أقرب ${p.shortAr} في ${p.cityAr} على خرائط جوجل`
-            : `الموقع على خرائط جوجل + المعاملات والمواعيد`,
+        // A stored address in the result row answers "where is it" before the
+        // visitor even taps — that is the point of storing it.
+        desc: p.contact
+            ? p.contact.address
+            : p.kind === 'nearby'
+                ? `اعرض أقرب ${p.shortAr} في ${p.cityAr} على خرائط جوجل`
+                : `الموقع على خرائط جوجل + المعاملات والمواعيد`,
         url: `/places/${p.slug}`,
-        keywords: [p.ar, p.tr, p.shortAr, p.cityAr, p.cityTr, ...p.aliases].join(' '),
+        keywords: [
+            p.ar, p.tr, p.shortAr, p.cityAr, p.cityTr,
+            // Street/district names are searchable too («قنصلية مجكا», «Levent»).
+            ...(p.contact ? [p.contact.address] : []),
+            ...p.aliases,
+        ].join(' '),
         mapUrl: placeMapUrl(p),
         icon: p.icon,
     }));

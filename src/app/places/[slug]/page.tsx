@@ -4,15 +4,18 @@ import Link from 'next/link';
 import {
     MapPin, Navigation, ExternalLink, ShieldCheck, CalendarClock, Info,
     ChevronDown, HelpCircle, ArrowLeft, Building2, Landmark, AlertTriangle,
+    RefreshCw,
 } from 'lucide-react';
 import PageHero from '@/components/PageHero';
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import {
     OFFICIAL_PLACES, MISSION_PLACES, OFFICE_KINDS, PLACE_CITIES,
-    placeBySlug, placeMapUrl, placeDirectionsUrl, placeGroupById, officePlace,
+    placeBySlug, placeMapUrl, placeDirectionsUrl, placeNameSearchUrl,
+    placeGroupById, officePlace,
     type OfficialPlace,
 } from '@/lib/officialPlaces';
+import PlaceAddressCard from './PlaceAddressCard';
 
 // ISR + dynamicParams (NOT force-static) — the only prerendered dynamic-route
 // shape @opennextjs/cloudflare actually serves on Workers; /city/[slug] and
@@ -44,12 +47,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (!place) notFound();
 
     const title = place.kind === 'single'
-        ? `${place.ar} — الموقع على الخريطة والعنوان والاتجاهات (${place.tr})`
+        ? `${place.ar} — العنوان ورقم الهاتف والموقع على الخريطة (${place.tr})`
         : `${place.ar} — أقرب فرع إليك على الخريطة (${place.tr})`;
 
-    const description = place.kind === 'single'
-        ? `موقع ${place.ar} على خرائط جوجل مباشرة: الاتجاهات من موقعك، رقم الهاتف وساعات العمل كما هي مسجّلة اليوم. ${place.what}`
-        : `افتح أقرب ${place.shortAr} إليك في ${place.cityAr} على خرائط جوجل — الاتجاهات وساعات العمل. ${place.what}`;
+    // With a verified address, lead the snippet with it: that is what people
+    // scan search results for.
+    const description = place.contact
+        ? `عنوان ${place.ar}: ${place.contact.address}${place.contact.phone ? ` — هاتف ${place.contact.phone}` : ''}${place.contact.hours ? ` — ${place.contact.hours}` : ''}. افتح الموقع على خرائط جوجل والاتجاهات من مكانك.`
+        : place.kind === 'single'
+            ? `موقع ${place.ar} على خرائط جوجل مباشرة: الاتجاهات من موقعك، رقم الهاتف وساعات العمل كما هي مسجّلة اليوم. ${place.what}`
+            : `افتح أقرب ${place.shortAr} إليك في ${place.cityAr} على خرائط جوجل — الاتجاهات وساعات العمل. ${place.what}`;
 
     return {
         title,
@@ -57,6 +64,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         keywords: [
             place.ar, `عنوان ${place.ar}`, `موقع ${place.ar}`, `اين تقع ${place.ar}`,
             `${place.shortAr} ${place.cityAr}`, place.tr, place.mapQuery,
+            ...(place.contact?.phone ? [`رقم هاتف ${place.ar}`] : []),
             'خرائط جوجل', 'الاتجاهات',
         ].join(', '),
         alternates: { canonical: `/places/${place.slug}` },
@@ -76,15 +84,26 @@ function buildFaqs(place: OfficialPlace) {
             q: place.kind === 'single'
                 ? `أين يقع ${place.ar} بالتحديد؟`
                 : `كيف أجد أقرب ${place.shortAr} إليّ في ${place.cityAr}؟`,
-            a: place.kind === 'single'
-                ? `اضغط زر «افتح الموقع على خرائط جوجل» أعلى الصفحة — يفتح بحثاً حياً باسم المقر الرسمي «${place.mapQuery}»، فترى الموقع الحالي والعنوان ورقم الهاتف وساعات العمل كما هي مسجّلة اليوم، وتستطيع بدء الاتجاهات من مكانك فوراً.`
-                : `اضغط زر «افتح الموقع على خرائط جوجل» أعلى الصفحة، واسمح للخرائط بالوصول إلى موقعك — تظهر فروع ${place.shortAr} في ${place.cityAr} مرتّبة من الأقرب إليك، مع العنوان والهاتف وساعات العمل والاتجاهات.`,
+            a: place.contact
+                ? `عنوانه: ${place.contact.address}. اضغط «افتح الموقع على خرائط جوجل» أعلى الصفحة ليفتح على العنوان بالتحديد، أو «ابدأ الاتجاهات» للملاحة من مكانك. ويمكنك نسخ العنوان من صندوق العنوان وإرساله لسائق التاكسي.`
+                : place.kind === 'single'
+                    ? `اضغط زر «افتح الموقع على خرائط جوجل» أعلى الصفحة — يفتح بحثاً حياً باسم المقر الرسمي «${place.mapQuery}»، فترى الموقع الحالي والعنوان ورقم الهاتف وساعات العمل كما هي مسجّلة اليوم، وتستطيع بدء الاتجاهات من مكانك فوراً.`
+                    : `اضغط زر «افتح الموقع على خرائط جوجل» أعلى الصفحة، واسمح للخرائط بالوصول إلى موقعك — تظهر فروع ${place.shortAr} في ${place.cityAr} مرتّبة من الأقرب إليك، مع العنوان والهاتف وساعات العمل والاتجاهات.`,
         },
         {
             q: `هل الموقع المعروض محدّث؟`,
-            a: `نعم. نحن لا نخزّن عنواناً ثابتاً قد يتغيّر — الرابط يفتح بحثاً حياً في خرائط جوجل باسم الجهة الرسمي. فإن نُقل المقر أو تغيّر رقم الهاتف أو ساعات العمل، ترى المعلومة الحالية لا معلومة قديمة عندنا.`,
+            a: place.contact
+                ? `العنوان المعروض هنا تم التحقق منه بتاريخ ${place.contact.verifiedOn} من ${place.contact.source}، والعناوين الرسمية نادراً ما تتغيّر — كثير منها ثابت لسنوات. ومع ذلك تركنا لك الخيار الثاني: زر «الموقع تغيّر؟ ابحث بالاسم الآن في جوجل» يشغّل بحثاً حياً في خرائط جوجل بالاسم الرسمي، فيعرض الموقع الحالي حتى لو انتقل المقر ولم نحدّث بياناتنا بعد. ويُفضّل دائماً الاتصال بالرقم قبل التوجّه.`
+                : `نحن لا نخزّن عنواناً لهذا المقر — الرابط يفتح بحثاً حياً في خرائط جوجل باسم الجهة الرسمي. فإن نُقل المقر أو تغيّر رقم الهاتف أو ساعات العمل، ترى المعلومة الحالية لا معلومة قديمة عندنا.`,
         },
     ];
+
+    if (place.missionType === 'honorary') {
+        faqs.push({
+            q: `هل يمكنني استخراج جواز أو تصديق ورقة من ${place.ar}؟`,
+            a: `لا. القنصلية الفخرية (Fahri Konsolosluk) يرأسها قنصل فخري وليست بعثة دبلوماسية كاملة: لا تُصدر جوازات ولا وثائق ولا تصدّق أوراقاً ولا تمنح تأشيرات. مهمتها تقديم معلومات ومساعدة محدودة وتمثيل تجاري. لكل معاملة رسمية راجع السفارة في أنقرة.`,
+        });
+    }
 
     if (place.appointment) {
         faqs.push({
@@ -117,6 +136,7 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
     const pageUrl = `${baseUrl}/places/${place.slug}`;
     const mapUrl = placeMapUrl(place);
     const dirUrl = placeDirectionsUrl(place);
+    const nameSearchUrl = placeNameSearchUrl(place);
     const group = placeGroupById(place.groupId);
     const faqs = buildFaqs(place);
     const city = PLACE_CITIES.find((c) => c.slug === place.citySlug);
@@ -147,13 +167,21 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
             url: pageUrl,
             inLanguage: 'ar',
             isPartOf: { '@type': 'WebSite', name: 'دليل العرب في تركيا', url: baseUrl },
-            // The authoritative location lives on Google Maps, not here — we
-            // point at it rather than restating an address we do not maintain.
+            // `streetAddress` + `telephone` are emitted ONLY when we hold a
+            // verified value. Structured data is a claim to search engines, so
+            // an unverified address here would be a fabricated claim, not just
+            // a soft UI guess.
             mainEntity: {
                 '@type': 'Place',
                 name: place.ar,
                 alternateName: place.tr,
-                address: { '@type': 'PostalAddress', addressLocality: place.cityTr, addressCountry: 'TR' },
+                address: {
+                    '@type': 'PostalAddress',
+                    ...(place.contact ? { streetAddress: place.contact.address } : {}),
+                    addressLocality: place.cityTr,
+                    addressCountry: 'TR',
+                },
+                ...(place.contact?.phone ? { telephone: place.contact.phone } : {}),
                 hasMap: mapUrl,
             },
         },
@@ -217,9 +245,11 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                         </a>
 
                         <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                            {place.kind === 'single'
-                                ? 'يفتح بطاقة المكان على خرائط جوجل: الموقع الحالي، العنوان، رقم الهاتف، وساعات العمل.'
-                                : `يفتح فروع ${place.shortAr} في ${place.cityAr} مرتّبة من الأقرب إليك — اسمح بالوصول لموقعك لأدقّ نتيجة.`}
+                            {place.contact
+                                ? 'يفتح على العنوان المسجّل بالتحديد — لا نتائج متشابهة ولا تخمين.'
+                                : place.kind === 'single'
+                                    ? 'يفتح بطاقة المكان على خرائط جوجل: الموقع الحالي، العنوان، رقم الهاتف، وساعات العمل.'
+                                    : `يفتح فروع ${place.shortAr} في ${place.cityAr} مرتّبة من الأقرب إليك — اسمح بالوصول لموقعك لأدقّ نتيجة.`}
                         </p>
 
                         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-center gap-3">
@@ -246,6 +276,24 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                             )}
                         </div>
 
+                        {/* The other half of the deal: a stored address is fast and
+                            copyable, a live name search is always current. Offer both
+                            rather than betting the page on either one. */}
+                        {place.contact && (
+                            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <a
+                                    href={nameSearchUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs font-black text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:underline"
+                                >
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    الموقع تغيّر؟ ابحث بالاسم الآن في جوجل
+                                    <ExternalLink className="w-3 h-3" />
+                                </a>
+                            </div>
+                        )}
+
                         {place.appointment && (
                             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                                 <a
@@ -264,6 +312,26 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                             </div>
                         )}
                     </div>
+
+                    {/* ── العنوان المسجّل ─────────────────────────────────── */}
+                    {place.contact && (
+                        <PlaceAddressCard contact={place.contact} placeName={place.tr} />
+                    )}
+
+                    {/* ── تنبيه القنصلية الفخرية ──────────────────────────── */}
+                    {place.missionType === 'honorary' && (
+                        <div className="relative overflow-hidden bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-200 dark:border-red-900/50 p-5">
+                            <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-red-500" />
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                                <p className="text-xs text-red-900 dark:text-red-200 leading-relaxed">
+                                    <strong>انتبه: هذه قنصلية فخرية (Fahri Konsolosluk)</strong> — لا تُصدر جوازات
+                                    ولا وثائق ولا تصدّق أوراقاً ولا تمنح تأشيرات. إن كانت معاملتك رسمية فلا تذهب
+                                    إلى هنا؛ راجع السفارة في أنقرة.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* ── ماذا تنجز هنا ───────────────────────────────────── */}
                     <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
@@ -288,10 +356,22 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                         <div className="flex items-start gap-3">
                             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                             <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
-                                نحن لا نخزّن عنواناً ثابتاً لهذا المقر. الرابط أعلاه يفتح <strong>بحثاً حياً</strong> في
-                                خرائط جوجل باسمه الرسمي، فتظهر لك المعلومات كما هي اليوم. ومع ذلك تبقى بيانات
-                                الخرائط من مصدر خارجي — اتصل بالرقم المعروض هناك قبل التوجّه، خصوصاً في العطل
-                                الرسمية أو إن كان المشوار طويلاً.
+                                {place.contact ? (
+                                    <>
+                                        العنوان أعلاه محقَّق بتاريخ {place.contact.verifiedOn}، والعناوين الرسمية
+                                        نادراً ما تتغيّر — لكنها تتغيّر أحياناً. اتصل بالرقم قبل التوجّه إن كان
+                                        المشوار طويلاً، وإن وجدت المقر منتقلاً فاستخدم رابط{' '}
+                                        <strong>«الموقع تغيّر؟ ابحث بالاسم الآن في جوجل»</strong> أعلاه ليعرض لك
+                                        الموقع الحالي.
+                                    </>
+                                ) : (
+                                    <>
+                                        لا نخزّن عنواناً لهذا المقر بعد. الرابط أعلاه يفتح <strong>بحثاً حياً</strong> في
+                                        خرائط جوجل باسمه الرسمي، فتظهر لك المعلومات كما هي اليوم. وتبقى بيانات
+                                        الخرائط من مصدر خارجي — اتصل بالرقم المعروض هناك قبل التوجّه، خصوصاً في
+                                        العطل الرسمية أو إن كان المشوار طويلاً.
+                                    </>
+                                )}
                             </p>
                         </div>
                     </div>

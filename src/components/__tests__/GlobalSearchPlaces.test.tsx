@@ -40,8 +40,9 @@ async function firstResult(query: string) {
     );
 
     const top = options[0] as HTMLAnchorElement;
-    const mapLink = top.parentElement?.querySelector('a[href*="google.com/maps"]') as HTMLAnchorElement | null;
-    return { href: top.getAttribute('href'), label: top.getAttribute('aria-label') || '', mapLink };
+    const row = top.parentElement as HTMLElement;
+    const mapLink = row?.querySelector('a[href*="google.com/maps"]') as HTMLAnchorElement | null;
+    return { href: top.getAttribute('href'), label: top.getAttribute('aria-label') || '', mapLink, row };
 }
 
 describe('global search → official places', () => {
@@ -68,14 +69,19 @@ describe('global search → official places', () => {
         expect(href).toBe(expectedHref);
     }, 20000);
 
-    it('gives place results a one-tap Google Maps link', async () => {
+    it('gives place results a one-tap Maps link aimed at the stored address', async () => {
         const { label, mapLink } = await firstResult('القنصلية السورية في اسطنبول');
         expect(label).toContain('موقع رسمي');
         expect(mapLink).not.toBeNull();
-        expect(mapLink!.getAttribute('href')).toContain(
-            encodeURIComponent('Suriye Başkonsolosluğu İstanbul')
-        );
+        // The stored address, not just the name — so the link lands on the
+        // exact building instead of a list of similarly-named pins.
+        expect(mapLink!.getAttribute('href')).toContain(encodeURIComponent('Maçka Cad.'));
         expect(mapLink!.getAttribute('target')).toBe('_blank');
+    }, 20000);
+
+    it('shows the address inside the result row', async () => {
+        const { row } = await firstResult('القنصلية السورية في اسطنبول');
+        expect(row.textContent).toContain('Teşvikiye');
     }, 20000);
 
     it('still ranks non-place queries normally (no place flooding)', async () => {

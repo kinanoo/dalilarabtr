@@ -11,7 +11,7 @@
 import {
     OFFICIAL_PLACES, MISSION_PLACES, OFFICE_PLACES, OFFICE_KINDS, PLACE_CITIES,
     PLACE_GROUPS, placeBySlug, officePlace, placeMapUrl, placeDirectionsUrl,
-    buildPlacesSearchEntries,
+    placeNameSearchUrl, hasStoredAddress, buildPlacesSearchEntries,
 } from '@/lib/officialPlaces';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
@@ -79,17 +79,111 @@ describe('officialPlaces table', () => {
     });
 });
 
+describe('stored addresses', () => {
+    const withContact = OFFICIAL_PLACES.filter((p) => p.contact);
+
+    it('stores addresses only on specific missions, never on class-of-office pages', () => {
+        // "the Nüfus offices in İstanbul" is dozens of branches — a single
+        // stored address there would be actively wrong.
+        expect(withContact.length).toBeGreaterThan(0);
+        expect(withContact.every((p) => p.kind === 'single')).toBe(true);
+        expect(OFFICE_PLACES.every((p) => !p.contact)).toBe(true);
+    });
+
+    it('stamps every stored address with an ISO date and a source', () => {
+        const bad = withContact
+            .filter((p) => !/^\d{4}-\d{2}-\d{2}$/.test(p.contact!.verifiedOn) || !p.contact!.source.trim())
+            .map((p) => p.slug);
+        expect(bad).toEqual([]);
+    });
+
+    it('never stores a placeholder or suspiciously short address', () => {
+        const bad = withContact
+            .filter((p) => {
+                const a = p.contact!.address;
+                return a.trim().length < 15 || /tbd|todo|\?\?|unknown/i.test(a);
+            })
+            .map((p) => p.slug);
+        expect(bad).toEqual([]);
+    });
+
+    it('names the city in the address it stores', () => {
+        // Catches a copy-paste that files an İstanbul address under Gaziantep.
+        const bad = withContact
+            .filter((p) => !p.contact!.address.toLowerCase().includes(p.cityTr.toLowerCase()))
+            .map((p) => `${p.slug}: ${p.contact!.address}`);
+        expect(bad).toEqual([]);
+    });
+
+    it('holds the addresses the customer request named', () => {
+        const syriaIst = placeBySlug('syria-consulate-istanbul')!;
+        expect(syriaIst.contact?.address).toContain('Teşvikiye');
+        expect(syriaIst.contact?.phone).toBeTruthy();
+
+        const syriaGaz = placeBySlug('syria-consulate-gaziantep')!;
+        expect(syriaGaz.contact?.address).toContain('Gaziantep');
+
+        expect(placeBySlug('egypt-consulate-istanbul')!.contact?.address).toContain('Bebek');
+        expect(placeBySlug('saudi-consulate-istanbul')!.contact?.address).toContain('Levent');
+    });
+});
+
+describe('honorary consulates', () => {
+    const honorary = MISSION_PLACES.filter((p) => p.missionType === 'honorary');
+
+    it('flags the honorary posts and says so in the label and the copy', () => {
+        expect(honorary.map((p) => p.slug).sort()).toEqual([
+            'bahrain-consulate-istanbul',
+            'jordan-consulate-istanbul',
+            'somalia-consulate-istanbul',
+            'yemen-consulate-istanbul',
+        ]);
+        for (const p of honorary) {
+            expect(p.ar).toContain('الفخرية');
+            expect(p.tr).toContain('Fahri Konsolosluğu');
+            // The warning that stops a wasted trip must be in the page copy.
+            expect(p.what).toContain('لا تُصدر جوازات');
+        }
+    });
+
+    it('keeps full consulates unflagged', () => {
+        const syria = placeBySlug('syria-consulate-istanbul')!;
+        expect(syria.missionType).toBe('consulate');
+        expect(syria.ar).not.toContain('الفخرية');
+    });
+});
+
 describe('map links', () => {
-    it('encodes the query into a Google Maps search URL', () => {
-        const syria = placeBySlug('syria-consulate-istanbul');
-        expect(syria).toBeDefined();
-        expect(syria!.mapQuery).toBe('Suriye Başkonsolosluğu İstanbul');
-        expect(placeMapUrl(syria!)).toBe(
-            'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(syria!.mapQuery)
+    it('targets the stored address when there is one', () => {
+        const syria = placeBySlug('syria-consulate-istanbul')!;
+        expect(hasStoredAddress(syria)).toBe(true);
+        const target = `${syria.tr}, ${syria.contact!.address}`;
+        expect(placeMapUrl(syria)).toBe(
+            'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(target)
         );
-        expect(placeDirectionsUrl(syria!)).toBe(
-            'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(syria!.mapQuery)
+        expect(placeDirectionsUrl(syria)).toBe(
+            'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(target)
         );
+    });
+
+    it('falls back to the official name when there is no stored address', () => {
+        const goc = placeBySlug('goc-istanbul')!;
+        expect(hasStoredAddress(goc)).toBe(false);
+        expect(placeMapUrl(goc)).toBe(
+            'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(goc.mapQuery)
+        );
+    });
+
+    it('always offers a live name-only search — the "it moved" escape hatch', () => {
+        // Must exist for EVERY place, and must ignore the stored address:
+        // that is the whole point of the second option.
+        for (const p of OFFICIAL_PLACES) {
+            const url = placeNameSearchUrl(p);
+            expect(url).toBe(
+                'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.mapQuery)
+            );
+            if (p.contact) expect(url).not.toContain(encodeURIComponent(p.contact.address));
+        }
     });
 
     it('never leaks a raw space or Turkish character into the URL', () => {
@@ -108,6 +202,17 @@ describe('search entries', () => {
         expect(entries).toHaveLength(OFFICIAL_PLACES.length);
         expect(entries.every((e) => e.mapUrl.includes('google.com/maps'))).toBe(true);
         expect(entries.every((e) => e.url.startsWith('/places/'))).toBe(true);
+    });
+
+    it('shows the stored address as the result description', () => {
+        const syria = entries.find((e) => e.id === 'place-syria-consulate-istanbul')!;
+        expect(syria.desc).toBe(placeBySlug('syria-consulate-istanbul')!.contact!.address);
+    });
+
+    it('makes the street and district searchable', () => {
+        // «قنصلية مجكا» / «konsolosluk Teşvikiye» — people search by landmark.
+        const syria = entries.find((e) => e.id === 'place-syria-consulate-istanbul')!;
+        expect(normalizeArabic(syria.keywords)).toContain('teşvikiye'.toLowerCase());
     });
 
     // These are the exact phrasings the feature was asked for. They are the

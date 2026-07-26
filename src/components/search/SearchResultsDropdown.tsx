@@ -62,6 +62,14 @@ export default function SearchResultsDropdown({
                   <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 truncate">
                     {result.title}
                   </h4>
+                  {/* Place results carry a verified street address — showing it
+                      here answers "where is it" without a tap. Only these rows
+                      get a description line; the rest keep the compact layout. */}
+                  {result.mapUrl && result.desc && (
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5" dir="ltr" lang="tr">
+                      {result.desc}
+                    </p>
+                  )}
                   <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full inline-block mt-1">
                     {result.type}
                   </span>
