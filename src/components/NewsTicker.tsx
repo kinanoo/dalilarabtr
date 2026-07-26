@@ -146,12 +146,12 @@ export default function NewsTicker({ initialEntries = [], initialHidden = false 
     const cycles = repeatCount(entries.length);
     const perCopy: Entry[] = Array.from({ length: cycles }, () => entries).flat();
 
-    const renderItem = (item: Entry, i: number) => (
+    const renderItem = (item: Entry, i: number, focusable: boolean) => (
         <span key={`${item.id}-${i}`} className="inline-flex items-center shrink-0">
             {item.kind === 'rate' ? (
                 // Rates are the audience's #1 daily check — make the strip a
                 // doorway into the full board + converter instead of a dead span.
-                <Link href="/tools/currency" title="أسعار الصرف ومحوّل العملات" className="group inline-flex items-center gap-1.5 px-4 transition-colors">
+                <Link href="/tools/currency" title="أسعار الصرف ومحوّل العملات" tabIndex={focusable ? undefined : -1} className="group inline-flex items-center gap-1.5 px-4 transition-colors">
                     <span className="text-slate-300 group-hover:text-emerald-300 transition-colors">{item.label}</span>
                     <span className="text-white tabular-nums group-hover:text-emerald-200 transition-colors" dir="ltr">{item.value} {item.unit}</span>
                     {item.change !== 0 && (
@@ -162,7 +162,7 @@ export default function NewsTicker({ initialEntries = [], initialHidden = false 
                     )}
                 </Link>
             ) : item.link ? (
-                <Link href={item.link} className="text-slate-100 hover:text-emerald-300 transition-colors px-4 tabular-nums">{item.text}</Link>
+                <Link href={item.link} tabIndex={focusable ? undefined : -1} className="text-slate-100 hover:text-emerald-300 transition-colors px-4 tabular-nums">{item.text}</Link>
             ) : (
                 <span className="text-slate-100 px-4 tabular-nums">{item.text}</span>
             )}
@@ -201,10 +201,10 @@ export default function NewsTicker({ initialEntries = [], initialHidden = false 
                         }}
                     >
                         <div ref={copyRef} className="flex items-center whitespace-nowrap shrink-0">
-                            {perCopy.map(renderItem)}
+                            {perCopy.map((item, i) => renderItem(item, i, true))}
                         </div>
                         <div className="flex items-center whitespace-nowrap shrink-0" aria-hidden="true">
-                            {perCopy.map(renderItem)}
+                            {perCopy.map((item, i) => renderItem(item, i, false))}
                         </div>
                     </div>
                 </div>

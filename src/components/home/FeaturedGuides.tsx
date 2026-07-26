@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { ListChecks, ArrowLeft } from 'lucide-react';
+import { getSupabaseImageUrl } from '@/lib/supabaseImage';
 
 export interface FeaturedGuide {
     id: string;
@@ -79,7 +80,12 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
                                 <span className="relative w-[88px] h-[88px] shrink-0 rounded-xl overflow-hidden">
                                     {g.image ? (
                                         <Image
-                                            src={g.image}
+                                            src={getSupabaseImageUrl(g.image, {
+                                                width: 176,
+                                                height: 176,
+                                                quality: 72,
+                                                resize: 'cover',
+                                            })}
                                             alt={g.title}
                                             fill
                                             sizes="88px"

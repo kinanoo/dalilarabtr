@@ -69,6 +69,7 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
   const drag = useRef({ startX: 0, frac: 0, on: false, moved: false, captured: false, pid: -1 });
   const pausedUntil = useRef(0);
   const [hoverPaused, setHoverPaused] = useState(false);
+  const [autoplayReady, setAutoplayReady] = useState(false);
   // Pause autoplay for 20s after any manual move so the rail never yanks out
   // from under the reader's hand.
   const bump = useCallback(() => { pausedUntil.current = Date.now() + 20000; }, []);
@@ -90,14 +91,27 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
     setActive((a) => ((a + dir) % n + n) % n);
   }, [n, bump]);
 
-  // Auto-advance newest -> oldest every 5s — a "the site is live" heartbeat.
-  // Owner request (2026-07-17): the rail must sit COMPLETELY STILL right
-  // after a page load/refresh — the old on-load sway hint is gone, and the
-  // FIRST visible motion is the first card advance at ~4.5s. After that,
-  // one advance every 5s. Skips while hovered, just after a manual move, or
-  // when the visitor prefers reduced motion.
+  // Keep the first viewport stable until the visitor interacts. An automatic
+  // card change during initial load becomes a late LCP candidate, making a
+  // responsive page look slow to both visitors and Core Web Vitals.
   useEffect(() => {
-    if (n <= 1) return;
+    if (typeof window === 'undefined') return;
+    const enableAutoplay = () => setAutoplayReady(true);
+    window.addEventListener('scroll', enableAutoplay, { passive: true, once: true });
+    window.addEventListener('pointerdown', enableAutoplay, { passive: true, once: true });
+    window.addEventListener('keydown', enableAutoplay, { once: true });
+    return () => {
+      window.removeEventListener('scroll', enableAutoplay);
+      window.removeEventListener('pointerdown', enableAutoplay);
+      window.removeEventListener('keydown', enableAutoplay);
+    };
+  }, []);
+
+  // Once the visitor has interacted, auto-advance newest -> oldest every 5s.
+  // Manual movement still pauses the rail for 20s, and reduced-motion users
+  // never receive automatic movement.
+  useEffect(() => {
+    if (!autoplayReady || n <= 1) return;
     if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
     let id: ReturnType<typeof setInterval> | undefined;
     const advance = () => {
@@ -105,11 +119,11 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
       setActive((a) => (a + 1) % n);
     };
     const start = setTimeout(() => {
-      advance(); // first motion, ~4.5s after load
+      advance();
       id = setInterval(advance, 5000);
-    }, 4500);
+    }, 5000);
     return () => { clearTimeout(start); if (id) clearInterval(id); };
-  }, [n, hoverPaused]);
+  }, [autoplayReady, n, hoverPaused]);
 
   // shortest signed distance, wrapped — works with fractional values too
   const wrap = (x: number) => {
@@ -219,10 +233,8 @@ export default function NewsAndUpdates({ items }: { items: NewsItem[] }) {
           role="region"
           aria-label="بطاقات الأخبار والإعلانات — اسحب للتنقّل"
         >
-          {/* news-sway (the one-time on-load sway hint) was REMOVED on owner
-              request 2026-07-17: any motion right after page load reads as
-              "the site is jumping around". The rail now sits perfectly still
-              until the first auto-advance (~4.5s — see the effect above). */}
+          {/* The rail stays still on arrival. Autoplay becomes eligible only
+              after the visitor scrolls, taps, or uses the keyboard. */}
           <div className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
             {items.map((it, i) => {
               const eo = wrap(i - active + dragFrac); // live effective offset
