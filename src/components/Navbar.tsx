@@ -301,6 +301,15 @@ export default function Navbar() {
     setHasNewUpdates(false);
   }, [pathname, currentUpdatesVersion]);
 
+  // Any navigation closes the drawer — including a Back gesture, which is how
+  // people leave a page on Android. The drawer rows close it themselves on
+  // click, but nothing was watching history: swipe back with the menu open and
+  // it stayed open over the previous page, with the body scroll lock below
+  // still applied. The page looked frozen.
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
