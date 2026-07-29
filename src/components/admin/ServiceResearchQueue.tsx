@@ -21,6 +21,8 @@ type CandidateRow = {
         category?: string;
         city?: string;
         phone?: string;
+        arab_provider_confirmed?: boolean;
+        arab_provider_evidence?: string;
     };
     sources: Array<{ type?: string; url?: string }>;
     status: string;
@@ -200,6 +202,9 @@ export default function ServiceResearchQueue() {
                         const data = row.candidate_data || {};
                         const isReady = row.status === 'ready';
                         const checked = selected.includes(row.id);
+                        const arabProviderConfirmed =
+                            data.arab_provider_confirmed === true &&
+                            Boolean(data.arab_provider_evidence?.trim());
                         return (
                             <div
                                 key={row.id}
@@ -229,6 +234,13 @@ export default function ServiceResearchQueue() {
                                                     : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
                                         }`}>
                                             {isReady ? 'جاهز' : row.status === 'rejected' ? 'مرفوض' : 'يحتاج مراجعة'}
+                                        </span>
+                                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                                            arabProviderConfirmed
+                                                ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300'
+                                                : 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300'
+                                        }`}>
+                                            {arabProviderConfirmed ? 'هوية عربية موثقة' : 'لا يوجد إثبات أنه عربي'}
                                         </span>
                                     </div>
                                     <p className="mt-1 text-xs text-slate-500 truncate">

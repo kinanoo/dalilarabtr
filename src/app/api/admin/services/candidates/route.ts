@@ -71,6 +71,10 @@ const normalizeSources = (value: unknown): CandidateSource[] => {
     return sources.slice(0, 10);
 };
 
+const hasArabProviderEvidence = (data: Record<string, unknown>): boolean =>
+    data.arab_provider_confirmed === true &&
+    text(data.arab_provider_evidence, 800).length >= 10;
+
 const normalizeCandidate = (value: unknown) => {
     if (!value || typeof value !== 'object') return null;
     const row = value as Record<string, unknown>;
@@ -83,6 +87,7 @@ const normalizeCandidate = (value: unknown) => {
     const whatsappDigits = normalizeTurkishPhone(rawWhatsapp);
     const description = text(row.description, 1500);
     const sources = normalizeSources(row.sources);
+    const arabProviderEvidence = text(row.arab_provider_evidence, 800);
 
     if (
         !name ||
@@ -92,7 +97,9 @@ const normalizeCandidate = (value: unknown) => {
         phoneDigits.length < 10 ||
         phoneDigits.length > 12 ||
         (rawWhatsapp && (whatsappDigits.length < 10 || whatsappDigits.length > 12)) ||
-        sources.length === 0
+        sources.length === 0 ||
+        row.arab_provider_confirmed !== true ||
+        arabProviderEvidence.length < 10
     ) {
         return null;
     }
@@ -139,6 +146,8 @@ const normalizeCandidate = (value: unknown) => {
             ? row.languages.map((language) => text(language, 40)).filter(Boolean).slice(0, 8)
             : [],
         image: safeUrl(row.image) || null,
+        arab_provider_confirmed: true,
+        arab_provider_evidence: arabProviderEvidence,
     };
 
     return {
@@ -268,6 +277,22 @@ export async function POST(request: Request) {
             if (!id || !['ready', 'needs_review', 'rejected'].includes(status)) {
                 return NextResponse.json({ error: 'طلب غير صالح' }, { status: 400 });
             }
+            if (status === 'ready') {
+                const { data: candidate, error: candidateError } = await gate.svc
+                    .from('service_provider_candidates')
+                    .select('candidate_data')
+                    .eq('id', id)
+                    .single();
+                if (candidateError) throw candidateError;
+                if (!hasArabProviderEvidence(
+                    (candidate?.candidate_data || {}) as Record<string, unknown>,
+                )) {
+                    return NextResponse.json(
+                        { error: 'يلزم دليل صريح بأن المزود أو النشاط عربي داخل تركيا' },
+                        { status: 409 },
+                    );
+                }
+            }
             const { error } = await gate.svc
                 .from('service_provider_candidates')
                 .update({
@@ -321,6 +346,21 @@ export async function POST(request: Request) {
 
             for (const candidate of candidates || []) {
                 const data = candidate.candidate_data as Record<string, unknown>;
+                if (!hasArabProviderEvidence(data)) {
+                    await gate.svc
+                        .from('service_provider_candidates')
+                        .update({
+                            status: 'needs_review',
+                            review_notes: 'لا يوجد دليل صريح على أن المزود أو النشاط عربي',
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', candidate.id);
+                    failures.push({
+                        id: candidate.id,
+                        error: 'arab_provider_evidence_required',
+                    });
+                    continue;
+                }
                 const phone = normalizeTurkishPhone(String(data.phone || ''));
                 const nameCityKey = providerFingerprint({
                     name: text(data.name, 160),
@@ -341,8 +381,11 @@ export async function POST(request: Request) {
                     continue;
                 }
 
+                const providerData = { ...data };
+                delete providerData.arab_provider_confirmed;
+                delete providerData.arab_provider_evidence;
                 const payload = {
-                    ...data,
+                    ...providerData,
                     slug: slugForCandidate(data),
                     status: 'approved',
                     active: true,

@@ -6,6 +6,12 @@ This folder is the reviewable source ledger for service-provider imports.
 
 - Google Maps may be used for discovery, but it is not copied as a database.
 - A provider is not published from a map result alone.
+- The directory accepts Arab or Syrian providers operating in Turkey only.
+- Arabic language support, an Arabic webpage, or an Arabic-speaking employee
+  does not prove that the provider or business is Arab.
+- Every new candidate must include `arab_provider_confirmed: true` and a
+  specific `arab_provider_evidence` statement backed by a provider-owned
+  source or a direct provider submission. Never infer identity from a name.
 - Core facts must be confirmed on a provider-owned website, an official
   registry, or a provider submission.
 - Do not copy Google photos, reviews, ratings, or descriptions.

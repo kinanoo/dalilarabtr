@@ -15,6 +15,18 @@ const outputPath = path.resolve(
 );
 
 const batch = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+const missingArabEvidence = batch.candidates.filter(
+  (candidate) =>
+    candidate.arab_provider_confirmed !== true ||
+    String(candidate.arab_provider_evidence || '').trim().length < 10,
+);
+if (missingArabEvidence.length > 0) {
+  throw new Error(
+    `Arab provider evidence is required for every candidate: ${missingArabEvidence
+      .map((candidate) => candidate.name)
+      .join(', ')}`,
+  );
+}
 
 const normalizePhone = (value) => {
   let digits = String(value || '').replace(/\D/g, '');
@@ -78,6 +90,8 @@ const normalized = batch.candidates.map((candidate) => {
       google_maps_url: candidate.google_maps_url || null,
       languages: candidate.languages || [],
       image: candidate.image || null,
+      arab_provider_confirmed: true,
+      arab_provider_evidence: candidate.arab_provider_evidence,
     },
     sources: candidate.sources,
     confidence: Math.min(100, confidence),

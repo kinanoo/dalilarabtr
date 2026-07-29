@@ -13,6 +13,18 @@ if (!process.argv[2] || !process.argv[3]) {
 }
 
 const batch = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+const missingArabEvidence = batch.candidates.filter(
+  (candidate) =>
+    candidate.arab_provider_confirmed !== true ||
+    String(candidate.arab_provider_evidence || '').trim().length < 10,
+);
+if (missingArabEvidence.length > 0) {
+  throw new Error(
+    `Refusing to publish candidates without Arab provider evidence: ${missingArabEvidence
+      .map((candidate) => candidate.name)
+      .join(', ')}`,
+  );
+}
 const expectedCount = batch.candidates.length;
 const sqlString = (value) => `'${String(value).replaceAll("'", "''")}'`;
 const categorySlug = `
@@ -55,6 +67,8 @@ ${categorySlug}
   FROM public.service_provider_candidates c
   JOIN target_batch b ON b.id = c.batch_id
   WHERE c.status = 'ready'
+    AND c.candidate_data->>'arab_provider_confirmed' = 'true'
+    AND length(trim(coalesce(c.candidate_data->>'arab_provider_evidence', ''))) >= 10
     AND NOT EXISTS (
       SELECT 1
       FROM public.service_providers p

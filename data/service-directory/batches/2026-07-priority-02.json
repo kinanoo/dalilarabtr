@@ -1,4 +1,6 @@
 {
+  "status": "cancelled",
+  "cancelled_reason": "Arabic-language availability does not prove that the provider is Arab",
   "label": "الدفعة الثانية - أنقرة وأنطاليا وأضنة وبورصة - 2026-07-30",
   "candidates": [
     {
