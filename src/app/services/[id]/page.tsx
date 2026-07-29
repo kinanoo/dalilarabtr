@@ -2,19 +2,30 @@ import { Metadata } from 'next';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft } from 'lucide-react';
+import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { categorySlugForName } from '@/lib/serviceCategories';
-import { getSupabaseImageUrl } from '@/lib/supabaseImage';
-import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
+import { serviceVerificationCopy } from '@/lib/serviceVerification';
+import ProviderAvatar from '@/components/services/ProviderAvatar';
 
 export const revalidate = 60;
+
+const safeExternalUrl = (value: unknown): string | null => {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    try {
+        const parsed = new URL(value.trim());
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+            ? parsed.toString()
+            : null;
+    } catch {
+        return null;
+    }
+};
 
 // ─── Shared helper ────────────────────────────────────────────────────────────
 async function getSupabase() {
@@ -90,15 +101,18 @@ export default async function ServiceDetailsPage(
     // Real row id for entity refs (ratings/comments); slug (if any) for URLs.
     const realId: string = provider.id;
     const canonicalId: string = provider.slug || provider.id;
-    const providerImageUrl = provider.image
-        ? getSupabaseImageUrl(provider.image, { width: 384, height: 384, quality: 78 })
-        : null;
-
+    const verification = serviceVerificationCopy(
+        provider.verification_level,
+        provider.is_verified,
+    );
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
+    const cleanWhatsApp = (provider.whatsapp || provider.phone || '').replace(/\D/g, '');
+    const websiteUrl = safeExternalUrl(provider.website);
+    const mapUrl = safeExternalUrl(provider.google_maps_url || provider.map_location);
     // Include this listing's link so the provider sees the client came from
     // دليل العرب + which exact service page — trust + lead attribution.
     const listingUrl = `${SITE_CONFIG.siteUrl}/services/${canonicalId}`;
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/${cleanWhatsApp}?text=${encodeURIComponent(
         `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${provider.profession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`
     )}`;
 
@@ -196,8 +210,12 @@ export default async function ServiceDetailsPage(
                     <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
                         {/* Avatar */}
                         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl shrink-0 overflow-hidden relative flex items-center justify-center -mt-16 sm:-mt-20 z-30">
-                            {providerImageUrl ? (
-                                <Image src={providerImageUrl} alt={provider.name} fill className="object-cover" sizes="(min-width: 640px) 160px, 128px" />
+                            {provider.image ? (
+                                <ProviderAvatar
+                                    name={provider.name}
+                                    image={provider.image}
+                                    className="h-full w-full rounded-none shadow-none"
+                                />
                             ) : (
                                 <Briefcase size={48} className="text-slate-300" />
                             )}
@@ -209,7 +227,7 @@ export default async function ServiceDetailsPage(
                                 <div>
                                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
                                         {provider.name}
-                                        {provider.is_verified && (
+                                        {verification.visible && (
                                             <CheckCircle className="text-blue-500 shrink-0" size={24} />
                                         )}
                                     </h1>
@@ -220,7 +238,9 @@ export default async function ServiceDetailsPage(
                                 <InlineStarRating
                                     serviceId={realId}
                                     serviceName={provider.name}
-                                    currentRating={provider.rating ? Number(provider.rating) : 5.0}
+                                    currentRating={provider.review_count && provider.rating
+                                        ? Number(provider.rating)
+                                        : 0}
                                     reviewCount={provider.review_count || 0}
                                 />
                             </div>
@@ -262,11 +282,11 @@ export default async function ServiceDetailsPage(
                             تواصل عبر الواتساب
                         </a>
 
-                        {provider.is_verified && (
+                        {verification.visible && (
                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-300 py-4 rounded-xl font-bold flex items-center justify-center gap-3">
                                 <ShieldCheck size={24} />
-                                <span title={SERVICE_VERIFICATION_EXPLANATION}>
-                                    {SERVICE_VERIFICATION_LABEL} من إدارة الدليل
+                                <span title={verification.explanation}>
+                                    {verification.label}
                                 </span>
                             </div>
                         )}
@@ -279,6 +299,49 @@ export default async function ServiceDetailsPage(
                             url={`${SITE_CONFIG.siteUrl}/services/${canonicalId}`}
                         />
                     </div>
+
+                    {(websiteUrl || mapUrl || provider.address_details) && (
+                        <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                                {websiteUrl && (
+                                    <a
+                                        href={websiteUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                    >
+                                        <Globe2 size={17} />
+                                        الموقع الرسمي
+                                    </a>
+                                )}
+                                {mapUrl && (
+                                    <a
+                                        href={mapUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                    >
+                                        <Navigation size={17} />
+                                        فتح الخريطة
+                                    </a>
+                                )}
+                            </div>
+                            {provider.address_details && (
+                                <p className="mx-auto mt-3 max-w-2xl text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
+                                    {provider.address_details}
+                                </p>
+                            )}
+                            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">
+                                هل تمثل هذا النشاط أو وجدت معلومة غير صحيحة؟{' '}
+                                <Link
+                                    href={`/contact?subject=service-data&provider=${encodeURIComponent(provider.name)}`}
+                                    className="font-bold text-emerald-700 hover:underline dark:text-emerald-400"
+                                >
+                                    اطلب التصحيح أو الحذف
+                                </Link>
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -302,17 +365,15 @@ export default async function ServiceDetailsPage(
                                 href={`/services/${r.slug || r.id}`}
                                 className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-start gap-3 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md transition-all"
                             >
-                                <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden relative flex items-center justify-center">
-                                    {r.image ? (
-                                        <Image src={getSupabaseImageUrl(r.image, { width: 128, height: 128 })} alt={r.name} fill className="object-cover" sizes="56px" />
-                                    ) : (
-                                        <Briefcase size={22} className="text-slate-300" />
-                                    )}
-                                </div>
+                                <ProviderAvatar
+                                    name={r.name}
+                                    image={r.image}
+                                    className="h-14 w-14 shrink-0 rounded-xl"
+                                />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-1 font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
                                         <span className="truncate">{r.name}</span>
-                                        {r.is_verified && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
+                                        {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
                                     </div>
                                     {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{r.profession}</p>}
                                     <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">

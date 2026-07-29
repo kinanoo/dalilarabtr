@@ -10,6 +10,8 @@ import {
     Briefcase, Stethoscope, Smile, Scale, Languages, Home, GraduationCap, Sparkles,
     Scissors, ShieldCheck, Car, UtensilsCrossed, Package, Ship, Calculator, HardHat,
     Droplets, Zap, Hammer, Snowflake, Truck, SprayCan, WashingMachine, Plane,
+    Wrench, Paintbrush, KeyRound, Wifi, Smartphone, Printer, ShoppingBag,
+    CarFront, UsersRound,
 } from 'lucide-react';
 
 export const CATEGORY_ICONS: Record<string, ElementType> = {
@@ -36,6 +38,15 @@ export const CATEGORY_ICONS: Record<string, ElementType> = {
     cleaning: SprayCan,
     'appliance-repair': WashingMachine,
     tourism: Plane,
+    'home-maintenance': Wrench,
+    'finishing-decor': Paintbrush,
+    'locksmith-metalwork': KeyRound,
+    'telecom-internet': Wifi,
+    'phones-computers': Smartphone,
+    'printing-design': Printer,
+    'retail-supplies': ShoppingBag,
+    'transport-taxi': CarFront,
+    employment: UsersRound,
     general: Briefcase,
 };
 

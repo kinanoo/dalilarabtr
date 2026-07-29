@@ -87,13 +87,21 @@ h1, h2, h3, h4, h5, h6,
    Several interactive elements (primary nav links, dropdown triggers)
    use Tailwind's `outline-none` to drop the mouse-focus ring — which also
    erased the KEYBOARD focus ring. This restores a clear, consistent
-   emerald ring for keyboard users only (:focus-visible never fires on a
-   mouse click). Unlayered so it overrides the layered `outline-none`
-   utility on those elements. */
+   emerald ring for those elements.
+
+   NOTE — this rule must NEVER set `border-radius`. It used to, and that
+   one line reshaped the whole site: `:focus-visible` and `.rounded-full`
+   have identical specificity, this file is emitted after the utilities,
+   so a flat 4px silently overrode every rounded corner the moment an
+   element took focus. And ":focus-visible fires for keyboard users only"
+   is not true of text fields — browsers always treat a focused text
+   input as focus-visible, even when it was clicked. So the homepage
+   search went from a pill to a sharp-cornered box on click. `outline`
+   already follows the element's own border-radius; there is nothing to
+   fix up here. */
 :focus-visible {
   outline: 2px solid #10b981;
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 /* ============================================
@@ -231,16 +239,20 @@ html.dark .tiptap hr, html.dark .prose-content hr {
 .prose-content img { cursor: zoom-in; transition: filter 0.2s, transform 0.2s; }
 .prose-content img:hover { filter: brightness(1.04); }
 
-/* CLS guard: reserve vertical space for body images that ship WITHOUT
-   intrinsic width/height attributes. Those already-sized images keep their
-   own ratio via the width/height attrs + `max-width:100%; height:auto` above,
-   so we exclude them (`:not([width]):not([height])`) to avoid distortion.
-   For attribute-less images a default 16/9 box holds the layout stable while
-   the image loads, then `object-fit: contain` letterboxes the real image
-   inside that box instead of stretching it. */
+/* This used to force `aspect-ratio: 16 / 9` on body images as a CLS guard,
+   on the assumption that images without width/height attributes were rare.
+   They are the rule: the admin editor inserts `setImage({ src })` and no
+   dimensions, so essentially every body image matched — and a specified
+   aspect-ratio overrides the image's own when height is auto. Phone
+   screenshots are portrait, and the e-Devlet and göç idaresi walkthroughs are
+   nothing but phone screenshots: a 1080x2340 capture ended up rendered about
+   88px wide inside a 330px letterbox, a sliver between two grey margins.
+
+   A stable layout is not worth showing the reader an unreadable thumbnail.
+   A small reserved height keeps most of the shift away while the image loads,
+   and never touches its shape. */
 .prose-content img:not([width]):not([height]) {
-  aspect-ratio: 16 / 9;
-  object-fit: contain;
+  min-height: 6rem;
 }
 
 /* Figures — illustrated guides wrap each screenshot in <figure>. Without a

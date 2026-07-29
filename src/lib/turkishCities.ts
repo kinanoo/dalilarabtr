@@ -34,7 +34,7 @@ export const TR_CITIES: TRCity[] = [
     { slug: 'kilis', ar: 'كلّس', variants: ['kilis', 'كلس', 'كلّس'] },
     { slug: 'kahramanmaras', ar: 'كهرمان مرعش', variants: ['kahramanmaras', 'kahramanmaraş', 'maras', 'مرعش', 'كهرمان مرعش'] },
     { slug: 'malatya', ar: 'ملاطية', variants: ['malatya', 'ملاطية', 'ملاطيا'] },
-    { slug: 'antalya', ar: 'أنطاليا', variants: ['antalya', 'أنطاليا', 'انطاليا', 'أنطاكية'] },
+    { slug: 'antalya', ar: 'أنطاليا', variants: ['antalya', 'أنطاليا', 'انطاليا'] },
 ];
 
 const norm = (s: string) => s.toLowerCase().trim();

@@ -248,6 +248,14 @@ export default function Navbar() {
     return () => ro.disconnect();
   }, []);
 
+  // Publish the measured height so anything that pins itself to the top of the
+  // viewport can clear this fixed header instead of hiding underneath it. The
+  // members dashboard was doing exactly that: its own sticky header pinned at
+  // y=0, behind a bar with a far higher z-index.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--nav-height', `${navHeight}px`);
+  }, [navHeight]);
+
   // Shared site config (menus + tools) — deduplicated with Footer via SWR
   const { data: siteConfig } = useSiteConfig();
 
@@ -300,6 +308,15 @@ export default function Navbar() {
     }
     setHasNewUpdates(false);
   }, [pathname, currentUpdatesVersion]);
+
+  // Any navigation closes the drawer — including a Back gesture, which is how
+  // people leave a page on Android. The drawer rows close it themselves on
+  // click, but nothing was watching history: swipe back with the menu open and
+  // it stayed open over the previous page, with the body scroll lock below
+  // still applied. The page looked frozen.
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!isOpen) return;

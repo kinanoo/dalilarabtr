@@ -4,7 +4,7 @@ import { canonicalCity } from '@/lib/turkishCities';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 import type { ProviderCardData } from './ProviderCard';
-import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
+import { serviceVerificationCopy } from '@/lib/serviceVerification';
 
 /**
  * ProviderRow — compact, scannable single-row layout for the "list" view of
@@ -15,16 +15,17 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
     const href = `/services/${p.slug || p.id}`;
     const city = canonicalCity(p.city);
     const hasReviews = !!(p.review_count && p.review_count > 0);
+    const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
 
     return (
         <article className="group flex items-center gap-3 sm:gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:shadow-emerald-500/5 transition-all">
             <Link href={href} className="relative shrink-0" aria-label={p.name}>
                 <ProviderAvatar name={p.name} image={p.image} className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl" />
-                {p.is_verified && (
+                {verification.visible && (
                     <span
                         className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm"
-                        title={SERVICE_VERIFICATION_EXPLANATION}
-                        aria-label={`${SERVICE_VERIFICATION_LABEL}: ${SERVICE_VERIFICATION_EXPLANATION}`}
+                        title={verification.explanation}
+                        aria-label={`${verification.label}: ${verification.explanation}`}
                     >
                         <BadgeCheck size={14} className="text-blue-500" aria-hidden="true" />
                     </span>

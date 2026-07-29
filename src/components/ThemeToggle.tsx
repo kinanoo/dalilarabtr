@@ -9,7 +9,11 @@ import { useEffect, useState } from 'react';
  * يظهر في شريط التنقل (Navbar)
  */
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  // resolvedTheme, not theme. `theme` is 'system' until someone picks a side,
+  // so on a phone set to dark this button read "light", showed a moon, and the
+  // first tap set 'dark' — which is what the page already was. Nothing
+  // happened, and it took a second tap to get anywhere.
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // تجنب hydration mismatch (مشكلة شائعة في Next.js)
@@ -21,7 +25,7 @@ export function ThemeToggle() {
     return <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-lg" />;
   }
 
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <button

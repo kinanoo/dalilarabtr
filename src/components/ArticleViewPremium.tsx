@@ -362,7 +362,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                         أهم الأوراق
                       </div>
                       <ul className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
-                        {article.documents.slice(0, 5).map((doc, i) => (
+                        {article.documents.map((doc, i) => (
                           <li key={i} className="flex gap-3">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></div>
                             <span className="leading-relaxed font-medium">{doc}</span>
@@ -380,7 +380,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                         الخطة السريعة
                       </div>
                       <ol className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
-                        {article.steps.slice(0, 5).map((step, i) => (
+                        {article.steps.map((step, i) => (
                           <li key={i} className="flex gap-3">
                             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-black flex-shrink-0 mt-0.5 shadow-sm shadow-blue-500/30 tabular-nums" dir="ltr">{i + 1}</span>
                             <div className="leading-relaxed flex-1 min-w-0">

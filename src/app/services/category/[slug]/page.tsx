@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { createElement } from 'react';
 import { Briefcase, MapPin, ArrowRight, CheckCircle2, AlertTriangle, ChevronLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
@@ -21,12 +22,16 @@ export function generateStaticParams() {
 
 interface Row extends ProviderCardData { category: string | null; }
 
+function CategoryIcon({ slug, size }: { slug: string; size: number }) {
+    return createElement(catIcon(slug), { size, 'aria-hidden': true });
+}
+
 async function fetchProviders(cat: ServiceCategory): Promise<Row[]> {
     try {
         if (!supabase) return [];
         const { data } = await supabase
             .from('service_providers')
-            .select('id, slug, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
+            .select('id, slug, name, profession, category, description, city, phone, whatsapp, image, is_verified, rating, review_count')
             .eq('status', 'approved')
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
@@ -79,7 +84,6 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     const providers = await fetchProviders(cat);
     // Cities that actually have providers in this profession → crawlable links.
     const cityChips = Array.from(new Set(providers.map((p) => citySlugForName(p.city)).filter(Boolean))) as string[];
-    const Icon = catIcon(cat.slug);
     const base = SITE_CONFIG.siteUrl;
     const pageUrl = `${base}/services/category/${cat.slug}`;
 
@@ -141,7 +145,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <span className="text-slate-800 dark:text-slate-200">{cat.labelAr}</span>
                     </nav>
                     <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 mb-3">
-                        <Icon size={24} />
+                        <CategoryIcon slug={cat.slug} size={24} />
                     </span>
                     <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> عرب في تركيا
@@ -173,7 +177,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                 <div className={`${providers.length > 0 ? 'mt-12 pt-8 border-t border-slate-200 dark:border-slate-800' : 'mt-2'}`}>
                     <div className="max-w-3xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-sm">
                         <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400"><Icon size={17} /></span>
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400"><CategoryIcon slug={cat.slug} size={17} /></span>
                             كيف تختار {cat.labelAr} في تركيا؟
                         </h2>
                         <p className="text-sm sm:text-[15px] leading-7 text-slate-600 dark:text-slate-300 mb-5">{cat.guide.intro}</p>

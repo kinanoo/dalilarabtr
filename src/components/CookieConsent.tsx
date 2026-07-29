@@ -28,10 +28,7 @@ export default function CookieConsent() {
     const pathname = usePathname();
 
     useEffect(() => {
-        if (pathname.startsWith('/admin')) {
-            setIsVisible(false);
-            return;
-        }
+        if (pathname.startsWith('/admin')) return;
         if (getAnalyticsConsent() !== 'unknown') return;
 
         const t = window.setTimeout(() => setIsVisible(true), SHOW_AFTER_MS);
@@ -43,7 +40,7 @@ export default function CookieConsent() {
         setIsVisible(false);
     };
 
-    if (!isVisible) return null;
+    if (pathname.startsWith('/admin') || !isVisible) return null;
 
     return (
         <div
@@ -62,7 +59,7 @@ export default function CookieConsent() {
                 <button
                     type="button"
                     onClick={() => answer('granted')}
-                    className="min-h-10 shrink-0 rounded-lg bg-emerald-600 px-5 text-xs font-bold text-white transition-colors hover:bg-emerald-700"
+                    className="min-h-10 shrink-0 rounded-lg bg-emerald-700 px-5 text-xs font-bold text-white transition-colors hover:bg-emerald-800"
                 >
                     موافق
                 </button>

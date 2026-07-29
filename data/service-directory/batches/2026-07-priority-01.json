@@ -1,0 +1,524 @@
+{
+  "status": "cancelled",
+  "cancelled_reason": "Arabic-language availability does not prove that the provider is Arab",
+  "label": "الدفعة الأولى - إسطنبول وغازي عنتاب ومرسين وإزمير - 2026-07-27",
+  "candidates": [
+    {
+      "name": "International Tercüme Bürosu",
+      "profession": "ترجمة محلفة وتصديق نوتري",
+      "category": "مترجم",
+      "city": "إسطنبول",
+      "district": "شيشلي",
+      "phone": "+90 531 785 02 62",
+      "whatsapp": "+90 531 785 02 62",
+      "description": "ترجمة عربية وتركية للوثائق القانونية والطبية والأكاديمية، مع خدمات الترجمة المحلفة والتصديق.",
+      "address_details": "Mecidiyeköy Mah. Selahattin Pınar Aralığı Sk. Hüseyin Özer İş Merkezi No:3 Kat:4 D:8, Şişli",
+      "website": "https://www.internationaltercumeburosu.com.tr/",
+      "email": "sales@internationaltercumeburosu.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=International+Tercume+Burosu+Mecidiyekoy",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.internationaltercumeburosu.com.tr/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر العربية والهاتف والعنوان في مجيدية كوي."
+        }
+      ]
+    },
+    {
+      "name": "Okeanos Tercüme",
+      "profession": "ترجمة عربية ومحلفة",
+      "category": "مترجم",
+      "city": "إسطنبول",
+      "district": "شيشلي",
+      "phone": "+90 212 221 45 21",
+      "whatsapp": "+90 553 910 31 32",
+      "description": "ترجمة عربية مكتوبة وشفوية، وترجمة محلفة وقانونية وطبية وتجارية.",
+      "address_details": "Perpa Ticaret Merkezi A Blok Kat:9 Ofis:1184, Okmeydanı, Şişli",
+      "website": "https://www.okeanostercume.com.tr/",
+      "email": "info@okeanostercume.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Okeanos+Tercume+Perpa+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.okeanostercume.com.tr/iletisim/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تؤكد العربية والهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "TransTürk Tercüme",
+      "profession": "ترجمة محلفة ووثائق رسمية",
+      "category": "مترجم",
+      "city": "إسطنبول",
+      "district": "بكر كوي",
+      "phone": "+90 212 543 43 18",
+      "whatsapp": "+90 506 859 21 11",
+      "description": "ترجمة عربية ومحلفة للوثائق الشخصية والتجارية والقانونية والطبية.",
+      "address_details": "İstanbul Cd. Meydan İş Hanı No:49 Kat:2, Bakırköy",
+      "website": "https://www.transturktercume.com/",
+      "email": "info@transturktercume.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=TransTurk+Tercume+Bakirkoy",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.transturktercume.com/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر الترجمة العربية والهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "İstanbul Tercüme Bürosu",
+      "profession": "ترجمة عربية ومحلفة",
+      "category": "مترجم",
+      "city": "إسطنبول",
+      "district": "شيشلي",
+      "phone": "+90 212 234 42 44",
+      "whatsapp": "+90 555 456 99 49",
+      "description": "ترجمة عربية للوثائق والنصوص مع خدمات الترجمة المحلفة والنوتري والأبوستيل.",
+      "address_details": "Halaskargazi Cad. No:179 D:2, Şişli",
+      "website": "https://www.istanbultercume.com.tr/",
+      "email": "destek@istanbultercume.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Istanbul+Tercume+Burosu+Halaskargazi",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.istanbultercume.com.tr/tercume/arapca-tercume.aspx",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الخدمة الرسمية تؤكد الترجمة العربية."
+        },
+        {
+          "type": "official_website",
+          "url": "https://www.istanbultercume.com.tr/iletisim.aspx",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تؤكد الهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "UMAY Tercüme",
+      "profession": "ترجمة عربية محلفة وتصديق نوتري",
+      "category": "مترجم",
+      "city": "إسطنبول",
+      "district": "بهشلي إفلر",
+      "phone": "+90 501 580 68 98",
+      "whatsapp": "+90 501 580 68 98",
+      "description": "ترجمة عربية محلفة ووثائق رسمية مع متابعة التصديق النوتري وخدمات الأبوستيل.",
+      "address_details": "Şirinevler Mah. Meydan İş Merkezi Kat:3 No:31, Bahçelievler",
+      "website": "https://www.umaytercume.com/",
+      "email": "info@umaytercume.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Umay+Tercume+Sirinevler",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.umaytercume.com/arapca-tercume/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يخصص صفحة للترجمة العربية المحلفة."
+        },
+        {
+          "type": "official_website",
+          "url": "https://www.umaytercume.com/iletisim/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تؤكد الهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Protranslate",
+      "profession": "ترجمة عربية احترافية عبر الإنترنت",
+      "category": "مترجم",
+      "city": "إسطنبول",
+      "district": "كادي كوي",
+      "phone": "+90 850 532 16 20",
+      "description": "ترجمة عربية مكتوبة ومحلفة للوثائق القانونية والطبية والأكاديمية عبر منصة إلكترونية.",
+      "address_details": "Fener Kalamış Cad. No:110, Tibaş Belvü Sitesi A2 Blok No:1, Kadıköy",
+      "website": "https://www.protranslate.net/tr/",
+      "email": "info@protranslate.net",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Protranslate+Kadikoy+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.protranslate.net/tr/istanbul-ceviri-ofisi/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة إسطنبول الرسمية تذكر الترجمة العربية."
+        },
+        {
+          "type": "official_website",
+          "url": "https://www.protranslate.net/tr/iletisim/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تؤكد البريد."
+        }
+      ]
+    },
+    {
+      "name": "Gaziantep Yeminli Tercüme Bürosu",
+      "profession": "ترجمة عربية محلفة",
+      "category": "مترجم",
+      "city": "غازي عنتاب",
+      "district": "شهيد كامل",
+      "phone": "+90 554 584 45 61",
+      "whatsapp": "+90 554 584 45 61",
+      "description": "ترجمة عربية محلفة للوثائق الرسمية مع خدمات النوتري والأبوستيل والتسليم الإلكتروني.",
+      "address_details": "Gazimuhtarpaşa Bulvarı Doktorlar Sitesi Asma Kat No:85, Şehitkamil",
+      "website": "https://gaziantepyeminlitercumeburosu.com.tr/",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Gaziantep+Yeminli+Tercume+Burosu",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://gaziantepyeminlitercumeburosu.com.tr/tr/iletisim/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يعرض العربية والهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Mersin Tercüme Bürosu",
+      "profession": "ترجمة عربية ومحلفة",
+      "category": "مترجم",
+      "city": "مرسين",
+      "district": "أكدنيز",
+      "phone": "+90 531 997 49 84",
+      "whatsapp": "+90 531 997 49 84",
+      "description": "ترجمة عربية للوثائق الرسمية والتجارية والطبية مع خدمات الترجمة المحلفة.",
+      "address_details": "Hamidiye, Atatürk Cd. Çamlıbel Apt. No:59/B, Akdeniz",
+      "website": "https://mersintercume.tr/",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Mersin+Tercume+Burosu+Hamidiye",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://mersintercume.tr/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر العربية والهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Eser Tercüme",
+      "profession": "ترجمة عربية وترجمة محلفة",
+      "category": "مترجم",
+      "city": "مرسين",
+      "district": "أكدنيز",
+      "phone": "+90 324 233 18 15",
+      "whatsapp": "+90 555 961 85 25",
+      "description": "ترجمة عربية مكتوبة وشفوية للوثائق والملفات القانونية والتجارية منذ عام 1998 بحسب الموقع الرسمي.",
+      "address_details": "Yeni Mah. Uray Cad. 5306 Sk. Güvenç İş Merkezi B Blok 4/48, Akdeniz",
+      "website": "https://www.esertercume.com.tr/",
+      "email": "esertercume@gmail.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Eser+Tercume+Mersin",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.esertercume.com.tr/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يؤكد العربية وأرقام الاتصال والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Erkol Tercüme Bürosu",
+      "profession": "ترجمة عربية محلفة",
+      "category": "مترجم",
+      "city": "مرسين",
+      "district": "مزيتلي",
+      "phone": "+90 536 211 02 72",
+      "whatsapp": "+90 536 211 02 72",
+      "description": "ترجمة عربية محلفة وقانونية وطبية وتجارية من مكتب مرسين، مع خدمات وثائق رسمية.",
+      "address_details": "Deniz Mah. Mehmet Könte Cad. No:38 Marvelous 2 Apt. No:23, Mezitli",
+      "website": "https://mersintercumeburosu.com/",
+      "email": "oerkol27@hotmail.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Erkol+Tercume+Mezitli+Mersin",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://mersintercumeburosu.com/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر العربية والهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Nova Diş",
+      "profession": "عيادة أسنان بخط تواصل عربي",
+      "category": "طب أسنان",
+      "city": "إسطنبول",
+      "district": "بيليك دوزو",
+      "phone": "+90 212 871 00 72",
+      "whatsapp": "+90 552 511 08 53",
+      "description": "عيادة أسنان في بيليك دوزو تضع خط واتساب مخصصاً للتواصل باللغة العربية.",
+      "address_details": "Barış Mah. Belediye Cad. Ginza Lavinya Park No:30 B Blok/82, Beylikdüzü",
+      "website": "https://novadis.com.tr/",
+      "email": "info@novadis.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Nova+Dis+Beylikduzu",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://novadis.com.tr/iletisim/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تنشر رقماً مخصصاً للعربية."
+        }
+      ]
+    },
+    {
+      "name": "Dent360 Beylikdüzü",
+      "profession": "عيادة أسنان بخدمة واتساب عربية",
+      "category": "طب أسنان",
+      "city": "إسطنبول",
+      "district": "بيليك دوزو",
+      "phone": "+90 530 832 03 60",
+      "whatsapp": "+90 505 648 41 42",
+      "description": "عيادة أسنان في بيليك دوزو تعرض على موقعها الرسمي رقم واتساب مخصصاً للعربية.",
+      "address_details": "Adnan Kahveci Mah. Çambaşı Cad. No:17/1, Beylikdüzü",
+      "website": "https://dent360.com.tr/",
+      "email": "info@dent360.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Dent360+Beylikduzu",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://dent360.com.tr/iletisim/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تذكر واتساب العربية والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Yalçın & Toygar Hukuk Bürosu",
+      "profession": "مكتب محاماة دولي",
+      "category": "محامي",
+      "city": "إسطنبول",
+      "district": "بي أوغلو",
+      "phone": "+90 212 293 09 09",
+      "description": "مكتب محاماة في إسطنبول له صفحة عربية، ويقدم خدمات في قانون الشركات والأسرة والعقارات والنزاعات.",
+      "address_details": "Kabataş Setüstü İnebolu Sok. No:25 Ada Apt. D:11, Beyoğlu",
+      "website": "https://www.yttlaw.com/ar/",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Yalcin+Toygar+Hukuk+Istanbul",
+      "languages": ["العربية (محتوى الموقع)", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.yttlaw.com/ar/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر اسم المكتب والهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "محامي تركية",
+      "profession": "خدمات قانونية للأجانب بالعربية",
+      "category": "محامي",
+      "city": "إسطنبول",
+      "district": null,
+      "phone": "+90 534 985 83 67",
+      "whatsapp": "+90 534 985 83 67",
+      "description": "مكتب في إسطنبول يعرض خدمات قانونية بالعربية في قانون الأجانب والعقارات والشركات والقضايا الجنائية.",
+      "website": "https://www.muhamiturkia.com/",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Muhami+Turkia+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.muhamiturkia.com/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر الهاتف والمدينة ومجالات العمل."
+        }
+      ]
+    },
+    {
+      "name": "Acacia International Lawyers",
+      "profession": "مكتب محاماة تركي للأجانب",
+      "category": "محامي",
+      "city": "إزمير",
+      "district": "كارشياكا",
+      "phone": "+90 535 700 24 44",
+      "description": "مكتب قانون تركي له صفحة عربية، ويعلن أسماء محامين مسجلين في نقابة إزمير ومجالات قانون العقارات والشركات والأجانب.",
+      "address_details": "Şükran Kurdakul Sok. No:18 Kat:2 D:3, Karşıyaka",
+      "website": "https://www.acacia-int.com/ar/",
+      "email": "info@acacia-int.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Acacia+International+Lawyers+Karsiyaka",
+      "languages": ["العربية (محتوى الموقع)", "التركية", "الإنجليزية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.acacia-int.com/ar/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر المكتب والهاتف."
+        },
+        {
+          "type": "official_website",
+          "url": "https://www.acacia-int.com/ar/our-team/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الفريق الرسمية تنشر أسماء المحامين وعضوياتهم النقابية."
+        }
+      ]
+    },
+    {
+      "name": "NLI Istanbul Real Estate",
+      "profession": "استشارات ووساطة عقارية",
+      "category": "عقارات",
+      "city": "إسطنبول",
+      "district": "مسلك",
+      "phone": "+90 501 631 90 20",
+      "whatsapp": "+90 501 631 90 20",
+      "description": "شركة عقارية لها واجهة عربية وتعرض عقارات سكنية وتجارية في إسطنبول.",
+      "address_details": "Maslak Mah. Büyükdere Cad., Sarıyer",
+      "website": "https://nli.com.tr/ar/",
+      "email": "info@nli.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=NLI+Istanbul+Real+Estate+Maslak",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://nli.com.tr/ar/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر الهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Right Home",
+      "profession": "تسويق واستشارات عقارية",
+      "category": "عقارات",
+      "city": "إسطنبول",
+      "district": "بكر كوي",
+      "phone": "+90 212 573 51 93",
+      "whatsapp": "+90 549 199 60 04",
+      "description": "شركة عقارية ذات موقع عربي للعقارات السكنية والاستثمارية في إسطنبول.",
+      "address_details": "Şenlikköy Mah. Yeşilköy Cd. Kat:2 17-1, Bakırköy",
+      "website": "https://www.righthome.com.tr/ar",
+      "email": "info@righthome.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Right+Home+Real+Estate+Bakirkoy",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.righthome.com.tr/ar",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر الهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Damas Group",
+      "profession": "تسويق ووساطة عقارية",
+      "category": "عقارات",
+      "city": "إسطنبول",
+      "district": "باغجلار",
+      "phone": "+90 552 510 00 05",
+      "whatsapp": "+90 552 510 00 05",
+      "description": "شركة عقارية ذات موقع عربي تعرض عقارات في إسطنبول ومدن تركية أخرى.",
+      "address_details": "Mahmutbey Mah. Taşocağı Yolu Cad. Ağaoğlu My Office 212 No:396, Bağcılar",
+      "website": "https://www.damasgroup.com.tr/",
+      "email": "info@damasgroup.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Damas+Group+Mahmutbey+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.damasgroup.com.tr/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر الهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "رؤيا للاستثمار العقاري",
+      "profession": "تسويق عقارات واستشارات",
+      "category": "عقارات",
+      "city": "إسطنبول",
+      "district": "الفاتح",
+      "phone": "+90 539 601 53 22",
+      "whatsapp": "+90 539 601 53 22",
+      "description": "شركة ذات موقع عربي متخصصة بعقارات إسطنبول السكنية والتجارية والاستثمارية.",
+      "address_details": "Akşemsettin Mah. Akdeniz Cad. Çemin Apt. No:66 D:9, Fatih",
+      "website": "https://ruya-tr.com/",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Ruya+Gayrimenkul+Fatih+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://ruya-tr.com/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر الهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Diamond Houses",
+      "profession": "استشارات ووساطة عقارية",
+      "category": "عقارات",
+      "city": "إسطنبول",
+      "district": "أفجلار",
+      "phone": "+90 507 509 02 07",
+      "whatsapp": "+90 507 509 02 07",
+      "description": "شركة عقارية ذات موقع عربي للاستشارة وشراء العقارات في إسطنبول.",
+      "address_details": "Avcılar, İstanbul",
+      "website": "https://www.diamondhouses.net/",
+      "email": "info@diamondhouses.net",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Diamond+Houses+Avcilar+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.diamondhouses.net/contact/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تذكر واتساب والعنوان والبريد."
+        }
+      ]
+    },
+    {
+      "name": "Sedad Property",
+      "profession": "تسويق أراض وعقارات",
+      "category": "عقارات",
+      "city": "إسطنبول",
+      "district": "أرناؤوط كوي",
+      "phone": "+90 554 110 36 00",
+      "whatsapp": "+90 554 110 36 00",
+      "description": "شركة ذات موقع عربي تعرض أراضي وعقارات في إسطنبول.",
+      "website": "https://sedad.com.tr/ar/",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Sedad+Property+Istanbul",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://sedad.com.tr/ar/",
+          "checked_at": "2026-07-27T00:00:00.000Z",
+          "note": "الموقع الرسمي العربي يذكر رقم التواصل وخدمات العقارات."
+        }
+      ]
+    }
+  ]
+}

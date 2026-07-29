@@ -26,7 +26,7 @@ export async function getInitialTicker(): Promise<InitialTicker> {
 
     const work = (async (): Promise<InitialTicker> => {
         // Admin on/off switch — collapse only when explicitly disabled.
-        let hidden = false;
+        const hidden = false;
         try {
             if (supabase) {
                 const { data, error } = await supabase.from('site_settings').select('ticker_enabled').limit(1).maybeSingle();

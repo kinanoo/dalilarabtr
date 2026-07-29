@@ -22,7 +22,7 @@ async function fetchCategoryProviders(cat: ServiceCategory): Promise<Row[]> {
         if (!supabase) return [];
         const { data } = await supabase
             .from('service_providers')
-            .select('id, slug, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
+            .select('id, slug, name, profession, category, description, city, phone, whatsapp, image, is_verified, rating, review_count')
             .eq('status', 'approved')
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
@@ -56,7 +56,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string; 
 
     const providers = providersInCity(await fetchCategoryProviders(cat), cityObj);
     const title = `${cat.labelAr} عرب في ${cityObj.ar} | دليل العرب`;
-    const description = `${cat.labelAr} ${cat.blurb} يتحدّثون العربية في ${cityObj.ar}، تركيا. ${providers.length > 0 ? `${providers.length} ` : ''}مهنيّ — تواصل مباشر عبر واتساب أو اتصال.`;
+    const description = `مزودو خدمات عرب في مجال ${cat.labelAr} داخل ${cityObj.ar}، تركيا. ${providers.length > 0 ? `${providers.length} ` : ''}مهنيّ — تواصل مباشر عبر واتساب أو اتصال.`;
 
     return {
         title,
@@ -138,7 +138,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> عرب في {cityObj.ar}
                     </h1>
                     <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                        {cat.blurb} يتحدّثون العربية في {cityObj.ar}. تواصل مباشر عبر واتساب أو اتصال.
+                        مزودو خدمات عرب في مجال {cat.labelAr} داخل {cityObj.ar}. تواصل مباشر عبر واتساب أو اتصال.
                     </p>
                 </div>
             </section>

@@ -67,13 +67,18 @@ export default function DeferredExtras() {
       <BackToTop />
       <CookieConsent />
       <Toaster position="bottom-center" richColors />
+      {/* Its own boundary, deliberately. These four mount 8 seconds after the
+          page loads, and a lazy child that suspends shows the fallback of the
+          NEAREST boundary — which was the one above, wrapping everything. So
+          the back-to-top button, the cookie bar and the toaster all vanished
+          for as long as these chunks took to arrive, on every single page. */}
       {backgroundReady && (
-        <>
+        <Suspense fallback={null}>
           {isDesktop && <SiteBackdrop />}
           <NotificationManager />
           <ServiceWorkerRegister />
           <PWAInstallPrompt />
-        </>
+        </Suspense>
       )}
     </Suspense>
   );

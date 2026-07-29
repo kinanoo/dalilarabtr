@@ -20,6 +20,56 @@ export function normalizeArabic(text: string): string {
   return normalized;
 }
 
+/**
+ * Every spelling of a token that a Postgres `ilike` would treat as a different
+ * word, so a database filter can match what a human actually typed.
+ *
+ * normalizeArabic() folds أ/إ/آ→ا, ة→ه, ى→ي, ؤ→و, ئ→ي — but that only helps
+ * once the rows are already in the browser. The `ilike` filters we send to
+ * Supabase compare raw bytes, so a visitor typing "اعفاء اذن طريق" (no hamza,
+ * which is how most people type on a phone) matched ZERO articles while the
+ * stored title reads "إعفاء إذن الطريق". Measured on the live database:
+ * "اعفاء" → 0 rows, "إعفاء" → 5. Same for "اذن" → 1 vs "إذن" → 5.
+ *
+ * So we expand the bare form back out into its variants and OR them together.
+ * Capped per token because each variant is another OR branch in the URL.
+ */
+const AR_VARIANT_GROUPS: Array<[RegExp, string[]]> = [
+  [/ا/g, ['ا', 'أ', 'إ', 'آ']],
+  [/ه/g, ['ه', 'ة']],
+  [/ي/g, ['ي', 'ى']],
+];
+
+export function arabicSpellingVariants(token: string, max = 6): string[] {
+  if (!token) return [];
+  const base = normalizeArabic(token);
+  if (!base) return [];
+
+  let forms = [base];
+  for (const [pattern, replacements] of AR_VARIANT_GROUPS) {
+    const next = new Set<string>();
+    for (const form of forms) {
+      const positions: number[] = [];
+      form.replace(pattern, (m, i: number) => { positions.push(i); return m; });
+      if (!positions.length) { next.add(form); continue; }
+      // Vary one position at a time — full cross-product explodes on long words
+      // and adds little: real spellings differ in a single letter far more often.
+      next.add(form);
+      for (const pos of positions) {
+        for (const rep of replacements) {
+          next.add(form.slice(0, pos) + rep + form.slice(pos + 1));
+        }
+      }
+    }
+    forms = Array.from(next);
+    if (forms.length > max * 4) break;
+  }
+
+  // Keep the plain normalized form first — it is the likeliest hit.
+  const ordered = [base, ...forms.filter((f) => f !== base)];
+  return Array.from(new Set(ordered)).slice(0, max);
+}
+
 const AR_STOPWORDS = new Set([
   // Common intent / filler words
   'انا',

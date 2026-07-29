@@ -3,13 +3,14 @@
 import { CheckCircle2, MapPin, Share2, Star } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
+import { serviceVerificationCopy } from '@/lib/serviceVerification';
 
 // === Type Definitions ===
 interface Service {
     name: string;
     image?: string;
     is_verified?: boolean;
+    verification_level?: string | null;
     profession: string;
     city: string;
     district?: string;
@@ -23,6 +24,11 @@ interface HeaderProps {
 }
 
 export default function ServiceProfileHeader({ service }: HeaderProps) {
+    const verification = serviceVerificationCopy(
+        service.verification_level,
+        service.is_verified,
+    );
+
     const handleShare = async () => {
         const url = window.location.href;
         if (navigator.share) {
@@ -75,13 +81,13 @@ export default function ServiceProfileHeader({ service }: HeaderProps) {
                             <div>
                                 <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
                                     {service.name}
-                                    {service.is_verified && (
+                                    {verification.visible && (
                                         <span
                                             className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-black text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-                                            title={SERVICE_VERIFICATION_EXPLANATION}
+                                            title={verification.explanation}
                                         >
                                             <CheckCircle2 className="text-blue-500" size={16} aria-hidden="true" />
-                                            {SERVICE_VERIFICATION_LABEL}
+                                            {verification.label}
                                         </span>
                                     )}
                                 </h1>
@@ -104,13 +110,17 @@ export default function ServiceProfileHeader({ service }: HeaderProps) {
                                 <MapPin size={16} />
                                 {service.city} {service.district && `، ${service.district}`}
                             </div>
-                            <div className="flex items-center gap-1 text-amber-500 font-bold">
-                                <Star size={16} fill="currentColor" />
-                                <span>{service.rating_avg ? Number(service.rating_avg).toFixed(1) : '0.0'}</span>
-                                <span className="text-slate-400 font-normal underline decoration-dashed ml-1">
-                                    ({service.review_count || 0} تقييم)
-                                </span>
-                            </div>
+                            {service.review_count && service.review_count > 0 ? (
+                                <div className="flex items-center gap-1 text-amber-500 font-bold">
+                                    <Star size={16} fill="currentColor" />
+                                    <span>{service.rating_avg ? Number(service.rating_avg).toFixed(1) : '—'}</span>
+                                    <span className="text-slate-400 font-normal underline decoration-dashed ml-1">
+                                        ({service.review_count} تقييم)
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-xs font-bold text-slate-400">لا تقييمات بعد</span>
+                            )}
                             <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs border border-slate-200 dark:border-slate-700">
                                 {service.category}
                             </div>

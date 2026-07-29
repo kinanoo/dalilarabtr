@@ -7,7 +7,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { FileText, Briefcase, Link2, ShieldAlert } from 'lucide-react';
-import { normalizeArabic } from '@/lib/arabicSearch';
+import { normalizeArabic, arabicSpellingVariants } from '@/lib/arabicSearch';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { supabase } from '@/lib/supabaseClient';
 import logger from '@/lib/logger';
@@ -64,28 +64,44 @@ const TYPE_PRIORITY: Record<string, number> = {
   'تحديث': 10,
 };
 
-/** Relevance scorer for remote results */
+/**
+ * Relevance scorer for remote results.
+ *
+ * `title` is optional but matters: scoring the whole blob equally meant a guide
+ * whose TITLE is the query ranked no higher than one that merely mentions it
+ * once in the intro. A word in the title is a far stronger signal of what the
+ * page is about, so it is weighted well above a body mention, and a title that
+ * contains the entire query wins outright.
+ */
 function calculateRelevance(
   text: string,
   tokens: string[],
-  expanded: string[]
+  expanded: string[],
+  title?: string
 ): { score: number; matchedTokens: number } {
   if (!text) return { score: 0, matchedTokens: 0 };
   const normText = normalizeArabic(text);
+  const normTitle = title ? normalizeArabic(title) : '';
   let score = 0;
   let matchedTokens = 0;
+  let titleHits = 0;
 
   tokens.forEach((token) => {
     const t = normalizeArabic(token);
+    if (!t) return;
     if (normText.includes(t)) {
       score += 20;
       matchedTokens++;
+    }
+    if (normTitle && normTitle.includes(t)) {
+      score += 25;
+      titleHits++;
     }
   });
 
   expanded.forEach((token) => {
     const t = normalizeArabic(token);
-    if (normText.includes(t)) {
+    if (t && normText.includes(t)) {
       score += 5;
     }
   });
@@ -93,13 +109,23 @@ function calculateRelevance(
   if (matchedTokens === tokens.length && tokens.length > 1) {
     score += 50;
   }
+  // Every query word present in the title — this is the result the visitor meant.
+  if (normTitle && tokens.length > 0 && titleHits === tokens.length) {
+    score += 60;
+  }
 
   return { score, matchedTokens };
 }
 
-export function useGlobalSearch() {
-  const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+/**
+ * @param initialQuery text the visitor already typed into the placeholder
+ *   field that stood here while this module downloaded. Seeding BOTH the live
+ *   and the debounced query means their first search fires immediately instead
+ *   of waiting out another debounce they never asked for.
+ */
+export function useGlobalSearch(initialQuery = '') {
+  const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [isOpen, setIsOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -163,29 +189,52 @@ export function useGlobalSearch() {
         const { originalTokens, expandedTokens } = intelligentTokenize(trimmed);
         const searchTokens = originalTokens.length > 0 ? originalTokens : [trimmed];
 
-        const updateQuery = searchTokens.map((t) => `title.ilike.%${t}%,content.ilike.%${t}%`).join(',');
-        const articleOrQuery = searchTokens
-          .flatMap((t) => [
-            `title.ilike.%${t}%`,
-            `intro.ilike.%${t}%`,
-            `details.ilike.%${t}%`,
-          ])
-          .join(',');
-        const questionOrQuery = searchTokens.map((t) => `question.ilike.%${t}%,answer.ilike.%${t}%`).join(',');
-        const nameOrQuery = searchTokens.map((t) => `name.ilike.%${t}%`).join(',');
-        const professionOrQuery = searchTokens.map((t) => `profession.ilike.%${t}%`).join(',');
+        // `ilike` compares raw bytes, so it does NOT see "اعفاء" and "إعفاء" as
+        // the same word — and most people type Arabic without hamza on a phone.
+        // Measured on the live database: "اعفاء" matched 0 articles, "إعفاء"
+        // matched 5. Expand each token into its spellings and OR them together,
+        // otherwise a visitor searching "اعفاء اذن طريق" gets nothing back.
+        // Capped: variants × tokens × columns all become OR branches in the URL.
+        const MAX_QUERY_TOKENS = 4;
+        const MAX_VARIANTS = 4;
+        const queryTokens = searchTokens.slice(0, MAX_QUERY_TOKENS);
+        const variantsOf = (t: string) => {
+          const v = arabicSpellingVariants(t, MAX_VARIANTS);
+          return v.length ? v : [t];
+        };
+        const orOver = (cols: string[]) =>
+          queryTokens
+            .flatMap((t) => variantsOf(t).flatMap((v) => cols.map((c) => `${c}.ilike.%${v}%`)))
+            .join(',');
+
+        const updateQuery = orOver(['title', 'content']);
+        const articleOrQuery = orOver(['title', 'intro', 'details']);
+        const questionOrQuery = orOver(['question', 'answer']);
+        const nameOrQuery = orOver(['name']);
+        const professionOrQuery = orOver(['profession']);
 
         const numbers = trimmed.match(/\d+/g);
         const codeOrParts: string[] = [];
         if (numbers) numbers.forEach((n) => codeOrParts.push(`code.ilike.%${n}%`));
-        searchTokens.forEach((t) => {
-          codeOrParts.push(`title.ilike.%${t}%`);
-          codeOrParts.push(`description.ilike.%${t}%`);
+        queryTokens.forEach((t) => {
+          variantsOf(t).forEach((v) => {
+            codeOrParts.push(`title.ilike.%${v}%`);
+            codeOrParts.push(`description.ilike.%${v}%`);
+          });
         });
         const codeOrQuery = codeOrParts.join(',');
 
+        // Two article queries, deliberately. The broad one searches details too,
+        // but it takes the newest 8 of everything that matched ANY word — and a
+        // common word drowns the good hit: 52 guides contain "طريق" in their
+        // body, so the guide actually TITLED "إعفاء إذن الطريق" never reached
+        // the scorer at all. The title-only query guarantees a strong match is
+        // always in the candidate set before scoring runs.
+        const articleTitleQuery = orOver(['title']);
+
         const responses = await Promise.allSettled([
           supabase.from('articles').select('id, slug, title, category, intro').or(articleOrQuery).order('published_at', { ascending: false }).limit(8),
+          supabase.from('articles').select('id, slug, title, category, intro').or(articleTitleQuery).order('published_at', { ascending: false }).limit(8),
           supabase.from('service_providers').select('id, name, profession').eq('status', 'approved').or(`${nameOrQuery},${professionOrQuery}`).limit(5),
           supabase.from('faqs').select('id, question, answer').or(questionOrQuery).limit(5),
           supabase.from('updates').select('id, title, date, content').eq('active', true).or(updateQuery).limit(5),
@@ -193,16 +242,22 @@ export function useGlobalSearch() {
           supabase.from('security_codes').select('code, title, description').or(codeOrQuery).limit(5),
         ]);
 
-        const [articlesRes, servicesRes, faqsRes, updatesRes, sourcesRes, codesRes] = responses.map((r) =>
+        const [articlesRes, articleTitlesRes, servicesRes, faqsRes, updatesRes, sourcesRes, codesRes] = responses.map((r) =>
           r.status === 'fulfilled' ? r.value : { data: [] }
         );
 
         const newResults: SearchResult[] = [];
 
-        if (articlesRes?.data) {
-          articlesRes.data.forEach((a: any) => {
+        // Title hits first so they win the de-duplication below on identical ids.
+        const mergedArticles = [
+          ...((articleTitlesRes?.data as any[]) || []),
+          ...((articlesRes?.data as any[]) || []),
+        ].filter((a, i, arr) => arr.findIndex((b) => b.id === a.id) === i);
+
+        if (mergedArticles.length) {
+          mergedArticles.forEach((a: any) => {
             const searchable = `${a.title} ${a.category || ''} ${a.intro || ''}`;
-            const stats = calculateRelevance(searchable, searchTokens, expandedTokens);
+            const stats = calculateRelevance(searchable, searchTokens, expandedTokens, a.title);
             newResults.push({
               id: `art-${a.id}`,
               title: a.title,
@@ -220,14 +275,14 @@ export function useGlobalSearch() {
 
         if (servicesRes?.data) {
           servicesRes.data.forEach((s: any) => {
-            const stats = calculateRelevance(`${s.name} ${s.profession}`, searchTokens, expandedTokens);
+            const stats = calculateRelevance(`${s.name} ${s.profession}`, searchTokens, expandedTokens, s.name);
             newResults.push({ id: `srv-${s.id}`, title: s.name, type: 'خدمة', url: `/services/${s.id}`, icon: Briefcase, desc: s.profession, typeKey: 'service', haystack: '', _score: stats.score, _matchedTokens: stats.matchedTokens } as any);
           });
         }
 
         if (faqsRes?.data) {
           faqsRes.data.forEach((f: any) => {
-            const qStats = calculateRelevance(f.question, searchTokens, expandedTokens);
+            const qStats = calculateRelevance(f.question, searchTokens, expandedTokens, f.question);
             const aStats = calculateRelevance(f.answer, searchTokens, expandedTokens);
             const answerSnippet = f.answer ? f.answer.replace(/<[^>]*>/g, '').slice(0, 80) + (f.answer.length > 80 ? '...' : '') : '';
             newResults.push({ id: `faq-${f.id}`, title: f.question, type: 'سؤال وجواب', url: `/faq?q=${encodeURIComponent(f.question)}`, icon: FileText, desc: answerSnippet || 'إجابة مباشرة', typeKey: 'article', haystack: '', _score: Math.max(qStats.score, aStats.score), _matchedTokens: Math.max(qStats.matchedTokens, aStats.matchedTokens) } as any);
@@ -378,14 +433,16 @@ export function useGlobalSearch() {
 
     const allResults = Array.from(uniqueMap.values());
 
+    // Strongest match wins, whatever its type. The old rule treated any gap
+    // under 10 points as a tie and fell back to type priority, which pushed a
+    // guide titled exactly like the query below a loosely-related tool.
+    // Type is now only a tie-breaker for genuinely equal scores.
     allResults.sort((a, b) => {
       const scoreDiff = (b._score || 0) - (a._score || 0);
-      if (Math.abs(scoreDiff) < 10) {
-        const priorityA = TYPE_PRIORITY[a.type] || 99;
-        const priorityB = TYPE_PRIORITY[b.type] || 99;
-        return priorityA - priorityB;
-      }
-      return scoreDiff;
+      if (scoreDiff !== 0) return scoreDiff;
+      const matchDiff = (b._matchedTokens || 0) - (a._matchedTokens || 0);
+      if (matchDiff !== 0) return matchDiff;
+      return (TYPE_PRIORITY[a.type] || 99) - (TYPE_PRIORITY[b.type] || 99);
     });
 
     // Adaptive filtering
@@ -404,7 +461,10 @@ export function useGlobalSearch() {
       finalResults = allResults.filter((r) => (r._score || 0) >= 10);
     }
 
-    return finalResults.slice(0, 15);
+    // Eight, not fifteen: a long list of tall rows ran past the fold and the
+    // visitor could not tell more existed. Fewer, tighter rows read as a
+    // complete list. Owner's call, 2026-07-26.
+    return finalResults.slice(0, 8);
   }, [debouncedQuery, searchIndex, remoteResults]);
 
   const refreshRecent = useCallback(() => {

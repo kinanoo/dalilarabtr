@@ -4,7 +4,7 @@ import { canonicalCity } from '@/lib/turkishCities';
 import { toLatinDigits } from '@/lib/digits';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
-import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
+import { serviceVerificationCopy } from '@/lib/serviceVerification';
 
 export interface ProviderCardData {
     id: string;
@@ -14,8 +14,10 @@ export interface ProviderCardData {
     city: string | null;
     description: string | null;
     phone: string | null;
+    whatsapp?: string | null;
     image: string | null;
     is_verified: boolean | null;
+    verification_level?: string | null;
     is_featured?: boolean | null;
     rating: number | null;
     review_count: number | null;
@@ -31,6 +33,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
     const href = `/services/${p.slug || p.id}`;
     const city = canonicalCity(p.city);
     const hasReviews = !!(p.review_count && p.review_count > 0);
+    const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
 
     return (
         <article className={`group relative flex flex-col rounded-2xl border bg-white dark:bg-slate-900 p-4 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 ${
@@ -48,11 +51,11 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             <div className="flex items-start gap-3">
                 <Link href={href} className="relative shrink-0" aria-label={p.name}>
                     <ProviderAvatar name={p.name} image={p.image} className="w-14 h-14 rounded-2xl text-lg" />
-                    {p.is_verified && (
+                    {verification.visible && (
                         <span
                             className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm"
-                            title={SERVICE_VERIFICATION_EXPLANATION}
-                            aria-label={`${SERVICE_VERIFICATION_LABEL}: ${SERVICE_VERIFICATION_EXPLANATION}`}
+                            title={verification.explanation}
+                            aria-label={`${verification.label}: ${verification.explanation}`}
                         >
                             <BadgeCheck size={16} className="text-blue-500" aria-hidden="true" />
                         </span>

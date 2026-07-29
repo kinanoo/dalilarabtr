@@ -2,8 +2,22 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Download, X, Share, Plus } from 'lucide-react';
+import { getAnalyticsConsent, ANALYTICS_CONSENT_EVENT } from '@/lib/consent';
 
 export default function PWAInstallPrompt() {
+    // The cookie bar and this card are both pinned to the bottom-right at
+    // z-[9999], so whichever mounts last covers the other — and this one was
+    // burying the consent buttons, leaving the visitor unable to answer a
+    // question that gates analytics. One question at a time: wait until they
+    // have answered, then offer the install.
+    const [consentAnswered, setConsentAnswered] = useState(false);
+    useEffect(() => {
+        const read = () => setConsentAnswered(getAnalyticsConsent() !== 'unknown');
+        read();
+        window.addEventListener(ANALYTICS_CONSENT_EVENT, read);
+        return () => window.removeEventListener(ANALYTICS_CONSENT_EVENT, read);
+    }, []);
+
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstallBanner, setShowInstallBanner] = useState(false);
     // iOS Safari never fires beforeinstallprompt, so those users would otherwise
@@ -95,7 +109,7 @@ export default function PWAInstallPrompt() {
         setShowInstallBanner(false);
     }, [deferredPrompt]);
 
-    if (!showInstallBanner) return null;
+    if (!showInstallBanner || !consentAnswered) return null;
 
     // iOS Safari: can't trigger install programmatically — show step-by-step
     // "Share → Add to Home Screen" instructions instead of an install button.

@@ -18,7 +18,7 @@ export default function HomeConsultantBtn() {
             <Link
                 href="/consultant"
                 prefetch={false}
-                className="group relative flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 active:bg-emerald-800"
+                className="group relative flex items-center gap-2 rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-colors hover:bg-emerald-800 active:bg-emerald-900"
             >
                 <span>ابدأ مع دليل المواقف</span>
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />

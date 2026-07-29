@@ -64,7 +64,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
-    const body = await req.json();
+    // sendBeacon can be interrupted while a tab is closing, leaving a partial
+    // JSON body. Analytics is best-effort, so discard that request quietly
+    // instead of returning a noisy 500 that never benefits the visitor.
+    const rawBody = await req.text();
+    if (!rawBody.trim()) return new NextResponse(null, { status: 204 });
+
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return new NextResponse(null, { status: 204 });
+    }
     const { event_name, page_path, duration_seconds, meta, analytics_consent } = body;
     const consented = analytics_consent === true;
 
