@@ -21,6 +21,8 @@ export async function GET() {
     `${baseUrl}/sitemap-services.xml`,
     `${baseUrl}/sitemap-updates.xml`,
     `${baseUrl}/sitemap-static.xml`,
+    // «أين يقع؟» — the /places hub + one page per consulate / embassy / office
+    `${baseUrl}/sitemap-places.xml`,
     // Image sitemap — surfaces article + service hero images to Google Images
     `${baseUrl}/sitemap-images.xml`,
     // Tag sitemap — every distinct tag that >=2 approved articles share

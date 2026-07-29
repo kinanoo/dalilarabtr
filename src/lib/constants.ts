@@ -26,6 +26,7 @@ export const NAVIGATION = [
     { name: "دليل الأكواد", href: "/codes", icon: ShieldAlert },
     { name: "الدليل الشامل", href: "/directory", icon: FolderOpen },
     { name: "الإقامات", href: "/category/residence", icon: FileText },
+    { name: "أين يقع؟ (خرائط المقرات)", href: "/places", icon: MapPin },
     { name: "المناطق المحظورة", href: "/zones", icon: MapPin },
     { name: "الأسئلة الشائعة", href: "/faq", icon: BookOpen },
     { name: "حاسبة المنع", href: "/ban-calculator", icon: Calculator },
@@ -36,11 +37,13 @@ export const PRIMARY_NAV = [
     { name: "خدمات", href: "/services", icon: Briefcase, isNew: true },
     { name: "الأكواد الأمنية", href: "/codes", icon: ShieldAlert },
     { name: "روابط حكومية رسمية", href: "/important-links", icon: Link },
+    { name: "أين يقع؟", href: "/places", icon: MapPin, isNew: true },
 ];
 
 export const GUIDES_MENU = [
     { name: "الدليل الشامل", href: "/directory", icon: FolderOpen },
     { name: "دليل المدن", href: "/city", icon: MapPin },
+    { name: "أين يقع؟ — القنصليات والدوائر الرسمية", href: "/places", icon: MapPin },
     { name: "خدمات السوريين", href: "/category/syrians", icon: Building2 },
     { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone },
     // Section hubs — standalone guide pages. `/residence` (not
@@ -66,6 +69,7 @@ export const SECTIONS_MENU = [
     { name: "الأكواد الأمنية", href: "/codes", icon: ShieldAlert, desc: "رموز المنع والوضع القانونيّ" },
     { name: "الدليل الشامل", href: "/directory", icon: FolderOpen, desc: "كل الخدمات في مكان واحد" },
     { name: "الروابط الرسمية", href: "/important-links", icon: Link, desc: "مواقع حكوميّة موثوقة" },
+    { name: "أين يقع؟", href: "/places", icon: MapPin, desc: "قنصليّات ودوائر على الخريطة" },
     { name: "خدمات e-Devlet", href: "/e-devlet-services", icon: Smartphone, desc: "معاملات إلكترونيّة" },
     { name: "خدمات السوريين", href: "/category/syrians", icon: Building2, desc: "مكاتب ومراكز الخدمة" },
     { name: "التعليم والجامعات", href: "/education", icon: GraduationCap, desc: "YÖS والمنح الدراسيّة" },
@@ -161,6 +165,7 @@ export const QUICK_ACTIONS = [
     { title: "النماذج الجاهزة", desc: "عقود واستمارات مترجمة", icon: FileText, href: "/forms" },
     { title: "الصيدليات المناوبة", desc: "بوابة e-Devlet الرسمية", icon: HeartPulse, href: "/tools/pharmacy" },
     { title: "روابط هامة", desc: "أهم المواقع الخدمية والمنظمات", icon: Link, href: "/important-links" },
+    { title: "أين يقع؟ القنصليات والدوائر", desc: "مواقع السفارات والدوائر الرسمية على خرائط جوجل", icon: MapPin, href: "/places" },
 ];
 
 const RAW_UPDATES = [

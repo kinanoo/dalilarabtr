@@ -94,6 +94,24 @@ export const ARABIC_SYNONYMS: Record<string, string[]> = {
     // 🏦 بنك
     'بنك': ['مصرف', 'bank', 'بنوك'],
     'حساب': ['account', 'hesap', 'رصيد'],
+
+    // 📍 المقرات والمواقع (يخدم دليل «أين يقع؟» — src/lib/officialPlaces.ts)
+    // NOTE: قنصلية ↮ سفارة on purpose. They are different missions in
+    // different cities; expanding one into the other would answer «وين
+    // القنصلية في إسطنبول؟» with an embassy in Ankara.
+    'قنصلية': ['قنصليه', 'القنصلية', 'consulate', 'konsolosluk', 'baskonsolosluk'],
+    'قنصليه': ['قنصلية', 'consulate', 'konsolosluk'],
+    'سفارة': ['سفاره', 'السفارة', 'embassy', 'buyukelcilik'],
+    'سفاره': ['سفارة', 'embassy', 'buyukelcilik'],
+    'موقع': ['مكان', 'عنوان', 'خريطة', 'خرائط', 'location', 'map', 'maps'],
+    'خريطة': ['خرائط', 'خريطه', 'map', 'maps', 'موقع', 'عنوان'],
+    'وين': ['اين', 'مكان', 'موقع', 'عنوان'],
+    'هجرة': ['الهجرة', 'goc', 'göç', 'goc idaresi', 'ادارة الهجرة', 'immigration'],
+    'نفوس': ['النفوس', 'nufus', 'nvi', 'الاحوال المدنية'],
+    'ضرائب': ['الضرائب', 'vergi', 'gib', 'الرقم الضريبي'],
+    'طابو': ['الطابو', 'tapu', 'السجل العقاري'],
+    'نوتر': ['noter', 'كاتب العدل', 'notary'],
+    'محكمة': ['المحكمة', 'adliye', 'دار العدل', 'العدلية'],
 };
 
 // ============================================
