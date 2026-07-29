@@ -35,7 +35,7 @@ export const serviceSchema = z.object({
     category: z.string().optional(),
     profession: z.string().trim().min(1, { message: "التخصص مطلوب" }),
     image: optionalString,
-    phone: requiredString.regex(/^(\+?90|0)?5\d{9}$/, { message: "رقم الهاتف غير صحيح (يجب أن يكون رقم تركي يبدأ بـ 5)" }),
+    phone: requiredString.regex(/^(\+?90|0)?[1-9]\d{9}$/, { message: "رقم الهاتف التركي غير صحيح" }),
     active: z.boolean().optional().default(true),
 });
 

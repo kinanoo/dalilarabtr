@@ -1,0 +1,377 @@
+{
+  "label": "الدفعة الثانية - أنقرة وأنطاليا وأضنة وبورصة - 2026-07-30",
+  "candidates": [
+    {
+      "name": "İnfoyed Yeminli Tercüme",
+      "profession": "ترجمة عربية محلفة ووثائق رسمية",
+      "category": "مترجم",
+      "city": "أنقرة",
+      "district": "كيزيلاي",
+      "phone": "+90 312 419 20 99",
+      "whatsapp": "+90 543 463 69 33",
+      "description": "ترجمة عربية وتركية محلفة للوثائق القانونية والطبية والأكاديمية مع خدمات التصديق.",
+      "address_details": "Meşrutiyet Cad. No:15/28, Kızılay, Çankaya",
+      "website": "https://www.infoyedtercume.com/",
+      "email": "infoyed@gmail.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Infoyed+Tercume+Kizilay+Ankara",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.infoyedtercume.com/arapca-tercume/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة العربية الرسمية تنشر خدمات الترجمة العربية والهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Onur Tercüme Merkezi",
+      "profession": "ترجمة عربية محلفة وتصديق نوتري",
+      "category": "مترجم",
+      "city": "أنقرة",
+      "district": "بالغات",
+      "phone": "+90 312 285 58 49",
+      "whatsapp": "+90 532 471 82 05",
+      "description": "ترجمة عربية تقنية وقانونية وطبية للوثائق الرسمية مع خدمات النوتري والأبوستيل.",
+      "address_details": "Ceyhun Atıf Kansu Cad. No:19/2, Balgat, Çankaya",
+      "website": "https://www.onurtercume.com/",
+      "email": "info@onurtercume.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Onur+Tercume+Balgat+Ankara",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.onurtercume.com/lang/arapca",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة العربية الرسمية تذكر مترجمين عرباً محلفين وفرعي أنقرة وأرقام الاتصال."
+        }
+      ]
+    },
+    {
+      "name": "Liyago Tercüme Bürosu",
+      "profession": "ترجمة عربية محلفة ونوترية",
+      "category": "مترجم",
+      "city": "أضنة",
+      "district": null,
+      "phone": "+90 322 458 90 00",
+      "whatsapp": "+90 544 664 19 39",
+      "description": "ترجمة عربية محلفة ووثائق رسمية وقانونية وطبية من مكتب ترجمة مقره أضنة.",
+      "address_details": null,
+      "website": "https://www.liyago.com/",
+      "email": "info@liyago.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Liyago+Tercume+Adana",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.liyago.com/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر الترجمة العربية المحلفة ومقر أضنة والهاتف وواتساب."
+        }
+      ]
+    },
+    {
+      "name": "P&S Global Tercüme",
+      "profession": "ترجمة عربية محلفة ووثائق رسمية",
+      "category": "مترجم",
+      "city": "أضنة",
+      "district": "سيحان",
+      "phone": "+90 544 971 85 48",
+      "whatsapp": "+90 544 971 85 48",
+      "description": "ترجمة عربية محلفة وقانونية وطبية مع خدمات النوتري والأبوستيل في أضنة.",
+      "address_details": "Hurmalı Mah. 34002 Sk. Yusuf Serin İş Merkezi Kat:4 D:402, Seyhan",
+      "website": "https://www.adanatercumeburosu.com.tr/",
+      "email": "psglobaltercume@gmail.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=P%26S+Global+Tercume+Seyhan+Adana",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.adanatercumeburosu.com.tr/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر العربية ضمن اللغات ويعرض الهاتف والبريد والعنوان."
+        },
+        {
+          "type": "official_website",
+          "url": "https://www.adanatercumeburosu.com.tr/iletisim",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تؤكد العنوان ورقم الهاتف."
+        }
+      ]
+    },
+    {
+      "name": "ONAT Antalya Tercüme",
+      "profession": "ترجمة عربية محلفة وتصديق رسمي",
+      "category": "مترجم",
+      "city": "أنطاليا",
+      "district": "مراد باشا",
+      "phone": "+90 850 532 58 52",
+      "whatsapp": "+90 850 532 78 72",
+      "description": "ترجمة عربية محلفة ونوترية مع متابعة الأبوستيل والوثائق الرسمية من فرع أنطاليا.",
+      "address_details": "Kızılsaray Mah. Şarampol Cad. No:101/26, Muratpaşa",
+      "website": "https://www.onattercumeantalya.com/",
+      "email": "bilgi@onatpro.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=ONAT+Tercume+Muratpasa+Antalya",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.onattercumeantalya.com/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر العربية وفرع مراد باشا والهاتف وواتساب والبريد."
+        }
+      ]
+    },
+    {
+      "name": "Pura Tercüme",
+      "profession": "ترجمة عربية محلفة ونوترية",
+      "category": "مترجم",
+      "city": "أنطاليا",
+      "district": "مراد باشا",
+      "phone": "+90 552 740 19 23",
+      "whatsapp": "+90 552 740 19 23",
+      "description": "ترجمة عربية للوثائق الرسمية والدبلومات والوكالات مع خدمات النوتري والأبوستيل.",
+      "address_details": "Üçgen Mah. Abdi İpekçi Cad. No:13, Muratpaşa",
+      "website": "https://puratercume.com/",
+      "email": "info@puratercume.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Pura+Tercume+Muratpasa+Antalya",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://puratercume.com/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "الموقع الرسمي يخصص خدمة للترجمة العربية ويعرض العنوان والهاتف وواتساب."
+        },
+        {
+          "type": "official_website",
+          "url": "https://puratercume.com/iletisim/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة الاتصال الرسمية تؤكد بيانات التواصل."
+        }
+      ]
+    },
+    {
+      "name": "TercümePro",
+      "profession": "ترجمة عربية محلفة ونوترية",
+      "category": "مترجم",
+      "city": "بورصة",
+      "district": null,
+      "phone": "+90 535 478 88 59",
+      "whatsapp": "+90 535 478 88 59",
+      "description": "ترجمة عربية وتركية محلفة ووثائق رسمية مع تسليم إلكتروني وخدمة داخل بورصة.",
+      "address_details": null,
+      "website": "https://tercumepro.com.tr/",
+      "email": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=TercumePro+Bursa",
+      "languages": ["العربية", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://tercumepro.com.tr/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر الترجمة العربية المحلفة وخدمة بورصة ورقم واتساب."
+        }
+      ]
+    },
+    {
+      "name": "Aden Dental Ankara",
+      "profession": "عيادة أسنان بدعم لغوي عربي",
+      "category": "طب أسنان",
+      "city": "أنقرة",
+      "district": "تشوكورأمبار",
+      "phone": "+90 537 265 07 07",
+      "whatsapp": "+90 537 265 07 07",
+      "description": "عيادة أسنان في تشوكورأمبار تقدم علاجات شاملة وتذكر دعماً لغوياً بالعربية.",
+      "address_details": "Kızılırmak Mah. 1445 Sk. No:2/9 Paragon Tower, Çukurambar, Çankaya",
+      "website": "https://adenankara.com.tr/ar",
+      "email": "info@adenankara.com.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Aden+Dental+Cukurambar+Ankara",
+      "languages": ["العربية", "التركية", "الإنجليزية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://adenankara.com.tr/ar/iletisim",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة الاتصال العربية تؤكد دعم العربية والهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Ankyra Dental",
+      "profession": "مجمع صحة فم وأسنان بواجهة عربية",
+      "category": "طب أسنان",
+      "city": "أنقرة",
+      "district": "غازي عثمان باشا",
+      "phone": "+90 312 446 60 65",
+      "whatsapp": null,
+      "description": "مجمع لصحة الفم والأسنان في أنقرة يقدم الزراعة والتقويم وعلاجات الأطفال عبر موقع عربي.",
+      "address_details": "100. Yıl Mah. Reşit Galip Cad. Han Sk. No:32, Gaziosmanpaşa, Çankaya",
+      "website": "https://ankyradental.com/ar/",
+      "email": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Ankyra+Dental+Gaziosmanpasa+Ankara",
+      "languages": ["العربية (محتوى الموقع)", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://ankyradental.com/ar/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "النسخة العربية الرسمية تعرض خدمات العيادة والهاتف والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Adalya Dental Clinic",
+      "profession": "عيادة أسنان بواجهة عربية",
+      "category": "طب أسنان",
+      "city": "أنطاليا",
+      "district": "دوش مالتي",
+      "phone": "+90 501 246 80 80",
+      "whatsapp": "+90 501 246 80 80",
+      "description": "عيادة أسنان في أنطاليا تعرض الزراعة والتجميل وعلاجات الفم عبر موقع عربي.",
+      "address_details": "Bahçeyaka Mah. Atatürk Cad. No:424, Döşemealtı",
+      "website": "https://ar.adalyadentalclinic.com/",
+      "email": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Adalya+Dental+Dosemealti+Antalya",
+      "languages": ["العربية (محتوى الموقع)", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://ar.adalyadentalclinic.com/contact-us/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة الاتصال العربية الرسمية تؤكد الهاتف وواتساب والعنوان."
+        }
+      ]
+    },
+    {
+      "name": "Defne Dental",
+      "profession": "عيادة أسنان بواجهة عربية",
+      "category": "طب أسنان",
+      "city": "أنطاليا",
+      "district": "لارا",
+      "phone": "+90 553 136 60 96",
+      "whatsapp": "+90 553 136 60 96",
+      "description": "عيادة أسنان في لارا تقدم الزراعة والتقويم وطب أسنان الأطفال عبر موقع عربي.",
+      "address_details": "لارا، أنطاليا",
+      "website": "https://www.defnedental.com/ar/",
+      "email": null,
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Defne+Dental+Lara+Antalya",
+      "languages": ["العربية (محتوى الموقع)", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.defnedental.com/ar/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "النسخة العربية الرسمية تعرض خدمات العيادة ورقم واتساب وموقعها في لارا."
+        }
+      ]
+    },
+    {
+      "name": "Antalya Estate",
+      "profession": "وساطة واستشارات عقارية بواجهة عربية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "district": "مراد باشا",
+      "phone": "+90 242 324 80 00",
+      "whatsapp": "+90 507 773 92 92",
+      "description": "شركة عقارية في أنطاليا تعرض خدمات البيع والاستثمار والتواصل عبر موقع عربي.",
+      "address_details": "Çağlayan Mah. 2043 Sk. No:1/4, Muratpaşa",
+      "website": "https://www.antalyaestate.ae/",
+      "email": "info@antalyaestate.net",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Antalya+Estate+Caglayan+Muratpasa",
+      "languages": ["العربية (محتوى الموقع)", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.antalyaestate.ae/contacts",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة الاتصال العربية الرسمية تعرض عنوان المكتب والهاتف والمحمول والبريد."
+        }
+      ]
+    },
+    {
+      "name": "Özdence Real Estate",
+      "profession": "وساطة عقارية بواجهة عربية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "district": "مراد باشا",
+      "phone": "+90 506 043 00 87",
+      "whatsapp": "+90 506 043 00 87",
+      "description": "مكتب عقاري في أنطاليا وألانيا يعرض الشقق والأراضي والفيلات عبر موقع عربي.",
+      "address_details": "Şirinyalı Mah. Lara Cad. No:101/B, Muratpaşa",
+      "website": "https://ozdence.com/ar",
+      "email": "info@ozdence.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Ozdence+Real+Estate+Lara+Antalya",
+      "languages": ["العربية (محتوى الموقع)", "التركية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://ozdence.com/ar/contact",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة الاتصال العربية الرسمية تعرض فرع أنطاليا والهاتف والبريد."
+        }
+      ]
+    },
+    {
+      "name": "Antalya Homes - TEKCE",
+      "profession": "وساطة عقارية بخدمة عربية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "district": "كونيالتي",
+      "phone": "+90 242 324 54 94",
+      "whatsapp": "+90 532 212 45 90",
+      "description": "مكتب عقاري في كونيالتي لديه وكيل يتحدث العربية ويقدم خدمات البيع والاستثمار.",
+      "address_details": "Gürsu Mah. Atatürk Bulvarı No:183, Mustafa Altunbaş İş Merkezi Kat:4 D:8, Konyaaltı",
+      "website": "https://antalyahomes.com/ar/",
+      "email": "info@tekce.com",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Antalya+Homes+Konyaalti",
+      "languages": ["العربية", "التركية", "الإنجليزية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://antalyahomes.com/ar/corporate/contact/antalya-konyaalti",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "صفحة المكتب العربية تنشر العنوان والهاتف وتذكر وكيلاً يتحدث العربية."
+        }
+      ]
+    },
+    {
+      "name": "Alkan Hukuk Bürosu",
+      "profession": "مكتب محاماة بفريق يتحدث العربية",
+      "category": "محامي",
+      "city": "أنطاليا",
+      "district": "كيبيز",
+      "phone": "+90 532 335 54 48",
+      "whatsapp": "+90 532 335 54 48",
+      "description": "مكتب محاماة في أنطاليا يذكر فريقاً يتحدث العربية وخدمات قانون الأجانب والعقارات والعمل.",
+      "address_details": "Emek Mah. Yeşilırmak Cad. Aksu Plaza No:5/4, Kepez",
+      "website": "https://www.ahmetalkan.av.tr/",
+      "email": "info@ahmetalkan.av.tr",
+      "google_maps_url": "https://www.google.com/maps/search/?api=1&query=Alkan+Hukuk+Kepez+Antalya",
+      "languages": ["العربية", "التركية", "الإنجليزية"],
+      "image": null,
+      "sources": [
+        {
+          "type": "official_website",
+          "url": "https://www.ahmetalkan.av.tr/iletisim/",
+          "checked_at": "2026-07-30T00:00:00.000Z",
+          "note": "الموقع الرسمي يذكر فريقاً يتحدث العربية والهاتف وواتساب والعنوان."
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { getSupabaseImageUrl } from '@/lib/supabaseImage';
 
@@ -14,18 +14,19 @@ const GRADS = [
 function gradFor(s: string) { let h = 0; for (const c of s || '?') h = (h * 31 + c.charCodeAt(0)) >>> 0; return GRADS[h % GRADS.length]; }
 function initials(name: string) { return (name || '؟').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join(''); }
 
-export default function ProviderAvatar({ name, image, className }: { name: string; image: string | null; className?: string }) {
-    const optimizedSource = useMemo(
-        () => image ? getSupabaseImageUrl(image, { width: 128, height: 128 }) : null,
-        [image],
-    );
+function ProviderAvatarImage({
+    name,
+    image,
+    optimizedSource,
+    className,
+}: {
+    name: string;
+    image: string;
+    optimizedSource: string;
+    className?: string;
+}) {
     const [source, setSource] = useState<string | null>(optimizedSource);
     const [err, setErr] = useState(false);
-
-    useEffect(() => {
-        setSource(optimizedSource);
-        setErr(false);
-    }, [optimizedSource]);
 
     const showImage = source && !err;
     return (
@@ -52,5 +53,32 @@ export default function ProviderAvatar({ name, image, className }: { name: strin
                 </div>
             )}
         </div>
+    );
+}
+
+export default function ProviderAvatar({ name, image, className }: { name: string; image: string | null; className?: string }) {
+    const optimizedSource = useMemo(
+        () => image ? getSupabaseImageUrl(image, { width: 128, height: 128 }) : null,
+        [image],
+    );
+
+    if (!image || !optimizedSource) {
+        return (
+            <div className={`relative overflow-hidden shadow-sm ${className || 'w-14 h-14 rounded-2xl'}`}>
+                <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(name)} text-white font-black`}>
+                    {initials(name)}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <ProviderAvatarImage
+            key={optimizedSource}
+            name={name}
+            image={image}
+            optimizedSource={optimizedSource}
+            className={className}
+        />
     );
 }

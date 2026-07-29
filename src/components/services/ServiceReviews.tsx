@@ -58,13 +58,16 @@ function addToStorageSet(key: string, value: string) {
 
 export default function ServiceReviews({ serviceId, serviceName = "الخدمة" }: ReviewsProps) {
     const [reviews, setReviews] = useState<ReviewItem[]>([]);
-    const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGuest, setIsGuest] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
     const [alreadyReviewed, setAlreadyReviewed] = useState(false);
-    const [votedIds, setVotedIds] = useState<Set<string>>(new Set());
-    const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
+    const [votedIds, setVotedIds] = useState<Set<string>>(
+        () => getStorageSet(HELPFUL_STORAGE_KEY),
+    );
+    const [reportedIds, setReportedIds] = useState<Set<string>>(
+        () => getStorageSet(REPORTED_STORAGE_KEY),
+    );
     const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -82,18 +85,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
         });
     }, [serviceId]);
 
-    // Load localStorage tracking
-    useEffect(() => {
-        setVotedIds(getStorageSet(HELPFUL_STORAGE_KEY));
-        setReportedIds(getStorageSet(REPORTED_STORAGE_KEY));
-    }, []);
-
-    // Fetch reviews
-    useEffect(() => {
-        fetchReviews();
-    }, [serviceId]);
-
-    async function fetchReviews() {
+    const fetchReviews = useCallback(async () => {
         if (!supabase) return;
 
         const { data } = await supabase
@@ -112,8 +104,13 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
             .order('created_at', { ascending: false });
 
         if (data) setReviews(data);
-        setLoading(false);
-    }
+    }, [serviceId]);
+
+    // Fetch reviews
+    useEffect(() => {
+        const timer = window.setTimeout(() => void fetchReviews(), 0);
+        return () => window.clearTimeout(timer);
+    }, [fetchReviews]);
 
     const handleHelpful = useCallback(async (reviewId: string) => {
         // Already voted — do nothing

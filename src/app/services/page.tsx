@@ -3,6 +3,11 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import logger from '@/lib/logger';
+import {
+    DIRECTORY_PAGE_SIZE,
+    type DirectoryProvider,
+    buildDirectoryFacets,
+} from '@/lib/serviceDirectory';
 
 // Refresh the directory's structured data periodically so new/updated
 // providers enter Google's index without a redeploy.
@@ -22,72 +27,92 @@ export const metadata: Metadata = {
     },
 };
 
-interface DirRow {
-    id: string;
-    slug: string | null;
-    name: string;
-    profession: string | null;
-    category: string | null;
-    description: string | null;
-    city: string | null;
-    image: string | null;
-    phone: string | null;
-    is_verified: boolean | null;
-    is_featured: boolean | null;
-    rating: number | null;
-    review_count: number | null;
-    status: string | null;
-    created_at: string | null;
-}
-
 /**
- * Fetch the FULL approved directory once, server-side, cached by ISR
- * (revalidate=600). It powers both the JSON-LD (top slice) AND seeds
- * <ServicesClient> so the browser never re-pulls the whole service_providers
- * table on every visit + filter change (egress saver). The list is small
- * (~cap 500), so shipping it all in the first HTML is cheap and also makes
- * every provider card crawlable instead of hidden behind a client spinner.
+ * Fetch only the first visible page plus lightweight facets. Shipping every
+ * provider in the HTML worked for 57 rows, but becomes a multi-megabyte page
+ * at 500-1000. Category/city landing pages remain crawlable, while subsequent
+ * result pages are fetched through /api/services/directory.
  */
-async function getDirectory(): Promise<{ rows: DirRow[]; total: number }> {
+async function getDirectory() {
     try {
-        if (!supabase) return { rows: [], total: 0 };
-        const BASE = 'id, slug, name, profession, category, description, city, image, phone, is_verified, rating, review_count, status, created_at';
-        // Prefer featured-first ordering. If the `is_featured` column doesn't
-        // exist yet (monetization migration not run), the query errors — fall
-        // back to the base query so /services never breaks. Once the migration
-        // is applied, the featured path just starts working with no redeploy.
-        let res: { data: unknown; count: number | null; error: unknown } = await supabase
+        if (!supabase) {
+            return {
+                rows: [] as DirectoryProvider[],
+                total: 0,
+                verifiedCount: 0,
+                cityCounts: {},
+                categoryCounts: {},
+            };
+        }
+        const BASE = 'id, slug, name, profession, category, description, city, image, phone, whatsapp, is_verified, rating, review_count, status, created_at';
+        let firstPage: { data: unknown; count: number | null; error: unknown } = await supabase
             .from('service_providers')
             .select(`${BASE}, is_featured`, { count: 'exact' })
             .eq('status', 'approved')
             .order('is_featured', { ascending: false })
             .order('is_verified', { ascending: false })
-            .order('rating', { ascending: false })
-            .limit(500);
-        if (res.error) {
-            res = await supabase
+            .order('rating', { ascending: false, nullsFirst: false })
+            .order('created_at', { ascending: false })
+            .limit(DIRECTORY_PAGE_SIZE);
+        if (firstPage.error) {
+            firstPage = await supabase
                 .from('service_providers')
                 .select(BASE, { count: 'exact' })
                 .eq('status', 'approved')
                 .order('is_verified', { ascending: false })
-                .order('rating', { ascending: false })
-                .limit(500);
+                .order('rating', { ascending: false, nullsFirst: false })
+                .order('created_at', { ascending: false })
+                .limit(DIRECTORY_PAGE_SIZE);
         }
-        const rows = (res.data as DirRow[]) || [];
-        return { rows, total: res.count || rows.length };
+
+        const [facetResult, verifiedResult] = await Promise.all([
+            supabase
+                .from('service_providers')
+                .select('city, category')
+                .eq('status', 'approved')
+                .limit(2000),
+            supabase
+                .from('service_providers')
+                .select('id', { count: 'exact', head: true })
+                .eq('status', 'approved')
+                .eq('is_verified', true),
+        ]);
+
+        const rows = (firstPage.data as DirectoryProvider[]) || [];
+        const facets = buildDirectoryFacets(
+            (facetResult.data as Array<{ city: string | null; category: string | null }>) || [],
+        );
+        return {
+            rows,
+            total: firstPage.count || rows.length,
+            verifiedCount: verifiedResult.count || 0,
+            ...facets,
+        };
     } catch (e) {
         logger.error('services directory fetch failed:', e);
-        return { rows: [], total: 0 };
+        return {
+            rows: [] as DirectoryProvider[],
+            total: 0,
+            verifiedCount: 0,
+            cityCounts: {},
+            categoryCounts: {},
+        };
     }
 }
 
 export default async function ServicesPage() {
-    const { rows, total } = await getDirectory();
+    const {
+        rows,
+        total,
+        verifiedCount,
+        cityCounts,
+        categoryCounts,
+    } = await getDirectory();
     const base = SITE_CONFIG.siteUrl;
 
-    // JSON-LD lists only the top slice (already ordered verified → top-rated)
-    // to keep the ItemList compact; the client gets the full set.
-    const jsonLdRows = rows.slice(0, 40);
+    // The first page is enough for a compact ItemList. Category and city
+    // landing pages expose the rest of the directory to crawlers.
+    const jsonLdRows = rows;
 
     // schema.org: a CollectionPage whose mainEntity is an ItemList of the
     // listed professionals, each modelled as a LocalBusiness. This tells
@@ -153,7 +178,13 @@ export default async function ServicesPage() {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
             )}
-            <ServicesClient initialServices={rows} />
+            <ServicesClient
+                initialServices={rows}
+                initialTotal={total}
+                verifiedCount={verifiedCount}
+                cityCounts={cityCounts}
+                categoryCounts={categoryCounts}
+            />
         </>
     );
 }

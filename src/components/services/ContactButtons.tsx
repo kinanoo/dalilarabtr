@@ -36,21 +36,23 @@ function trackContact(p: ProviderCardData, channel: 'whatsapp' | 'call') {
 }
 
 const waUrl = (p: ProviderCardData) => {
-    if (!p.phone) return '';
+    const whatsapp = p.whatsapp || p.phone;
+    if (!whatsapp) return '';
     // Include the provider's own listing link so they instantly see the client
     // came from دليل العرب + exactly which service page — builds trust and lets
     // the owner attribute the lead to the site.
     const listing = `${SITE_CONFIG.siteUrl}/services/${p.slug || p.id}`;
     const service = p.profession || p.name || 'خدمتك';
     const msg = `مرحباً، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${service}" على هذا الرابط:\n${listing}`;
-    return `https://wa.me/${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+    return `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
 };
 
 // Returns a fragment (WhatsApp + call) so the parent card/row controls layout.
 export default function ContactButtons({ p, compact = false }: { p: ProviderCardData; compact?: boolean }) {
+    const hasWhatsApp = Boolean(p.whatsapp || p.phone);
     return (
         <>
-            {p.phone && (
+            {hasWhatsApp && (
             <a
                 href={waUrl(p)}
                 target="_blank"

@@ -1,127 +1,115 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Sparkles, Info } from 'lucide-react';
-import Image from 'next/image';
-import { supabase } from '@/lib/supabaseClient';
-import { canonicalCity } from '@/lib/turkishCities';
-import { SERVICE_CATEGORIES, CATEGORY_VARIANTS } from '@/lib/serviceCategories';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Info } from 'lucide-react';
+import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
-import ProviderAvatar from '@/components/services/ProviderAvatar';
 import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
-import logger from '@/lib/logger';
-import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
+import {
+  SERVICE_VERIFICATION_EXPLANATION,
+  SERVICE_VERIFICATION_LABEL,
+} from '@/lib/serviceVerification';
+import {
+  DIRECTORY_PAGE_SIZE,
+  type DirectoryProvider,
+} from '@/lib/serviceDirectory';
 
-export default function ServicesClient({ initialServices = [] }: { initialServices?: any[] }) {
-  // The server (page.tsx) fetches the FULL approved directory once, ISR-cached,
-  // and passes it here as `initialServices`. When present we never touch
-  // Supabase from the browser: filtering, search, city + sort all run in memory
-  // over this seed (the list is small). This kills the per-visit + per-filter
-  // egress that used to re-pull the whole service_providers table from every
-  // client, and puts every provider card in the server HTML (crawlable).
-  const hasSeed = initialServices.length > 0;
+interface ServicesClientProps {
+  initialServices?: DirectoryProvider[];
+  initialTotal?: number;
+  verifiedCount?: number;
+  cityCounts?: Record<string, number>;
+  categoryCounts?: Record<string, number>;
+}
 
-  // Normalize the seed's city spellings once (Istanbul/اسطنبول/إسطنبول → one).
-  const seed = useMemo(
-    () => initialServices.map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city })),
-    [initialServices]
-  );
-
-  // --- State ---
-  // `rawData` = the full approved list (unfiltered). Seeded from the server;
-  // only fetched client-side as a FALLBACK when the server seed is empty
-  // (e.g. the build-time fetch failed) so the page still works standalone.
-  const [rawData, setRawData] = useState<any[]>(seed);
-  const [loading, setLoading] = useState(!hasSeed);
+export default function ServicesClient({
+  initialServices = [],
+  initialTotal = 0,
+  verifiedCount = 0,
+  cityCounts = {},
+  categoryCounts = {},
+}: ServicesClientProps) {
+  const [services, setServices] = useState<DirectoryProvider[]>(initialServices);
+  const [resultTotal, setResultTotal] = useState(initialTotal);
+  const [loading, setLoading] = useState(initialServices.length === 0);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeCity, setActiveCity] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [page, setPage] = useState(1);
-  const PER_PAGE = 15;
+  const skippedInitialRequest = useRef(false);
+  const availableCities = Object.keys(cityCounts);
+  const totalCount = initialTotal;
 
-  // --- Category Mapping ---
-  // Canonical Arabic category → every DB spelling it might hold, derived from
-  // the shared taxonomy (src/lib/serviceCategories.ts) so this filter, the
-  // landing pages, and the sitemap never drift. Module constant = stable ref.
-  const CATEGORY_MAPPING = CATEGORY_VARIANTS;
-
-  // --- Fallback fetch (only when the server seed is empty) ---
-  // Runs at most once. With a healthy seed this never touches the network.
   useEffect(() => {
-    if (hasSeed || !supabase) { setLoading(false); return; }
-    let alive = true;
+    const timer = window.setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch only the requested result page. The unfiltered first page is already
+  // in the server HTML, so initial paint needs no client round-trip.
+  useEffect(() => {
+    const isInitialView =
+      page === 1 &&
+      activeCategory === 'all' &&
+      activeCity === 'all' &&
+      debouncedSearch === '' &&
+      sortBy === 'recommended';
+
+    if (isInitialView && initialServices.length > 0 && !skippedInitialRequest.current) {
+      skippedInitialRequest.current = true;
+      return;
+    }
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(DIRECTORY_PAGE_SIZE),
+      sort: sortBy,
+    });
+    if (activeCategory !== 'all') params.set('category', activeCategory);
+    if (activeCity !== 'all') params.set('city', activeCity);
+    if (debouncedSearch) params.set('q', debouncedSearch);
+
     setLoading(true);
-    (async () => {
-      const BASE = 'id, name, profession, category, description, city, phone, image, is_verified, rating, review_count, status, slug, created_at';
-      // Featured-first if the column exists; fall back to base if the
-      // monetization migration hasn't been run yet (so the list never breaks).
-      let res: { data: unknown; error: any } = await supabase!
-        .from('service_providers')
-        .select(`${BASE}, is_featured`)
-        .eq('status', 'approved')
-        .order('is_featured', { ascending: false })
-        .order('is_verified', { ascending: false })
-        .order('rating', { ascending: false })
-        .limit(500);
-      if (res.error) {
-        res = await supabase!
-          .from('service_providers')
-          .select(BASE)
-          .eq('status', 'approved')
-          .order('is_verified', { ascending: false })
-          .order('rating', { ascending: false })
-          .limit(500);
-      }
-      if (!alive) return;
-      if (res.error) { logger.error('Supabase Error:', res.error); setErrorMsg(res.error.message + ' (' + res.error.code + ')'); }
-      setRawData(((res.data as any[]) || []).map((d: any) => ({ ...d, city: canonicalCity(d.city) || d.city })));
-      setLoading(false);
-    })();
-    return () => { alive = false; };
-  }, [hasSeed]);
+    setErrorMsg(null);
+    fetch(`/api/services/directory?${params.toString()}`, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || 'تعذّر تحميل الخدمات');
+        setServices(Array.isArray(payload.rows) ? payload.rows : []);
+        setResultTotal(Number(payload.total) || 0);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setServices([]);
+        setResultTotal(0);
+        setErrorMsg(error instanceof Error ? error.message : 'تعذّر تحميل الخدمات');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
 
-  // Cities + per-city counts + extra (dynamic) categories — derived from the
-  // FULL unfiltered snapshot so counts never undercount.
-  const { availableCities, cityCounts, totalCount, extraCategories } = useMemo(() => {
-    const cities = Array.from(new Set(rawData.map((d: any) => d.city).filter(Boolean))) as string[];
-    const counts: Record<string, number> = {};
-    rawData.forEach((d: any) => { if (d.city) counts[d.city] = (counts[d.city] || 0) + 1; });
-    const knownValues = new Set(Object.values(CATEGORY_MAPPING).flat().map(v => v.toLowerCase()));
-    const dbCategories = Array.from(new Set(rawData.map((d: any) => d.category).filter(Boolean))) as string[];
-    const newCats = dbCategories.filter(c => !knownValues.has(c.toLowerCase()));
-    return { availableCities: cities.sort(), cityCounts: counts, totalCount: rawData.length, extraCategories: newCats.sort() };
-  }, [rawData, CATEGORY_MAPPING]);
-
-  // The displayed list — category + search + city applied client-side over the
-  // full seed (mirrors the old server query: category = exact `.in()` variants,
-  // search = case-insensitive substring across the same 4 fields, city = exact).
-  const services = useMemo(() => {
-    let list = rawData;
-    if (activeCategory !== 'all') {
-      const valid = new Set(CATEGORY_MAPPING[activeCategory] || [activeCategory]);
-      list = list.filter((d: any) => d.category && valid.has(d.category));
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      list = list.filter((d: any) =>
-        [d.name, d.description, d.profession, d.category].some(
-          (f) => f && String(f).toLowerCase().includes(q)
-        )
-      );
-    }
-    if (activeCity !== 'all') {
-      list = list.filter((d: any) => d.city === activeCity);
-    }
-    return list;
-  }, [rawData, activeCategory, searchQuery, activeCity, CATEGORY_MAPPING]);
+    return () => controller.abort();
+  }, [
+    activeCategory,
+    activeCity,
+    debouncedSearch,
+    initialServices,
+    initialTotal,
+    page,
+    sortBy,
+  ]);
 
   // /services builds its list client-side, so on a hard refresh the browser's
   // scroll restoration overshoots the (briefly short) page and jumps to the
@@ -134,51 +122,32 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
     return () => { if (h && 'scrollRestoration' in h) h.scrollRestoration = 'auto'; };
   }, []);
 
-  // Newest providers for the "أضيفوا حديثاً" discovery strip (filter-independent) —
-  // derived from the same seed, newest first. No extra Supabase round-trip.
-  const recent = useMemo(
-    () => [...rawData]
-      .sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
-      .slice(0, 10),
-    [rawData]
-  );
-
   // --- Filter state helpers ---
-  const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery !== '';
+  const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery.trim() !== '';
   const clearFilters = () => {
     setActiveCategory('all');
     setActiveCity('all');
     setSearchQuery('');
+    setPage(1);
   };
 
-  // Grid/list preference (persisted) + reset to page 1 when results change.
+  // Grid/list preference is cosmetic, so it is restored after the first paint.
   useEffect(() => {
-    const saved = localStorage.getItem('services_view');
-    if (saved === 'list' || saved === 'grid') setView(saved);
+    const frame = window.requestAnimationFrame(() => {
+      const saved = localStorage.getItem('services_view');
+      if (saved === 'list' || saved === 'grid') setView(saved);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
   const changeView = (v: 'grid' | 'list') => { setView(v); localStorage.setItem('services_view', v); };
-  useEffect(() => { setPage(1); }, [activeCategory, activeCity, searchQuery, sortBy]);
 
-  // Sort (memoised; 'recommended' keeps the query order = verified first, then
-  // top-rated). Then paginate so a 50-in-a-city list is a few pages.
-  const sorted = useMemo(() => {
-    const arr = [...services];
-    if (sortBy === 'rating') arr.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
-    else if (sortBy === 'newest') arr.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-    else if (sortBy === 'name') arr.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ar'));
-    return arr;
-  }, [services, sortBy]);
-
-  // Trust strip stats (social proof) from the current result set.
-  const stats = useMemo(() => ({
-    total: services.length,
-    verified: services.filter((s: { is_verified?: boolean }) => s.is_verified).length,
-    cities: new Set(services.map((s: { city?: string }) => s.city).filter(Boolean)).size,
-  }), [services]);
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
+  const stats = {
+    total: totalCount,
+    verified: verifiedCount,
+    cities: availableCities.length,
+  };
+  const totalPages = Math.max(1, Math.ceil(resultTotal / DIRECTORY_PAGE_SIZE));
   const pageClamped = Math.min(page, totalPages);
-  const paged = sorted.slice((pageClamped - 1) * PER_PAGE, pageClamped * PER_PAGE);
   const goPage = (pp: number) => {
     setPage(Math.min(Math.max(1, pp), totalPages));
     if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -188,19 +157,13 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
       {/* Hero / Search Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 dark:text-white pb-8 pt-6 lg:pt-8">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-emerald-50 via-white to-sky-50 text-slate-900 dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:text-white pb-6 pt-5 lg:pb-8 lg:pt-8">
 
         {/* Official colour stripe — a hint of government red */}
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
 
-        {/* Abstract Background Shapes */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20 dark:opacity-10 pointer-events-none">
-          <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-emerald-500 blur-[120px]" />
-          <div className="absolute top-[40%] -left-[10%] w-[400px] h-[400px] rounded-full bg-blue-600 blur-[100px]" />
-        </div>
-
         <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
-          <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100 font-cairo">
+          <h1 className="text-[30px] sm:text-4xl md:text-5xl font-black mb-3 md:mb-4 leading-tight animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100 font-cairo">
             دليل <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">المهن والخدمات العربية</span> في تركيا
           </h1>
 
@@ -217,7 +180,10 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
               type="text"
               placeholder="عن ماذا تبحث؟ (مثال: طبيب أسنان...)"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
               className="w-full h-14 pr-12 pl-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 font-bold text-base shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all border-none"
             />
           </div>
@@ -231,7 +197,10 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
             <div className="max-w-2xl mx-auto">
               <CityFilter
                 value={activeCity}
-                onChange={setActiveCity}
+                onChange={(city) => {
+                  setActiveCity(city);
+                  setPage(1);
+                }}
                 cities={availableCities}
                 counts={cityCounts}
                 totalCount={totalCount}
@@ -251,17 +220,24 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
                 // Quick-filter chips = the most-searched professions; the full
                 // taxonomy is browsable in the "كل المهن" grid below.
                 ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
-                ...extraCategories.map(c => ({ id: c, label: c })),
               ].map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
+                  onClick={() => {
+                    setActiveCategory(cat.id);
+                    setPage(1);
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${activeCategory === cat.id
                     ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white'
                     : 'bg-white/70 text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700'
                     }`}
                 >
-                  {cat.label}
+                  <span>{cat.label}</span>
+                  {cat.id !== 'all' && categoryCounts[cat.id] > 0 && (
+                    <span className="mr-1 tabular-nums opacity-70">
+                      {categoryCounts[cat.id]}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -286,52 +262,20 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
         </div>
       )}
 
-      {/* CTA banner */}
-      <AddServiceBanner />
-
-      {/* Recently added — discovery strip (hidden while filtering) */}
-      {!hasActiveFilters && recent.length > 0 && (
-        <section className="max-w-screen-2xl mx-auto px-4 pt-8 w-full">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles size={16} className="text-amber-500" />
-            <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">أضيفوا حديثاً</h2>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {recent.map((r) => (
-              <Link
-                key={r.id}
-                href={`/services/${r.slug || r.id}`}
-                className="shrink-0 w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all flex flex-col items-center text-center gap-2"
-              >
-                <div className="relative">
-                  <ProviderAvatar name={r.name} image={r.image} className="w-12 h-12 rounded-xl" />
-                  {r.is_verified && (
-                    <span className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm" title={SERVICE_VERIFICATION_EXPLANATION} aria-label={`${SERVICE_VERIFICATION_LABEL}: ${SERVICE_VERIFICATION_EXPLANATION}`}>
-                      <BadgeCheck size={13} className="text-blue-500" aria-hidden="true" />
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0 w-full">
-                  <p className="text-xs font-black text-slate-900 dark:text-slate-100 line-clamp-1">{r.name}</p>
-                  <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 line-clamp-1">{r.profession}</p>
-                </div>
-                <span className="text-[9px] font-black text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border border-amber-200/60 dark:border-amber-800/40 px-2 py-0.5 rounded-full uppercase tracking-wide">جديد</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Results */}
-      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-12 w-full scroll-mt-4">
+      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-8 md:py-10 w-full scroll-mt-4">
 
         {/* Results count + view toggle + clear filters */}
         {!loading && (
           <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
             <div className="flex items-center gap-3 flex-wrap">
               <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                {services.length > 0 ? (
-                  <>عرض <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-black">{services.length}</span> {hasActiveFilters ? 'نتيجة مطابقة' : 'مهنيّ وخدمة'}</>
+                {resultTotal > 0 ? (
+                  <>
+                    عرض <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-black">{services.length}</span>
+                    {' '}من <span className="tabular-nums font-black">{resultTotal}</span>
+                    {' '}{hasActiveFilters ? 'نتيجة مطابقة' : 'مهنيّ وخدمة'}
+                  </>
                 ) : 'لا نتائج'}
               </p>
               {hasActiveFilters && (
@@ -347,7 +291,10 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
               <div className="flex items-center gap-2">
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  onChange={(e) => {
+                    setSortBy(e.target.value as typeof sortBy);
+                    setPage(1);
+                  }}
                   aria-label="ترتيب النتائج"
                   className="text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
@@ -407,13 +354,13 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
           <>
             {view === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {paged.map((provider) => (
+                {services.map((provider) => (
                   <ProviderCard key={provider.id} p={provider} />
                 ))}
               </div>
             ) : (
               <div className="flex flex-col gap-3 max-w-4xl mx-auto">
-                {paged.map((provider) => (
+                {services.map((provider) => (
                   <ProviderRow key={provider.id} p={provider} />
                 ))}
               </div>
@@ -459,6 +406,8 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
         )}
       </section>
 
+      <AddServiceBanner />
+
       {/* Browse every profession — crawlable links to each landing page (each
           carries its own guide), and a full directory for users. Rendered in
           the server HTML so Google discovers all category pages from /services. */}
@@ -490,15 +439,8 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
       </section>
 
       {/* Bottom CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-900 dark:bg-none dark:text-white py-16 text-center shadow-2xl">
+      <section className="relative overflow-hidden border-t border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-sky-50 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:bg-none dark:text-white py-16 text-center">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
-        {/* Background Decor */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20 pointer-events-none">
-          <div className="absolute top-[-50%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500 blur-[100px] mix-blend-screen" />
-          <div className="absolute bottom-[-50%] left-[-10%] w-[400px] h-[400px] rounded-full bg-blue-600 blur-[120px] mix-blend-screen" />
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        </div>
-
         <div className="container mx-auto px-4 relative z-10 max-w-2xl">
           <h2 className="text-2xl md:text-3xl font-black mb-6 leading-tight font-cairo text-slate-900 dark:text-white">
             هل تقدم خدمة وتريد <span className="text-emerald-600 dark:text-emerald-400">الوصول لآلاف العملاء؟</span>
@@ -516,26 +458,6 @@ export default function ServicesClient({ initialServices = [] }: { initialServic
         </div>
       </section>
 
-      {/* Image Modal */}
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-in fade-in"
-          onClick={() => setPreviewImage(null)}
-        >
-          <button onClick={() => setPreviewImage(null)} aria-label="إغلاق المعاينة" className="absolute top-4 right-4 text-white"><X size={32} /></button>
-          <div className="relative max-w-full max-h-[90vh] w-auto h-auto">
-            <Image
-              src={previewImage}
-              alt="Preview"
-              width={1200}
-              height={800}
-              className="rounded-xl object-contain"
-              onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: '100%', maxHeight: '90vh', width: 'auto', height: 'auto' }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

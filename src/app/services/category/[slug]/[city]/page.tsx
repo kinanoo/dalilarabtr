@@ -22,7 +22,7 @@ async function fetchCategoryProviders(cat: ServiceCategory): Promise<Row[]> {
         if (!supabase) return [];
         const { data } = await supabase
             .from('service_providers')
-            .select('id, slug, name, profession, category, description, city, phone, image, is_verified, rating, review_count')
+            .select('id, slug, name, profession, category, description, city, phone, whatsapp, image, is_verified, rating, review_count')
             .eq('status', 'approved')
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
