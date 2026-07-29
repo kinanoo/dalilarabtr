@@ -9,7 +9,7 @@
 // ============================================================================
 
 import { useState } from 'react';
-import { Copy, Check, MapPin, Phone, Clock, ShieldCheck } from 'lucide-react';
+import { Copy, Check, MapPin, Phone, Clock, ShieldCheck, AlertTriangle } from 'lucide-react';
 import type { PlaceContact } from '@/lib/officialPlaces';
 
 /** 2026-07-26 → 26/07/2026 (no Date parsing: the value is already ISO). */
@@ -93,6 +93,16 @@ export default function PlaceAddressCard({
                     </p>
                 )}
             </div>
+
+            {/* A caveat about the post itself (services suspended, etc.) sits
+                above the freshness stamp — it changes whether the trip is worth
+                making at all. */}
+            {contact.note && (
+                <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-3">
+                    <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">{contact.note}</p>
+                </div>
+            )}
 
             {/* Freshness, stated rather than implied. */}
             <p className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-start gap-2 text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">

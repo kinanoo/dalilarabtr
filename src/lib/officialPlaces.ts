@@ -479,11 +479,25 @@ export interface PlaceContact {
     verifiedOn: string;
     /** Where it was checked — a domain or 'cross-checked directories'. */
     source: string;
+    /**
+     * A caveat the visitor needs before they travel — e.g. sources reporting
+     * that consular services at this post are suspended or reduced. Rendered as
+     * a warning, not hidden: an address that is right about the building but
+     * wrong about it being open still wastes the trip.
+     */
+    note?: string;
 }
 
 /** One consulate of one country in one city. */
 interface ConsulatePost {
     city: string;
+    /**
+     * Official Turkish name, when it is not the default
+     * «<Country> Başkonsolosluğu». Germany's Antalya post, for instance, is a
+     * plain `Konsolosluk` with a passport desk but no visa section — calling it
+     * a Başkonsolosluk would send visa applicants to the wrong city.
+     */
+    titleTr?: string;
     /**
      * Honorary consulate (Fahri Konsolosluk). This matters a lot in practice:
      * an honorary consul cannot issue passports or legalise documents, so
@@ -527,7 +541,8 @@ const DIRS = 'مقارنة أدلة القنصليات التركية';
 const ARAB_MISSIONS: MissionCountry[] = [
     {
         id: 'syria', countryAr: 'سوريا', adjAr: 'السورية', tr: 'Suriye', flag: '🇸🇾',
-        embassy: true, aliases: ['سوري', 'syrian', 'suriye konsoloslugu'],
+        embassy: true,
+        embassyContact: { address: 'Sedat Simavi Sok. No: 40, 06550 Çankaya, Ankara', phone: '0312 440 96 57', hours: 'الاثنين–الجمعة 08:30–15:00', verifiedOn: V, source: DIRS, note: 'بعض المصادر تشير إلى تعليق أو تقليص الخدمات القنصلية في هذا المقر — اتصل قبل التوجّه أو استخدم البحث الحيّ للتأكد.' }, aliases: ['سوري', 'syrian', 'suriye konsoloslugu'],
         consulates: [
             {
                 city: 'istanbul',
@@ -551,7 +566,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'egypt', countryAr: 'مصر', adjAr: 'المصرية', tr: 'Mısır', flag: '🇪🇬',
-        embassy: true, aliases: ['مصري', 'egypt', 'egyptian', 'misir'],
+        embassy: true,
+        embassyContact: { address: 'Atatürk Bulvarı No: 26, Kavaklıdere, Çankaya, Ankara', phone: '0312 426 10 26', hours: 'الاثنين–الجمعة 09:00–12:00 و14:00–17:00', verifiedOn: V, source: DIRS }, aliases: ['مصري', 'egypt', 'egyptian', 'misir'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -564,7 +580,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'saudi', countryAr: 'السعودية', adjAr: 'السعودية', tr: 'Suudi Arabistan', flag: '🇸🇦',
-        embassy: true, aliases: ['سعودي', 'saudi', 'المملكة العربية السعودية', 'suudi'],
+        embassy: true,
+        embassyContact: { address: 'Gaziosmanpaşa Mah., Turan Emeksiz Sok. No: 6, 06700 Çankaya, Ankara', phone: '0312 468 55 40', hours: 'الاثنين–الجمعة 09:00–15:00', verifiedOn: V, source: 'mofa.gov.sa' }, aliases: ['سعودي', 'saudi', 'المملكة العربية السعودية', 'suudi'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -577,7 +594,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'iraq', countryAr: 'العراق', adjAr: 'العراقية', tr: 'Irak', flag: '🇮🇶',
-        embassy: true, aliases: ['عراقي', 'iraq', 'iraqi'],
+        embassy: true,
+        embassyContact: { address: 'Turan Emeksiz Sok. No: 11, Gaziosmanpaşa, Çankaya, Ankara', phone: '0312 468 74 21', hours: 'الاثنين–الجمعة 09:00–15:00', verifiedOn: V, source: DIRS }, aliases: ['عراقي', 'iraq', 'iraqi'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -590,14 +608,23 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'jordan', countryAr: 'الأردن', adjAr: 'الأردنية', tr: 'Ürdün', flag: '🇯🇴',
-        embassy: true, aliases: ['اردني', 'أردني', 'jordan', 'urdun'],
-        // Honorary post. Directories disagree on its address (Kalıpçı Sok. vs
-        // Büyükdere Cad.), so no address is stored — the live search wins.
-        consulates: [{ city: 'istanbul', honorary: true }],
+        embassy: true,
+        embassyContact: { address: 'Mesnevi, Dede Korkut Sok. No: 18, Çankaya, Ankara', phone: '0312 440 20 54', verifiedOn: V, source: DIRS }, aliases: ['اردني', 'أردني', 'jordan', 'urdun'],
+        // Honorary post. Directories first looked split (Kalıpçı Sok. vs
+        // Büyükdere Cad.); a follow-up check settled it on Büyükdere — the
+        // Kalıpçı listing belongs to a different, older record.
+        consulates: [{
+            city: 'istanbul', honorary: true,
+            contact: {
+                address: 'Büyükdere Cad. No: 155/3, Zincirlikuyu, Şişli, İstanbul',
+                verifiedOn: V, source: DIRS,
+            },
+        }],
     },
     {
         id: 'lebanon', countryAr: 'لبنان', adjAr: 'اللبنانية', tr: 'Lübnan', flag: '🇱🇧',
-        embassy: true, aliases: ['لبناني', 'lebanon', 'lubnan'],
+        embassy: true,
+        embassyContact: { address: 'Kızkulesi Sok. No: 44, Gaziosmanpaşa, Çankaya, Ankara', phone: '0312 446 74 85', hours: 'الاثنين–الجمعة 09:00–15:00', verifiedOn: V, source: DIRS }, aliases: ['لبناني', 'lebanon', 'lubnan'],
         consulates: [{
             city: 'istanbul',
             officialUrl: 'http://istanbul.mfa.gov.lb/turkey/turkish/contact-us',
@@ -611,7 +638,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'palestine', countryAr: 'فلسطين', adjAr: 'الفلسطينية', tr: 'Filistin', flag: '🇵🇸',
-        embassy: true, embassyUrl: 'https://www.embassyofpalestine.org.tr/tr-tr',
+        embassy: true,
+        embassyContact: { address: 'Kılıç Ali Cad. No: 5, Diplomatik Site, 06450 Oran, Çankaya, Ankara', phone: '0312 490 35 46', hours: 'الاثنين–الجمعة 08:30–15:00', verifiedOn: V, source: 'embassyofpalestine.org.tr' }, embassyUrl: 'https://www.embassyofpalestine.org.tr/tr-tr',
         aliases: ['فلسطيني', 'palestine', 'filistin'],
         consulates: [{
             city: 'istanbul',
@@ -626,7 +654,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'yemen', countryAr: 'اليمن', adjAr: 'اليمنية', tr: 'Yemen', flag: '🇾🇪',
-        embassy: true, embassyUrl: 'https://yemenembassytr.org/',
+        embassy: true,
+        embassyContact: { address: 'Fethiye Sok. No: 2, 06700 Gaziosmanpaşa, Çankaya, Ankara', phone: '0312 446 26 37', hours: 'الاثنين–الجمعة 08:30–15:00', verifiedOn: V, source: DIRS }, embassyUrl: 'https://yemenembassytr.org/',
         aliases: ['يمني', 'yemen'],
         consulates: [{
             city: 'istanbul', honorary: true,
@@ -639,7 +668,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'sudan', countryAr: 'السودان', adjAr: 'السودانية', tr: 'Sudan', flag: '🇸🇩',
-        embassy: true, aliases: ['سوداني', 'sudan'],
+        embassy: true,
+        embassyContact: { address: 'Mahatma Gandi Cad. No: 48, Gaziosmanpaşa, Çankaya, Ankara', phone: '0312 446 63 27', verifiedOn: V, source: 'sudanembassy-turkiye.net' }, aliases: ['سوداني', 'sudan'],
         consulates: [{
             city: 'istanbul',
             officialUrl: 'https://sudanist.com/',
@@ -653,7 +683,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'libya', countryAr: 'ليبيا', adjAr: 'الليبية', tr: 'Libya', flag: '🇱🇾',
-        embassy: true, aliases: ['ليبي', 'libya'],
+        embassy: true,
+        embassyContact: { address: 'Cinnah Cad. No: 60, 06690 Çankaya, Ankara', phone: '0312 438 11 10', hours: 'الاثنين–الجمعة 09:00–15:00', verifiedOn: V, source: DIRS }, aliases: ['ليبي', 'libya'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -666,7 +697,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'morocco', countryAr: 'المغرب', adjAr: 'المغربية', tr: 'Fas', flag: '🇲🇦',
-        embassy: true, aliases: ['مغربي', 'morocco', 'fas'],
+        embassy: true,
+        embassyContact: { address: '100. Yıl Mah., Fıskiye Sok. No: 22, Gaziosmanpaşa, Çankaya, Ankara', phone: '0312 437 60 20', hours: 'الاثنين–الجمعة 09:00–16:00', verifiedOn: V, source: 'maec.gov.ma' }, aliases: ['مغربي', 'morocco', 'fas'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -679,7 +711,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'tunisia', countryAr: 'تونس', adjAr: 'التونسية', tr: 'Tunus', flag: '🇹🇳',
-        embassy: true, aliases: ['تونسي', 'tunisia', 'tunus'],
+        embassy: true,
+        embassyContact: { address: 'Ferit Recai Ertuğrul Cad. No: 19, Diplomatik Site, Oran, Çankaya, Ankara', phone: '0312 491 96 35', verifiedOn: V, source: DIRS }, aliases: ['تونسي', 'tunisia', 'tunus'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -691,7 +724,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'algeria', countryAr: 'الجزائر', adjAr: 'الجزائرية', tr: 'Cezayir', flag: '🇩🇿',
-        embassy: true, aliases: ['جزائري', 'algeria', 'cezayir'],
+        embassy: true,
+        embassyContact: { address: 'Şehit Ersan Cad. No: 42, 06680 Çankaya, Ankara', phone: '0312 468 77 19', hours: 'الاثنين–الخميس 09:00–12:00 و13:00–17:00', verifiedOn: V, source: 'embankara.mfa.gov.dz' }, aliases: ['جزائري', 'algeria', 'cezayir'],
         consulates: [{
             city: 'istanbul',
             officialUrl: 'https://cgistanbul.mfa.gov.dz/tr/contact',
@@ -705,7 +739,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'kuwait', countryAr: 'الكويت', adjAr: 'الكويتية', tr: 'Kuveyt', flag: '🇰🇼',
-        embassy: true, embassyUrl: 'http://kuwaitembassy.org.tr/',
+        embassy: true,
+        embassyContact: { address: 'Kazım Özalp, Reşit Galip Cad. No: 110, 06700 Çankaya, Ankara', phone: '0312 445 05 76', hours: 'الاثنين–الجمعة 09:00–16:00', verifiedOn: V, source: 'kuwaitembassy.org.tr' }, embassyUrl: 'http://kuwaitembassy.org.tr/',
         aliases: ['كويتي', 'kuwait', 'kuveyt'],
         consulates: [{
             city: 'istanbul',
@@ -719,7 +754,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'qatar', countryAr: 'قطر', adjAr: 'القطرية', tr: 'Katar', flag: '🇶🇦',
-        embassy: true, aliases: ['قطري', 'qatar', 'katar'],
+        embassy: true,
+        embassyContact: { address: 'Bakü Sok. No: 6, Diplomatik Site, 06450 Oran, Çankaya, Ankara', phone: '0312 490 72 74', hours: 'الاثنين–الجمعة 09:00–15:00', verifiedOn: V, source: DIRS }, aliases: ['قطري', 'qatar', 'katar'],
         consulates: [{
             city: 'istanbul',
             contact: {
@@ -732,7 +768,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'uae', countryAr: 'الإمارات', adjAr: 'الإماراتية', tr: 'Birleşik Arap Emirlikleri', flag: '🇦🇪',
-        embassy: true, aliases: ['اماراتي', 'الامارات', 'uae', 'emirates', 'dubai', 'bae'],
+        embassy: true,
+        embassyContact: { address: 'Turan Güneş Bulvarı, Galip Erdem Cad., 613. Sok. No: 13, Çankaya, Ankara', phone: '0312 490 14 14', verifiedOn: V, source: 'mofa.gov.ae' }, aliases: ['اماراتي', 'الامارات', 'uae', 'emirates', 'dubai', 'bae'],
         consulates: [{
             city: 'istanbul',
             officialUrl: 'https://www.mofa.gov.ae/tr-tr/missions/istanbul',
@@ -746,7 +783,8 @@ const ARAB_MISSIONS: MissionCountry[] = [
     },
     {
         id: 'bahrain', countryAr: 'البحرين', adjAr: 'البحرينية', tr: 'Bahreyn', flag: '🇧🇭',
-        embassy: true, aliases: ['بحريني', 'bahrain', 'bahreyn'],
+        embassy: true,
+        embassyContact: { address: 'İlkbahar Mah., 606. Sok. No: 19, Oran, Çankaya, Ankara', phone: '0312 491 26 55', hours: 'الاثنين–الجمعة 09:00–15:00', verifiedOn: V, source: 'mofa.gov.bh' }, aliases: ['بحريني', 'bahrain', 'bahreyn'],
         consulates: [{
             city: 'istanbul', honorary: true,
             contact: {
@@ -756,10 +794,12 @@ const ARAB_MISSIONS: MissionCountry[] = [
             },
         }],
     },
-    { id: 'oman', countryAr: 'عُمان', adjAr: 'العُمانية', tr: 'Umman', flag: '🇴🇲', embassy: true, consulates: [], aliases: ['عمان', 'سلطنة عمان', 'oman', 'umman'] },
+    { id: 'oman', countryAr: 'عُمان', adjAr: 'العُمانية', tr: 'Umman', flag: '🇴🇲', embassy: true,
+        embassyContact: { address: 'Diplomatik Bölge, Besim Atalay Sok. No: 7, Oran, Çankaya, Ankara', phone: '0312 491 09 40', hours: 'الاثنين–الخميس 09:00–15:00، الجمعة 09:00–14:00', verifiedOn: V, source: 'mofa.gov.om' }, consulates: [], aliases: ['عمان', 'سلطنة عمان', 'oman', 'umman'] },
     {
         id: 'somalia', countryAr: 'الصومال', adjAr: 'الصومالية', tr: 'Somali', flag: '🇸🇴',
-        embassy: true, embassyUrl: 'https://ankara.mfa.gov.so/',
+        embassy: true,
+        embassyContact: { address: 'Kazım Özalp, Reşit Galip Cad. No: 100, 06700 Çankaya, Ankara', phone: '0312 436 40 28', hours: 'الاثنين–الجمعة 09:00–12:00 و13:00–17:00', verifiedOn: V, source: 'ankara.mfa.gov.so' }, embassyUrl: 'https://ankara.mfa.gov.so/',
         aliases: ['صومالي', 'somalia'],
         consulates: [{
             city: 'istanbul', honorary: true,
@@ -771,8 +811,10 @@ const ARAB_MISSIONS: MissionCountry[] = [
             },
         }],
     },
-    { id: 'mauritania', countryAr: 'موريتانيا', adjAr: 'الموريتانية', tr: 'Moritanya', flag: '🇲🇷', embassy: true, consulates: [], aliases: ['موريتاني', 'mauritania', 'moritanya'] },
-    { id: 'djibouti', countryAr: 'جيبوتي', adjAr: 'الجيبوتية', tr: 'Cibuti', flag: '🇩🇯', embassy: true, consulates: [], aliases: ['جيبوتي', 'djibouti', 'cibuti'] },
+    { id: 'mauritania', countryAr: 'موريتانيا', adjAr: 'الموريتانية', tr: 'Moritanya', flag: '🇲🇷', embassy: true,
+        embassyContact: { address: 'Oran Mah., Şemsettin Bayramoğlu Sok. No: 7, Çankaya, Ankara', phone: '0312 491 70 63', hours: 'الاثنين–الجمعة 09:00–12:00 و13:00–15:30', verifiedOn: V, source: DIRS }, consulates: [], aliases: ['موريتاني', 'mauritania', 'moritanya'] },
+    { id: 'djibouti', countryAr: 'جيبوتي', adjAr: 'الجيبوتية', tr: 'Cibuti', flag: '🇩🇯', embassy: true,
+        embassyContact: { address: 'İlkbahar Mah., Galip Erdem Cad., 613. Sok. No: 21, Yıldız, Çankaya, Ankara', phone: '0312 491 95 13', verifiedOn: V, source: 'djiboutiembassy.com.tr' }, consulates: [], aliases: ['جيبوتي', 'djibouti', 'cibuti'] },
 ];
 
 /**
@@ -782,20 +824,20 @@ const ARAB_MISSIONS: MissionCountry[] = [
  * search, which already answers "where is it" correctly.
  */
 const INTL_MISSIONS: MissionCountry[] = [
-    { id: 'usa', countryAr: 'أمريكا', adjAr: 'الأمريكية', tr: 'Amerika Birleşik Devletleri', flag: '🇺🇸', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['امريكا', 'الولايات المتحدة', 'usa', 'us', 'america', 'abd'] },
-    { id: 'uk', countryAr: 'بريطانيا', adjAr: 'البريطانية', tr: 'Birleşik Krallık', flag: '🇬🇧', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['بريطانيا', 'انجلترا', 'المملكة المتحدة', 'uk', 'britain', 'england', 'ingiltere'] },
-    { id: 'germany', countryAr: 'ألمانيا', adjAr: 'الألمانية', tr: 'Almanya', flag: '🇩🇪', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'izmir' }, { city: 'antalya' }], aliases: ['المانيا', 'germany', 'almanya', 'deutschland'] },
-    { id: 'france', countryAr: 'فرنسا', adjAr: 'الفرنسية', tr: 'Fransa', flag: '🇫🇷', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['فرنسا', 'france', 'fransa'] },
-    { id: 'netherlands', countryAr: 'هولندا', adjAr: 'الهولندية', tr: 'Hollanda', flag: '🇳🇱', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['هولندا', 'netherlands', 'holland', 'hollanda'] },
-    { id: 'italy', countryAr: 'إيطاليا', adjAr: 'الإيطالية', tr: 'İtalya', flag: '🇮🇹', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'izmir' }], aliases: ['ايطاليا', 'italy', 'italya'] },
-    { id: 'spain', countryAr: 'إسبانيا', adjAr: 'الإسبانية', tr: 'İspanya', flag: '🇪🇸', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['اسبانيا', 'spain', 'ispanya'] },
-    { id: 'greece', countryAr: 'اليونان', adjAr: 'اليونانية', tr: 'Yunanistan', flag: '🇬🇷', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'izmir' }], aliases: ['اليونان', 'greece', 'yunanistan'] },
-    { id: 'sweden', countryAr: 'السويد', adjAr: 'السويدية', tr: 'İsveç', flag: '🇸🇪', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['السويد', 'sweden', 'isvec'] },
-    { id: 'canada', countryAr: 'كندا', adjAr: 'الكندية', tr: 'Kanada', flag: '🇨🇦', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['كندا', 'canada', 'kanada'] },
-    { id: 'russia', countryAr: 'روسيا', adjAr: 'الروسية', tr: 'Rusya', flag: '🇷🇺', embassy: true, consulates: [{ city: 'istanbul' }, { city: 'antalya' }], aliases: ['روسيا', 'russia', 'rusya'] },
-    { id: 'iran', countryAr: 'إيران', adjAr: 'الإيرانية', tr: 'İran', flag: '🇮🇷', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['ايران', 'iran'] },
-    { id: 'azerbaijan', countryAr: 'أذربيجان', adjAr: 'الأذربيجانية', tr: 'Azerbaycan', flag: '🇦🇿', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['اذربيجان', 'azerbaijan', 'azerbaycan'] },
-    { id: 'pakistan', countryAr: 'باكستان', adjAr: 'الباكستانية', tr: 'Pakistan', flag: '🇵🇰', embassy: true, consulates: [{ city: 'istanbul' }], aliases: ['باكستان', 'pakistan'] },
+    { id: 'usa', countryAr: 'أمريكا', adjAr: 'الأمريكية', tr: 'Amerika Birleşik Devletleri', flag: '🇺🇸', embassy: true, embassyContact: { address: 'Atatürk Bulvarı No: 110, Kavaklıdere, Çankaya, Ankara', phone: '0312 455 55 55', hours: 'الاثنين–الجمعة 08:30–17:30', verifiedOn: V, source: DIRS }, consulates: [{ city: 'istanbul', contact: { address: 'Kaplıcalar Mevkii Sok. No: 2, İstinye, Sarıyer, 34460 İstanbul', phone: '0212 335 90 00', hours: 'الاثنين–الجمعة 08:00–16:30', verifiedOn: V, source: DIRS } }], aliases: ['امريكا', 'الولايات المتحدة', 'usa', 'us', 'america', 'abd'] },
+    { id: 'uk', countryAr: 'بريطانيا', adjAr: 'البريطانية', tr: 'Birleşik Krallık', flag: '🇬🇧', embassy: true, embassyContact: { address: 'Şehit Ersan Cad. No: 46/A, Çankaya, Ankara', phone: '0312 455 33 44', hours: 'الاثنين–الجمعة 09:00–17:00', verifiedOn: V, source: DIRS }, consulates: [{ city: 'istanbul', contact: { address: 'Kamer Hatun, Meşrutiyet Cad. No: 34, 34435 Tepebaşı, Beyoğlu, İstanbul', phone: '0212 334 64 00', hours: 'الاثنين–الجمعة 09:00–13:00 و14:00–17:00', verifiedOn: V, source: DIRS } }], aliases: ['بريطانيا', 'انجلترا', 'المملكة المتحدة', 'uk', 'britain', 'england', 'ingiltere'] },
+    { id: 'germany', countryAr: 'ألمانيا', adjAr: 'الألمانية', tr: 'Almanya', flag: '🇩🇪', embassy: true, embassyContact: { address: 'Atatürk Bulvarı No: 114, Kavaklıdere, 06680 Çankaya, Ankara', phone: '0312 455 51 00', hours: 'الاثنين–الجمعة 09:00–16:00', verifiedOn: V, source: 'tuerkei.diplo.de' }, embassyUrl: 'https://tuerkei.diplo.de/tr-tr/vertretungen/botschaft', consulates: [{ city: 'istanbul', officialUrl: 'https://tuerkei.diplo.de/tr-tr/vertretungen/generalkonsulat-istanbul', contact: { address: 'İnönü Cad. No: 10, 34437 Gümüşsuyu, Beyoğlu, İstanbul', phone: '0212 334 61 00', hours: 'قسم التأشيرات: الاثنين–الجمعة 08:00–12:00', verifiedOn: V, source: 'tuerkei.diplo.de' } }, { city: 'izmir', officialUrl: 'https://tuerkei.diplo.de/tr-tr/vertretungen/generalkonsulat-izmir', contact: { address: 'Korutürk Mah., Havuzbaşı Sok. No: 1, 35330 Balçova, İzmir', phone: '0232 488 88 88', hours: 'الاثنين–الخميس 08:00–12:30 و13:00–17:15، الجمعة 08:00–14:00', verifiedOn: V, source: 'tuerkei.diplo.de' } }, { city: 'antalya', titleTr: 'Almanya Konsolosluğu', officialUrl: 'https://tuerkei.diplo.de/tr-tr/vertretungen/konsulat-antalya', contact: { address: 'Çağlayan Mah., Barınaklar Bulvarı No: 54, 07235 Muratpaşa, Antalya', phone: '0242 314 11 01', hours: 'الاثنين–الجمعة 09:00–12:00، والخميس أيضاً 14:00–16:30', verifiedOn: V, source: 'tuerkei.diplo.de', note: 'هذه قنصلية (Konsolosluk) وليست قنصلية عامة: فيها قسم جوازات لكن لا يوجد قسم تأشيرات — طلبات التأشيرة تُقدَّم في إسطنبول أو إزمير أو أنقرة.' } }], aliases: ['المانيا', 'germany', 'almanya', 'deutschland'] },
+    { id: 'france', countryAr: 'فرنسا', adjAr: 'الفرنسية', tr: 'Fransa', flag: '🇫🇷', embassy: true, embassyContact: { address: 'Paris Cad. No: 70, Kavaklıdere, 06540 Çankaya, Ankara', phone: '0312 455 45 45', hours: 'قسم التأشيرات: الاثنين–الجمعة 08:30–13:00 و15:00–17:00', verifiedOn: V, source: 'tr.diplomatie.gouv.fr' }, embassyUrl: 'https://tr.diplomatie.gouv.fr/tr/fransanin-turkiye-buyukelciligi', consulates: [{ city: 'istanbul', officialUrl: 'https://tr.diplomatie.gouv.fr/tr/fransanin-istanbul-baskonsoloslugu', contact: { address: 'İstiklal Cad. No: 4, 34435 Taksim, Beyoğlu, İstanbul', phone: '0212 334 87 30', hours: 'الاثنين–الجمعة 09:00–13:00 و14:00–17:00 — بموعد مسبق فقط', verifiedOn: V, source: 'tr.diplomatie.gouv.fr' } }], aliases: ['فرنسا', 'france', 'fransa'] },
+    { id: 'netherlands', countryAr: 'هولندا', adjAr: 'الهولندية', tr: 'Hollanda', flag: '🇳🇱', embassy: true, embassyContact: { address: 'Hilal Mah., Turan Güneş Bulvarı, Hollanda Cad. No: 5, 06550 Çankaya, Ankara', phone: '0312 409 18 00', hours: 'الاثنين–الجمعة 08:30–17:00', verifiedOn: V, source: DIRS }, consulates: [{ city: 'istanbul', contact: { address: 'İstiklal Cad. No: 197, 34433 Beyoğlu, İstanbul', phone: '0212 393 21 21', hours: 'الاثنين–الجمعة 09:00–17:00 — قسم التأشيرات 08:30–12:00', verifiedOn: V, source: DIRS } }], aliases: ['هولندا', 'netherlands', 'holland', 'hollanda'] },
+    { id: 'italy', countryAr: 'إيطاليا', adjAr: 'الإيطالية', tr: 'İtalya', flag: '🇮🇹', embassy: true, embassyContact: { address: 'Atatürk Bulvarı No: 118, 06680 Kavaklıdere, Çankaya, Ankara', phone: '0312 457 42 00', hours: 'القسم القنصلي: الاثنين–الجمعة 09:30–12:00 بموعد', verifiedOn: V, source: 'ambankara.esteri.it' }, embassyUrl: 'https://ambankara.esteri.it/tr/chi-siamo/contatti/', consulates: [{ city: 'istanbul', officialUrl: 'https://consistanbul.esteri.it/tr/', contact: { address: 'Tomtom Kaptan Sok. No: 5, Beyoğlu, İstanbul', phone: '0212 243 10 24', hours: 'الاثنين–الخميس 08:30–16:30، الجمعة 08:30–14:00', verifiedOn: V, source: 'consistanbul.esteri.it' } }, { city: 'izmir', titleTr: 'İtalya Konsolosluğu', officialUrl: 'https://consizmir.esteri.it/tr/', contact: { address: 'Akdeniz Mah., Şehit Fethi Bey Cad. No: 55, Konak, İzmir', phone: '0232 463 66 76', hours: 'الاثنين–الجمعة 09:00–17:00', verifiedOn: V, source: 'consizmir.esteri.it' } }], aliases: ['ايطاليا', 'italy', 'italya'] },
+    { id: 'spain', countryAr: 'إسبانيا', adjAr: 'الإسبانية', tr: 'İspanya', flag: '🇪🇸', embassy: true, embassyContact: { address: 'Prof. Dr. Aziz Sancar Cad. No: 8, Çankaya, Ankara', phone: '0312 438 03 92', hours: 'الاثنين–الجمعة 09:00–16:30 — التأشيرات 09:30–12:00', verifiedOn: V, source: 'exteriores.gob.es' }, embassyUrl: 'https://www.exteriores.gob.es/Embajadas/ankara/tr/Embajada/Paginas/Contacto.aspx', consulates: [{ city: 'istanbul', officialUrl: 'https://www.exteriores.gob.es/Consulados/estambul/tr/Paginas/index.aspx', contact: { address: 'Karanfil Aralığı Sok. No: 16, 1. Levent, 34330 Beşiktaş, İstanbul', phone: '0212 270 74 10', hours: 'الاثنين–الجمعة 09:00–13:00', verifiedOn: V, source: 'exteriores.gob.es' } }], aliases: ['اسبانيا', 'spain', 'ispanya'] },
+    { id: 'greece', countryAr: 'اليونان', adjAr: 'اليونانية', tr: 'Yunanistan', flag: '🇬🇷', embassy: true, embassyContact: { address: 'Ziaur Rahman Cad. No: 9-11, 06700 Gaziosmanpaşa, Çankaya, Ankara', phone: '0312 448 06 47', hours: 'الاثنين–الجمعة 09:00–16:00', verifiedOn: V, source: 'mfa.gr' }, embassyUrl: 'https://www.mfa.gr/turkey/tr/the-embassy', consulates: [{ city: 'istanbul', officialUrl: 'https://www.mfa.gr/turkey/tr/contact/contact-our-missions-in-turkey/consulate-general-in-istanbul.html', contact: { address: 'Turnacıbaşı Sok. No: 22, 34433 Beyoğlu, İstanbul', phone: '0212 393 82 90', hours: 'الاثنين–الجمعة 09:00–13:30', verifiedOn: V, source: 'mfa.gr' } }, { city: 'izmir', officialUrl: 'https://www.mfa.gr/turkey/tr/contact/contact-our-missions-in-turkey/consulate-general-in-izmir.html', contact: { address: 'Atatürk Cad. No: 262, Alsancak, Konak, İzmir', phone: '0232 464 31 60', hours: 'الاثنين–الجمعة 09:00–16:00 — التأشيرات بموعد مسبق', verifiedOn: V, source: 'mfa.gr' } }], aliases: ['اليونان', 'greece', 'yunanistan'] },
+    { id: 'sweden', countryAr: 'السويد', adjAr: 'السويدية', tr: 'İsveç', flag: '🇸🇪', embassy: true, embassyContact: { address: 'Katip Çelebi Sok. No: 7, 06692 Kavaklıdere, Çankaya, Ankara', phone: '0312 455 41 00', hours: 'الاثنين–الخميس 08:00–16:45، الجمعة 08:00–14:30', verifiedOn: V, source: 'swedenabroad.se' }, embassyUrl: 'https://www.swedenabroad.se/en/embassies/turkey-ankara/', consulates: [{ city: 'istanbul', contact: { address: 'Şahkulu Mah., İstiklal Cad., Beyoğlu, İstanbul', phone: '0212 334 06 00', hours: 'الاثنين–الخميس 10:30–12:30', verifiedOn: V, source: DIRS } }], aliases: ['السويد', 'sweden', 'isvec'] },
+    { id: 'canada', countryAr: 'كندا', adjAr: 'الكندية', tr: 'Kanada', flag: '🇨🇦', embassy: true, embassyContact: { address: 'Cinnah Cad. No: 58, 06690 Çankaya, Ankara', phone: '0312 409 27 00', hours: 'الاثنين–الخميس 08:30–17:45، الجمعة 08:30–13:00', verifiedOn: V, source: 'international.gc.ca' }, embassyUrl: 'https://www.international.gc.ca/country-pays/turkiye/ankara.aspx?lang=eng', consulates: [{ city: 'istanbul', contact: { address: 'Büyükdere Cad., Tekfen Tower Kat: 16, 4. Levent, 34394 İstanbul', phone: '0212 385 97 00', hours: 'الاثنين–الخميس 08:30–16:45، الجمعة 08:30–13:00', verifiedOn: V, source: DIRS } }], aliases: ['كندا', 'canada', 'kanada'] },
+    { id: 'russia', countryAr: 'روسيا', adjAr: 'الروسية', tr: 'Rusya', flag: '🇷🇺', embassy: true, embassyContact: { address: 'Karyağdı Sok. No: 5, 06692 Çankaya, Ankara', phone: '0312 440 94 85', hours: 'القسم القنصلي: الاثنين والأربعاء والجمعة 09:00–12:00', verifiedOn: V, source: DIRS }, consulates: [{ city: 'istanbul', contact: { address: 'İstiklal Cad. No: 219-225A, 34433 Beyoğlu, İstanbul', phone: '0212 292 51 01', hours: 'الاثنين–الجمعة 08:30–13:00 و14:30–18:00', verifiedOn: V, source: DIRS } }, { city: 'antalya', officialUrl: 'https://antalya.mid.ru/tr/', contact: { address: 'Çağlayan Mah., 2011. Sok. No: 10, Muratpaşa, Antalya', phone: '0242 248 32 02', hours: 'الاثنين–الجمعة 09:00–18:00', verifiedOn: V, source: 'antalya.mid.ru' } }], aliases: ['روسيا', 'russia', 'rusya'] },
+    { id: 'iran', countryAr: 'إيران', adjAr: 'الإيرانية', tr: 'İran', flag: '🇮🇷', embassy: true, embassyContact: { address: 'Tahran Cad. No: 10, Kavaklıdere, Çankaya, Ankara', phone: '0312 457 41 00', hours: 'الاثنين–الجمعة 08:00–18:00', verifiedOn: V, source: 'turkey.mfa.gov.ir' }, embassyUrl: 'https://turkey.mfa.gov.ir/tr', consulates: [{ city: 'istanbul', contact: { address: 'Ankara Cad. No: 1, Cağaloğlu, Fatih, İstanbul', phone: '0212 513 82 30', hours: 'الاثنين–الجمعة 08:00–16:00', verifiedOn: V, source: DIRS } }], aliases: ['ايران', 'iran'] },
+    { id: 'azerbaijan', countryAr: 'أذربيجان', adjAr: 'الأذربيجانية', tr: 'Azerbaycan', flag: '🇦🇿', embassy: true, embassyContact: { address: 'Diplomatik Site, Bakü Sok. No: 1, 06450 Oran, Çankaya, Ankara', phone: '0312 491 16 81', verifiedOn: V, source: 'ankara.mfa.gov.az' }, embassyUrl: 'https://ankara.mfa.gov.az/tr/content/6/iletisim', consulates: [{ city: 'istanbul', officialUrl: 'https://istanbul.mfa.gov.az/tr', contact: { address: 'Zeytinoğlu Cad. No: 65, Akatlar, Beşiktaş, İstanbul', phone: '0212 325 80 42', verifiedOn: V, source: 'istanbul.mfa.gov.az' } }], aliases: ['اذربيجان', 'azerbaijan', 'azerbaycan'] },
+    { id: 'pakistan', countryAr: 'باكستان', adjAr: 'الباكستانية', tr: 'Pakistan', flag: '🇵🇰', embassy: true, embassyContact: { address: 'Gaziosmanpaşa Mah., İran Cad. No: 37, 06700 Çankaya, Ankara', phone: '0312 427 14 10', hours: 'الاثنين–الجمعة 08:30–17:00', verifiedOn: V, source: DIRS }, embassyUrl: 'https://www.pakembassyankara.com/', consulates: [{ city: 'istanbul', contact: { address: 'Konaklar Mah., Akağaç Sok. No: 2, 4. Levent, 34330 Beşiktaş, İstanbul', phone: '0212 324 91 54', verifiedOn: V, source: DIRS } }], aliases: ['باكستان', 'pakistan'] },
 ];
 
 // ============================================================================
@@ -888,9 +930,10 @@ function buildMissionPlaces(list: MissionCountry[], region: 'arab' | 'intl'): Of
             // diplomat with a passport counter. Saying so up front is the whole
             // point — «القنصلية اليمنية» sent someone after a passport to an
             // office that cannot issue one.
-            const trName = post.honorary
-                ? `${m.tr} Fahri Konsolosluğu`
-                : `${m.tr} Başkonsolosluğu`;
+            const trName = post.titleTr
+                ?? (post.honorary
+                    ? `${m.tr} Fahri Konsolosluğu`
+                    : `${m.tr} Başkonsolosluğu`);
 
             out.push({
                 slug: `${m.id}-consulate-${city.slug}`,

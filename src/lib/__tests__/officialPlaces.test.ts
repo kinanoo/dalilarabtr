@@ -115,6 +115,20 @@ describe('stored addresses', () => {
         expect(bad).toEqual([]);
     });
 
+    // Every embassy and consulate now carries a verified address. Keeping the
+    // allowlist empty (rather than asserting a count) means adding a mission
+    // without one fails here and forces a conscious decision: verify it, or add
+    // it to this list with a reason.
+    const MISSIONS_WITHOUT_VERIFIED_ADDRESS: string[] = [];
+
+    it('has a verified address for every embassy and consulate', () => {
+        const missing = MISSION_PLACES
+            .filter((p) => !p.contact)
+            .map((p) => p.slug)
+            .filter((slug) => !MISSIONS_WITHOUT_VERIFIED_ADDRESS.includes(slug));
+        expect(missing).toEqual([]);
+    });
+
     it('holds the addresses the customer request named', () => {
         const syriaIst = placeBySlug('syria-consulate-istanbul')!;
         expect(syriaIst.contact?.address).toContain('Teşvikiye');
@@ -150,6 +164,24 @@ describe('honorary consulates', () => {
         const syria = placeBySlug('syria-consulate-istanbul')!;
         expect(syria.missionType).toBe('consulate');
         expect(syria.ar).not.toContain('الفخرية');
+    });
+});
+
+describe('posts that are not full consulates-general', () => {
+    it('uses the real Turkish title instead of assuming Başkonsolosluk', () => {
+        // Germany's Antalya post is a plain Konsolosluk with no visa section;
+        // Italy's İzmir post is a Konsolosluk too. Calling either a
+        // Başkonsolosluk would send visa applicants to the wrong city.
+        const gerAntalya = placeBySlug('germany-consulate-antalya')!;
+        expect(gerAntalya.tr).toBe('Almanya Konsolosluğu');
+        expect(gerAntalya.mapQuery).toBe('Almanya Konsolosluğu Antalya');
+        expect(gerAntalya.contact?.note).toContain('لا يوجد قسم تأشيرات');
+
+        expect(placeBySlug('italy-consulate-izmir')!.tr).toBe('İtalya Konsolosluğu');
+    });
+
+    it('still defaults to Başkonsolosluk when no override is given', () => {
+        expect(placeBySlug('germany-consulate-istanbul')!.tr).toBe('Almanya Başkonsolosluğu');
     });
 });
 
