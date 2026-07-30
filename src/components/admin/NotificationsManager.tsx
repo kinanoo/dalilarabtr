@@ -21,9 +21,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { adminUpdate, adminDelete } from '@/lib/adminApi';
-import { Trash2, Eye, EyeOff, Bell, RefreshCw, ExternalLink, Users, User } from 'lucide-react';
+import { Trash2, Eye, EyeOff, Bell, RefreshCw, ExternalLink, Users, User, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
+
+type BulkScope = 'day' | 'week' | 'month' | 'all';
+const SCOPE_LABEL: Record<BulkScope, string> = {
+    day: 'آخر يوم',
+    week: 'آخر أسبوع',
+    month: 'آخر شهر',
+    all: 'كل الإشعارات',
+};
 
 interface NotificationRow {
     id: string;
@@ -43,6 +51,8 @@ export default function NotificationsManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [busyId, setBusyId] = useState<string | null>(null);
     const [showHidden, setShowHidden] = useState(true);
+    const [bulkScope, setBulkScope] = useState<BulkScope>('day');
+    const [bulkBusy, setBulkBusy] = useState(false);
 
     const fetchItems = useCallback(async () => {
         if (!supabase) return;
@@ -88,6 +98,38 @@ export default function NotificationsManager() {
         toast.success('حُذف الإشعار نهائياً');
     }
 
+    async function bulk(action: 'hide' | 'delete') {
+        const scopeText = SCOPE_LABEL[bulkScope];
+        const msg = action === 'hide'
+            ? `إخفاء إشعارات ${scopeText} عن كل المستخدمين؟\n\nقابل للتراجع إشعاراً بإشعار من هذه القائمة.`
+            : `حذف نهائي لإشعارات ${scopeText}؟\n\nلا يمكن التراجع إطلاقاً. للإزالة المؤقتة استخدم «إخفاء».`;
+        if (!confirm(msg)) return;
+        setBulkBusy(true);
+        try {
+            const res = await fetch('/api/admin/notifications-bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, scope: bulkScope }),
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                toast.error(`تعذّر التنفيذ: ${json.error || `HTTP ${res.status}`}`);
+                return;
+            }
+            const count = json.count ?? 0;
+            toast.success(
+                count === 0
+                    ? 'لا إشعارات مطابقة في هذه المدة'
+                    : action === 'hide'
+                        ? `أُخفي ${count} إشعاراً عن المستخدمين`
+                        : `حُذف ${count} إشعاراً نهائياً`,
+            );
+            await fetchItems();
+        } finally {
+            setBulkBusy(false);
+        }
+    }
+
     const visible = showHidden ? items : items.filter((n) => n.is_active);
     const activeCount = items.filter((n) => n.is_active).length;
 
@@ -114,6 +156,47 @@ export default function NotificationsManager() {
                         className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-300 transition-colors"
                     >
                         <RefreshCw size={14} /> تحديث
+                    </button>
+                </div>
+            </div>
+
+            {/* Bulk actions — one compact row: pick a window, then hide or delete it */}
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-3 py-2.5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-black text-slate-700 dark:text-slate-200">
+                    <Layers size={14} /> إجراء جماعي
+                </span>
+                <div className="flex flex-wrap items-center gap-1">
+                    {(Object.keys(SCOPE_LABEL) as BulkScope[]).map((s) => (
+                        <button
+                            key={s}
+                            type="button"
+                            onClick={() => setBulkScope(s)}
+                            className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
+                                bulkScope === s
+                                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            {SCOPE_LABEL[s]}
+                        </button>
+                    ))}
+                </div>
+                <div className="ms-auto flex items-center gap-1.5">
+                    <button
+                        type="button"
+                        disabled={bulkBusy}
+                        onClick={() => bulk('hide')}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-700 px-3 py-1.5 text-[11px] font-black text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40 transition-colors"
+                    >
+                        <EyeOff size={13} /> إخفاء {SCOPE_LABEL[bulkScope]}
+                    </button>
+                    <button
+                        type="button"
+                        disabled={bulkBusy}
+                        onClick={() => bulk('delete')}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-red-300 dark:border-red-800 px-3 py-1.5 text-[11px] font-black text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 transition-colors"
+                    >
+                        <Trash2 size={13} /> حذف {SCOPE_LABEL[bulkScope]}
                     </button>
                 </div>
             </div>
