@@ -55,7 +55,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string; 
     if (!cat || !cityObj) return { title: 'الصفحة غير موجودة', robots: { index: false, follow: false } };
 
     const providers = providersInCity(await fetchCategoryProviders(cat), cityObj);
-    const title = `${cat.labelAr} عرب في ${cityObj.ar} | دليل العرب`;
+    const title = `${cat.labelAr} يتحدثون العربية في ${cityObj.ar} | دليل العرب`;
     const description = `مزودو خدمات ${cat.labelAr} يقدّمون خدماتهم بالعربية في ${cityObj.ar}، تركيا. ${providers.length > 0 ? `${providers.length} ` : ''}مهنيّ — تواصل مباشر عبر واتساب أو اتصال.`;
 
     return {
@@ -96,7 +96,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                 '@type': 'CollectionPage',
                 '@id': `${pageUrl}#directory`,
                 url: pageUrl,
-                name: `${cat.labelAr} عرب في ${cityObj.ar}`,
+                name: `${cat.labelAr} يتحدثون العربية في ${cityObj.ar}`,
                 inLanguage: 'ar',
                 mainEntity: {
                     '@type': 'ItemList',
@@ -135,7 +135,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                         <span className="text-slate-800 dark:text-slate-200">{cityObj.ar}</span>
                     </nav>
                     <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> عرب في {cityObj.ar}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> يتحدثون العربية في {cityObj.ar}
                     </h1>
                     <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
                         مزودو خدمات {cat.labelAr} يقدّمون خدماتهم بالعربية في {cityObj.ar}. تواصل مباشر عبر واتساب أو اتصال.

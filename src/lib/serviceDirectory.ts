@@ -2,11 +2,13 @@ import {
     SERVICE_CATEGORIES,
     categoryBySlug,
     categoryForName,
+    categorySlugForName,
 } from '@/lib/serviceCategories';
 import {
     TR_CITIES,
     canonicalCity,
     cityBySlug,
+    citySlugForName,
 } from '@/lib/turkishCities';
 
 export const DIRECTORY_PAGE_SIZE = 15;
@@ -36,6 +38,21 @@ export interface DirectoryFacets {
     cityCounts: Record<string, number>;
     categoryCounts: Record<string, number>;
     extraCategories: string[];
+}
+
+export interface DirectoryFacetRow {
+    city?: string | null;
+    category?: string | null;
+    count?: number | null;
+}
+
+export interface DirectoryPopularSearch {
+    city: string;
+    citySlug: string;
+    category: string;
+    categoryLabel: string;
+    categorySlug: string;
+    count: number;
 }
 
 const normalizeComparable = (value: string): string =>
@@ -119,21 +136,22 @@ export function categoryVariantsForDirectory(value: string | null | undefined): 
 }
 
 export function buildDirectoryFacets(
-    rows: Array<{ city?: string | null; category?: string | null }>,
+    rows: DirectoryFacetRow[],
 ): DirectoryFacets {
     const cityCounts: Record<string, number> = {};
     const categoryCounts: Record<string, number> = {};
     const unknownCategories = new Set<string>();
 
     for (const row of rows) {
+        const weight = Math.max(1, Number(row.count) || 1);
         const city = canonicalCity(row.city);
-        if (city) cityCounts[city] = (cityCounts[city] || 0) + 1;
+        if (city) cityCounts[city] = (cityCounts[city] || 0) + weight;
 
         const rawCategory = row.category?.trim();
         if (!rawCategory) continue;
         const category = categoryForName(rawCategory);
         const key = category?.name || rawCategory;
-        categoryCounts[key] = (categoryCounts[key] || 0) + 1;
+        categoryCounts[key] = (categoryCounts[key] || 0) + weight;
         if (!category) unknownCategories.add(rawCategory);
     }
 
@@ -164,4 +182,46 @@ export function buildDirectoryFacets(
         ),
         extraCategories,
     };
+}
+
+export function buildPopularDirectorySearches(
+    rows: DirectoryFacetRow[],
+    limit = 10,
+): DirectoryPopularSearch[] {
+    const combinations = new Map<string, DirectoryPopularSearch>();
+
+    for (const row of rows) {
+        const weight = Math.max(1, Number(row.count) || 1);
+        const city = canonicalCity(row.city);
+        const category = categoryForName(row.category);
+        if (!city || !category) continue;
+
+        const citySlug = citySlugForName(city);
+        const categorySlug = categorySlugForName(category.name);
+        if (!citySlug || !categorySlug) continue;
+
+        const key = `${citySlug}|${categorySlug}`;
+        const current = combinations.get(key);
+        if (current) {
+            current.count += weight;
+            continue;
+        }
+
+        combinations.set(key, {
+            city,
+            citySlug,
+            category: category.name,
+            categoryLabel: category.labelAr,
+            categorySlug,
+            count: weight,
+        });
+    }
+
+    return Array.from(combinations.values())
+        .sort((a, b) =>
+            b.count - a.count ||
+            a.city.localeCompare(b.city, 'ar') ||
+            a.categoryLabel.localeCompare(b.categoryLabel, 'ar'),
+        )
+        .slice(0, Math.max(0, limit));
 }

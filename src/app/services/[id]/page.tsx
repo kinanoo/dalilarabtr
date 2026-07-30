@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation } from 'lucide-react';
+import { MapPin, PhoneCall, MessageCircle, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 
@@ -116,9 +116,8 @@ export default async function ServiceDetailsPage(
         `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${provider.profession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`
     )}`;
 
-    // Schema.org: Service + LocalBusiness — now with aggregateRating when we
-    // have it (Google shows star carousel) and a fallback priceRange so the
-    // LocalBusiness card renders fully in Knowledge Panels.
+    // Schema.org: Service + LocalBusiness with aggregateRating only when real
+    // ratings exist. Never infer pricing or credentials that were not supplied.
     const numericRating = typeof provider.rating === 'number'
         ? provider.rating
         : provider.rating ? Number(provider.rating) : null;
@@ -144,7 +143,7 @@ export default async function ServiceDetailsPage(
                     worstRating: 1,
                 },
             } : {}),
-            priceRange: provider.price_range || '$$',
+            ...(provider.price_range ? { priceRange: provider.price_range } : {}),
         },
         areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
         url: `${SITE_CONFIG.siteUrl}/services/${canonicalId}`,
@@ -271,26 +270,38 @@ export default async function ServiceDetailsPage(
                     </div>
 
                     {/* Contact + Share */}
-                    <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 text-lg"
-                        >
-                            <Phone size={24} />
-                            تواصل عبر الواتساب
-                        </a>
-
-                        {verification.visible && (
-                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-300 py-4 rounded-xl font-bold flex items-center justify-center gap-3">
-                                <ShieldCheck size={24} />
-                                <span title={verification.explanation}>
-                                    {verification.label}
-                                </span>
-                            </div>
+                    <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {cleanWhatsApp && (
+                            <a
+                                href={whatsappUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 active:scale-95"
+                            >
+                                <MessageCircle size={22} />
+                                تواصل عبر الواتساب
+                            </a>
+                        )}
+                        {cleanPhone && (
+                            <a
+                                href={`tel:+${cleanPhone}`}
+                                className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-800 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                            >
+                                <PhoneCall size={22} />
+                                اتصال مباشر
+                            </a>
                         )}
                     </div>
+
+                    {verification.visible && (
+                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-200">
+                            <ShieldCheck size={20} className="mt-0.5 shrink-0" />
+                            <p>
+                                <span className="font-black">{verification.label}:</span>{' '}
+                                {verification.explanation}
+                            </p>
+                        </div>
+                    )}
 
                     <div className="mt-4 flex justify-center">
                         <ShareMenu
@@ -331,17 +342,17 @@ export default async function ServiceDetailsPage(
                                     {provider.address_details}
                                 </p>
                             )}
-                            <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">
-                                هل تمثل هذا النشاط أو وجدت معلومة غير صحيحة؟{' '}
-                                <Link
-                                    href={`/contact?subject=service-data&provider=${encodeURIComponent(provider.name)}`}
-                                    className="font-bold text-emerald-700 hover:underline dark:text-emerald-400"
-                                >
-                                    اطلب التصحيح أو الحذف
-                                </Link>
-                            </p>
                         </div>
                     )}
+                    <p className="mt-5 border-t border-slate-100 pt-4 text-center text-xs leading-6 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                        هل هذه خدمتك أو وجدت معلومة غير صحيحة؟{' '}
+                        <Link
+                            href={`/contact?subject=service-data&provider=${encodeURIComponent(provider.name)}`}
+                            className="font-black text-emerald-700 hover:underline dark:text-emerald-400"
+                        >
+                            اطلب امتلاك الصفحة أو تعديلها أو حذفها
+                        </Link>
+                    </p>
                 </div>
             </div>
 

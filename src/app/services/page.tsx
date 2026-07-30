@@ -6,12 +6,12 @@ import logger from '@/lib/logger';
 import {
     DIRECTORY_PAGE_SIZE,
     type DirectoryProvider,
-    buildDirectoryFacets,
 } from '@/lib/serviceDirectory';
+import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 
 // Refresh the directory's structured data periodically so new/updated
 // providers enter Google's index without a redeploy.
-export const revalidate = 600;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
     title: { absolute: 'دليل الخدمات العربية في تركيا: أطباء ومحامون ومترجمون | دليل العرب' },
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     alternates: { canonical: '/services' },
     openGraph: {
         title: 'دليل الخدمات العربية في تركيا',
-        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات عرب في كل مدن تركيا.',
+        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات يعرّفون عن خدماتهم بالعربية في مدن تركيا.',
         url: `${SITE_CONFIG.siteUrl}/services`,
         type: 'website',
         images: ['/og-banner.jpg'],
@@ -42,9 +42,10 @@ async function getDirectory() {
                 verifiedCount: 0,
                 cityCounts: {},
                 categoryCounts: {},
+                popularSearches: [],
             };
         }
-        const BASE = 'id, slug, name, profession, category, description, city, image, phone, whatsapp, is_verified, rating, review_count, status, created_at';
+        const BASE = 'id, slug, name, profession, category, description, city, image, phone, whatsapp, is_verified, verification_level, rating, review_count, status, created_at';
         let firstPage: { data: unknown; count: number | null; error: unknown } = await supabase
             .from('service_providers')
             .select(`${BASE}, is_featured`, { count: 'exact' })
@@ -53,6 +54,7 @@ async function getDirectory() {
             .order('is_verified', { ascending: false })
             .order('rating', { ascending: false, nullsFirst: false })
             .order('created_at', { ascending: false })
+            .order('id', { ascending: true })
             .limit(DIRECTORY_PAGE_SIZE);
         if (firstPage.error) {
             firstPage = await supabase
@@ -62,31 +64,18 @@ async function getDirectory() {
                 .order('is_verified', { ascending: false })
                 .order('rating', { ascending: false, nullsFirst: false })
                 .order('created_at', { ascending: false })
+                .order('id', { ascending: true })
                 .limit(DIRECTORY_PAGE_SIZE);
         }
+        if (firstPage.error) throw firstPage.error;
 
-        const [facetResult, verifiedResult] = await Promise.all([
-            supabase
-                .from('service_providers')
-                .select('city, category')
-                .eq('status', 'approved')
-                .limit(2000),
-            supabase
-                .from('service_providers')
-                .select('id', { count: 'exact', head: true })
-                .eq('status', 'approved')
-                .eq('is_verified', true),
-        ]);
+        const facetSummary = await getServiceDirectoryFacetSummary(supabase);
 
         const rows = (firstPage.data as DirectoryProvider[]) || [];
-        const facets = buildDirectoryFacets(
-            (facetResult.data as Array<{ city: string | null; category: string | null }>) || [],
-        );
         return {
             rows,
             total: firstPage.count || rows.length,
-            verifiedCount: verifiedResult.count || 0,
-            ...facets,
+            ...facetSummary,
         };
     } catch (e) {
         logger.error('services directory fetch failed:', e);
@@ -96,6 +85,7 @@ async function getDirectory() {
             verifiedCount: 0,
             cityCounts: {},
             categoryCounts: {},
+            popularSearches: [],
         };
     }
 }
@@ -107,6 +97,7 @@ export default async function ServicesPage() {
         verifiedCount,
         cityCounts,
         categoryCounts,
+        popularSearches,
     } = await getDirectory();
     const base = SITE_CONFIG.siteUrl;
 
@@ -162,7 +153,7 @@ export default async function ServicesPage() {
                 '@id': `${base}/services#directory`,
                 url: `${base}/services`,
                 name: 'دليل الخدمات والمهن العربية في تركيا',
-                description: 'دليل مقدّمي الخدمات العرب في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
+                description: 'دليل مقدّمي الخدمات باللغة العربية في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
                 inLanguage: 'ar',
                 isPartOf: { '@id': `${base}/#organization` },
                 mainEntity: itemList,
@@ -184,6 +175,7 @@ export default async function ServicesPage() {
                 verifiedCount={verifiedCount}
                 cityCounts={cityCounts}
                 categoryCounts={categoryCounts}
+                initialPopularSearches={popularSearches}
             />
         </>
     );

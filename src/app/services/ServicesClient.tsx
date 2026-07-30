@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Info } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Info, TrendingUp } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
@@ -15,6 +15,7 @@ import {
 } from '@/lib/serviceVerification';
 import {
   DIRECTORY_PAGE_SIZE,
+  type DirectoryPopularSearch,
   type DirectoryProvider,
 } from '@/lib/serviceDirectory';
 
@@ -24,6 +25,7 @@ interface ServicesClientProps {
   verifiedCount?: number;
   cityCounts?: Record<string, number>;
   categoryCounts?: Record<string, number>;
+  initialPopularSearches?: DirectoryPopularSearch[];
 }
 
 export default function ServicesClient({
@@ -32,6 +34,7 @@ export default function ServicesClient({
   verifiedCount = 0,
   cityCounts = {},
   categoryCounts = {},
+  initialPopularSearches = [],
 }: ServicesClientProps) {
   const [services, setServices] = useState<DirectoryProvider[]>(initialServices);
   const [resultTotal, setResultTotal] = useState(initialTotal);
@@ -44,29 +47,46 @@ export default function ServicesClient({
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [page, setPage] = useState(1);
-  const skippedInitialRequest = useRef(false);
-  const availableCities = Object.keys(cityCounts);
-  const totalCount = initialTotal;
+  const [urlStateReady, setUrlStateReady] = useState(false);
+  const [liveTotal, setLiveTotal] = useState(initialTotal);
+  const [liveVerifiedCount, setLiveVerifiedCount] = useState(verifiedCount);
+  const [liveCityCounts, setLiveCityCounts] = useState(cityCounts);
+  const [liveCategoryCounts, setLiveCategoryCounts] = useState(categoryCounts);
+  const [popularSearches, setPopularSearches] = useState(initialPopularSearches);
+  const facetsLoadedRef = useRef(false);
+  const availableCities = useMemo(() => Object.keys(liveCityCounts), [liveCityCounts]);
+  const totalCount = liveTotal;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get('q')?.trim() || '';
+      const city = params.get('city')?.trim() || 'all';
+      const category = params.get('category')?.trim() || 'all';
+      const requestedSort = params.get('sort');
+      const requestedPage = Number(params.get('page'));
+
+      setSearchQuery(query);
+      setDebouncedSearch(query);
+      setActiveCity(city);
+      setActiveCategory(category);
+      if (requestedSort && ['recommended', 'rating', 'newest', 'name'].includes(requestedSort)) {
+        setSortBy(requestedSort as typeof sortBy);
+      }
+      if (Number.isInteger(requestedPage) && requestedPage > 0) setPage(requestedPage);
+      setUrlStateReady(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch only the requested result page. The unfiltered first page is already
-  // in the server HTML, so initial paint needs no client round-trip.
   useEffect(() => {
-    const isInitialView =
-      page === 1 &&
-      activeCategory === 'all' &&
-      activeCity === 'all' &&
-      debouncedSearch === '' &&
-      sortBy === 'recommended';
-
-    if (isInitialView && initialServices.length > 0 && !skippedInitialRequest.current) {
-      skippedInitialRequest.current = true;
-      return;
-    }
+    if (!urlStateReady) return;
 
     const controller = new AbortController();
     const params = new URLSearchParams({
@@ -74,12 +94,15 @@ export default function ServicesClient({
       limit: String(DIRECTORY_PAGE_SIZE),
       sort: sortBy,
     });
+    if (!facetsLoadedRef.current) params.set('facets', '1');
     if (activeCategory !== 'all') params.set('category', activeCategory);
     if (activeCity !== 'all') params.set('city', activeCity);
     if (debouncedSearch) params.set('q', debouncedSearch);
 
-    setLoading(true);
-    setErrorMsg(null);
+    const loadingTimer = window.setTimeout(() => {
+      setLoading(true);
+      setErrorMsg(null);
+    }, 0);
     fetch(`/api/services/directory?${params.toString()}`, {
       signal: controller.signal,
       headers: { Accept: 'application/json' },
@@ -89,6 +112,18 @@ export default function ServicesClient({
         if (!response.ok) throw new Error(payload.error || 'تعذّر تحميل الخدمات');
         setServices(Array.isArray(payload.rows) ? payload.rows : []);
         setResultTotal(Number(payload.total) || 0);
+        if (payload.facets && typeof payload.facets === 'object') {
+          facetsLoadedRef.current = true;
+          setLiveTotal(Number(payload.facets.directoryTotal) || Number(payload.total) || 0);
+          setLiveVerifiedCount(Number(payload.facets.verifiedCount) || 0);
+          setLiveCityCounts(payload.facets.cityCounts || {});
+          setLiveCategoryCounts(payload.facets.categoryCounts || {});
+          setPopularSearches(
+            Array.isArray(payload.facets.popularSearches)
+              ? payload.facets.popularSearches
+              : [],
+          );
+        }
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -100,16 +135,30 @@ export default function ServicesClient({
         if (!controller.signal.aborted) setLoading(false);
       });
 
-    return () => controller.abort();
+    return () => {
+      window.clearTimeout(loadingTimer);
+      controller.abort();
+    };
   }, [
     activeCategory,
     activeCity,
     debouncedSearch,
-    initialServices,
-    initialTotal,
     page,
     sortBy,
+    urlStateReady,
   ]);
+
+  useEffect(() => {
+    if (!urlStateReady) return;
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set('q', debouncedSearch);
+    if (activeCity !== 'all') params.set('city', activeCity);
+    if (activeCategory !== 'all') params.set('category', activeCategory);
+    if (sortBy !== 'recommended') params.set('sort', sortBy);
+    if (page > 1) params.set('page', String(page));
+    const query = params.toString();
+    window.history.replaceState(null, '', query ? `/services?${query}` : '/services');
+  }, [activeCategory, activeCity, debouncedSearch, page, sortBy, urlStateReady]);
 
   // /services builds its list client-side, so on a hard refresh the browser's
   // scroll restoration overshoots the (briefly short) page and jumps to the
@@ -143,9 +192,13 @@ export default function ServicesClient({
 
   const stats = {
     total: totalCount,
-    verified: verifiedCount,
+    verified: liveVerifiedCount,
     cities: availableCities.length,
   };
+  const activeCategoryLabel = activeCategory === 'all'
+    ? ''
+    : SERVICE_CATEGORIES.find((category) => category.name === activeCategory)?.labelAr
+      || activeCategory;
   const totalPages = Math.max(1, Math.ceil(resultTotal / DIRECTORY_PAGE_SIZE));
   const pageClamped = Math.min(page, totalPages);
   const goPage = (pp: number) => {
@@ -168,7 +221,7 @@ export default function ServicesClient({
           </h1>
 
           <p className="text-base text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
-            أطباء، محامون، مترجمون، عقارات، تأمين وشحن — مقدمو خدمات عرب في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
+            أطباء، محامون، مترجمون، عقارات، تأمين وشحن — خدمات معروضة بالعربية في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
           </p>
 
           {/* Search Bar */}
@@ -202,7 +255,7 @@ export default function ServicesClient({
                   setPage(1);
                 }}
                 cities={availableCities}
-                counts={cityCounts}
+                counts={liveCityCounts}
                 totalCount={totalCount}
               />
             </div>
@@ -233,9 +286,9 @@ export default function ServicesClient({
                     }`}
                 >
                   <span>{cat.label}</span>
-                  {cat.id !== 'all' && categoryCounts[cat.id] > 0 && (
+                  {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
                     <span className="mr-1 tabular-nums opacity-70">
-                      {categoryCounts[cat.id]}
+                      {liveCategoryCounts[cat.id]}
                     </span>
                   )}
                 </button>
@@ -262,6 +315,27 @@ export default function ServicesClient({
         </div>
       )}
 
+      {popularSearches.length > 0 && (
+        <section className="mx-auto mt-5 w-full max-w-screen-2xl px-4" aria-labelledby="popular-service-searches">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <h2 id="popular-service-searches" className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
+              <TrendingUp size={15} className="text-emerald-600" />
+              عمليات بحث شائعة
+            </h2>
+            {popularSearches.map((item) => (
+              <Link
+                key={`${item.citySlug}-${item.categorySlug}`}
+                href={`/services/category/${item.categorySlug}/${item.citySlug}`}
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              >
+                {item.categoryLabel} في {item.city}
+                <span className="tabular-nums text-[10px] text-slate-400">{item.count}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Results */}
       <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-8 md:py-10 w-full scroll-mt-4">
 
@@ -269,7 +343,10 @@ export default function ServicesClient({
         {!loading && (
           <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
             <div className="flex items-center gap-3 flex-wrap">
-              <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+              <p
+                className="text-sm font-bold text-slate-600 dark:text-slate-300"
+                aria-live="polite"
+              >
                 {resultTotal > 0 ? (
                   <>
                     عرض <span className="text-emerald-600 dark:text-emerald-400 tabular-nums font-black">{services.length}</span>
@@ -316,12 +393,59 @@ export default function ServicesClient({
           </div>
         )}
 
+        {!loading && hasActiveFilters && (
+          <div className="-mt-3 mb-5 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {activeCity !== 'all' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCity('all');
+                  setPage(1);
+                }}
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-emerald-50 px-3 text-xs font-bold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+              >
+                <MapPin size={13} />
+                {activeCity}
+                <X size={13} />
+              </button>
+            )}
+            {activeCategory !== 'all' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategory('all');
+                  setPage(1);
+                }}
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-sky-50 px-3 text-xs font-bold text-sky-800 dark:bg-sky-950/30 dark:text-sky-300"
+              >
+                <Briefcase size={13} />
+                {activeCategoryLabel}
+                <X size={13} />
+              </button>
+            )}
+            {searchQuery.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setPage(1);
+                }}
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-amber-50 px-3 text-xs font-bold text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+              >
+                <Search size={13} />
+                {searchQuery.trim()}
+                <X size={13} />
+              </button>
+            )}
+          </div>
+        )}
+
         {loading ? (
           // Full-height skeleton (not a tiny spinner) so the page keeps its
           // height during the client fetch — otherwise the browser's scroll
           // restoration on refresh overshoots a short page and jumps to the
           // bottom. Also nicer than a lone spinner.
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 15 }).map((_, i) => (
               <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 animate-pulse">
                 <div className="flex items-start gap-3">
@@ -353,7 +477,7 @@ export default function ServicesClient({
         ) : (
           <>
             {view === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {services.map((provider) => (
                   <ProviderCard key={provider.id} p={provider} />
                 ))}
@@ -430,7 +554,11 @@ export default function ServicesClient({
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100 leading-tight truncate">{c.labelAr}</span>
-                  <span className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-tight truncate">{c.blurb}</span>
+                  <span className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-tight truncate">
+                    {liveCategoryCounts[c.name]
+                      ? `${liveCategoryCounts[c.name]} نتيجة`
+                      : c.blurb}
+                  </span>
                 </span>
               </Link>
             );

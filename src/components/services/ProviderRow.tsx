@@ -43,9 +43,7 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
                     {city && <span className="inline-flex items-center gap-0.5 text-slate-400"><MapPin size={11} />{city}</span>}
                     {hasReviews ? (
                         <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400"><Star size={11} className="fill-amber-400 text-amber-400" />{p.rating ? Number(p.rating).toFixed(1) : '5.0'}</span>
-                    ) : (
-                        <span className="text-emerald-500">· جديد</span>
-                    )}
+                    ) : null}
                 </div>
                 <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">{p.description}</p>
             </div>

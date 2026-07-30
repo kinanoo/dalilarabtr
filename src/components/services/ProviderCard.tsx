@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Star, BadgeCheck } from 'lucide-react';
+import { MapPin, Star, BadgeCheck, ChevronLeft } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
 import { toLatinDigits } from '@/lib/digits';
 import ProviderAvatar from './ProviderAvatar';
@@ -78,9 +78,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
                                 <Star size={12} className="fill-amber-400 text-amber-400" />{p.rating ? Number(p.rating).toFixed(1) : '5.0'}
                                 <span className="text-amber-500/70">({p.review_count})</span>
                             </span>
-                        ) : (
-                            <span className="text-emerald-600 dark:text-emerald-400">· جديد</span>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -98,7 +96,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
                     aria-label="عرض التفاصيل"
                     className="inline-flex items-center justify-center w-11 h-[42px] rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all text-lg font-black"
                 >
-                    ‹
+                    <ChevronLeft size={18} aria-hidden="true" />
                 </Link>
             </div>
         </article>

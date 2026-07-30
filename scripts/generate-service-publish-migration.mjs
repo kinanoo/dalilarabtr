@@ -15,22 +15,53 @@ if (!process.argv[2] || !process.argv[3]) {
 const batch = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
 const expectedCount = batch.candidates.length;
 const sqlString = (value) => `'${String(value).replaceAll("'", "''")}'`;
-const categorySlug = `
-      CASE c.candidate_data->>'category'
-        WHEN 'مترجم' THEN 'translator'
-        WHEN 'طب أسنان' THEN 'dentist'
-        WHEN 'محامي' THEN 'lawyer'
-        WHEN 'عقارات' THEN 'real-estate'
-        ELSE 'service'
-      END`;
-const sourceCategorySlug = `
-    CASE cs.category
-      WHEN 'مترجم' THEN 'translator'
-      WHEN 'طب أسنان' THEN 'dentist'
-      WHEN 'محامي' THEN 'lawyer'
-      WHEN 'عقارات' THEN 'real-estate'
-      ELSE 'service'
-    END`;
+const categorySlugs = {
+  'طبيب': 'doctor',
+  'طب أسنان': 'dentist',
+  'محامي': 'lawyer',
+  'مترجم': 'translator',
+  'عقارات': 'real-estate',
+  'تعليم': 'education',
+  'تجميل': 'beauty',
+  'حلاقة': 'barber',
+  'تأمين': 'insurance',
+  'سيارات': 'cars',
+  'مطاعم': 'restaurant',
+  'شحن': 'cargo',
+  'تخليص جمركي': 'customs',
+  'محاسبة': 'accounting',
+  'مقاولات': 'contractor',
+  'سباكة': 'plumber',
+  'كهرباء': 'electrician',
+  'نجارة': 'carpenter',
+  'تكييف وتبريد': 'hvac',
+  'نقل عفش': 'moving',
+  'تنظيف': 'cleaning',
+  'صيانة أجهزة': 'appliance-repair',
+  'سياحة': 'tourism',
+  'صيانة منزلية': 'home-maintenance',
+  'تشطيبات وديكور': 'finishing-decor',
+  'حدادة وأقفال': 'locksmith',
+  'اتصالات وإنترنت': 'telecom',
+  'تقنية وصيانة هواتف': 'technology',
+  'طباعة وتصميم': 'printing-design',
+  'متاجر ومستلزمات': 'retail',
+  'نقل وتكسي': 'transport',
+  'توظيف وعمالة': 'employment',
+  'خدمات عامة': 'service',
+};
+const categorySlugCase = (expression, indent) => `
+${indent}CASE ${expression}
+${Object.entries(categorySlugs)
+  .map(([category, slug]) => `${indent}  WHEN ${sqlString(category)} THEN ${sqlString(slug)}`)
+  .join('\n')}
+${indent}  ELSE 'service'
+${indent}END`;
+const categorySlug = categorySlugCase(
+  "c.candidate_data->>'category'",
+  '      ',
+);
+const sourceCategorySlug = categorySlugCase('cs.category', '    ');
 const label = sqlString(batch.label);
 const sourceLabel = path.relative(root, sourcePath).replaceAll('\\', '/');
 
@@ -47,6 +78,15 @@ WITH target_batch AS (
 publishable AS (
   SELECT
     c.*,
+    CASE
+      WHEN EXISTS (
+        SELECT 1
+        FROM public.service_providers p
+        WHERE lower(trim(p.name)) = lower(trim(c.candidate_data->>'name'))
+      )
+      THEN concat(c.candidate_data->>'name', ' - ', c.candidate_data->>'city')
+      ELSE c.candidate_data->>'name'
+    END AS provider_name,
     (
 ${categorySlug}
       || '-'
@@ -94,7 +134,7 @@ INSERT INTO public.service_providers (
 )
 SELECT
   provider_slug,
-  candidate_data->>'name',
+  provider_name,
   candidate_data->>'profession',
   candidate_data->>'category',
   candidate_data->>'city',

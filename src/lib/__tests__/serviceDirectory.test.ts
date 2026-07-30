@@ -1,5 +1,6 @@
 import {
     buildDirectoryFacets,
+    buildPopularDirectorySearches,
     categoryVariantsForDirectory,
     cityVariantsForDirectory,
     directorySearchVariants,
@@ -49,6 +50,29 @@ describe('service directory normalization', () => {
         expect(facets.cityCounts['غازي عنتاب']).toBe(1);
         expect(facets.categoryCounts['محامي']).toBe(2);
         expect(facets.categoryCounts['مترجم']).toBe(1);
+    });
+
+    test('builds popular searches only from real canonical combinations', () => {
+        const searches = buildPopularDirectorySearches([
+            { city: 'Istanbul', category: 'legal', count: 2 },
+            { city: 'إسطنبول', category: 'محامي', count: 3 },
+            { city: 'Gaziantep', category: 'translation' },
+            { city: 'مدينة غير معروفة', category: 'translation' },
+            { city: 'Istanbul', category: 'تصنيف غير معروف' },
+        ]);
+
+        expect(searches).toEqual([
+            expect.objectContaining({
+                citySlug: 'istanbul',
+                categorySlug: 'lawyers',
+                count: 5,
+            }),
+            expect.objectContaining({
+                citySlug: 'gaziantep',
+                categorySlug: 'translators',
+                count: 1,
+            }),
+        ]);
     });
 
     test('removes PostgREST control characters from search input', () => {

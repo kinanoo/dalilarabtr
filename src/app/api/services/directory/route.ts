@@ -8,6 +8,7 @@ import {
     directorySearchVariants,
     sanitizeDirectorySearch,
 } from '@/lib/serviceDirectory';
+import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
@@ -24,6 +25,7 @@ const SELECT_FIELDS = [
     'phone',
     'whatsapp',
     'is_verified',
+    'verification_level',
     'is_featured',
     'rating',
     'review_count',
@@ -51,6 +53,7 @@ export async function GET(request: NextRequest) {
     const category = params.get('category');
     const search = sanitizeDirectorySearch(params.get('q'));
     const sort = params.get('sort') || 'recommended';
+    const includeFacets = params.get('facets') === '1';
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -95,7 +98,15 @@ export async function GET(request: NextRequest) {
 
         query = query.order('id', { ascending: true });
 
-        const { data, count, error } = await query.range(from, to);
+        const directoryPromise = query.range(from, to);
+        const facetsPromise = includeFacets
+            ? getServiceDirectoryFacetSummary(supabase)
+            : null;
+
+        const [{ data, count, error }, facets] = await Promise.all([
+            directoryPromise,
+            facetsPromise,
+        ]);
         if (error) throw error;
 
         const total = count || 0;
@@ -106,10 +117,13 @@ export async function GET(request: NextRequest) {
                 page,
                 limit,
                 pages: Math.max(1, Math.ceil(total / limit)),
+                ...(facets ? { facets } : {}),
             },
             {
                 headers: {
-                    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900',
+                    'Cache-Control': includeFacets
+                        ? 'public, s-maxage=60, stale-while-revalidate=300'
+                        : 'public, s-maxage=300, stale-while-revalidate=900',
                 },
             },
         );
