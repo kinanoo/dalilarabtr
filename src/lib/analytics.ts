@@ -79,6 +79,49 @@ export const trackToolUse = (toolId: string) => {
 };
 
 // ============================================
+// 📍 Place Events («أين يقع؟»)
+// ============================================
+
+// Two signals per place page, mirroring trackToolUse:
+//   • 'place_view' — the page was opened
+//   • 'place_map_open' — the visitor actually tapped through to Google Maps,
+//     which is the ONLY signal that says the page did its job. A view without a
+//     map tap means the visitor did not find what they came for.
+// Aggregate on meta->>'place' / meta->>'city' to answer the questions that
+// decide what to expand next: which places are in demand, in which province,
+// and which pages get opened but not acted on.
+const sendPlaceEvent = (
+    eventName: 'place_view' | 'place_map_open',
+    meta: { place: string; city?: string; district?: string; kind?: string }
+) => {
+    trackEvent(eventName, 'places', meta.place);
+    if (typeof window === 'undefined') return;
+    try {
+        const body = JSON.stringify({
+            event_name: eventName,
+            page_path: window.location.pathname,
+            analytics_consent: hasAnalyticsConsent(),
+            meta,
+        });
+        // sendBeacon survives the navigation to Google Maps; without it the
+        // map-open signal — the important one — would be lost on every tap.
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/track', new Blob([body], { type: 'application/json' }));
+        } else {
+            fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+        }
+    } catch {
+        /* tracking must never throw into the UI */
+    }
+};
+
+export const trackPlaceView = (meta: { place: string; city?: string; district?: string; kind?: string }) =>
+    sendPlaceEvent('place_view', meta);
+
+export const trackPlaceMapOpen = (meta: { place: string; city?: string; district?: string; kind?: string }) =>
+    sendPlaceEvent('place_map_open', meta);
+
+// ============================================
 // 💼 Service Events
 // ============================================
 

@@ -65,9 +65,10 @@
 import type { LucideIcon } from 'lucide-react';
 import {
     Landmark, Building2, Users, Gavel, Fingerprint, ReceiptText, HeartPulse,
-    Briefcase, Mail, HandHeart, Stamp, Home, Hospital, Plane, ShieldCheck,
+    Briefcase, Mail, HandHeart, Stamp, Home, Hospital, Plane, ShieldCheck, Bus,
 } from 'lucide-react';
 import { TR_CITIES } from '@/lib/turkishCities';
+import { PHARMACY_CITIES } from '@/lib/pharmacyCities';
 
 // ============================================================================
 // 🗂️ المجموعات — how the hub is organised
@@ -194,6 +195,66 @@ export const placeCityBySlug = (slug: string): PlaceCity | undefined =>
     PLACE_CITIES.find((c) => c.slug === slug);
 
 // ============================================================================
+// 🧭 المناطق (İlçe) — because "إدارة الهجرة في إسطنبول" is not an answer
+// ============================================================================
+//
+// İstanbul alone has 39 districts and the immigration administration runs
+// several separate offices across them; Gaziantep runs more than one too. A
+// single province-wide page tells someone in Esenyurt to cross the city, which
+// is exactly the wasted-day problem this directory exists to prevent.
+//
+// The district list is reused from pharmacyCities.ts — it already carries the
+// districts people actually search for, in Turkish AND Arabic, verified for the
+// duty-pharmacy pages. Reusing it keeps one district taxonomy for the site
+// instead of two that drift apart.
+
+/** Turkish → URL slug. Handles the Turkish letters ASCII-folding gets wrong. */
+function slugifyTr(name: string): string {
+    return name
+        .toLowerCase()
+        .replace(/ı/g, 'i').replace(/i̇/g, 'i')
+        .replace(/ş/g, 's').replace(/ğ/g, 'g')
+        .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+export interface PlaceDistrict {
+    slug: string;
+    tr: string;
+    ar: string;
+    citySlug: string;
+    cityAr: string;
+    cityTr: string;
+}
+
+/**
+ * Every district we can address, for the provinces in our taxonomy.
+ * PHARMACY_CITIES covers a couple of provinces we don't list (and misses
+ * districts for a couple we do) — the filter keeps the two in step rather than
+ * silently producing pages for a province with no city page behind it.
+ */
+export const PLACE_DISTRICTS: PlaceDistrict[] = PHARMACY_CITIES.flatMap((pc) => {
+    const city = placeCityBySlug(pc.slug);
+    if (!city) return [];
+    return pc.districts.map((d) => ({
+        slug: slugifyTr(d.tr),
+        tr: d.tr,
+        ar: d.ar,
+        citySlug: city.slug,
+        cityAr: city.ar,
+        cityTr: city.tr,
+    }));
+});
+
+export const districtsOfCity = (citySlug: string): PlaceDistrict[] =>
+    PLACE_DISTRICTS.filter((d) => d.citySlug === citySlug);
+
+export const placeDistrict = (citySlug: string, districtSlug: string): PlaceDistrict | undefined =>
+    PLACE_DISTRICTS.find((d) => d.citySlug === citySlug && d.slug === districtSlug);
+
+// ============================================================================
 // 🏛️ أنواع الدوائر الرسمية — the 'nearby' places, one page per (kind × city)
 // ============================================================================
 
@@ -215,6 +276,23 @@ export interface OfficeKind {
     appointment?: { url: string; label: string };
     /** Restrict to specific city slugs; omitted = every province above. */
     cities?: string[];
+    /**
+     * Also build a page per DISTRICT, not just per province.
+     *
+     * Only for kinds where the district genuinely changes the answer. Immigration
+     * is the clearest case: İstanbul runs separate offices and a resident of
+     * Esenyurt must not be pointed at Fatih. Nüfus and hospitals are the same
+     * shape — one per district, and only the nearest one is useful. Ticking this
+     * on a kind with a single provincial office would invent branches that do
+     * not exist, so leave it off unless the district really is the unit.
+     *
+     * `districtTr` overrides the Turkish term used in the district-scoped Maps
+     * query when the provincial name would be wrong (an İstanbul district has a
+     * "Göç İdaresi", not an "İl Göç İdaresi Müdürlüğü" — there is only one of
+     * those per province).
+     */
+    perDistrict?: boolean;
+    districtTr?: string;
 }
 
 export const OFFICE_KINDS: OfficeKind[] = [
@@ -232,6 +310,9 @@ export const OFFICE_KINDS: OfficeKind[] = [
         ],
         officialUrl: 'https://www.goc.gov.tr/',
         appointment: { url: 'https://e-ikamet.goc.gov.tr/', label: 'التقديم والموعد عبر e-İkamet' },
+        // The whole reason the district dimension exists.
+        perDistrict: true,
+        districtTr: 'Göç İdaresi',
     },
     {
         id: 'emniyet',
@@ -272,6 +353,10 @@ export const OFFICE_KINDS: OfficeKind[] = [
         ],
         officialUrl: 'https://www.nvi.gov.tr/',
         appointment: { url: 'https://randevu.nvi.gov.tr/', label: 'حجز موعد النفوس الرسمي' },
+        // Every district runs its own Nüfus office and your address decides which
+        // one you belong to — the province-wide page is the wrong unit.
+        perDistrict: true,
+        districtTr: 'Nüfus Müdürlüğü',
     },
     {
         id: 'adliye',
@@ -394,6 +479,9 @@ export const OFFICE_KINDS: OfficeKind[] = [
         ],
         officialUrl: 'https://www.saglik.gov.tr/',
         appointment: { url: 'https://mhrs.gov.tr/', label: 'حجز موعد طبي عبر MHRS' },
+        // Nobody crosses İstanbul for a state hospital — the district is the unit.
+        perDistrict: true,
+        districtTr: 'Devlet Hastanesi',
     },
     {
         id: 'gocmen-saglik',
@@ -421,6 +509,30 @@ export const OFFICE_KINDS: OfficeKind[] = [
             'kizilay', 'kızılay', 'red crescent', 'مساعدة', 'كرت المساعدة', 'ssc',
         ],
         officialUrl: 'https://www.kizilay.org.tr/',
+    },
+    {
+        id: 'otogar',
+        ar: 'كراج الحافلات (Otogar)',
+        tr: 'Şehirlerarası Otobüs Terminali',
+        groupId: 'money',
+        icon: Bus,
+        what: 'السفر بين المدن، شركات الحافلات، ومكاتب الشحن — أول مكان يحتاجه القادم الجديد.',
+        aliases: [
+            'كراج', 'الكراج', 'اوتوغار', 'أوتوغار', 'محطة الحافلات', 'الباصات', 'الحافلات',
+            'otogar', 'terminal', 'otobus terminali', 'سفر بين المدن', 'شركات النقل',
+        ],
+    },
+    {
+        id: 'havalimani',
+        ar: 'المطار',
+        tr: 'Havalimanı',
+        groupId: 'money',
+        icon: Plane,
+        what: 'الرحلات الداخلية والدولية، ومنافذ الوصول والمغادرة في الولاية.',
+        aliases: [
+            'المطار', 'مطار', 'الطيران', 'havalimani', 'havalimanı', 'airport',
+            'hava limani', 'رحلة', 'طيران', 'سفر',
+        ],
     },
     {
         id: 'visa-center',
@@ -872,6 +984,10 @@ export interface OfficialPlace {
     appointment?: { url: string; label: string };
     /** Set on 'nearby' places so the copy can say "الأقرب إليك" honestly. */
     officeKindId?: string;
+    /** Set on district-scoped office pages (goc / nufus / hastane). */
+    districtSlug?: string;
+    districtAr?: string;
+    districtTr?: string;
     /** Missions only — splits the hub into «عربية» / «أجنبية». */
     region?: 'arab' | 'intl';
     /** Missions only. `honorary` cannot issue passports — surfaced in the UI. */
@@ -1003,22 +1119,201 @@ function buildOfficePlaces(): OfficialPlace[] {
                 appointment: kind.appointment,
                 officeKindId: kind.id,
             });
+
+            // District-scoped pages, where the district is the real unit.
+            if (!kind.perDistrict) continue;
+            const districtTerm = kind.districtTr || kind.tr;
+            for (const d of districtsOfCity(city.slug)) {
+                out.push({
+                    slug: `${kind.id}-${city.slug}-${d.slug}`,
+                    kind: 'nearby',
+                    groupId: kind.groupId,
+                    ar: `${kind.ar} في ${d.ar} (${city.ar})`,
+                    shortAr: `${kind.ar} — ${d.ar}`,
+                    tr: `${districtTerm} — ${d.tr}, ${city.tr}`,
+                    citySlug: city.slug,
+                    cityAr: city.ar,
+                    cityTr: city.tr,
+                    districtSlug: d.slug,
+                    districtAr: d.ar,
+                    districtTr: d.tr,
+                    // District + province in the query: "Göç İdaresi Esenyurt
+                    // İstanbul" resolves to what actually serves Esenyurt, which
+                    // is the answer — even when that office sits next door.
+                    mapQuery: `${districtTerm} ${d.tr} ${city.tr}`,
+                    what: kind.what,
+                    aliases: [
+                        ...kind.aliases, ...city.aliases,
+                        city.ar, kind.ar, d.ar, d.tr, slugifyTr(d.tr),
+                        `${kind.ar} ${d.ar}`, `${kind.ar} ${d.ar} ${city.ar}`,
+                        // «بالفاتح», «في اسنيورت» — the way people actually type it.
+                        `ب${d.ar}`, `في${d.ar}`,
+                    ],
+                    icon: kind.icon,
+                    officialUrl: kind.officialUrl,
+                    appointment: kind.appointment,
+                    officeKindId: kind.id,
+                });
+            }
         }
     }
 
     return out;
 }
 
-/** Every place the site knows about, built once at module load. */
+// ============================================================================
+// 🏢 الفروع المحقَّقة — specific offices, verified address, and WHO they serve
+// ============================================================================
+//
+// A district page answers "where is the office for my district" with a live
+// search. These entries go further: a named building we verified, plus the list
+// of districts it actually serves. That second part is the one people get wrong
+// — in İstanbul a resident of Esenyurt is served in Beylikdüzü and one in
+// Sultanbeyli in Pendik, so «إدارة الهجرة في اسنيورت» pointing at an Esenyurt
+// building would be a wasted trip. `serves` says it in plain Arabic.
+//
+// Only add a branch you verified. Anything unverified is already covered by the
+// district page's live Maps search — a guess here buys nothing and risks a lot.
+
+interface VerifiedBranch {
+    /** Slug suffix; final slug is `<kindId>-<citySlug>-branch-<id>`. */
+    id: string;
+    kindId: string;
+    citySlug: string;
+    /** Arabic name of the branch (without the kind prefix). */
+    ar: string;
+    tr: string;
+    contact: PlaceContact;
+    /** Arabic sentence naming the districts this office serves. */
+    serves?: string;
+}
+
+const VERIFIED_BRANCHES: VerifiedBranch[] = [
+    {
+        id: 'il-mudurlugu', kindId: 'goc', citySlug: 'istanbul',
+        ar: 'المديرية الرئيسية (الفاتح)', tr: 'İstanbul İl Göç İdaresi Müdürlüğü',
+        serves: 'المقر الرئيسي لولاية إسطنبول، في الفاتح قرب بيازيد — إليه تُحال المعاملات التي لا تُنجز في فروع المناطق.',
+        contact: {
+            address: 'Hırka-i Şerif Mah., Adnan Menderes Bulvarı No: 64, 34091 Fatih, İstanbul',
+            verifiedOn: '2026-07-30', source: 'istanbul.goc.gov.tr',
+        },
+    },
+    {
+        id: 'beylikduzu', kindId: 'goc', citySlug: 'istanbul',
+        ar: 'فرع بيليك دوزو', tr: 'Beylikdüzü İlçe Çalışma Grup Başkanlığı',
+        serves: 'يخدم مناطق: بيليك دوزو، اسنيورت، وبيوك تشكمجة. سكان اسنيورت يراجعون هذا الفرع لا فرعاً في اسنيورت نفسها.',
+        contact: {
+            address: 'Yakuplu Mah., Hürriyet Bulvarı No: 18, Beylikdüzü, İstanbul',
+            verifiedOn: '2026-07-30', source: DIRS,
+        },
+    },
+    {
+        id: 'pendik', kindId: 'goc', citySlug: 'istanbul',
+        ar: 'فرع بنديك', tr: 'Pendik İlçe Çalışma Grup Başkanlığı',
+        serves: 'يخدم مناطق: بنديك، كارتال، مالتيبه، سلطان بيلي، وتوزلا. سكان سلطان بيلي يراجعون هذا الفرع.',
+        contact: {
+            address: 'Pendik Kaymakamlığı, Doğu Mah., İnce Sok. No: 12, Kat: 1, Pendik, İstanbul',
+            verifiedOn: '2026-07-30', source: DIRS,
+        },
+    },
+    {
+        id: 'umraniye', kindId: 'goc', citySlug: 'istanbul',
+        ar: 'فرع العمرانية', tr: 'Ümraniye İlçe Çalışma Grup Başkanlığı',
+        serves: 'يخدم مناطق الجانب الآسيوي الشمالي حول العمرانية.',
+        contact: {
+            address: 'Necip Fazıl Mah., Gaffar Okkan Cad. No: 3 (Adil Amca Parkı), Ümraniye, İstanbul',
+            verifiedOn: '2026-07-30', source: DIRS,
+        },
+    },
+    {
+        id: 'besiktas', kindId: 'goc', citySlug: 'istanbul',
+        ar: 'فرع بشيكتاش', tr: 'Beşiktaş İlçe Çalışma Grup Başkanlığı',
+        serves: 'يخدم مناطق الجانب الأوروبي المركزي حول بشيكتاش.',
+        contact: {
+            address: 'Gayrettepe Mah., Gönenoğlu Sok. No: 10, Beşiktaş, İstanbul',
+            verifiedOn: '2026-07-30', source: DIRS,
+        },
+    },
+    {
+        id: 'il-mudurlugu', kindId: 'goc', citySlug: 'gaziantep',
+        ar: 'المديرية الرئيسية (شهيد كامل)', tr: 'Gaziantep İl Göç İdaresi Müdürlüğü',
+        serves: 'المقر الرئيسي لولاية غازي عنتاب، في حي إنجيلي بينار بمنطقة شهيد كامل. ولمناطق مثل إسلاهية ونيزيب راجع صفحة المنطقة لعرض أقرب مكتب إليك.',
+        contact: {
+            address: 'İncilipınar Mah., 4 Nolu Cad. No: 6, Şehitkamil, Gaziantep',
+            phone: '0342 215 01 81',
+            verifiedOn: '2026-07-30', source: 'gaziantep.goc.gov.tr',
+        },
+    },
+];
+
+function buildBranchPlaces(): OfficialPlace[] {
+    return VERIFIED_BRANCHES.flatMap((b) => {
+        const city = placeCityBySlug(b.citySlug);
+        const kind = officeKindById(b.kindId);
+        if (!city || !kind) return [];
+        return [{
+            slug: `${b.kindId}-${b.citySlug}-branch-${b.id}`,
+            // A named building, not a class of offices — so 'single', and the
+            // Maps link targets its verified address.
+            kind: 'single' as const,
+            groupId: kind.groupId,
+            ar: `${kind.ar} في ${city.ar} — ${b.ar}`,
+            shortAr: `${kind.ar} — ${b.ar}`,
+            tr: b.tr,
+            citySlug: city.slug,
+            cityAr: city.ar,
+            cityTr: city.tr,
+            mapQuery: `${b.tr} ${city.tr}`,
+            what: b.serves ? `${b.serves} ${kind.what}` : kind.what,
+            aliases: [
+                ...kind.aliases, ...city.aliases, city.ar, kind.ar, b.ar, b.tr,
+            ],
+            icon: kind.icon,
+            officialUrl: kind.officialUrl,
+            appointment: kind.appointment,
+            officeKindId: kind.id,
+            contact: b.contact,
+        }];
+    });
+}
+
+/**
+ * Every place the site knows about, built once at module load.
+ *
+ * ORDER MATTERS. Search ties are broken by position, and office pages come
+ * BEFORE their verified branches on purpose: «إدارة الهجرة في إسطنبول» must land
+ * on the province page — the one listing all five offices and every district —
+ * not on the Fatih branch. Both titles contain every query token, so without
+ * this the branch won the tie and sent a resident of Esenyurt across the city.
+ * A query that names a branch («فرع بيليك دوزو») still wins on its own tokens.
+ */
 export const OFFICIAL_PLACES: OfficialPlace[] = [
     ...buildMissionPlaces(ARAB_MISSIONS, 'arab'),
     ...buildMissionPlaces(INTL_MISSIONS, 'intl'),
     ...buildOfficePlaces(),
+    ...buildBranchPlaces(),
 ];
 
-/** Missions (kind: 'single'), Arab ones first — the audience we serve. */
+/** Verified, named branch offices (as opposed to class-of-office pages). */
+export const BRANCH_PLACES: OfficialPlace[] =
+    OFFICIAL_PLACES.filter((p) => p.kind === 'single' && p.officeKindId);
+
+/** The verified branches of one office kind in one province. */
+export const branchesOf = (kindId: string, citySlug: string): OfficialPlace[] =>
+    BRANCH_PLACES.filter((p) => p.officeKindId === kindId && p.citySlug === citySlug);
+
+/** District-scoped office pages for one province. */
+export const districtPlacesOf = (kindId: string, citySlug: string): OfficialPlace[] =>
+    OFFICIAL_PLACES.filter((p) => p.officeKindId === kindId && p.citySlug === citySlug && p.districtSlug);
+
+/**
+ * Diplomatic missions only. Filtered on `region` rather than `kind === 'single'`
+ * because verified branch offices are also 'single' (they are named buildings
+ * too) — keying on kind alone would file the İstanbul immigration branches
+ * under «السفارات والقنصليات».
+ */
 export const MISSION_PLACES: OfficialPlace[] =
-    OFFICIAL_PLACES.filter((p) => p.kind === 'single');
+    OFFICIAL_PLACES.filter((p) => Boolean(p.region));
 
 /** Office pages (kind: 'nearby'). */
 export const OFFICE_PLACES: OfficialPlace[] =

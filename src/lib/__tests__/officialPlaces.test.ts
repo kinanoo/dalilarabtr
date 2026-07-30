@@ -12,6 +12,7 @@ import {
     OFFICIAL_PLACES, MISSION_PLACES, OFFICE_PLACES, OFFICE_KINDS, PLACE_CITIES,
     PLACE_GROUPS, placeBySlug, officePlace, placeMapUrl, placeDirectionsUrl,
     placeNameSearchUrl, hasStoredAddress, buildPlacesSearchEntries,
+    BRANCH_PLACES, placeDistrict,
 } from '@/lib/officialPlaces';
 import { normalizeArabic } from '@/lib/arabicSearch';
 
@@ -52,10 +53,50 @@ describe('officialPlaces table', () => {
         expect(missing).toEqual([]);
     });
 
-    it('splits cleanly into missions and offices', () => {
-        expect(MISSION_PLACES.length + OFFICE_PLACES.length).toBe(OFFICIAL_PLACES.length);
+    it('splits cleanly into missions, office pages and verified branches', () => {
+        // Three disjoint kinds of place, together covering everything. Branches
+        // are 'single' like missions (a named building) but carry an
+        // officeKindId, which is what tells the two apart.
+        expect(MISSION_PLACES.length + OFFICE_PLACES.length + BRANCH_PLACES.length)
+            .toBe(OFFICIAL_PLACES.length);
         expect(MISSION_PLACES.every((p) => p.kind === 'single' && p.region && p.missionType)).toBe(true);
         expect(OFFICE_PLACES.every((p) => p.kind === 'nearby' && Boolean(p.officeKindId))).toBe(true);
+        expect(BRANCH_PLACES.every((p) => p.kind === 'single' && Boolean(p.officeKindId) && !p.region)).toBe(true);
+        // Every verified branch must actually carry the address that justifies it
+        // existing as a separate page from its district page.
+        expect(BRANCH_PLACES.every((p) => Boolean(p.contact))).toBe(true);
+    });
+
+    it('gives every district page a district, and every district a real province', () => {
+        const districtPages = OFFICIAL_PLACES.filter((p) => p.districtSlug);
+        expect(districtPages.length).toBeGreaterThan(200);
+        const bad = districtPages
+            .filter((p) => !p.districtAr || !p.districtTr || !placeDistrict(p.citySlug, p.districtSlug!))
+            .map((p) => p.slug);
+        expect(bad).toEqual([]);
+        // The district must be in the Maps query, or the page is just the
+        // province page under a different URL — the exact bug it exists to fix.
+        const missingDistrict = districtPages
+            .filter((p) => !p.mapQuery.includes(p.districtTr!))
+            .map((p) => p.slug);
+        expect(missingDistrict).toEqual([]);
+    });
+
+    it('routes the districts the request named to their own pages', () => {
+        for (const slug of [
+            'goc-istanbul-esenyurt', 'goc-istanbul-fatih', 'goc-istanbul-sultanbeyli',
+            'goc-gaziantep-islahiye', 'goc-gaziantep-sahinbey', 'goc-gaziantep-nizip',
+        ]) {
+            expect(placeBySlug(slug)).toBeDefined();
+        }
+    });
+
+    it('names which districts each verified branch serves', () => {
+        // The whole point of a branch page over a district page: Esenyurt is
+        // served in Beylikdüzü and Sultanbeyli in Pendik. Saying so prevents the
+        // wasted trip; omitting it makes the branch page pointless.
+        expect(placeBySlug('goc-istanbul-branch-beylikduzu')!.what).toContain('اسنيورت');
+        expect(placeBySlug('goc-istanbul-branch-pendik')!.what).toContain('سلطان بيلي');
     });
 
     it('builds an office page for every (kind, allowed city) pair', () => {
@@ -88,6 +129,30 @@ describe('stored addresses', () => {
         expect(withContact.length).toBeGreaterThan(0);
         expect(withContact.every((p) => p.kind === 'single')).toBe(true);
         expect(OFFICE_PLACES.every((p) => !p.contact)).toBe(true);
+    });
+
+    /**
+     * The staleness guard.
+     *
+     * Every address was verified on one day, and nothing about the data warns
+     * when that day recedes: in a year all of them still read "verified
+     * 2026-07-26" and a consulate that moved would go unnoticed. This test is
+     * the alarm clock — when it starts failing, the addresses are due a
+     * re-verification pass (and the visitor-facing report button exists so the
+     * pass starts from real reports rather than from scratch).
+     *
+     * Bump MAX_AGE_DAYS only together with an actual re-verification.
+     */
+    it('has no address older than the re-verification window', () => {
+        const MAX_AGE_DAYS = 400;
+        const now = Date.now();
+        const stale = withContact
+            .filter((p) => {
+                const age = (now - Date.parse(p.contact!.verifiedOn)) / 86_400_000;
+                return age > MAX_AGE_DAYS;
+            })
+            .map((p) => `${p.slug} (${p.contact!.verifiedOn})`);
+        expect(stale).toEqual([]);
     });
 
     it('stamps every stored address with an ISO date and a source', () => {

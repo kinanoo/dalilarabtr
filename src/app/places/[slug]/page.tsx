@@ -12,10 +12,11 @@ import { SITE_CONFIG } from '@/lib/config';
 import {
     OFFICIAL_PLACES, MISSION_PLACES, OFFICE_KINDS, PLACE_CITIES,
     placeBySlug, placeMapUrl, placeDirectionsUrl, placeNameSearchUrl,
-    placeGroupById, officePlace,
+    placeGroupById, officePlace, branchesOf, districtPlacesOf,
     type OfficialPlace,
 } from '@/lib/officialPlaces';
 import PlaceAddressCard from './PlaceAddressCard';
+import PlaceFooter from './PlaceFooter';
 
 // ISR + dynamicParams (NOT force-static) — the only prerendered dynamic-route
 // shape @opennextjs/cloudflare actually serves on Workers; /city/[slug] and
@@ -150,6 +151,14 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
             .filter((c) => c.slug !== place.citySlug)
             .map((c) => officePlace(place.officeKindId!, c.slug))
             .filter((p): p is OfficialPlace => Boolean(p));
+
+    // Verified named branches + district pages of THIS office kind. Shown only
+    // on the province-level page, which is the one that needs them: it is the
+    // page that would otherwise answer "where is immigration in İstanbul?" with
+    // one pin for a city of 39 districts and five separate offices.
+    const isProvinceOfficePage = place.kind === 'nearby' && !place.districtSlug && Boolean(place.officeKindId);
+    const branches = isProvinceOfficePage ? branchesOf(place.officeKindId!, place.citySlug) : [];
+    const districtPages = isProvinceOfficePage ? districtPlacesOf(place.officeKindId!, place.citySlug) : [];
 
     // Other office kinds in the same city — the natural "while you're here".
     const alsoInCity: OfficialPlace[] = OFFICE_KINDS
@@ -399,6 +408,71 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                         </div>
                     </div>
 
+                    {/* ── الفروع المحقَّقة في هذه الولاية ─────────────────── */}
+                    {branches.length > 0 && (
+                        <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                            <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-emerald-500" />
+                            <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-2">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                                    <Building2 size={16} />
+                                </span>
+                                فروع {place.shortAr} في {place.cityAr}
+                            </h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                                لكل فرع مناطق يخدمها — راجع الفرع الصحيح لمنطقتك، لا الأقرب على الخريطة.
+                            </p>
+                            <div className="space-y-2">
+                                {branches.map((b) => (
+                                    <Link
+                                        key={b.slug}
+                                        href={`/places/${b.slug}`}
+                                        className="group flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-sm transition-all"
+                                    >
+                                        <MapPin size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                                                {b.shortAr}
+                                            </span>
+                                            {b.contact && (
+                                                <span className="block text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5" dir="ltr" lang="tr">
+                                                    {b.contact.address}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── حسب المنطقة ─────────────────────────────────────── */}
+                    {districtPages.length > 0 && (
+                        <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                            <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-blue-500" />
+                            <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-2">
+                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                    <MapPin size={16} />
+                                </span>
+                                {place.shortAr} حسب المنطقة في {place.cityAr}
+                            </h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                                اختر منطقتك لعرض المكتب الذي يخدمها على الخريطة.
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {districtPages.map((d) => (
+                                    <Link
+                                        key={d.slug}
+                                        href={`/places/${d.slug}`}
+                                        className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2.5 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all"
+                                    >
+                                        <MapPin size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{d.districtAr}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* ── دوائر أخرى في نفس الولاية ───────────────────────── */}
                     {place.kind === 'nearby' && alsoInCity.length > 0 && (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
@@ -472,6 +546,16 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
 
                 </div>
             </main>
+
+            <PlaceFooter
+                slug={place.slug}
+                placeAr={place.ar}
+                citySlug={place.citySlug}
+                districtSlug={place.districtSlug}
+                officeKindId={place.officeKindId}
+                mapUrl={mapUrl}
+                hasAddress={Boolean(place.contact)}
+            />
         </div>
     );
 }

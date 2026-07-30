@@ -6,8 +6,13 @@ import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG } from '@/lib/config';
 import {
     OFFICIAL_PLACES, MISSION_PLACES, OFFICE_KINDS, PLACE_CITIES,
+    districtsOfCity, officeKindById,
 } from '@/lib/officialPlaces';
+
 import PlacesClient from './PlacesClient';
+
+/** The office kinds that have per-district pages (see OfficeKind.perDistrict). */
+const DISTRICT_KIND_IDS = OFFICE_KINDS.filter((k) => k.perDistrict).map((k) => k.id);
 
 // Everything on this hub is a compile-time constant plus outbound Maps links,
 // so it can be cached hard. Matches the /tools/pharmacy hub.
@@ -213,6 +218,34 @@ export default function PlacesHubPage() {
                                 </div>
                             );
                         })}
+                    </div>
+
+                    {/* District-level pages need their own crawlable links: they
+                        are the answer for «إدارة الهجرة في اسنيورت» and there are
+                        hundreds of them, all otherwise reachable only from inside
+                        their province page. */}
+                    <h3 className="text-sm font-black text-slate-700 dark:text-slate-200 mt-6 mb-2">
+                        حسب المنطقة — الهجرة والنفوس والمستشفيات
+                    </h3>
+                    <div className="space-y-3">
+                        {PLACE_CITIES.filter((c) => districtsOfCity(c.slug).length > 0).map((c) => (
+                            <div key={`d-${c.slug}`}>
+                                <p className="text-xs font-black text-slate-500 dark:text-slate-400 mb-1.5">{c.ar}</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {DISTRICT_KIND_IDS.flatMap((kindId) =>
+                                        districtsOfCity(c.slug).map((d) => (
+                                            <Link
+                                                key={`${kindId}-${c.slug}-${d.slug}`}
+                                                href={`/places/${kindId}-${c.slug}-${d.slug}`}
+                                                className="text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full px-2.5 py-1 hover:border-blue-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+                                            >
+                                                {officeKindById(kindId)?.ar.split(' ')[0]} {d.ar}
+                                            </Link>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </section>
 
