@@ -12,6 +12,8 @@ import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { categorySlugForName } from '@/lib/serviceCategories';
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
+import DirectWhatsAppLink from '@/components/services/DirectWhatsAppLink';
+import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
 
 export const revalidate = 60;
 
@@ -62,8 +64,9 @@ export async function generateMetadata(
 
     // No manual brand suffix — the root layout's title template appends
     // "| <brand>" once. Adding "| دليل العرب" here produced a doubled brand.
-    const title = `${data.name} - ${data.profession} في ${data.city}`;
-    const description = data.description?.substring(0, 160) ||
+    const profession = displayServiceProfession(data.profession);
+    const title = `${data.name} - ${profession} في ${data.city}`;
+    const description = cleanServiceText(data.description)?.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
     const ogImage = getOgImage(data.image, { title });
 
@@ -107,14 +110,14 @@ export default async function ServiceDetailsPage(
     );
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
     const cleanWhatsApp = (provider.whatsapp || provider.phone || '').replace(/\D/g, '');
+    const providerProfession = displayServiceProfession(provider.profession);
+    const providerDescription = cleanServiceText(provider.description);
     const websiteUrl = safeExternalUrl(provider.website);
     const mapUrl = safeExternalUrl(provider.google_maps_url || provider.map_location);
     // Include this listing's link so the provider sees the client came from
     // دليل العرب + which exact service page — trust + lead attribution.
     const listingUrl = `${SITE_CONFIG.siteUrl}/services/${canonicalId}`;
-    const whatsappUrl = `https://wa.me/${cleanWhatsApp}?text=${encodeURIComponent(
-        `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${provider.profession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`
-    )}`;
+    const whatsappText = `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${providerProfession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`;
 
     // Schema.org: Service + LocalBusiness with aggregateRating only when real
     // ratings exist. Never infer pricing or credentials that were not supplied.
@@ -126,8 +129,8 @@ export default async function ServiceDetailsPage(
     const catSlug = categorySlugForName(provider.category);
     const serviceLd = {
         '@type': 'Service',
-        name: `${provider.profession} — ${provider.name}`,
-        description: provider.description || `خدمات ${provider.category} في ${provider.city}`,
+        name: `${providerProfession} — ${provider.name}`,
+        description: providerDescription || `خدمات ${provider.category} في ${provider.city}`,
         provider: {
             '@type': 'LocalBusiness',
             name: provider.name,
@@ -231,7 +234,7 @@ export default async function ServiceDetailsPage(
                                         )}
                                     </h1>
                                     <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg mt-1">
-                                        {provider.profession}
+                                        {providerProfession}
                                     </p>
                                 </div>
                                 <InlineStarRating
@@ -265,22 +268,21 @@ export default async function ServiceDetailsPage(
                     <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">نبذة عن الخدمة</h2>
                         <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {provider.description || 'لم يتم إضافة نبذة تفصيلية بعد.'}
+                            {providerDescription || 'لم يتم إضافة نبذة تفصيلية بعد.'}
                         </div>
                     </div>
 
                     {/* Contact + Share */}
                     <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {cleanWhatsApp && (
-                            <a
-                                href={whatsappUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <DirectWhatsAppLink
+                                phone={provider.whatsapp || provider.phone || ''}
+                                text={whatsappText}
                                 className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 active:scale-95"
                             >
                                 <MessageCircle size={22} />
                                 تواصل عبر الواتساب
-                            </a>
+                            </DirectWhatsAppLink>
                         )}
                         {cleanPhone && (
                             <a
@@ -305,8 +307,8 @@ export default async function ServiceDetailsPage(
 
                     <div className="mt-4 flex justify-center">
                         <ShareMenu
-                            title={`${provider.name} — ${provider.profession}`}
-                            text={`${provider.name} — ${provider.profession} في ${provider.city}. تواصل عبر دليل العرب.`}
+                            title={`${provider.name} — ${providerProfession}`}
+                            text={`${provider.name} — ${providerProfession} في ${provider.city}. تواصل عبر دليل العرب.`}
                             url={`${SITE_CONFIG.siteUrl}/services/${canonicalId}`}
                         />
                     </div>
@@ -386,7 +388,7 @@ export default async function ServiceDetailsPage(
                                         <span className="truncate">{r.name}</span>
                                         {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
                                     </div>
-                                    {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{r.profession}</p>}
+                                    {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{displayServiceProfession(r.profession)}</p>}
                                     <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                                         {r.city && <span className="inline-flex items-center gap-0.5"><MapPin size={11} />{r.city}</span>}
                                         {!!(r.review_count && r.review_count > 0 && r.rating) && (

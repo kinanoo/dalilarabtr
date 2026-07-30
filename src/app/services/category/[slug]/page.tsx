@@ -13,6 +13,7 @@ import {
 } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import { cityBySlug, citySlugForName } from '@/lib/turkishCities';
+import { displayServiceProfession } from '@/lib/serviceText';
 
 export const revalidate = 600;
 
@@ -114,7 +115,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                             '@type': 'LocalBusiness',
                             name: p.name,
                             url,
-                            ...(p.profession ? { description: p.profession } : {}),
+                            ...(p.profession ? { description: displayServiceProfession(p.profession) } : {}),
                             ...(p.image ? { image: p.image } : {}),
                             ...(p.phone ? { telephone: p.phone } : {}),
                             address: { '@type': 'PostalAddress', addressCountry: 'TR', ...(p.city ? { addressLocality: p.city } : {}) },

@@ -9,6 +9,7 @@ import AddServiceBanner from '@/components/services/AddServiceBanner';
 import ProviderCard, { type ProviderCardData } from '@/components/services/ProviderCard';
 import { categoryBySlug, type ServiceCategory } from '@/lib/serviceCategories';
 import { cityBySlug, citySlugForName, type TRCity } from '@/lib/turkishCities';
+import { displayServiceProfession } from '@/lib/serviceText';
 
 export const revalidate = 600;
 
@@ -106,7 +107,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                             '@type': 'LocalBusiness',
                             name: p.name,
                             url: `${base}/services/${p.slug || p.id}`,
-                            ...(p.profession ? { description: p.profession } : {}),
+                            ...(p.profession ? { description: displayServiceProfession(p.profession) } : {}),
                             ...(p.image ? { image: p.image } : {}),
                             ...(p.phone ? { telephone: p.phone } : {}),
                             address: { '@type': 'PostalAddress', addressCountry: 'TR', addressLocality: cityObj.ar },

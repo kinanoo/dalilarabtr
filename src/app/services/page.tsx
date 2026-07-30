@@ -8,6 +8,7 @@ import {
     type DirectoryProvider,
 } from '@/lib/serviceDirectory';
 import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
+import { displayServiceProfession } from '@/lib/serviceText';
 
 // Refresh the directory's structured data periodically so new/updated
 // providers enter Google's index without a redeploy.
@@ -118,7 +119,7 @@ export default async function ServicesPage() {
                 '@type': 'LocalBusiness',
                 name: p.name,
                 url,
-                ...(p.profession ? { description: p.profession } : {}),
+                ...(p.profession ? { description: displayServiceProfession(p.profession) } : {}),
                 ...(p.image ? { image: p.image } : {}),
                 ...(p.phone ? { telephone: p.phone } : {}),
                 address: {
@@ -153,7 +154,7 @@ export default async function ServicesPage() {
                 '@id': `${base}/services#directory`,
                 url: `${base}/services`,
                 name: 'دليل الخدمات والمهن العربية في تركيا',
-                description: 'دليل مقدّمي الخدمات باللغة العربية في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
+                description: 'دليل مقدّمي الخدمات في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
                 inLanguage: 'ar',
                 isPartOf: { '@id': `${base}/#organization` },
                 mainEntity: itemList,

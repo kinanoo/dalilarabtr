@@ -51,12 +51,12 @@ const blockedSourceCategories = new Set([
 const classificationRules = [
   {
     category: 'طب أسنان',
-    profession: 'خدمات طب أسنان باللغة العربية',
+    profession: 'خدمات طب أسنان',
     patterns: ['dentist', 'dental', 'أسنان', 'اسنان', 'سني'],
   },
   {
     category: 'طبيب',
-    profession: 'خدمات طبية باللغة العربية',
+    profession: 'خدمات طبية',
     patterns: [
       'health-medical',
       'doctor',
@@ -72,17 +72,17 @@ const classificationRules = [
   },
   {
     category: 'محامي',
-    profession: 'خدمات قانونية باللغة العربية',
+    profession: 'خدمات قانونية',
     patterns: ['lawyer', 'legal', 'attorney', 'محامي', 'قانون', 'حقوق'],
   },
   {
     category: 'مترجم',
-    profession: 'خدمات ترجمة باللغة العربية',
+    profession: 'خدمات ترجمة',
     patterns: ['translator', 'translation', 'ترجم', 'ترجمة', 'tercüme'],
   },
   {
     category: 'عقارات',
-    profession: 'خدمات عقارية باللغة العربية',
+    profession: 'خدمات عقارية',
     patterns: [
       'real-estate',
       'property',
@@ -111,7 +111,7 @@ const classificationRules = [
   },
   {
     category: 'متاجر ومستلزمات',
-    profession: 'متجر يعرض خدماته باللغة العربية',
+    profession: 'متجر يعرض خدماته',
     patterns: [
       'supermarket',
       'market',
@@ -130,7 +130,7 @@ const classificationRules = [
   },
   {
     category: 'تعليم',
-    profession: 'خدمات تعليمية باللغة العربية',
+    profession: 'خدمات تعليمية',
     patterns: [
       'education',
       'school',
@@ -147,7 +147,7 @@ const classificationRules = [
   },
   {
     category: 'تجميل',
-    profession: 'خدمات تجميل وعناية باللغة العربية',
+    profession: 'خدمات تجميل وعناية',
     patterns: [
       'beauty',
       'hair',
@@ -162,12 +162,12 @@ const classificationRules = [
   },
   {
     category: 'حلاقة',
-    profession: 'خدمات حلاقة باللغة العربية',
+    profession: 'خدمات حلاقة',
     patterns: ['barber', 'hairdresser', 'حلاق', 'حلاقة', 'كوافير'],
   },
   {
     category: 'شحن',
-    profession: 'خدمات شحن ولوجستيات باللغة العربية',
+    profession: 'خدمات شحن ولوجستيات',
     patterns: [
       'cargo',
       'shipping',
@@ -181,17 +181,17 @@ const classificationRules = [
   },
   {
     category: 'نقل عفش',
-    profession: 'خدمات نقل أثاث باللغة العربية',
+    profession: 'خدمات نقل أثاث',
     patterns: ['moving', 'evden', 'نقل عفش', 'نقل أثاث'],
   },
   {
     category: 'نقل وتكسي',
-    profession: 'خدمات نقل وتوصيل باللغة العربية',
+    profession: 'خدمات نقل وتوصيل',
     patterns: ['taxi', 'transfer', 'تكسي', 'تاكسي', 'سائق', 'توصيل', 'ترانسفير'],
   },
   {
     category: 'سياحة',
-    profession: 'خدمات سياحية باللغة العربية',
+    profession: 'خدمات سياحية',
     patterns: [
       'tour',
       'travel',
@@ -205,7 +205,7 @@ const classificationRules = [
   },
   {
     category: 'سيارات',
-    profession: 'خدمات سيارات باللغة العربية',
+    profession: 'خدمات سيارات',
     patterns: [
       'automotive',
       'car-rental',
@@ -219,17 +219,17 @@ const classificationRules = [
   },
   {
     category: 'تأمين',
-    profession: 'خدمات تأمين باللغة العربية',
+    profession: 'خدمات تأمين',
     patterns: ['insurance', 'sigorta', 'تأمين', 'سيكورتا'],
   },
   {
     category: 'محاسبة',
-    profession: 'خدمات محاسبة باللغة العربية',
+    profession: 'خدمات محاسبة',
     patterns: ['accounting', 'accountant', 'muhasebe', 'محاسب', 'محاسبة'],
   },
   {
     category: 'مقاولات',
-    profession: 'خدمات مقاولات وتشطيبات باللغة العربية',
+    profession: 'خدمات مقاولات وتشطيبات',
     patterns: [
       'construction',
       'contractor',
@@ -244,27 +244,27 @@ const classificationRules = [
   },
   {
     category: 'تشطيبات وديكور',
-    profession: 'خدمات تشطيبات وديكور باللغة العربية',
+    profession: 'خدمات تشطيبات وديكور',
     patterns: ['finishing', 'decoration', 'ديكور', 'تشطيب', 'ترميم'],
   },
   {
     category: 'سباكة',
-    profession: 'خدمات سباكة باللغة العربية',
+    profession: 'خدمات سباكة',
     patterns: ['plumbing', 'plumber', 'tesisat', 'سباك', 'سباكة', 'تمديدات'],
   },
   {
     category: 'كهرباء',
-    profession: 'خدمات كهرباء باللغة العربية',
+    profession: 'خدمات كهرباء',
     patterns: ['electric', 'elektrik', 'كهرباء', 'كهربائي'],
   },
   {
     category: 'نجارة',
-    profession: 'خدمات نجارة باللغة العربية',
+    profession: 'خدمات نجارة',
     patterns: ['carpenter', 'wood', 'mobilya', 'نجار', 'نجارة', 'خشب'],
   },
   {
     category: 'حدادة وأقفال',
-    profession: 'خدمات حدادة وأقفال باللغة العربية',
+    profession: 'خدمات حدادة وأقفال',
     patterns: [
       'locksmith',
       'metal',
@@ -279,22 +279,22 @@ const classificationRules = [
   },
   {
     category: 'تنظيف',
-    profession: 'خدمات تنظيف باللغة العربية',
+    profession: 'خدمات تنظيف',
     patterns: ['cleaning', 'temizlik', 'تنظيف', 'نظافة'],
   },
   {
     category: 'صيانة أجهزة',
-    profession: 'خدمات صيانة أجهزة باللغة العربية',
+    profession: 'خدمات صيانة أجهزة',
     patterns: ['appliance-repair', 'صيانة أجهزة', 'تصليح غسالات', 'تصليح أفران'],
   },
   {
     category: 'صيانة منزلية',
-    profession: 'خدمات صيانة منزلية باللغة العربية',
+    profession: 'خدمات صيانة منزلية',
     patterns: ['home-maintenance', 'professional-services', 'صيانة منزلية', 'خدمات الصيانة'],
   },
   {
     category: 'تقنية وصيانة هواتف',
-    profession: 'خدمات تقنية وصيانة باللغة العربية',
+    profession: 'خدمات تقنية وصيانة',
     patterns: [
       'technology',
       'computer',
@@ -311,7 +311,7 @@ const classificationRules = [
   },
   {
     category: 'طباعة وتصميم',
-    profession: 'خدمات تصميم وطباعة باللغة العربية',
+    profession: 'خدمات تصميم وطباعة',
     patterns: [
       'printing',
       'design',
@@ -326,7 +326,7 @@ const classificationRules = [
   },
   {
     category: 'خدمات عامة',
-    profession: 'خدمات عامة باللغة العربية',
+    profession: 'خدمات عامة',
     patterns: [
       'general-services',
       'consulting',
@@ -474,6 +474,14 @@ const normalizePhone = (value) => {
   if (digits.length === 10) digits = `90${digits}`;
   return /^90\d{10}$/.test(digits) ? digits : '';
 };
+
+const cleanGeneratedServiceText = (value) =>
+  String(value || '')
+    .replace(/\s*باللغة العربية\s*/g, ' ')
+    .replace(/\s*ويتيح التواصل\.?/g, '.')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+\./g, '.')
+    .trim();
 
 const fetchHtml = async (url, attempt = 1) => {
   const controller = new AbortController();
@@ -650,14 +658,15 @@ const parseItem = (url, city, html) => {
       ) || null;
 
   const name = title.replace(/\s+/g, ' ').slice(0, 160);
+  const profession = cleanGeneratedServiceText(classification.profession);
   return {
     name,
-    profession: classification.profession,
+    profession,
     category: classification.category,
     city,
     phone: `+${phone}`,
     whatsapp: `+${phone}`,
-    description: `${name} يعرّف عن ${classification.profession.replace(' باللغة العربية', '')} في ${city} ويتيح التواصل باللغة العربية.`,
+    description: `${name} يعرّف عن ${profession} في ${city} ويتيح التواصل.`,
     website,
     google_maps_url: mapUrl,
     languages: ['العربية'],
@@ -761,7 +770,7 @@ const categoryCounts = Object.fromEntries(
 
 const batch = {
   label:
-    'دفعة التوسع الرابعة - مزودو خدمات يعرضون أعمالهم باللغة العربية في الولايات الحيوية - 2026-07-30',
+    'دفعة التوسع الرابعة - مزودو خدمات يعرضون أعمالهم في الولايات الحيوية - 2026-07-30',
   generated_at: CHECKED_AT,
   criteria: {
     language:

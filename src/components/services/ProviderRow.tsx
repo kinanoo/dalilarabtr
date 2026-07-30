@@ -5,6 +5,7 @@ import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 import type { ProviderCardData } from './ProviderCard';
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
+import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
 
 /**
  * ProviderRow — compact, scannable single-row layout for the "list" view of
@@ -16,6 +17,8 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
     const city = canonicalCity(p.city);
     const hasReviews = !!(p.review_count && p.review_count > 0);
     const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
+    const profession = displayServiceProfession(p.profession);
+    const description = cleanServiceText(p.description);
 
     return (
         <article className="group flex items-center gap-3 sm:gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:shadow-emerald-500/5 transition-all">
@@ -39,13 +42,13 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
                     </h3>
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] sm:text-xs font-bold flex-wrap">
-                    <span className="text-emerald-600 dark:text-emerald-400 line-clamp-1">{p.profession}</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 line-clamp-1">{profession}</span>
                     {city && <span className="inline-flex items-center gap-0.5 text-slate-400"><MapPin size={11} />{city}</span>}
                     {hasReviews ? (
                         <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400"><Star size={11} className="fill-amber-400 text-amber-400" />{p.rating ? Number(p.rating).toFixed(1) : '5.0'}</span>
                     ) : null}
                 </div>
-                <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">{p.description}</p>
+                <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">{description}</p>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">

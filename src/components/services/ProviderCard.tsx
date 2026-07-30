@@ -5,6 +5,7 @@ import { toLatinDigits } from '@/lib/digits';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
+import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
 
 export interface ProviderCardData {
     id: string;
@@ -34,6 +35,8 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
     const city = canonicalCity(p.city);
     const hasReviews = !!(p.review_count && p.review_count > 0);
     const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
+    const profession = displayServiceProfession(p.profession);
+    const description = cleanServiceText(p.description);
 
     return (
         <article className={`group relative flex flex-col rounded-2xl border bg-white dark:bg-slate-900 p-4 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 ${
@@ -68,7 +71,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
                             {p.name}
                         </h3>
                     </Link>
-                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 line-clamp-1 mt-0.5">{p.profession}</p>
+                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 line-clamp-1 mt-0.5">{profession}</p>
                     <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-bold">
                         {city && (
                             <span className="inline-flex items-center gap-0.5"><MapPin size={12} className="text-slate-400" />{city}</span>
@@ -85,7 +88,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
 
             {/* Description */}
             <p className="mt-3 text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 min-h-[38px]">
-                {toLatinDigits(p.description) || 'اضغط لعرض التفاصيل الكاملة وطرق التواصل.'}
+                {toLatinDigits(description) || 'اضغط لعرض التفاصيل الكاملة وطرق التواصل.'}
             </p>
 
             {/* Actions */}
