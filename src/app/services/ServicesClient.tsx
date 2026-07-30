@@ -25,6 +25,66 @@ interface ServicesClientProps {
   initialPopularSearches?: DirectoryPopularSearch[];
 }
 
+const QUICK_NEEDS = [
+  { label: 'طبيب أسنان', query: 'طبيب أسنان', category: 'طب أسنان' },
+  { label: 'محامي', query: 'محامي', category: 'محامي' },
+  { label: 'مترجم', query: 'مترجم', category: 'مترجم' },
+  { label: 'عقارات', query: 'عقارات', category: 'عقارات' },
+  { label: 'شحن', query: 'شحن', category: 'شحن' },
+  { label: 'مطعم', query: 'مطعم', category: 'مطاعم' },
+];
+
+const CATEGORY_ACCENTS = [
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-teal-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-teal-500 bg-teal-50 text-teal-950 shadow-sm ring-1 ring-teal-200 dark:bg-teal-950/30 dark:text-teal-100 dark:ring-teal-900',
+    idleIcon: 'bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white dark:bg-teal-950/40 dark:text-teal-300',
+    activeIcon: 'bg-teal-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-sky-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-sky-500 bg-sky-50 text-sky-950 shadow-sm ring-1 ring-sky-200 dark:bg-sky-950/30 dark:text-sky-100 dark:ring-sky-900',
+    idleIcon: 'bg-sky-50 text-sky-700 group-hover:bg-sky-600 group-hover:text-white dark:bg-sky-950/40 dark:text-sky-300',
+    activeIcon: 'bg-sky-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-violet-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-violet-500 bg-violet-50 text-violet-950 shadow-sm ring-1 ring-violet-200 dark:bg-violet-950/30 dark:text-violet-100 dark:ring-violet-900',
+    idleIcon: 'bg-violet-50 text-violet-700 group-hover:bg-violet-600 group-hover:text-white dark:bg-violet-950/40 dark:text-violet-300',
+    activeIcon: 'bg-violet-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-amber-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-amber-500 bg-amber-50 text-amber-950 shadow-sm ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-100 dark:ring-amber-900',
+    idleIcon: 'bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white dark:bg-amber-950/40 dark:text-amber-300',
+    activeIcon: 'bg-amber-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-rose-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-rose-500 bg-rose-50 text-rose-950 shadow-sm ring-1 ring-rose-200 dark:bg-rose-950/30 dark:text-rose-100 dark:ring-rose-900',
+    idleIcon: 'bg-rose-50 text-rose-700 group-hover:bg-rose-600 group-hover:text-white dark:bg-rose-950/40 dark:text-rose-300',
+    activeIcon: 'bg-rose-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-blue-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-blue-500 bg-blue-50 text-blue-950 shadow-sm ring-1 ring-blue-200 dark:bg-blue-950/30 dark:text-blue-100 dark:ring-blue-900',
+    idleIcon: 'bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-950/40 dark:text-blue-300',
+    activeIcon: 'bg-blue-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-lime-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-lime-500 bg-lime-50 text-lime-950 shadow-sm ring-1 ring-lime-200 dark:bg-lime-950/30 dark:text-lime-100 dark:ring-lime-900',
+    idleIcon: 'bg-lime-50 text-lime-700 group-hover:bg-lime-600 group-hover:text-white dark:bg-lime-950/40 dark:text-lime-300',
+    activeIcon: 'bg-lime-600 text-white',
+  },
+  {
+    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-cyan-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
+    activeCard: 'border-cyan-500 bg-cyan-50 text-cyan-950 shadow-sm ring-1 ring-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-100 dark:ring-cyan-900',
+    idleIcon: 'bg-cyan-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white dark:bg-cyan-950/40 dark:text-cyan-300',
+    activeIcon: 'bg-cyan-600 text-white',
+  },
+];
+
 export default function ServicesClient({
   initialServices = [],
   initialTotal = 0,
@@ -54,6 +114,12 @@ export default function ServicesClient({
   const facetsLoadedRef = useRef(false);
   const availableCities = useMemo(() => Object.keys(liveCityCounts), [liveCityCounts]);
   const totalCount = liveTotal;
+  const topCities = useMemo(
+    () => [...availableCities]
+      .sort((a, b) => (liveCityCounts[b] || 0) - (liveCityCounts[a] || 0))
+      .slice(0, 6),
+    [availableCities, liveCityCounts],
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -215,6 +281,11 @@ export default function ServicesClient({
     setPage(1);
     setFiltersOpen(false);
   };
+  const applyNeed = (query: string, category: string) => {
+    setSearchQuery(query);
+    setActiveCategory(category);
+    setPage(1);
+  };
   const goPage = (pp: number) => {
     setPage(Math.min(Math.max(1, pp), totalPages));
     if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -229,16 +300,16 @@ export default function ServicesClient({
       <section className="relative overflow-hidden border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
 
-        <div className="mx-auto grid max-w-screen-2xl gap-6 px-4 py-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-center">
-          <div>
+        <div className="mx-auto grid max-w-screen-2xl gap-6 px-4 py-5 md:py-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-center">
+          <div className="text-center lg:text-right">
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
               <Sparkles size={14} />
               دليل خدمات عربي في تركيا
             </span>
-            <h1 className="mt-3 max-w-4xl text-[28px] font-black leading-tight sm:text-4xl lg:text-5xl">
+            <h1 className="mx-auto mt-3 max-w-4xl text-[25px] font-black leading-tight sm:text-4xl lg:mx-0 lg:text-5xl">
               ابحث عن خدمة عربية قريبة منك وتواصل مباشرة
             </h1>
-            <p className="mt-3 max-w-3xl text-sm font-bold leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+            <p className="mx-auto mt-3 max-w-3xl text-sm font-bold leading-7 text-slate-600 dark:text-slate-300 sm:text-base lg:mx-0">
               أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. اكتب ما تحتاجه أو اختر المهنة والمدينة.
             </p>
 
@@ -302,6 +373,20 @@ export default function ServicesClient({
                 </button>
               )}
             </div>
+
+            <div className="mt-3 hidden max-w-full items-center gap-2 overflow-x-auto pb-1 md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <span className="shrink-0 text-xs font-black text-slate-500 dark:text-slate-400">أحتاج:</span>
+              {QUICK_NEEDS.map((need) => (
+                <button
+                  key={need.label}
+                  type="button"
+                  onClick={() => applyNeed(need.query, need.category)}
+                  className="inline-flex min-h-9 shrink-0 items-center rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                >
+                  {need.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <aside className="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:block">
@@ -347,21 +432,19 @@ export default function ServicesClient({
         </div>
 
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
-          {featuredCategories.map((category) => {
+          {featuredCategories.map((category, index) => {
             const Icon = catIcon(category.slug);
             const isActive = activeCategory === category.name;
+            const accent = CATEGORY_ACCENTS[index % CATEGORY_ACCENTS.length];
             return (
               <button
                 key={category.slug}
                 type="button"
                 onClick={() => applyCategory(category.name)}
                 aria-pressed={isActive}
-                className={`group flex min-h-[100px] w-32 shrink-0 flex-col items-start justify-between rounded-2xl border p-3 text-right transition-all active:scale-[0.98] lg:w-auto ${isActive
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-900 shadow-sm ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-100 dark:ring-emerald-900'
-                  : 'border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100'
-                }`}
+                className={`group flex min-h-[100px] w-32 shrink-0 flex-col items-start justify-between rounded-2xl border p-3 text-right transition-all active:scale-[0.98] lg:w-auto ${isActive ? accent.activeCard : accent.idleCard}`}
               >
-                <span className={`grid h-10 w-10 place-items-center rounded-xl ${isActive ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white dark:bg-slate-800 dark:text-emerald-300'}`}>
+                <span className={`grid h-10 w-10 place-items-center rounded-xl transition ${isActive ? accent.activeIcon : accent.idleIcon}`}>
                   <Icon size={19} />
                 </span>
                 <span>
@@ -374,6 +457,32 @@ export default function ServicesClient({
             );
           })}
         </div>
+
+        {topCities.length > 0 && (
+          <div className="mt-4 flex max-w-full items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
+              <MapPin size={14} className="text-gov-red" />
+              مدن سريعة
+            </span>
+            {topCities.map((city) => (
+              <button
+                key={city}
+                type="button"
+                onClick={() => {
+                  setActiveCity(city);
+                  setPage(1);
+                }}
+                className={`inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-3 text-xs font-black transition ${activeCity === city
+                  ? 'border-gov-red bg-red-50 text-gov-red dark:bg-red-950/30'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-gov-red/40 hover:text-gov-red dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
+                }`}
+              >
+                {city}
+                <span className="tabular-nums text-[10px] opacity-60">{liveCityCounts[city]}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className={`${filtersOpen ? 'block' : 'hidden'} mt-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900`}>
           <div className="grid gap-3 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
@@ -422,7 +531,7 @@ export default function ServicesClient({
         </div>
 
         {visiblePopularSearches.length > 0 && (
-          <div className="mt-4 flex max-w-full items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-labelledby="popular-service-searches">
+          <div className="mt-4 hidden max-w-full items-center gap-2 overflow-x-auto pb-1 md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-labelledby="popular-service-searches">
             <h2 id="popular-service-searches" className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
               <TrendingUp size={15} className="text-emerald-600" />
               شائع
@@ -446,7 +555,7 @@ export default function ServicesClient({
 
         {/* Results count + view toggle + clear filters */}
         {!loading && (
-          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="sticky top-[52px] z-20 mb-5 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">الخدمات المتاحة</h2>
