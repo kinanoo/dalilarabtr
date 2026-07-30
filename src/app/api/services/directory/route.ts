@@ -12,6 +12,8 @@ import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 import logger from '@/lib/logger';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const SELECT_FIELDS = [
     'id',
@@ -121,9 +123,7 @@ export async function GET(request: NextRequest) {
             },
             {
                 headers: {
-                    'Cache-Control': includeFacets
-                        ? 'public, s-maxage=60, stale-while-revalidate=300'
-                        : 'public, s-maxage=300, stale-while-revalidate=900',
+                    'Cache-Control': 'no-store, max-age=0',
                 },
             },
         );

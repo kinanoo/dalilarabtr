@@ -10,9 +10,11 @@ import {
 import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 import { displayServiceProfession } from '@/lib/serviceText';
 
-// Refresh the directory's structured data periodically so new/updated
-// providers enter Google's index without a redeploy.
-export const revalidate = 60;
+// The services directory changes from the admin/database and must not show
+// stale HTML to users or crawlers after providers are edited.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
     title: { absolute: 'دليل الخدمات العربية في تركيا: أطباء ومحامون ومترجمون | دليل العرب' },

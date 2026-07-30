@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Info, TrendingUp } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Info, TrendingUp, SlidersHorizontal } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
@@ -46,6 +46,7 @@ export default function ServicesClient({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [urlStateReady, setUrlStateReady] = useState(false);
   const [liveTotal, setLiveTotal] = useState(initialTotal);
@@ -173,6 +174,11 @@ export default function ServicesClient({
 
   // --- Filter state helpers ---
   const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery.trim() !== '';
+  const activeFiltersCount = [
+    activeCategory !== 'all',
+    activeCity !== 'all',
+    searchQuery.trim() !== '',
+  ].filter(Boolean).length;
   const clearFilters = () => {
     setActiveCategory('all');
     setActiveCity('all');
@@ -201,6 +207,11 @@ export default function ServicesClient({
       || activeCategory;
   const totalPages = Math.max(1, Math.ceil(resultTotal / DIRECTORY_PAGE_SIZE));
   const pageClamped = Math.min(page, totalPages);
+  const quickCategories = [
+    { id: 'all', label: 'الكل' },
+    ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
+  ];
+  const visiblePopularSearches = popularSearches.slice(0, 8);
   const goPage = (pp: number) => {
     setPage(Math.min(Math.max(1, pp), totalPages));
     if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -210,7 +221,7 @@ export default function ServicesClient({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
       {/* Hero / Search Section */}
-      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-emerald-50 via-white to-sky-50 text-slate-900 dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:text-white pb-6 pt-5 lg:pb-8 lg:pt-8">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-emerald-50 via-white to-sky-50 text-slate-900 dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:text-white pb-5 pt-4 lg:pb-6 lg:pt-7">
 
         {/* Official colour stripe — a hint of government red */}
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
@@ -220,12 +231,12 @@ export default function ServicesClient({
             دليل <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">المهن والخدمات العربية</span> في تركيا
           </h1>
 
-          <p className="text-base text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
+          <p className="text-base text-slate-600 dark:text-slate-400 mb-4 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
             أطباء، محامون، مترجمون، عقارات، تأمين وشحن — خدمات معروضة بالعربية في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
           </p>
 
           {/* Search Bar */}
-          <div className="relative max-w-xl mx-auto mb-8 group animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
+          <div className="relative max-w-xl mx-auto mb-3 group animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
             <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
               <Search size={24} />
             </div>
@@ -241,58 +252,79 @@ export default function ServicesClient({
             />
           </div>
 
-          {/* City — the PRIMARY filter (most important axis for our users) */}
-          <div className="mt-1 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-400">
-            <div className="flex items-center justify-center gap-1.5 mb-2.5">
-              <MapPin size={15} className="text-gov-red" />
-              <span className="text-sm font-black text-slate-800 dark:text-slate-100">اختر مدينتك</span>
-            </div>
-            <div className="max-w-2xl mx-auto">
-              <CityFilter
-                value={activeCity}
-                onChange={(city) => {
-                  setActiveCity(city);
-                  setPage(1);
-                }}
-                cities={availableCities}
-                counts={liveCityCounts}
-                totalCount={totalCount}
-              />
-            </div>
+          <div className="mx-auto mb-2 flex max-w-xl items-center justify-center gap-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((open) => !open)}
+              aria-expanded={filtersOpen}
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+            >
+              <SlidersHorizontal size={17} />
+              فلاتر الخدمة
+              {activeFiltersCount > 0 && (
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs text-white">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </button>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="h-11 shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-500 shadow-sm transition-colors hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              >
+                مسح
+              </button>
+            )}
           </div>
 
-          {/* Profession — secondary filter */}
-          <div className="mt-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-500">
-            <div className="flex items-center justify-center gap-1.5 mb-2">
-              <Briefcase size={12} className="text-slate-400" />
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wide">التخصّص</span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {[
-                { id: 'all', label: 'الكل' },
-                // Quick-filter chips = the most-searched professions; the full
-                // taxonomy is browsable in the "كل المهن" grid below.
-                ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
-              ].map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setActiveCategory(cat.id);
+          <div className={`${filtersOpen ? 'block' : 'hidden'} mx-auto mt-3 max-w-4xl rounded-2xl border border-slate-200 bg-white/85 p-3 text-start shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 lg:block`}>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
+              <div>
+                <div className="mb-2 flex items-center gap-1.5">
+                  <MapPin size={15} className="text-gov-red" />
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-100">المدينة</span>
+                </div>
+                <CityFilter
+                  value={activeCity}
+                  onChange={(city) => {
+                    setActiveCity(city);
                     setPage(1);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${activeCategory === cat.id
-                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white'
-                    : 'bg-white/70 text-slate-600 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700'
-                    }`}
-                >
-                  <span>{cat.label}</span>
-                  {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
-                    <span className="mr-1 tabular-nums opacity-70">
-                      {liveCategoryCounts[cat.id]}
-                    </span>
-                  )}
-                </button>
-              ))}
+                  cities={availableCities}
+                  counts={liveCityCounts}
+                  totalCount={totalCount}
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center gap-1.5">
+                  <Briefcase size={14} className="text-slate-400" />
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-100">التخصّص</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:flex lg:flex-wrap">
+                  {quickCategories.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setActiveCategory(cat.id);
+                        setPage(1);
+                      }}
+                      className={`min-h-9 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all ${activeCategory === cat.id
+                        ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+                        : 'border-slate-200 bg-white/80 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300'
+                        }`}
+                    >
+                      <span>{cat.label}</span>
+                      {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
+                        <span className="mr-1 tabular-nums opacity-70">
+                          {liveCategoryCounts[cat.id]}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -315,14 +347,15 @@ export default function ServicesClient({
         </div>
       )}
 
-      {popularSearches.length > 0 && (
-        <section className="mx-auto mt-5 w-full max-w-screen-2xl px-4" aria-labelledby="popular-service-searches">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {visiblePopularSearches.length > 0 && (
+        <section className="container mx-auto mt-3 max-w-6xl px-4" aria-labelledby="popular-service-searches">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex max-w-full items-center gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <h2 id="popular-service-searches" className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
               <TrendingUp size={15} className="text-emerald-600" />
               عمليات بحث شائعة
             </h2>
-            {popularSearches.map((item) => (
+            {visiblePopularSearches.map((item) => (
               <Link
                 key={`${item.citySlug}-${item.categorySlug}`}
                 href={`/services/category/${item.categorySlug}/${item.citySlug}`}
@@ -333,11 +366,12 @@ export default function ServicesClient({
               </Link>
             ))}
           </div>
+          </div>
         </section>
       )}
 
       {/* Results */}
-      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-8 md:py-10 w-full scroll-mt-4">
+      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-6 md:py-8 w-full scroll-mt-4">
 
         {/* Results count + view toggle + clear filters */}
         {!loading && (
