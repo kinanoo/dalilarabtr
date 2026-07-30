@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
                 .order('created_at', { ascending: false });
         }
 
+        query = query.order('id', { ascending: true });
+
         const { data, count, error } = await query.range(from, to);
         if (error) throw error;
 

@@ -1,46 +1,27 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const sourcePath = path.resolve(root, process.argv[2] ?? '');
-const outputPath = path.resolve(root, process.argv[3] ?? '');
-
-if (!process.argv[2] || !process.argv[3]) {
-  throw new Error(
-    'Usage: node scripts/generate-service-publish-migration.mjs <batch.json> <output.sql>',
-  );
-}
-
-const batch = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
-const expectedCount = batch.candidates.length;
-const sqlString = (value) => `'${String(value).replaceAll("'", "''")}'`;
-const categorySlug = `
-      CASE c.candidate_data->>'category'
-        WHEN 'مترجم' THEN 'translator'
-        WHEN 'طب أسنان' THEN 'dentist'
-        WHEN 'محامي' THEN 'lawyer'
-        WHEN 'عقارات' THEN 'real-estate'
-        ELSE 'service'
-      END`;
-const sourceCategorySlug = `
-    CASE cs.category
-      WHEN 'مترجم' THEN 'translator'
-      WHEN 'طب أسنان' THEN 'dentist'
-      WHEN 'محامي' THEN 'lawyer'
-      WHEN 'عقارات' THEN 'real-estate'
-      ELSE 'service'
-    END`;
-const label = sqlString(batch.label);
-const sourceLabel = path.relative(root, sourcePath).replaceAll('\\', '/');
-
-const sql = `-- Generated from ${sourceLabel}.
+-- Generated from data/service-directory/batches/2026-07-expansion-03.json.
 -- Publishes only source-checked candidates that are not already in the directory.
+
+ALTER TABLE public.service_provider_sources
+  DROP CONSTRAINT IF EXISTS service_provider_sources_source_type_check;
+
+ALTER TABLE public.service_provider_sources
+  ADD CONSTRAINT service_provider_sources_source_type_check
+  CHECK (
+    source_type IN (
+      'official_website',
+      'official_registry',
+      'social_profile',
+      'maps_discovery',
+      'directory_listing',
+      'provider_submission',
+      'other'
+    )
+  );
 
 WITH target_batch AS (
   SELECT id
   FROM public.service_import_batches
-  WHERE label = ${label}
+  WHERE label = 'دفعة التوسع الثالثة - مزودو خدمات باللغة العربية في الولايات الحيوية - 2026-07-30'
   ORDER BY created_at DESC
   LIMIT 1
 ),
@@ -48,7 +29,14 @@ publishable AS (
   SELECT
     c.*,
     (
-${categorySlug}
+
+      CASE c.candidate_data->>'category'
+        WHEN 'مترجم' THEN 'translator'
+        WHEN 'طب أسنان' THEN 'dentist'
+        WHEN 'محامي' THEN 'lawyer'
+        WHEN 'عقارات' THEN 'real-estate'
+        ELSE 'service'
+      END
       || '-'
       || left(md5(c.fingerprint), 12)
     ) AS provider_slug
@@ -124,7 +112,7 @@ FROM publishable;
 WITH target_batch AS (
   SELECT id
   FROM public.service_import_batches
-  WHERE label = ${label}
+  WHERE label = 'دفعة التوسع الثالثة - مزودو خدمات باللغة العربية في الولايات الحيوية - 2026-07-30'
   ORDER BY created_at DESC
   LIMIT 1
 ),
@@ -157,7 +145,14 @@ SELECT
 FROM candidate_sources cs
 JOIN public.service_providers p
   ON p.slug = (
-${sourceCategorySlug}
+
+    CASE cs.category
+      WHEN 'مترجم' THEN 'translator'
+      WHEN 'طب أسنان' THEN 'dentist'
+      WHEN 'محامي' THEN 'lawyer'
+      WHEN 'عقارات' THEN 'real-estate'
+      ELSE 'service'
+    END
     || '-'
     || left(md5(cs.fingerprint), 12)
   )
@@ -171,7 +166,7 @@ SET
 WITH target_batch AS (
   SELECT id
   FROM public.service_import_batches
-  WHERE label = ${label}
+  WHERE label = 'دفعة التوسع الثالثة - مزودو خدمات باللغة العربية في الولايات الحيوية - 2026-07-30'
   ORDER BY created_at DESC
   LIMIT 1
 )
@@ -183,7 +178,14 @@ SET
 FROM target_batch b, public.service_providers p
 WHERE c.batch_id = b.id
   AND p.slug = (
-${categorySlug}
+
+      CASE c.candidate_data->>'category'
+        WHEN 'مترجم' THEN 'translator'
+        WHEN 'طب أسنان' THEN 'dentist'
+        WHEN 'محامي' THEN 'lawyer'
+        WHEN 'عقارات' THEN 'real-estate'
+        ELSE 'service'
+      END
       || '-'
       || left(md5(c.fingerprint), 12)
   )
@@ -197,12 +199,12 @@ BEGIN
   INTO imported_count
   FROM public.service_provider_candidates c
   JOIN public.service_import_batches b ON b.id = c.batch_id
-  WHERE b.label = ${label}
+  WHERE b.label = 'دفعة التوسع الثالثة - مزودو خدمات باللغة العربية في الولايات الحيوية - 2026-07-30'
     AND c.status = 'imported';
 
-  IF imported_count <> ${expectedCount} THEN
+  IF imported_count <> 134 THEN
     RAISE EXCEPTION
-      'Expected ${expectedCount} imported service candidates, found %',
+      'Expected 134 imported service candidates, found %',
       imported_count;
   END IF;
 END $$;
@@ -211,15 +213,9 @@ UPDATE public.service_import_batches
 SET
   status = 'imported',
   stats = stats || jsonb_build_object(
-    'published', ${expectedCount},
+    'published', 134,
     'duplicates', 0,
     'failed', 0
   ),
   completed_at = now()
-WHERE label = ${label};
-`;
-
-fs.writeFileSync(outputPath, sql, 'utf8');
-console.log(
-  `Generated ${path.relative(root, outputPath)} with ${expectedCount} candidates.`,
-);
+WHERE label = 'دفعة التوسع الثالثة - مزودو خدمات باللغة العربية في الولايات الحيوية - 2026-07-30';
