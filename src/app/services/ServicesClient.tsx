@@ -2,17 +2,14 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, Info, TrendingUp, SlidersHorizontal } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, ArrowLeft, Sparkles } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
 import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
-import {
-  SERVICE_VERIFICATION_EXPLANATION,
-  SERVICE_VERIFICATION_LABEL,
-} from '@/lib/serviceVerification';
+import { SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
 import {
   DIRECTORY_PAGE_SIZE,
   type DirectoryPopularSearch,
@@ -211,174 +208,250 @@ export default function ServicesClient({
     { id: 'all', label: 'الكل' },
     ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
   ];
+  const featuredCategories = SERVICE_CATEGORIES.filter((c) => c.popular).slice(0, 8);
   const visiblePopularSearches = popularSearches.slice(0, 8);
+  const applyCategory = (category: string) => {
+    setActiveCategory(category);
+    setPage(1);
+    setFiltersOpen(false);
+  };
   const goPage = (pp: number) => {
     setPage(Math.min(Math.max(1, pp), totalPages));
+    if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  const scrollToResults = () => {
     if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
-      {/* Hero / Search Section */}
-      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-emerald-50 via-white to-sky-50 text-slate-900 dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 dark:text-white pb-5 pt-4 lg:pb-6 lg:pt-7">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+        <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
 
-        {/* Official colour stripe — a hint of government red */}
-        <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
+        <div className="mx-auto grid max-w-screen-2xl gap-6 px-4 py-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-center">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
+              <Sparkles size={14} />
+              دليل خدمات عربي في تركيا
+            </span>
+            <h1 className="mt-3 max-w-4xl text-[28px] font-black leading-tight sm:text-4xl lg:text-5xl">
+              ابحث عن خدمة عربية قريبة منك وتواصل مباشرة
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm font-bold leading-7 text-slate-600 dark:text-slate-300 sm:text-base">
+              أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. اكتب ما تحتاجه أو اختر المهنة والمدينة.
+            </p>
 
-        <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
-          <h1 className="text-[30px] sm:text-4xl md:text-5xl font-black mb-3 md:mb-4 leading-tight animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100 font-cairo">
-            دليل <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">المهن والخدمات العربية</span> في تركيا
-          </h1>
-
-          <p className="text-base text-slate-600 dark:text-slate-400 mb-4 max-w-2xl mx-auto leading-relaxed animate-in slide-in-from-bottom-8 fade-in duration-700 delay-200">
-            أطباء، محامون، مترجمون، عقارات، تأمين وشحن — خدمات معروضة بالعربية في إسطنبول، غازي عنتاب، أنقرة، بورصة وكل المدن. تواصل مباشر عبر واتساب.
-          </p>
-
-          {/* Search Bar */}
-          <div className="relative max-w-xl mx-auto mb-3 group animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
-            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
-              <Search size={24} />
-            </div>
-            <input
-              type="text"
-              placeholder="عن ماذا تبحث؟ (مثال: طبيب أسنان...)"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              className="w-full h-14 pr-12 pl-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 font-bold text-base shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all border-none"
-            />
-          </div>
-
-          <div className="mx-auto mb-2 flex max-w-xl items-center justify-center gap-2 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((open) => !open)}
-              aria-expanded={filtersOpen}
-              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-            >
-              <SlidersHorizontal size={17} />
-              فلاتر الخدمة
-              {activeFiltersCount > 0 && (
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs text-white">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="h-11 shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-500 shadow-sm transition-colors hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-              >
-                مسح
-              </button>
-            )}
-          </div>
-
-          <div className={`${filtersOpen ? 'block' : 'hidden'} mx-auto mt-3 max-w-4xl rounded-2xl border border-slate-200 bg-white/85 p-3 text-start shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 lg:block`}>
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
-              <div>
-                <div className="mb-2 flex items-center gap-1.5">
-                  <MapPin size={15} className="text-gov-red" />
-                  <span className="text-sm font-black text-slate-800 dark:text-slate-100">المدينة</span>
-                </div>
-                <CityFilter
-                  value={activeCity}
-                  onChange={(city) => {
-                    setActiveCity(city);
+            <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-[minmax(0,1fr)_240px] lg:max-w-4xl">
+              <div className="relative">
+                <Search size={22} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="اكتب الخدمة: طبيب، ترجمة، عقارات، شحن..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
                     setPage(1);
                   }}
-                  cities={availableCities}
-                  counts={liveCityCounts}
-                  totalCount={totalCount}
+                  className="h-14 w-full rounded-xl border border-transparent bg-white pr-12 pl-4 text-base font-black text-slate-900 shadow-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/15 dark:bg-slate-950 dark:text-white"
                 />
               </div>
+              <CityFilter
+                compact
+                value={activeCity}
+                onChange={(city) => {
+                  setActiveCity(city);
+                  setPage(1);
+                }}
+                cities={availableCities}
+                counts={liveCityCounts}
+                totalCount={totalCount}
+              />
+            </div>
 
-              <div>
-                <div className="mb-2 flex items-center gap-1.5">
-                  <Briefcase size={14} className="text-slate-400" />
-                  <span className="text-sm font-black text-slate-800 dark:text-slate-100">التخصّص</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:flex lg:flex-wrap">
-                  {quickCategories.map(cat => (
-                    <button
-                      key={cat.id}
-                      onClick={() => {
-                        setActiveCategory(cat.id);
-                        setPage(1);
-                      }}
-                      className={`min-h-9 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all ${activeCategory === cat.id
-                        ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
-                        : 'border-slate-200 bg-white/80 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300'
-                        }`}
-                    >
-                      <span>{cat.label}</span>
-                      {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
-                        <span className="mr-1 tabular-nums opacity-70">
-                          {liveCategoryCounts[cat.id]}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollToResults}
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+              >
+                عرض النتائج
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((open) => !open)}
+                aria-expanded={filtersOpen}
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              >
+                <SlidersHorizontal size={16} />
+                كل الفلاتر
+                {activeFiltersCount > 0 && (
+                  <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs text-white">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="inline-flex min-h-10 items-center rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-500 transition hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  مسح البحث والفلاتر
+                </button>
+              )}
             </div>
           </div>
+
+          <aside className="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:block">
+            <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">لمحة سريعة</h2>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="rounded-xl bg-white p-3 text-center ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                <Briefcase size={16} className="mx-auto text-emerald-600" />
+                <div className="mt-1 text-xl font-black tabular-nums">{stats.total}</div>
+                <div className="text-[10px] font-bold text-slate-500">خدمة</div>
+              </div>
+              <div className="rounded-xl bg-white p-3 text-center ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                <MapPin size={16} className="mx-auto text-gov-red" />
+                <div className="mt-1 text-xl font-black tabular-nums">{stats.cities}</div>
+                <div className="text-[10px] font-bold text-slate-500">مدينة</div>
+              </div>
+              <div className="rounded-xl bg-white p-3 text-center ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                <BadgeCheck size={16} className="mx-auto text-blue-500" />
+                <div className="mt-1 text-xl font-black tabular-nums">{stats.verified}</div>
+                <div className="text-[10px] font-bold text-slate-500">{SERVICE_VERIFICATION_LABEL}</div>
+              </div>
+            </div>
+            <p className="mt-3 text-xs font-bold leading-6 text-slate-500 dark:text-slate-400">
+              اختر الخدمة ثم راسل مقدمها عبر واتساب. راجع التفاصيل واتفق على السعر قبل أي دفع.
+            </p>
+          </aside>
         </div>
       </section>
 
-      {/* Trust strip — social proof from the current result set */}
-      {!loading && stats.total > 0 && (
-        <div className="container mx-auto px-4 max-w-6xl mt-4">
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3 text-sm shadow-sm">
-            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><Briefcase size={15} className="text-emerald-600" /><span className="tabular-nums font-black">{stats.total}</span> مهنيّ وخدمة</span>
-            <span className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
-            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200" title={SERVICE_VERIFICATION_EXPLANATION}><BadgeCheck size={15} className="text-blue-500" /><span className="tabular-nums font-black">{stats.verified}</span> {SERVICE_VERIFICATION_LABEL}</span>
-            <span className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
-            <span className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200"><MapPin size={15} className="text-gov-red" /><span className="tabular-nums font-black">{stats.cities}</span> مدينة</span>
+      <section className="mx-auto max-w-screen-2xl px-4 py-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">اختصر الطريق</h2>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">أكثر أنواع الخدمات طلباً في الدليل.</p>
           </div>
-          <p className="mt-2 flex items-start justify-center gap-1.5 text-center text-[11px] leading-5 text-slate-500 dark:text-slate-400">
-            <Info size={13} className="mt-0.5 shrink-0 text-blue-500" aria-hidden="true" />
-            {SERVICE_VERIFICATION_EXPLANATION}
-          </p>
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 shadow-sm lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+          >
+            <SlidersHorizontal size={15} />
+            فلاتر
+          </button>
         </div>
-      )}
 
-      {visiblePopularSearches.length > 0 && (
-        <section className="container mx-auto mt-3 max-w-6xl px-4" aria-labelledby="popular-service-searches">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex max-w-full items-center gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
+          {featuredCategories.map((category) => {
+            const Icon = catIcon(category.slug);
+            const isActive = activeCategory === category.name;
+            return (
+              <button
+                key={category.slug}
+                type="button"
+                onClick={() => applyCategory(category.name)}
+                aria-pressed={isActive}
+                className={`group flex min-h-[100px] w-32 shrink-0 flex-col items-start justify-between rounded-2xl border p-3 text-right transition-all active:scale-[0.98] lg:w-auto ${isActive
+                  ? 'border-emerald-500 bg-emerald-50 text-emerald-900 shadow-sm ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-100 dark:ring-emerald-900'
+                  : 'border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100'
+                }`}
+              >
+                <span className={`grid h-10 w-10 place-items-center rounded-xl ${isActive ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white dark:bg-slate-800 dark:text-emerald-300'}`}>
+                  <Icon size={19} />
+                </span>
+                <span>
+                  <span className="block text-sm font-black leading-tight">{category.labelAr}</span>
+                  <span className="mt-1 block text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    {liveCategoryCounts[category.name] ? `${liveCategoryCounts[category.name]} نتيجة` : 'تصفّح'}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className={`${filtersOpen ? 'block' : 'hidden'} mt-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900`}>
+          <div className="grid gap-3 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
+            <div>
+              <div className="mb-2 flex items-center gap-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
+                <MapPin size={15} className="text-gov-red" />
+                المدينة
+              </div>
+              <CityFilter
+                compact
+                value={activeCity}
+                onChange={(city) => {
+                  setActiveCity(city);
+                  setPage(1);
+                }}
+                cities={availableCities}
+                counts={liveCityCounts}
+                totalCount={totalCount}
+              />
+            </div>
+            <div>
+              <div className="mb-2 flex items-center gap-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
+                <Briefcase size={15} className="text-emerald-600" />
+                التخصص
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                {quickCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => applyCategory(cat.id)}
+                    className={`min-h-10 rounded-xl border px-3 text-xs font-black transition ${activeCategory === cat.id
+                      ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-950'
+                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
+                    }`}
+                  >
+                    {cat.label}
+                    {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
+                      <span className="mr-1 tabular-nums opacity-70">{liveCategoryCounts[cat.id]}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {visiblePopularSearches.length > 0 && (
+          <div className="mt-4 flex max-w-full items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-labelledby="popular-service-searches">
             <h2 id="popular-service-searches" className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
               <TrendingUp size={15} className="text-emerald-600" />
-              عمليات بحث شائعة
+              شائع
             </h2>
             {visiblePopularSearches.map((item) => (
               <Link
                 key={`${item.citySlug}-${item.categorySlug}`}
                 href={`/services/category/${item.categorySlug}/${item.citySlug}`}
-                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
               >
                 {item.categoryLabel} في {item.city}
                 <span className="tabular-nums text-[10px] text-slate-400">{item.count}</span>
               </Link>
             ))}
           </div>
-          </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* Results */}
-      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 py-6 md:py-8 w-full scroll-mt-4">
+      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 pb-8 pt-3 md:pb-10 w-full scroll-mt-4">
 
         {/* Results count + view toggle + clear filters */}
         {!loading && (
-          <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
-            <div className="flex items-center gap-3 flex-wrap">
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">الخدمات المتاحة</h2>
               <p
-                className="text-sm font-bold text-slate-600 dark:text-slate-300"
+                className="mt-1 text-sm font-bold text-slate-600 dark:text-slate-300"
                 aria-live="polite"
               >
                 {resultTotal > 0 ? (
@@ -389,17 +462,18 @@ export default function ServicesClient({
                   </>
                 ) : 'لا نتائج'}
               </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg transition-colors"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-500 transition-colors hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 >
-                  <X size={14} /> مسح الفلاتر
+                  <X size={14} /> مسح
                 </button>
               )}
-            </div>
-            {services.length > 0 && (
-              <div className="flex items-center gap-2">
+              {services.length > 0 && (
+                <>
                 <select
                   value={sortBy}
                   onChange={(e) => {
@@ -407,23 +481,25 @@ export default function ServicesClient({
                     setPage(1);
                   }}
                   aria-label="ترتيب النتائج"
-                  className="text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                  className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 >
-                  <option value="recommended">الأفضل أولاً</option>
+                  <option value="recommended">الأكثر صلة</option>
                   <option value="rating">الأعلى تقييماً</option>
                   <option value="newest">الأحدث</option>
                   <option value="name">أبجديّاً</option>
                 </select>
-                <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-0.5">
-                  <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`p-1.5 rounded-md transition-colors ${view === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                <div className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+                  <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
                     <LayoutGrid size={16} />
                   </button>
-                  <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`p-1.5 rounded-md transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                  <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
                     <ListIcon size={16} />
                   </button>
                 </div>
-              </div>
-            )}
+                </>
+              )}
+            </div>
+            </div>
           </div>
         )}
 
@@ -511,7 +587,7 @@ export default function ServicesClient({
         ) : (
           <>
             {view === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {services.map((provider) => (
                   <ProviderCard key={provider.id} p={provider} />
                 ))}
@@ -569,55 +645,41 @@ export default function ServicesClient({
       {/* Browse every profession — crawlable links to each landing page (each
           carries its own guide), and a full directory for users. Rendered in
           the server HTML so Google discovers all category pages from /services. */}
-      <section className="max-w-screen-2xl mx-auto px-4 pb-4 w-full">
-        <div className="flex items-center gap-2 mb-4">
-          <Briefcase size={18} className="text-emerald-600" />
-          <h2 className="text-base font-black text-slate-800 dark:text-slate-100">تصفّح كل المهن والخدمات</h2>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          {SERVICE_CATEGORIES.map((c) => {
-            const Icon = catIcon(c.slug);
-            return (
-              <Link
-                key={c.slug}
-                href={`/services/category/${c.slug}`}
-                className="group flex items-center gap-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all"
-              >
-                <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                  <Icon size={17} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[13px] font-black text-slate-800 dark:text-slate-100 leading-tight truncate">{c.labelAr}</span>
-                  <span className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-tight truncate">
-                    {liveCategoryCounts[c.name]
-                      ? `${liveCategoryCounts[c.name]} نتيجة`
-                      : c.blurb}
+      <section className="mx-auto max-w-screen-2xl px-4 pb-10 pt-5 w-full">
+        <details className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 text-base font-black text-slate-800 dark:text-slate-100">
+              <Briefcase size={18} className="text-emerald-600" />
+              تصفّح كل المهن والخدمات
+            </span>
+            <span className="text-xs font-black text-slate-500 group-open:hidden">فتح القائمة</span>
+            <span className="hidden text-xs font-black text-slate-500 group-open:inline">إخفاء</span>
+          </summary>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            {SERVICE_CATEGORIES.map((c) => {
+              const Icon = catIcon(c.slug);
+              return (
+                <Link
+                  key={c.slug}
+                  href={`/services/category/${c.slug}`}
+                  className="group/link flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:border-emerald-300 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-emerald-700 dark:hover:bg-slate-900"
+                >
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-slate-200 transition group-hover/link:bg-emerald-600 group-hover/link:text-white dark:bg-slate-900 dark:text-emerald-300 dark:ring-slate-800">
+                    <Icon size={17} />
                   </span>
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="relative overflow-hidden border-t border-slate-200 bg-gradient-to-br from-emerald-50 via-white to-sky-50 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:bg-none dark:text-white py-16 text-center">
-        <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
-        <div className="container mx-auto px-4 relative z-10 max-w-2xl">
-          <h2 className="text-2xl md:text-3xl font-black mb-6 leading-tight font-cairo text-slate-900 dark:text-white">
-            هل تقدم خدمة وتريد <span className="text-emerald-600 dark:text-emerald-400">الوصول لآلاف العملاء؟</span>
-          </h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 leading-relaxed">
-            انضم إلى دليل العرب وقدّم خدمتك لجمهور عربي واسع في تركيا.
-          </p>
-          <Link
-            href="/services/add"
-            className="inline-flex items-center gap-2 bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black text-lg hover:bg-emerald-700 hover:scale-105 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
-          >
-            <Briefcase size={20} />
-            أضف خدمتك مجاناً
-          </Link>
-        </div>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[13px] font-black leading-tight text-slate-800 dark:text-slate-100">{c.labelAr}</span>
+                    <span className="block truncate text-[10px] font-bold leading-tight text-slate-400 dark:text-slate-500">
+                      {liveCategoryCounts[c.name]
+                        ? `${liveCategoryCounts[c.name]} نتيجة`
+                        : c.blurb}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </details>
       </section>
 
     </div>
