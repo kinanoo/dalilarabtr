@@ -1,21 +1,26 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabaseClient';
 import UpdatesClient from './UpdatesClient';
 
-export const revalidate = 60;
+// 10 minutes, not 1: this page pulls up to 120 full news rows on every ISR
+// tick, so a 60-second window meant ~1,440 heavy Supabase reads a day for a
+// page whose content changes a few times a week. Publishing or hiding an item
+// in /admin/updates purges this path on demand (see NewsManager →
+// /api/admin/revalidate), so editors still see changes immediately.
+export const revalidate = 600;
 
 // Fetch the raw `updates` rows on the server so the primary list is present in
 // the first HTML (crawlers/no-JS see real content). select('*') keeps the
 // query tolerant: the optional editorial columns (category, summary,
 // source_url, source_name, pinned) come through once the migration has run,
 // and the query still succeeds while they don't exist yet.
+//
+// Reads go through the plain anon server client, NOT a cookie-bound one. This
+// page shows the same public rows (active = true) to everyone and never reads
+// the session, but touching cookies() opts the route out of static rendering
+// entirely — which silently made `revalidate` a no-op and re-ran this query on
+// EVERY page view. Without cookies the ISR window above actually applies.
 async function getInitialUpdates() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  if (!supabase) return [];
 
   const { data } = await supabase
     .from('updates')

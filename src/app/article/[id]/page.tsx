@@ -22,6 +22,44 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 export const dynamicParams = true;
 
 /**
+ * Prerender every approved article at build time.
+ *
+ * Without this the route has no known params, so Next never prerenders it and
+ * every single article view server-renders — one Supabase read pulling the
+ * full `details` HTML per visit, on the site's highest-traffic page type.
+ * That mattered doubly here: the Cloudflare adapter has no incremental cache
+ * bucket provisioned (see open-next.config.ts), so ISR pages re-render on
+ * every worker cold start instead of being shared. Pages prerendered at build
+ * ship as static assets and cost zero database reads to serve.
+ *
+ * `dynamicParams = true` above keeps the on-demand path: an article published
+ * after the last build still renders (and then revalidates) normally, so
+ * publishing never has to wait for a deploy.
+ *
+ * Canonical slugs only. The page permanent-redirects any non-canonical param
+ * to `article.slug`, so prerendering the legacy `id` form would just build
+ * pages whose only job is to redirect. Rows with no slug fall back to `id`,
+ * which is what the redirect logic treats as canonical for them.
+ */
+export async function generateStaticParams(): Promise<Array<{ id: string }>> {
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('articles')
+    .select('id, slug')
+    .eq('status', 'approved');
+
+  // A build without database access (or a transient failure) must not fail the
+  // deploy — returning [] simply leaves every article to the on-demand path.
+  if (error || !data) return [];
+
+  return data
+    .map((row: { id: string; slug: string | null }) => row.slug || row.id)
+    .filter((param): param is string => Boolean(param))
+    .map((id) => ({ id }));
+}
+
+/**
  * prepareHtml — decode + sanitize an article body field ON THE SERVER.
  *
  * ORDER IS A SECURITY REQUIREMENT: deobfuscate FIRST, then sanitize. Some

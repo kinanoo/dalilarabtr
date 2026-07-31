@@ -216,6 +216,24 @@ export default function NewsManager() {
         return;
       }
 
+      // Purge the cached news pages so the change is visible immediately.
+      // /updates and /updates/[id] use a long ISR window (see their
+      // `export const revalidate`) to keep Supabase egress down — that window
+      // is only affordable because publishing purges the cache right here.
+      // Fire-and-forget: a failed purge just means the page waits for its
+      // next ISR tick, so it must never block or fail the save.
+      try {
+        const paths = ['/', '/updates'];
+        if (editingRow?.id) paths.push(`/updates/${editingRow.id}`);
+        void fetch('/api/admin/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths }),
+        });
+      } catch {
+        // ignore — cache falls back to its ISR window
+      }
+
       // Notify only for a NEW, LIVE item (not edits, not drafts). One instant
       // pipeline fans out to bell + push + Telegram; the 30-min cron is only a
       // safety net. No body — the pipeline scans recent updates itself.
@@ -267,6 +285,12 @@ export default function NewsManager() {
     const { error } = await adminUpdate('updates', { active: !u.active }, u.id);
     if (error) { toast.error('فشل التحديث: ' + error.message); return; }
     toast.success(u.active ? 'أُخفي عن الزوّار' : 'أصبح ظاهراً');
+    // Visibility flips change what visitors see — purge the cached pages too.
+    void fetch('/api/admin/revalidate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths: ['/', '/updates', `/updates/${u.id}`] }),
+    }).catch(() => { /* falls back to the ISR window */ });
     fetchUpdates();
   };
 

@@ -206,10 +206,52 @@ export async function fetchRemoteUpdates(): Promise<RuntimeUpdate[] | null> {
   }
 }
 
+let cachedUpdatesVersion: string | null = null;
+let updatesVersionPromise: Promise<string | null> | null = null;
+
+/**
+ * Version string for the Navbar's "new updates" dot.
+ *
+ * The Navbar renders on EVERY page, so this runs once per page view for every
+ * visitor. It used to call fetchRemoteUpdates(), which pulls the whole updates
+ * table INCLUDING each row's full `content` HTML — hundreds of KB of uncached
+ * Supabase egress per page view, to produce a ~20-character string. The
+ * version only needs id + date, so select just those two columns.
+ *
+ * The computation itself is unchanged: same rows (active !== false, so rows
+ * with a NULL active still count — an .eq('active', true) filter would drop
+ * them and shift the version), same computeUpdatesVersion(), so a visitor's
+ * stored last-seen value stays comparable and no spurious dot appears.
+ */
 export async function fetchRemoteUpdatesVersion(): Promise<string | null> {
-  const updates = await fetchRemoteUpdates();
-  if (!updates) return null;
-  return computeUpdatesVersion(updates.map((u) => ({ id: u.id, date: u.date })));
+  if (cachedUpdatesVersion) return cachedUpdatesVersion;
+  if (updatesVersionPromise) return updatesVersionPromise;
+
+  updatesVersionPromise = (async () => {
+    const supabase = await getSupabase();
+    if (!supabase) {
+      const rows = isDemoMode() ? readDemoUpdates().filter((u) => u.active !== false) : null;
+      if (!rows) return null;
+      return computeUpdatesVersion(rows.map((u) => ({ id: u.id, date: u.date })));
+    }
+
+    const { data, error } = await supabase
+      .from('updates')
+      .select('id,date,active')
+      .order('date', { ascending: false });
+
+    if (error) return null;
+    const rows = ((data as Array<Pick<RemoteUpdateRow, 'id' | 'date' | 'active'>>) ?? [])
+      .filter((u) => u.active !== false);
+    cachedUpdatesVersion = computeUpdatesVersion(rows.map((u) => ({ id: u.id, date: u.date })));
+    return cachedUpdatesVersion;
+  })();
+
+  try {
+    return await updatesVersionPromise;
+  } finally {
+    updatesVersionPromise = null;
+  }
 }
 
 export async function fetchRemoteArticleById(id: string): Promise<RemoteArticleRow | null> {

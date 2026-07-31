@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,13 +16,12 @@ import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/
 export const revalidate = 60;
 
 // ─── Shared helper ────────────────────────────────────────────────────────────
+// Plain anon client, no cookies. Every visitor sees the same public provider
+// row and the session is never read here, but a cookie-bound client forces
+// dynamic rendering — which made `revalidate` above a no-op and re-ran these
+// queries on every view.
 async function getSupabase() {
-    const cookieStore = await cookies();
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { cookies: { get: (name) => cookieStore.get(name)?.value } }
-    );
+    return supabase;
 }
 
 // Detail URLs resolve by either the pretty slug (new) or the uuid id (legacy).
@@ -36,6 +34,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
     const { id } = await props.params;
     const supabase = await getSupabase();
+    if (!supabase) notFound();
     const key = decodeURIComponent(id);
 
     const { data } = await supabase
@@ -74,6 +73,7 @@ export default async function ServiceDetailsPage(
 ) {
     const { id } = await props.params;
     const supabase = await getSupabase();
+    if (!supabase) notFound();
     const key = decodeURIComponent(id);
 
     const { data: provider, error } = await supabase
