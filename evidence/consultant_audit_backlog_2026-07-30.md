@@ -1,75 +1,35 @@
-# قائمة متابعة تدقيق «دليل المواقف» — 2026-07-30
+# قائمة متابعة تدقيق «دليل المواقف» — الحالة الختامية 2026-07-30
 
-ما لم يدخل ملف التصحيح `sql/2026-07-30_consultant_audit_full.sql` وسببه.
+التدقيق مُغلق: 254 ملاحظة فُنّدت كلها عبر أربع طبقات تحقق (عدا واحدة).
+الملفان المنفَّذان: `2026-07-30_consultant_audit_full.sql` + `2026-07-30_consultant_audit_final.sql`.
 
-## ملاحظات أسقطها التفنيد (الصف الأصلي صحيح — لا تغيير)
+## يحتاج قرار المالك (لا نص بديل آمن بدون قرار بشري)
 
-- `protection-status-2026` / `cost` — الادّعاء المرفوض: تكاليف الإقامة السياحية تبدأ من 3,000+ ليرة سنوياً.
-- `syrian-return-code` / `title` — الادّعاء المرفوض: إزالة كود V-87 / كود العودة
-- `daily-bank-open` / `steps[0]` — الادّعاء المرفوض: استخرج رقماً ضريبياً (Vergi Numarası) إن لم يكن لديك — مجاني من أي دائرة ضرائب.
-- `tourist-health-insurance` / `steps[0]` — الادّعاء المرفوض: حاملو الإقامة أكثر من سنة: يمكنهم التسجيل في التأمين الحكومي GSS
+- `syrian-fix-address` / `title` [medium|UNVERIFIABLE]
+  - الادعاء: إزالة كود V-160 (تجميد العنوان)
+  - المشكلة: No official source - goc.gov.tr, icisleri.gov.tr, mevzuat.gov.tr - publishes a restriction code named 'V-160' or defines it as an address freeze. Every source that describes it is a law-firm or consultancy marketing page
+- `housing-eviction` / `cost` [medium|UNVERIFIABLE]
+  - الادعاء: الدفاع عن حقوقك: رسوم المحكمة ~2,000-4,000 ليرة + أتعاب محامٍ 10,000-25,000 ليرة. المحكمة قد تحكم للمالك بمصاريف المحاماة إذا خسرت.
+  - المشكلة: Four specific lira figures with no source, on a row last updated 2025-12; Turkish court fees are reset every January by a Harçlar Kanunu Genel Tebliği and the attorney fee the court awards against a losing party is not f
+- `housing-rent-increase` / `cost` [medium|FALSE]
+  - الادعاء: شكوى Tüketici Hakem Heyeti: مجانية. دعوى المحكمة: رسوم ~1,500-3,000 ليرة + أتعاب محامٍ (اختياري).
+  - المشكلة: The first sentence prices a route that does not exist for rent disputes (see the finding on steps[3]: 6502 m.66 limits the heyet to consumer transactions). The court-fee range is an unsourced 2025 figure on a row last up
+- `housing-tahliye-undertaking` / `cost` [medium|UNVERIFIABLE]
+  - الادعاء: الاعتراض في İcra: رسوم بسيطة. الدعوى في المحكمة: 2,000-4,000 ليرة + محامٍ.
+  - المشكلة: Unsourced lira figures on a row last touched 2025-12. Turkish maktu court fees were re-set for 1/1/2026 by the 98 Seri No'lu Harçlar Kanunu Genel Tebliği (RG 31/12/2025, 33124 5. Mükerrer), so any 2025-vintage range is p
 
-## تصحيحها يحتاج قراراً بشرياً (النص المقترح غير قابل للنشر كما هو)
+## أسقطها التفنيد — الصفوف الأصلية صحيحة، لا تغيير
 
-- `syrian-fix-address` / `title` [medium] — إزالة كود V-160 (تجميد العنوان)
-- `housing-eviction` / `cost` [medium] — الدفاع عن حقوقك: رسوم المحكمة ~2,000-4,000 ليرة + أتعاب محامٍ 10,000-25,000 ليرة. المحكمة 
-- `housing-rent-increase` / `cost` [medium] — شكوى Tüketici Hakem Heyeti: مجانية. دعوى المحكمة: رسوم ~1,500-3,000 ليرة + أتعاب محامٍ (اخ
-- `housing-tahliye-undertaking` / `cost` [medium] — الاعتراض في İcra: رسوم بسيطة. الدعوى في المحكمة: 2,000-4,000 ليرة + محامٍ.
+- `protection-status-2026` / `cost`: تكاليف الإقامة السياحية تبدأ من 3,000+ ليرة سنوياً.
+- `daily-bank-open` / `steps[0]`: استخرج رقماً ضريبياً (Vergi Numarası) إن لم يكن لديك — مجاني من أي دائرة ضرائب.
+- `family-child-vaccination` / `tip`: التطعيمات مجانية لجميع الأطفال في تركيا بغض النظر عن الجنسية أو وضع الإقامة.
+- `family-pregnancy-birth` / `tip`: حتى لو لم يكن لديك تأمين صحي، لا يحق لأي مشفى حكومي رفض الحامل عند الولادة.
+- `syrian-return-code` / `title`: إزالة كود V-87 / كود العودة
+- `tourist-new` / `cost`: السوريون والفلسطينيون والطلاب معفيون من الرسوم (يدفعون البطاقة فقط)
+- `tourist-new` / `cost`: بطاقة الإقامة (Kart Bedeli): 964 ل.ت • الشهر الأول (Harç): حد أقصى 3,359.90 ل.ت • كل شهر إضافي: 2,23
+- `tourist-new` / `cost`: الشهر الأول (Harç): حد أقصى 3,359.90 ل.ت • كل شهر إضافي: 2,232.30 ل.ت
+- `tourist-health-insurance` / `steps[0]`: حاملو الإقامة أكثر من سنة: يمكنهم التسجيل في التأمين الحكومي GSS
 
-## متوسطة/منخفضة لم تُفنَّد بعد (وجدها المدقّق ولم تمرّ على مفنِّد مستقل)
+## بلا حكم (سقطت من عهدة المفنّدين — تُراجع يدوياً عند الرغبة)
 
-من دفعات daily-2 / worker / student / tourist / other فقط — البقية فُنّدت.
-
-- [medium|FALSE] `daily-internet-telecom` / `steps[1]` — إذا لم تُحل خلال 15 يوماً، قدّم شكوى في BTK (هيئة تنظيم الاتصالات)
-- [medium|MISSI] `daily-internet-telecom` / `tip` — قبل توقيع عقد جديد، اسأل عن مدة الالتزام (Taahhüt). العقود بالتزام 24 شهراً تتضم
-- [medium|FALSE] `daily-family-doctor-change` / `legal` — لا يوجد قيد قانوني على عدد مرات التغيير، لكن بعض الولايات تضع حداً عملياً (مرة ك
-- [medium|FALSE] `daily-family-doctor-change` / `description` — يحق لك تغيير طبيب العائلة مرة واحدة كل فترة (حسب لوائح الولاية).
-- [medium|FALSE] `daily-goc-appointment` / `steps[1]` — نظام Randevu (randevu.goc.gov.tr أو عبر ALO 157): استخدمه لـ تحديث بيانات، استفس
-- [medium|FALSE] `daily-goc-appointment` / `steps[3]` — لحجز Randevu عام: اتصل على 157 أو استخدم بوابة الحجز الإلكتروني. حدد نوع المعامل
-- [medium|STALE] `daily-mhrs-booking` / `cost` — الكشف في المشفى الحكومي: 10-30 ليرة مشاركة (Katılım payı) مع SGK.
-- [medium|UNVER] `daily-mhrs-booking` / `cost` — بدون تأمين: تكلفة الكشف كاملة (500-2,000 ليرة).
-- [medium|OVERC] `daily-mhrs-booking` / `description` — الشرط الأساسي: تأمين صحي ساري المفعول (SGK أو خاص معتمد).
-- [medium|FALSE] `daily-fast` / `description` — لكن له حدود يومية تختلف حسب البنك.
-- [medium|DANGE] `daily-fast` / `steps[2]` — إذا كان المبلغ كبيراً: اسأل البنك عن الطريقة الأنسب (EFT/حوالة/تقسيم دفعات) لتجن
-- [medium|FALSE] `daily-lost-driving-license` / `steps[3]` — دفع الرسوم إن طُلب.
-- [medium|MISSI] `daily-lost-driving-license` / `cost` — رسوم/ضرائب تختلف.
-- [low|FALSE] `daily-family-doctor-change` / `steps[1]` — للتغيير إلكترونياً: E-Devlet → Aile Hekimi Değiştirme (إن كان متاحاً في ولايتك).
-- [medium|FALSE] `daily-crypto` / `steps[1]` — لا تخلط بين “تداول” و“دفع”؛ قواعد الدفع قد تكون مختلفة ومقيّدة.
-- [low|FALSE] `daily-fast` / `steps[0]` — تحقق من تطبيق بنكك: هل يدعم FAST؟ وما الحد اليومي؟
-- [low|UNVER] `daily-mhrs-booking` / `tip` — (تُفتح مواعيد جديدة يومياً الساعة 08:00)
-- [medium|OVERC] `worker-rights-violation` / `steps[4]` — يمكنك المطالبة بالراتب المتأخر + تعويض الإنهاء غير العادل (Kıdem + İhbar Tazmina
-- [medium|OVERC] `worker-rights-violation` / `cost` — الوساطة: مجانية للعامل | المحكمة: رسوم قليلة مع إمكانية الإعفاء
-- [medium|OVERC] `work-permit-employee` / `docs[0]` — الكملك المسجل في نفس ولاية العمل
-- [medium|MISSI] `work-permit-employee` / `tip` — تأكد دورياً من أن صاحب العمل يدفع التأمينات عبر E-Devlet (سجل SGK).
-- [medium|MISSI] `worker-freelance-rules` / `steps[0]` — تحتاج إذن عمل ساري المفعول حتى للعمل الحر
-- [medium|FALSE] `work-sgk` / `legal` — تعديلات قانون الضمان الاجتماعي (SGK) لعام 2026 ولوائح GSS للأجانب.
-- [medium|STALE] `company-setup` / `steps[3]` — أنجز التوقيعات/النوتر (تواقيع المدير/مدراء) ثم تابع إجراءات السجل التجاري/الغرفة
-- [medium|MISSI] `worker-bagkur` / `cost` — اشتراك شهري يتغير حسب السنة والفئة.
-- [medium|OVERC] `work-permit-company` / `description` — هذا المسار مناسب لمن لديه نشاط تجاري حقيقي ويريد إذن عمل كمدير/مالك. التحدي الأس
-- [medium|OVERC] `worker-meal-card` / `tip` — لا تفترض أنه حق تلقائي للجميع. هو “ميزة” شائعة لكنها تعتمد على العقد.
-- [low|STALE] `work-permit-cost` / `title` — تكلفة إذن العمل 2025 (تقريباً وما الذي يُدفع فعلاً)
-- [medium|OVERC] `student-residence` / `cost` — الطلاب المسجّلون رسمياً معفون من رسوم الإقامة الشهرية (Harç) — يدفعون فقط بطاقة 
-- [medium|MISSI] `student-residence` / `description` — إقامة الطالب غالباً أقوى وأسهل من السياحية لأنها مبنية على قبول/تسجيل تعليمي. نج
-- [medium|MISSI] `student-open-highschool` / `cost` — رسوم رمزية/كتب حسب النظام.
-- [medium|FALSE] `student-mavi-diploma` / `description` — هي ملحق للدبلوم (Diploma Supplement) تصدره بعض الجامعات لتسهيل فهم الشهادة دوليا
-- [medium|FALSE] `student-mavi-diploma` / `steps[1]` — تحقق إن كانت تصدر مجاناً أم برسوم، وما آلية الطلب.
-- [medium|FALSE] `student-mavi-diploma` / `cost` — حسب الجامعة.
-- [medium|UNVER] `student-dormitory` / `cost` — KYK: 1,500-3,000 ليرة/شهر | خاص: 4,000-15,000 ليرة/شهر
-- [medium|OVERC] `tourist-extension` / `steps[5]` — خلال فترة الانتظار تبقى إقامتك القديمة سارية المفعول قانونياً حتى صدور القرار.
-- [medium|MISSI] `tourist-extension` / `docs` — وصل دفع الرسوم
-- [low|FALSE] `tourist-extension` / `docs[4]` — صور شخصية بيومترية (4 صور)
-- [low|FALSE] `tourist-new` / `docs[1]` — صور شخصية بيومترية (4 صور، خلفية بيضاء)
-- [medium|FALSE] `tourist-overstay` / `steps[4]` — غادر تركيا خلال المهلة المحددة (عادة 7-30 يوماً بعد التبليغ).
-- [medium|FALSE] `tourist-health-insurance` / `docs[1]` — تقرير الدخل من SGK
-- [low|FALSE] `tourist-lease-contract` / `steps[4]` — سجّل عنوانك في النفوس خلال 20 يوماً من الانتقال
-- [medium|MISSI] `emergency-domestic-violence` / `tip` — أمر الحماية يصدر حتى لو لم يكن لديك إقامة رسمية. يمكنك أيضاً التقديم عبر UYAP أو
-- [medium|OVERC] `family-child-vaccination` / `tip` — التطعيمات مجانية لجميع الأطفال في تركيا بغض النظر عن الجنسية أو وضع الإقامة.
-- [medium|UNVER] `family-pregnancy-birth` / `cost` — الولادة الحكومية: مجانية مع GSS | بدون تأمين: 5,000-15,000 ليرة
-- [medium|UNVER] `family-pregnancy-birth` / `steps[1]` — متابعة الحمل مجانية في المشافي الحكومية (حتى بدون تأمين للحوامل)
-- [medium|OVERC] `family-pregnancy-birth` / `tip` — حتى لو لم يكن لديك تأمين صحي، لا يحق لأي مشفى حكومي رفض الحامل عند الولادة.
-- [medium|FABRI] `emergency-airport-denied` / `legal` — قانون الأجانب والحماية الدولية رقم 6458 — المادة 9
-- [medium|UNVER] `investor-property-buying-process` / `cost` — 4% رسوم طابو + ~3,000-5,000 ليرة تقييم + رسوم نوتر
-- [medium|UNVER] `investor-property-dispute` / `cost` — الوساطة: 2,000-5,000 ليرة | المحكمة: حسب قيمة النزاع
-- [medium|OVERC] `investor-tax-obligations` / `tip` — إذا كنت لا تقيم في تركيا وتؤجر عقارك، عليك تعيين ممثل ضريبي (Vergi Temsilcisi). 
-
-الإحصاء: {'medium': 44, 'low': 7}
+- `worker-meal-card` / `tip` [medium]: لا تفترض أنه حق تلقائي للجميع. هو “ميزة” شائعة لكنها تعتمد على العقد.
