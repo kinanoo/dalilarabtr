@@ -395,12 +395,17 @@ export default function NewsManager() {
 
           <div>
             <label className={labelCls}>رابط توجيه بديل (اختياري)</label>
+            {/* type="text": the value is usually an INTERNAL path (/article/…) which
+                type="url" rejects natively, blocking the whole save. The pattern
+                still validates the two legal shapes. */}
             <input
-              type="url"
+              type="text"
               dir="ltr"
               value={form.link}
               onChange={(e) => setForm({ ...form, link: e.target.value })}
               placeholder="/article/123"
+              pattern="(/.*|https?://.*)"
+              title="رابط داخلي يبدأ بـ / (مثل ‎/article/123) أو رابط كامل يبدأ بـ https://"
               className={inputCls}
             />
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">

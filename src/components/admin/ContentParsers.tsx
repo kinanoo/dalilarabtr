@@ -156,7 +156,7 @@ export function UpdatesManager() {
                     </div>
                     <div>
                         <label className="text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200 uppercase tracking-wider">رابط التوجيه (اختياري)</label>
-                        <input type="url" placeholder="مثلاً: /article/123 أو https://example.com" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all" dir="ltr" />
+                        <input type="text" pattern="(/.*|https?://.*)" title="رابط داخلي يبدأ بـ / أو رابط كامل يبدأ بـ https://" placeholder="مثلاً: /article/123 أو https://example.com" value={formData.link || ''} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all" dir="ltr" />
                     </div>
                     <ImageUploader
                         label="صورة التحديث (اختياري)"
