@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { MapPin, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
@@ -13,15 +16,44 @@ import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
  * city read in a few screens instead of an endless scroll.
  */
 export default function ProviderRow({ p }: { p: ProviderCardData }) {
+    const [touchActive, setTouchActive] = useState(false);
+    const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const href = `/services/${p.slug || p.id}`;
     const city = canonicalCity(p.city);
     const hasReviews = !!(p.review_count && p.review_count > 0);
     const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
     const profession = displayServiceProfession(p.profession);
     const description = cleanServiceText(p.description);
+    const startTouchFeedback = () => {
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+        setTouchActive(true);
+    };
+    const finishTouchFeedback = () => {
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+        touchTimer.current = setTimeout(() => setTouchActive(false), 260);
+    };
+    const flashTouchFeedback = () => {
+        startTouchFeedback();
+        finishTouchFeedback();
+    };
+
+    useEffect(() => () => {
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+    }, []);
 
     return (
-        <article className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all duration-300 before:pointer-events-none before:absolute before:inset-y-3 before:right-0 before:w-1 before:rounded-l-full before:bg-gradient-to-b before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10 hover:before:opacity-100 active:scale-[0.99] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700 dark:active:bg-emerald-950/20 sm:gap-4 sm:p-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+        <article
+            onPointerDown={startTouchFeedback}
+            onPointerUp={finishTouchFeedback}
+            onPointerCancel={finishTouchFeedback}
+            onPointerLeave={finishTouchFeedback}
+            onTouchStart={startTouchFeedback}
+            onTouchEnd={finishTouchFeedback}
+            onMouseDown={startTouchFeedback}
+            onMouseUp={finishTouchFeedback}
+            onClickCapture={flashTouchFeedback}
+            className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all duration-300 before:pointer-events-none before:absolute before:inset-y-3 before:right-0 before:w-1 before:rounded-l-full before:bg-gradient-to-b before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/10 hover:before:opacity-100 active:scale-[0.99] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700 dark:active:bg-emerald-950/20 sm:gap-4 sm:p-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${touchActive ? '-translate-y-0.5 border-emerald-300 bg-emerald-50/40 shadow-lg shadow-emerald-500/10 before:opacity-100 dark:bg-emerald-950/20' : ''}`}
+        >
             <Link href={href} className="relative shrink-0 transition-transform duration-300 group-hover:scale-[1.04] group-active:scale-[0.98] motion-reduce:transition-none" aria-label={p.name}>
                 <ProviderAvatar name={p.name} image={p.image} className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl" />
                 {verification.visible && (

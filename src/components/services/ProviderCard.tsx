@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { MapPin, Star, BadgeCheck, ChevronLeft } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
@@ -31,19 +34,48 @@ export interface ProviderCardData {
  * normalisation).
  */
 export default function ProviderCard({ p }: { p: ProviderCardData }) {
+    const [touchActive, setTouchActive] = useState(false);
+    const touchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const href = `/services/${p.slug || p.id}`;
     const city = canonicalCity(p.city);
     const hasReviews = !!(p.review_count && p.review_count > 0);
     const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
     const profession = displayServiceProfession(p.profession);
     const description = cleanServiceText(p.description);
+    const startTouchFeedback = () => {
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+        setTouchActive(true);
+    };
+    const finishTouchFeedback = () => {
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+        touchTimer.current = setTimeout(() => setTouchActive(false), 260);
+    };
+    const flashTouchFeedback = () => {
+        startTouchFeedback();
+        finishTouchFeedback();
+    };
+
+    useEffect(() => () => {
+        if (touchTimer.current) clearTimeout(touchTimer.current);
+    }, []);
 
     return (
-        <article className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-4 shadow-sm outline-none transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:h-1 before:rounded-b-full before:bg-gradient-to-l before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-1 hover:shadow-xl hover:before:opacity-100 active:scale-[0.985] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:bg-slate-900 dark:active:bg-emerald-950/20 sm:p-5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+        <article
+            onPointerDown={startTouchFeedback}
+            onPointerUp={finishTouchFeedback}
+            onPointerCancel={finishTouchFeedback}
+            onPointerLeave={finishTouchFeedback}
+            onTouchStart={startTouchFeedback}
+            onTouchEnd={finishTouchFeedback}
+            onMouseDown={startTouchFeedback}
+            onMouseUp={finishTouchFeedback}
+            onClickCapture={flashTouchFeedback}
+            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-4 shadow-sm outline-none transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:h-1 before:rounded-b-full before:bg-gradient-to-l before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-1 hover:shadow-xl hover:before:opacity-100 active:scale-[0.985] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:bg-slate-900 dark:active:bg-emerald-950/20 sm:p-5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${touchActive ? '-translate-y-1 border-emerald-300 bg-emerald-50/40 shadow-xl shadow-emerald-500/10 before:opacity-100 dark:bg-emerald-950/20' : ''} ${
             p.is_featured
                 ? 'border-amber-300 dark:border-amber-700/60 ring-1 ring-amber-200/70 dark:ring-amber-800/40 hover:shadow-amber-500/10 hover:border-amber-400'
                 : 'border-slate-200 dark:border-slate-800 hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700'
-        }`}>
+        }`}
+        >
             {/* Featured (paid) ribbon */}
             {p.is_featured && (
                 <span className="absolute -top-2 start-3 z-10 inline-flex items-center gap-1 bg-gradient-to-l from-amber-500 to-yellow-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm shadow-amber-500/40">
