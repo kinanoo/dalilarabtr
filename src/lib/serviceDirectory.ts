@@ -76,19 +76,58 @@ export function sanitizeDirectorySearch(value: string | null | undefined): strin
         .slice(0, 80);
 }
 
+const SEARCH_TOKEN_STOPWORDS = new Set([
+    'في',
+    'من',
+    'عن',
+    'على',
+    'الى',
+    'إلى',
+    'او',
+    'أو',
+    'مع',
+    'شركة',
+    'مكتب',
+    'خدمة',
+    'خدمات',
+    'the',
+    'and',
+    'for',
+    'with',
+    'bir',
+    've',
+    'ile',
+    'hizmet',
+    'hizmetleri',
+]);
+
 export function directorySearchVariants(value: string): string[] {
-    const lower = value.toLocaleLowerCase('tr-TR');
+    const sanitized = sanitizeDirectorySearch(value);
+    const lower = sanitized.toLocaleLowerCase('tr-TR');
     const titleCase = lower.replace(
         /(^|[\s-])(\p{L})/gu,
         (_, separator: string, letter: string) =>
             `${separator}${letter.toLocaleUpperCase('tr-TR')}`,
     );
+    const tokens = sanitized
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter((token) => {
+            if (token.length < 3) return false;
+            const lowerToken = token.toLocaleLowerCase('tr-TR');
+            return !SEARCH_TOKEN_STOPWORDS.has(token) &&
+                !SEARCH_TOKEN_STOPWORDS.has(lowerToken) &&
+                !SEARCH_TOKEN_STOPWORDS.has(normalizeComparable(token));
+        });
 
     return Array.from(new Set([
-        value,
+        sanitized,
         lower,
-        value.toLocaleUpperCase('tr-TR'),
+        sanitized.toLocaleUpperCase('tr-TR'),
         titleCase,
+        ...tokens,
+        ...tokens.map((token) => token.toLocaleLowerCase('tr-TR')),
+        ...tokens.map((token) => token.toLocaleUpperCase('tr-TR')),
     ]));
 }
 

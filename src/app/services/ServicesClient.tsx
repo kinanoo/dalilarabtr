@@ -91,6 +91,14 @@ const SERVICE_INTENT_GROUPS = [
   },
 ];
 
+const NEED_SEARCH_KEYS = new Set(
+  [...QUICK_NEEDS, ...SERVICE_INTENT_GROUPS.flatMap((group) => group.needs)]
+    .map((need) => `${need.query.trim()}|||${need.category.trim()}`),
+);
+
+const isPresetNeedSearch = (query: string, category: string): boolean =>
+  NEED_SEARCH_KEYS.has(`${query.trim()}|||${category.trim()}`);
+
 const SERVICES_FAQS = [
   {
     question: 'كيف أجد مقدم خدمة عربي في تركيا؟',
@@ -203,11 +211,14 @@ export default function ServicesClient({
       const query = params.get('q')?.trim() || '';
       const city = params.get('city')?.trim() || 'all';
       const category = params.get('category')?.trim() || 'all';
+      const normalizedQuery = category !== 'all' && isPresetNeedSearch(query, category)
+        ? ''
+        : query;
       const requestedSort = params.get('sort');
       const requestedPage = Number(params.get('page'));
 
-      setSearchQuery(query);
-      setDebouncedSearch(query);
+      setSearchQuery(normalizedQuery);
+      setDebouncedSearch(normalizedQuery);
       setActiveCity(city);
       setActiveCategory(category);
       if (requestedSort && ['recommended', 'rating', 'newest', 'name'].includes(requestedSort)) {
@@ -359,7 +370,8 @@ export default function ServicesClient({
     setFiltersOpen(false);
   };
   const applyNeed = (query: string, category: string) => {
-    setSearchQuery(query);
+    setSearchQuery('');
+    setDebouncedSearch('');
     setActiveCategory(category);
     setPage(1);
   };

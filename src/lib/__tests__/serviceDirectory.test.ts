@@ -85,4 +85,16 @@ describe('service directory normalization', () => {
         expect(directorySearchVariants('infoyed')).toContain('İnfoyed');
         expect(directorySearchVariants('onat tercüme')).toContain('Onat Tercüme');
     });
+
+    test('adds useful tokens for multi-word Arabic service searches', () => {
+        const variants = directorySearchVariants('\u062A\u0623\u0645\u064A\u0646 \u0635\u062D\u064A');
+        expect(variants).toContain('\u062A\u0623\u0645\u064A\u0646');
+        expect(variants).toContain('\u0635\u062D\u064A');
+    });
+
+    test('does not add broad business stopwords as search tokens', () => {
+        const variants = directorySearchVariants('\u0634\u0631\u0643\u0629 \u0627\u0644\u0632\u0647\u064A\u0631');
+        expect(variants).not.toContain('\u0634\u0631\u0643\u0629');
+        expect(variants).toContain('\u0627\u0644\u0632\u0647\u064A\u0631');
+    });
 });
