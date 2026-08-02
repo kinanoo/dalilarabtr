@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,7 +12,35 @@ import { stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
 
-export const revalidate = 60;
+// A published news item is effectively immutable, so a 60-second ISR window
+// only bought re-reads. Editing or hiding it in /admin/updates purges this
+// exact path on demand (NewsManager → /api/admin/revalidate).
+export const revalidate = 600;
+export const dynamicParams = true;
+
+/**
+ * Prerender the active news items at build time.
+ *
+ * Same reasoning as /article/[id]: with no params known at build, every news
+ * view server-rendered and re-read the row — and the Cloudflare adapter has no
+ * incremental cache bucket (see open-next.config.ts), so ISR does not survive
+ * worker cold starts. Prerendered pages ship as static assets and cost no
+ * database reads. `dynamicParams = true` keeps items published after the last
+ * build rendering on demand.
+ */
+export async function generateStaticParams(): Promise<Array<{ id: string }>> {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+        .from('updates')
+        .select('id')
+        .eq('active', true)
+        .order('date', { ascending: false })
+        .limit(300);
+
+    if (error || !data) return [];
+    return data.map((row: { id: string | number }) => ({ id: String(row.id) }));
+}
 
 // Arabic labels for updates.category (missing/unknown → no chip)
 const CATEGORY_LABELS: Record<string, string> = {
@@ -39,13 +66,12 @@ function formatDateLatin(dateStr: string): string {
     return `${date.getDate()} ${AR_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+// Plain anon client, no cookies. This page renders one public row (active =
+// true) identically for every visitor and never reads the session, but a
+// cookie-bound client makes the route dynamic — which turned `revalidate`
+// above into a no-op and re-queried the row on every single view.
 async function getSupabase() {
-    const cookieStore = await cookies();
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { cookies: { get: (name) => cookieStore.get(name)?.value } }
-    );
+    return supabase;
 }
 
 export async function generateMetadata(
@@ -53,6 +79,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
     const { id } = await props.params;
     const supabase = await getSupabase();
+    if (!supabase) notFound();
 
     // select('*') so optional columns (summary, category, ...) are tolerated
     // whether or not the migration adding them has run.
@@ -101,6 +128,7 @@ export default async function UpdateDetailPage(
 ) {
     const { id } = await props.params;
     const supabase = await getSupabase();
+    if (!supabase) notFound();
 
     const { data: update, error } = await supabase
         .from('updates')
