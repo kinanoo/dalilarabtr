@@ -17,13 +17,13 @@ export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-    title: { absolute: 'دليل الخدمات العربية في تركيا: أطباء ومحامون ومترجمون | دليل العرب' },
-    description: 'دليل المهن والخدمات العربية في تركيا — أطباء، محامون، مترجمون، عقارات، تأمين، شحن وأكثر في إسطنبول، غازي عنتاب، أنقرة، بورصة. تواصل مباشر عبر واتساب.',
-    keywords: ['خدمات عربية تركيا', 'أطباء عرب تركيا', 'محامي عربي تركيا', 'مترجم عربي تركيا', 'مهنيين عرب تركيا', 'دليل العرب', 'arap doktor', 'arap avukat', 'tercüman'],
+    title: { absolute: 'دليل الخدمات العربية في تركيا: أطباء، محامون، مترجمون ومهن يومية | دليل العرب' },
+    description: 'ابحث عن مقدمي خدمات عرب في تركيا حسب المدينة والمهنة: أطباء، محامون، مترجمون، عقارات، تأمين، شحن، صيانة ومطاعم. تواصل مباشر عبر واتساب أو اتصال.',
+    keywords: ['خدمات عربية تركيا', 'خدمات عرب في تركيا', 'أطباء عرب تركيا', 'محامي عربي تركيا', 'مترجم عربي تركيا', 'مهنيين عرب تركيا', 'خدمات سورية في تركيا', 'دليل العرب', 'arap doktor', 'arap avukat', 'tercüman'],
     alternates: { canonical: '/services' },
     openGraph: {
         title: 'دليل الخدمات العربية في تركيا',
-        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات يعرّفون عن خدماتهم بالعربية في مدن تركيا.',
+        description: 'ابحث حسب المدينة والمهنة عن مقدمي خدمات يعرّفون عن خدماتهم بالعربية في تركيا.',
         url: `${SITE_CONFIG.siteUrl}/services`,
         type: 'website',
         images: ['/og-banner.jpg'],
@@ -152,14 +152,73 @@ export default async function ServicesPage() {
                 logo: `${base}/logo.png`,
             },
             {
+                '@type': 'WebSite',
+                '@id': `${base}/#website`,
+                url: base,
+                name: 'دليل العرب',
+                inLanguage: 'ar',
+                publisher: { '@id': `${base}/#organization` },
+                potentialAction: {
+                    '@type': 'SearchAction',
+                    target: `${base}/services?q={search_term_string}`,
+                    'query-input': 'required name=search_term_string',
+                },
+            },
+            {
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: base },
+                    { '@type': 'ListItem', position: 2, name: 'الخدمات العربية في تركيا', item: `${base}/services` },
+                ],
+            },
+            {
                 '@type': 'CollectionPage',
                 '@id': `${base}/services#directory`,
                 url: `${base}/services`,
                 name: 'دليل الخدمات والمهن العربية في تركيا',
-                description: 'دليل مقدّمي الخدمات في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
+                description: 'دليل مقدّمي الخدمات العرب في تركيا حسب المدينة والمهنة: أطباء، محامون، مترجمون، عقارات، شحن، صيانة وخدمات يومية.',
                 inLanguage: 'ar',
-                isPartOf: { '@id': `${base}/#organization` },
+                isPartOf: { '@id': `${base}/#website` },
                 mainEntity: itemList,
+            },
+            {
+                '@type': 'FAQPage',
+                '@id': `${base}/services#faq`,
+                inLanguage: 'ar',
+                mainEntity: [
+                    {
+                        '@type': 'Question',
+                        name: 'كيف أجد مقدم خدمة عربي في تركيا؟',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'اكتب نوع الخدمة أو اختر المدينة والمهنة من دليل الخدمات، ثم افتح بطاقة مقدم الخدمة للتواصل عبر واتساب أو الاتصال.',
+                        },
+                    },
+                    {
+                        '@type': 'Question',
+                        name: 'هل كل الخدمات في الدليل باللغة العربية؟',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'يعرض الدليل مقدمي خدمات يعرّفون عن خدماتهم بالعربية أو يستهدفون الجمهور العربي في تركيا، مع إمكانية البحث حسب المدينة والتخصص.',
+                        },
+                    },
+                    {
+                        '@type': 'Question',
+                        name: 'كيف أتحقق قبل التعامل مع مقدم الخدمة؟',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'راجع التفاصيل، اسأل عن السعر والخطوات كتابة، ولا تدفع كامل المبلغ مسبقاً قبل التأكد من الخدمة والاتفاق.',
+                        },
+                    },
+                    {
+                        '@type': 'Question',
+                        name: 'هل يمكن البحث حسب المدينة والمهنة معاً؟',
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: 'نعم. يمكن اختيار المدينة والمهنة من صفحة الخدمات أو فتح صفحات مخصصة مثل أطباء في إسطنبول أو مترجمون في غازي عنتاب.',
+                        },
+                    },
+                ],
             },
         ],
     };
