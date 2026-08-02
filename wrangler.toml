@@ -44,12 +44,12 @@ binding = "ASSETS"
 #
 # THE BUCKET MUST EXIST BEFORE THE FIRST DEPLOY WITH THIS BINDING, or the
 # deploy fails. Create it once with either:
-#   wrangler r2 bucket create dalilarabtr-cache
-# or Cloudflare dashboard → R2 → Create bucket → name it dalilarabtr-cache.
+#   wrangler r2 bucket create dalilarab
+# or Cloudflare dashboard → R2 → Create bucket → name it dalilarab.
 # The binding name is fixed by the adapter and must stay exactly as below.
 [[r2_buckets]]
 binding = "NEXT_INC_CACHE_R2_BUCKET"
-bucket_name = "dalilarabtr-cache"
+bucket_name = "dalilarab"
 
 # Logging — sends Worker stdout/stderr to Cloudflare Logpush. Useful for
 # debugging during cutover, can be removed once stable.

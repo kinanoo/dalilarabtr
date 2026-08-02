@@ -30,7 +30,7 @@
  *
  * DEPLOY ORDER MATTERS: the NEXT_INC_CACHE_R2_BUCKET binding in wrangler.toml
  * must point at a bucket that already exists. Create it first
- * (`wrangler r2 bucket create dalilarabtr-cache`, or the Cloudflare dashboard)
+ * (`wrangler r2 bucket create dalilarab`, or the Cloudflare dashboard)
  * — deploying this config against a missing bucket fails the deploy.
  */
 import { defineCloudflareConfig } from '@opennextjs/cloudflare';
