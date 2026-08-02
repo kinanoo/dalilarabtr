@@ -382,24 +382,24 @@ export default function ServicesClient({
           <div className="min-w-0 text-center lg:text-right">
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
               <Sparkles size={14} />
-              دليل خدمات عربي في تركيا
+              خدمات العرب في تركيا
             </span>
             <h1 className="mx-auto mt-3 w-full max-w-[22rem] text-[23px] font-black leading-[1.3] tracking-normal text-slate-950 sm:max-w-4xl sm:text-4xl lg:mx-0 lg:text-5xl dark:text-white">
-              <span className="block sm:inline">ابحث عن خدمة عربية</span>
-              <span className="block text-emerald-700 dark:text-emerald-300 sm:inline"> في تركيا بدون حاجز اللغة</span>
+              <span className="block sm:inline">دليل المهن والخدمات العربية</span>
+              <span className="block text-emerald-700 dark:text-emerald-300 sm:inline"> في تركيا</span>
             </h1>
             <p className="mx-auto mt-3 max-w-3xl text-sm font-bold leading-7 text-slate-600 dark:text-slate-300 sm:text-base lg:mx-0">
-              <span className="sm:hidden">اكتب الخدمة أو اختر المدينة، ثم تواصل مباشرة مع مقدم خدمة يعرّف عن نفسه بالعربية.</span>
-              <span className="hidden sm:inline">أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. اكتب ما تحتاجه أو اختر المهنة والمدينة لتصل إلى مقدم خدمة يعرّف عن نفسه بالعربية.</span>
+              <span className="sm:hidden">ابحث عن طبيب، محام، مترجم، عقار، شحن أو أي خدمة يومية، وتواصل مباشرة عبر واتساب.</span>
+              <span className="hidden sm:inline">أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. ابحث عن الخدمة أو اختر المدينة وتواصل مباشرة، وإن كنت تقدم خدمة فسجّلها ليصل إليك العملاء من الموقع.</span>
             </p>
             <div className="mx-auto mt-3 flex max-w-3xl flex-wrap items-center justify-center gap-2 text-[12px] font-black text-slate-600 dark:text-slate-300 lg:mx-0 lg:justify-start">
               <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-sky-50 px-3 text-sky-800 ring-1 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-200 dark:ring-sky-900/50">
                 <Languages size={14} />
-                نتائج موجهة لمن يريد خدمة بالعربية
+                تواصل مباشر لأي خدمة
               </span>
               <span className="hidden min-h-8 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/50 sm:inline-flex">
                 <BadgeCheck size={14} />
-                تواصل مباشر واتفق قبل الدفع
+                سجّل خدمتك ليجدك العملاء
               </span>
             </div>
 
@@ -453,6 +453,13 @@ export default function ServicesClient({
                   </span>
                 )}
               </button>
+              <Link
+                href="/services/add"
+                className="hidden min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-black text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 active:scale-95 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200 sm:inline-flex"
+              >
+                سجّل خدمتك
+                <ChevronLeft size={16} />
+              </Link>
               {hasActiveFilters && (
                 <button
                   type="button"
@@ -466,6 +473,13 @@ export default function ServicesClient({
 
             <div className="mt-3 flex max-w-full items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <span className="shrink-0 text-xs font-black text-slate-500 dark:text-slate-400">أحتاج:</span>
+              <Link
+                href="/services/add"
+                className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-black text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200 sm:hidden"
+              >
+                <BadgeCheck size={14} />
+                سجّل خدمتك
+              </Link>
               {QUICK_NEEDS.map((need) => (
                 <button
                   key={need.label}
