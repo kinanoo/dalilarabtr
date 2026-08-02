@@ -374,33 +374,36 @@ export default function ServicesClient({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
-      <section className="relative overflow-hidden border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-900 dark:border-slate-800 dark:bg-[linear-gradient(180deg,#020617_0%,#0f172a_100%)] dark:text-white">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-200 to-transparent dark:via-emerald-900" />
 
-        <div className="mx-auto grid max-w-screen-2xl gap-5 px-4 py-4 md:gap-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-center">
-          <div className="text-center lg:text-right">
+        <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-5 px-4 py-4 md:gap-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+          <div className="min-w-0 text-center lg:text-right">
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
               <Sparkles size={14} />
               دليل خدمات عربي في تركيا
             </span>
-            <h1 className="mx-auto mt-3 max-w-4xl text-[25px] font-black leading-tight sm:text-4xl lg:mx-0 lg:text-5xl">
-              ابحث عن خدمة عربية في تركيا وتواصل بدون حاجز اللغة
+            <h1 className="mx-auto mt-3 w-full max-w-[22rem] text-[23px] font-black leading-[1.3] tracking-normal text-slate-950 sm:max-w-4xl sm:text-4xl lg:mx-0 lg:text-5xl dark:text-white">
+              <span className="block sm:inline">ابحث عن خدمة عربية</span>
+              <span className="block text-emerald-700 dark:text-emerald-300 sm:inline"> في تركيا بدون حاجز اللغة</span>
             </h1>
             <p className="mx-auto mt-3 max-w-3xl text-sm font-bold leading-7 text-slate-600 dark:text-slate-300 sm:text-base lg:mx-0">
-              أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. اكتب ما تحتاجه أو اختر المهنة والمدينة لتصل إلى مقدم خدمة يعرّف عن نفسه بالعربية.
+              <span className="sm:hidden">اكتب الخدمة أو اختر المدينة، ثم تواصل مباشرة مع مقدم خدمة يعرّف عن نفسه بالعربية.</span>
+              <span className="hidden sm:inline">أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. اكتب ما تحتاجه أو اختر المهنة والمدينة لتصل إلى مقدم خدمة يعرّف عن نفسه بالعربية.</span>
             </p>
             <div className="mx-auto mt-3 flex max-w-3xl flex-wrap items-center justify-center gap-2 text-[12px] font-black text-slate-600 dark:text-slate-300 lg:mx-0 lg:justify-start">
               <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-sky-50 px-3 text-sky-800 ring-1 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-200 dark:ring-sky-900/50">
                 <Languages size={14} />
                 نتائج موجهة لمن يريد خدمة بالعربية
               </span>
-              <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/50">
+              <span className="hidden min-h-8 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/50 sm:inline-flex">
                 <BadgeCheck size={14} />
                 تواصل مباشر واتفق قبل الدفع
               </span>
             </div>
 
-            <div className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-[minmax(0,1fr)_240px] lg:max-w-4xl">
+            <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85 dark:shadow-black/20 sm:grid-cols-[minmax(0,1fr)_240px] lg:max-w-4xl">
               <div className="relative">
                 <Search size={22} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -427,11 +430,11 @@ export default function ServicesClient({
               />
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
               <button
                 type="button"
                 onClick={scrollToResults}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
               >
                 عرض النتائج
                 <ArrowLeft size={16} />
@@ -440,7 +443,7 @@ export default function ServicesClient({
                 type="button"
                 onClick={() => setFiltersOpen((open) => !open)}
                 aria-expanded={filtersOpen}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
               >
                 <SlidersHorizontal size={16} />
                 كل الفلاتر
@@ -454,7 +457,7 @@ export default function ServicesClient({
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex min-h-10 items-center rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-500 transition hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-300"
+                  className="col-span-2 inline-flex min-h-10 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-500 transition hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-300 sm:col-span-1"
                 >
                   مسح البحث والفلاتر
                 </button>
