@@ -47,11 +47,12 @@ interface Props {
     cities: string[];                    // available cities (sorted)
     counts: Record<string, number>;      // {city: providerCount}
     totalCount: number;
+    compact?: boolean;                   // hide desktop quick chips inside tight layouts
 }
 
 const PANEL_W = 340;
 
-export default function CityFilter({ value, onChange, cities, counts, totalCount }: Props) {
+export default function CityFilter({ value, onChange, cities, counts, totalCount, compact = false }: Props) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
     // Non-null => desktop popover anchored at these viewport coords; null => mobile bottom sheet.
@@ -220,7 +221,7 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
         <div className="relative">
             <div className="flex flex-col items-stretch gap-2 lg:flex-row lg:flex-wrap lg:items-center lg:justify-center">
                 {/* Desktop-only popular quick-chips (one-tap for big cities) */}
-                <div className="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-center gap-2">
+                <div className={`${compact ? 'hidden' : 'hidden lg:flex'} lg:flex-wrap lg:items-center lg:justify-center gap-2`}>
                     {desktopChips.map((c) => (
                         <button key={c} type="button" onClick={() => onChange(c)} aria-current={value === c} className={chipCls(value === c)}>
                             {c}
@@ -232,14 +233,14 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
                 {/* Trigger group — the main button opens the list; when a city is
                     selected a SEPARATE sibling button clears it (interactive
                     controls must not nest inside a <button>). */}
-                <div className="flex w-full lg:w-auto">
+                <div className={`flex w-full ${compact ? 'lg:w-full' : 'lg:w-auto'}`}>
                     <button
                         ref={triggerRef}
                         type="button"
                         aria-haspopup="dialog"
                         aria-expanded={open}
                         onClick={() => (open ? close() : openPanel())}
-                        className={`inline-flex h-11 flex-1 items-center gap-2 px-4 text-sm font-bold border transition-all lg:flex-initial ${!isAll
+                        className={`inline-flex h-11 flex-1 items-center gap-2 px-4 text-sm font-bold border transition-all ${compact ? 'lg:w-full' : 'lg:flex-initial'} ${!isAll
                             ? 'rounded-s-xl bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
                             : 'rounded-xl w-full lg:w-auto bg-white text-slate-700 border-slate-200 hover:border-emerald-300 dark:bg-slate-800/60 dark:text-slate-200 dark:border-slate-700'
                             }`}

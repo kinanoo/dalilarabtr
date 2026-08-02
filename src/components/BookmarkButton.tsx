@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Star, LogIn, X, Bookmark } from 'lucide-react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { getSupabase } from '@/lib/supabaseLazy';
@@ -17,17 +17,24 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
     const { toggleBookmark, isBookmarked, isLoaded } = useBookmarks();
     const [active, setActive] = useState(false);
     const [animating, setAnimating] = useState(false);
-    const [isGuest, setIsGuest] = useState(true);
+    // null = we do not know yet. It used to start as `true`, so a signed-in
+    // member who tapped before the session check came back was told to log in —
+    // and if the check never resolved, every tap was answered that way forever.
+    const [isGuest, setIsGuest] = useState<boolean | null>(null);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const pendingTap = useRef(false);
 
     useEffect(() => {
         // Lazy client — keeps supabase-js out of the article page's first load.
         getSupabase().then((supabase) => {
-            if (!supabase) return;
-            supabase.auth.getSession().then(({ data }) => {
-                setIsGuest(!data.session?.user);
-            });
-        });
+            if (!supabase) {
+                setIsGuest(true); // no client to ask; treat as a visitor
+                return;
+            }
+            supabase.auth.getSession()
+                .then(({ data }) => setIsGuest(!data.session?.user))
+                .catch(() => setIsGuest(true));
+        }).catch(() => setIsGuest(true));
     }, []);
 
     useEffect(() => {
@@ -36,20 +43,37 @@ export default function BookmarkButton({ id, mini = false, variant = 'default', 
         }
     }, [id, isBookmarked, isLoaded]);
 
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+    const runTap = useCallback(() => {
         if (isGuest) {
             setShowLoginModal(true);
             return;
         }
-
         const newState = toggleBookmark(id);
         setActive(newState);
-
         setAnimating(true);
         setTimeout(() => setAnimating(false), 300);
+    }, [isGuest, id, toggleBookmark]);
+
+    // A tap that arrived before we knew who was tapping is held, not dropped,
+    // and runs the moment the answer lands.
+    useEffect(() => {
+        if (isGuest === null || !pendingTap.current) return;
+        pendingTap.current = false;
+        runTap();
+    }, [isGuest, runTap]);
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isGuest === null) {
+            pendingTap.current = true;
+            setAnimating(true);           // acknowledge the tap immediately
+            setTimeout(() => setAnimating(false), 300);
+            return;
+        }
+
+        runTap();
     };
 
     if (!isLoaded) return null;

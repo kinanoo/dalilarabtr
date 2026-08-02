@@ -17,7 +17,10 @@
 //   - PrintButton          (window.print)
 //   - ArticleCompletedBadge(localStorage checklist relic)
 //   - ShareMenu / BookmarkButton / ArticleHeroImage / ArticleHeroGallery /
-//     InlineRelatedArticles (pre-existing islands, unchanged)
+//     (pre-existing islands, unchanged)
+// The mid-article "قد يهمك أيضاً" block is NOT an island any more: it is
+// InlineRelatedArticlesServer, fetched on the server so its links are in the
+// initial HTML.
 //
 // ⚠️ Content contract: `intro`/`details` arrive DECODED + SANITIZED and
 // steps/tips/documents/fees/warning arrive DECODED from the server page
@@ -33,7 +36,7 @@ import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
 import { SITE_CONFIG, CATEGORY_SLUGS, TAG_LABELS } from '@/lib/config';
 import Breadcrumbs from './Breadcrumbs';
-import InlineRelatedArticles from './InlineRelatedArticles';
+import InlineRelatedArticlesServer from './InlineRelatedArticlesServer';
 
 import { estimateReadingTime, isRecentlyUpdated } from '@/lib/articleMeta';
 import ArticleTOC from './article/ArticleTOC';
@@ -359,7 +362,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                         أهم الأوراق
                       </div>
                       <ul className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
-                        {article.documents.slice(0, 5).map((doc, i) => (
+                        {article.documents.map((doc, i) => (
                           <li key={i} className="flex gap-3">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></div>
                             <span className="leading-relaxed font-medium">{doc}</span>
@@ -377,7 +380,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                         الخطة السريعة
                       </div>
                       <ol className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
-                        {article.steps.slice(0, 5).map((step, i) => (
+                        {article.steps.map((step, i) => (
                           <li key={i} className="flex gap-3">
                             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-black flex-shrink-0 mt-0.5 shadow-sm shadow-blue-500/30 tabular-nums" dir="ltr">{i + 1}</span>
                             <div className="leading-relaxed flex-1 min-w-0">
@@ -408,7 +411,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
 
 
               {/* قد يهمك أيضاً — Mid-article related articles */}
-              <InlineRelatedArticles currentArticleId={slug} category={article.category} />
+              <InlineRelatedArticlesServer currentArticleId={slug} category={article.category} />
 
               {/* التكلفة — accent stripe + light orb */}
               {article.fees && (

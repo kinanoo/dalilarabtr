@@ -71,6 +71,10 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
     const [severityFilter, setSeverityFilter] = useState('all');
 
     const ui = UI[lang];
+    // Detail pages (/codes/[code]) still take the language as a query param — only
+    // the INDEX moved to a real path (/codes/tr), because the index is the page
+    // that had to become cacheable. Keep sending Turkish readers to the Turkish
+    // reading of a code rather than dropping them into the Arabic one.
     const suffix = lang === 'tr' ? '?lang=tr' : '';
     const dTitle = (c: AdminCode) => (lang === 'tr' ? c.title_tr || c.title : c.title);
     const dDesc = (c: AdminCode) => (lang === 'tr' ? c.description_tr || c.desc : c.desc);
@@ -217,13 +221,13 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
             <div className="max-w-4xl mx-auto px-4 py-10 w-full" dir={ui.dir}>
                 <Breadcrumbs
                     items={[
-                        { name: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد', href: `/codes${suffix}`, isActive: true },
+                        { name: lang === 'tr' ? 'Tahdit Kodları' : 'الأكواد', href: lang === 'tr' ? '/codes/tr' : '/codes', isActive: true },
                     ]}
                 />
                 {/* Language toggle */}
                 {showToggle && (
                     <div className="flex justify-center mb-8">
-                        <CodesLangToggle arHref="/codes" trHref="/codes?lang=tr" lang={lang} />
+                        <CodesLangToggle arHref="/codes" trHref="/codes/tr" lang={lang} />
                     </div>
                 )}
 

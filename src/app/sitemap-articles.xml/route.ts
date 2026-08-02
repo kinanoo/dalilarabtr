@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 
 /**
  * Sitemap — المقالات
  * يتم تحديثه ديناميكياً من قاعدة البيانات
  */
 
-export const dynamic = 'force-dynamic';
+// Egress guard: this route used `force-dynamic`, so EVERY request — from
+// Googlebot, Bingbot, and every other crawler, and separately from each
+// Cloudflare edge location — re-read the whole table out of Supabase. Sitemap
+// data changes at most a few times a day, so that was pure repeated egress and
+// it is what pushed the project over its Supabase egress quota.
+//
+// `revalidate` caches the rendered XML in Next's own (shared) cache and lets a
+// single background refresh per hour serve every crawler, instead of one DB
+// read per request. Matches the Cache-Control this route already sends.
+// Trade-off: a content change now takes up to an hour to appear here.
+export const revalidate = 3600;
 
 const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '');
 
@@ -15,13 +26,34 @@ export async function GET() {
 
   if (supabase) {
     try {
-      const { data } = await supabase
+      // The visibility flag on `articles` is `active` — NOT `is_active`.
+      // Confirmed against the live database:
+      //   select column_name from information_schema.columns
+      //   where table_name='articles' and column_name in ('active','is_active');
+      //   → one row: active | boolean | default true
+      // An earlier attempt filtered on `is_active`, which does not exist, and
+      // PostgREST fails the entire request when a filtered column is absent —
+      // it emptied this sitemap outright (verified live: `<urlset>` with zero
+      // URLs, every article withheld from Google). Do not rename this back.
+      //
+      // `not.is.false` rather than `eq(true)` so a NULL flag still counts as
+      // visible, matching the column default.
+      //
+      // Note this only stops SUBMITTING these URLs; it does not deindex them.
+      // The pages still answer 200 by design, so if removal is ever the real
+      // intent it needs a 301 or a 410 as a separate, deliberate decision.
+      const res = await supabase
         .from('articles')
         .select('id, slug, last_update')
-        .eq('status', 'approved');
-      articles = data || [];
-    } catch {
-      // Fail silently — return empty sitemap
+        .eq('status', 'approved')
+        .not('active', 'is', false);
+      if (res.error) logger.error('sitemap-articles: query failed', res.error);
+      articles = res.data || [];
+      // Never publish an empty sitemap on a site with hundreds of articles —
+      // that is a stronger (and wrong) signal than publishing nothing new.
+      if (!articles.length) logger.error('sitemap-articles: query returned zero rows');
+    } catch (e) {
+      logger.error('sitemap-articles: fetch threw', e);
     }
   }
 

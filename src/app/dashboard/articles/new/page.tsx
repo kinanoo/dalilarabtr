@@ -59,8 +59,16 @@ export default function AddArticlePage() {
                         intro: formData.intro,
                         details: formData.details,
                         image: formData.image,
+                        // `status` is the real gate: nothing shows publicly
+                        // until an admin moves it to 'approved'. An
+                        // `is_active: false` used to be written here as well,
+                        // but that column broke every read query that touched
+                        // it (it emptied sitemap-articles.xml and /directory),
+                        // so on an INSERT it would reject the whole row — i.e.
+                        // members could not submit an article at all. Writing a
+                        // column whose existence we cannot confirm buys nothing
+                        // here, because `status` already hides the row.
                         status: 'pending',
-                        is_active: false,
                         last_update: new Date().toISOString(),
                     }
                 ]);

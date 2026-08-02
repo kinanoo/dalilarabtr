@@ -1,0 +1,60 @@
+import { supabase } from '@/lib/supabaseClient';
+import type { AdminCode } from '@/lib/types';
+import CodesClient from './CodesClient';
+import CodesLegalNote from '@/components/codes/CodesLegalNote';
+import ToolFooter from '@/components/tools/ToolFooter';
+import { SITE_CONFIG } from '@/lib/config';
+import type { Lang } from '@/lib/codesI18n';
+
+export default async function CodesIndex({ lang }: { lang: Lang }) {
+
+  // Fetch the codes on the SERVER so the full, searchable list is in the first
+  // HTML response — no client-side spinner wall, and crawlable by Google.
+  // select('*') carries the Turkish (*_tr) columns through once they exist.
+  let initialCodes: AdminCode[] = [];
+  if (supabase) {
+    const { data } = await supabase
+      .from('security_codes')
+      .select('*')
+      .order('code');
+    initialCodes = (data || [])
+      .filter((d: { active?: boolean }) => d.active !== false)
+      .map((d: { code: string; title: string; description: string; category: string; severity: string; duration?: string | null; title_tr?: string | null; description_tr?: string | null; duration_tr?: string | null }) => ({
+        id: d.code,
+        code: d.code,
+        title: d.title,
+        desc: d.description,
+        category: d.category,
+        severity: d.severity as AdminCode['severity'],
+        active: true,
+        duration: d.duration ?? null,
+        title_tr: d.title_tr ?? null,
+        description_tr: d.description_tr ?? null,
+        duration_tr: d.duration_tr ?? null,
+      }));
+  }
+
+  // DefinedTermSet JSON-LD — the codes glossary, so Google understands each
+  // code as a defined term within one named set (crawlable from the list page).
+  const definedTermSet = {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTermSet',
+    name: 'الأكواد الأمنية التركية',
+    url: `${SITE_CONFIG.siteUrl}/codes`,
+    hasDefinedTerm: initialCodes.slice(0, 100).map((c) => ({
+      '@type': 'DefinedTerm',
+      name: c.code,
+      description: c.title,
+      url: `${SITE_CONFIG.siteUrl}/codes/${encodeURIComponent(c.code)}`,
+    })),
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(definedTermSet) }} />
+      <CodesClient initialCodes={initialCodes} lang={lang} />
+      <CodesLegalNote />
+      {lang !== 'tr' && <ToolFooter toolId="codes" />}
+    </>
+  );
+}

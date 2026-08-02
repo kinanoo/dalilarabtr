@@ -4,7 +4,8 @@
       "Bash(npx tsc:*)",
       "Bash(git push:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__Claude_Code_Remote__subscribe_pr_activity"
     ]
   }
 }

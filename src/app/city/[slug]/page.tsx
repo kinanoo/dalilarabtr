@@ -14,6 +14,9 @@ import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import { TR_CITIES, cityBySlug, canonicalCity } from '@/lib/turkishCities';
 import { pharmacyCityBySlug } from '@/lib/pharmacyCities';
+import {
+    OFFICE_KINDS, officePlace, placeMapUrl, placesInCity, type OfficialPlace,
+} from '@/lib/officialPlaces';
 import closedAreas from '../../../../public/data/closed-areas.json';
 
 export const revalidate = 3600;
@@ -112,6 +115,13 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
     const { city, providers, closedCount, districts, cityArticles, residenceArticles } = data;
     const base = SITE_CONFIG.siteUrl;
     const topProviders = providers.slice(0, 8);
+
+    // «أين يقع؟» — the province's public offices and diplomatic missions, each
+    // one tap from its live Google-Maps location. See src/lib/officialPlaces.ts.
+    const cityOffices: OfficialPlace[] = OFFICE_KINDS
+        .map((k) => officePlace(k.id, slug))
+        .filter((p): p is OfficialPlace => Boolean(p));
+    const cityMissions: OfficialPlace[] = placesInCity(slug).filter((p) => p.kind === 'single');
 
     const faqs = [
         { q: `كم عدد الأحياء المغلقة لتسجيل الأجانب في ${city.ar}؟`, a: closedCount > 0 ? `يوجد ${closedCount} حيّاً مغلقاً أمام تسجيل الأجانب في ${city.ar}، موزّعة على ${districts.length} منطقة. تحقّق دائماً أن الحيّ مفتوح قبل استئجار أو شراء سكن.` : `لا توجد أحياء مغلقة مسجّلة حالياً في ${city.ar} في قائمتنا. تحقّق دائماً قبل التسجيل.` },
@@ -262,6 +272,45 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                         </Link>
                     </div>
                 </section>
+
+                {/* Official places on the map — «أين يقع؟» for this province */}
+                {cityOffices.length > 0 && (
+                    <section>
+                        <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                            <MapPin size={20} className="text-emerald-600" /> أين تقع الدوائر الرسمية في {city.ar}؟
+                        </h2>
+                        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+                            <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed mb-4">
+                                اضغط أي دائرة لتفتح موقعها على خرائط جوجل مباشرة — الفروع الأقرب إليك في {city.ar} مع
+                                الاتجاهات وساعات العمل ورقم الهاتف كما هي مسجّلة اليوم.
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {cityOffices.map((p) => (
+                                    <a
+                                        key={p.slug}
+                                        href={placeMapUrl(p)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-sm transition-all"
+                                    >
+                                        <MapPin size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{p.shortAr}</span>
+                                    </a>
+                                ))}
+                            </div>
+                            <div className="mt-4 flex flex-wrap gap-2.5">
+                                {cityMissions.length > 0 && (
+                                    <Link href={`/places/${cityMissions[0].slug}`} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black px-4 py-2.5 transition-colors">
+                                        <Landmark size={16} /> السفارات والقنصليات في {city.ar}
+                                    </Link>
+                                )}
+                                <Link href="/places" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-black px-4 py-2.5 hover:border-emerald-300 transition-colors">
+                                    <MapPin size={15} /> دليل «أين يقع؟» الكامل
+                                </Link>
+                            </div>
+                        </div>
+                    </section>
+                )}
 
                 {/* Pharmacies on duty */}
                 <section>

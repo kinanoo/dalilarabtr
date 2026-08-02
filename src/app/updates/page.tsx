@@ -13,12 +13,11 @@ export const revalidate = 600;
 // query tolerant: the optional editorial columns (category, summary,
 // source_url, source_name, pinned) come through once the migration has run,
 // and the query still succeeds while they don't exist yet.
-//
-// Reads go through the plain anon server client, NOT a cookie-bound one. This
-// page shows the same public rows (active = true) to everyone and never reads
-// the session, but touching cookies() opts the route out of static rendering
-// entirely — which silently made `revalidate` a no-op and re-ran this query on
-// EVERY page view. Without cookies the ISR window above actually applies.
+// Uses the plain anon client, NOT a cookie-bound server client. This query is a
+// public read (`active = true`) with no per-user component, and reading
+// `cookies()` forces Next to render the whole route dynamically — verified
+// live, this page answered `Cache-Control: private, no-cache, no-store`, so the
+// declared `revalidate` never engaged and every visit re-queried Supabase.
 async function getInitialUpdates() {
   if (!supabase) return [];
 

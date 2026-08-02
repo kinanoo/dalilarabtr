@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import ZoneFocus from '@/components/zones/ZoneFocus';
 import { notFound } from 'next/navigation';
 import PageHero from '@/components/PageHero';
 import { MapPin, ArrowRight, AlertTriangle, CheckCircle2, XCircle, Clock, Sparkles } from 'lucide-react';
@@ -13,9 +15,71 @@ import { citySlugForName } from '@/lib/turkishCities';
 
 export const revalidate = 600;
 
+/**
+ * Prerender the CITY and DISTRICT hubs only.
+ *
+ * Without this the route answered `Cache-Control: private, no-cache, no-store`
+ * — verified live — so every visit re-ran the full zones query. On this
+ * OpenNext/Workers deployment a dynamic segment with no known params is treated
+ * as fully dynamic and the declared `revalidate` never engages; the routes that
+ * DO declare generateStaticParams all answer with `s-maxage`. Zones is the
+ * site's strongest cluster, so this was its busiest pages paying a ~1,166-row
+ * read per visitor.
+ *
+ * Neighbourhood pages are deliberately NOT prerendered: there are ~1,166 of
+ * them, they are noindex thin pages, and building them all would dominate the
+ * build for no ranking gain. `dynamicParams` (default true) keeps them working
+ * on demand, exactly as today.
+ */
+export async function generateStaticParams() {
+    try {
+        if (!supabase) return [];
+        const seen = new Set<string>();
+        let from = 0;
+        const step = 1000;
+        for (;;) {
+            const { data, error } = await supabase
+                .from('zones')
+                .select('city, district')
+                .range(from, from + step - 1);
+            if (error || !data || data.length === 0) break;
+            for (const z of data as { city?: string; district?: string }[]) {
+                if (z.city) seen.add(z.city);
+                if (z.district) seen.add(z.district);
+            }
+            if (data.length < step) break;
+            from += step;
+        }
+        return [...seen].map((slug) => ({ slug }));
+    } catch {
+        return []; // degrade to on-demand rendering rather than fail the build
+    }
+}
+
+// A district hub is only worth an internal link once it holds at least this
+// many neighbourhoods — the same threshold sitemap-zones.xml uses to decide
+// which hubs to submit. Keep the two in step.
+const MIN_ROWS_PER_DISTRICT_LINK = 3;
+
 type Props = {
     params: Promise<{ slug: string }>;
 };
+
+// NOTE ON ?city=&district=
+// Neighbourhood NAMES REPEAT across provinces — "CUMHURİYET MAHALLESİ" exists
+// in 20 different rows — so looking a name up on its own returns an arbitrary
+// row and can show "open" for a neighbourhood that is closed where the reader
+// actually lives. That is a housing-contract-level mistake, and the fix is that
+// this page NEVER asserts one row when several match: it renders them all,
+// each labelled with its own district and province.
+//
+// The /zones search results still append ?city=&district= to say which one the
+// reader meant, but it is resolved in the BROWSER by <ZoneFocus>, not here.
+// Reading `searchParams` in this server component would force the whole route
+// to render dynamically, and this page runs a ~1,166-row Supabase query — that
+// was one full table read per visit on the site's strongest cluster. Keeping it
+// client-side lets the route stay prerendered and cached while the reader still
+// lands on their own district.
 
 type Zone = {
     id: string;
@@ -36,14 +100,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!supabase) return { title: `منطقة ${decodedSlug}` };
 
-    // Try finding by neighborhood
-    const { data: exactZone } = await supabase
+    // Try finding by neighborhood. Every match is fetched, never just the first:
+    // when the name repeats across provinces the title must say so rather than
+    // announce one province's status as if it were the answer.
+    const { data: nameMatches } = await supabase
         .from('zones')
         .select('neighborhood, city, district, status')
         .ilike('neighborhood', decodedSlug)
-        .limit(1)
-        .single();
+        .limit(60);
+    const found = (nameMatches || []) as { neighborhood: string; city: string; district: string; status: string | null }[];
 
+    // Same name in several provinces and no ?city=&district= to disambiguate:
+    // the title must NOT announce one province's status as if it were the
+    // answer — the body lists them all, so the title says so too.
+    if (found.length > 1) {
+        const closed = found.filter((z) => z.status === 'closed').length;
+        // Arabic number agreement: 3-10 take the plural (مواقع), 11+ take the
+        // accusative singular (موقعاً).
+        const placeWord = found.length <= 10 ? 'مواقع' : 'موقعاً';
+        const listTitle = `أحياء باسم ${found[0].neighborhood} في ${found.length} ${placeWord} — تحقّق من ولايتك`;
+        return {
+            title: listTitle,
+            description: `اسم «${found[0].neighborhood}» يتكرّر في ${found.length} حياً بولايات مختلفة، ${closed} منها مغلق أمام تسجيل عناوين الأجانب. اختر ولايتك ومنطقتك لمعرفة الحالة الصحيحة.`,
+            alternates: { canonical: `/zones/${encodeURIComponent(found[0].neighborhood)}` },
+            robots: { index: false, follow: true },
+            openGraph: {
+                title: listTitle,
+                images: [{ url: getOgImage(undefined, { title: listTitle }), width: 1200, height: 630, alt: listTitle }],
+            },
+        };
+    }
+
+    const exactZone = found[0];
     if (exactZone) {
         const isClosed = exactZone.status === 'closed';
         const zoneTitle = isClosed
@@ -235,7 +323,12 @@ function StatusSection({
             {districts.length > 1 ? (
                 <div className="space-y-6">
                     {districts.map(([district, zones]) => (
-                        <div key={district}>
+                        // data-district lets <ZoneFocus> find and highlight the
+                        // group the visitor actually asked for, reading
+                        // ?city=&district= on the CLIENT. Doing it server-side
+                        // would mean reading searchParams, which forces the
+                        // whole route dynamic and costs a full DB read per view.
+                        <div key={district} data-district={district}>
                             {/* SectionDivider — replaces the inline h3 + small
                                 count pill. The divider draws a horizontal rule
                                 across the section with the district name +
@@ -272,6 +365,11 @@ export default async function ZoneDetailPage({ params }: Props) {
     if (!supabase) return notFound();
 
     let viewType: 'single' | 'district' | 'city' = 'single';
+    // True only when the slug resolved to a real province. Step 1 also sets
+    // viewType='city' for a neighbourhood name that repeats across provinces,
+    // and there `district` has the province folded into the label — so that
+    // case must not be mistaken for a province hub.
+    let isCityHub = false;
     let singleItem: Zone | null = null;
     let groupItems: Zone[] = [];
     let title = '';
@@ -297,15 +395,36 @@ export default async function ZoneDetailPage({ params }: Props) {
     }
     const slugNorm = tnorm(decodedSlug);
 
-    // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ")
+    // 1. Try NEIGHBORHOOD (e.g. "MOLLA GÜRANİ MAHALLESİ").
+    //    Names REPEAT across provinces, so we fetch every match instead of
+    //    picking one. If the caller passed ?city=&district= (search results) or
+    //    the name is genuinely unique, we land on one row and show its status.
+    //    Otherwise we must NOT assert a single status — we list every match with
+    //    its province/district so the reader picks their own. Showing one
+    //    arbitrary row here previously reported "open" for a neighbourhood that
+    //    is closed in 16 of its 20 provinces.
     {
         const { data } = await supabase
             .from('zones')
             .select(ZONE_COLS)
             .ilike('neighborhood', decodedSlug)
-            .limit(1)
-            .single();
-        if (data) { singleItem = data as Zone; viewType = 'single'; }
+            .limit(60);
+        const matches = (data || []) as Zone[];
+        if (matches.length === 1) {
+            singleItem = matches[0];
+            viewType = 'single';
+        } else if (matches.length > 1) {
+            viewType = 'city';           // grouped list, split by district
+            // The grouped view labels each section by `district`; for a repeated
+            // neighbourhood the PROVINCE is the part that disambiguates, so fold
+            // it into the label — otherwise two same-named districts in
+            // different provinces would still be indistinguishable.
+            groupItems = matches.map((z) => ({
+                ...z,
+                district: z.city && z.district ? `${z.district} — ${z.city}` : (z.district || z.city),
+            }));
+            title = matches[0].neighborhood;
+        }
     }
 
     // 2. Try DISTRICT (e.g., "Fatih")
@@ -329,6 +448,7 @@ export default async function ZoneDetailPage({ params }: Props) {
             .ilike('city', decodedSlug);
         if (data && data.length > 0) {
             viewType = 'city';
+            isCityHub = true;
             groupItems = data as Zone[];
             title = data[0].city;
         }
@@ -362,6 +482,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                     .eq('city', resolvedCity);
                 if (data && data.length > 0) {
                     viewType = 'city';
+                    isCityHub = true;
                     groupItems = data as Zone[];
                     title = (data[0] as Zone).city;
                 }
@@ -510,6 +631,13 @@ export default async function ZoneDetailPage({ params }: Props) {
 
         return (
             <main className="min-h-screen bg-white dark:bg-slate-950 font-cairo">
+                {/* Reads ?city=&district= in the BROWSER and jumps the reader to
+                    their own district. Kept off the server so this route stays
+                    prerendered — see the note on Props. Suspense is required
+                    around useSearchParams or the whole route opts out again. */}
+                <Suspense fallback={null}>
+                    <ZoneFocus />
+                </Suspense>
                 {/* JSON-LD for Google: Dataset + BreadcrumbList. Both surface
                     rich SERP features (Dataset Search inclusion + breadcrumb
                     trail on the result card). */}
@@ -630,6 +758,59 @@ export default async function ZoneDetailPage({ params }: Props) {
                             Icon={Clock}
                         />
                     </div>
+
+                    {/* District index — one link per district in this province.
+                        The district hubs (/zones/{district}) are submitted in
+                        sitemap-zones.xml but nothing on the site linked to them,
+                        so every one of them was an orphan: offered to Google
+                        for indexing with zero inbound internal links.
+
+                        Threshold is the same ≥3 rows the sitemap uses — a
+                        district holding one or two neighbourhoods is a thin,
+                        near-duplicate page, and aiming crawl budget at those is
+                        exactly what feeds "crawled – currently not indexed".
+                        Counting within this province is stricter than the
+                        sitemap's global per-name count, so every link emitted
+                        here is a URL the sitemap already submits.
+
+                        Deliberately placed BELOW the status sections rather than
+                        above them: this cluster is the site's strongest, and the
+                        city view already carries a hub link, three stat chips and
+                        a banner ahead of the data. */}
+                    {isCityHub && (() => {
+                        const counts = new Map<string, number>();
+                        for (const z of groupItems) {
+                            if (z.district) counts.set(z.district, (counts.get(z.district) || 0) + 1);
+                        }
+                        const districtLinks = [...counts.entries()]
+                            .filter(([, n]) => n >= MIN_ROWS_PER_DISTRICT_LINK)
+                            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'tr'));
+                        // With a single district the index would just repeat the
+                        // page you are already on.
+                        if (districtLinks.length < 2) return null;
+                        return (
+                            <nav className="mt-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm" aria-label={`مناطق ${title}`}>
+                                <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-2">
+                                    <MapPin size={16} className="text-emerald-600" /> كل مناطق {title}
+                                </h2>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                                    افتح صفحة المنطقة لترى حالة أحيائها وحدها.
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {districtLinks.map(([district, n]) => (
+                                        <Link
+                                            key={district}
+                                            href={`/zones/${encodeURIComponent(district)}`}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors"
+                                        >
+                                            {district}
+                                            <span className="text-slate-400 dark:text-slate-500 font-normal tabular-nums"> ({n.toLocaleString('en-US')})</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </nav>
+                        );
+                    })()}
 
                     {/* Cross-links — curated internal links for SEO */}
                     <div className="mt-8">

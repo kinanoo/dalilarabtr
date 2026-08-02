@@ -9,22 +9,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
+import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import logger from '@/lib/logger';
 
-const CATEGORIES = [
-    'طبيب',
-    'محامي',
-    'مترجم',
-    'عقارات',
-    'تعليم',
-    'تجميل',
-    'تأمين',
-    'سيارات',
-    'مطاعم',
-    'شحن',
-    'سياحة',
-    'خدمات عامة'
-];
+// Single source of truth for professions (mirrors the public form + landings).
+const CATEGORIES = SERVICE_CATEGORIES.map((c) => ({ value: c.name, label: c.labelAr }));
 
 export default function AddServicePage() {
     const [loading, setLoading] = useState(false);
@@ -172,7 +161,7 @@ export default function AddServicePage() {
                                     className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none"
                                 >
                                     {CATEGORIES.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
+                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
                                     ))}
                                 </select>
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">

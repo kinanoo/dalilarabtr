@@ -10,6 +10,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { ArticleStep } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
+import logger from '@/lib/logger';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import RelatedArticles from '@/components/RelatedArticles';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
@@ -22,41 +23,44 @@ export const revalidate = 3600; // ISR: Revalidate every hour
 export const dynamicParams = true;
 
 /**
- * Prerender every approved article at build time.
+ * Without this, every article view re-rendered from scratch and re-queried
+ * Supabase — verified live: article pages answered
+ * `Cache-Control: private, no-cache, no-store`, while every route that DOES
+ * declare generateStaticParams (/city/[slug], /tools/pharmacy/[city],
+ * /services/category/[slug]) answered with `s-maxage`. On this
+ * OpenNext/Workers deployment the correlation is exact: a dynamic segment with
+ * no known params is treated as fully dynamic and `revalidate` alone never
+ * engages. Articles are the site's main organic landing pages, so that was one
+ * database read per visitor on the busiest section — the largest single
+ * contributor to the Supabase egress overage, and it grew with traffic.
  *
- * Without this the route has no known params, so Next never prerenders it and
- * every single article view server-renders — one Supabase read pulling the
- * full `details` HTML per visit, on the site's highest-traffic page type.
- * That mattered doubly here: the Cloudflare adapter has no incremental cache
- * bucket provisioned (see open-next.config.ts), so ISR pages re-render on
- * every worker cold start instead of being shared. Pages prerendered at build
- * ship as static assets and cost zero database reads to serve.
- *
- * `dynamicParams = true` above keeps the on-demand path: an article published
- * after the last build still renders (and then revalidates) normally, so
- * publishing never has to wait for a deploy.
- *
- * Canonical slugs only. The page permanent-redirects any non-canonical param
- * to `article.slug`, so prerendering the legacy `id` form would just build
- * pages whose only job is to redirect. Rows with no slug fall back to `id`,
- * which is what the redirect logic treats as canonical for them.
+ * `dynamicParams` stays true, so an article published after the last build
+ * still renders on demand rather than 404ing; it just isn't prerendered until
+ * the next deploy. Returning [] on any failure degrades to today's behaviour
+ * instead of failing the build.
  */
-export async function generateStaticParams(): Promise<Array<{ id: string }>> {
-  if (!supabase) return [];
-
-  const { data, error } = await supabase
-    .from('articles')
-    .select('id, slug')
-    .eq('status', 'approved');
-
-  // A build without database access (or a transient failure) must not fail the
-  // deploy — returning [] simply leaves every article to the on-demand path.
-  if (error || !data) return [];
-
-  return data
-    .map((row: { id: string; slug: string | null }) => row.slug || row.id)
-    .filter((param): param is string => Boolean(param))
-    .map((id) => ({ id }));
+export async function generateStaticParams() {
+    try {
+        if (!supabase) return [];
+        const { data, error } = await supabase
+            .from('articles')
+            .select('id, slug')
+            .eq('status', 'approved')
+            .not('active', 'is', false)
+            .limit(1000);
+        if (error) {
+            logger.error('article generateStaticParams failed:', error);
+            return [];
+        }
+        // The route resolves by slug first and falls back to id, so prerender
+        // whichever value the canonical URL actually uses.
+        return (data || [])
+            .map((a: { id: string; slug: string | null }) => ({ id: a.slug || a.id }))
+            .filter((p) => Boolean(p.id));
+    } catch (e) {
+        logger.error('article generateStaticParams threw:', e);
+        return [];
+    }
 }
 
 /**
@@ -120,7 +124,13 @@ async function fetchArticleData(slug: string) {
     const decoded = decodeURIComponent(slug);
 
     // Try by slug (short English URL) first — filter status at DB level
-    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status';
+    // `tags` is required by the tag-chip renderer in ArticleViewPremium, which
+    // is guarded by Array.isArray(article.tags). Omitting the column here meant
+    // the guard never passed, so NO article rendered a single /tag/ link while
+    // sitemap-tags.xml kept submitting those hubs to Google — every tag page was
+    // an orphan. It is also the only topical (non-boilerplate) internal link an
+    // article carries.
+    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, tags';
 
     let { data } = await supabase
       .from('articles')
@@ -161,7 +171,11 @@ async function fetchArticleData(slug: string) {
         // schema can emit an accurate datePublished (was wrongly equal to
         // dateModified, making every edited article look freshly published).
         createdAt: data.created_at ? new Date(data.created_at).toISOString().split('T')[0] : '',
-        lastUpdate: (data.last_update || data.created_at) ? new Date(data.last_update || data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+        lastUpdate: (data.last_update || data.created_at) ? new Date(data.last_update || data.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        // Carried through to the tag chips in ArticleViewPremium. This mapper
+        // builds a NEW object, so selecting the column is not enough — a field
+        // omitted here never reaches the view.
+        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
       };
     }
   }

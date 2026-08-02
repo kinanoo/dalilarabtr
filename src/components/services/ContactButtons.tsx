@@ -4,6 +4,8 @@ import { PhoneCall, MessageCircle } from 'lucide-react';
 import type { ProviderCardData } from './ProviderCard';
 import { SITE_CONFIG } from '@/lib/config';
 import { hasAnalyticsConsent } from '@/lib/consent';
+import DirectWhatsAppLink from './DirectWhatsAppLink';
+import { displayServiceProfession } from '@/lib/serviceText';
 
 /**
  * Contact actions (WhatsApp + call) with click tracking. Logs a
@@ -35,32 +37,33 @@ function trackContact(p: ProviderCardData, channel: 'whatsapp' | 'call') {
     } catch { /* tracking must never block the contact action */ }
 }
 
-const waUrl = (p: ProviderCardData) => {
-    if (!p.phone) return '';
+const waText = (p: ProviderCardData) => {
+    const whatsapp = p.whatsapp || p.phone;
+    if (!whatsapp) return '';
     // Include the provider's own listing link so they instantly see the client
     // came from دليل العرب + exactly which service page — builds trust and lets
     // the owner attribute the lead to the site.
     const listing = `${SITE_CONFIG.siteUrl}/services/${p.slug || p.id}`;
-    const service = p.profession || p.name || 'خدمتك';
+    const service = displayServiceProfession(p.profession, p.name || 'خدمتك');
     const msg = `مرحباً، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${service}" على هذا الرابط:\n${listing}`;
-    return `https://wa.me/${p.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+    return msg;
 };
 
 // Returns a fragment (WhatsApp + call) so the parent card/row controls layout.
 export default function ContactButtons({ p, compact = false }: { p: ProviderCardData; compact?: boolean }) {
+    const hasWhatsApp = Boolean(p.whatsapp || p.phone);
     return (
         <>
-            {p.phone && (
-            <a
-                href={waUrl(p)}
-                target="_blank"
-                rel="noopener noreferrer"
+            {hasWhatsApp && (
+            <DirectWhatsAppLink
+                phone={p.whatsapp || p.phone || ''}
+                text={waText(p)}
                 aria-label={`تواصل عبر واتساب مع ${p.name}`}
                 onClick={() => trackContact(p, 'whatsapp')}
                 className={`${compact ? 'h-10 px-3 sm:px-4' : 'flex-1 py-2.5'} inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs shadow-sm shadow-emerald-600/20 active:scale-95 transition-all`}
             >
                 <MessageCircle size={15} /><span className={compact ? 'hidden sm:inline' : ''}>واتساب</span>
-            </a>
+            </DirectWhatsAppLink>
             )}
             {p.phone && (
                 <a

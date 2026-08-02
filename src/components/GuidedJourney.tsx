@@ -52,7 +52,7 @@ const JOURNEY_GROUPS: JourneyGroup[] = [
         headerBg: 'bg-violet-100 dark:bg-violet-900/20',
         headerText: 'text-violet-600 dark:text-violet-400',
         cards: [
-            { id: 'syrian-kimlik-renew', title: 'تجديد الكملك وتحديث البيانات', desc: 'الأوراق المطلوبة، المواعيد، تغيير العنوان، والبصمة', icon: UserCheck, color: 'from-violet-500 to-purple-600', href: '/category/kimlik?tag=renewal' },
+            { id: 'syrian-kimlik-renew', title: 'تحديث بيانات الكملك', desc: 'الأوراق المطلوبة، الموعد المسبق، تغيير العنوان، والبصمة', icon: UserCheck, color: 'from-violet-500 to-purple-600', href: '/category/kimlik?tag=renewal' },
             { id: 'syrian-travel', title: 'تصاريح السفر والتنقل', desc: 'إذن السفر بين الولايات، وثيقة السفر، والعودة الطوعية', icon: Globe, color: 'from-blue-500 to-indigo-500', href: '/category/syrians?tag=travel-permit' },
             { id: 'syrian-citizenship', title: 'الجنسية الاستثنائية للسوريين', desc: 'شروط التجنيس، الملف المطلوب، والمراحل والمدة', icon: Crown, color: 'from-yellow-500 to-amber-500', href: '/category/syrians?tag=citizenship' },
             { id: 'syrian-codes', title: 'الأكواد الأمنية والترحيل', desc: 'فهم أكواد V-87, G-87, Ç-113 وكيفية الاعتراض', icon: AlertTriangle, color: 'from-red-500 to-rose-600', href: '/codes' },

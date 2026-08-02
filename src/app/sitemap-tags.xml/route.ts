@@ -14,7 +14,17 @@ import { supabase } from '@/lib/supabaseClient';
  * shouldn't out-prioritise the underlying articles (0.7) or the home page (1.0).
  */
 
-export const dynamic = 'force-dynamic';
+// Egress guard: this route used `force-dynamic`, so EVERY request — from
+// Googlebot, Bingbot, and every other crawler, and separately from each
+// Cloudflare edge location — re-read the whole table out of Supabase. Sitemap
+// data changes at most a few times a day, so that was pure repeated egress and
+// it is what pushed the project over its Supabase egress quota.
+//
+// `revalidate` caches the rendered XML in Next's own (shared) cache and lets a
+// single background refresh per hour serve every crawler, instead of one DB
+// read per request. Matches the Cache-Control this route already sends.
+// Trade-off: a content change now takes up to an hour to appear here.
+export const revalidate = 3600;
 
 const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '');
 
@@ -52,8 +62,14 @@ export async function GET() {
             }
             // Single-use tags are usually typos or one-off — drop them so
             // Google doesn't crawl 70 thin landing pages with one card each.
+            // Raised 2 → 3 alongside making article tag chips render: linking a
+            // page and submitting it for indexing are separate decisions. A
+            // two-article tag page is a fine navigation target but is still thin
+            // as a search result, and thin submitted URLs are what feeds the
+            // "crawled – currently not indexed" bucket. Two-article tags stay
+            // reachable and indexable; they're just not pushed at Google.
             entries = Array.from(buckets.entries())
-                .filter(([, v]) => v.count >= 2)
+                .filter(([, v]) => v.count >= 3)
                 .map(([tag, v]) => ({ tag, count: v.count, lastSeen: v.lastSeen || new Date().toISOString() }));
         } catch {
             // ignore — emit empty sitemap rather than 500

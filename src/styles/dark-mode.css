@@ -211,20 +211,30 @@ html.theme-switching * {
    📊 Shadows & Overlays
    ============================================ */
 
-/* Enhanced shadows */
-.dark .shadow-sm {
+/* Enhanced shadows — deliberately scoped to the resting state.
+   `.dark .shadow-sm` scores two classes, exactly like Tailwind's
+   `.hover\:shadow-xl:hover`, and it wins the tie. So in dark mode every card
+   kept its resting shadow while the pointer was over it: no lift, and the
+   coloured hover shadows never appeared at all.
+   `:not(:hover)` states the real intent — deepen the shadow while the card is
+   at rest, and get out of the way the moment a hover style has something to
+   say. On touch, where :hover never matches, the enhancement always applies.
+   Do NOT "simplify" this to :where(): that drops the specificity below plain
+   `.shadow-*`, and since this file lands before the utilities in the built
+   sheet the enhancement would silently stop applying at all. */
+.dark .shadow-sm:not(:hover) {
     box-shadow: var(--shadow-sm);
 }
 
-.dark .shadow-md {
+.dark .shadow-md:not(:hover) {
     box-shadow: var(--shadow-md);
 }
 
-.dark .shadow-lg {
+.dark .shadow-lg:not(:hover) {
     box-shadow: var(--shadow-lg);
 }
 
-.dark .shadow-xl {
+.dark .shadow-xl:not(:hover) {
     box-shadow: var(--shadow-xl);
 }
 

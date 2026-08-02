@@ -81,6 +81,17 @@ const FAQ_LINK: CrossLink = {
   icon: HelpCircle,
 };
 
+// /qa had no inbound internal link anywhere in src/ — it sat in the sitemap at
+// priority 0.8 with nothing pointing at it. (GUIDES_MENU in lib/constants.ts
+// lists it, but that constant is not rendered by any component.) The zones
+// pages are the site's biggest entry point and their readers arrive with
+// exactly the kind of situational question /qa answers.
+const QA_LINK: CrossLink = {
+  href: '/qa',
+  label: 'اقرأ أسئلة وأجوبة حقيقية من مقيمين عرب في تركيا، أو اطرح سؤالك',
+  icon: HeartHandshake,
+};
+
 const TOOLS_LINK: CrossLink = {
   href: '/tools',
   label: 'جرّب باقي الأدوات التفاعلية المجانية للعرب في تركيا',
@@ -240,7 +251,7 @@ function getLinks(context: CrossLinksContext, category?: string): CrossLink[] {
       links = [TOOLS_LINK, CODES_LINK, ZONES_LINK, EDEVLET_LINK, FAQ_LINK];
       break;
     case 'zone':
-      links = [ZONES_LINK, CODES_LINK, CONSULTANT_LINK, RESIDENCE_LINK];
+      links = [ZONES_LINK, CODES_LINK, CONSULTANT_LINK, RESIDENCE_LINK, QA_LINK];
       break;
     case 'hub': {
       links = [CONSULTANT_LINK, FAQ_LINK, SERVICES_LINK, TOOLS_LINK];

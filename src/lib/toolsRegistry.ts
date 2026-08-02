@@ -190,13 +190,13 @@ export const TOOLS: Tool[] = [
     short: 'تحقّق خوارزمياً من رقم الكملك، مع رابط النفوس الرسمي لفحص القيد.',
     whenToUse: 'حين تريد التأكد أن كملكك فعّال قبل معاملة أو توظيف.',
     cta: {
-      heading: 'كملكك يحتاج تجديداً أو معاملة؟',
+      heading: 'قيدك موقوف أو تحتاج معاملة؟',
       primary: { href: '/request?service=appointments', label: 'احجز موعد نفوس / تحديث بيانات' },
       secondary: { href: '/consultant', label: 'حدّد إجراءك عبر دليل المواقف' },
     },
     relatedArticles: [
-      a('kimlik-renewal-steps', 'خطوات تجديد الكملك'),
-      a('kimlik-renewal-expired', 'تجديد الكملك بعد انتهائه'),
+      a('kimlik-renewal-steps', 'تحديث بيانات الكملك: الإجراء الصحيح'),
+      a('kimlik-data-update', 'مهلة الإبلاغ عن تغيّر بياناتك وعنوانك'),
       a('lost-kimlik-replacement', 'فقدان الكملك واستخراج بدل'),
       a('citizenship-for-kimlik-holders-2026', 'الجنسية لحاملي الكملك 2026'),
     ],

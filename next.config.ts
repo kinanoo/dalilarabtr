@@ -113,6 +113,55 @@ const nextConfig: NextConfig = {
   // 🔀 301 Redirects (old Arabic slugs → English)
   async redirects() {
     return [
+      // Archive pagination moved from ?page=N to real paths (/articles/page/N)
+      // so the route can be prerendered — reading searchParams forces dynamic
+      // rendering and cost a Supabase query per visit. These keep every old
+      // link and any already-indexed ?page= URL pointing at one canonical
+      // address. Declared here rather than with redirect() in the page: an
+      // in-render redirect returns 200 on this deployment, config redirects
+      // correctly return 308.
+      {
+        source: '/articles',
+        has: [{ type: 'query', key: 'page', value: '(?<n>\\d+)' }],
+        destination: '/articles/page/:n',
+        permanent: true,
+      },
+      // …and page 1 has exactly one home: /articles.
+      { source: '/articles/page/1', destination: '/articles', permanent: true },
+      // Duplicate consolidation, wave 1. Selected by MEASURED body overlap
+      // (distinct-word intersection between each pair), not by title
+      // similarity: 88%, 80%, 79%, 74% and 73% respectively. Same-topic pairs
+      // that measured 32-36% overlap — family-reunion-syrians, travel-permit-2026,
+      // birth-registration-turkey — were deliberately left alone; they read like
+      // duplicates by title but are separate procedures.
+      // The unique content of the three lm-alshaml fragments (the sworn
+      // translation → notary → apostille chain, passport and bank-statement
+      // windows, where to apply, who is excluded) was merged into the parent
+      // article first, so nothing is lost behind these redirects.
+      { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
+      { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
+      { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      { source: '/article/turkish-citizenship-syrians', destination: '/article/citizenship-syrians', permanent: true },
+      { source: '/article/school-registration', destination: '/article/school-registration-turkey', permanent: true },
+      // Duplicate pair with reversed slugs, both thin, both competing for the
+      // same query. kimlik-update-data was the weaker of the two AND stated the
+      // address-change deadline as "45 days" — the law (5490, md. 50-51, and
+      // md. 8 for foreigners) says twenty WORKING days, so a reader trusting it
+      // would miss the window and be fined. It is retired into the surviving
+      // article, which now carries the corrected figure with its source.
+      {
+        source: '/article/kimlik-update-data',
+        destination: '/article/kimlik-data-update',
+        permanent: true,
+      },
+      // Codes index: Turkish edition moved from ?lang=tr to /codes/tr, same
+      // reason. hreflang on both pages now points at these paths.
+      {
+        source: '/codes',
+        has: [{ type: 'query', key: 'lang', value: 'tr' }],
+        destination: '/codes/tr',
+        permanent: true,
+      },
       {
         source: '/article/%D8%AF%D9%84%D9%8A%D9%84-%D8%A7%D9%84%D8%AA%D9%82%D8%AF%D9%8A%D9%85-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D8%AC%D9%86%D8%B3%D9%8A%D8%A9-%D8%A7%D9%84%D8%AA%D8%B1%D9%83%D9%8A%D8%A9-%D8%B9%D8%A8%D8%B1-%D8%A7%D9%84%D8%B2%D9%88%D8%A7%D8%AC-%D9%84%D9%84%D8%B3%D9%88%D8%B1%D9%8A%D9%8A%D9%86-%D9%81%D9%8A-%D8%BA%D8%A7%D8%B2%D9%8A-%D8%B9%D9%86%D8%AA%D8%A7%D8%A8',
         destination: '/article/turkish-citizenship-marriage-syrians-gaziantep',
@@ -135,6 +184,16 @@ const nextConfig: NextConfig = {
       {
         source: '/request/:service',
         destination: '/request',
+        permanent: true,
+      },
+      // /dictionary was a page whose whole body was `redirect('/directory')`.
+      // On this deployment an in-render redirect() answers 200 with a meta
+      // refresh and no canonical — a soft-404 shape, not a redirect. Config
+      // level redirects DO emit a real 308 here, so the page was deleted and
+      // the mapping lives here instead.
+      {
+        source: '/dictionary',
+        destination: '/directory',
         permanent: true,
       },
     ];

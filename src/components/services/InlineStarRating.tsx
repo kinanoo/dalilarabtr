@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Star, Send, LogIn, X, CheckCircle2, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import { addReview, hasUserReviewed, getUserReview, updateReview, deleteReview } from '@/lib/api/reviews';
+import { addReview, getUserReview, updateReview, deleteReview } from '@/lib/api/reviews';
 import { postComment } from '@/lib/api/comments';
 import logger from '@/lib/logger';
 // createNotification removed — reviews don't broadcast to all users
@@ -46,6 +46,12 @@ export default function InlineStarRating({
 
     const popupRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const closePopup = useCallback(() => {
+        setShowPopup(false);
+        setShowConfirmDelete(false);
+        setSelectedRating(0);
+        setComment('');
+    }, []);
 
     // Auth check + fetch existing review
     useEffect(() => {
@@ -86,14 +92,7 @@ export default function InlineStarRating({
         }
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showPopup, showConfirmDelete]);
-
-    const closePopup = () => {
-        setShowPopup(false);
-        setShowConfirmDelete(false);
-        setSelectedRating(0);
-        setComment('');
-    };
+    }, [closePopup, showPopup, showConfirmDelete]);
 
     const handleStarClick = useCallback((star: number) => {
         if (isGuest) {
@@ -276,10 +275,14 @@ export default function InlineStarRating({
                     {/* Rating Number + Count */}
                     <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 px-2.5 py-1 rounded-lg border border-amber-100 dark:border-amber-900/50">
                         <span className="font-bold text-sm">
-                            {displayRating ? displayRating.toFixed(1) : '5.0'}
+                            {displayCount > 0 && displayRating > 0
+                                ? displayRating.toFixed(1)
+                                : '—'}
                         </span>
                         <span className="text-xs opacity-70">
-                            ({displayCount} تقييم)
+                            {displayCount > 0
+                                ? `(${displayCount} تقييم)`
+                                : 'لا تقييمات'}
                         </span>
                     </div>
                 </div>

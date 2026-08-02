@@ -72,8 +72,16 @@ export default function DashboardLayoutClient({
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo text-slate-900 dark:text-slate-100" dir="rtl">
-            {/* Header — accent stripe + premium logo + nav */}
-            <header className="relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm">
+            {/* Header — accent stripe + premium logo + nav.
+                Pinned BELOW the site navbar, not at y=0: the navbar is
+                position:fixed at z-[100], so a sticky header at top-0 parked
+                itself underneath and disappeared the moment you scrolled.
+                --nav-height is published by the navbar's ResizeObserver, so
+                this follows it across breakpoints and when a banner appears. */}
+            <header
+                style={{ top: 'var(--nav-height, 49px)' }}
+                className="relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky z-30 shadow-sm"
+            >
                 {/* Top accent stripe — same family pattern as the public site */}
                 <div
                     aria-hidden="true"

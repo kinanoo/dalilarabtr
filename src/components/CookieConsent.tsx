@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Cookie, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { getAnalyticsConsent, setAnalyticsConsent } from '@/lib/consent';
 
 // No framer-motion here ON PURPOSE. This banner mounts for every visitor who
@@ -16,76 +16,65 @@ import { getAnalyticsConsent, setAnalyticsConsent } from '@/lib/consent';
 // here, so those classes silently emit no CSS. Exit is an instant unmount,
 // which reads fine for a dismissal.
 
+// Hold the notice back until the reader has actually settled into the page.
+// Firing it on arrival interrupts the first thing they came for, and it is the
+// single most common reason people dismiss without reading. Nothing depends on
+// answering it: the site's own visit counting and performance measurement are
+// anonymous and run regardless — only Google Analytics waits on this.
+const SHOW_AFTER_MS = 20_000;
+
 export default function CookieConsent() {
     const [isVisible, setIsVisible] = useState(false);
     const pathname = usePathname();
 
     useEffect(() => {
-        if (pathname.startsWith('/admin')) {
-            setIsVisible(false);
-            return;
-        }
+        if (pathname.startsWith('/admin')) return;
+        if (getAnalyticsConsent() !== 'unknown') return;
 
-        setIsVisible(getAnalyticsConsent() === 'unknown');
+        const t = window.setTimeout(() => setIsVisible(true), SHOW_AFTER_MS);
+        return () => window.clearTimeout(t);
     }, [pathname]);
 
-    const choose = (choice: 'granted' | 'denied') => {
+    const answer = (choice: 'granted' | 'denied') => {
         setAnalyticsConsent(choice);
         setIsVisible(false);
     };
 
+    if (pathname.startsWith('/admin') || !isVisible) return null;
+
     return (
-        <>
-            {isVisible && (
-                <div
-                    className="animate-consent-in fixed bottom-3 left-3 right-3 z-[9999] border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-auto sm:right-4 sm:w-[410px]"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="إعدادات الخصوصية"
+        <div
+            className="animate-consent-in fixed bottom-3 left-3 right-3 z-[9999] rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:left-auto sm:right-4 sm:w-[400px]"
+            role="dialog"
+            aria-label="إشعار ملفات تعريف الارتباط"
+        >
+            <div className="flex items-center gap-3">
+                <p className="min-w-0 flex-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                    نستخدم ملفات تعريف الارتباط لتحسين تجربتك على الموقع.{' '}
+                    <Link href="/privacy" className="font-bold text-emerald-700 underline dark:text-emerald-400">
+                        اعرف المزيد
+                    </Link>
+                </p>
+
+                <button
+                    type="button"
+                    onClick={() => answer('granted')}
+                    className="min-h-10 shrink-0 rounded-lg bg-emerald-700 px-5 text-xs font-bold text-white transition-colors hover:bg-emerald-800"
                 >
-                    <div className="flex items-start gap-3">
-                        <div className="shrink-0 rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/40">
-                            <Cookie className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                        </div>
+                    موافق
+                </button>
 
-                        <div className="min-w-0 flex-1">
-                            <h3 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">خصوصيتك أولاً</h3>
-                            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                                نستخدم ملفات ضرورية لتشغيل الموقع. لن نفعّل أدوات قياس الزيارات إلا بعد موافقتك.{' '}
-                                <Link href="/privacy#privacy-controls" className="font-bold text-emerald-700 underline dark:text-emerald-400">
-                                    سياسة الخصوصية
-                                </Link>
-                            </p>
-
-                            <div className="mt-3 grid grid-cols-2 gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => choose('granted')}
-                                    className="min-h-11 bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700"
-                                >
-                                    السماح بالتحليلات
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => choose('denied')}
-                                    className="min-h-11 border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                                >
-                                    الضرورية فقط
-                                </button>
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => choose('denied')}
-                            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                            aria-label="استخدام الملفات الضرورية فقط وإغلاق الرسالة"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
-        </>
+                {/* Dismissing is a decline, not a deferral — otherwise the notice
+                    would return on every visit for anyone who ignores it. */}
+                <button
+                    type="button"
+                    onClick={() => answer('denied')}
+                    className="flex min-h-10 w-8 shrink-0 items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                    aria-label="إغلاق دون الموافقة"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </div>
+        </div>
     );
 }

@@ -48,6 +48,21 @@ const ITEMS_PER_PAGE = 15;
 
 export default function FAQClientNew({ staticData, totalCount, initialQuery = '' }: FAQClientProps) {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
+
+  // Deep link (?q=…) is read HERE, in the browser, not on the server.
+  // Reading it server-side forced /faq to render dynamically — verified live,
+  // the page answered `no-store`, so the declared revalidate never engaged and
+  // every visit re-queried Supabase. `window.location` rather than
+  // useSearchParams on purpose: useSearchParams would require a Suspense
+  // boundary around this component, and during prerender crawlers would then
+  // receive the fallback instead of the questions — the exact thing the
+  // server-side read was there to protect. This runs after hydration, so the
+  // full list is in the server HTML either way.
+  useEffect(() => {
+    if (initialQuery) return; // an explicit prop still wins
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) setSearchQuery(q);
+  }, [initialQuery]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);

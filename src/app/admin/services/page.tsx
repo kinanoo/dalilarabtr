@@ -3,18 +3,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { DataTable } from '@/components/admin/DataTable';
-import { Briefcase, ArrowRight, Loader2, Save, Trash2, X, XCircle } from 'lucide-react';
-import Link from 'next/link';
+import { Briefcase, ArrowRight, Loader2, Save, Trash2, X } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
-import { ServiceEditor } from '@/components/admin/editors/ServiceEditor';
+import {
+    ServiceEditor,
+    type ServiceEditorForm,
+} from '@/components/admin/editors/ServiceEditor';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
 import logger from '@/lib/logger';
 import { extractErrorMessage } from '@/lib/errors';
+import ServiceResearchQueue from '@/components/admin/ServiceResearchQueue';
 
-interface ServiceFormData {
-    [key: string]: string | boolean | undefined;
-}
+type ServiceFormData = ServiceEditorForm &
+    Record<string, string | boolean | string[] | null | undefined>;
 
 interface SelectedItem {
     id: string;
@@ -70,7 +72,10 @@ export default function AdminServicesPage() {
         async function loadService() {
             if (editId && supabase) {
                 const { data } = await supabase.from('service_providers').select('*').eq('id', editId).single();
-                if (data && mounted) setSelectedItem({ id: data.id, data });
+                if (data && mounted) {
+                    setSelectedItem({ id: data.id, data });
+                    setForm(data);
+                }
             }
         }
         loadService();
@@ -87,14 +92,10 @@ export default function AdminServicesPage() {
         return undefined;
     };
 
-    // Load Data into Form when selected
-    useEffect(() => {
-        if (selectedItem) {
-            setForm(selectedItem.data || {});
-        } else {
-            setForm({});
-        }
-    }, [selectedItem]);
+    const openEditor = (item: SelectedItem) => {
+        setSelectedItem(item);
+        setForm(item.data || {});
+    };
 
     const handleSave = async () => {
         if (!selectedItem) return;
@@ -105,9 +106,8 @@ export default function AdminServicesPage() {
             // 1. Sanitization (Strict Mock of GlobalSearchAdmin logic)
             const clean = { ...form };
 
-            // Remove 'active', 'whatsapp', and 'rating' (schema mismatch fix)
+            // Remove UI-only and calculated fields.
             delete clean.active;
-            delete clean.whatsapp;
             delete clean.rating;
 
             // Clean nulls/undefined/empty
@@ -197,6 +197,17 @@ export default function AdminServicesPage() {
                 </div>
             )}
 
+            <details className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <summary className="list-none cursor-pointer p-4 sm:px-6 flex items-center justify-between gap-3">
+                    <span className="font-black text-slate-900 dark:text-white">دفعات البحث والاستيراد</span>
+                    <span className="text-xs font-bold text-slate-400 group-open:hidden">فتح</span>
+                    <span className="text-xs font-bold text-slate-400 hidden group-open:inline">إغلاق</span>
+                </summary>
+                <div className="border-t border-slate-100 dark:border-slate-800 p-4 sm:p-6">
+                    <ServiceResearchQueue />
+                </div>
+            </details>
+
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-6 shadow-sm">
                 <DataTable
                     tableName="service_providers"
@@ -211,8 +222,8 @@ export default function AdminServicesPage() {
                         { key: 'city', label: 'المدينة' }
                     ]}
                     searchFields={['name', 'profession', 'description', 'city']}
-                    onEdit={(item) => setSelectedItem({ id: item.id, data: item })}
-                    onCreate={() => setSelectedItem({ id: 'new', data: { profession: '' } })}
+                    onEdit={(item) => openEditor({ id: item.id, data: item })}
+                    onCreate={() => openEditor({ id: 'new', data: { profession: '' } })}
                 />
             </div>
 

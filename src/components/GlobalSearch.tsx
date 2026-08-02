@@ -8,19 +8,33 @@
 
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGlobalSearch, saveRecentSearch } from '@/hooks/useGlobalSearch';
 import { PopularSuggestions, AutocompleteSuggestions } from '@/components/search/SearchSuggestions';
 import SearchResultsDropdown from '@/components/search/SearchResultsDropdown';
+import {
+  HERO_ARIA_LABEL,
+  HERO_FIELD,
+  HERO_FORM,
+  HERO_GLOW,
+  HERO_ICON_WRAP,
+  HERO_PLACEHOLDER,
+  HERO_SUBMIT,
+  HERO_WRAPPER,
+} from '@/components/search/heroSearchStyles';
 
 export default function GlobalSearch({
   variant = 'default',
   autoFocus = false,
+  initialQuery = '',
 }: {
   variant?: 'default' | 'hero';
   autoFocus?: boolean;
+  /** Text the visitor typed into the placeholder field before this component
+   *  finished downloading. Carried over so nothing they typed is lost. */
+  initialQuery?: string;
 }) {
   const {
     query, setQuery, debouncedQuery,
@@ -28,17 +42,25 @@ export default function GlobalSearch({
     showSuggestions, setShowSuggestions,
     recentSearches, suggestions,
     results, isSearching, refreshRecent,
-  } = useGlobalSearch();
+  } = useGlobalSearch(initialQuery);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isHero = variant === 'hero';
 
-  useEffect(() => {
+  // A layout effect, not an effect + rAF: this runs after the DOM is in place
+  // but BEFORE the browser paints, so the visitor never sees a frame where the
+  // field they were typing in has lost focus. This component only ever arrives
+  // through a dynamic import, so it never renders on the server.
+  useLayoutEffect(() => {
     if (!autoFocus) return;
-    const frame = requestAnimationFrame(() => inputRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    // Put the caret after the carried-over text, not before it.
+    const end = el.value.length;
+    try { el.setSelectionRange(end, end); } catch { /* type=search rejects this in some engines */ }
   }, [autoFocus]);
 
   // Click outside to close
@@ -113,22 +135,20 @@ export default function GlobalSearch({
   }, [setIsOpen, query, refreshRecent]);
 
   return (
-    <div ref={wrapperRef} className={`relative mx-auto ${isHero ? 'max-w-xl' : 'max-w-3xl md:max-w-3xl lg:max-w-2xl xl:max-w-2xl'}`}>
-      <form role="search" onSubmit={handleSubmit} className={`relative transform transition-all duration-300 ${isHero ? 'group' : ''}`}>
+    <div ref={wrapperRef} className={isHero ? HERO_WRAPPER : 'relative mx-auto max-w-3xl md:max-w-3xl lg:max-w-2xl xl:max-w-2xl'}>
+      <form role="search" onSubmit={handleSubmit} className={isHero ? HERO_FORM : 'relative transform transition-all duration-300'}>
 
         {/* Glow Effect for Hero */}
-        {isHero && (
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-500" />
-        )}
+        {isHero && <div className={HERO_GLOW} />}
 
-        <div className="absolute inset-y-0 start-4 flex items-center pointer-events-none z-10">
+        <div className={isHero ? HERO_ICON_WRAP : 'absolute inset-y-0 start-4 flex items-center pointer-events-none z-10'}>
           <Search className={isHero ? 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors' : 'text-slate-400'} size={isHero ? 22 : 18} />
         </div>
 
         <input
           ref={inputRef}
           type="search"
-          aria-label="بحث عام في الموقع (اضغط / للتركيز)"
+          aria-label={isHero ? HERO_ARIA_LABEL : 'بحث عام في الموقع (اضغط / للتركيز)'}
           value={query}
           onChange={(e) => {
             const v = e.target.value;
@@ -137,24 +157,17 @@ export default function GlobalSearch({
             if (!v.trim()) setIsOpen(false);
           }}
           onFocus={() => { setShowSuggestions(true); if (debouncedQuery.trim().length >= 2) setIsOpen(true); }}
-          placeholder={isHero ? 'ماذا تريد أن تعرف اليوم؟ (إقامة، قانون...)' : 'ابحث بأي صيغة... (ضيعت كملك، فقدت جواز، بسبور ضاع...)'}
+          placeholder={isHero ? HERO_PLACEHOLDER : 'ابحث بأي صيغة... (ضيعت كملك، فقدت جواز، بسبور ضاع...)'}
           autoFocus={false}
-          className={`
-            w-full transition-all outline-none border-0
-            ${isHero
-              ? 'py-4 ps-12 pe-24 rounded-full bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl text-slate-800 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500 text-lg shadow-2xl ring-1 ring-slate-200 dark:ring-white/10 focus:ring-2 focus:ring-emerald-500/60 focus:shadow-[0_0_20px_4px_rgba(16,185,129,0.15)] relative z-10'
-              : 'py-4 md:py-5 ps-11 md:ps-12 pe-16 rounded-2xl text-sm md:text-base shadow-sm focus:ring-4 focus:ring-accent-500/50 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-xs md:placeholder:text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400'
-            }
-          `}
+          className={isHero
+            ? HERO_FIELD
+            : 'w-full transition-all outline-none border-0 appearance-none py-4 md:py-5 ps-11 md:ps-12 pe-16 rounded-2xl text-sm md:text-base shadow-sm focus:ring-4 focus:ring-accent-500/50 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-xs md:placeholder:text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400'
+          }
         />
 
         {/* Hero Search Button */}
         {isHero && (
-          <button
-            type="submit"
-            aria-label="بحث"
-            className="absolute inset-y-1.5 end-1.5 bg-emerald-700 hover:bg-emerald-600 text-white px-6 rounded-full font-bold shadow-lg transform active:scale-95 transition-all z-20 flex items-center justify-center"
-          >
+          <button type="submit" aria-label="بحث" className={HERO_SUBMIT}>
             بحث
           </button>
         )}

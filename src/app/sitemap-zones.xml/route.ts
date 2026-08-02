@@ -5,19 +5,42 @@ import { supabase } from '@/lib/supabaseClient';
  * Sitemap — المناطق المحظورة (Zones)
  */
 
-export const dynamic = 'force-dynamic';
+// Egress guard: this route used `force-dynamic`, so EVERY request — from
+// Googlebot, Bingbot, and every other crawler, and separately from each
+// Cloudflare edge location — re-read the whole table out of Supabase. Sitemap
+// data changes at most a few times a day, so that was pure repeated egress and
+// it is what pushed the project over its Supabase egress quota.
+//
+// `revalidate` caches the rendered XML in Next's own (shared) cache and lets a
+// single background refresh per hour serve every crawler, instead of one DB
+// read per request. Matches the Cache-Control this route already sends.
+// Trade-off: a content change now takes up to an hour to appear here.
+export const revalidate = 3600;
 
 const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').replace(/\/$/, '');
 
 export async function GET() {
-  let zones: Array<{ neighborhood: string; district: string; city: string; updated_at?: string }> = [];
+  const zones: Array<{ neighborhood: string; district: string; city: string; updated_at?: string; reopened_at?: string }> = [];
 
   if (supabase) {
     try {
-      const { data } = await supabase
-        .from('zones')
-        .select('neighborhood, district, city, updated_at');
-      zones = data || [];
+      // PostgREST caps a select at 1000 rows, and the table holds ~1,166 — a
+      // bare select silently truncated the tail, dropping whole cities and
+      // districts from this sitemap. Page through the same way /zones does.
+      let from = 0;
+      const step = 1000;
+      for (;;) {
+        const { data, error } = await supabase
+          .from('zones')
+          .select('neighborhood, district, city, updated_at, reopened_at')
+          .in('status', ['closed', 'reopened', 'pending'])
+          .range(from, from + step - 1);
+        if (error) break;
+        if (!data || data.length === 0) break;
+        zones.push(...data);
+        if (data.length < step) break;
+        from += step;
+      }
     } catch {
       // Fail silently
     }
@@ -31,8 +54,18 @@ export async function GET() {
   // (Individual neighbourhood pages are intentionally NOT listed here — they're
   // thin/near-duplicate and now noindex; the city/district hubs are the
   // valuable, indexable entry points.)
+  // `lastmod` per hub = MAX(updated_at, reopened_at) of its rows. reopened_at
+  // matters because a reopening is the change readers care about most, and it
+  // does not always move updated_at — without it most hubs stayed frozen on an
+  // old date and Google stopped treating the freshness signal as meaningful.
   const cityMax = new Map<string, string>();
   const districtMax = new Map<string, string>();
+  // Row counts per hub: a hub with one or two neighbourhoods is a thin page.
+  // Submitting those is what feeds "crawled – currently not indexed", so they
+  // stay reachable and indexable but are not pushed at Google.
+  const cityCount = new Map<string, number>();
+  const districtCount = new Map<string, number>();
+  const MIN_ROWS_PER_HUB = 3;
   let overallMax = '';
 
   const bumpMax = (map: Map<string, string>, key: string, ts?: string) => {
@@ -40,15 +73,28 @@ export async function GET() {
     const cur = map.get(key);
     if (!cur || ts > cur) map.set(key, ts);
   };
+  const bumpCount = (map: Map<string, number>, key: string) => {
+    map.set(key, (map.get(key) || 0) + 1);
+  };
 
   for (const z of zones) {
-    if (z.updated_at && z.updated_at > overallMax) overallMax = z.updated_at;
-    if (z.city) bumpMax(cityMax, z.city, z.updated_at);
-    if (z.district) bumpMax(districtMax, z.district, z.updated_at);
+    const ts = [z.updated_at, z.reopened_at].filter(Boolean).sort().pop();
+    if (ts && ts > overallMax) overallMax = ts;
+    if (z.city) { bumpMax(cityMax, z.city, ts); bumpCount(cityCount, z.city); }
+    if (z.district) { bumpMax(districtMax, z.district, ts); bumpCount(districtCount, z.district); }
   }
 
-  const citySet = cityMax;
-  const districtSet = districtMax;
+  // A hub with no timestamp at all still deserves a URL — fall back to the
+  // dataset-wide max rather than dropping it.
+  const hubs = (counts: Map<string, number>, maxes: Map<string, string>) =>
+    new Map(
+      [...counts.entries()]
+        .filter(([, n]) => n >= MIN_ROWS_PER_HUB)
+        .map(([key]) => [key, maxes.get(key) || overallMax]),
+    );
+
+  const citySet = hubs(cityCount, cityMax);
+  const districtSet = hubs(districtCount, districtMax);
   // Fallback only if the table has no updated_at anywhere (shouldn't happen).
   const now = overallMax || new Date().toISOString();
 

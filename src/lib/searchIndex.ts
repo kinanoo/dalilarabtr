@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { normalizeArabic } from '@/lib/arabicSearch';
+import { buildPlacesSearchEntries } from '@/lib/officialPlaces';
 import logger from '@/lib/logger';
 // import { CONSULTANT_SCENARIOS } from '@/lib/consultant-scenarios'; // REMOVED
 
@@ -24,6 +25,13 @@ export type SearchIndexItem = {
   icon: LucideIcon;
   haystack: string;
   keywords?: string;
+  /**
+   * Direct Google-Maps link, set only on «موقع رسمي» results (consulates,
+   * embassies, government offices — see src/lib/officialPlaces.ts). The results
+   * dropdown renders it as a second, one-tap action so "where is the Syrian
+   * consulate in İstanbul?" goes search box → Maps without an intermediate page.
+   */
+  mapUrl?: string;
 };
 
 export type SearchResult = SearchIndexItem & {
@@ -214,6 +222,16 @@ const STATIC_INDEX_DATA: SearchIndexItem[] = [
 
   // --- STATIC PAGES ---
   {
+    id: 'page-places',
+    title: 'أين يقع؟ — مواقع القنصليات والدوائر الرسمية',
+    desc: 'ابحث عن أي قنصلية أو سفارة أو دائرة رسمية وافتح موقعها على خرائط جوجل.',
+    url: '/places',
+    type: 'صفحة',
+    typeKey: 'service',
+    icon: MapPin,
+    haystack: normalizeArabic('اين يقع وين موقع عنوان خريطة خرائط جوجل google maps قنصلية سفارة قنصليات سفارات دوائر رسمية حكومية ادارة الهجرة نفوس ضرائب طابو محكمة نوتر مستشفى الاتجاهات كيف اوصل'),
+  },
+  {
     id: 'page-important-links',
     title: 'روابط هامة',
     desc: 'أهم الروابط الحكومية والخدمية (نفوس، ضرائب، هجرة).',
@@ -333,9 +351,33 @@ async function fetchScenariosIndex(): Promise<SearchIndexItem[]> {
 
 let _staticIndex: SearchIndexItem[] | null = null;
 
+/**
+ * Every consulate / embassy / government office as a searchable item.
+ *
+ * Built from the compact tables in officialPlaces.ts rather than written out,
+ * so the hundreds of entries cost bundle bytes only once (the tables), and the
+ * objects + normalised haystacks are materialised once per session — inside
+ * getStaticSearchIndex(), which the search box only reaches after it loads
+ * (it is a `dynamic(..., { ssr: false })` chunk, so this never touches the
+ * homepage's critical path).
+ */
+function buildPlaceIndexItems(): SearchIndexItem[] {
+  return buildPlacesSearchEntries().map((p) => ({
+    id: p.id,
+    title: p.title,
+    type: 'موقع رسمي',
+    typeKey: 'service' as const,
+    desc: p.desc,
+    url: p.url,
+    icon: p.icon,
+    haystack: normalizeArabic(p.keywords),
+    mapUrl: p.mapUrl,
+  }));
+}
+
 export function getStaticSearchIndex(): SearchIndexItem[] {
   if (_staticIndex === null) {
-    _staticIndex = STATIC_INDEX_DATA;
+    _staticIndex = [...STATIC_INDEX_DATA, ...buildPlaceIndexItems()];
   }
   return _staticIndex;
 }

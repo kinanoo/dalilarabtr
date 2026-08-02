@@ -1,0 +1,4707 @@
+{
+  "label": "دفعة التوسع الرابعة - مزودو خدمات يعرضون أعمالهم في الولايات الحيوية - 2026-07-30",
+  "generated_at": "2026-07-30T07:19:08.120Z",
+  "criteria": {
+    "language": "صفحة نشاط عربية عامة مع اسم الخدمة ووسيلة اتصال تركية منشورة.",
+    "data_policy": "حقائق اتصال عامة فقط؛ لا صور ولا تقييمات ولا نسخ لوصف المصدر.",
+    "duplicate_policy": "استبعاد الهاتف المكرر والاسم المكرر داخل المدينة."
+  },
+  "report": [
+    {
+      "city": "إسطنبول",
+      "accepted": 18,
+      "checked": 29,
+      "target": 18
+    },
+    {
+      "city": "غازي عنتاب",
+      "accepted": 16,
+      "checked": 18,
+      "target": 16
+    },
+    {
+      "city": "مرسين",
+      "accepted": 16,
+      "checked": 19,
+      "target": 16
+    },
+    {
+      "city": "أضنة",
+      "accepted": 16,
+      "checked": 29,
+      "target": 16
+    },
+    {
+      "city": "هاتاي",
+      "accepted": 16,
+      "checked": 20,
+      "target": 16
+    },
+    {
+      "city": "شانلي أورفا",
+      "accepted": 16,
+      "checked": 26,
+      "target": 16
+    },
+    {
+      "city": "إزمير",
+      "accepted": 16,
+      "checked": 85,
+      "target": 16
+    },
+    {
+      "city": "ملاطية",
+      "accepted": 0,
+      "checked": 9,
+      "target": 14
+    },
+    {
+      "city": "أنطاليا",
+      "accepted": 16,
+      "checked": 26,
+      "target": 16
+    },
+    {
+      "city": "بورصة",
+      "accepted": 16,
+      "checked": 21,
+      "target": 16
+    },
+    {
+      "city": "قونية",
+      "accepted": 14,
+      "checked": 26,
+      "target": 14
+    },
+    {
+      "city": "أنقرة",
+      "accepted": 14,
+      "checked": 18,
+      "target": 14
+    },
+    {
+      "city": "كوجالي",
+      "accepted": 12,
+      "checked": 13,
+      "target": 12
+    },
+    {
+      "city": "قيصري",
+      "accepted": 12,
+      "checked": 32,
+      "target": 12
+    },
+    {
+      "city": "سكاريا",
+      "accepted": 10,
+      "checked": 27,
+      "target": 10
+    }
+  ],
+  "category_counts": {
+    "متاجر ومستلزمات": 36,
+    "طبيب": 33,
+    "طب أسنان": 18,
+    "مطاعم": 16,
+    "تقنية وصيانة هواتف": 13,
+    "عقارات": 12,
+    "نقل عفش": 11,
+    "شحن": 7,
+    "تنظيف": 6,
+    "تجميل": 5,
+    "خدمات عامة": 5,
+    "نقل وتكسي": 5,
+    "سيارات": 5,
+    "مترجم": 5,
+    "تعليم": 5,
+    "سياحة": 4,
+    "كهرباء": 4,
+    "صيانة منزلية": 3,
+    "مقاولات": 3,
+    "حلاقة": 3,
+    "محامي": 2,
+    "سباكة": 2,
+    "تشطيبات وديكور": 2,
+    "تأمين": 1,
+    "حدادة وأقفال": 1,
+    "صيانة أجهزة": 1
+  },
+  "candidates": [
+    {
+      "name": "Elman Grubu",
+      "profession": "خدمات تأمين",
+      "category": "تأمين",
+      "city": "إسطنبول",
+      "phone": "+905379256320",
+      "whatsapp": "+905379256320",
+      "description": "Elman Grubu يعرّف عن خدمات تأمين في إسطنبول ويتيح التواصل.",
+      "website": "https://www.elmangrubu.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.01440909999999,28.9762145",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/elman-grubu",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "خدمات التوريد والفحص والشحن - Change Commerce",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "إسطنبول",
+      "phone": "+905527064473",
+      "whatsapp": "+905527064473",
+      "description": "خدمات التوريد والفحص والشحن - Change Commerce يعرّف عن خدمات شحن ولوجستيات في إسطنبول ويتيح التواصل.",
+      "website": "https://www.changecommerce.cn/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.06786899999999,28.9944491",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/changecommerce",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة البكري لنقل وشحن اثاث منزلي",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إسطنبول",
+      "phone": "+905362136208",
+      "whatsapp": "+905362136208",
+      "description": "شركة البكري لنقل وشحن اثاث منزلي يعرّف عن متجر يعرض خدماته في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.0343177,28.6614809",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/khdm-nkl-oshhn-athath-mnzly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "اكستنشن الشعر الطبيعي في اسطنبول",
+      "profession": "خدمات تجميل وعناية",
+      "category": "تجميل",
+      "city": "إسطنبول",
+      "phone": "+905550003111",
+      "whatsapp": "+905550003111",
+      "description": "اكستنشن الشعر الطبيعي في اسطنبول يعرّف عن خدمات تجميل وعناية في إسطنبول ويتيح التواصل.",
+      "website": "https://beauty-inturkey.com/beauty-care",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.0211643,28.9427494",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/akstnshn-alshaar-altbyaay-fy-astnbol",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم ساروجا",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "إسطنبول",
+      "phone": "+905051347070",
+      "whatsapp": "+905051347070",
+      "description": "مطعم ساروجا يعرّف عن مطعم أو خدمات طعام عربية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.0206014,28.9422632",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-saroja",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "أكاديمية بسمة للسعادة الزوجية",
+      "profession": "خدمات عامة",
+      "category": "خدمات عامة",
+      "city": "إسطنبول",
+      "phone": "+905524262122",
+      "whatsapp": "+905524262122",
+      "description": "أكاديمية بسمة للسعادة الزوجية يعرّف عن خدمات عامة في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/akadymy-bsm-llsaaad-alzojy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الصقر لتجهيز المطاعم",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إسطنبول",
+      "phone": "+905392055861",
+      "whatsapp": "+905392055861",
+      "description": "شركة الصقر لتجهيز المطاعم يعرّف عن متجر يعرض خدماته في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alskr-ltjhyz-almtaaam",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مصباح ابو عدي للصيانة",
+      "profession": "خدمات صيانة منزلية",
+      "category": "صيانة منزلية",
+      "city": "إسطنبول",
+      "phone": "+905387136377",
+      "whatsapp": "+905387136377",
+      "description": "مصباح ابو عدي للصيانة يعرّف عن خدمات صيانة منزلية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/msbah-abo-aady-llsyan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة السبيل للسياحة والسفر",
+      "profession": "خدمات سياحية",
+      "category": "سياحة",
+      "city": "إسطنبول",
+      "phone": "+905448826545",
+      "whatsapp": "+905448826545",
+      "description": "شركة السبيل للسياحة والسفر يعرّف عن خدمات سياحية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alsbyl-llsyah-oalsfr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "عطر الشاطر",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إسطنبول",
+      "phone": "+905511664851",
+      "whatsapp": "+905511664851",
+      "description": "عطر الشاطر يعرّف عن متجر يعرض خدماته في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aatr-alshatr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم الكوفية - Alkufiye Restorani",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "إسطنبول",
+      "phone": "+905510890540",
+      "whatsapp": "+905510890540",
+      "description": "مطعم الكوفية - Alkufiye Restorani يعرّف عن مطعم أو خدمات طعام عربية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.9951015,28.8485076",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-alkofy-alkufiye-restorani",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم شوايتي",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "إسطنبول",
+      "phone": "+905516286614",
+      "whatsapp": "+905516286614",
+      "description": "مطعم شوايتي يعرّف عن مطعم أو خدمات طعام عربية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.0172822,28.6728285",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-shoayty",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم كازابلانكا‭",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "إسطنبول",
+      "phone": "+905533333500",
+      "whatsapp": "+905533333500",
+      "description": "مطعم كازابلانكا‭ يعرّف عن مطعم أو خدمات طعام عربية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.042967,28.9854668",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-kazablanka",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم نور الشام - الفرع الأول",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "إسطنبول",
+      "phone": "+905343110212",
+      "whatsapp": "+905343110212",
+      "description": "مطعم نور الشام - الفرع الأول يعرّف عن مطعم أو خدمات طعام عربية في إسطنبول ويتيح التواصل.",
+      "website": "https://xr.nouralsham.com/ar/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=41.0191774,28.67178819999999",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-nor-alsham-fraa-1",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الفجر للسياحة والسفر",
+      "profession": "خدمات سياحية",
+      "category": "سياحة",
+      "city": "إسطنبول",
+      "phone": "+905398503222",
+      "whatsapp": "+905398503222",
+      "description": "شركة الفجر للسياحة والسفر يعرّف عن خدمات سياحية في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alfjr-llsyah-oalsfr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الستاوي للنقليات",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "إسطنبول",
+      "phone": "+905444122592",
+      "whatsapp": "+905444122592",
+      "description": "الستاوي للنقليات يعرّف عن خدمات نقل أثاث في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alstaoy-llnklyat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شـركة أم آي كلين - M_iclean",
+      "profession": "خدمات عامة",
+      "category": "خدمات عامة",
+      "city": "إسطنبول",
+      "phone": "+905524937004",
+      "whatsapp": "+905524937004",
+      "description": "شـركة أم آي كلين - M_iclean يعرّف عن خدمات عامة في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-am-aay-klyn-m-iclean",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور أيهم حجازي - Dr. Ayham Hijazi",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "إسطنبول",
+      "phone": "+905369556962",
+      "whatsapp": "+905369556962",
+      "description": "الدكتور أيهم حجازي - Dr. Ayham Hijazi يعرّف عن خدمات طب أسنان في إسطنبول ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-ayhm-hjazy-dr-ayham-hijazi",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور ابراهيم ذياب",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905380227000",
+      "whatsapp": "+905380227000",
+      "description": "الدكتور ابراهيم ذياب يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-abrahym-thyab",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور محمد الاحمد",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905380788633",
+      "whatsapp": "+905380788633",
+      "description": "الدكتور محمد الاحمد يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-mhmd-alahmd",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "فريق العلاج الفيزيائي وإعادة التأهيل",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905398570473",
+      "whatsapp": "+905398570473",
+      "description": "فريق العلاج الفيزيائي وإعادة التأهيل يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/fryk-alaalaj-alfyzyaey-oeaaad-altahyl",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور شادي عطيش",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905312079001",
+      "whatsapp": "+905312079001",
+      "description": "الدكتور شادي عطيش يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-shady-aatysh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور محمد عبدالقادر",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905396684916",
+      "whatsapp": "+905396684916",
+      "description": "الدكتور محمد عبدالقادر يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-mhmd-aabdalkadr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور بشر طباخا",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905383727229",
+      "whatsapp": "+905383727229",
+      "description": "الدكتور بشر طباخا يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/ldktor-bshr-tbakh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور بسام الطريفي",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905319878754",
+      "whatsapp": "+905319878754",
+      "description": "الدكتور بسام الطريفي يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-bsam-altryfy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة نايفة السمان",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905531011500",
+      "whatsapp": "+905531011500",
+      "description": "الدكتورة نايفة السمان يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-nayf-alsman",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة بتول المصري",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905349725123",
+      "whatsapp": "+905349725123",
+      "description": "الدكتورة بتول المصري يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-btol-almsry",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة مريم احمد النابو",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905538440174",
+      "whatsapp": "+905538440174",
+      "description": "الدكتورة مريم احمد النابو يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-mrym-maaalj-fyzyaey",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة أمل عبد القادر الخطيب",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905342006123",
+      "whatsapp": "+905342006123",
+      "description": "الدكتورة أمل عبد القادر الخطيب يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aml-aabd-alkadr-alkhtyb",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور خالد حيدر",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905318296217",
+      "whatsapp": "+905318296217",
+      "description": "الدكتور خالد حيدر يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-khald-hydr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الحلبي للإستشارات القانونية و العقارية - غازي عنتاب",
+      "profession": "خدمات قانونية",
+      "category": "محامي",
+      "city": "غازي عنتاب",
+      "phone": "+905524415016",
+      "whatsapp": "+905524415016",
+      "description": "شركة الحلبي للإستشارات القانونية و العقارية - غازي عنتاب يعرّف عن خدمات قانونية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alhlby-llestsharat-alkanony-o-alaakary-ghazy-aantab",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور لؤي حلابة",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905395254298",
+      "whatsapp": "+905395254298",
+      "description": "الدكتور لؤي حلابة يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-loey-hlab",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور سيف الدين مصطفى السلوم",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "غازي عنتاب",
+      "phone": "+905375467877",
+      "whatsapp": "+905375467877",
+      "description": "الدكتور سيف الدين مصطفى السلوم يعرّف عن خدمات طبية في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-syf-aldyn-mstf-alslom",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور راتب سعيد",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "غازي عنتاب",
+      "phone": "+905372935615",
+      "whatsapp": "+905372935615",
+      "description": "الدكتور راتب سعيد يعرّف عن خدمات طب أسنان في غازي عنتاب ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-ratb-saayd",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "تاكسي مرسين",
+      "profession": "خدمات نقل وتوصيل",
+      "category": "نقل وتكسي",
+      "city": "مرسين",
+      "phone": "+905523820450",
+      "whatsapp": "+905523820450",
+      "description": "تاكسي مرسين يعرّف عن خدمات نقل وتوصيل في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/taksy-mrsyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "فرات للاتصالات - الفرع الثالث",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "مرسين",
+      "phone": "+905375450481",
+      "whatsapp": "+905375450481",
+      "description": "فرات للاتصالات - الفرع الثالث يعرّف عن خدمات تقنية وصيانة في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/frat-llatsalat-alfraa-althalth",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور نواف الشيخ",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905344698059",
+      "whatsapp": "+905344698059",
+      "description": "الدكتور نواف الشيخ يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/dnoaf-alshykh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور بشير الاجاتي",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905075923357",
+      "whatsapp": "+905075923357",
+      "description": "الدكتور بشير الاجاتي يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-bshyr-alajaty",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عمار اغا",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905356312183",
+      "whatsapp": "+905356312183",
+      "description": "الدكتور عمار اغا يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aamar-agha",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات الزين",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "مرسين",
+      "phone": "+905312809107",
+      "whatsapp": "+905312809107",
+      "description": "نقليات الزين يعرّف عن خدمات نقل أثاث في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-alzyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ألمنيوم الأمين",
+      "profession": "خدمات حدادة وأقفال",
+      "category": "حدادة وأقفال",
+      "city": "مرسين",
+      "phone": "+905522835033",
+      "whatsapp": "+905522835033",
+      "description": "ألمنيوم الأمين يعرّف عن خدمات حدادة وأقفال في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/almnyom-alamyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقاء لفلاتر المياه المنزلية",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "مرسين",
+      "phone": "+905394951018",
+      "whatsapp": "+905394951018",
+      "description": "نقاء لفلاتر المياه المنزلية يعرّف عن متجر يعرض خدماته في مرسين ويتيح التواصل.",
+      "website": "http://aksuaritim.com/?fbclid=IwAR0TVSZvxxjKZbIyEAHbAIcVoZBQ1Pfub3pXbYIKlNgYlO0X0u1Pw4nQpqw",
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nka-lflatr-almyah-almnzly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "السعدي للتمديدات الصحية",
+      "profession": "خدمات سباكة",
+      "category": "سباكة",
+      "city": "مرسين",
+      "phone": "+905378688952",
+      "whatsapp": "+905378688952",
+      "description": "السعدي للتمديدات الصحية يعرّف عن خدمات سباكة في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alsaady-lltmdydat-alshy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور نبيل الحجار",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "مرسين",
+      "phone": "+905443127095",
+      "whatsapp": "+905443127095",
+      "description": "الدكتور نبيل الحجار يعرّف عن خدمات طب أسنان في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-nbyl-alhjar",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور فراس الأسعد",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905395615952",
+      "whatsapp": "+905395615952",
+      "description": "الدكتور فراس الأسعد يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-fras-alasaad",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور علي عبيدين",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905070029312",
+      "whatsapp": "+905070029312",
+      "description": "الدكتور علي عبيدين يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aaly-aabydyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عدنان الأيوبي",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905327456448",
+      "whatsapp": "+905327456448",
+      "description": "الدكتور عدنان الأيوبي يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aadnan-alayoby",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة تغريد الخطيب",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905354100653",
+      "whatsapp": "+905354100653",
+      "description": "الدكتورة تغريد الخطيب يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-tghryd-alkhtyb",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة رزان جلال",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "مرسين",
+      "phone": "+905522958522",
+      "whatsapp": "+905522958522",
+      "description": "الدكتورة رزان جلال يعرّف عن خدمات طبية في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-rzan-jlal",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الحكم للإستيراد والتصدير",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "مرسين",
+      "phone": "+905061341099",
+      "whatsapp": "+905061341099",
+      "description": "شركة الحكم للإستيراد والتصدير يعرّف عن خدمات شحن ولوجستيات في مرسين ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alhkm-llestyrad-oaltsdyr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركه آفاق للشحن - مكتب أضنة",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "أضنة",
+      "phone": "+905312612743",
+      "whatsapp": "+905312612743",
+      "description": "شركه آفاق للشحن - مكتب أضنة يعرّف عن خدمات شحن ولوجستيات في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrkh-aafak-llshhn-mktb-adn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور حسام كشتو",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "أضنة",
+      "phone": "+905068550230",
+      "whatsapp": "+905068550230",
+      "description": "الدكتور حسام كشتو يعرّف عن خدمات طبية في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-hsam-kshto",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور ايمن طويش",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أضنة",
+      "phone": "+905525577771",
+      "whatsapp": "+905525577771",
+      "description": "الدكتور ايمن طويش يعرّف عن خدمات طب أسنان في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aymn-toysh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور احمد سيجري",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أضنة",
+      "phone": "+905442383112",
+      "whatsapp": "+905442383112",
+      "description": "الدكتور احمد سيجري يعرّف عن خدمات طب أسنان في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-ahmd-syjry",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عبد الرحمن ضاهر",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أضنة",
+      "phone": "+905457406616",
+      "whatsapp": "+905457406616",
+      "description": "الدكتور عبد الرحمن ضاهر يعرّف عن خدمات طب أسنان في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aabd-alrhmn-dahr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور حسن نايف",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "أضنة",
+      "phone": "+905324984610",
+      "whatsapp": "+905324984610",
+      "description": "الدكتور حسن نايف يعرّف عن خدمات طبية في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-hsn-nayf",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور اسامة منصور",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "أضنة",
+      "phone": "+905398374393",
+      "whatsapp": "+905398374393",
+      "description": "الدكتور اسامة منصور يعرّف عن خدمات طبية في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-asam-mnsor",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركات المرام لتجارة السيارات - مكتب الحوت",
+      "profession": "خدمات سيارات",
+      "category": "سيارات",
+      "city": "أضنة",
+      "phone": "+905525577770",
+      "whatsapp": "+905525577770",
+      "description": "شركات المرام لتجارة السيارات - مكتب الحوت يعرّف عن خدمات سيارات في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrkat-almram-ltjar-alsyara",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الزهير التجارية",
+      "profession": "خدمات سيارات",
+      "category": "سيارات",
+      "city": "أضنة",
+      "phone": "+905313142183",
+      "whatsapp": "+905313142183",
+      "description": "شركة الزهير التجارية يعرّف عن خدمات سيارات في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alzhyr-altjary",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شحن رصيد تركي سوري",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "أضنة",
+      "phone": "+905356316698",
+      "whatsapp": "+905356316698",
+      "description": "شحن رصيد تركي سوري يعرّف عن خدمات تقنية وصيانة في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shhn-rsyd-trky-sory",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة TOT",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "أضنة",
+      "phone": "+905380438822",
+      "whatsapp": "+905380438822",
+      "description": "شركة TOT يعرّف عن خدمات شحن ولوجستيات في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.454527,35.8102552",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-tot",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "افران المختار و الحسن",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "أضنة",
+      "phone": "+905355588064",
+      "whatsapp": "+905355588064",
+      "description": "افران المختار و الحسن يعرّف عن متجر يعرض خدماته في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.15172,35.50769",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/afran-almkhtar-o-alhsn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ايلول ترجمانة",
+      "profession": "خدمات ترجمة",
+      "category": "مترجم",
+      "city": "أضنة",
+      "phone": "+905459731271",
+      "whatsapp": "+905459731271",
+      "description": "ايلول ترجمانة يعرّف عن خدمات ترجمة في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.15172,35.50769",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aylol-trjman",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور فراس البكور",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أضنة",
+      "phone": "+905388246077",
+      "whatsapp": "+905388246077",
+      "description": "الدكتور فراس البكور يعرّف عن خدمات طب أسنان في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.0487016,35.4588695",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-fras-albkor",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ملبوسات الزين",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "أضنة",
+      "phone": "+905550955134",
+      "whatsapp": "+905550955134",
+      "description": "ملبوسات الزين يعرّف عن متجر يعرض خدماته في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.0515857,35.5021131",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mlbosat-alzyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة ابو احمد للتطريز",
+      "profession": "خدمات عامة",
+      "category": "خدمات عامة",
+      "city": "أضنة",
+      "phone": "+905550866659",
+      "whatsapp": "+905550866659",
+      "description": "شركة ابو احمد للتطريز يعرّف عن خدمات عامة في أضنة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.0508421,35.5027968",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-abo-ahmd-llttryz",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مفروشات حسين أبوراس",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905360707059",
+      "whatsapp": "+905360707059",
+      "description": "مفروشات حسين أبوراس يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.7661525,36.2213683",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mfroshat-hsyn-aboras",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "قندقجي للمفروشات",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905313545884",
+      "whatsapp": "+905313545884",
+      "description": "قندقجي للمفروشات يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": "https://mattress-store-2311.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.586546,36.1649713",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/kndkjy-llmfroshat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الزرزور ماركت",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905349106452",
+      "whatsapp": "+905349106452",
+      "description": "الزرزور ماركت يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.5822124,36.1973355",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alzrzor-markt",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات العاصي",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "هاتاي",
+      "phone": "+905397332139",
+      "whatsapp": "+905397332139",
+      "description": "نقليات العاصي يعرّف عن خدمات نقل أثاث في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.60863,36.43794",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-alaaasy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مدرسة سوريانا",
+      "profession": "خدمات تعليمية",
+      "category": "تعليم",
+      "city": "هاتاي",
+      "phone": "+905373585423",
+      "whatsapp": "+905373585423",
+      "description": "مدرسة سوريانا يعرّف عن خدمات تعليمية في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4950967,36.3413267",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mdrs-soryana",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "روان للألبسة النسائية والولادية",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905393635222",
+      "whatsapp": "+905393635222",
+      "description": "روان للألبسة النسائية والولادية يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4967885,36.3547056",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/roan-llalbs-alnsaey-oalolady",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "بقالة العثماني",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905346694735",
+      "whatsapp": "+905346694735",
+      "description": "بقالة العثماني يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4960655,36.354589",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/bkal-alaathmany",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مغسل حلفايا كرخان",
+      "profession": "خدمات تنظيف",
+      "category": "تنظيف",
+      "city": "هاتاي",
+      "phone": "+905537320970",
+      "whatsapp": "+905537320970",
+      "description": "مغسل حلفايا كرخان يعرّف عن خدمات تنظيف في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.5010751,36.3728363",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mghsl-hlfaya-krkhan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الأعراف لتجارة وصناعة الألبسة",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905340772856",
+      "whatsapp": "+905340772856",
+      "description": "شركة الأعراف لتجارة وصناعة الألبسة يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4958921,36.3618748",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alaaaraf-ltjar-osnaaa-alalbs",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ملبوسات سجى",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905352324254",
+      "whatsapp": "+905352324254",
+      "description": "ملبوسات سجى يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": "https://clothing-store-21358.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4930058,36.3531357",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mlbosat-sj",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الكرنازي لتجاره الالبسه",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "هاتاي",
+      "phone": "+905541533100",
+      "whatsapp": "+905541533100",
+      "description": "الكرنازي لتجاره الالبسه يعرّف عن متجر يعرض خدماته في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4948966,36.3614926",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alkrnazy-ltjarh-alalbsh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز سبوت لايت للاتصالات فرع 1",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "هاتاي",
+      "phone": "+905360633400",
+      "whatsapp": "+905360633400",
+      "description": "مركز سبوت لايت للاتصالات فرع 1 يعرّف عن خدمات تقنية وصيانة في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4945366,36.3608973",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-sbot-layt-llatsalat-fraa-1",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم جود",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "هاتاي",
+      "phone": "+905386868099",
+      "whatsapp": "+905386868099",
+      "description": "مطعم جود يعرّف عن مطعم أو خدمات طعام عربية في هاتاي ويتيح التواصل.",
+      "website": "https://joudrestaurant.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4948235,36.3621051",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-jod",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "كنافة الرواد",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "هاتاي",
+      "phone": "+905528668805",
+      "whatsapp": "+905528668805",
+      "description": "كنافة الرواد يعرّف عن مطعم أو خدمات طعام عربية في هاتاي ويتيح التواصل.",
+      "website": "http://ravvad-konafa.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4936709,36.3588116",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/knaf-alroad",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مغسلة السلام",
+      "profession": "خدمات تنظيف",
+      "category": "تنظيف",
+      "city": "هاتاي",
+      "phone": "+905398405559",
+      "whatsapp": "+905398405559",
+      "description": "مغسلة السلام يعرّف عن خدمات تنظيف في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4942806,36.3676627",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mghsl-alslam",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "حلويات اريحا في كرخان",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "هاتاي",
+      "phone": "+905343061540",
+      "whatsapp": "+905343061540",
+      "description": "حلويات اريحا في كرخان يعرّف عن مطعم أو خدمات طعام عربية في هاتاي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4925248,36.365237",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/hloyat-aryha-fy-krkhan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور أحمد العزو",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905442424962",
+      "whatsapp": "+905442424962",
+      "description": "الدكتور أحمد العزو يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-ahmd-alaazo",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور محمد حمود",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905346331996",
+      "whatsapp": "+905346331996",
+      "description": "الدكتور محمد حمود يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-mhmd-hmod",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور محمود سويحة",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905388577706",
+      "whatsapp": "+905388577706",
+      "description": "الدكتور محمود سويحة يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-mhmod-soyh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عبد العزيز الدخيل",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905317272458",
+      "whatsapp": "+905317272458",
+      "description": "الدكتور عبد العزيز الدخيل يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aabd-alaazyz-aldkhyl",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور صدام الابراهيم",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905422432296",
+      "whatsapp": "+905422432296",
+      "description": "الدكتور صدام الابراهيم يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-sdam-alabrahym",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور خالد السعيد",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905376159575",
+      "whatsapp": "+905376159575",
+      "description": "الدكتور خالد السعيد يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-khald-alsaayd",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مكتب عيد للمناسبات",
+      "profession": "خدمات عامة",
+      "category": "خدمات عامة",
+      "city": "شانلي أورفا",
+      "phone": "+905382131159",
+      "whatsapp": "+905382131159",
+      "description": "مكتب عيد للمناسبات يعرّف عن خدمات عامة في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mktb-aayd-llmnasbat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "HM para",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "شانلي أورفا",
+      "phone": "+905558882054",
+      "whatsapp": "+905558882054",
+      "description": "HM para يعرّف عن خدمات تقنية وصيانة في شانلي أورفا ويتيح التواصل.",
+      "website": "https://www.hmpara.com/",
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/hm-para",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتورة سوزان دباس",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905312022101",
+      "whatsapp": "+905312022101",
+      "description": "الدكتورة سوزان دباس يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-sozan-dbas",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات الرزاق",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "شانلي أورفا",
+      "phone": "+905316036145",
+      "whatsapp": "+905316036145",
+      "description": "نقليات الرزاق يعرّف عن خدمات نقل أثاث في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-alrzak",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور خليل الممدوح",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905373852486",
+      "whatsapp": "+905373852486",
+      "description": "الدكتور خليل الممدوح يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-khlyl-almmdoh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة المتحدة للنقل",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "شانلي أورفا",
+      "phone": "+905366022579",
+      "whatsapp": "+905366022579",
+      "description": "شركة المتحدة للنقل يعرّف عن خدمات نقل أثاث في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-almthd-llnkl",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات الأسمر",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "شانلي أورفا",
+      "phone": "+905393688051",
+      "whatsapp": "+905393688051",
+      "description": "نقليات الأسمر يعرّف عن خدمات نقل أثاث في شانلي أورفا ويتيح التواصل.",
+      "website": "https://esmarnakliyat.com/about/",
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-alasmr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات ابو هشام العراقي",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "شانلي أورفا",
+      "phone": "+905352343810",
+      "whatsapp": "+905352343810",
+      "description": "نقليات ابو هشام العراقي يعرّف عن خدمات نقل أثاث في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-abo-hsham-alaaraky",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور رياض السالم",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905362725427",
+      "whatsapp": "+905362725427",
+      "description": "الدكتور رياض السالم يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldknor-ryad-alsalm",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عبدالرحمن عبدة",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "شانلي أورفا",
+      "phone": "+905382535366",
+      "whatsapp": "+905382535366",
+      "description": "الدكتور عبدالرحمن عبدة يعرّف عن خدمات طبية في شانلي أورفا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aabdalrhmn-aabd",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "تكسي أبو ابراهيم",
+      "profession": "خدمات نقل وتوصيل",
+      "category": "نقل وتكسي",
+      "city": "إزمير",
+      "phone": "+905372760962",
+      "whatsapp": "+905372760962",
+      "description": "تكسي أبو ابراهيم يعرّف عن خدمات نقل وتوصيل في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/tksy-abo-abrahym",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مغسلة الليث",
+      "profession": "خدمات تنظيف",
+      "category": "تنظيف",
+      "city": "إزمير",
+      "phone": "+905313996274",
+      "whatsapp": "+905313996274",
+      "description": "مغسلة الليث يعرّف عن خدمات تنظيف في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mghsl-allyth",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "وكيل شركة غربتنا في ازمير",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "إزمير",
+      "phone": "+905525070090",
+      "whatsapp": "+905525070090",
+      "description": "وكيل شركة غربتنا في ازمير يعرّف عن خدمات تقنية وصيانة في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/okyl-shrk-ghrbtna-fy-azmyr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مغسلة هرشو",
+      "profession": "خدمات تنظيف",
+      "category": "تنظيف",
+      "city": "إزمير",
+      "phone": "+905372634226",
+      "whatsapp": "+905372634226",
+      "description": "مغسلة هرشو يعرّف عن خدمات تنظيف في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mghsl-hrsho",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مغسلة قمر",
+      "profession": "خدمات تنظيف",
+      "category": "تنظيف",
+      "city": "إزمير",
+      "phone": "+905519662446",
+      "whatsapp": "+905519662446",
+      "description": "مغسلة قمر يعرّف عن خدمات تنظيف في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mghsl-kmr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور محمد أبو الوفا",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "إزمير",
+      "phone": "+905378484712",
+      "whatsapp": "+905378484712",
+      "description": "الدكتور محمد أبو الوفا يعرّف عن خدمات طبية في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-mhmd-abo-alofa",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "خلف علي للانترنت",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "إزمير",
+      "phone": "+905392894956",
+      "whatsapp": "+905392894956",
+      "description": "خلف علي للانترنت يعرّف عن خدمات تقنية وصيانة في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/khlf-aaly-llantrnt",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "محل عبدو اوسو",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إزمير",
+      "phone": "+905397645786",
+      "whatsapp": "+905397645786",
+      "description": "محل عبدو اوسو يعرّف عن متجر يعرض خدماته في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mhl-aabdo-aoso",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ZAHRA SHOESللاستيراد والتصدير",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "إزمير",
+      "phone": "+905527929334",
+      "whatsapp": "+905527929334",
+      "description": "ZAHRA SHOESللاستيراد والتصدير يعرّف عن خدمات شحن ولوجستيات في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/zahra-shoesllastyrad-oaltsdyr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "أزياء ملاك",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إزمير",
+      "phone": "+905383619853",
+      "whatsapp": "+905383619853",
+      "description": "أزياء ملاك يعرّف عن متجر يعرض خدماته في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/azya-mlak",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مفروشات الاصدقاء",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إزمير",
+      "phone": "+905368806316",
+      "whatsapp": "+905368806316",
+      "description": "مفروشات الاصدقاء يعرّف عن متجر يعرض خدماته في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mfroshat-alasdka",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "فرشات جاد",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "إزمير",
+      "phone": "+905386172559",
+      "whatsapp": "+905386172559",
+      "description": "فرشات جاد يعرّف عن متجر يعرض خدماته في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/frshat-jad",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ورشة الدوزان والمكانيك",
+      "profession": "خدمات سيارات",
+      "category": "سيارات",
+      "city": "إزمير",
+      "phone": "+905388803576",
+      "whatsapp": "+905388803576",
+      "description": "ورشة الدوزان والمكانيك يعرّف عن خدمات سيارات في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/orsh-aldozan-oalmkanyk",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الشريف لصيانة الأجهزة الكهربائية",
+      "profession": "خدمات صيانة أجهزة",
+      "category": "صيانة أجهزة",
+      "city": "إزمير",
+      "phone": "+905524261132",
+      "whatsapp": "+905524261132",
+      "description": "الشريف لصيانة الأجهزة الكهربائية يعرّف عن خدمات صيانة أجهزة في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alshryf-lsyan-alajhz-alkhrbaey",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "جكليتة للكيك",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "إزمير",
+      "phone": "+905318592085",
+      "whatsapp": "+905318592085",
+      "description": "جكليتة للكيك يعرّف عن مطعم أو خدمات طعام عربية في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/jklyt-llkyk",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "سفريات ابوحسين",
+      "profession": "خدمات سياحية",
+      "category": "سياحة",
+      "city": "إزمير",
+      "phone": "+905349222248",
+      "whatsapp": "+905349222248",
+      "description": "سفريات ابوحسين يعرّف عن خدمات سياحية في إزمير ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/sfryat-abohsyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم زاد الخير ـ Zad Al Kahir Restaurant",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "أنطاليا",
+      "phone": "+905526019647",
+      "whatsapp": "+905526019647",
+      "description": "مطعم زاد الخير ـ Zad Al Kahir Restaurant يعرّف عن مطعم أو خدمات طعام عربية في أنطاليا ويتيح التواصل.",
+      "website": "https://zad-al-khair-restaurant-alanya-irak.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4896821,32.0977696",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-zad-alkhyr-zad-al-kahir-restaurant",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ستار ماركت",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "أنطاليا",
+      "phone": "+905376947568",
+      "whatsapp": "+905376947568",
+      "description": "ستار ماركت يعرّف عن متجر يعرض خدماته في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.51169770000001,32.0695608",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/star-markt",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "حلويات الركن الملكي kral Tatlis",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "أنطاليا",
+      "phone": "+905399380668",
+      "whatsapp": "+905399380668",
+      "description": "حلويات الركن الملكي kral Tatlis يعرّف عن مطعم أو خدمات طعام عربية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.49463,32.09085",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/hloyat-alrkn-almlky-kral-tatlis",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة ريان للعقارات",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "phone": "+905355228325",
+      "whatsapp": "+905355228325",
+      "description": "شركة ريان للعقارات يعرّف عن خدمات عقارية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4883928,32.0987341",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-ryan-llaakarat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة عمار للعقارات في الانيا",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "phone": "+905398516836",
+      "whatsapp": "+905398516836",
+      "description": "شركة عمار للعقارات في الانيا يعرّف عن خدمات عقارية في أنطاليا ويتيح التواصل.",
+      "website": "https://ammarhomes.net/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.4841795,32.1027632",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-aamar-llaakarat-fy-alanya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ماركت يامال الشام فرع الانيا",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "أنطاليا",
+      "phone": "+905527505712",
+      "whatsapp": "+905527505712",
+      "description": "ماركت يامال الشام فرع الانيا يعرّف عن متجر يعرض خدماته في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.47693659999999,32.1105048",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/markt-yamal-alsham-fraa-alanya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور سامي دعسان",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "أنطاليا",
+      "phone": "+905525105930",
+      "whatsapp": "+905525105930",
+      "description": "الدكتور سامي دعسان يعرّف عن خدمات طبية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.481025,32.104881",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-samy-daasan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم شهرزاد العراقي",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "أنطاليا",
+      "phone": "+905395665832",
+      "whatsapp": "+905395665832",
+      "description": "مطعم شهرزاد العراقي يعرّف عن مطعم أو خدمات طعام عربية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.481624,32.1034918",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-shhrzad-alaaraky",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "عيادة طبيب الأسنان في ألانيا محموتلار",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أنطاليا",
+      "phone": "+905369752540",
+      "whatsapp": "+905369752540",
+      "description": "عيادة طبيب الأسنان في ألانيا محموتلار يعرّف عن خدمات طب أسنان في أنطاليا ويتيح التواصل.",
+      "website": "https://www.dentistinmahmutlar.com/en/dentist-abroad-turkey",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.47886829999999,32.1045782",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aayad-tbyb-alasnan-fy-alanya-mhmotlar",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "دجلة ماركت",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "أنطاليا",
+      "phone": "+905393118632",
+      "whatsapp": "+905393118632",
+      "description": "دجلة ماركت يعرّف عن متجر يعرض خدماته في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.54375,31.99982",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/djl-markt",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ليان للعقارات في تركيا",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "phone": "+905312378872",
+      "whatsapp": "+905312378872",
+      "description": "ليان للعقارات في تركيا يعرّف عن خدمات عقارية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.54375,31.99982",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/lyan-llaakarat-fy-trkya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ترنس فير الانيا انطاليا",
+      "profession": "خدمات نقل وتوصيل",
+      "category": "نقل وتكسي",
+      "city": "أنطاليا",
+      "phone": "+905524599520",
+      "whatsapp": "+905524599520",
+      "description": "ترنس فير الانيا انطاليا يعرّف عن خدمات نقل وتوصيل في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.54375,31.99982",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/trns-fyr-alanya-antalya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "العيادة الطبية العربية في أنطاليا - ألانيا",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "أنطاليا",
+      "phone": "+905378419399",
+      "whatsapp": "+905378419399",
+      "description": "العيادة الطبية العربية في أنطاليا - ألانيا يعرّف عن خدمات طبية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.54375,31.99982",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alaayad-altby-alaarby-fy-antalya-alanya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عزام الهنيدي",
+      "profession": "خدمات طبية",
+      "category": "طبيب",
+      "city": "أنطاليا",
+      "phone": "+905526188830",
+      "whatsapp": "+905526188830",
+      "description": "الدكتور عزام الهنيدي يعرّف عن خدمات طبية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.544443,31.995408",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aazam-alhnydy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "بيكاسو هومز",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "أنطاليا",
+      "phone": "+905346559000",
+      "whatsapp": "+905346559000",
+      "description": "بيكاسو هومز يعرّف عن خدمات عقارية في أنطاليا ويتيح التواصل.",
+      "website": "https://www.alanyapicassohomes.com/?dil=21",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.5443568,31.9951066",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/bykaso-homz",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ميار لمستحضرات التجميل - Mayar Kozmetik",
+      "profession": "خدمات تجميل وعناية",
+      "category": "تجميل",
+      "city": "أنطاليا",
+      "phone": "+905074444502",
+      "whatsapp": "+905074444502",
+      "description": "ميار لمستحضرات التجميل - Mayar Kozmetik يعرّف عن خدمات تجميل وعناية في أنطاليا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=36.54939,31.98762",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mayar-kozmetik",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "رسلان للإتصالات - Raslan tel",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "بورصة",
+      "phone": "+905399355822",
+      "whatsapp": "+905399355822",
+      "description": "رسلان للإتصالات - Raslan tel يعرّف عن خدمات تقنية وصيانة في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/rslan-lletsalat-raslan-tel",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة Ama للديكور و الموبيليا",
+      "profession": "خدمات تشطيبات وديكور",
+      "category": "تشطيبات وديكور",
+      "city": "بورصة",
+      "phone": "+905455411685",
+      "whatsapp": "+905455411685",
+      "description": "شركة Ama للديكور و الموبيليا يعرّف عن خدمات تشطيبات وديكور في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-ama-lldykor-oalmobylya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الريان لغسيل السجاد - بورصة",
+      "profession": "خدمات تنظيف",
+      "category": "تنظيف",
+      "city": "بورصة",
+      "phone": "+905312912108",
+      "whatsapp": "+905312912108",
+      "description": "شركة الريان لغسيل السجاد - بورصة يعرّف عن خدمات تنظيف في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mghsl-alryan-bors",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الحلبي للإستشارات القانونية و العقارية - بورصة",
+      "profession": "خدمات قانونية",
+      "category": "محامي",
+      "city": "بورصة",
+      "phone": "+905315958689",
+      "whatsapp": "+905315958689",
+      "description": "شركة الحلبي للإستشارات القانونية و العقارية - بورصة يعرّف عن خدمات قانونية في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alhlby-llestsharat-alkanony-o-alaakary-bors",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ماركت الطير - Market ALteer",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "بورصة",
+      "phone": "+905378504141",
+      "whatsapp": "+905378504141",
+      "description": "ماركت الطير - Market ALteer يعرّف عن متجر يعرض خدماته في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/markt-altyr-market-alteer",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "أبو قتادة للصيانة",
+      "profession": "خدمات صيانة منزلية",
+      "category": "صيانة منزلية",
+      "city": "بورصة",
+      "phone": "+905315113192",
+      "whatsapp": "+905315113192",
+      "description": "أبو قتادة للصيانة يعرّف عن خدمات صيانة منزلية في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/abo-ktad-llsyan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "معرض كنعان للأدوات الكهربائية",
+      "profession": "خدمات كهرباء",
+      "category": "كهرباء",
+      "city": "بورصة",
+      "phone": "+905346666744",
+      "whatsapp": "+905346666744",
+      "description": "معرض كنعان للأدوات الكهربائية يعرّف عن خدمات كهرباء في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/maard-knaaan-lladoat-alkhrbaey",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الحداد للديكور",
+      "profession": "خدمات تشطيبات وديكور",
+      "category": "تشطيبات وديكور",
+      "city": "بورصة",
+      "phone": "+905388604603",
+      "whatsapp": "+905388604603",
+      "description": "الحداد للديكور يعرّف عن خدمات تشطيبات وديكور في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alhdad-lldykor",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز بورصة للخدمات الطلابية",
+      "profession": "خدمات تعليمية",
+      "category": "تعليم",
+      "city": "بورصة",
+      "phone": "+905061339775",
+      "whatsapp": "+905061339775",
+      "description": "مركز بورصة للخدمات الطلابية يعرّف عن خدمات تعليمية في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-bors-llkhdmat-altlaby",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ميني ماركت أراك - Mini Market Arak",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "بورصة",
+      "phone": "+905340611036",
+      "whatsapp": "+905340611036",
+      "description": "ميني ماركت أراك - Mini Market Arak يعرّف عن متجر يعرض خدماته في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/myny-markt-arak-mini-market-arak",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "تمديدات الصحيه وكافة التعهدات",
+      "profession": "خدمات سباكة",
+      "category": "سباكة",
+      "city": "بورصة",
+      "phone": "+905510429505",
+      "whatsapp": "+905510429505",
+      "description": "تمديدات الصحيه وكافة التعهدات يعرّف عن خدمات سباكة في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/tmdydat-alshyh-okaf-altaahdat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "بيبي كيدز",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "بورصة",
+      "phone": "+905342669722",
+      "whatsapp": "+905342669722",
+      "description": "بيبي كيدز يعرّف عن متجر يعرض خدماته في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/byby-kydz",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "التاج الملكي للستائر - BRADY ROAYL TAC",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "بورصة",
+      "phone": "+905350708370",
+      "whatsapp": "+905350708370",
+      "description": "التاج الملكي للستائر - BRADY ROAYL TAC يعرّف عن متجر يعرض خدماته في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/altaj-almlky-llstaer-oalbyadat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ستائر و برادي القنواتي",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "بورصة",
+      "phone": "+905352558064",
+      "whatsapp": "+905352558064",
+      "description": "ستائر و برادي القنواتي يعرّف عن متجر يعرض خدماته في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/staer-obrady-alknoaty",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الحكيم للإنشاء و الديكور",
+      "profession": "خدمات مقاولات وتشطيبات",
+      "category": "مقاولات",
+      "city": "بورصة",
+      "phone": "+905392662108",
+      "whatsapp": "+905392662108",
+      "description": "الحكيم للإنشاء و الديكور يعرّف عن خدمات مقاولات وتشطيبات في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alhkym-llensha-o-aldykor",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "سلسلة أزياء نور الشام - الفرع الثاني",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "بورصة",
+      "phone": "+905319729219",
+      "whatsapp": "+905319729219",
+      "description": "سلسلة أزياء نور الشام - الفرع الثاني يعرّف عن متجر يعرض خدماته في بورصة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/slsl-azya-nor-alsham-alfraa-althany",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور عزت سراقبي",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "قونية",
+      "phone": "+905550200115",
+      "whatsapp": "+905550200115",
+      "description": "الدكتور عزت سراقبي يعرّف عن خدمات طب أسنان في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-aazt-srakby",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات الشهباء بإدارة أبو يزن",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "قونية",
+      "phone": "+905398535368",
+      "whatsapp": "+905398535368",
+      "description": "نقليات الشهباء بإدارة أبو يزن يعرّف عن خدمات نقل أثاث في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-abo-yzn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نقليات الرحمة - قونيا",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "قونية",
+      "phone": "+905346711357",
+      "whatsapp": "+905346711357",
+      "description": "نقليات الرحمة - قونيا يعرّف عن خدمات نقل أثاث في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/nklyat-alrhm-konya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "عالم الديجتال",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "قونية",
+      "phone": "+905373078055",
+      "whatsapp": "+905373078055",
+      "description": "عالم الديجتال يعرّف عن خدمات تقنية وصيانة في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aaalm-aldyjtal",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "نورالدين صهريج للصيانة",
+      "profession": "خدمات صيانة منزلية",
+      "category": "صيانة منزلية",
+      "city": "قونية",
+      "phone": "+905386338187",
+      "whatsapp": "+905386338187",
+      "description": "نورالدين صهريج للصيانة يعرّف عن خدمات صيانة منزلية في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/noraldyn-llsyan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مجموعة المنتصر بالله",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "قونية",
+      "phone": "+905316022045",
+      "whatsapp": "+905316022045",
+      "description": "مجموعة المنتصر بالله يعرّف عن خدمات نقل أثاث في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mjmoaa-almntsr-ballh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز ستار بيوتي",
+      "profession": "خدمات تجميل وعناية",
+      "category": "تجميل",
+      "city": "قونية",
+      "phone": "+905547170042",
+      "whatsapp": "+905547170042",
+      "description": "مركز ستار بيوتي يعرّف عن خدمات تجميل وعناية في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.51024,33.07761",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-star-byoty",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ابو سردة",
+      "profession": "خدمات تجميل وعناية",
+      "category": "تجميل",
+      "city": "قونية",
+      "phone": "+905376012791",
+      "whatsapp": "+905376012791",
+      "description": "ابو سردة يعرّف عن خدمات تجميل وعناية في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.0050326,32.5247119",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/abo-srd",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ماهر للحلاقة الرجالية",
+      "profession": "خدمات حلاقة",
+      "category": "حلاقة",
+      "city": "قونية",
+      "phone": "+905398919486",
+      "whatsapp": "+905398919486",
+      "description": "ماهر للحلاقة الرجالية يعرّف عن خدمات حلاقة في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.01505,32.5180858",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mahr-llhlak-alrjaly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة ليتوليفت لصناعة وتصدير المصاعد",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "قونية",
+      "phone": "+905395747254",
+      "whatsapp": "+905395747254",
+      "description": "شركة ليتوليفت لصناعة وتصدير المصاعد يعرّف عن متجر يعرض خدماته في قونية ويتيح التواصل.",
+      "website": "https://litulift.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.9302486,32.5582466",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-lytolyft-lsnaaa-otsdyr-almsaaad",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ايمن للحلاقة الرجالية",
+      "profession": "خدمات حلاقة",
+      "category": "حلاقة",
+      "city": "قونية",
+      "phone": "+905349161001",
+      "whatsapp": "+905349161001",
+      "description": "ايمن للحلاقة الرجالية يعرّف عن خدمات حلاقة في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.9764847,32.5179091",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aymn-llhlak-alrjaly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة أفران أريما",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "قونية",
+      "phone": "+905523713131",
+      "whatsapp": "+905523713131",
+      "description": "شركة أفران أريما يعرّف عن متجر يعرض خدماته في قونية ويتيح التواصل.",
+      "website": "https://arima-unlu-mamuller.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.926446,32.542148",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-afran-aryma",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة ديزل ورلد",
+      "profession": "خدمات سيارات",
+      "category": "سيارات",
+      "city": "قونية",
+      "phone": "+905367010101",
+      "whatsapp": "+905367010101",
+      "description": "شركة ديزل ورلد يعرّف عن خدمات سيارات في قونية ويتيح التواصل.",
+      "website": "http://dizelworld.com.tr/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.94343569999999,32.5202413",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-dyzl-orld",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الغفران و الفرات للشحن الخارجي سوريةوالعراق",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "قونية",
+      "phone": "+905395450787",
+      "whatsapp": "+905395450787",
+      "description": "شركة الغفران و الفرات للشحن الخارجي سوريةوالعراق يعرّف عن خدمات شحن ولوجستيات في قونية ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=37.9113117,32.5352776",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alghfran-o-alfrat-llshhn-alkharjy-soryoalaarak",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز رويال سمايل لطب الأسنان",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أنقرة",
+      "phone": "+905319705007",
+      "whatsapp": "+905319705007",
+      "description": "مركز رويال سمايل لطب الأسنان يعرّف عن خدمات طب أسنان في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-royal-smayl-ltb-alasnan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "معلمة قرآن كريم",
+      "profession": "خدمات تعليمية",
+      "category": "تعليم",
+      "city": "أنقرة",
+      "phone": "+905541861841",
+      "whatsapp": "+905541861841",
+      "description": "معلمة قرآن كريم يعرّف عن خدمات تعليمية في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/maalm-kraan-krym",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز ماوي الخاص لطب الاسنان أنقرة",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أنقرة",
+      "phone": "+905523195245",
+      "whatsapp": "+905523195245",
+      "description": "مركز ماوي الخاص لطب الاسنان أنقرة يعرّف عن خدمات طب أسنان في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-maoy-alkhas-ltb-alasnan-ankr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة ليدر للعقارات فرع أنقرة",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "أنقرة",
+      "phone": "+905345208327",
+      "whatsapp": "+905345208327",
+      "description": "شركة ليدر للعقارات فرع أنقرة يعرّف عن خدمات عقارية في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.969676,32.965675",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-lydr-llaakarat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة السفاريني للشحن والخدمات اللوجستية",
+      "profession": "خدمات شحن ولوجستيات",
+      "category": "شحن",
+      "city": "أنقرة",
+      "phone": "+905356059786",
+      "whatsapp": "+905356059786",
+      "description": "شركة السفاريني للشحن والخدمات اللوجستية يعرّف عن خدمات شحن ولوجستيات في أنقرة ويتيح التواصل.",
+      "website": "https://safarini.com.tr/ar",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.9632307,32.9399489",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alsfryny-llshhn-oalkhdmat-allojsty",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم مشوياتي عراقية",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "أنقرة",
+      "phone": "+905316277277",
+      "whatsapp": "+905316277277",
+      "description": "مطعم مشوياتي عراقية يعرّف عن مطعم أو خدمات طعام عربية في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.9300893,32.9164344",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-mshoyaty-aaraky",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مدرسة أكاديمية أفاق الدولية",
+      "profession": "خدمات تعليمية",
+      "category": "تعليم",
+      "city": "أنقرة",
+      "phone": "+905067270488",
+      "whatsapp": "+905067270488",
+      "description": "مدرسة أكاديمية أفاق الدولية يعرّف عن خدمات تعليمية في أنقرة ويتيح التواصل.",
+      "website": "https://www.linkedin.com/in/afakschool/?fbclid=IwAR2X7FUjyUzb28Jq9tN106OY7GH76-FyZI_WnaGgF70wf2ss8x3kmydd-mM",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.8766185,32.879502",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mdrs-akadymy-afak-aldoly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الرضوان لتجارة المواد الغذائية",
+      "profession": "خدمات عامة",
+      "category": "خدمات عامة",
+      "city": "أنقرة",
+      "phone": "+905312941633",
+      "whatsapp": "+905312941633",
+      "description": "شركة الرضوان لتجارة المواد الغذائية يعرّف عن خدمات عامة في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.9676487,32.9371032",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alrdoan-ltjar-almoad-alghthaey",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مفروشات الخطيب",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "أنقرة",
+      "phone": "+905538267063",
+      "whatsapp": "+905538267063",
+      "description": "مفروشات الخطيب يعرّف عن متجر يعرض خدماته في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.961535,32.9272324",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mfroshat-alkhtyb",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الدكتور باسل اليوسف",
+      "profession": "خدمات طب أسنان",
+      "category": "طب أسنان",
+      "city": "أنقرة",
+      "phone": "+905541722911",
+      "whatsapp": "+905541722911",
+      "description": "الدكتور باسل اليوسف يعرّف عن خدمات طب أسنان في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.95805470000001,32.9223422",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aldktor-basl-alyosf",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز إنجاز",
+      "profession": "خدمات كهرباء",
+      "category": "كهرباء",
+      "city": "أنقرة",
+      "phone": "+905394406777",
+      "whatsapp": "+905394406777",
+      "description": "مركز إنجاز يعرّف عن خدمات كهرباء في أنقرة ويتيح التواصل.",
+      "website": "https://injazmerkezi.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.9696334,32.9302774",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-enjaz",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "تكسي ابو لؤي",
+      "profession": "خدمات نقل وتوصيل",
+      "category": "نقل وتكسي",
+      "city": "أنقرة",
+      "phone": "+905050629954",
+      "whatsapp": "+905050629954",
+      "description": "تكسي ابو لؤي يعرّف عن خدمات نقل وتوصيل في أنقرة ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.962476,32.9251537",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/tksy-abo-loey",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مدارس أجيال نينوى العراقية",
+      "profession": "خدمات تعليمية",
+      "category": "تعليم",
+      "city": "أنقرة",
+      "phone": "+903124900078",
+      "whatsapp": "+903124900078",
+      "description": "مدارس أجيال نينوى العراقية يعرّف عن خدمات تعليمية في أنقرة ويتيح التواصل.",
+      "website": "https://bit.ly/3u7ethZ",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.8561386,32.8551336",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mdars-ajyal-nyno-alaaraky",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "السلطان للإتصالات فرع أنقرة",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "أنقرة",
+      "phone": "+905537799905",
+      "whatsapp": "+905537799905",
+      "description": "السلطان للإتصالات فرع أنقرة يعرّف عن خدمات تقنية وصيانة في أنقرة ويتيح التواصل.",
+      "website": "https://alsultantelekom.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=39.9692115,32.9297031",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alsltan-lletsalat-fraa-ankr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "تكسي الأمين",
+      "profession": "خدمات نقل وتوصيل",
+      "category": "نقل وتكسي",
+      "city": "كوجالي",
+      "phone": "+905346790290",
+      "whatsapp": "+905346790290",
+      "description": "تكسي الأمين يعرّف عن خدمات نقل وتوصيل في كوجالي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/tksy-alamyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مفروشات العلوي",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "كوجالي",
+      "phone": "+905516407460",
+      "whatsapp": "+905516407460",
+      "description": "مفروشات العلوي يعرّف عن متجر يعرض خدماته في كوجالي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mfroshat-alaaloy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ماركت خيرات بلدنا",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "كوجالي",
+      "phone": "+905397754216",
+      "whatsapp": "+905397754216",
+      "description": "ماركت خيرات بلدنا يعرّف عن متجر يعرض خدماته في كوجالي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7158696,30.1173101",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/markt-khyrat-bldna",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة المواس لتأجير السيارات",
+      "profession": "خدمات سيارات",
+      "category": "سيارات",
+      "city": "كوجالي",
+      "phone": "+905538111119",
+      "whatsapp": "+905538111119",
+      "description": "شركة المواس لتأجير السيارات يعرّف عن خدمات سيارات في كوجالي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7427167,29.9560348",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-almoas-ltajyr-alsyarat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "امتلاك العقارية - فرع كوجالي ازميت",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "كوجالي",
+      "phone": "+905074000900",
+      "whatsapp": "+905074000900",
+      "description": "امتلاك العقارية - فرع كوجالي ازميت يعرّف عن خدمات عقارية في كوجالي ويتيح التواصل.",
+      "website": "https://www.imtilak.net/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7803934,29.9743788",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/amtlak-alaakary-fraa-kojaly-azmyt",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الفاروق للترجمة والاقامات فرع باشيسكلي",
+      "profession": "خدمات ترجمة",
+      "category": "مترجم",
+      "city": "كوجالي",
+      "phone": "+905511665424",
+      "whatsapp": "+905511665424",
+      "description": "الفاروق للترجمة والاقامات فرع باشيسكلي يعرّف عن خدمات ترجمة في كوجالي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7130325,29.9368853",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alfarok-lltrjm-oalakamat-fraa-bashyskly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة النور التجارية",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "كوجالي",
+      "phone": "+905522009005",
+      "whatsapp": "+905522009005",
+      "description": "شركة النور التجارية يعرّف عن خدمات عقارية في كوجالي ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7143711,29.9370651",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alnor-altjary",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "ريان للانشاءات و العقارات",
+      "profession": "خدمات مقاولات وتشطيبات",
+      "category": "مقاولات",
+      "city": "كوجالي",
+      "phone": "+905413280441",
+      "whatsapp": "+905413280441",
+      "description": "ريان للانشاءات و العقارات يعرّف عن خدمات مقاولات وتشطيبات في كوجالي ويتيح التواصل.",
+      "website": "http://www.rynins.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7136318,29.9351723",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/ryan-llanshaat-o-alaakarat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الكيان للمقاولات والاستشارات الهندسية",
+      "profession": "خدمات مقاولات وتشطيبات",
+      "category": "مقاولات",
+      "city": "كوجالي",
+      "phone": "+905383633669",
+      "whatsapp": "+905383633669",
+      "description": "شركة الكيان للمقاولات والاستشارات الهندسية يعرّف عن خدمات مقاولات وتشطيبات في كوجالي ويتيح التواصل.",
+      "website": "https://alkayantr.com/%d8%a7%d9%84%d8%b1%d8%a6%d9%8a%d8%b3%d9%8a%d8%a9/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7140722,29.9353476",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alkyan-llmkaolat-oalastsharat-alhndsy",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "رقميون | تصميم مواقع الكترونية وخدماتها",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "كوجالي",
+      "phone": "+905360194480",
+      "whatsapp": "+905360194480",
+      "description": "رقميون | تصميم مواقع الكترونية وخدماتها يعرّف عن خدمات تقنية وصيانة في كوجالي ويتيح التواصل.",
+      "website": "https://raqmiyon.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7140722,29.9353476",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/rkmyon-tsmym-moakaa-alktrony-okhdmatha",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة معمار العقارية",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "كوجالي",
+      "phone": "+905398948888",
+      "whatsapp": "+905398948888",
+      "description": "شركة معمار العقارية يعرّف عن خدمات عقارية في كوجالي ويتيح التواصل.",
+      "website": "http://www.mimarrealestate.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7140722,29.9353476",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-maamar-alaakary",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مجموعة الاصالة التجارية",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "كوجالي",
+      "phone": "+905522009001",
+      "whatsapp": "+905522009001",
+      "description": "مجموعة الاصالة التجارية يعرّف عن خدمات عقارية في كوجالي ويتيح التواصل.",
+      "website": "http://www.asallet.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7106918,29.9331338",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mjmoaa-alasal-altjary",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "كهرباء الأنوار (أبو محمود )",
+      "profession": "خدمات كهرباء",
+      "category": "كهرباء",
+      "city": "قيصري",
+      "phone": "+905550157860",
+      "whatsapp": "+905550157860",
+      "description": "كهرباء الأنوار (أبو محمود ) يعرّف عن خدمات كهرباء في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/khrba-alanoar-abo-mhmod",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "Queen gelinlik مصطفى لأزياء العرائس",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "قيصري",
+      "phone": "+905367324469",
+      "whatsapp": "+905367324469",
+      "description": "Queen gelinlik مصطفى لأزياء العرائس يعرّف عن متجر يعرض خدماته في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/queen-gelinlik-mstf-lazya-alaaraes",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "المترجم حسين زياد ناصر",
+      "profession": "خدمات ترجمة",
+      "category": "مترجم",
+      "city": "قيصري",
+      "phone": "+905342279198",
+      "whatsapp": "+905342279198",
+      "description": "المترجم حسين زياد ناصر يعرّف عن خدمات ترجمة في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/almtrjm-hsyn-zyad-nasr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مترجم محلف (حسين حسين )",
+      "profession": "خدمات ترجمة",
+      "category": "مترجم",
+      "city": "قيصري",
+      "phone": "+905378900925",
+      "whatsapp": "+905378900925",
+      "description": "مترجم محلف (حسين حسين ) يعرّف عن خدمات ترجمة في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtrjm-mhlf-hsyn-hsyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مهندخضر ازياء الصفا للألبسه النسائيه",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "قيصري",
+      "phone": "+905389538390",
+      "whatsapp": "+905389538390",
+      "description": "مهندخضر ازياء الصفا للألبسه النسائيه يعرّف عن متجر يعرض خدماته في قيصري ويتيح التواصل.",
+      "website": "https://lingerie-store-476.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.75,35.45",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mhndkhdr-azya-alsfa-llalbsh-alnsaeyh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مفروشات ألاطلي",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "قيصري",
+      "phone": "+905513985040",
+      "whatsapp": "+905513985040",
+      "description": "مفروشات ألاطلي يعرّف عن متجر يعرض خدماته في قيصري ويتيح التواصل.",
+      "website": "https://furniture-store-14711.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.6892275,35.3984765",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mfroshat-alatly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم وكافتيريا السلطان احمد قيصري الصحابيه",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "قيصري",
+      "phone": "+905312633981",
+      "whatsapp": "+905312633981",
+      "description": "مطعم وكافتيريا السلطان احمد قيصري الصحابيه يعرّف عن مطعم أو خدمات طعام عربية في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.72954,35.4861999",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-okaftyrya-alsltan-ahmd-kysry-alshabyh",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "اتصالات الناصر",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "قيصري",
+      "phone": "+905353928208",
+      "whatsapp": "+905353928208",
+      "description": "اتصالات الناصر يعرّف عن خدمات تقنية وصيانة في قيصري ويتيح التواصل.",
+      "website": "https://alnasser-phone.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.7293338,35.4866196",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/atsalat-alnasr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "كهرباء السلطان",
+      "profession": "خدمات كهرباء",
+      "category": "كهرباء",
+      "city": "قيصري",
+      "phone": "+905383744238",
+      "whatsapp": "+905383744238",
+      "description": "كهرباء السلطان يعرّف عن خدمات كهرباء في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.721159,35.4730207",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/khrba-alsltan",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "kasiyun fast food | مطعم قاسيون",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "قيصري",
+      "phone": "+905536808838",
+      "whatsapp": "+905536808838",
+      "description": "kasiyun fast food | مطعم قاسيون يعرّف عن مطعم أو خدمات طعام عربية في قيصري ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.7304335,35.4886296",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/kasiyun-fast-food-mtaam-kasyon",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "البسة الباشا",
+      "profession": "متجر يعرض خدماته",
+      "category": "متاجر ومستلزمات",
+      "city": "قيصري",
+      "phone": "+905387089593",
+      "whatsapp": "+905387089593",
+      "description": "البسة الباشا يعرّف عن متجر يعرض خدماته في قيصري ويتيح التواصل.",
+      "website": "https://dress-shop-1071.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.7303864,35.4889281",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/albs-albasha",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة السفراني للإتصالات و خدمات التكنولوجيا",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "قيصري",
+      "phone": "+905349300876",
+      "whatsapp": "+905349300876",
+      "description": "شركة السفراني للإتصالات و خدمات التكنولوجيا يعرّف عن خدمات تقنية وصيانة في قيصري ويتيح التواصل.",
+      "website": "http://phone-repair-service-75.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=38.7210984,35.4737527",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alsfrany-lletsalat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الرواد- AQSERV",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "سكاريا",
+      "phone": "+905314053680",
+      "whatsapp": "+905314053680",
+      "description": "الرواد- AQSERV يعرّف عن خدمات عقارية في سكاريا ويتيح التواصل.",
+      "website": "https://www.aqservs.com/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.6874269,30.2687639",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/aqserv",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الصقور الذهبية لنقل الدولي فرع سكاريا",
+      "profession": "خدمات نقل أثاث",
+      "category": "نقل عفش",
+      "city": "سكاريا",
+      "phone": "+905388832095",
+      "whatsapp": "+905388832095",
+      "description": "شركة الصقور الذهبية لنقل الدولي فرع سكاريا يعرّف عن خدمات نقل أثاث في سكاريا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": null,
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alskor-althhby-lnkl-aldoly-fraa-skarya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مترجم تركي عربي",
+      "profession": "خدمات ترجمة",
+      "category": "مترجم",
+      "city": "سكاريا",
+      "phone": "+905375026054",
+      "whatsapp": "+905375026054",
+      "description": "مترجم تركي عربي يعرّف عن خدمات ترجمة في سكاريا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7576829,30.41433829999999",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtrjm-trky-aarby",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "صالون حلاقة حسام للحلاقة الرجالية",
+      "profession": "خدمات حلاقة",
+      "category": "حلاقة",
+      "city": "سكاريا",
+      "phone": "+905511531277",
+      "whatsapp": "+905511531277",
+      "description": "صالون حلاقة حسام للحلاقة الرجالية يعرّف عن خدمات حلاقة في سكاريا ويتيح التواصل.",
+      "website": "https://barber-shop-8657.business.site/?utm_source=gmb&utm_medium=referral",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7624076,30.4134244",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/salon-hlak-hsam-llhlak-alrjaly",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "الايادي فلاي للسياحة والسفر",
+      "profession": "خدمات سياحية",
+      "category": "سياحة",
+      "city": "سكاريا",
+      "phone": "+905398628399",
+      "whatsapp": "+905398628399",
+      "description": "الايادي فلاي للسياحة والسفر يعرّف عن خدمات سياحية في سكاريا ويتيح التواصل.",
+      "website": "https://flyturizm.com/ar/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7720412,30.4051315",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/alayady-flay-llsyah-oalsfr",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "صالون رزان للسيدات",
+      "profession": "خدمات تجميل وعناية",
+      "category": "تجميل",
+      "city": "سكاريا",
+      "phone": "+905316061134",
+      "whatsapp": "+905316061134",
+      "description": "صالون رزان للسيدات يعرّف عن خدمات تجميل وعناية في سكاريا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7751334,30.4067827",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/salon-rzan-llsydat",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة الاتحاد العقارية فرع سكاريا",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "سكاريا",
+      "phone": "+905375846643",
+      "whatsapp": "+905375846643",
+      "description": "شركة الاتحاد العقارية فرع سكاريا يعرّف عن خدمات عقارية في سكاريا ويتيح التواصل.",
+      "website": null,
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.772152,30.4049503",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-alathad-alaakary-fraa-skarya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "شركة ميرال العقارية - سكاريا",
+      "profession": "خدمات عقارية",
+      "category": "عقارات",
+      "city": "سكاريا",
+      "phone": "+902642419999",
+      "whatsapp": "+902642419999",
+      "description": "شركة ميرال العقارية - سكاريا يعرّف عن خدمات عقارية في سكاريا ويتيح التواصل.",
+      "website": "https://www.meral.ltd/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7438697,30.3866259",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/shrk-myral-alaakary-skarya",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مطعم نور الدين",
+      "profession": "مطعم أو خدمات طعام عربية",
+      "category": "مطاعم",
+      "city": "سكاريا",
+      "phone": "+905380502054",
+      "whatsapp": "+905380502054",
+      "description": "مطعم نور الدين يعرّف عن مطعم أو خدمات طعام عربية في سكاريا ويتيح التواصل.",
+      "website": "https://bit.ly/3YTfyHy",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7740318,30.403512",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mtaam-nor-aldyn",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    },
+    {
+      "name": "مركز الجود لخدمات الانترنت",
+      "profession": "خدمات تقنية وصيانة",
+      "category": "تقنية وصيانة هواتف",
+      "city": "سكاريا",
+      "phone": "+905445214290",
+      "whatsapp": "+905445214290",
+      "description": "مركز الجود لخدمات الانترنت يعرّف عن خدمات تقنية وصيانة في سكاريا ويتيح التواصل.",
+      "website": "https://electronics-store-20550.business.site/",
+      "google_maps_url": "https://www.google.com/maps/dir/?api=1&destination=40.7764224,30.4038139",
+      "languages": [
+        "العربية"
+      ],
+      "sources": [
+        {
+          "type": "directory_listing",
+          "url": "https://rakwaturkey.com/item/mrkz-aljod-lkhdmat-alantrnt",
+          "checked_at": "2026-07-30T07:19:08.120Z",
+          "note": "صفحة نشاط عربية عامة تتضمن اسم الخدمة ووسيلة اتصال منشورة."
+        }
+      ]
+    }
+  ]
+}

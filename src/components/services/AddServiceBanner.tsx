@@ -29,14 +29,13 @@ export default function AddServiceBanner() {
             .then(({ count }) => setCount(count ?? null));
     }, []);
 
-    // Guests sign up first; logged-in members go straight to the add form.
-    // IMPORTANT: only route to /join when we KNOW the user is a guest
-    // (isGuest === true). While auth is still resolving (isGuest === null) OR the
-    // user is a member (false), point at the add form — so a logged-in member is
-    // never wrongly sent to sign-up during the brief load. The form itself guards
-    // guests who slip through.
-    const href = isGuest === true ? '/join' : '/dashboard/services/new';
-    const ctaLabel = isGuest === true ? 'سجّل وأضف خدمتك مجاناً' : 'أضف خدمتك الآن';
+    // Guests go to the PUBLIC no-account form (/services/add) — the biggest
+    // conversion win is not forcing sign-up first. Logged-in members go to the
+    // dashboard form so they can manage the listing under their account. While
+    // auth resolves (isGuest === null) default to the public form (works for
+    // everyone), never to sign-up.
+    const href = isGuest === false ? '/dashboard/services/new' : '/services/add';
+    const ctaLabel = 'أضف خدمتك مجاناً';
 
     const VALUE = [
         { icon: Search, text: 'تظهر في بحث جوجل ويجدك الناس' },

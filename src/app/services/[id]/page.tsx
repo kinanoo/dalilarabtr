@@ -1,19 +1,32 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Phone, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft } from 'lucide-react';
+import { MapPin, PhoneCall, MessageCircle, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { categorySlugForName } from '@/lib/serviceCategories';
-import { getSupabaseImageUrl } from '@/lib/supabaseImage';
-import { SERVICE_VERIFICATION_EXPLANATION, SERVICE_VERIFICATION_LABEL } from '@/lib/serviceVerification';
+import { serviceVerificationCopy } from '@/lib/serviceVerification';
+import ProviderAvatar from '@/components/services/ProviderAvatar';
+import DirectWhatsAppLink from '@/components/services/DirectWhatsAppLink';
+import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
 
 export const revalidate = 60;
+
+const safeExternalUrl = (value: unknown): string | null => {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    try {
+        const parsed = new URL(value.trim());
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+            ? parsed.toString()
+            : null;
+    } catch {
+        return null;
+    }
+};
 
 // ─── Shared helper ────────────────────────────────────────────────────────────
 // Plain anon client, no cookies. Every visitor sees the same public provider
@@ -50,8 +63,9 @@ export async function generateMetadata(
 
     // No manual brand suffix — the root layout's title template appends
     // "| <brand>" once. Adding "| دليل العرب" here produced a doubled brand.
-    const title = `${data.name} - ${data.profession} في ${data.city}`;
-    const description = data.description?.substring(0, 160) ||
+    const profession = displayServiceProfession(data.profession);
+    const title = `${data.name} - ${profession} في ${data.city}`;
+    const description = cleanServiceText(data.description)?.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
     const ogImage = getOgImage(data.image, { title });
 
@@ -90,21 +104,23 @@ export default async function ServiceDetailsPage(
     // Real row id for entity refs (ratings/comments); slug (if any) for URLs.
     const realId: string = provider.id;
     const canonicalId: string = provider.slug || provider.id;
-    const providerImageUrl = provider.image
-        ? getSupabaseImageUrl(provider.image, { width: 384, height: 384, quality: 78 })
-        : null;
-
+    const verification = serviceVerificationCopy(
+        provider.verification_level,
+        provider.is_verified,
+    );
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
+    const cleanWhatsApp = (provider.whatsapp || provider.phone || '').replace(/\D/g, '');
+    const providerProfession = displayServiceProfession(provider.profession);
+    const providerDescription = cleanServiceText(provider.description);
+    const websiteUrl = safeExternalUrl(provider.website);
+    const mapUrl = safeExternalUrl(provider.google_maps_url || provider.map_location);
     // Include this listing's link so the provider sees the client came from
     // دليل العرب + which exact service page — trust + lead attribution.
     const listingUrl = `${SITE_CONFIG.siteUrl}/services/${canonicalId}`;
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-        `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${provider.profession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`
-    )}`;
+    const whatsappText = `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${providerProfession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`;
 
-    // Schema.org: Service + LocalBusiness — now with aggregateRating when we
-    // have it (Google shows star carousel) and a fallback priceRange so the
-    // LocalBusiness card renders fully in Knowledge Panels.
+    // Schema.org: Service + LocalBusiness with aggregateRating only when real
+    // ratings exist. Never infer pricing or credentials that were not supplied.
     const numericRating = typeof provider.rating === 'number'
         ? provider.rating
         : provider.rating ? Number(provider.rating) : null;
@@ -113,8 +129,8 @@ export default async function ServiceDetailsPage(
     const catSlug = categorySlugForName(provider.category);
     const serviceLd = {
         '@type': 'Service',
-        name: `${provider.profession} — ${provider.name}`,
-        description: provider.description || `خدمات ${provider.category} في ${provider.city}`,
+        name: `${providerProfession} — ${provider.name}`,
+        description: providerDescription || `خدمات ${provider.category} في ${provider.city}`,
         provider: {
             '@type': 'LocalBusiness',
             name: provider.name,
@@ -130,7 +146,7 @@ export default async function ServiceDetailsPage(
                     worstRating: 1,
                 },
             } : {}),
-            priceRange: provider.price_range || '$$',
+            ...(provider.price_range ? { priceRange: provider.price_range } : {}),
         },
         areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
         url: `${SITE_CONFIG.siteUrl}/services/${canonicalId}`,
@@ -196,8 +212,12 @@ export default async function ServiceDetailsPage(
                     <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
                         {/* Avatar */}
                         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl shrink-0 overflow-hidden relative flex items-center justify-center -mt-16 sm:-mt-20 z-30">
-                            {providerImageUrl ? (
-                                <Image src={providerImageUrl} alt={provider.name} fill className="object-cover" sizes="(min-width: 640px) 160px, 128px" />
+                            {provider.image ? (
+                                <ProviderAvatar
+                                    name={provider.name}
+                                    image={provider.image}
+                                    className="h-full w-full rounded-none shadow-none"
+                                />
                             ) : (
                                 <Briefcase size={48} className="text-slate-300" />
                             )}
@@ -209,18 +229,20 @@ export default async function ServiceDetailsPage(
                                 <div>
                                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
                                         {provider.name}
-                                        {provider.is_verified && (
+                                        {verification.visible && (
                                             <CheckCircle className="text-blue-500 shrink-0" size={24} />
                                         )}
                                     </h1>
                                     <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg mt-1">
-                                        {provider.profession}
+                                        {providerProfession}
                                     </p>
                                 </div>
                                 <InlineStarRating
                                     serviceId={realId}
                                     serviceName={provider.name}
-                                    currentRating={provider.rating ? Number(provider.rating) : 5.0}
+                                    currentRating={provider.review_count && provider.rating
+                                        ? Number(provider.rating)
+                                        : 0}
                                     reviewCount={provider.review_count || 0}
                                 />
                             </div>
@@ -246,39 +268,93 @@ export default async function ServiceDetailsPage(
                     <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">نبذة عن الخدمة</h2>
                         <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {provider.description || 'لم يتم إضافة نبذة تفصيلية بعد.'}
+                            {providerDescription || 'لم يتم إضافة نبذة تفصيلية بعد.'}
                         </div>
                     </div>
 
                     {/* Contact + Share */}
-                    <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 text-lg"
-                        >
-                            <Phone size={24} />
-                            تواصل عبر الواتساب
-                        </a>
-
-                        {provider.is_verified && (
-                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-300 py-4 rounded-xl font-bold flex items-center justify-center gap-3">
-                                <ShieldCheck size={24} />
-                                <span title={SERVICE_VERIFICATION_EXPLANATION}>
-                                    {SERVICE_VERIFICATION_LABEL} من إدارة الدليل
-                                </span>
-                            </div>
+                    <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {cleanWhatsApp && (
+                            <DirectWhatsAppLink
+                                phone={provider.whatsapp || provider.phone || ''}
+                                text={whatsappText}
+                                className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 active:scale-95"
+                            >
+                                <MessageCircle size={22} />
+                                تواصل عبر الواتساب
+                            </DirectWhatsAppLink>
+                        )}
+                        {cleanPhone && (
+                            <a
+                                href={`tel:+${cleanPhone}`}
+                                className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-800 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                            >
+                                <PhoneCall size={22} />
+                                اتصال مباشر
+                            </a>
                         )}
                     </div>
 
+                    {verification.visible && (
+                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-200">
+                            <ShieldCheck size={20} className="mt-0.5 shrink-0" />
+                            <p>
+                                <span className="font-black">{verification.label}:</span>{' '}
+                                {verification.explanation}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="mt-4 flex justify-center">
                         <ShareMenu
-                            title={`${provider.name} — ${provider.profession}`}
-                            text={`${provider.name} — ${provider.profession} في ${provider.city}. تواصل عبر دليل العرب.`}
+                            title={`${provider.name} — ${providerProfession}`}
+                            text={`${provider.name} — ${providerProfession} في ${provider.city}. تواصل عبر دليل العرب.`}
                             url={`${SITE_CONFIG.siteUrl}/services/${canonicalId}`}
                         />
                     </div>
+
+                    {(websiteUrl || mapUrl || provider.address_details) && (
+                        <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                                {websiteUrl && (
+                                    <a
+                                        href={websiteUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                    >
+                                        <Globe2 size={17} />
+                                        الموقع الرسمي
+                                    </a>
+                                )}
+                                {mapUrl && (
+                                    <a
+                                        href={mapUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                    >
+                                        <Navigation size={17} />
+                                        فتح الخريطة
+                                    </a>
+                                )}
+                            </div>
+                            {provider.address_details && (
+                                <p className="mx-auto mt-3 max-w-2xl text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
+                                    {provider.address_details}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    <p className="mt-5 border-t border-slate-100 pt-4 text-center text-xs leading-6 text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                        هل هذه خدمتك أو وجدت معلومة غير صحيحة؟{' '}
+                        <Link
+                            href={`/contact?subject=service-data&provider=${encodeURIComponent(provider.name)}`}
+                            className="font-black text-emerald-700 hover:underline dark:text-emerald-400"
+                        >
+                            اطلب امتلاك الصفحة أو تعديلها أو حذفها
+                        </Link>
+                    </p>
                 </div>
             </div>
 
@@ -302,19 +378,17 @@ export default async function ServiceDetailsPage(
                                 href={`/services/${r.slug || r.id}`}
                                 className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-start gap-3 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md transition-all"
                             >
-                                <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden relative flex items-center justify-center">
-                                    {r.image ? (
-                                        <Image src={getSupabaseImageUrl(r.image, { width: 128, height: 128 })} alt={r.name} fill className="object-cover" sizes="56px" />
-                                    ) : (
-                                        <Briefcase size={22} className="text-slate-300" />
-                                    )}
-                                </div>
+                                <ProviderAvatar
+                                    name={r.name}
+                                    image={r.image}
+                                    className="h-14 w-14 shrink-0 rounded-xl"
+                                />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-1 font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
                                         <span className="truncate">{r.name}</span>
-                                        {r.is_verified && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
+                                        {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
                                     </div>
-                                    {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{r.profession}</p>}
+                                    {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{displayServiceProfession(r.profession)}</p>}
                                     <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                                         {r.city && <span className="inline-flex items-center gap-0.5"><MapPin size={11} />{r.city}</span>}
                                         {!!(r.review_count && r.review_count > 0 && r.rating) && (

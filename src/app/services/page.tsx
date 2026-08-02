@@ -3,10 +3,18 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import logger from '@/lib/logger';
+import {
+    DIRECTORY_PAGE_SIZE,
+    type DirectoryProvider,
+} from '@/lib/serviceDirectory';
+import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
+import { displayServiceProfession } from '@/lib/serviceText';
 
-// Refresh the directory's structured data periodically so new/updated
-// providers enter Google's index without a redeploy.
-export const revalidate = 600;
+// The services directory changes from the admin/database and must not show
+// stale HTML to users or crawlers after providers are edited.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
     title: { absolute: 'دليل الخدمات العربية في تركيا: أطباء ومحامون ومترجمون | دليل العرب' },
@@ -15,79 +23,90 @@ export const metadata: Metadata = {
     alternates: { canonical: '/services' },
     openGraph: {
         title: 'دليل الخدمات العربية في تركيا',
-        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات عرب في كل مدن تركيا.',
+        description: 'أطباء، محامون، مترجمون، وعقارات — ابحث عن مقدمي خدمات يعرّفون عن خدماتهم بالعربية في مدن تركيا.',
         url: `${SITE_CONFIG.siteUrl}/services`,
         type: 'website',
         images: ['/og-banner.jpg'],
     },
 };
 
-interface DirRow {
-    id: string;
-    slug: string | null;
-    name: string;
-    profession: string | null;
-    category: string | null;
-    description: string | null;
-    city: string | null;
-    image: string | null;
-    phone: string | null;
-    is_verified: boolean | null;
-    is_featured: boolean | null;
-    rating: number | null;
-    review_count: number | null;
-    status: string | null;
-    created_at: string | null;
-}
-
 /**
- * Fetch the FULL approved directory once, server-side, cached by ISR
- * (revalidate=600). It powers both the JSON-LD (top slice) AND seeds
- * <ServicesClient> so the browser never re-pulls the whole service_providers
- * table on every visit + filter change (egress saver). The list is small
- * (~cap 500), so shipping it all in the first HTML is cheap and also makes
- * every provider card crawlable instead of hidden behind a client spinner.
+ * Fetch only the first visible page plus lightweight facets. Shipping every
+ * provider in the HTML worked for 57 rows, but becomes a multi-megabyte page
+ * at 500-1000. Category/city landing pages remain crawlable, while subsequent
+ * result pages are fetched through /api/services/directory.
  */
-async function getDirectory(): Promise<{ rows: DirRow[]; total: number }> {
+async function getDirectory() {
     try {
-        if (!supabase) return { rows: [], total: 0 };
-        const BASE = 'id, slug, name, profession, category, description, city, image, phone, is_verified, rating, review_count, status, created_at';
-        // Prefer featured-first ordering. If the `is_featured` column doesn't
-        // exist yet (monetization migration not run), the query errors — fall
-        // back to the base query so /services never breaks. Once the migration
-        // is applied, the featured path just starts working with no redeploy.
-        let res: { data: unknown; count: number | null; error: unknown } = await supabase
+        if (!supabase) {
+            return {
+                rows: [] as DirectoryProvider[],
+                total: 0,
+                verifiedCount: 0,
+                cityCounts: {},
+                categoryCounts: {},
+                popularSearches: [],
+            };
+        }
+        const BASE = 'id, slug, name, profession, category, description, city, image, phone, whatsapp, is_verified, verification_level, rating, review_count, status, created_at';
+        let firstPage: { data: unknown; count: number | null; error: unknown } = await supabase
             .from('service_providers')
             .select(`${BASE}, is_featured`, { count: 'exact' })
             .eq('status', 'approved')
             .order('is_featured', { ascending: false })
             .order('is_verified', { ascending: false })
-            .order('rating', { ascending: false })
-            .limit(500);
-        if (res.error) {
-            res = await supabase
+            .order('rating', { ascending: false, nullsFirst: false })
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: true })
+            .limit(DIRECTORY_PAGE_SIZE);
+        if (firstPage.error) {
+            firstPage = await supabase
                 .from('service_providers')
                 .select(BASE, { count: 'exact' })
                 .eq('status', 'approved')
                 .order('is_verified', { ascending: false })
-                .order('rating', { ascending: false })
-                .limit(500);
+                .order('rating', { ascending: false, nullsFirst: false })
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: true })
+                .limit(DIRECTORY_PAGE_SIZE);
         }
-        const rows = (res.data as DirRow[]) || [];
-        return { rows, total: res.count || rows.length };
+        if (firstPage.error) throw firstPage.error;
+
+        const facetSummary = await getServiceDirectoryFacetSummary(supabase);
+
+        const rows = (firstPage.data as DirectoryProvider[]) || [];
+        return {
+            rows,
+            total: firstPage.count || rows.length,
+            ...facetSummary,
+        };
     } catch (e) {
         logger.error('services directory fetch failed:', e);
-        return { rows: [], total: 0 };
+        return {
+            rows: [] as DirectoryProvider[],
+            total: 0,
+            verifiedCount: 0,
+            cityCounts: {},
+            categoryCounts: {},
+            popularSearches: [],
+        };
     }
 }
 
 export default async function ServicesPage() {
-    const { rows, total } = await getDirectory();
+    const {
+        rows,
+        total,
+        verifiedCount,
+        cityCounts,
+        categoryCounts,
+        popularSearches,
+    } = await getDirectory();
     const base = SITE_CONFIG.siteUrl;
 
-    // JSON-LD lists only the top slice (already ordered verified → top-rated)
-    // to keep the ItemList compact; the client gets the full set.
-    const jsonLdRows = rows.slice(0, 40);
+    // The first page is enough for a compact ItemList. Category and city
+    // landing pages expose the rest of the directory to crawlers.
+    const jsonLdRows = rows;
 
     // schema.org: a CollectionPage whose mainEntity is an ItemList of the
     // listed professionals, each modelled as a LocalBusiness. This tells
@@ -102,7 +121,7 @@ export default async function ServicesPage() {
                 '@type': 'LocalBusiness',
                 name: p.name,
                 url,
-                ...(p.profession ? { description: p.profession } : {}),
+                ...(p.profession ? { description: displayServiceProfession(p.profession) } : {}),
                 ...(p.image ? { image: p.image } : {}),
                 ...(p.phone ? { telephone: p.phone } : {}),
                 address: {
@@ -137,7 +156,7 @@ export default async function ServicesPage() {
                 '@id': `${base}/services#directory`,
                 url: `${base}/services`,
                 name: 'دليل الخدمات والمهن العربية في تركيا',
-                description: 'دليل مقدّمي الخدمات العرب في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
+                description: 'دليل مقدّمي الخدمات في تركيا: أطباء، محامون، مترجمون، عقارات وأكثر.',
                 inLanguage: 'ar',
                 isPartOf: { '@id': `${base}/#organization` },
                 mainEntity: itemList,
@@ -153,7 +172,14 @@ export default async function ServicesPage() {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
             )}
-            <ServicesClient initialServices={rows} />
+            <ServicesClient
+                initialServices={rows}
+                initialTotal={total}
+                verifiedCount={verifiedCount}
+                cityCounts={cityCounts}
+                categoryCounts={categoryCounts}
+                initialPopularSearches={popularSearches}
+            />
         </>
     );
 }

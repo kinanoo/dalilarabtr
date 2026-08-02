@@ -22,6 +22,8 @@ const staticPages = [
   { path: '/forms', priority: 0.7 },
   { path: '/request', priority: 0.6 },
   { path: '/join', priority: 0.5 },
+  // Public "list your business free" form — a conversion + local-SEO landing.
+  { path: '/services/add', priority: 0.7 },
   // NOTE: /bookmarks intentionally omitted — it's a per-user page that
   // renders client-side saved items, so it has no stable indexable content
   // (and is Disallowed in robots.txt).

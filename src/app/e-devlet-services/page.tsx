@@ -105,7 +105,12 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
+// `force-dynamic` used to sit here alongside `revalidate`, which is a
+// contradiction — force-dynamic wins, so the page answered
+// `Cache-Control: private, no-cache, no-store` (verified live) and re-queried
+// Supabase on every visit while appearing to be cached for an hour. The query
+// below is a plain public read with no request-specific input, so hourly ISR is
+// all it ever needed.
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function EDevletServicesPage() {

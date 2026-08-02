@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ArrowRight, Bell, Megaphone, AlertTriangle, Info } from 'lucide-react';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabaseLazy';
@@ -23,11 +23,51 @@ const dismissStore = (type?: string): Storage | null => {
     }
 };
 
+// The banner's height from the visitor's last visit. It cannot be known before
+// the fetch resolves — the banner lives behind a database row and a per-visitor
+// dismissal — so on a first view it appears after hydration and shoves the page
+// down. Remembering the height lets every subsequent visit reserve the space up
+// front, which is what matters for the readers who come back daily.
+const BANNER_HEIGHT_KEY = 'dalil_banner_height';
+
+function rememberedHeight(): number {
+    if (typeof window === 'undefined') return 0;
+    try {
+        const v = parseInt(window.localStorage.getItem(BANNER_HEIGHT_KEY) || '0', 10);
+        return Number.isFinite(v) && v > 0 && v < 200 ? v : 0;
+    } catch {
+        return 0;
+    }
+}
+
 export default function UrgencyBanner() {
     const pathname = usePathname();
     const [isVisible, setIsVisible] = useState(false);
     const [isExiting, setIsExiting] = useState(false);
     const [bannerData, setBannerData] = useState<any>(null);
+    const [settled, setSettled] = useState(false);
+    const [reserved, setReserved] = useState(0);
+    const bannerRef = useRef<HTMLDivElement>(null);
+
+    // Read the remembered height on mount only — reading it during render would
+    // differ between server and client and break hydration.
+    useEffect(() => { setReserved(rememberedHeight()); }, []);
+
+    // Record what this banner actually measured, for next time.
+    useEffect(() => {
+        if (!isVisible || !bannerRef.current) return;
+        const h = Math.round(bannerRef.current.getBoundingClientRect().height);
+        if (h > 0) {
+            try { window.localStorage.setItem(BANNER_HEIGHT_KEY, String(h)); } catch { /* ignore */ }
+        }
+    }, [isVisible, bannerData]);
+
+    // Nothing to show — stop reserving, and stop reserving on future visits too.
+    useEffect(() => {
+        if (!settled || isVisible) return;
+        setReserved(0);
+        try { window.localStorage.removeItem(BANNER_HEIGHT_KEY); } catch { /* ignore */ }
+    }, [settled, isVisible]);
 
     useEffect(() => {
         async function fetchBanner() {
@@ -58,7 +98,7 @@ export default function UrgencyBanner() {
             }
         }
 
-        fetchBanner();
+        fetchBanner().finally(() => setSettled(true));
     }, []);
 
     if (pathname?.startsWith('/admin')) return null;
@@ -72,7 +112,12 @@ export default function UrgencyBanner() {
         setTimeout(() => setIsVisible(false), 300);
     };
 
-    if (!isVisible || !bannerData) return null;
+    // Hold the space the banner occupied last time, so it does not shove the
+    // page down when it arrives. Collapses to nothing once we know there is
+    // no banner to show.
+    if (!isVisible || !bannerData) {
+        return reserved > 0 ? <div style={{ height: reserved }} aria-hidden="true" /> : null;
+    }
 
     const isAlert = bannerData.type === 'alert';
     const isWarning = bannerData.type === 'warning';
@@ -83,6 +128,7 @@ export default function UrgencyBanner() {
 
     return (
         <div
+            ref={bannerRef}
             className={`relative z-[50] overflow-hidden shadow-lg font-cairo transition-all duration-300 ease-in-out ${
                 isExiting ? 'max-h-0 opacity-0 py-0' : 'max-h-24 opacity-100'
             }`}
