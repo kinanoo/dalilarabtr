@@ -11,8 +11,8 @@ import { adminUpsert } from '@/lib/adminApi';
 import type { BackdropConfig } from '@/components/SiteBackdrop';
 
 const DEFAULT_CFG: BackdropConfig = {
-  enabled: true,
-  images: ['/bg/bg-1.webp', '/bg/bg-2.webp', '/bg/bg-3.webp', '/bg/bg-4.webp'],
+  enabled: false,
+  images: [],
   opacity: 20,
   veil: 22,
   mode: 'per-page',
@@ -45,10 +45,13 @@ export default function AdminAppearancePage() {
     if (!u) return;
     if (cfg.images.includes(u)) { toast.error('الصورة مضافة سلفاً'); return; }
     if (cfg.images.length >= 12) { toast.error('الحدّ الأقصى 12 صورة'); return; }
-    setCfg((c) => ({ ...c, images: [...c.images, u] }));
+    setCfg((c) => ({ ...c, enabled: true, images: [...c.images, u] }));
   };
 
-  const removeImage = (url: string) => setCfg((c) => ({ ...c, images: c.images.filter((i) => i !== url) }));
+  const removeImage = (url: string) => setCfg((c) => {
+    const images = c.images.filter((i) => i !== url);
+    return { ...c, enabled: images.length > 0 ? c.enabled : false, images };
+  });
 
   const save = async () => {
     setSaving(true);

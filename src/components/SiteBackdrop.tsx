@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { isPrivateModelSharePath } from '@/lib/models/routes';
 
 /**
- * SiteBackdrop — a faint, fixed Istanbul photo behind ALL page content.
+ * SiteBackdrop — an optional faint photo behind page content.
  *
  * Fully admin-controlled from /admin/appearance: the image list (up to 12),
  * opacity, veil strength, and distribution mode all live in site_settings.backdrop
@@ -15,10 +15,8 @@ import { isPrivateModelSharePath } from '@/lib/models/routes';
  * Decorative only: aria-hidden, pointer-events:none, z-0 (below the z-10 content
  * wrapper, above the opaque body bg) so the existing design/layout/text never
  * change — the photo only shows through the page's light gaps at a whisper.
- * Hidden on /admin. Falls back to the four bundled images if none are configured.
+ * Hidden on /admin. No admin images means no backdrop at all.
  */
-
-const BUILTIN = ['/bg/bg-1.webp', '/bg/bg-2.webp', '/bg/bg-3.webp', '/bg/bg-4.webp'];
 
 export interface BackdropConfig {
   enabled: boolean;
@@ -29,15 +27,12 @@ export interface BackdropConfig {
 }
 
 const DEFAULT_CFG: BackdropConfig = {
-  enabled: true,
-  images: BUILTIN,
+  enabled: false,
+  images: [],
   opacity: 20,
   veil: 22,
   mode: 'per-page',
 };
-
-// Module-level cache so client navigations don't refetch the config.
-let cached: BackdropConfig | null = null;
 
 function hashSeg(s: string): number {
   let h = 0;
@@ -47,20 +42,22 @@ function hashSeg(s: string): number {
 
 export default function SiteBackdrop() {
   const pathname = usePathname() || '/';
-  const [cfg, setCfg] = useState<BackdropConfig | null>(cached);
+  const [cfg, setCfg] = useState<BackdropConfig | null>(null);
+  const [shuffleSeed] = useState(() => Math.random());
 
   useEffect(() => {
-    if (cached) { setCfg(cached); return; }
     let alive = true;
     (async () => {
-      if (!supabase) return;
+      if (!supabase) {
+        if (alive) setCfg(DEFAULT_CFG);
+        return;
+      }
       const { data } = await supabase.from('site_settings').select('backdrop').eq('id', 1).maybeSingle();
       const raw = (data as { backdrop?: unknown } | null)?.backdrop;
       const merged: BackdropConfig = {
         ...DEFAULT_CFG,
         ...(raw && typeof raw === 'object' ? (raw as Partial<BackdropConfig>) : {}),
       };
-      cached = merged;
       if (alive) setCfg(merged);
     })();
     return () => { alive = false; };
@@ -72,10 +69,11 @@ export default function SiteBackdrop() {
   if (!c.enabled) return null;
 
   const images = (Array.isArray(c.images) ? c.images.filter(Boolean) : []).slice(0, 12);
-  const list = images.length ? images : BUILTIN;
+  if (!images.length) return null;
+  const list = images;
 
   let idx = 0;
-  if (c.mode === 'shuffle') idx = Math.floor(Math.random() * list.length);
+  if (c.mode === 'shuffle') idx = Math.floor(shuffleSeed * list.length);
   else if (c.mode === 'single') idx = 0;
   else idx = pathname === '/' ? 0 : hashSeg(pathname.split('/')[1] || 'home') % list.length;
   const img = list[idx] || list[0];
