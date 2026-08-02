@@ -118,7 +118,7 @@ const article = {
   warning:
     'المواعيد والإجراءات قد تختلف حسب السفارة أو القنصلية والخدمة المختارة. اعتمد دائماً على التطبيق أو الموقع الرسمي لوزارة الخارجية والمغتربين السورية قبل المراجعة.',
   source: 'https://www.mofaex.gov.sy',
-  tags: ['دليل', 'الشرح_المصور', 'MOFA_SY', 'السفارة_السورية', 'القنصلية_السورية', 'جواز_السفر_السوري'],
+  tags: ['دليل', 'الشرح_المصور', 'MOFA_SY', 'السفارة_السورية', 'القنصلية_السورية', 'جواز_السفر_السوري', 'خبر_رئيسي'],
   seo_title: 'خطوات حجز موعد عبر تطبيق MOFA SY للسفارات والقنصليات السورية',
   seo_description: intro,
   seo_keywords: [
@@ -149,7 +149,7 @@ async function main() {
 
   const { data: existing, error: readError } = await supabase
     .from('articles')
-    .select('id,slug,title')
+    .select('id,slug,title,category,image,details')
     .eq('id', ARTICLE_ID)
     .maybeSingle();
 
@@ -158,18 +158,27 @@ async function main() {
     return;
   }
 
-  if (existing) {
-    console.log(`[mofa-publish] Article already exists; leaving admin edits untouched: /article/${existing.slug || existing.id}`);
+  const hasMofaAssets =
+    existing &&
+    typeof existing.details === 'string' &&
+    existing.details.includes('/article-assets/mofa-sy-appointment/');
+
+  if (existing && hasMofaAssets && existing.image === images[0].url && existing.category === article.category) {
+    console.log(`[mofa-publish] Article already contains MOFA assets; leaving it untouched: /article/${existing.slug || existing.id}`);
     return;
   }
 
-  const { error } = await supabase.from('articles').insert(article);
+  const write = existing
+    ? await supabase.from('articles').update(article).eq('id', ARTICLE_ID)
+    : await supabase.from('articles').insert(article);
+
+  const { error } = write;
   if (error) {
-    console.warn('[mofa-publish] Insert failed:', error.message);
+    console.warn(`[mofa-publish] ${existing ? 'Update' : 'Insert'} failed:`, error.message);
     return;
   }
 
-  console.log(`[mofa-publish] Published: ${SITE_URL}/article/${ARTICLE_ID}`);
+  console.log(`[mofa-publish] ${existing ? 'Updated' : 'Published'}: ${SITE_URL}/article/${ARTICLE_ID}`);
 }
 
 main().catch((error) => {
