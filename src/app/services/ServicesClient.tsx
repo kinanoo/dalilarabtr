@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, ArrowLeft, Sparkles, Languages, Stethoscope, Home, Truck, GraduationCap } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, ArrowLeft, Sparkles, Languages, Stethoscope, Home, Truck, GraduationCap, HelpCircle } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
@@ -88,6 +88,25 @@ const SERVICE_INTENT_GROUPS = [
       { label: 'مطعم', query: 'مطعم', category: 'مطاعم' },
       { label: 'حرفي', query: 'حرفي', category: 'خدمات عامة' },
     ],
+  },
+];
+
+const SERVICES_FAQS = [
+  {
+    question: 'كيف أجد مقدم خدمة عربي في تركيا؟',
+    answer: 'اكتب نوع الخدمة أو اختر المدينة والمهنة، ثم افتح بطاقة مقدم الخدمة للتواصل عبر واتساب أو الاتصال.',
+  },
+  {
+    question: 'هل كل الخدمات في الدليل باللغة العربية؟',
+    answer: 'يعرض الدليل مقدمي خدمات يعرّفون عن خدماتهم بالعربية أو يستهدفون الجمهور العربي في تركيا.',
+  },
+  {
+    question: 'كيف أتحقق قبل التعامل مع مقدم الخدمة؟',
+    answer: 'راجع التفاصيل، اسأل عن السعر والخطوات كتابة، ولا تدفع كامل المبلغ مسبقاً قبل التأكد من الخدمة والاتفاق.',
+  },
+  {
+    question: 'هل يمكن البحث حسب المدينة والمهنة معاً؟',
+    answer: 'نعم. اختر المدينة والمهنة من الصفحة أو افتح روابط الأدلة الجاهزة حسب المدينة والمهنة.',
   },
 ];
 
@@ -358,7 +377,7 @@ export default function ServicesClient({
       <section className="relative overflow-hidden border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
 
-        <div className="mx-auto grid max-w-screen-2xl gap-6 px-4 py-5 md:py-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-center">
+        <div className="mx-auto grid max-w-screen-2xl gap-5 px-4 py-4 md:gap-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-center">
           <div className="text-center lg:text-right">
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
               <Sparkles size={14} />
@@ -483,8 +502,8 @@ export default function ServicesClient({
         </div>
       </section>
 
-      <section className="mx-auto max-w-screen-2xl px-4 py-5">
-        <div className="mb-3 flex items-center justify-between gap-3">
+      <section className={`mx-auto max-w-screen-2xl px-4 ${filtersOpen ? 'py-4' : 'py-0'} md:py-5`}>
+        <div className="mb-3 hidden items-center justify-between gap-3 md:flex">
           <div>
             <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">اختصر الطريق</h2>
             <p className="text-xs font-bold text-slate-500 dark:text-slate-400">أكثر أنواع الخدمات طلباً في الدليل.</p>
@@ -499,7 +518,7 @@ export default function ServicesClient({
           </button>
         </div>
 
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-4 hidden gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:flex lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
           {featuredCategories.map((category, index) => {
             const Icon = catIcon(category.slug);
             const isActive = activeCategory === category.name;
@@ -510,13 +529,13 @@ export default function ServicesClient({
                 type="button"
                 onClick={() => applyCategory(category.name)}
                 aria-pressed={isActive}
-                className={`group flex min-h-[100px] w-32 shrink-0 flex-col items-start justify-between rounded-2xl border p-3 text-right transition-all active:scale-[0.98] lg:w-auto ${isActive ? accent.activeCard : accent.idleCard}`}
+                className={`group flex min-h-[78px] w-28 shrink-0 flex-col items-start justify-between rounded-2xl border p-2.5 text-right transition-all active:scale-[0.98] lg:min-h-[100px] lg:w-auto lg:p-3 ${isActive ? accent.activeCard : accent.idleCard}`}
               >
-                <span className={`grid h-10 w-10 place-items-center rounded-xl transition ${isActive ? accent.activeIcon : accent.idleIcon}`}>
-                  <Icon size={19} />
+                <span className={`grid h-9 w-9 place-items-center rounded-xl transition lg:h-10 lg:w-10 ${isActive ? accent.activeIcon : accent.idleIcon}`}>
+                  <Icon size={18} />
                 </span>
                 <span>
-                  <span className="block text-sm font-black leading-tight">{category.labelAr}</span>
+                  <span className="block text-[13px] font-black leading-tight lg:text-sm">{category.labelAr}</span>
                   <span className="mt-1 block text-[11px] font-bold text-slate-500 dark:text-slate-400">
                     {liveCategoryCounts[category.name] ? `${liveCategoryCounts[category.name]} نتيجة` : 'تصفّح'}
                   </span>
@@ -527,7 +546,7 @@ export default function ServicesClient({
         </div>
 
         {topCities.length > 0 && (
-          <div className="mt-4 flex max-w-full items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-4 hidden max-w-full items-center gap-2 overflow-x-auto pb-1 md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
               <MapPin size={14} className="text-gov-red" />
               مدن سريعة
@@ -904,6 +923,36 @@ export default function ServicesClient({
           </div>
         </section>
       )}
+
+      <section className="mx-auto max-w-screen-2xl px-4 pb-5 pt-1 w-full">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col gap-1">
+            <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-900 dark:text-slate-100">
+              <HelpCircle size={18} className="text-sky-600" />
+              أسئلة سريعة قبل التواصل
+            </h2>
+            <p className="text-xs font-bold leading-6 text-slate-500 dark:text-slate-400">
+              معلومات مختصرة تساعدك تختار الخدمة وتتواصل بأمان.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-2 md:grid-cols-2">
+            {SERVICES_FAQS.map((item) => (
+              <details
+                key={item.question}
+                className="group rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-slate-800 dark:text-slate-100">
+                  <span>{item.question}</span>
+                  <ChevronLeft size={16} className="shrink-0 text-slate-400 transition group-open:-rotate-90 group-open:text-sky-600" />
+                </summary>
+                <p className="mt-2 text-xs font-bold leading-6 text-slate-600 dark:text-slate-300">
+                  {item.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <AddServiceBanner />
 

@@ -186,7 +186,7 @@ export function buildDirectoryFacets(
 
 export function buildPopularDirectorySearches(
     rows: DirectoryFacetRow[],
-    limit = 10,
+    limit = 36,
 ): DirectoryPopularSearch[] {
     const combinations = new Map<string, DirectoryPopularSearch>();
 
