@@ -38,14 +38,18 @@ directory = ".open-next/assets"
 binding = "ASSETS"
 
 # R2 bucket for Next.js incremental cache (ISR pages, fetch cache, server
-# component results). Not strictly required to deploy — without it ISR works
-# but cache resets every cold start. Worth creating later for performance:
-#   wrangler r2 bucket create dalilarabtr-cache
-# then uncomment the block below.
+# component results). Shared across worker isolates, so an ISR page renders
+# once instead of re-rendering — and re-querying Supabase — on every cold
+# start. Wired up in open-next.config.ts (r2IncrementalCache + regional cache).
 #
-# [[r2_buckets]]
-# binding = "NEXT_INC_CACHE_R2_BUCKET"
-# bucket_name = "dalilarabtr-cache"
+# THE BUCKET MUST EXIST BEFORE THE FIRST DEPLOY WITH THIS BINDING, or the
+# deploy fails. Create it once with either:
+#   wrangler r2 bucket create dalilarab
+# or Cloudflare dashboard → R2 → Create bucket → name it dalilarab.
+# The binding name is fixed by the adapter and must stay exactly as below.
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "dalilarab"
 
 # Logging — sends Worker stdout/stderr to Cloudflare Logpush. Useful for
 # debugging during cutover, can be removed once stable.
