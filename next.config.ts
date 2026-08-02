@@ -6,7 +6,7 @@ const cspBase = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://bcgwbffwzdlzlyjvlyhr.supabase.co https://lh3.googleusercontent.com https://www.google-analytics.com https://www.google.com https://www.transparenttextures.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com wss://*.pusher.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
+  "connect-src 'self' https://bcgwbffwzdlzlyjvlyhr.supabase.co https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://cloudflareinsights.com wss://*.pusher.com https://www.google.com https://googleads.g.doubleclick.net https://www.googleadservices.com",
   "frame-src 'self' https://tckimlik.nvi.gov.tr",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -31,10 +31,9 @@ const DEV_EVAL = process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : '';
 // Global: unsafe-eval ONLY in dev (see DEV_EVAL); public prod pages don't need it.
 const cspGlobal = [
   ...cspBase,
-  // Cloudflare Web Analytics is intentionally omitted. Cloudflare may inject
-  // its beacon at the edge, but CSP blocks it so analytics cannot run before
-  // the visitor grants consent through ConsentAwareAnalytics.
-  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
+  // Cloudflare may inject its Web Analytics beacon at the edge; allow it so
+  // production pages do not emit CSP console errors.
+  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
 ].join('; ');
 
 // Admin: same strict script-src as the public site — 'unsafe-eval' in PROD is
@@ -49,7 +48,7 @@ const cspGlobal = [
 // re-opening unsafe-eval site-wide for /admin.
 const cspAdmin = [
   ...cspBase,
-  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
+  `script-src 'self' 'unsafe-inline'${DEV_EVAL} https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://googleads.g.doubleclick.net https://www.googleadservices.com`,
 ].join('; ');
 
 // Shared security headers (applied to all routes)
