@@ -70,7 +70,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             onMouseDown={startTouchFeedback}
             onMouseUp={finishTouchFeedback}
             onClickCapture={flashTouchFeedback}
-            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-4 shadow-sm outline-none transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-4 before:top-0 before:h-1 before:rounded-b-full before:bg-gradient-to-l before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-1 hover:shadow-xl hover:before:opacity-100 active:scale-[0.985] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:bg-slate-900 dark:active:bg-emerald-950/20 sm:p-5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${touchActive ? '-translate-y-1 border-emerald-300 bg-emerald-50/40 shadow-xl shadow-emerald-500/10 before:opacity-100 dark:bg-emerald-950/20' : ''} ${
+            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-3 shadow-sm outline-none transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-3 before:top-0 before:h-1 before:rounded-b-full before:bg-gradient-to-l before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-1 hover:shadow-xl hover:before:opacity-100 active:scale-[0.985] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:bg-slate-900 dark:active:bg-emerald-950/20 sm:p-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${touchActive ? '-translate-y-1 border-emerald-300 bg-emerald-50/40 shadow-xl shadow-emerald-500/10 before:opacity-100 dark:bg-emerald-950/20' : ''} ${
             p.is_featured
                 ? 'border-amber-300 dark:border-amber-700/60 ring-1 ring-amber-200/70 dark:ring-amber-800/40 hover:shadow-amber-500/10 hover:border-amber-400'
                 : 'border-slate-200 dark:border-slate-800 hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700'
@@ -85,7 +85,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             {/* Header — avatar + name + trust */}
             <div className="flex items-start gap-3">
                 <Link href={href} className="relative shrink-0 transition-transform duration-300 group-hover:scale-[1.04] group-active:scale-[0.98] motion-reduce:transition-none" aria-label={p.name}>
-                    <ProviderAvatar name={p.name} image={p.image} className="h-16 w-16 rounded-2xl text-lg" />
+                    <ProviderAvatar name={p.name} image={p.image} className="h-14 w-14 rounded-2xl text-base sm:h-16 sm:w-16 sm:text-lg" />
                     {verification.visible && (
                         <span
                             className="absolute -bottom-1 -left-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm"
@@ -99,7 +99,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
 
                 <div className="min-w-0 flex-1">
                     <Link href={href}>
-                        <h3 className="line-clamp-2 text-[15px] font-black leading-snug text-slate-900 transition-colors group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
+                        <h3 className="line-clamp-2 text-sm font-black leading-snug text-slate-900 transition-colors group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400 sm:text-[15px]">
                             {p.name}
                         </h3>
                     </Link>
@@ -119,20 +119,20 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             </div>
 
             {/* Description */}
-            <p className="mt-4 min-h-[42px] flex-1 text-[13px] leading-7 text-slate-600 line-clamp-2 dark:text-slate-300">
+            <p className="mt-3 flex-1 text-[13px] leading-6 text-slate-600 line-clamp-2 dark:text-slate-300 sm:min-h-[40px]">
                 {toLatinDigits(description) || 'اضغط لعرض التفاصيل الكاملة وطرق التواصل.'}
             </p>
 
             {/* Actions */}
-            <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+            <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
                 <ContactButtons p={p} />
                 <Link
                     href={href}
                     aria-label="عرض التفاصيل"
-                    className="inline-flex h-[42px] items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition-all hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                    className="inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition-all hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:h-[42px]"
                 >
-                    تفاصيل
-                    <ChevronLeft size={18} aria-hidden="true" />
+                    المزيد
+                    <ChevronLeft size={16} aria-hidden="true" />
                 </Link>
             </div>
         </article>

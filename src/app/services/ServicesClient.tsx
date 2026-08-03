@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, ArrowLeft, Sparkles, Languages, Stethoscope, Home, Truck, GraduationCap, HelpCircle } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, ArrowLeft, Sparkles, Stethoscope, Home, Truck, GraduationCap, HelpCircle } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
@@ -118,57 +118,6 @@ const SERVICES_FAQS = [
   },
 ];
 
-const CATEGORY_ACCENTS = [
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-teal-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-teal-500 bg-teal-50 text-teal-950 shadow-sm ring-1 ring-teal-200 dark:bg-teal-950/30 dark:text-teal-100 dark:ring-teal-900',
-    idleIcon: 'bg-teal-50 text-teal-700 group-hover:bg-teal-600 group-hover:text-white dark:bg-teal-950/40 dark:text-teal-300',
-    activeIcon: 'bg-teal-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-sky-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-sky-500 bg-sky-50 text-sky-950 shadow-sm ring-1 ring-sky-200 dark:bg-sky-950/30 dark:text-sky-100 dark:ring-sky-900',
-    idleIcon: 'bg-sky-50 text-sky-700 group-hover:bg-sky-600 group-hover:text-white dark:bg-sky-950/40 dark:text-sky-300',
-    activeIcon: 'bg-sky-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-violet-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-violet-500 bg-violet-50 text-violet-950 shadow-sm ring-1 ring-violet-200 dark:bg-violet-950/30 dark:text-violet-100 dark:ring-violet-900',
-    idleIcon: 'bg-violet-50 text-violet-700 group-hover:bg-violet-600 group-hover:text-white dark:bg-violet-950/40 dark:text-violet-300',
-    activeIcon: 'bg-violet-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-amber-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-amber-500 bg-amber-50 text-amber-950 shadow-sm ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-100 dark:ring-amber-900',
-    idleIcon: 'bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white dark:bg-amber-950/40 dark:text-amber-300',
-    activeIcon: 'bg-amber-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-rose-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-rose-500 bg-rose-50 text-rose-950 shadow-sm ring-1 ring-rose-200 dark:bg-rose-950/30 dark:text-rose-100 dark:ring-rose-900',
-    idleIcon: 'bg-rose-50 text-rose-700 group-hover:bg-rose-600 group-hover:text-white dark:bg-rose-950/40 dark:text-rose-300',
-    activeIcon: 'bg-rose-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-blue-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-blue-500 bg-blue-50 text-blue-950 shadow-sm ring-1 ring-blue-200 dark:bg-blue-950/30 dark:text-blue-100 dark:ring-blue-900',
-    idleIcon: 'bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-950/40 dark:text-blue-300',
-    activeIcon: 'bg-blue-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-lime-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-lime-500 bg-lime-50 text-lime-950 shadow-sm ring-1 ring-lime-200 dark:bg-lime-950/30 dark:text-lime-100 dark:ring-lime-900',
-    idleIcon: 'bg-lime-50 text-lime-700 group-hover:bg-lime-600 group-hover:text-white dark:bg-lime-950/40 dark:text-lime-300',
-    activeIcon: 'bg-lime-600 text-white',
-  },
-  {
-    idleCard: 'border-slate-200 bg-white text-slate-800 hover:border-cyan-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100',
-    activeCard: 'border-cyan-500 bg-cyan-50 text-cyan-950 shadow-sm ring-1 ring-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-100 dark:ring-cyan-900',
-    idleIcon: 'bg-cyan-50 text-cyan-700 group-hover:bg-cyan-600 group-hover:text-white dark:bg-cyan-950/40 dark:text-cyan-300',
-    activeIcon: 'bg-cyan-600 text-white',
-  },
-];
-
 export default function ServicesClient({
   initialServices = [],
   initialTotal = 0,
@@ -198,12 +147,6 @@ export default function ServicesClient({
   const facetsLoadedRef = useRef(false);
   const availableCities = useMemo(() => Object.keys(liveCityCounts), [liveCityCounts]);
   const totalCount = liveTotal;
-  const topCities = useMemo(
-    () => [...availableCities]
-      .sort((a, b) => (liveCityCounts[b] || 0) - (liveCityCounts[a] || 0))
-      .slice(0, 6),
-    [availableCities, liveCityCounts],
-  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -362,8 +305,6 @@ export default function ServicesClient({
     ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
   ];
   const primaryNeeds = QUICK_NEEDS.slice(0, 6);
-  const featuredCategories = SERVICE_CATEGORIES.filter((c) => c.popular).slice(0, 8);
-  const visiblePopularSearches = popularSearches.slice(0, 10);
   const directoryGuideLinks = popularSearches.slice(0, 24);
   const applyCategory = (category: string) => {
     setActiveCategory(category);
@@ -407,8 +348,8 @@ export default function ServicesClient({
             </p>
             <div className="mx-auto mt-3 hidden max-w-3xl flex-wrap items-center justify-center gap-2 text-[12px] font-black text-slate-600 dark:text-slate-300 sm:flex lg:mx-0 lg:justify-start">
               <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-sky-50 px-3 text-sky-800 ring-1 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-200 dark:ring-sky-900/50">
-                <Languages size={14} />
-                تواصل مباشر لأي خدمة
+                <Briefcase size={14} />
+                ابحث حسب المهنة والمدينة
               </span>
               <span className="hidden min-h-8 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/50 sm:inline-flex">
                 <BadgeCheck size={14} />
@@ -459,7 +400,7 @@ export default function ServicesClient({
                 className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 sm:min-h-11 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
               >
                 <SlidersHorizontal size={16} />
-                كل الفلاتر
+                التخصصات
                 {activeFiltersCount > 0 && (
                   <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs text-white">
                     {activeFiltersCount}
@@ -535,8 +476,8 @@ export default function ServicesClient({
       <section className={`mx-auto max-w-screen-2xl px-4 ${filtersOpen ? 'py-3 md:py-4' : 'hidden'}`}>
         <div className="mb-3 hidden items-center justify-between gap-3 md:flex">
           <div>
-            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">اختصر الطريق</h2>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">أكثر أنواع الخدمات طلباً في الدليل.</p>
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">اختر التخصص</h2>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">اختيارات سريعة تساعد الزائر يصل للخدمة بدون تعقيد.</p>
           </div>
           <button
             type="button"
@@ -544,172 +485,35 @@ export default function ServicesClient({
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 shadow-sm lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
           >
             <SlidersHorizontal size={15} />
-            فلاتر
+            إغلاق
           </button>
         </div>
 
-        <div className="-mx-4 hidden gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:flex lg:mx-0 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
-          {featuredCategories.map((category, index) => {
-            const Icon = catIcon(category.slug);
-            const isActive = activeCategory === category.name;
-            const accent = CATEGORY_ACCENTS[index % CATEGORY_ACCENTS.length];
-            return (
+        <div className={`${filtersOpen ? 'block' : 'hidden'} rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900`}>
+          <div className="mb-2 flex items-center gap-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
+            <Briefcase size={15} className="text-emerald-600" />
+            كل التخصصات
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {quickCategories.map((cat) => (
               <button
-                key={category.slug}
+                key={cat.id}
                 type="button"
-                onClick={() => applyCategory(category.name)}
-                aria-pressed={isActive}
-                className={`group flex min-h-[78px] w-28 shrink-0 flex-col items-start justify-between rounded-2xl border p-2.5 text-right transition-all active:scale-[0.98] lg:min-h-[100px] lg:w-auto lg:p-3 ${isActive ? accent.activeCard : accent.idleCard}`}
-              >
-                <span className={`grid h-9 w-9 place-items-center rounded-xl transition lg:h-10 lg:w-10 ${isActive ? accent.activeIcon : accent.idleIcon}`}>
-                  <Icon size={18} />
-                </span>
-                <span>
-                  <span className="block text-[13px] font-black leading-tight lg:text-sm">{category.labelAr}</span>
-                  <span className="mt-1 block text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                    {liveCategoryCounts[category.name] ? `${liveCategoryCounts[category.name]} نتيجة` : 'تصفّح'}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {topCities.length > 0 && (
-          <div className="mt-4 hidden max-w-full items-center gap-2 overflow-x-auto pb-1 md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
-              <MapPin size={14} className="text-gov-red" />
-              مدن سريعة
-            </span>
-            {topCities.map((city) => (
-              <button
-                key={city}
-                type="button"
-                onClick={() => {
-                  setActiveCity(city);
-                  setPage(1);
-                }}
-                className={`inline-flex min-h-9 shrink-0 items-center gap-1 rounded-xl border px-3 text-xs font-black transition ${activeCity === city
-                  ? 'border-gov-red bg-red-50 text-gov-red dark:bg-red-950/30'
-                  : 'border-slate-200 bg-white text-slate-700 hover:border-gov-red/40 hover:text-gov-red dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
+                onClick={() => applyCategory(cat.id)}
+                className={`min-h-10 rounded-xl border px-3 text-xs font-black transition ${activeCategory === cat.id
+                  ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-950'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
                 }`}
               >
-                {city}
-                <span className="tabular-nums text-[10px] opacity-60">{liveCityCounts[city]}</span>
+                {cat.label}
+                {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
+                  <span className="mr-1 tabular-nums opacity-70">{liveCategoryCounts[cat.id]}</span>
+                )}
               </button>
             ))}
           </div>
-        )}
-
-        <div className="mt-4 hidden grid-cols-5 gap-3 lg:grid">
-          {SERVICE_INTENT_GROUPS.map((group) => {
-            const Icon = group.icon;
-            const firstNeed = group.needs[0];
-            return (
-              <div
-                key={group.title}
-                className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    applyNeed(firstNeed.query, firstNeed.category);
-                    scrollToResults();
-                  }}
-                  className="flex w-full items-start gap-3 text-right"
-                >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                    <Icon size={19} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-black text-slate-900 dark:text-slate-100">{group.title}</span>
-                    <span className="mt-1 block truncate text-[11px] font-bold text-slate-500 dark:text-slate-400">{group.text}</span>
-                  </span>
-                </button>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {group.needs.map((need) => (
-                    <button
-                      key={`${group.title}-${need.label}`}
-                      type="button"
-                      onClick={() => {
-                        applyNeed(need.query, need.category);
-                        scrollToResults();
-                      }}
-                      className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-black text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
-                    >
-                      {need.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
         </div>
 
-        <div className={`${filtersOpen ? 'block' : 'hidden'} mt-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900`}>
-          <div className="grid gap-3 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-            <div>
-              <div className="mb-2 flex items-center gap-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
-                <MapPin size={15} className="text-gov-red" />
-                المدينة
-              </div>
-              <CityFilter
-                compact
-                value={activeCity}
-                onChange={(city) => {
-                  setActiveCity(city);
-                  setPage(1);
-                }}
-                cities={availableCities}
-                counts={liveCityCounts}
-                totalCount={totalCount}
-              />
-            </div>
-            <div>
-              <div className="mb-2 flex items-center gap-1.5 text-sm font-black text-slate-800 dark:text-slate-100">
-                <Briefcase size={15} className="text-emerald-600" />
-                التخصص
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-                {quickCategories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => applyCategory(cat.id)}
-                    className={`min-h-10 rounded-xl border px-3 text-xs font-black transition ${activeCategory === cat.id
-                      ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-950'
-                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
-                    }`}
-                  >
-                    {cat.label}
-                    {cat.id !== 'all' && liveCategoryCounts[cat.id] > 0 && (
-                      <span className="mr-1 tabular-nums opacity-70">{liveCategoryCounts[cat.id]}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {visiblePopularSearches.length > 0 && (
-          <div className="mt-4 hidden max-w-full items-center gap-2 overflow-x-auto pb-1 md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-labelledby="popular-service-searches">
-            <h2 id="popular-service-searches" className="inline-flex shrink-0 items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300">
-              <TrendingUp size={15} className="text-emerald-600" />
-              شائع
-            </h2>
-            {visiblePopularSearches.map((item) => (
-              <Link
-                key={`${item.citySlug}-${item.categorySlug}`}
-                href={`/services/category/${item.categorySlug}/${item.citySlug}`}
-                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-              >
-                {item.categoryLabel} في {item.city}
-                <span className="tabular-nums text-[10px] text-slate-400">{item.count}</span>
-              </Link>
-            ))}
-          </div>
-        )}
       </section>
 
       {/* Results */}
@@ -718,11 +522,11 @@ export default function ServicesClient({
         {/* Results count + view toggle + clear filters */}
         {!loading && (
           <div className="z-20 mb-3 rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur md:sticky md:top-[52px] md:p-3 dark:border-slate-800 dark:bg-slate-900/95">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-lg font-black text-slate-900 md:text-xl dark:text-slate-100">الخدمات المتاحة</h2>
+            <div className="flex flex-row flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <h2 className="text-base font-black text-slate-900 md:text-xl dark:text-slate-100">الخدمات المتاحة</h2>
               <p
-                className="mt-1 text-sm font-bold text-slate-600 dark:text-slate-300"
+                className="mt-0.5 text-xs font-bold text-slate-600 md:text-sm dark:text-slate-300"
                 aria-live="polite"
               >
                 {resultTotal > 0 ? (
@@ -734,7 +538,7 @@ export default function ServicesClient({
                 ) : 'لا نتائج'}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
