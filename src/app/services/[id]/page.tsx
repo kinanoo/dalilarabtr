@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import Link from 'next/link';
 import { MapPin, PhoneCall, MessageCircle, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation, AlertTriangle } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
@@ -14,6 +15,7 @@ import { serviceVerificationCopy } from '@/lib/serviceVerification';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
 import DirectWhatsAppLink from '@/components/services/DirectWhatsAppLink';
 import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
+import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
 
 export const revalidate = 60;
 
@@ -42,21 +44,35 @@ async function getSupabase() {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const lookupCol = (key: string): 'id' | 'slug' => (UUID_RE.test(key) ? 'id' : 'slug');
 
+type ProviderRow = { [key: string]: any };
+
+const fetchProviderData = cache(async (id: string): Promise<ProviderRow | null> => {
+    const client = await getSupabase();
+    if (!client) return null;
+    const key = decodeURIComponent(id);
+
+    const { data, error } = await retrySupabaseQuery('service provider detail', () =>
+        client
+            .from('service_providers')
+            .select('*')
+            .eq(lookupCol(key), key)
+            .eq('status', 'approved')
+            .maybeSingle(),
+    );
+
+    if (error) {
+        throwSupabaseQueryError('service provider detail', error);
+    }
+
+    return data;
+});
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 export async function generateMetadata(
     props: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {
     const { id } = await props.params;
-    const supabase = await getSupabase();
-    if (!supabase) notFound();
-    const key = decodeURIComponent(id);
-
-    const { data } = await supabase
-        .from('service_providers')
-        .select('name, profession, city, category, description, image, slug, id')
-        .eq(lookupCol(key), key)
-        .eq('status', 'approved')
-        .single();
+    const data = await fetchProviderData(id);
 
     // Pre-stream notFound() → real HTTP 404 (see codes/[code] note).
     if (!data) notFound();
@@ -87,20 +103,13 @@ export default async function ServiceDetailsPage(
     props: { params: Promise<{ id: string }> }
 ) {
     const { id } = await props.params;
+    const provider = await fetchProviderData(id);
     const supabase = await getSupabase();
-    if (!supabase) notFound();
-    const key = decodeURIComponent(id);
 
-    const { data: provider, error } = await supabase
-        .from('service_providers')
-        .select('*')
-        .eq(lookupCol(key), key)
-        .eq('status', 'approved')
-        .single();
-
-    if (error || !provider) {
+    if (!provider) {
         notFound();
     }
+    if (!supabase) notFound();
 
     // Real row id for entity refs (ratings/comments); slug (if any) for URLs.
     const realId: string = provider.id;

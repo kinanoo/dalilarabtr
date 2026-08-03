@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -11,6 +12,8 @@ import HtmlContent from '@/components/ui/HtmlContent';
 import { stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
+import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
+import logger from '@/lib/logger';
 
 // A published news item is effectively immutable, so a 60-second ISR window
 // only bought re-reads. Editing or hiding it in /admin/updates purges this
@@ -74,21 +77,33 @@ async function getSupabase() {
     return supabase;
 }
 
+type UpdateRow = { [key: string]: any };
+
+const fetchUpdateData = cache(async (id: string): Promise<UpdateRow | null> => {
+    const client = await getSupabase();
+    if (!client) return null;
+
+    const { data, error } = await retrySupabaseQuery('update detail', () =>
+        client
+            .from('updates')
+            .select('*')
+            .eq('id', id)
+            .eq('active', true)
+            .maybeSingle(),
+    );
+
+    if (error) {
+        throwSupabaseQueryError('update detail', error);
+    }
+
+    return data;
+});
+
 export async function generateMetadata(
     props: { params: Promise<{ id: string }> }
 ): Promise<Metadata> {
     const { id } = await props.params;
-    const supabase = await getSupabase();
-    if (!supabase) notFound();
-
-    // select('*') so optional columns (summary, category, ...) are tolerated
-    // whether or not the migration adding them has run.
-    const { data } = await supabase
-        .from('updates')
-        .select('*')
-        .eq('id', id)
-        .eq('active', true)
-        .single();
+    const data = await fetchUpdateData(id);
 
     // Pre-stream notFound() → real HTTP 404 (see codes/[code] note).
     if (!data) notFound();
@@ -127,28 +142,31 @@ export default async function UpdateDetailPage(
     props: { params: Promise<{ id: string }> }
 ) {
     const { id } = await props.params;
-    const supabase = await getSupabase();
-    if (!supabase) notFound();
+    const update = await fetchUpdateData(id);
 
-    const { data: update, error } = await supabase
-        .from('updates')
-        .select('*')
-        .eq('id', id)
-        .eq('active', true)
-        .single();
-
-    if (error || !update) {
+    if (!update) {
         notFound();
     }
 
     // Fetch related updates
-    const { data: relatedUpdates } = await supabase
-        .from('updates')
-        .select('id, title, type, date, image')
-        .eq('active', true)
-        .neq('id', id)
-        .order('date', { ascending: false })
-        .limit(4);
+    const client = await getSupabase();
+    let relatedUpdates = null;
+    try {
+        if (client) {
+            const relatedResponse = await retrySupabaseQuery('related updates', () =>
+                client
+                    .from('updates')
+                    .select('id, title, type, date, image')
+                    .eq('active', true)
+                    .neq('id', id)
+                    .order('date', { ascending: false })
+                    .limit(4),
+            );
+            relatedUpdates = relatedResponse.data;
+        }
+    } catch (error) {
+        logger.warn('related updates failed', error);
+    }
 
     const isAlert = update.type === 'alert';
     const typeLabel = update.type === 'news' ? 'خبر' : isAlert ? 'تنبيه هام' : 'تحديث';

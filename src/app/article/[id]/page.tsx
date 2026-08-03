@@ -8,6 +8,7 @@ import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleView from '@/components/ArticleViewPremium';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import { cache } from 'react';
 import type { ArticleStep } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import logger from '@/lib/logger';
@@ -17,6 +18,7 @@ import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import { stripHtml } from '@/lib/stripHtml';
 import { sanitizeHtmlContent } from '@/lib/sanitize';
 import { deobfuscate, isObfuscated } from '@/lib/security';
+import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
 
 
 export const revalidate = 3600; // ISR: Revalidate every hour
@@ -118,9 +120,10 @@ function normalizeSteps(raw: unknown): ArticleStep[] {
 }
 
 // Helper to fetch article (DB -> Static Fallback)
-async function fetchArticleData(slug: string) {
+const fetchArticleData = cache(async (slug: string) => {
   // 1. Try Supabase — check slug first, then id
   if (supabase) {
+    const client = supabase;
     const decoded = decodeURIComponent(slug);
 
     // Try by slug (short English URL) first — filter status at DB level
@@ -132,21 +135,36 @@ async function fetchArticleData(slug: string) {
     // article carries.
     const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, tags';
 
-    let { data } = await supabase
-      .from('articles')
-      .select(articleFields)
-      .eq('slug', decoded)
-      .eq('status', 'approved')
-      .maybeSingle();
+    const bySlug = await retrySupabaseQuery('article detail by slug', () =>
+      client
+        .from('articles')
+        .select(articleFields)
+        .eq('slug', decoded)
+        .eq('status', 'approved')
+        .maybeSingle(),
+    );
+
+    if (bySlug.error) {
+      throwSupabaseQueryError('article detail by slug', bySlug.error);
+    }
+    let data = bySlug.data;
 
     // Fallback to id (original Arabic-based ID)
     if (!data) {
-      ({ data } = await supabase
-        .from('articles')
-        .select(articleFields)
-        .eq('id', decoded)
-        .eq('status', 'approved')
-        .maybeSingle());
+      const byId = await retrySupabaseQuery('article detail by id', () =>
+        client
+          .from('articles')
+          .select(articleFields)
+          .eq('id', decoded)
+          .eq('status', 'approved')
+          .maybeSingle(),
+      );
+
+      if (byId.error) {
+        throwSupabaseQueryError('article detail by id', byId.error);
+      }
+
+      data = byId.data;
     }
 
     if (data) {
@@ -181,7 +199,7 @@ async function fetchArticleData(slug: string) {
   }
 
   return null;
-}
+});
 
 function inferExtraKeywordsByCategory(categoryName: string): string[] {
   const c = (categoryName || '').toLowerCase();
@@ -244,7 +262,7 @@ function buildArticleKeywords(args: { slug: string; title: string; category: str
 }
 
 function getCategorySlugFromName(categoryName: string): string | undefined {
-  return Object.entries(CATEGORY_SLUGS).find(([_, name]) => name === categoryName)?.[0];
+  return Object.entries(CATEGORY_SLUGS).find(([, name]) => name === categoryName)?.[0];
 }
 
 function calculateWordCount(text: string): number {
