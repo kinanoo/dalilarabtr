@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
 import { useEffect, useMemo, useState } from 'react';
 import { Copy, User, FileText, CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
@@ -17,6 +18,7 @@ import { trackEvent } from '@/lib/analytics';
 // a server component (real SSR content for crawlers/no-JS); this file only
 // carries the stateful form that needs useSearchParams/react-hook-form.
 export default function RequestForm() {
+    const waNumber = useSiteWhatsApp();
   const searchParams = useSearchParams();
   const initialServiceId = searchParams.get('service') || 'other';
 
@@ -110,7 +112,7 @@ export default function RequestForm() {
 
     // Open WhatsApp with the request details pre-filled — in a NEW tab so the
     // form page (and its "copied" state) isn't lost to the wa.me interstitial.
-    const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+    const num = waNumber;
     window.open(`https://wa.me/${num}?text=${subject}%0A%0A${body}`, '_blank', 'noopener,noreferrer');
   };
 

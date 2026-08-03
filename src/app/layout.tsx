@@ -18,6 +18,8 @@ const cairo = IBM_Plex_Sans_Arabic({
   preload: true,
 });
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { getSiteSettings } from "@/lib/siteSettings";
 import LatinDigits from "@/components/LatinDigits";
 import ChunkReloadGuard from "@/components/ChunkReloadGuard";
 import { SEO_KEYWORDS } from "@/lib/keywords";
@@ -128,11 +130,16 @@ export const metadata: Metadata = {
 // ============================================
 // 🏠 Layout الرئيسي
 // ============================================
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  // Resolve the admin-editable settings once per rendered page. Uses the anon
+  // client (never cookies()), so pages stay statically renderable and this read
+  // is amortised by their ISR window rather than running per visitor.
+  const siteSettings = await getSiteSettings();
+
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning className={cairo.variable}>
       <head>
@@ -204,7 +211,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning className={`font-cairo bg-surface-light dark:bg-slate-950 text-slate-900 dark:text-slate-50 min-h-screen flex flex-col transition-colors`}>
         {/* Structured Data — in body to prevent Next.js head duplication */}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema(siteSettings.whatsapp)) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
         {/* Skip to main content for keyboard/screen reader users */}
         <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-600 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
@@ -220,6 +227,7 @@ export default function RootLayout({
         <ChunkReloadGuard />
         <TapFeedbackPulse />
         <ThemeProviderWrapper>
+         <SiteSettingsProvider value={siteSettings}>
           <ScrollRestoration />
           <div className="flex flex-col min-h-screen relative">
             {/* Faint Istanbul photo behind everything (z-0, fixed) now mounts
@@ -240,6 +248,7 @@ export default function RootLayout({
               <DeferredExtras />
             </LazyGroup>
           </div>
+         </SiteSettingsProvider>
         </ThemeProviderWrapper>
       </body>
     </html>

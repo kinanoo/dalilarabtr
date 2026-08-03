@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Scale, MessageCircle } from 'lucide-react';
@@ -9,6 +10,7 @@ import { SITE_CONFIG } from '@/lib/config';
 const ALLOWED_PATHS = ['/', '/services'];
 
 export default function WhatsAppAssistant() {
+    const waNumber = useSiteWhatsApp();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -68,7 +70,7 @@ export default function WhatsAppAssistant() {
         >
           <span className="text-[9px] font-bold bg-slate-900/80 dark:bg-slate-100/90 text-white dark:text-slate-900 px-1.5 py-0.5 rounded shadow-lg backdrop-blur-sm whitespace-nowrap">واتساب</span>
           <a
-            href={`https://wa.me/${(SITE_CONFIG.whatsapp || '').replace(/\D/g, '')}`}
+            href={`https://wa.me/${waNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setOpen(false)}

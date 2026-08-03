@@ -1,10 +1,12 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
 import { ExternalLink, Scale } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
 
 export default function CopyrightComplaintForm() {
+    const waNumber = useSiteWhatsApp();
     const [confirmed, setConfirmed] = useState(false);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -14,7 +16,7 @@ export default function CopyrightComplaintForm() {
         const ownerName = String(form.get('ownerName') || '').trim();
         const relationship = String(form.get('relationship') || '').trim();
         const details = String(form.get('details') || '').trim();
-        const number = SITE_CONFIG.whatsapp.replace(/\D/g, '');
+        const number = waNumber;
         const message = [
             'طلب مراجعة حقوق نشر أو إزالة محتوى',
             '',

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { getSiteSettings } from '@/lib/siteSettings';
 import Link from 'next/link';
 import PageHero from '@/components/PageHero';
 import RequestForm from './RequestForm';
@@ -17,8 +18,10 @@ const STEPS = [
   { icon: MessageCircle, title: 'نردّ عليك بالتكلفة والخطوات', desc: 'نراجع طلبك ونعود إليك بالتفاصيل والاتفاق قبل البدء — عادةً خلال ساعات.' },
 ];
 
-export default function RequestPage() {
-  const whatsappNumber = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+export default async function RequestPage() {
+  // Reads the admin-editable number from site_settings (the /admin form writes
+  // whatsapp_number there); falls back to the build-time constant.
+  const { whatsapp: whatsappNumber } = await getSiteSettings();
 
   return (
     <main className="flex flex-col min-h-screen">

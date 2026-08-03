@@ -1,6 +1,7 @@
 'use client';
 
 import { MessageCircle } from 'lucide-react';
+import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
 import { SITE_CONFIG } from '@/lib/config';
 
 /**
@@ -37,7 +38,8 @@ const STRINGS = {
 } as const;
 
 export default function AskOnWhatsApp({ topic, lang = 'ar' }: { topic?: string; lang?: 'ar' | 'tr' }) {
-    const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+    const waNumber = useSiteWhatsApp();
+    const num = waNumber;
     if (!num) return null;
     const t = STRINGS[lang];
 

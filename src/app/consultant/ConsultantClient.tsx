@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
 import Link from 'next/link';
 import {
   CheckCircle, AlertTriangle, FileText, RefreshCw, ShieldAlert, Lightbulb,
@@ -68,6 +69,7 @@ const mapArticleToPlan = (article: Article, key: string, scenario: PlanResult): 
 };
 
 export default function ConsultantClient({ initialScenarios = [] }: Props) {
+    const waNumber = useSiteWhatsApp();
   const hasSeed = initialScenarios.length > 0;
   // Skip the client table pull when the server already seeded the catalogue.
   const { scenarios } = useAdminScenarios(hasSeed);
@@ -1338,7 +1340,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                       هل تحتاج مساعدة شخصية؟
                     </p>
                     <a
-                      href={`https://wa.me/${(SITE_CONFIG.whatsapp || '').replace(/\D/g, '')}?text=${encodeURIComponent(`السلام عليكم، أحتاج مساعدة بخصوص:\n${shownResult.title}\n${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id}`)}`}
+                      href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`السلام عليكم، أحتاج مساعدة بخصوص:\n${shownResult.title}\n${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-colors w-full text-sm"

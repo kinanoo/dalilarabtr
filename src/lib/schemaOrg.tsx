@@ -56,7 +56,14 @@ export type ServiceSchemaData = {
  * Schema للمنظمة/الموقع
  * يظهر في Knowledge Panel في Google
  */
-export function generateOrganizationSchema() {
+/**
+ * @param whatsapp digits-only number from site_settings; falls back to the
+ * build-time constant when the caller has none. Previously this always emitted
+ * SITE_CONFIG.whatsapp, so the contact point Google saw could never be changed
+ * from the admin panel.
+ */
+export function generateOrganizationSchema(whatsapp?: string) {
+  const phone = (whatsapp || String(SITE_CONFIG.whatsapp || '')).replace(/\D/g, '');
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -75,10 +82,10 @@ export function generateOrganizationSchema() {
     // "دليل العرب في تركيا"-type queries).
     areaServed: { '@type': 'Country', name: 'Turkey' },
     address: { '@type': 'PostalAddress', addressCountry: 'TR' },
-    ...(SITE_CONFIG.whatsapp ? {
+    ...(phone ? {
       contactPoint: {
         '@type': 'ContactPoint',
-        telephone: `+${SITE_CONFIG.whatsapp}`,
+        telephone: `+${phone}`,
         contactType: 'customer service',
         availableLanguage: ['Arabic', 'Turkish'],
       },

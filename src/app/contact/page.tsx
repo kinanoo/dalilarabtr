@@ -1,6 +1,7 @@
 'use client';
 
 import PageHero from '@/components/PageHero';
+import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
 import Link from 'next/link';
 import { useState } from 'react';
 import { User, MessageCircle, Copy, AlertCircle, Scale, HelpCircle, FileText, Send } from 'lucide-react';
@@ -19,6 +20,7 @@ const MESSAGE_TYPES = [
 ];
 
 export default function ContactPage() {
+    const waNumber = useSiteWhatsApp();
   const [copied, setCopied] = useState(false);
 
   const {
@@ -63,7 +65,7 @@ export default function ContactPage() {
 
     // Open WhatsApp with the message pre-filled — in a NEW tab so the page
     // (and the visitor's place on it) isn't lost to the wa.me interstitial.
-    const num = (SITE_CONFIG.whatsapp || '').replace(/\D/g, '');
+    const num = waNumber;
     window.open(`https://wa.me/${num}?text=${subject}%0A%0A${body}`, '_blank', 'noopener,noreferrer');
   };
 
@@ -76,7 +78,7 @@ export default function ContactPage() {
         {/* Quick Action Cards — family treatment with accent stripes */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <a
-            href={`https://wa.me/${(SITE_CONFIG.whatsapp || '').replace(/\D/g, '')}`}
+            href={`https://wa.me/${waNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 text-center hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300"

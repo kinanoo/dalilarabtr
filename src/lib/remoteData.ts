@@ -340,12 +340,15 @@ export async function fetchDefaultWhatsApp(): Promise<string | null> {
   if (!supabase) return isDemoMode() ? readDemoDefaultWhatsApp() : null;
   const { data, error } = await supabase
     .from('site_settings')
-    .select('default_whatsapp')
+    .select('whatsapp_number')
     .eq('id', 1)
     .maybeSingle();
 
   if (error) return null;
-  const value = (data as { default_whatsapp?: unknown } | null)?.default_whatsapp;
+  // Column is `whatsapp_number` — this used to select `default_whatsapp`,
+  // which does not exist on site_settings, so the query errored and the
+  // resolver silently returned null on every call.
+  const value = (data as { whatsapp_number?: unknown } | null)?.whatsapp_number;
   if (!value || typeof value !== 'string') return null;
   return normalizeWaPhone(value) || null;
 }
