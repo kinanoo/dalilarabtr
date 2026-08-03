@@ -99,6 +99,24 @@ const NEED_SEARCH_KEYS = new Set(
 const isPresetNeedSearch = (query: string, category: string): boolean =>
   NEED_SEARCH_KEYS.has(`${query.trim()}|||${category.trim()}`);
 
+const normalizeSuggestionText = (value: string): string =>
+  value
+    .toLocaleLowerCase('ar')
+    .replace(/[إأآٱ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .trim();
+
+type SearchSuggestion = {
+  key: string;
+  label: string;
+  hint: string;
+  query: string;
+  category: string;
+  city?: string;
+};
+
 const SERVICES_FAQS = [
   {
     question: 'كيف أجد مقدم خدمة عربي في تركيا؟',
@@ -137,6 +155,7 @@ export default function ServicesClient({
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [page, setPage] = useState(1);
   const [urlStateReady, setUrlStateReady] = useState(false);
   const [liveTotal, setLiveTotal] = useState(initialTotal);
@@ -306,10 +325,96 @@ export default function ServicesClient({
   ];
   const primaryNeeds = QUICK_NEEDS.slice(0, 6);
   const directoryGuideLinks = popularSearches.slice(0, 24);
+  const topSuggestionCities = useMemo(
+    () => [...availableCities]
+      .sort((a, b) => (liveCityCounts[b] || 0) - (liveCityCounts[a] || 0))
+      .slice(0, 3),
+    [availableCities, liveCityCounts],
+  );
+  const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
+    const rawQuery = searchQuery.trim();
+    const normalizedQuery = normalizeSuggestionText(rawQuery);
+    const defaultCity = activeCity !== 'all' ? activeCity : topSuggestionCities[0];
+    const suggestions: SearchSuggestion[] = [];
+    const seen = new Set<string>();
+    const addSuggestion = (item: SearchSuggestion) => {
+      const key = `${item.query}|${item.category}|${item.city || ''}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      suggestions.push(item);
+    };
+
+    const matchingNeeds = QUICK_NEEDS.filter((need) => {
+      if (!normalizedQuery) return true;
+      const haystack = normalizeSuggestionText(`${need.label} ${need.query} ${need.category}`);
+      return haystack.includes(normalizedQuery) || normalizedQuery.includes(normalizeSuggestionText(need.label));
+    });
+
+    for (const need of matchingNeeds.slice(0, normalizedQuery ? 4 : 3)) {
+      addSuggestion({
+        key: `need-${need.label}-${defaultCity || 'all'}`,
+        label: defaultCity ? `${need.label} في ${defaultCity}` : need.label,
+        hint: defaultCity ? 'اقتراح سريع' : 'كل المدن',
+        query: need.query,
+        category: need.category,
+        city: defaultCity,
+      });
+    }
+
+    for (const category of SERVICE_CATEGORIES.filter((item) => item.popular)) {
+      const haystack = normalizeSuggestionText(`${category.labelAr} ${category.name} ${category.keywords.join(' ')}`);
+      if (normalizedQuery && !haystack.includes(normalizedQuery)) continue;
+      addSuggestion({
+        key: `cat-${category.slug}-${defaultCity || 'all'}`,
+        label: defaultCity ? `${category.labelAr} في ${defaultCity}` : category.labelAr,
+        hint: liveCategoryCounts[category.name] ? `${liveCategoryCounts[category.name]} نتيجة` : 'تخصص',
+        query: '',
+        category: category.name,
+        city: defaultCity,
+      });
+      if (suggestions.length >= 6) break;
+    }
+
+    for (const item of popularSearches) {
+      const haystack = normalizeSuggestionText(`${item.categoryLabel} ${item.category} ${item.city}`);
+      if (normalizedQuery && !haystack.includes(normalizedQuery)) continue;
+      addSuggestion({
+        key: `popular-${item.categorySlug}-${item.citySlug}`,
+        label: `${item.categoryLabel} في ${item.city}`,
+        hint: `${item.count} نتيجة`,
+        query: '',
+        category: item.category,
+        city: item.city,
+      });
+      if (suggestions.length >= 7) break;
+    }
+
+    if (rawQuery && suggestions.length < 7) {
+      addSuggestion({
+        key: `free-${rawQuery}-${activeCity}`,
+        label: `البحث عن "${rawQuery}"`,
+        hint: activeCity !== 'all' ? activeCity : 'كل المدن',
+        query: rawQuery,
+        category: activeCategory,
+        city: activeCity !== 'all' ? activeCity : undefined,
+      });
+    }
+
+    return suggestions.slice(0, 7);
+  }, [activeCategory, activeCity, liveCategoryCounts, popularSearches, searchQuery, topSuggestionCities]);
   const applyCategory = (category: string) => {
     setActiveCategory(category);
     setPage(1);
     setFiltersOpen(false);
+  };
+  const applySearchSuggestion = (suggestion: SearchSuggestion) => {
+    setSearchQuery(suggestion.query);
+    setDebouncedSearch(suggestion.query);
+    setActiveCategory(suggestion.category);
+    if (suggestion.city) setActiveCity(suggestion.city);
+    setPage(1);
+    setSearchFocused(false);
+    window.setTimeout(scrollToResults, 40);
   };
   const applyNeed = (query: string, category: string) => {
     setSearchQuery('');
@@ -364,6 +469,14 @@ export default function ServicesClient({
                   type="text"
                   placeholder="اكتب الخدمة: طبيب، ترجمة، عقارات، شحن..."
                   value={searchQuery}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setSearchFocused(false);
+                      scrollToResults();
+                    }
+                  }}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setPage(1);
@@ -377,11 +490,34 @@ export default function ServicesClient({
                 onChange={(city) => {
                   setActiveCity(city);
                   setPage(1);
+                  setSearchFocused(false);
                 }}
                 cities={availableCities}
                 counts={liveCityCounts}
                 totalCount={totalCount}
               />
+              {searchFocused && searchSuggestions.length > 0 && (
+                <div className="sm:col-span-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                  <div className="mb-2 flex items-center gap-1.5 px-1 text-[11px] font-black text-emerald-800 dark:text-emerald-200">
+                    <Search size={13} />
+                    اقتراحات سريعة
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {searchSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.key}
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => applySearchSuggestion(suggestion)}
+                        className="inline-flex min-h-10 shrink-0 flex-col items-start justify-center rounded-xl border border-white/80 bg-white px-3 text-right shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md active:scale-[0.98] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700"
+                      >
+                        <span className="max-w-[12rem] truncate text-xs font-black text-slate-900 dark:text-slate-100">{suggestion.label}</span>
+                        <span className="mt-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">{suggestion.hint}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:flex sm:flex-wrap sm:items-center">
@@ -715,49 +851,6 @@ export default function ServicesClient({
         )}
       </section>
 
-      {directoryGuideLinks.length > 0 && (
-        <section className="mx-auto max-w-screen-2xl px-4 pb-5 pt-1 w-full">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-900 dark:text-slate-100">
-                  <TrendingUp size={18} className="text-emerald-600" />
-                  أدلة جاهزة حسب المدينة والمهنة
-                </h2>
-                <p className="mt-1 text-xs font-bold leading-6 text-slate-500 dark:text-slate-400">
-                  روابط مباشرة لأكثر عمليات البحث الموجودة في الدليل.
-                </p>
-              </div>
-              <Link
-                href="/services"
-                className="inline-flex min-h-9 items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-              >
-                كل الخدمات
-              </Link>
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {directoryGuideLinks.map((item) => (
-                <Link
-                  key={`guide-${item.citySlug}-${item.categorySlug}`}
-                  href={`/services/category/${item.categorySlug}/${item.citySlug}`}
-                  className="group flex min-h-12 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-emerald-700 dark:hover:bg-slate-900"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-black text-slate-800 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-300">
-                      {item.categoryLabel} في {item.city}
-                    </span>
-                    <span className="mt-0.5 block text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                      {item.count} نتيجة متاحة
-                    </span>
-                  </span>
-                  <ChevronLeft size={18} className="shrink-0 text-slate-400 transition group-hover:-translate-x-0.5 group-hover:text-emerald-600" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       <section className="mx-auto max-w-screen-2xl px-4 pb-5 pt-1 w-full">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col gap-1">
@@ -789,6 +882,44 @@ export default function ServicesClient({
       </section>
 
       <AddServiceBanner />
+
+      {directoryGuideLinks.length > 0 && (
+        <section className="mx-auto max-w-screen-2xl px-4 pb-4 pt-1 w-full">
+          <details className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <span className="min-w-0">
+                <span className="inline-flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 sm:text-base">
+                  <TrendingUp size={18} className="text-emerald-600" />
+                  أدلة سريعة حسب المدينة والمهنة
+                </span>
+                <span className="mt-1 block text-xs font-bold leading-5 text-slate-500 dark:text-slate-400">
+                  روابط مرتبة لمن يبحث مباشرة مثل: أطباء في إسطنبول، مترجمون في مرسين، محامون في عنتاب.
+                </span>
+              </span>
+              <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600 group-open:hidden dark:bg-slate-800 dark:text-slate-300">
+                فتح
+              </span>
+              <span className="hidden shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600 group-open:inline-flex dark:bg-slate-800 dark:text-slate-300">
+                إخفاء
+              </span>
+            </summary>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {directoryGuideLinks.map((item) => (
+                <Link
+                  key={`guide-${item.citySlug}-${item.categorySlug}`}
+                  href={`/services/category/${item.categorySlug}/${item.citySlug}`}
+                  className="inline-flex min-h-9 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20"
+                >
+                  <span>{item.categoryLabel} في {item.city}</span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">
+                    {item.count}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </details>
+        </section>
+      )}
 
       {/* Browse every profession — crawlable links to each landing page (each
           carries its own guide), and a full directory for users. Rendered in
