@@ -2,13 +2,14 @@ import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { MapPin, PhoneCall, MessageCircle, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation } from 'lucide-react';
+import { MapPin, PhoneCall, MessageCircle, Briefcase, CheckCircle, ArrowRight, ShieldCheck, Star, ArrowLeft, Globe2, Navigation, AlertTriangle } from 'lucide-react';
 import InlineStarRating from '@/components/services/InlineStarRating';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
 
 import ShareMenu from '@/components/ShareMenu';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
-import { categorySlugForName } from '@/lib/serviceCategories';
+import { categoryForName } from '@/lib/serviceCategories';
+import { canonicalCity, cityBySlug, citySlugForName } from '@/lib/turkishCities';
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
 import DirectWhatsAppLink from '@/components/services/DirectWhatsAppLink';
@@ -112,6 +113,11 @@ export default async function ServiceDetailsPage(
     const cleanWhatsApp = (provider.whatsapp || provider.phone || '').replace(/\D/g, '');
     const providerProfession = displayServiceProfession(provider.profession);
     const providerDescription = cleanServiceText(provider.description);
+    const providerCity = canonicalCity(provider.city);
+    const providerCitySlug = citySlugForName(provider.city);
+    const category = categoryForName(provider.category);
+    const catSlug = category?.slug;
+    const categoryLabel = category?.labelAr || provider.category || providerProfession;
     const websiteUrl = safeExternalUrl(provider.website);
     const mapUrl = safeExternalUrl(provider.google_maps_url || provider.map_location);
     // Include this listing's link so the provider sees the client came from
@@ -119,62 +125,85 @@ export default async function ServiceDetailsPage(
     const listingUrl = `${SITE_CONFIG.siteUrl}/services/${canonicalId}`;
     const whatsappText = `مرحباً أستاذ ${provider.name}، وصلت إليك عبر موقع "دليل العرب" 🧭\nرأيت خدمتك "${providerProfession}" على هذا الرابط:\n${listingUrl}\nوأود الاستفسار.`;
 
-    // Schema.org: Service + LocalBusiness with aggregateRating only when real
-    // ratings exist. Never infer pricing or credentials that were not supplied.
+    // Schema.org: explicit WebPage + Service + LocalBusiness + Breadcrumb.
+    // Only publish facts we actually have; no inferred credentials or prices.
     const numericRating = typeof provider.rating === 'number'
         ? provider.rating
         : provider.rating ? Number(provider.rating) : null;
     const reviewCount = typeof provider.review_count === 'number' ? provider.review_count : 0;
     const hasUsableRating = numericRating !== null && !Number.isNaN(numericRating) && reviewCount > 0;
-    const catSlug = categorySlugForName(provider.category);
+    const localBusinessLd = {
+        '@type': 'LocalBusiness',
+        '@id': `${listingUrl}#provider`,
+        name: provider.name,
+        url: listingUrl,
+        ...(providerDescription && { description: providerDescription }),
+        ...(providerProfession && { knowsAbout: providerProfession }),
+        ...(provider.category && { category: provider.category }),
+        ...(provider.image && { image: provider.image }),
+        ...(cleanPhone && { telephone: cleanPhone }),
+        ...(providerCity && { address: { '@type': 'PostalAddress', addressLocality: providerCity, addressCountry: 'TR' } }),
+        ...(providerCity && { areaServed: { '@type': 'City', name: providerCity } }),
+        ...(websiteUrl && { sameAs: [websiteUrl] }),
+        ...(hasUsableRating ? {
+            aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: numericRating,
+                reviewCount,
+                bestRating: 5,
+                worstRating: 1,
+            },
+        } : {}),
+        ...(provider.price_range ? { priceRange: provider.price_range } : {}),
+    };
     const serviceLd = {
         '@type': 'Service',
-        name: `${providerProfession} — ${provider.name}`,
-        description: providerDescription || `خدمات ${provider.category} في ${provider.city}`,
-        provider: {
-            '@type': 'LocalBusiness',
-            name: provider.name,
-            ...(provider.city && { address: { '@type': 'PostalAddress', addressLocality: provider.city, addressCountry: 'TR' } }),
-            ...(cleanPhone && { telephone: cleanPhone }),
-            ...(provider.image && { image: provider.image }),
-            ...(hasUsableRating ? {
-                aggregateRating: {
-                    '@type': 'AggregateRating',
-                    ratingValue: numericRating,
-                    reviewCount,
-                    bestRating: 5,
-                    worstRating: 1,
-                },
-            } : {}),
-            ...(provider.price_range ? { priceRange: provider.price_range } : {}),
-        },
-        areaServed: { '@type': 'City', name: provider.city || 'تركيا' },
-        url: `${SITE_CONFIG.siteUrl}/services/${canonicalId}`,
+        '@id': `${listingUrl}#service`,
+        name: `${providerProfession} - ${provider.name}`,
+        serviceType: providerProfession,
+        category: categoryLabel,
+        description: providerDescription || `خدمات ${categoryLabel} في ${providerCity || 'تركيا'}`,
+        provider: { '@id': `${listingUrl}#provider` },
+        areaServed: { '@type': 'City', name: providerCity || 'تركيا' },
+        url: listingUrl,
+    };
+    const webPageLd = {
+        '@type': 'WebPage',
+        '@id': `${listingUrl}#webpage`,
+        url: listingUrl,
+        name: `${provider.name} - ${providerProfession}`,
+        description: providerDescription || `تواصل مع ${provider.name} للحصول على ${categoryLabel} في ${providerCity || 'تركيا'}.`,
+        inLanguage: 'ar',
+        isPartOf: { '@id': `${SITE_CONFIG.siteUrl}/#website` },
+        mainEntity: { '@id': `${listingUrl}#service` },
+        breadcrumb: { '@id': `${listingUrl}#breadcrumb` },
     };
 
     // BreadcrumbList — Home › Services › [Category] › Provider. Links the
     // provider into the category landing page hierarchy for Google.
     const breadcrumbLd = {
         '@type': 'BreadcrumbList',
+        '@id': `${listingUrl}#breadcrumb`,
         itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_CONFIG.siteUrl },
             { '@type': 'ListItem', position: 2, name: 'الخدمات', item: `${SITE_CONFIG.siteUrl}/services` },
-            ...(catSlug ? [{ '@type': 'ListItem', position: 3, name: provider.category, item: `${SITE_CONFIG.siteUrl}/services/category/${catSlug}` }] : []),
-            { '@type': 'ListItem', position: catSlug ? 4 : 3, name: provider.name, item: `${SITE_CONFIG.siteUrl}/services/${canonicalId}` },
+            ...(catSlug ? [{ '@type': 'ListItem', position: 3, name: categoryLabel, item: `${SITE_CONFIG.siteUrl}/services/category/${catSlug}` }] : []),
+            ...(catSlug && providerCitySlug ? [{ '@type': 'ListItem', position: 4, name: providerCity, item: `${SITE_CONFIG.siteUrl}/services/category/${catSlug}/${providerCitySlug}` }] : []),
+            { '@type': 'ListItem', position: catSlug && providerCitySlug ? 5 : catSlug ? 4 : 3, name: provider.name, item: listingUrl },
         ],
     };
 
-    const jsonLd = { '@context': 'https://schema.org', '@graph': [serviceLd, breadcrumbLd] };
+    const jsonLd = { '@context': 'https://schema.org', '@graph': [webPageLd, serviceLd, localBusinessLd, breadcrumbLd] };
 
     // Related providers — same profession (same-city first) → crawlable internal
     // links that keep the visitor browsing when this listing isn't the right fit
     // (engagement + more conversions + spreads link equity to sibling pages).
-    type Related = { id: string; slug: string | null; name: string; profession: string | null; city: string | null; image: string | null; is_verified: boolean | null; rating: number | null; review_count: number | null };
+    type Related = { id: string; slug: string | null; name: string; profession: string | null; category: string | null; city: string | null; image: string | null; is_verified: boolean | null; rating: number | null; review_count: number | null };
     let related: Related[] = [];
     try {
         const { data: rel } = await supabase
             .from('service_providers')
-            .select('id, slug, name, profession, city, image, is_verified, rating, review_count')
+            .select('id, slug, name, profession, category, city, image, is_verified, rating, review_count')
             .eq('status', 'approved')
             .eq('category', provider.category)
             .neq('id', realId)
@@ -188,6 +217,28 @@ export default async function ServiceDetailsPage(
         related = related.slice(0, 6);
     } catch { /* best-effort — related is a nice-to-have */ }
 
+    let sameCityServices: Related[] = [];
+    try {
+        const cityObj = providerCitySlug ? cityBySlug(providerCitySlug) : undefined;
+        const cityVariants = cityObj
+            ? Array.from(new Set([cityObj.ar, cityObj.slug, ...cityObj.variants]))
+            : provider.city ? [provider.city] : [];
+        if (cityVariants.length > 0) {
+            const { data: cityRows } = await supabase
+                .from('service_providers')
+                .select('id, slug, name, profession, category, city, image, is_verified, rating, review_count')
+                .eq('status', 'approved')
+                .in('city', cityVariants)
+                .neq('id', realId)
+                .order('is_verified', { ascending: false })
+                .order('rating', { ascending: false })
+                .limit(24);
+            sameCityServices = ((cityRows as Related[]) || [])
+                .filter((row) => row.category !== provider.category)
+                .slice(0, 6);
+        }
+    } catch { /* best-effort */ }
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -195,10 +246,19 @@ export default async function ServiceDetailsPage(
             <div className="bg-gradient-to-l from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-900 dark:bg-none dark:text-white pt-8 pb-32 relative overflow-hidden">
                 <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-blue/10 via-transparent to-brand-magenta/10 dark:from-blue-900/40 dark:via-slate-900 dark:to-emerald-900/20" />
-                <div className="container mx-auto px-4 relative z-10">
+                <div className="container mx-auto px-4 relative z-10 max-w-5xl">
+                    <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400" aria-label="مسار التنقّل">
+                        <Link href="/" className="hover:text-emerald-600">الرئيسية</Link><span>/</span>
+                        <Link href="/services" className="hover:text-emerald-600">الخدمات</Link><span>/</span>
+                        {catSlug && <Link href={`/services/category/${catSlug}`} className="hover:text-emerald-600">{categoryLabel}</Link>}
+                        {catSlug && <span>/</span>}
+                        {catSlug && providerCitySlug && <Link href={`/services/category/${catSlug}/${providerCitySlug}`} className="hover:text-emerald-600">{providerCity}</Link>}
+                        {catSlug && providerCitySlug && <span>/</span>}
+                        <span className="text-slate-800 dark:text-slate-200">{provider.name}</span>
+                    </nav>
                     <Link
                         href="/services"
-                        className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors mb-8 bg-slate-900/5 dark:bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm"
+                        className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors bg-slate-900/5 dark:bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm"
                     >
                         <ArrowRight size={18} />
                         <span className="text-sm font-bold">العودة للخدمات</span>
@@ -250,14 +310,14 @@ export default async function ServiceDetailsPage(
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-6 text-sm text-slate-600 dark:text-slate-300 font-medium">
                                 <div className="flex items-center gap-1.5">
                                     <MapPin size={18} className="text-slate-400" />
-                                    <span>{provider.city}{provider.district && `، ${provider.district}`}</span>
+                                    <span>{providerCity || provider.city}{provider.district && `، ${provider.district}`}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Briefcase size={18} className="text-slate-400" />
                                     {catSlug ? (
-                                        <Link href={`/services/category/${catSlug}`} className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors">{provider.category}</Link>
+                                        <Link href={providerCitySlug ? `/services/category/${catSlug}/${providerCitySlug}` : `/services/category/${catSlug}`} className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition-colors">{categoryLabel}</Link>
                                     ) : (
-                                        <span>{provider.category}</span>
+                                        <span>{categoryLabel}</span>
                                     )}
                                 </div>
                             </div>
@@ -272,27 +332,40 @@ export default async function ServiceDetailsPage(
                         </div>
                     </div>
 
-                    {/* Contact + Share */}
-                    <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {cleanWhatsApp && (
-                            <DirectWhatsAppLink
-                                phone={provider.whatsapp || provider.phone || ''}
-                                text={whatsappText}
-                                className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-700 active:scale-95"
-                            >
-                                <MessageCircle size={22} />
-                                تواصل عبر الواتساب
-                            </DirectWhatsAppLink>
-                        )}
-                        {cleanPhone && (
-                            <a
-                                href={`tel:+${cleanPhone}`}
-                                className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3 font-bold text-slate-800 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                            >
-                                <PhoneCall size={22} />
-                                اتصال مباشر
-                            </a>
-                        )}
+                    {/* Contact + trust */}
+                    <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <div>
+                                <h2 className="text-lg font-black text-slate-900 dark:text-white">تواصل مع مقدم الخدمة</h2>
+                                <p className="mt-1 text-xs font-bold leading-5 text-slate-600 dark:text-slate-300">افتح واتساب أو اتصل مباشرة، واذكر أنك وصلت عبر دليل العرب.</p>
+                            </div>
+                            <MessageCircle size={24} className="shrink-0 text-emerald-600 dark:text-emerald-300" />
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {cleanWhatsApp && (
+                                <DirectWhatsAppLink
+                                    phone={provider.whatsapp || provider.phone || ''}
+                                    text={whatsappText}
+                                    className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-800 active:scale-95"
+                                >
+                                    <MessageCircle size={22} />
+                                    واتساب الآن
+                                </DirectWhatsAppLink>
+                            )}
+                            {cleanPhone && (
+                                <a
+                                    href={`tel:+${cleanPhone}`}
+                                    className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3 font-black text-slate-800 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                >
+                                    <PhoneCall size={22} />
+                                    اتصال مباشر
+                                </a>
+                            )}
+                        </div>
+                        <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs font-bold leading-6 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
+                            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                            تحقّق من تفاصيل الخدمة والسعر والهوية قبل الدفع. دليل العرب يسهّل الوصول ولا يضمن نتيجة التعامل خارج الموقع.
+                        </div>
                     </div>
 
                     {verification.visible && (
@@ -363,10 +436,10 @@ export default async function ServiceDetailsPage(
                 <div className="container mx-auto px-4 max-w-4xl pb-4">
                     <div className="flex items-center justify-between gap-3 mb-4">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                            {provider.category ? `${provider.category} آخرون قد يهمّونك` : 'مزوّدون آخرون قد يهمّونك'}
+                            خدمات مشابهة
                         </h2>
                         {catSlug && (
-                            <Link href={`/services/category/${catSlug}`} className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:gap-2 transition-all shrink-0">
+                            <Link href={providerCitySlug ? `/services/category/${catSlug}/${providerCitySlug}` : `/services/category/${catSlug}`} className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:gap-2 transition-all shrink-0">
                                 عرض الكل <ArrowLeft size={16} />
                             </Link>
                         )}
@@ -398,6 +471,57 @@ export default async function ServiceDetailsPage(
                                 </div>
                             </Link>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {sameCityServices.length > 0 && (
+                <div className="container mx-auto px-4 max-w-4xl pb-4">
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                            خدمات أخرى في {providerCity || provider.city}
+                        </h2>
+                        <Link href="/services" className="inline-flex items-center gap-1 text-sm font-bold text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-all shrink-0">
+                            الدليل الكامل <ArrowLeft size={16} />
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {sameCityServices.map((r) => {
+                            const relatedCat = categoryForName(r.category);
+                            const relatedCatSlug = relatedCat?.slug;
+                            return (
+                                <Link
+                                    key={r.id}
+                                    href={`/services/${r.slug || r.id}`}
+                                    className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-start gap-3 hover:border-cyan-400 dark:hover:border-cyan-600 hover:shadow-md transition-all"
+                                >
+                                    <ProviderAvatar
+                                        name={r.name}
+                                        image={r.image}
+                                        className="h-14 w-14 shrink-0 rounded-xl"
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-1 font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors leading-tight">
+                                            <span className="truncate">{r.name}</span>
+                                            {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
+                                        </div>
+                                        {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{displayServiceProfession(r.profession)}</p>}
+                                        <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                            {relatedCatSlug && providerCitySlug && (
+                                                <span className="rounded-full bg-cyan-50 px-2 py-1 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-300">
+                                                    {relatedCat?.labelAr}
+                                                </span>
+                                            )}
+                                            {!!(r.review_count && r.review_count > 0 && r.rating) && (
+                                                <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-1 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+                                                    <Star size={11} className="text-amber-400 fill-amber-400" />{Number(r.rating).toFixed(1)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             )}

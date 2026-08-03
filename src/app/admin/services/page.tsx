@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { DataTable } from '@/components/admin/DataTable';
-import { Briefcase, ArrowRight, Loader2, Save, Trash2, X } from 'lucide-react';
+import { Briefcase, ArrowRight, Loader2, Save, Trash2, X, CheckCircle2, Clock, MapPin, PhoneCall, Star } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import {
     ServiceEditor,
@@ -23,30 +23,39 @@ interface SelectedItem {
     data?: ServiceFormData;
 }
 
+interface ServiceStats {
+    total: number;
+    approved: number;
+    pending: number;
+    missingPhone: number;
+    missingCity: number;
+    featured: number;
+}
+
 // Copied SaveBar for independence
 const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () => void, onDelete: () => void, onCancel: () => void, loading: boolean, isNew: boolean }) => (
-    <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-between items-center gap-4 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <div className="p-3 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         {!isNew && (
             <button
                 onClick={onDelete}
                 disabled={loading}
-                className="flex items-center gap-2 px-5 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold transition-all disabled:opacity-50"
+                className="flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold transition-all disabled:opacity-50"
             >
-                <Trash2 size={18} /> حذف العنصر
+                <Trash2 size={18} /> حذف
             </button>
         )}
-        <div className="flex gap-3 mr-auto w-full md:w-auto justify-end">
+        <div className="flex gap-2 sm:gap-3 mr-auto w-full sm:w-auto justify-end">
             <button
                 onClick={onCancel}
                 disabled={loading}
-                className="px-6 py-3 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-bold transition-all"
+                className="min-h-11 px-4 sm:px-6 py-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-bold transition-all"
             >
                 إلغاء
             </button>
             <button
                 onClick={onSave}
                 disabled={loading}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-10 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-70 active:scale-95"
+                className="flex-1 sm:flex-none flex min-h-11 items-center justify-center gap-2 px-6 sm:px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-70 active:scale-95"
             >
                 {loading ? <Loader2 className="animate-spin" size={22} /> : <Save size={22} />}
                 {loading ? 'جاري الحفظ...' : 'حفظ التعديلات'}
@@ -65,6 +74,16 @@ export default function AdminServicesPage() {
     const [form, setForm] = useState<ServiceFormData>({});
     const [saving, setSaving] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [stats, setStats] = useState<ServiceStats | null>(null);
+    const [statsLoading, setStatsLoading] = useState(false);
+
+    const issueLabels: Record<string, string> = {
+        missing_phone: 'خدمات بدون هاتف',
+        missing_city: 'خدمات بدون مدينة',
+        pending: 'بانتظار المراجعة',
+        approved: 'الخدمات المنشورة',
+        featured: 'الخدمات المميزة',
+    };
 
     // Auto-open editor if id is passed in URL
     useEffect(() => {
@@ -82,15 +101,61 @@ export default function AdminServicesPage() {
         return () => { mounted = false; };
     }, [editId]);
 
-    const getCustomFilter = () => {
+    useEffect(() => {
+        let mounted = true;
+        async function loadStats() {
+            const client = supabase;
+            if (!client) return;
+            setStatsLoading(true);
+            try {
+                const countRows = async (filter?: (query: any) => any) => {
+                    let query = client
+                        .from('service_providers')
+                        .select('id', { count: 'exact', head: true });
+                    if (filter) query = filter(query);
+                    const { count, error } = await query;
+                    if (error) throw error;
+                    return count || 0;
+                };
+                const [total, approved, pending, missingPhone, missingCity, featured] = await Promise.all([
+                    countRows(),
+                    countRows((q) => q.eq('status', 'approved')),
+                    countRows((q) => q.eq('status', 'pending')),
+                    countRows((q) => q.or('phone.is.null,phone.eq.""')),
+                    countRows((q) => q.or('city.is.null,city.eq.""')),
+                    countRows((q) => q.eq('is_featured', true)),
+                ]);
+                if (mounted) {
+                    setStats({ total, approved, pending, missingPhone, missingCity, featured });
+                }
+            } catch (err) {
+                logger.error('services stats failed:', err);
+            } finally {
+                if (mounted) setStatsLoading(false);
+            }
+        }
+        loadStats();
+        return () => { mounted = false; };
+    }, [refreshKey]);
+
+    const customFilter = useMemo<((query: any) => any) | undefined>(() => {
         if (issueType === 'missing_phone') {
             return (q: { or: (filter: string) => unknown }) => q.or('phone.is.null,phone.eq.""');
         }
         if (issueType === 'missing_city') {
             return (q: { or: (filter: string) => unknown }) => q.or('city.is.null,city.eq.""');
         }
+        if (issueType === 'pending') {
+            return (q: { eq: (key: string, value: string) => unknown }) => q.eq('status', 'pending');
+        }
+        if (issueType === 'approved') {
+            return (q: { eq: (key: string, value: string) => unknown }) => q.eq('status', 'approved');
+        }
+        if (issueType === 'featured') {
+            return (q: { eq: (key: string, value: boolean) => unknown }) => q.eq('is_featured', true);
+        }
         return undefined;
-    };
+    }, [issueType]);
 
     const openEditor = (item: SelectedItem) => {
         setSelectedItem(item);
@@ -170,6 +235,15 @@ export default function AdminServicesPage() {
         }
     };
 
+    const statCards = [
+        { label: 'كل الخدمات', value: stats?.total ?? 0, icon: Briefcase, href: '/admin/services', tone: 'slate' },
+        { label: 'منشورة', value: stats?.approved ?? 0, icon: CheckCircle2, href: '/admin/services?issue=approved', tone: 'emerald' },
+        { label: 'بانتظار المراجعة', value: stats?.pending ?? 0, icon: Clock, href: '/admin/services?issue=pending', tone: 'amber' },
+        { label: 'بدون هاتف', value: stats?.missingPhone ?? 0, icon: PhoneCall, href: '/admin/services?issue=missing_phone', tone: 'rose' },
+        { label: 'بدون مدينة', value: stats?.missingCity ?? 0, icon: MapPin, href: '/admin/services?issue=missing_city', tone: 'sky' },
+        { label: 'مميزة', value: stats?.featured ?? 0, icon: Star, href: '/admin/services?issue=featured', tone: 'violet' },
+    ];
+
     return (
         <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
             <AdminPageHeader
@@ -180,12 +254,35 @@ export default function AdminServicesPage() {
                 eyebrow="دليل"
             />
 
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                {statCards.map((item) => {
+                    const Icon = item.icon;
+                    const active = item.href.includes(`issue=${issueType}`) || (!issueType && item.href === '/admin/services');
+                    return (
+                        <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => router.push(item.href)}
+                            className={`min-h-24 rounded-2xl border bg-white p-3 text-right shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 ${active ? 'border-emerald-300 ring-2 ring-emerald-100 dark:border-emerald-700 dark:ring-emerald-900/40' : 'border-slate-200 dark:border-slate-800'}`}
+                        >
+                            <span className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl ${item.tone === 'emerald' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : item.tone === 'amber' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300' : item.tone === 'rose' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300' : item.tone === 'sky' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300' : item.tone === 'violet' ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
+                                <Icon size={18} />
+                            </span>
+                            <span className="block text-xs font-bold text-slate-500 dark:text-slate-400">{item.label}</span>
+                            <span className="mt-1 block text-2xl font-black tabular-nums text-slate-950 dark:text-white">
+                                {statsLoading && !stats ? '...' : item.value}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+
             {issueType && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2">
                     <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
                         <ArrowRight className="rotate-180" size={20} />
                         <span className="font-bold">
-                            {issueType === 'missing_phone' ? 'وضع الإصلاح: عرض خدمات بدون هاتف' : 'وضع الإصلاح: عرض خدمات بدون مدينة'}
+                            وضع الإصلاح: {issueLabels[issueType] || 'فلتر مخصص'}
                         </span>
                     </div>
                     <button
@@ -213,17 +310,52 @@ export default function AdminServicesPage() {
                     tableName="service_providers"
                     title="قائمة الخدمات"
                     type="service"
-                    customFilter={getCustomFilter()}
+                    customFilter={customFilter}
                     refreshKey={refreshKey}
                     columns={[
                         { key: 'name', label: 'الاسم' },
-                        { key: 'profession', label: 'التخصص' },
-                        { key: 'phone', label: 'الهاتف' },
-                        { key: 'city', label: 'المدينة' }
+                        { key: 'category', label: 'التصنيف' },
+                        { key: 'profession', label: 'الخدمة' },
+                        {
+                            key: 'city',
+                            label: 'المدينة',
+                            render: (value) => value ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-1 text-xs font-bold text-sky-700 dark:bg-sky-950/30 dark:text-sky-300">
+                                    <MapPin size={12} /> {value}
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">بدون مدينة</span>
+                            ),
+                        },
+                        {
+                            key: 'phone',
+                            label: 'التواصل',
+                            render: (value, row) => value || row.whatsapp ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
+                                    <PhoneCall size={12} /> موجود
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">ناقص</span>
+                            ),
+                        },
+                        {
+                            key: 'status',
+                            label: 'الحالة',
+                            render: (value) => {
+                                const status = String(value || 'approved');
+                                const label = status === 'approved' ? 'منشور' : status === 'pending' ? 'مراجعة' : status === 'draft' ? 'مسودة' : 'موقوف';
+                                const tone = status === 'approved'
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
+                                    : status === 'pending'
+                                        ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
+                                return <span className={`inline-flex rounded-full px-2 py-1 text-xs font-black ${tone}`}>{label}</span>;
+                            },
+                        },
                     ]}
-                    searchFields={['name', 'profession', 'description', 'city']}
+                    searchFields={['name', 'category', 'profession', 'description', 'city', 'phone']}
                     onEdit={(item) => openEditor({ id: item.id, data: item })}
-                    onCreate={() => openEditor({ id: 'new', data: { profession: '' } })}
+                    onCreate={() => openEditor({ id: 'new', data: { profession: '', status: 'approved', verification_level: 'listed' } })}
                 />
             </div>
 
