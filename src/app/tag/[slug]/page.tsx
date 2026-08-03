@@ -28,6 +28,16 @@ import { Calendar, Tag as TagIcon } from 'lucide-react';
 
 export const revalidate = 600; // 10 min ISR
 
+// `revalidate` alone never applied: a dynamic route with no
+// generateStaticParams is not pre-rendered, so every /tag/… hit was an
+// uncached Supabase read (verified live — responses came back `no-store`).
+// TAG_LABELS is the canonical tag set, so pre-generating is free; anything
+// outside it still renders on demand via dynamicParams.
+export const dynamicParams = true;
+export function generateStaticParams() {
+    return Object.keys(TAG_LABELS).map((slug) => ({ slug }));
+}
+
 function decodeSlug(raw: string): string {
     try { return decodeURIComponent(raw); }
     catch { return raw; }

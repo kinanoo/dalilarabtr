@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FileText, ArrowLeft, AlertCircle, Calendar, Loader2, FolderOpen, Search, X, Clock, RefreshCw } from 'lucide-react';
@@ -25,13 +26,17 @@ export default function CategoryArticlesList({
   categoryName,
   categorySlug,
   initialArticles,
-  activeTag,
 }: {
   categoryName: string;
   categorySlug?: string;
   initialArticles: ArticlePreview[];
-  activeTag?: string;
 }) {
+  // ?tag= is read HERE, not on the server. Reading searchParams in the page
+  // made it dynamic on every request — the category pages were served
+  // `no-store` and re-queried Supabase for every visitor. The filter is
+  // client-side anyway (line ~64), so nothing is lost and the page becomes
+  // statically generated + ISR.
+  const activeTag = useSearchParams().get('tag') || undefined;
   // The server already rendered this category's articles (initialArticles).
   // Skip the client fetch of the WHOLE articles table (full HTML bodies ×
   // ~310 rows) — the memo below already falls back to initialArticles when

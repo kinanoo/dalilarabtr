@@ -11,6 +11,16 @@ import logger from '@/lib/logger';
 // 1. السماح بالباراميترات الديناميكية (Dynamic Params)
 export const dynamicParams = true;
 
+// Pre-generate every known category and refresh hourly. Without
+// generateStaticParams a dynamic route is never built ahead of time even if it
+// declares `revalidate`, so these pages were fully dynamic: an uncached
+// Supabase read on literally every visit (verified live — the responses came
+// back `no-store`). CATEGORY_SLUGS is a static map, so this is free.
+export const revalidate = 3600;
+export function generateStaticParams() {
+  return Object.keys(CATEGORY_SLUGS).map((slug) => ({ slug }));
+}
+
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const categoryName = CATEGORY_SLUGS[params.slug];
@@ -43,12 +53,9 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 // 2. مكون الصفحة
 export default async function CategoryPage(props: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tag?: string }>;
 }) {
   const params = await props.params;
-  const sp = await props.searchParams;
   const categoryName = CATEGORY_SLUGS[params.slug];
-  const activeTag = typeof sp?.tag === 'string' ? sp.tag : undefined;
 
   // جلب المقالات من قاعدة البيانات
   let initialArticles: any[] = [];
@@ -59,10 +66,6 @@ export default async function CategoryPage(props: {
         .select('id, slug, title, intro, last_update, category, image, tags')
         .eq('category', categoryName)
         .eq('status', 'approved');
-
-      if (activeTag) {
-        query = query.contains('tags', [activeTag]);
-      }
 
       const { data } = await query;
 
@@ -143,7 +146,6 @@ export default async function CategoryPage(props: {
         categoryName={categoryName}
         categorySlug={params.slug}
         initialArticles={initialArticles}
-        activeTag={activeTag}
       />
 
 

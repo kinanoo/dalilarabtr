@@ -216,7 +216,11 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                   <Link href="/editorial-policy" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors border-b border-transparent hover:border-emerald-400 pb-0.5">
                     <ShieldCheck size={16} className="text-emerald-400" /> بإشراف هيئة تحرير دليل العرب
                   </Link>
-                  <span className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400" /> راجعته الهيئة · آخر تحديث: {article.lastUpdate}</span>
+                  {/* Was «راجعته الهيئة · آخر تحديث» as one static string on all
+                      357 articles, including sourceless stubs — a review claim
+                      nothing backed. Only the update date is a fact we hold, so
+                      only the update date is shown. */}
+                  <span className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400" /> آخر تحديث: {article.lastUpdate}</span>
                   <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>
                   <ArticleViews slug={slug} />
                   {officialSources.length > 0 && (

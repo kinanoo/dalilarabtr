@@ -339,12 +339,12 @@ function buildJsonLd(args: {
       '@type': 'ImageObject',
       url: args.image || `${args.siteUrl}/og-banner.jpg`,
     },
-    reviewedBy: {
-      '@type': 'Organization',
-      name: 'فريق دليل العرب القانوني',
-      url: args.siteUrl,
-    },
-    lastReviewed: dateModified,
+    // No reviewedBy/lastReviewed. These used to assert that «فريق دليل العرب
+    // القانوني» reviewed every article on its dateModified — a legal team the
+    // site does not have and a review that never happened. /disclaimer says so
+    // plainly. Emitting the claim in structured data was the strongest false
+    // statement on the site. If a real review process is ever added, gate these
+    // on a per-article reviewed_at column rather than restoring a constant.
     // Cite the official government/authority source(s) backing this article.
     ...((() => {
       const cites = (args.source || '')
