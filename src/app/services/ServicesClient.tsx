@@ -361,6 +361,7 @@ export default function ServicesClient({
     { id: 'all', label: 'الكل' },
     ...SERVICE_CATEGORIES.filter((c) => c.popular).map((c) => ({ id: c.name, label: c.labelAr })),
   ];
+  const primaryNeeds = QUICK_NEEDS.slice(0, 6);
   const featuredCategories = SERVICE_CATEGORIES.filter((c) => c.popular).slice(0, 8);
   const visiblePopularSearches = popularSearches.slice(0, 10);
   const directoryGuideLinks = popularSearches.slice(0, 24);
@@ -390,21 +391,21 @@ export default function ServicesClient({
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-200 to-transparent dark:via-emerald-900" />
 
-        <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-5 px-4 py-4 md:gap-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+        <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-3 px-4 py-3 md:gap-5 md:py-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
           <div className="min-w-0 text-center lg:text-right">
             <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/50">
               <Sparkles size={14} />
               خدمات العرب في تركيا
             </span>
-            <h1 className="mx-auto mt-3 w-full max-w-[22rem] text-[23px] font-black leading-[1.3] tracking-normal text-slate-950 sm:max-w-4xl sm:text-4xl lg:mx-0 lg:text-5xl dark:text-white">
+            <h1 className="mx-auto mt-2 w-full max-w-[22rem] text-[21px] font-black leading-[1.25] tracking-normal text-slate-950 sm:max-w-4xl sm:text-3xl lg:mx-0 lg:text-4xl dark:text-white">
               <span className="block sm:inline">دليل المهن والخدمات العربية</span>
               <span className="block text-emerald-700 dark:text-emerald-300 sm:inline"> في تركيا</span>
             </h1>
-            <p className="mx-auto mt-3 max-w-3xl text-sm font-bold leading-7 text-slate-600 dark:text-slate-300 sm:text-base lg:mx-0">
+            <p className="mx-auto mt-2 max-w-3xl text-xs font-bold leading-6 text-slate-600 dark:text-slate-300 sm:text-base sm:leading-7 lg:mx-0">
               <span className="sm:hidden">ابحث عن طبيب، محام، مترجم، عقار، شحن أو أي خدمة يومية، وتواصل مباشرة عبر واتساب.</span>
               <span className="hidden sm:inline">أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. ابحث عن الخدمة أو اختر المدينة وتواصل مباشرة، وإن كنت تقدم خدمة فسجّلها ليصل إليك العملاء من الموقع.</span>
             </p>
-            <div className="mx-auto mt-3 flex max-w-3xl flex-wrap items-center justify-center gap-2 text-[12px] font-black text-slate-600 dark:text-slate-300 lg:mx-0 lg:justify-start">
+            <div className="mx-auto mt-3 hidden max-w-3xl flex-wrap items-center justify-center gap-2 text-[12px] font-black text-slate-600 dark:text-slate-300 sm:flex lg:mx-0 lg:justify-start">
               <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-sky-50 px-3 text-sky-800 ring-1 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-200 dark:ring-sky-900/50">
                 <Languages size={14} />
                 تواصل مباشر لأي خدمة
@@ -415,7 +416,7 @@ export default function ServicesClient({
               </span>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85 dark:shadow-black/20 sm:grid-cols-[minmax(0,1fr)_240px] lg:max-w-4xl">
+            <div className="mt-3 grid grid-cols-1 gap-2 rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-sm shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/85 dark:shadow-black/20 sm:grid-cols-[minmax(0,1fr)_240px] sm:gap-3 sm:p-3 lg:max-w-4xl">
               <div className="relative">
                 <Search size={22} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -426,7 +427,7 @@ export default function ServicesClient({
                     setSearchQuery(e.target.value);
                     setPage(1);
                   }}
-                  className="h-14 w-full rounded-xl border border-transparent bg-white pr-12 pl-4 text-base font-black text-slate-900 shadow-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/15 dark:bg-slate-950 dark:text-white"
+                  className="h-12 w-full rounded-xl border border-transparent bg-white pr-12 pl-4 text-sm font-black text-slate-900 shadow-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/15 dark:bg-slate-950 dark:text-white sm:h-14 sm:text-base"
                 />
               </div>
               <CityFilter
@@ -442,11 +443,11 @@ export default function ServicesClient({
               />
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3 sm:flex sm:flex-wrap sm:items-center">
               <button
                 type="button"
                 onClick={scrollToResults}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 active:scale-95 sm:min-h-11 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
               >
                 عرض النتائج
                 <ArrowLeft size={16} />
@@ -455,7 +456,7 @@ export default function ServicesClient({
                 type="button"
                 onClick={() => setFiltersOpen((open) => !open)}
                 aria-expanded={filtersOpen}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 sm:min-h-11 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
               >
                 <SlidersHorizontal size={16} />
                 كل الفلاتر
@@ -483,7 +484,7 @@ export default function ServicesClient({
               )}
             </div>
 
-            <div className="mt-3 flex max-w-full items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="mt-2 flex max-w-full items-center gap-2 overflow-x-auto pb-1 sm:mt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <span className="shrink-0 text-xs font-black text-slate-500 dark:text-slate-400">أحتاج:</span>
               <Link
                 href="/services/add"
@@ -492,7 +493,7 @@ export default function ServicesClient({
                 <BadgeCheck size={14} />
                 سجّل خدمتك
               </Link>
-              {QUICK_NEEDS.map((need) => (
+              {primaryNeeds.map((need) => (
                 <button
                   key={need.label}
                   type="button"
@@ -505,7 +506,7 @@ export default function ServicesClient({
             </div>
           </div>
 
-          <aside className="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:block">
+          <aside className="hidden rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:block">
             <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">لمحة سريعة</h2>
             <div className="mt-3 grid grid-cols-3 gap-2">
               <div className="rounded-xl bg-white p-3 text-center ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
@@ -531,7 +532,7 @@ export default function ServicesClient({
         </div>
       </section>
 
-      <section className={`mx-auto max-w-screen-2xl px-4 ${filtersOpen ? 'py-4' : 'py-0'} md:py-5`}>
+      <section className={`mx-auto max-w-screen-2xl px-4 ${filtersOpen ? 'py-3 md:py-4' : 'hidden'}`}>
         <div className="mb-3 hidden items-center justify-between gap-3 md:flex">
           <div>
             <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">اختصر الطريق</h2>
@@ -712,14 +713,14 @@ export default function ServicesClient({
       </section>
 
       {/* Results */}
-      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 pb-8 pt-3 md:pb-10 w-full scroll-mt-4">
+      <section id="svc-results" className="max-w-screen-2xl mx-auto px-4 pb-8 pt-2 md:pb-10 w-full scroll-mt-4">
 
         {/* Results count + view toggle + clear filters */}
         {!loading && (
-          <div className="sticky top-[52px] z-20 mb-5 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+          <div className="z-20 mb-3 rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur md:sticky md:top-[52px] md:p-3 dark:border-slate-800 dark:bg-slate-900/95">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">الخدمات المتاحة</h2>
+              <h2 className="text-lg font-black text-slate-900 md:text-xl dark:text-slate-100">الخدمات المتاحة</h2>
               <p
                 className="mt-1 text-sm font-bold text-slate-600 dark:text-slate-300"
                 aria-live="polite"
