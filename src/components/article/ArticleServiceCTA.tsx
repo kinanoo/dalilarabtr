@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import { getSiteSettings } from '@/lib/siteSettings';
 import { matchServiceCategory } from '@/lib/articleServiceMatch';
 import { BadgeCheck, ArrowLeft, Users } from 'lucide-react';
 import logger from '@/lib/logger';
@@ -52,9 +53,16 @@ async function countProviders(categoryName: string): Promise<number> {
 }
 
 export default async function ArticleServiceCTA({ slug, category, tags }: Props) {
+    const { contactEnabled } = await getSiteSettings();
     const match = matchServiceCategory({ slug, category, tags });
     const count = match ? await countProviders(match.name) : 0;
     const hasProviders = count > 0;
+
+    // Contact off: the generic variant exists only to push /request, which is
+    // closed — so it renders nothing at all. A matched profession still shows,
+    // because that block sends the reader to independent providers in the
+    // directory, not to the owner.
+    if (!contactEnabled && !hasProviders) return null;
 
     const heading = match && hasProviders
         ? `تحتاج ${match.labelAr}؟`
@@ -62,7 +70,9 @@ export default async function ArticleServiceCTA({ slug, category, tags }: Props)
 
     const body = match && hasProviders
         ? `${match.reason} — في دليلنا ${count} مسجَّلاً في هذا القسم، ويمكنك التصفية حسب مدينتك.`
-        : 'اطلب توجيهاً لحالتك، أو تصفّح دليل مقدّمي الخدمات الناطقين بالعربية حسب مدينتك.';
+        : contactEnabled
+            ? 'اطلب توجيهاً لحالتك، أو تصفّح دليل مقدّمي الخدمات الناطقين بالعربية حسب مدينتك.'
+            : 'تصفّح دليل مقدّمي الخدمات الناطقين بالعربية حسب مدينتك.';
 
     return (
         <aside
@@ -86,6 +96,7 @@ export default async function ArticleServiceCTA({ slug, category, tags }: Props)
                     </Link>
                 )}
 
+                {contactEnabled && (
                 <Link
                     href={`/request?from=${encodeURIComponent(slug)}`}
                     className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
@@ -97,6 +108,7 @@ export default async function ArticleServiceCTA({ slug, category, tags }: Props)
                     اطلب توجيهاً لحالتك
                     <ArrowLeft size={14} />
                 </Link>
+                )}
 
                 <Link
                     href="/services"

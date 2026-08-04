@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
+import { useSiteWhatsApp, useContactEnabled } from '@/components/SiteSettingsProvider';
 import { useEffect, useMemo, useState } from 'react';
 import { Copy, User, FileText, CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
@@ -19,6 +19,7 @@ import { trackEvent } from '@/lib/analytics';
 // carries the stateful form that needs useSearchParams/react-hook-form.
 export default function RequestForm() {
     const waNumber = useSiteWhatsApp();
+    const contactEnabled = useContactEnabled();
   const searchParams = useSearchParams();
   const initialServiceId = searchParams.get('service') || 'other';
 

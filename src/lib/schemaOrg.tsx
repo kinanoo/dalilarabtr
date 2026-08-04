@@ -62,8 +62,10 @@ export type ServiceSchemaData = {
  * SITE_CONFIG.whatsapp, so the contact point Google saw could never be changed
  * from the admin panel.
  */
-export function generateOrganizationSchema(whatsapp?: string) {
-  const phone = (whatsapp || String(SITE_CONFIG.whatsapp || '')).replace(/\D/g, '');
+export function generateOrganizationSchema(whatsapp?: string, contactEnabled = true) {
+  // No phone in the structured data when contact is off — otherwise Google
+  // keeps surfacing a number the owner does not want reached.
+  const phone = contactEnabled ? (whatsapp || String(SITE_CONFIG.whatsapp || '')).replace(/\D/g, '') : '';
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',

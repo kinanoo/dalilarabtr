@@ -1,12 +1,13 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
+import { useSiteWhatsApp, useContactEnabled } from '@/components/SiteSettingsProvider';
 import { ExternalLink, Scale } from 'lucide-react';
 import { SITE_CONFIG } from '@/lib/config';
 
 export default function CopyrightComplaintForm() {
     const waNumber = useSiteWhatsApp();
+    const contactEnabled = useContactEnabled();
     const [confirmed, setConfirmed] = useState(false);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {

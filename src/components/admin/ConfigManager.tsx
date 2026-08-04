@@ -752,10 +752,36 @@ function GeneralSettingsForm() {
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     التواصل والخبراء
                 </h4>
+                {/* Master switch. One control, because every contact route on
+                    the site ends at WhatsApp — the consultation block, the
+                    floating button, the contact page and the request form. */}
+                <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, contact_enabled: settings.contact_enabled === false })}
+                    className="w-full flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-right hover:border-emerald-400 transition-colors"
+                >
+                    <span className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${settings.contact_enabled !== false ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${settings.contact_enabled !== false ? 'right-0.5' : 'right-[22px]'}`} />
+                    </span>
+                    <span className="min-w-0">
+                        <span className="block text-sm font-black text-slate-800 dark:text-slate-100">
+                            {settings.contact_enabled !== false ? 'التواصل مفتوح — الزوّار يستطيعون مراسلتك' : 'التواصل مغلق — لا أحد يستطيع الوصول إليك'}
+                        </span>
+                        <span className="block text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 mt-0.5">
+                            عند الإغلاق تختفي تماماً: كتلة «هل الإجراء معقّد؟» في المقالات والأخبار والأكواد،
+                            وزرّ واتساب العائم، وزرّ الاستشارة في دليل المواقف، وبطاقة واتساب في صفحة «اتصل بنا»،
+                            وصفحة «اطلب خدمة»، ورقمك من بيانات جوجل المهيكلة. باقي الموقع يعمل كما هو.
+                        </span>
+                    </span>
+                </button>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label className={labelCls}>رقم التواصل (واتساب)</label>
                         <input className={`${inputCls} font-mono`} dir="ltr" placeholder="+90..." value={settings.whatsapp_number || ''} onChange={e => setSettings({ ...settings, whatsapp_number: e.target.value })} />
+                        <p className="text-[11px] text-slate-400 mt-1">
+                            أقلّ من 8 أرقام يُعامَل كرقم ناقص فيبقى التواصل مغلقاً — حمايةً من رابط واتساب معطّل على كل صفحة.
+                        </p>
                     </div>
                     <div>
                         <label className={labelCls}>البريد الإلكتروني</label>

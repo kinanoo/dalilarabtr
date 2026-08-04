@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
+import { useSiteWhatsApp, useContactEnabled } from '@/components/SiteSettingsProvider';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Scale, MessageCircle } from 'lucide-react';
@@ -11,11 +11,13 @@ const ALLOWED_PATHS = ['/', '/services'];
 
 export default function WhatsAppAssistant() {
     const waNumber = useSiteWhatsApp();
+  const contactEnabled = useContactEnabled();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const isVisible = ALLOWED_PATHS.includes(pathname || '');
+  // Owner's master contact switch wins over the path allowlist.
+  const isVisible = contactEnabled && ALLOWED_PATHS.includes(pathname || '');
 
   useEffect(() => {
     if (!open) return;

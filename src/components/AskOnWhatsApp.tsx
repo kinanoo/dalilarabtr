@@ -1,7 +1,7 @@
 'use client';
 
 import { MessageCircle } from 'lucide-react';
-import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
+import { useSiteWhatsApp, useContactEnabled } from '@/components/SiteSettingsProvider';
 import { SITE_CONFIG } from '@/lib/config';
 
 /**
@@ -39,8 +39,12 @@ const STRINGS = {
 
 export default function AskOnWhatsApp({ topic, lang = 'ar' }: { topic?: string; lang?: 'ar' | 'tr' }) {
     const waNumber = useSiteWhatsApp();
+    const contactEnabled = useContactEnabled();
     const num = waNumber;
-    if (!num) return null;
+    // Owner switched contact off in /admin/settings: render nothing at all —
+    // not a disabled button, not a placeholder. The reader never sees that a
+    // consultation route exists.
+    if (!contactEnabled || !num) return null;
     const t = STRINGS[lang];
 
     const openWithContext = () => {

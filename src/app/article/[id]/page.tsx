@@ -6,6 +6,7 @@
 
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleServiceCTA from '@/components/article/ArticleServiceCTA';
+import { resolveArticleRedirect } from '@/lib/articleRedirects';
 import ArticleView from '@/components/ArticleViewPremium';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -413,6 +414,16 @@ function buildJsonLd(args: {
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params;
+
+  // A merged slug has no row, so without this it would emit the 404 metadata
+  // (noindex) on a URL that is about to 308 — a contradictory signal to Google
+  // right at the moment we want the redirect respected. Point the canonical at
+  // the surviving page instead.
+  const mergedTo = resolveArticleRedirect(decodeURIComponent(params.id));
+  if (mergedTo) {
+    return { alternates: { canonical: `${SITE_CONFIG.siteUrl}/article/${mergedTo}` } };
+  }
+
   const article = await fetchArticleData(params.id);
 
   if (!article) {
@@ -511,6 +522,17 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 }
 
 export default async function ArticlePage(props: { params: Promise<{ id: string }> }) {
+  // Merged-page redirects are checked FIRST, before any lookup: the row for a
+  // consolidated slug no longer exists, so a DB-driven redirect could never
+  // fire. 308 so Google moves the old URL's authority to the surviving page
+  // instead of dropping it, and so links already shared in Telegram, WhatsApp
+  // and other articles keep working.
+  {
+    const raw = decodeURIComponent((await props.params).id);
+    const merged = resolveArticleRedirect(raw);
+    if (merged) permanentRedirect(`/article/${merged}`);
+  }
+
   const params = await props.params;
   const article = await fetchArticleData(params.id);
 

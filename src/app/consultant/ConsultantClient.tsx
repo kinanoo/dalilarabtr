@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
+import { useSiteWhatsApp, useContactEnabled } from '@/components/SiteSettingsProvider';
 import Link from 'next/link';
 import {
   CheckCircle, AlertTriangle, FileText, RefreshCw, ShieldAlert, Lightbulb,
@@ -70,6 +70,7 @@ const mapArticleToPlan = (article: Article, key: string, scenario: PlanResult): 
 
 export default function ConsultantClient({ initialScenarios = [] }: Props) {
     const waNumber = useSiteWhatsApp();
+    const contactEnabled = useContactEnabled();
   const hasSeed = initialScenarios.length > 0;
   // Skip the client table pull when the server already seeded the catalogue.
   const { scenarios } = useAdminScenarios(hasSeed);
@@ -1349,7 +1350,9 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                     </p>
                   </div>
 
-                  {/* Email CTA */}
+                  {/* Personal-help CTA — hidden entirely when the owner
+                      switches contact off in /admin/settings. */}
+                  {contactEnabled && (
                   <div className="mt-8 p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/40">
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                       <MessageCircle size={18} className="text-emerald-600" />
@@ -1365,6 +1368,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                       تواصل معنا عبر واتساب
                     </a>
                   </div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row justify-center pt-8 mt-auto border-t border-slate-100 dark:border-slate-800 gap-3 sm:gap-4">
                     <button onClick={reset} className="flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 font-bold py-3 order-2 sm:order-1">

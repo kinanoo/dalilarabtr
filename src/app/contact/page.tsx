@@ -1,7 +1,7 @@
 'use client';
 
 import PageHero from '@/components/PageHero';
-import { useSiteWhatsApp } from '@/components/SiteSettingsProvider';
+import { useSiteWhatsApp, useContactEnabled } from '@/components/SiteSettingsProvider';
 import Link from 'next/link';
 import { useState } from 'react';
 import { User, MessageCircle, Copy, AlertCircle, Scale, HelpCircle, FileText, Send } from 'lucide-react';
@@ -21,6 +21,7 @@ const MESSAGE_TYPES = [
 
 export default function ContactPage() {
     const waNumber = useSiteWhatsApp();
+    const contactEnabled = useContactEnabled();
   const [copied, setCopied] = useState(false);
 
   const {
@@ -77,6 +78,7 @@ export default function ContactPage() {
 
         {/* Quick Action Cards — family treatment with accent stripes */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          {contactEnabled && (
           <a
             href={`https://wa.me/${waNumber}`}
             target="_blank"
@@ -90,6 +92,7 @@ export default function ContactPage() {
             <h3 className="font-black text-slate-800 dark:text-slate-100 mb-1 group-hover:text-emerald-600 transition-colors">واتساب</h3>
             <p className="text-xs text-slate-400">راسلنا مباشرةً على واتساب</p>
           </a>
+          )}
 
           <Link
             href="/consultant"
