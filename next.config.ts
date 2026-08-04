@@ -140,6 +140,12 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Lost-kimlik consolidation: three URLs competed for «ضاع الكملك، شو
+      // بعمل؟». Their unique facts were folded into the 1,942-word canonical
+      // (body AND card columns) before the rows were deleted — see
+      // sql/2026-08-04_merge_lost_kimlik.sql.
+      { source: '/article/kimlik-lost-damaged', destination: '/article/lost-kimlik-replacement', permanent: true },
+      { source: '/article/identity-lost-card-replacement', destination: '/article/lost-kimlik-replacement', permanent: true },
       { source: '/article/turkish-citizenship-syrians', destination: '/article/citizenship-syrians', permanent: true },
       { source: '/article/school-registration', destination: '/article/school-registration-turkey', permanent: true },
       // Duplicate pair with reversed slugs, both thin, both competing for the
