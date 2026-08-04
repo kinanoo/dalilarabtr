@@ -13,6 +13,7 @@ import { stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
 import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
+import { bindNumbersToWords } from '@/lib/digits';
 import logger from '@/lib/logger';
 
 // A published news item is effectively immutable, so a 60-second ISR window
@@ -270,8 +271,8 @@ export default async function UpdateDetailPage(
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.5]">
-                        {update.title}
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.5] text-balance">
+                        {bindNumbersToWords(update.title)}
                     </h1>
                 </div>
             </div>
