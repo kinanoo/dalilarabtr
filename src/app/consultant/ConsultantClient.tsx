@@ -74,17 +74,24 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
   // Skip the client table pull when the server already seeded the catalogue.
   const { scenarios } = useAdminScenarios(hasSeed);
 
-  // The hardcoded fallback catalogue is a 212KB source module (~60KB gz
-  // chunk), so it loads after mount instead of riding in the route's
-  // first-load JS. DB rows (seed or hook) cover the UI until it lands.
+  // The hardcoded fallback catalogue is a 220KB source module (~60KB gz chunk).
+  // It used to load on mount for EVERY visitor, on top of the 111 rows the
+  // server already seeded — the same catalogue downloaded twice before anyone
+  // clicked anything. Now it is fetched only when a scenario is actually
+  // missing from the seed (12 ids live in code and not in the table), so the
+  // common path never pays for it.
   const [bundledScenarios, setBundledScenarios] = useState<Record<string, PlanResult>>({});
-  useEffect(() => {
-    let mounted = true;
-    import('@/lib/consultant-scenarios').then(
-      (m) => { if (mounted) setBundledScenarios(m.CONSULTANT_SCENARIOS); },
-      () => { /* offline/chunk error — DB scenarios keep the page usable */ }
-    );
-    return () => { mounted = false; };
+  const bundleReq = useRef<Promise<Record<string, PlanResult>> | null>(null);
+  const loadBundled = useCallback(() => {
+    if (!bundleReq.current) {
+      bundleReq.current = import('@/lib/consultant-scenarios')
+        .then((m) => {
+          setBundledScenarios(m.CONSULTANT_SCENARIOS);
+          return m.CONSULTANT_SCENARIOS as Record<string, PlanResult>;
+        })
+        .catch(() => ({}));
+    }
+    return bundleReq.current;
   }, []);
 
   // Create a map for quick lookup by ID. Prefer the server seed; fall back to
@@ -202,7 +209,16 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
 
   const loadScenario = useCallback(async (key: string) => {
     const seq = ++loadSeq.current;
-    const bundledResult = SCENARIOS[key] || null;
+    let bundledResult = SCENARIOS[key] || null;
+
+    // Only now, and only if the seed does not carry this scenario, is the
+    // bundled catalogue worth its ~60KB. Twelve ids still live in code alone
+    // (emergency-detention, emergency-police-station, emergency-undocumented
+    // and nine others); everyone else never downloads it.
+    if (!bundledResult) {
+      const bundle = await loadBundled();
+      bundledResult = bundle[key] || null;
+    }
 
     // Known scenarios open immediately. The database refresh below can replace
     // the bundled copy, but it must never hold the visible result hostage.
@@ -276,7 +292,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
       // network is unavailable or a database response is malformed.
       if (seq === loadSeq.current) setLoading(false);
     }
-  }, [SCENARIOS]);
+  }, [SCENARIOS, loadBundled]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import NavbarSearch from '@/components/NavbarSearch';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -584,7 +585,11 @@ export default function Navbar() {
           {/* 3. Actions Section (Right) */}
           <div className="flex items-center gap-2 shrink-0">
 
-            {/* Search Removed */}
+            {/* Search on EVERY page. Most visitors land on an article from
+                Google; before this the only search box lived on the homepage,
+                so their only way to look for anything else was to go back to
+                Google. Lazy so its bundle costs nothing until first open. */}
+            <NavbarSearch />
 
             <NotificationBell />
 
