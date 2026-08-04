@@ -46,6 +46,7 @@ import ArticleHeroGallery from './article/ArticleHeroGallery';
 import ArticleViews from './article/ArticleViews';
 import PrintButton from './article/PrintButton';
 import ArticleCompletedBadge from './article/ArticleCompletedBadge';
+import { bindNumbersToWords } from '@/lib/digits';
 
 /** Everything the article view renders. All text fields are already decoded
     (and intro/details sanitized) server-side — see the contract above. */
@@ -207,7 +208,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                   )}
                   <ArticleCompletedBadge slug={slug} documentsCount={article.documents.length} />
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black mb-4 lg:mb-6 leading-[1.5] drop-shadow-lg">{article.title}</h1>
+                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black mb-4 lg:mb-6 leading-[1.5] text-balance drop-shadow-lg">{bindNumbersToWords(article.title)}</h1>
                 <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-slate-400 text-sm font-medium">
                   {/* Visible authorship + review byline — the on-page E-E-A-T
                       signal Google looks for on YMYL pages. Attributed honestly
