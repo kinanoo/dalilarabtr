@@ -19,7 +19,13 @@ name: Content notification cron
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # every 30 minutes (UTC)
+    # Every 5 minutes. Most news on this site is published by running a SQL
+    # file in Supabase, not through the admin editor — so no instant-notify
+    # call fires and the cron IS the delivery path, not a safety net. At 30
+    # minutes, plus GitHub's own scheduling lag, a headline could sit unsent
+    # for the better part of an hour. The pipeline dedupes by link and caps at
+    # MAX_PER_RUN, so a tighter interval costs nothing but a few HTTP calls.
+    - cron: '*/5 * * * *'   # every 5 minutes (UTC)
   workflow_dispatch:           # allow a manual run from the Actions tab
     inputs:
       tgtest:

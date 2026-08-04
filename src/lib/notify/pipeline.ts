@@ -255,7 +255,12 @@ async function sendItems(
 
         // Telegram post — one message per fresh item to the channel.
         if (tgEnabled) {
-            const text = `${item.title}\n\n${item.message}\n\n${SITE_CONFIG.siteUrl}${item.link}`;
+            // Skip the message line when it is empty — news items now carry the
+            // headline as the title with no separate body, and joining blindly
+            // left two blank lines above the link.
+            const text = [item.title, item.message, `${SITE_CONFIG.siteUrl}${item.link}`]
+                .filter((part) => part && String(part).trim())
+                .join('\n\n');
             const r = await sendTelegram(text);
             if (r.ok) tgSent++;
             else { tgError = r.error; logger.error('telegram send failed:', r.error); }
@@ -312,7 +317,11 @@ export async function runNotifyPipeline(
         items.push({ link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title });
     }
     for (const u of (updRes.data as { id: string; title: string }[] | null) || []) {
-        items.push({ link: `/updates/${u.id}`, title: 'تحديث جديد ⚡', message: u.title });
+        // The headline IS the notification. A generic «تحديث جديد ⚡» prefix
+        // above it wasted the first line of every Telegram post and the push
+        // title, pushing the actual news down — and said nothing the reader
+        // could not see from the channel name.
+        items.push({ link: `/updates/${u.id}`, title: u.title, message: '' });
     }
 
     return sendItems(svc, items, opts);

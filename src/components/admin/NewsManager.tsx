@@ -234,10 +234,14 @@ export default function NewsManager() {
         // ignore — cache falls back to its ISR window
       }
 
-      // Notify only for a NEW, LIVE item (not edits, not drafts). One instant
-      // pipeline fans out to bell + push + Telegram; the 30-min cron is only a
-      // safety net. No body — the pipeline scans recent updates itself.
-      if (!editingRow && goLive && sendPush) {
+      // Notify when an item BECOMES live: a brand-new published row, or a
+      // draft flipped to live. The old condition was `!editingRow`, so the
+      // most common workflow — save a draft, review it, then publish — never
+      // fired the instant path and every such item waited for the 30-minute
+      // cron. Re-saving an already-live row still stays silent, and the
+      // pipeline dedupes by link, so a later cron pass cannot double-post.
+      const becameLive = goLive && (!editingRow || editingRow.active === false);
+      if (becameLive && sendPush) {
         try {
           const res = await fetch('/api/admin/notify-now', { method: 'POST' });
           const r = await res.json();
