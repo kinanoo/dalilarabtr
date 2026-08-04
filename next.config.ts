@@ -147,7 +147,30 @@ const nextConfig: NextConfig = {
       { source: '/article/kimlik-lost-damaged', destination: '/article/lost-kimlik-replacement', permanent: true },
       { source: '/article/identity-lost-card-replacement', destination: '/article/lost-kimlik-replacement', permanent: true },
       { source: '/article/turkish-citizenship-syrians', destination: '/article/citizenship-syrians', permanent: true },
+      // NOTE: this redirect predates the row deletion. The article kept
+      // existing in the database behind it, so it stayed in category listings
+      // and the sitemap while its URL bounced elsewhere — merged for real in
+      // sql/2026-08-05_merge_duplicate_clusters.sql.
       { source: '/article/school-registration', destination: '/article/school-registration-turkey', permanent: true },
+      // Duplicate clusters found by comparing the titles of all 355 live
+      // articles within related categories, then reading each candidate. Their
+      // facts were moved into the survivors VERBATIM — list items and field
+      // values copied across, nothing re-written, anything the survivor already
+      // said dropped. See sql/2026-08-05_merge_duplicate_clusters.sql.
+      //
+      // Deliberately NOT merged, because a title-similarity signal flags them
+      // but they are not duplicates: the Adana/Hatay/Mersin city guides (three
+      // cities, one template), CK electricity vs İSKİ water, and cars-in-your-
+      // name vs phone-lines-in-your-name.
+      //
+      // Two of these are also targets of the consultant routing table
+      // (src/lib/consultant-routing.ts), which links to /article/<slug>
+      // directly — the redirects below are what keeps that flow off a 404.
+      { source: '/article/travel-permit-medical', destination: '/article/travel-permit', permanent: true },
+      { source: '/article/travel-permit-visit', destination: '/article/travel-permit', permanent: true },
+      { source: '/article/consumer-rights-complaint', destination: '/article/edevlet-tuketici-sikayet', permanent: true },
+      { source: '/article/newborn-registration', destination: '/article/birth-registration-turkey', permanent: true },
+      { source: '/article/mobile-lines-check', destination: '/article/edevlet-mobil-hat-sorgulama', permanent: true },
       // Duplicate pair with reversed slugs, both thin, both competing for the
       // same query. kimlik-update-data was the weaker of the two AND stated the
       // address-change deadline as "45 days" — the law (5490, md. 50-51, and
