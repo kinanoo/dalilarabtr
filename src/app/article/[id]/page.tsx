@@ -570,7 +570,19 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     siteUrl: SITE_CONFIG.siteUrl,
     articleBody,
     keywords,
-    image: article.image || `${SITE_CONFIG.siteUrl}/og-banner.jpg`,
+    // Same image the og:/twitter: tags use, deliberately. 322 of the 355
+    // articles have no `image` of their own, and this used to fall back to the
+    // single static /og-banner.jpg — so the great majority of the site
+    // published Article and HowTo structured data pointing at one identical
+    // file. A shared image is not a representative image; Google has nothing
+    // to show next to the result and no reason to treat it as belonging to the
+    // page. getOgImage() renders a per-article 1200×630 card carrying the
+    // article's own headline (verified: image/png, 1200×630, and the og host's
+    // robots.txt is `Allow: /` with search=yes, so Googlebot can fetch it).
+    // Passing exactly the same arguments as the og: tags matters — a different
+    // arg set would mint a second worker URL and a second cached card per
+    // article for no gain.
+    image: getOgImage(article.image, { title: article.title }),
     source: article.source,
     steps: stepTexts,
     stepImages,
