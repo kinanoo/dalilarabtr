@@ -1,0 +1,12 @@
+{
+  "name": "dalilarabtr-cron",
+  "private": true,
+  "description": "Cron-trigger worker that calls the content-notification endpoint every 5 minutes",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "logs": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

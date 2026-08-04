@@ -1,0 +1,29 @@
+# dalilarabtr-cron — scheduler for content notifications.
+#
+# Deployed separately from the main site worker:
+#   cd workers/cron
+#   npx wrangler secret put CRON_SECRET   # same value the site worker uses
+#   npx wrangler deploy
+#
+# Replaces .github/workflows/cron-notify.yml as the PRIMARY schedule. GitHub
+# only fired that workflow about once every two hours no matter what interval
+# the file asked for (measured 2026-08-04). The workflow is left in place as a
+# fallback — the notify pipeline dedupes by link, so both running is harmless.
+
+name = "dalilarabtr-cron"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+# No public HTTP surface: no routes, and the workers.dev subdomain is off. The
+# notifier must only ever be reachable through the schedule. Keep this ABOVE
+# the [triggers] table — in TOML a key written after a table header belongs to
+# that table, and wrangler warns "Unexpected fields found in triggers field".
+workers_dev = false
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# console.log/error from the scheduled handler go to Cloudflare logs — the only
+# place a silent failure would show up.
+[observability]
+enabled = true

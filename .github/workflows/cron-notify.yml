@@ -19,13 +19,17 @@ name: Content notification cron
 
 on:
   schedule:
-    # Every 5 minutes. Most news on this site is published by running a SQL
-    # file in Supabase, not through the admin editor — so no instant-notify
-    # call fires and the cron IS the delivery path, not a safety net. At 30
-    # minutes, plus GitHub's own scheduling lag, a headline could sit unsent
-    # for the better part of an hour. The pipeline dedupes by link and caps at
-    # MAX_PER_RUN, so a tighter interval costs nothing but a few HTTP calls.
-    - cron: '*/5 * * * *'   # every 5 minutes (UTC)
+    # FALLBACK ONLY. The real schedule is the Cloudflare cron worker in
+    # workers/cron — see its header for the measurement, but in short: this
+    # interval is a request GitHub does not honour. With '*/5' committed at
+    # 13:25 UTC on 2026-08-04 the workflow fired at 15:58, 17:59 and 19:51 —
+    # roughly two hours apart, no denser than it had been at '*/30'. Tightening
+    # the number here again will not make news arrive sooner.
+    #
+    # Left running because the pipeline dedupes by link and caps at
+    # MAX_PER_RUN, so a second caller costs a few HTTP requests and can only
+    # help if the Cloudflare worker is ever down.
+    - cron: '*/5 * * * *'   # honoured as ~2h by GitHub; see above
   workflow_dispatch:           # allow a manual run from the Actions tab
     inputs:
       tgtest:

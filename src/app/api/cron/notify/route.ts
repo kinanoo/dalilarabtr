@@ -3,20 +3,27 @@ import { createClient } from '@supabase/supabase-js';
 import { runNotifyPipeline, resolveTelegramChat, pushProbe } from '@/lib/notify/pipeline';
 
 /**
- * Scheduled content-notification endpoint (the 30-min safety net).
+ * Scheduled content-notification endpoint.
  *
  * The actual send logic lives in @/lib/notify/pipeline — shared with
  * /api/admin/notify-now, which the editor fires the instant content is
- * published. This route is just the secret-gated scheduler entry: a tiny
- * external scheduler (GitHub Actions, .github/workflows/cron-notify.yml) hits
- * it every ~30 min. Because the pipeline is idempotent (dedupe by link), the
- * cron only ever picks up items the instant path somehow missed — a delayed
- * publish, a failed notify-now call — and never double-posts.
+ * published. This route is just the secret-gated scheduler entry. Because the
+ * pipeline is idempotent (dedupe by link), a caller can only ever pick up
+ * items the instant path missed — a delayed publish, a failed notify-now call,
+ * or the common case here: news published by running a SQL file in Supabase,
+ * which fires no instant call at all. It never double-posts, so more than one
+ * scheduler is safe.
  *
- * We do NOT add a Cloudflare `scheduled()` handler because that would mean
- * surgery on the OpenNext worker entry (open-next.config.ts deliberately ships
- * none) — a plain HTTP route triggered externally is lower-risk and just as
- * reliable.
+ * WHO CALLS THIS: workers/cron, a Cloudflare cron-trigger worker, every 5
+ * minutes. .github/workflows/cron-notify.yml also calls it but is a fallback
+ * only — GitHub honours its schedule at roughly two-hour granularity no matter
+ * what the file asks for (measured 2026-08-04), which is why the Cloudflare
+ * worker exists.
+ *
+ * Still no Cloudflare `scheduled()` handler on the MAIN worker: OpenNext
+ * generates that entrypoint and it exports only `fetch`, so adding one means
+ * wrapping generated code that cannot be bundled on Windows to test. A
+ * separate tiny worker calling this route keeps the site's entrypoint alone.
  *
  * Safety: secret-gated (CRON_SECRET) with a constant-time compare — no secret
  * set → 503, so the endpoint is inert until the owner opts in. `?dry=1` previews
