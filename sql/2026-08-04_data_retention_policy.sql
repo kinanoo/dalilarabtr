@@ -26,18 +26,18 @@
 -- ─── 1) تقرير الأحجام قبل التنظيف ───
 SELECT
   'قبل التنظيف' AS المرحلة,
-  relname       AS الجدول,
+  s.relname     AS الجدول,
   pg_size_pretty(pg_total_relation_size(c.oid)) AS الحجم,
-  n_live_tup    AS عدد_الصفوف_التقريبي
+  s.n_live_tup  AS عدد_الصفوف_التقريبي
 FROM pg_stat_user_tables s
 JOIN pg_class c ON c.oid = s.relid
-WHERE schemaname = 'public'
+WHERE s.schemaname = 'public'
 ORDER BY pg_total_relation_size(c.oid) DESC
 LIMIT 20;
 
 -- ─── 2) دالة التنظيف (تُستخدم الآن ودورياً لاحقاً) ───
 CREATE OR REPLACE FUNCTION public.prune_log_tables()
-RETURNS TABLE(table_name text, rows_deleted bigint)
+RETURNS TABLE(tbl text, deleted bigint)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
@@ -65,9 +65,13 @@ BEGIN
 
     -- تخطَّ الجدول إن لم يكن موجوداً، أو إن لم يحتوِ عمود الوقت المتوقَّع.
     CONTINUE WHEN to_regclass('public.' || t) IS NULL;
+    -- الأعمدة مؤهَّلة بـcols. لأن اسم أي مُخرَج للدالة يحجب عمود الجدول
+    -- الذي يحمل الاسم نفسه داخل plpgsql — وهو ما كان يجعل الفحص بلا معنى.
     CONTINUE WHEN NOT EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_schema = 'public' AND table_name = t AND column_name = ts_col
+      SELECT 1 FROM information_schema.columns cols
+      WHERE cols.table_schema = 'public'
+        AND cols.table_name   = t
+        AND cols.column_name  = ts_col
     );
 
     EXECUTE format(
@@ -76,8 +80,8 @@ BEGIN
     );
     GET DIAGNOSTICS n = ROW_COUNT;
 
-    table_name   := t;
-    rows_deleted := n;
+    tbl     := t;
+    deleted := n;
     RETURN NEXT;
   END LOOP;
 END
@@ -112,12 +116,12 @@ $vac$;
 -- ─── 5) تقرير الأحجام بعد التنظيف ───
 SELECT
   'بعد التنظيف' AS المرحلة,
-  relname       AS الجدول,
+  s.relname     AS الجدول,
   pg_size_pretty(pg_total_relation_size(c.oid)) AS الحجم,
-  n_live_tup    AS عدد_الصفوف_التقريبي
+  s.n_live_tup  AS عدد_الصفوف_التقريبي
 FROM pg_stat_user_tables s
 JOIN pg_class c ON c.oid = s.relid
-WHERE schemaname = 'public'
+WHERE s.schemaname = 'public'
 ORDER BY pg_total_relation_size(c.oid) DESC
 LIMIT 20;
 
@@ -126,8 +130,9 @@ LIMIT 20;
 DO $sched$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
-    PERFORM cron.unschedule('prune-log-tables')
-      WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'prune-log-tables');
+    IF EXISTS (SELECT 1 FROM cron.job j WHERE j.jobname = 'prune-log-tables') THEN
+      PERFORM cron.unschedule('prune-log-tables');
+    END IF;
 
     PERFORM cron.schedule(
       'prune-log-tables',
