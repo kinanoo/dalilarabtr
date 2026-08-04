@@ -38,6 +38,12 @@ interface PeriodInsight {
     engaged_visitors?: number;
 }
 interface TopPage { page_path: string; views: number | string; uniques?: number | string }
+interface DailyPoint {
+    day: string;
+    page_views: number | string | null;
+    unique_visitors: number | string | null;
+    new_visitors: number | string;
+}
 interface Insights {
     tracking_since?: string;
     today?: PeriodInsight;
@@ -116,6 +122,91 @@ function PeriodCard({ title, data }: { title: string; data?: PeriodInsight }) {
     );
 }
 
+// Daily traffic since we started keeping a permanent summary.
+//
+// This is the one tile that answers the owner's actual question — "is the site
+// growing?" — which no single number can. It reads analytics_daily, the rollup
+// that survives the 90-day pruning of analytics_events, so the curve keeps
+// getting longer instead of resetting.
+//
+// Bars, not a line: daily counts are discrete magnitudes, and a line between
+// them implies values at 3am that we never measured. One series, so no legend —
+// the heading names it. Only the peak and the latest day are labelled; a number
+// on all 90 bars would be noise.
+//
+// Time runs oldest-left to today-right, the usual direction for a time axis.
+// Note the array is sorted newest-first and the container is dir="rtl", so flex
+// lays child 0 at the RIGHT — the two cancel out. Measured in a browser rather
+// than assumed, and the caption underneath is laid out by the same rule, so the
+// date under the right end really is the latest day. If you ever change the
+// sort, check the caption still lines up.
+//
+// #059669 in both themes — validated against the light and dark chart surfaces
+// (lightness band + >=3:1 contrast), not a bright-on-dark flip of a light-mode
+// colour.
+const BAR_COLOR = '#059669';
+
+function GrowthChart({ data }: { data: DailyPoint[] }) {
+    const points = [...data]
+        .sort((a, b) => (a.day < b.day ? 1 : -1))   // newest first; RTL puts it rightmost
+        .slice(0, 90);
+    const known = points.filter((p) => p.unique_visitors != null);
+    if (known.length < 2) return null;
+
+    const values = known.map((p) => Number(p.unique_visitors));
+    const max = Math.max(...values);
+    const peakDay = known[values.indexOf(max)]?.day;
+    const latest = points.find((p) => p.unique_visitors != null);
+    const oldest = points[points.length - 1];
+
+    const dayLabel = (d?: string) => (d ? new Date(d + 'T00:00:00Z').toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' }) : '');
+
+    return (
+        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                    <TrendingUp size={14} />
+                </span>
+                <h3 className="text-xs font-black text-slate-700 dark:text-slate-200">الزوّار يومياً</h3>
+                <span className="ms-auto text-[10px] font-bold text-slate-400 tabular-nums">
+                    الذروة {fmt(max)} · {dayLabel(peakDay)}
+                </span>
+            </div>
+
+            <div
+                className="flex items-end gap-[2px] h-16 border-b border-slate-200 dark:border-slate-800"
+                role="img"
+                aria-label={`الزوّار الفريدون يومياً على مدى ${known.length} يوماً. الذروة ${max} زائراً. آخر يوم ${Number(latest?.unique_visitors ?? 0)} زائراً.`}
+            >
+                {points.map((p) => {
+                    const v = p.unique_visitors == null ? null : Number(p.unique_visitors);
+                    // A pruned day is NOT a zero day — it renders as a hairline
+                    // stub in muted ink so a gap in memory never reads as a
+                    // collapse in traffic.
+                    if (v == null) {
+                        return (
+                            <div key={p.day} className="flex-1 h-[2px] rounded-t-[2px] bg-slate-200 dark:bg-slate-700" title={`${p.day} — لا تفاصيل محفوظة`} />
+                        );
+                    }
+                    return (
+                        <div
+                            key={p.day}
+                            className="flex-1 rounded-t-[3px] transition-opacity hover:opacity-70"
+                            style={{ height: `${Math.max((v / max) * 100, 2)}%`, backgroundColor: BAR_COLOR }}
+                            title={`${p.day} — ${v.toLocaleString('en-US')} زائر`}
+                        />
+                    );
+                })}
+            </div>
+
+            <div className="flex items-center justify-between mt-1.5 text-[10px] font-bold text-slate-400">
+                <span className="tabular-nums">{dayLabel(latest?.day)} · {fmt(Number(latest?.unique_visitors ?? 0))}</span>
+                <span className="tabular-nums">{dayLabel(oldest?.day)}</span>
+            </div>
+        </div>
+    );
+}
+
 function MiniPanel({ title, icon: Icon, accent, rows, prefix, action }: {
     title: string;
     icon: React.ElementType;
@@ -163,6 +254,7 @@ export default function SitePulse() {
     const [pages, setPages] = useState<Row[]>([]);
     const [insights, setInsights] = useState<Insights | null>(null);
     const [pagesPeriod, setPagesPeriod] = useState<'week' | 'month'>('week');
+    const [daily, setDaily] = useState<DailyPoint[]>([]);
     const [sources, setSources] = useState<Row[]>([]);
     const [countries, setCountries] = useState<Row[]>([]);
     const [devices, setDevices] = useState<Row[]>([]);
@@ -188,13 +280,17 @@ export default function SitePulse() {
         if (!supabase) { setLoading(false); return; }
         if (silent) setRefreshing(true); else setLoading(true);
         const rpc = (name: string) => supabase!.rpc(name);
-        const [s, c, p, r, co, dv, vi] = await Promise.allSettled([
+        const [s, c, p, r, co, dv, vi, dt] = await Promise.allSettled([
             rpc('get_dashboard_stats'), rpc('get_period_comparison'),
             rpc('get_top_pages'), rpc('get_referrer_stats'),
             rpc('get_country_stats'), rpc('get_device_stats'),
             rpc('get_visitor_insights'),
+            // Absent until the owner runs sql/2026-08-04_analytics_durable_rollups.sql;
+            // allSettled means that just leaves the growth tile unrendered.
+            rpc('get_daily_traffic'),
         ]);
         if (vi.status === 'fulfilled' && vi.value.data) setInsights(vi.value.data as Insights);
+        if (dt.status === 'fulfilled' && Array.isArray(dt.value.data)) setDaily(dt.value.data as DailyPoint[]);
         if (s.status === 'fulfilled' && s.value.data) setStats(s.value.data as Stats);
         if (c.status === 'fulfilled' && c.value.data) setCmp(c.value.data as Comparison);
         if (p.status === 'fulfilled' && Array.isArray(p.value.data))
@@ -280,6 +376,12 @@ export default function SitePulse() {
                     })}
                 </div>
             )}
+
+            {/* Growth curve — stays OUT of the collapsible section on purpose.
+                The KPI cards each answer "how is today?"; none of them answers
+                "are we growing?", which is the owner's actual goal. One short
+                row is a fair price for the only tile that shows a trend. */}
+            {!loading && daily.length > 0 && <GrowthChart data={daily} />}
 
             {/* Live mini-panels — collapsible detail. Toggle keeps the dashboard
                 compact by default; owner expands to see the full breakdown. */}
