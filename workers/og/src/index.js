@@ -15,26 +15,159 @@ import cairoRegular from '../fonts/Cairo-Regular.ttf';
  * the Cloudflare cache on repeat shares.
  */
 
-// ── verbatim helpers from the old /api/og route ────────────────────────────
+// ── Arabic shaping ─────────────────────────────────────────────────────────
+//
+// Why this exists: Satori lays out text by summing each character's advance
+// width from the font's cmap, and for Arabic it looks up the BASE codepoint —
+// whose glyph is the isolated, standalone form. It then draws the connected
+// form, which is much narrower. The leftover width stays in the box, so every
+// word carried a chunk of trailing slack and titles came out with ragged,
+// oversized gaps. Setting the gap between words to zero barely moved them,
+// which is what proved the space was inside the word boxes rather than between
+// them.
+//
+// The fix is to hand Satori text that is already shaped, so the codepoint it
+// measures is the glyph it draws. Unicode's Arabic Presentation Forms-B block
+// exists for exactly this.
+//
+// Verified against both bundled Cairo weights' cmap before writing the table:
+// they contain exactly the 89 non-isolated presentation forms (final, initial,
+// medial, plus the four lam-alef ligature pairs) and NOT ONE isolated form.
+// That is not a gap — it is how the font is built: the base codepoint already
+// maps to the isolated glyph. So the table below stores only the three
+// connected forms, and the isolated case deliberately falls through to the
+// original character.
+//
+// Base letter -> [final, initial, medial]; null where the letter has no such
+// form because it never joins to the following letter.
+const AR_FORMS = {
+    'آ': ['ﺂ', null, null],       'أ': ['ﺄ', null, null],
+    'ؤ': ['ﺆ', null, null],       'إ': ['ﺈ', null, null],
+    'ئ': ['ﺊ', 'ﺋ', 'ﺌ'], 'ا': ['ﺎ', null, null],
+    'ب': ['ﺐ', 'ﺑ', 'ﺒ'], 'ة': ['ﺔ', null, null],
+    'ت': ['ﺖ', 'ﺗ', 'ﺘ'], 'ث': ['ﺚ', 'ﺛ', 'ﺜ'],
+    'ج': ['ﺞ', 'ﺟ', 'ﺠ'], 'ح': ['ﺢ', 'ﺣ', 'ﺤ'],
+    'خ': ['ﺦ', 'ﺧ', 'ﺨ'], 'د': ['ﺪ', null, null],
+    'ذ': ['ﺬ', null, null],       'ر': ['ﺮ', null, null],
+    'ز': ['ﺰ', null, null],       'س': ['ﺲ', 'ﺳ', 'ﺴ'],
+    'ش': ['ﺶ', 'ﺷ', 'ﺸ'], 'ص': ['ﺺ', 'ﺻ', 'ﺼ'],
+    'ض': ['ﺾ', 'ﺿ', 'ﻀ'], 'ط': ['ﻂ', 'ﻃ', 'ﻄ'],
+    'ظ': ['ﻆ', 'ﻇ', 'ﻈ'], 'ع': ['ﻊ', 'ﻋ', 'ﻌ'],
+    'غ': ['ﻎ', 'ﻏ', 'ﻐ'], 'ف': ['ﻒ', 'ﻓ', 'ﻔ'],
+    'ق': ['ﻖ', 'ﻗ', 'ﻘ'], 'ك': ['ﻚ', 'ﻛ', 'ﻜ'],
+    'ل': ['ﻞ', 'ﻟ', 'ﻠ'], 'م': ['ﻢ', 'ﻣ', 'ﻤ'],
+    'ن': ['ﻦ', 'ﻧ', 'ﻨ'], 'ه': ['ﻪ', 'ﻫ', 'ﻬ'],
+    'و': ['ﻮ', null, null],       'ى': ['ﻰ', null, null],
+    'ي': ['ﻲ', 'ﻳ', 'ﻴ'],
+};
 
-// Satori renders Arabic words LTR — reverse word order + fix bracket/slash positions.
-// ONLY for Arabic text: a Turkish/Latin title must keep its natural order.
-function fixArabic(text) {
+// LAM followed by one of these alefs is a single ligature glyph, never two
+// letters. [isolated, final] — both present in the font.
+const LAM_ALEF = {
+    'آ': ['ﻵ', 'ﻶ'], 'أ': ['ﻷ', 'ﻸ'],
+    'إ': ['ﻹ', 'ﻺ'], 'ا': ['ﻻ', 'ﻼ'],
+};
+
+const TATWEEL = 'ـ';
+
+// Harakat and other marks sit above/below a letter and must not break a join —
+// they are skipped when looking at neighbours but kept in the output.
+const isTransparent = (c) =>
+    (c >= 'ؐ' && c <= 'ؚ') || (c >= 'ً' && c <= 'ٟ') ||
+    c === 'ٰ' || (c >= 'ۖ' && c <= 'ۜ') || (c >= '۟' && c <= 'ۨ');
+
+// Can this character take a join from the letter BEFORE it? True for every
+// letter that has a final form.
+const joinsBack = (c) => c === TATWEEL || Object.prototype.hasOwnProperty.call(AR_FORMS, c);
+// Does this character connect FORWARD to the next letter? Only dual-joining
+// letters do, and those are exactly the ones with an initial form.
+const joinsForward = (c) => c === TATWEEL || (AR_FORMS[c] ? AR_FORMS[c][1] !== null : false);
+
+function shapeArabic(text) {
     if (!/[؀-ۿ]/.test(text)) return text;
-    return text
-        .split(' ')
-        .reverse()
-        .map((word) => {
-            if (word.includes('/')) word = word.split('/').reverse().join('/');
-            if (word.startsWith('(') && word.endsWith(')')) return word;
-            if (word.startsWith(')') && word.endsWith('(')) return word;
-            if (word.startsWith('(')) return word.slice(1) + ')';
-            if (word.startsWith(')')) return word.slice(1) + '(';
-            if (word.endsWith(')')) return '(' + word.slice(0, -1);
-            if (word.endsWith('(')) return ')' + word.slice(0, -1);
-            return word;
-        })
-        .join(' ');
+    const chars = [...text];
+    const out = [];
+
+    const neighbour = (from, step) => {
+        for (let i = from + step; i >= 0 && i < chars.length; i += step) {
+            if (!isTransparent(chars[i])) return chars[i];
+        }
+        return null;
+    };
+
+    for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        if (!AR_FORMS[ch] && ch !== TATWEEL) { out.push(ch); continue; }
+
+        const prev = neighbour(i, -1);
+        const joinPrev = prev !== null && joinsForward(prev);
+
+        // LAM + ALEF collapses to one ligature. Consume both.
+        const nxt = neighbour(i, 1);
+        if (ch === 'ل' && nxt && LAM_ALEF[nxt]) {
+            out.push(LAM_ALEF[nxt][joinPrev ? 1 : 0]);
+            // Skip forward past the alef, carrying any marks between them.
+            for (let j = i + 1; j < chars.length; j++) {
+                if (chars[j] === nxt) { i = j; break; }
+                out.push(chars[j]);
+            }
+            continue;
+        }
+
+        if (ch === TATWEEL) { out.push(ch); continue; }
+
+        const joinNext = joinsForward(ch) && nxt !== null && joinsBack(nxt);
+        const [fin, ini, med] = AR_FORMS[ch];
+        // Isolated falls through to the base character on purpose — see above.
+        if (joinPrev && joinNext) out.push(med || fin || ch);
+        else if (joinPrev)        out.push(fin || ch);
+        else if (joinNext)        out.push(ini || ch);
+        else                      out.push(ch);
+    }
+    return out.join('');
+}
+
+// ── logical order -> visual order ──────────────────────────────────────────
+//
+// This replaces the old fixArabic(), which reversed WORD order only and left
+// the letters inside each word alone. That worked because the renderer saw
+// base Arabic codepoints, recognised them as right-to-left, and reversed the
+// letters itself.
+//
+// Once the text is pre-shaped that stops happening: presentation forms are
+// compatibility characters and the renderer leaves them in the order given, so
+// shaping alone produced correctly-joined words spelled backwards. Since we are
+// now taking over shaping, we have to take over ordering too — the two cannot
+// be split between us and the renderer.
+//
+// So: emit the string back-to-front, mirroring brackets, but keep each Latin
+// or numeric run in its own left-to-right order. That last part matters —
+// titles here carry things like "2026" and "e-Devlet", and a blind reversal
+// would render them backwards.
+const MIRROR = { '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{', '<': '>', '>': '<', '«': '»', '»': '«' };
+const isLtrChar = (c) => /[A-Za-z0-9À-ÖØ-öø-ÿĞğİıŞşÇçÖöÜü]/.test(c);
+
+function visualOrder(text) {
+    if (!/[؀-ۿ]/.test(text)) return text;
+    const chars = [...text];
+    const out = [];
+    let i = chars.length - 1;
+    while (i >= 0) {
+        if (isLtrChar(chars[i])) {
+            // Walk back over the whole Latin/number run — including the
+            // separators inside it (2026-07-18, e-Devlet, turkiye.gov.tr) —
+            // then emit it unreversed.
+            let j = i;
+            while (j >= 0 && (isLtrChar(chars[j]) ||
+                   (/[.\-_/:]/.test(chars[j]) && j > 0 && isLtrChar(chars[j - 1])))) j--;
+            out.push(chars.slice(j + 1, i + 1).join(''));
+            i = j;
+        } else {
+            out.push(MIRROR[chars[i]] || chars[i]);
+            i--;
+        }
+    }
+    return out.join('');
 }
 
 function splitLines(text, maxChars) {
@@ -67,6 +200,26 @@ function getTitleSize(len) {
 
 // Element helper (satori object notation — no JSX in a plain worker)
 const h = (type, style, children) => ({ type, props: { style, children } });
+
+// Emit already-ordered text as one span per character.
+//
+// Needed because shaping leaves the string MIXED: connected letters become
+// presentation forms, which the renderer treats as neutral and leaves alone,
+// while isolated letters stay as base Arabic codepoints, which it still sees
+// as right-to-left and reverses. Handing it a whole line meant our ordering
+// and its ordering both applied to different parts of the same string — which
+// is exactly why «فقدان» came out «فقدنا» and «أو» came out «وأ»: those are the
+// words that end in two isolated letters.
+//
+// A single character cannot be reordered, so putting each in its own span
+// leaves the order entirely ours and removes the renderer's bidi from the
+// picture. Joining is unaffected: in Arabic the connecting strokes belong to
+// the glyph outlines themselves, so adjacent glyphs with correct advances still
+// meet — verified in a render, not assumed.
+// A span holding only a plain space collapses to zero width, which ran every
+// word together. U+00A0 is the same advance and does not collapse.
+const arabicText = (text, style) =>
+    [...visualOrder(shapeArabic(text))].map((ch) => h('span', style || {}, ch === ' ' ? ' ' : ch));
 
 // Palette — deep olive-green (lightened from the very-dark ministry olive) with
 // muted gold accents. White title for maximum legibility on long Arabic titles;
@@ -101,12 +254,13 @@ function card(title, category) {
                 background: 'rgba(216,185,106,0.12)', color: GOLD, padding: '8px 26px',
                 borderRadius: '9999px', fontSize: '23px', fontWeight: 700,
                 border: '1px solid rgba(216,185,106,0.5)',
-            }, fixArabic(category))] : []),
+            }, arabicText(category))] : []),
             h('div', { width: '92px', height: '5px', background: GOLD, borderRadius: '4px', display: 'flex' }),
             h('div', { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '100%' },
                 lines.map((line) => h('div', {
+                    display: 'flex', flexDirection: 'row',
                     color: '#ffffff', fontSize: `${fontSize}px`, fontWeight: 700, lineHeight: 1.4,
-                }, fixArabic(line)))),
+                }, arabicText(line)))),
         ]),
         // Bottom branding bar
         h('div', {
@@ -115,7 +269,7 @@ function card(title, category) {
             border: '1px solid rgba(216,185,106,0.30)', position: 'relative',
         }, [
             h('span', { color: 'rgba(255,255,255,0.62)', fontSize: '21px', fontWeight: 400 }, 'dalilarabtr.com'),
-            h('span', { color: GOLD, fontSize: '25px', fontWeight: 700 }, fixArabic('دليل العرب في تركيا')),
+            h('div', { display: 'flex', flexDirection: 'row', color: GOLD, fontSize: '25px', fontWeight: 700 }, arabicText('دليل العرب في تركيا')),
         ]),
     ]);
 }

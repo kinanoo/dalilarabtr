@@ -47,8 +47,18 @@ export function getOgImage(
         if (card?.category?.trim()) params.set('category', card.category.trim());
         // Cache-bust: the OG worker caches each URL immutably for a year, so bump
         // this whenever the card DESIGN changes to force fresh cards everywhere
-        // (v2 = olive-green + gold redesign, 2026-07-08).
-        params.set('v', '2');
+        // (v2 = olive-green + gold redesign, 2026-07-08;
+        //  v5 = Arabic shaping, 2026-08-05 — the old cards had ragged word gaps
+        //  because the renderer measured isolated letterforms; without this bump
+        //  every card already cached would keep the broken spacing for a year).
+        //
+        // Why v5 and not v3: v3 and v4 were requested while the new worker was
+        // still rolling out, so the edge cached the OLD image under those keys —
+        // and the worker sets max-age=31536000, immutable, so a poisoned key
+        // stays poisoned for a year. v5 was confirmed a clean miss on three
+        // titles before being wired up here. If you ever bump this again, do NOT
+        // fetch the new value until after the worker deploy has settled.
+        params.set('v', '5');
         return `https://og.dalilarabtr.com/?${params.toString()}`;
     }
     return `${SITE_CONFIG.siteUrl}/og-banner.jpg`;
