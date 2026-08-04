@@ -688,8 +688,33 @@ function GeneralSettingsForm() {
         setLoading(true);
         // Ensure ID 1 exists
         const { error } = await adminUpsert('site_settings', { id: 1, ...settings });
-        if (!error) toast.success('تم الحفظ بنجاح');
-        else toast.error('فشل الحفظ: ' + error.message);
+        if (error) {
+            toast.error('فشل الحفظ: ' + error.message);
+            setLoading(false);
+            return;
+        }
+
+        // Purge every cached page, and WAIT for it before reporting success.
+        // These settings are resolved in the root layout, so without this the
+        // contact switch would keep serving the old state for up to an hour —
+        // the owner would flip it off, see "saved", and still be reachable.
+        // Awaited (not fire-and-forget) so the toast tells the truth about
+        // whether the change is actually live.
+        let purged = false;
+        try {
+            const res = await fetch('/api/admin/revalidate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ scope: 'site' }),
+            });
+            purged = res.ok;
+        } catch {
+            purged = false;
+        }
+
+        toast.success(purged
+            ? 'تم الحفظ — والتغيير ساري على الموقع خلال ثوانٍ'
+            : 'تم الحفظ، لكن تفريغ الكاش فشل — قد يستغرق ظهور التغيير حتى ساعة');
         setLoading(false);
     }
 

@@ -51,6 +51,27 @@ binding = "ASSETS"
 binding = "NEXT_INC_CACHE_R2_BUCKET"
 bucket_name = "dalilarab"
 
+# Durable Object holding the Next.js tag cache — the piece that makes
+# `revalidatePath()` actually purge something.
+#
+# Without it the adapter falls back to its "dummy" tag cache, whose isStale()
+# always answers false: /api/admin/revalidate returned 200 and changed nothing,
+# so every admin edit sat behind the full ISR window while the UI claimed the
+# change was live. The DO stores one row per revalidated tag in SQLite and the
+# read path consults it, so a purge is immediate and strongly consistent.
+#
+# Unlike R2, nothing has to be created before deploying: the DOShardedTagCache
+# class is exported by the generated worker and the migration below creates the
+# namespace on the first deploy. Uses SQLite storage, hence new_sqlite_classes.
+# The binding name is fixed by the adapter — do not rename it.
+[[durable_objects.bindings]]
+name = "NEXT_TAG_CACHE_DO_SHARDED"
+class_name = "DOShardedTagCache"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DOShardedTagCache"]
+
 # Logging — sends Worker stdout/stderr to Cloudflare Logpush. Useful for
 # debugging during cutover, can be removed once stable.
 [observability]

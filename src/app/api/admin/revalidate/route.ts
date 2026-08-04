@@ -86,6 +86,25 @@ export async function POST(req: NextRequest) {
 
         // ── Parse + validate body ───────────────────────────────────
         const body = await req.json().catch(() => null);
+
+        // Site-wide purge. The per-path allowlist cannot express this: settings
+        // like the contact switch and the WhatsApp number are resolved in the
+        // ROOT LAYOUT, so flipping one changes every page on the site — and
+        // there is no listing 357 articles under a 20-path cap. Next's
+        // layout-scoped revalidation is exactly this semantic: purge everything
+        // nested under `/`. Still admin-only, and deliberately a separate,
+        // explicit opt-in rather than something a stray `paths` array can
+        // trigger by accident.
+        if (body?.scope === 'site') {
+            try {
+                revalidatePath('/', 'layout');
+                return NextResponse.json({ revalidated: ['/ (layout)'], skipped: [] });
+            } catch (err) {
+                logger.error('site-wide revalidate failed:', err);
+                return NextResponse.json({ error: 'فشل التحديث الفوري' }, { status: 500 });
+            }
+        }
+
         const paths = body?.paths;
 
         if (!Array.isArray(paths)) {
