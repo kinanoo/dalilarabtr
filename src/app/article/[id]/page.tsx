@@ -5,6 +5,7 @@
 // } from '@/lib/schemaOrg';
 
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
+import ArticleServiceCTA from '@/components/article/ArticleServiceCTA';
 import ArticleView from '@/components/ArticleViewPremium';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -599,6 +600,11 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
       <ArticleView article={article} slug={params.id}>
         {/* "Didn't understand? message us on WhatsApp" — on every article
             (not the services directory, which has its own contact buttons). */}
+        {/* Bridge to the services funnel. Server-rendered so the links are
+            crawlable — that is the whole point; a client widget would give
+            Google nothing. Renders above the WhatsApp prompt because a reader
+            who needs a professional wants the directory before a chat. */}
+        <ArticleServiceCTA slug={params.id} category={article.category} tags={article.tags} />
         <AskOnWhatsApp topic={article.title} />
         <UniversalComments entityType="article" entityId={params.id} />
       </ArticleView>
