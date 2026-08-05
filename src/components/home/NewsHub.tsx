@@ -42,6 +42,7 @@ type FeaturedRow = {
   intro?: string | null;
   category?: string | null;
   published_at?: string | null;
+  created_at?: string | null;
   image?: string | null;
 };
 
@@ -61,7 +62,11 @@ async function getFeatured(): Promise<FeaturedRow[]> {
     const result = await withTimeout(
       supabase
         .from('articles')
-        .select('id, slug, title, intro, category, published_at, image')
+        // created_at is selected, not just ordered by: it is the fallback when
+        // published_at is null. That was harmless while featured items were
+        // pinned to the front regardless of date, but now that the list is
+        // sorted an empty sortDate would sink a brand-new article to the end.
+        .select('id, slug, title, intro, category, published_at, created_at, image')
         .contains('tags', [FEATURED_TAG])
         .eq('active', true)
         .eq('status', 'approved')
@@ -85,8 +90,10 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
     title: a.title,
     intro: a.intro || undefined,
     type: a.category || 'خبر رئيسي',
-    dateLabel: formatArabicDate(a.published_at || undefined),
-    sortDate: a.published_at || '',
+    dateLabel: formatArabicDate(a.published_at || a.created_at || undefined),
+    // Truncated to YYYY-MM-DD so it compares like-for-like against the
+    // updates, whose dates carry no time at all.
+    sortDate: (a.published_at || a.created_at || '').slice(0, 10),
     href: `/article/${a.slug || a.id}`,
     image: a.image || undefined,
     featured: true,
@@ -109,7 +116,20 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
       urgent: u.type === 'عاجل' || u.type === 'هام',
     }));
 
-  const items = [...featuredItems, ...updateItems];
+  // Sort the COMBINED list by date. This used to be a plain concatenation,
+  // which pinned every featured article ahead of every update no matter how
+  // old it was: the owner published a news item on 2026-08-04 and found it at
+  // slide 9 of 19, behind seven featured articles from late June and July,
+  // because the featured query caps at 8. Being featured is a matter of
+  // presentation — the card still gets its ring from `featured` — not a reason
+  // to outrank newer news.
+  //
+  // Both sides are plain YYYY-MM-DD (articles.published_at is a DATE column,
+  // and the updates arrive already truncated to a day), so a string compare is
+  // the date compare. Equal days keep their arrival order, which leaves a
+  // featured item ahead of an update published the same day.
+  const items = [...featuredItems, ...updateItems]
+    .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
   if (items.length === 0) return null;
 
   return <NewsAndUpdates items={items} />;
