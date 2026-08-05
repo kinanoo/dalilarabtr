@@ -3,18 +3,10 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, FileText, Smartphone } from 'lucide-react';
+import type { EDevletService } from '@/lib/edevletServices';
 import { minTokenMatches, normalizeArabic, tokenizeArabicQuery } from '@/lib/arabicSearch';
 import PageHero from '@/components/PageHero';
 import HeroSearchInput from '@/components/HeroSearchInput';
-
-type EDevletService = {
-  id: string;
-  title: string;
-  intro: string;
-  lastUpdate: string;
-  source?: string;
-  slug?: string;
-};
 
 // Auto-categorize services based on title keywords
 const CATEGORY_RULES: { label: string; keywords: string[] }[] = [
@@ -141,47 +133,63 @@ export default function EDevletServicesHub({
             {filteredServices.map((service) => (
               <div
                 key={service.id}
-                className="group relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all"
+                id={service.id}
+                // scroll-mt clears the sticky header when one of the retired
+                // /article/<slug> URLs lands on this card's anchor.
+                className="group relative overflow-hidden scroll-mt-28 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 hover:-translate-y-0.5 transition-all"
               >
                 {/* Accent stripe — start edge (RTL-aware) */}
                 <span className="absolute top-0 start-0 h-full w-1 bg-emerald-500 opacity-70 group-hover:opacity-100 transition-opacity" />
 
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
-                    <FileText size={22} />
-                  </div>
-                  <span className="text-xs font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg whitespace-nowrap tabular-nums" dir="ltr">
-                    {service.lastUpdate}
-                  </span>
+                <div className="p-3 mb-4 w-fit rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+                  <FileText size={22} />
                 </div>
 
                 <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 mb-2 leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {service.title}
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed">
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
                   {service.intro}
                 </p>
 
-                <div className="flex items-center justify-between gap-3">
-                  <Link
-                    href={`/article/${service.slug || service.id}`}
-                    className="text-emerald-700 dark:text-emerald-400 font-black text-sm hover:underline"
-                  >
-                    اقرأ الشرح
-                  </Link>
+                {/* The step that is genuinely specific to this service. The
+                    shared ones are stated once, below the grid. */}
+                {service.howTo && (
+                  <p className="text-[13px] text-slate-700 dark:text-slate-200 leading-relaxed mb-3 ps-3 border-s-2 border-emerald-200 dark:border-emerald-800">
+                    {service.howTo}
+                  </p>
+                )}
 
-                  {service.source ? (
-                    <a
-                      href={service.source}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-black hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
-                    >
-                      زيارة الموقع
-                      <ExternalLink size={16} />
-                    </a>
-                  ) : null}
-                </div>
+                {service.needs?.length ? (
+                  <ul className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed mb-3 space-y-1">
+                    {service.needs.map((n) => (
+                      <li key={n}>• {n}</li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                {service.notes?.length ? (
+                  <details className="mb-4 text-[13px]">
+                    <summary className="cursor-pointer font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+                      تفاصيل أكثر
+                    </summary>
+                    <div className="mt-2 space-y-2 text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {service.notes.map((n) => (
+                        <p key={n}>{n}</p>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+
+                <a
+                  href={service.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto self-start bg-emerald-600 text-white px-4 py-2 rounded-xl font-black hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                >
+                  افتح الخدمة الرسمية
+                  <ExternalLink size={16} />
+                </a>
               </div>
             ))}
           </div>

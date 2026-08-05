@@ -26,14 +26,41 @@ import { readFileSync } from 'node:fs';
 // Empty is the normal state. Entries live here for one deploy and are removed
 // the moment their rows are deleted — which is what the stale check below
 // forces.
-const MERGE_CONSULATE = 'sql/2026-08-05_merge_consulate_cluster.sql';
+const RETIRE_EDEVLET = 'sql/2026-08-05_retire_edevlet_template_pages.sql';
 const PENDING_SQL = {
-    'gaziantep-syrian-consulate-opens-2026-06-11': MERGE_CONSULATE,
-    'alqnslya-alswrya-fy-ghazy-antab-mttlbat': MERGE_CONSULATE,
-    'syrian-consular-appointments-app': MERGE_CONSULATE,
-    'passport-booking-system-legacy': MERGE_CONSULATE,
-    'agency-attestation-legacy': MERGE_CONSULATE,
-    'identity-passport-renewal-update': MERGE_CONSULATE,
+    'edevlet-adima-tescilli-arac': RETIRE_EDEVLET,
+    'edevlet-adli-sicil-kaydi': RETIRE_EDEVLET,
+    'edevlet-adres-degisikligi-bildirimi': RETIRE_EDEVLET,
+    'edevlet-aile-hekim-bilgisi-sorgulama': RETIRE_EDEVLET,
+    'edevlet-aracimin-cekildigi-otopark-bilgisi-sorgulama': RETIRE_EDEVLET,
+    'edevlet-borc-durumu-sorgulama': RETIRE_EDEVLET,
+    'edevlet-cimer-basvuru': RETIRE_EDEVLET,
+    'edevlet-ck-bogazici-elektrik': RETIRE_EDEVLET,
+    'edevlet-dava-dosyasi-sorgulama': RETIRE_EDEVLET,
+    'edevlet-dogum-raporu': RETIRE_EDEVLET,
+    'edevlet-doviz': RETIRE_EDEVLET,
+    'edevlet-e-nabiz': RETIRE_EDEVLET,
+    'edevlet-evlenme-ehliyet': RETIRE_EDEVLET,
+    'edevlet-ikamet-kisisel-bilgi': RETIRE_EDEVLET,
+    'edevlet-imei-sorgulama': RETIRE_EDEVLET,
+    'edevlet-iski-su': RETIRE_EDEVLET,
+    'edevlet-mhrs': RETIRE_EDEVLET,
+    'edevlet-mobil-hat-sorgulama': RETIRE_EDEVLET,
+    'edevlet-nvi-nufus-kayit-ornegi': RETIRE_EDEVLET,
+    'edevlet-nvi-yerlesim-yeri': RETIRE_EDEVLET,
+    'edevlet-operator-debt': RETIRE_EDEVLET,
+    'edevlet-plaka-ceza': RETIRE_EDEVLET,
+    'edevlet-sgk-hizmet-dokumu': RETIRE_EDEVLET,
+    'edevlet-sgk-kayit-belgesi': RETIRE_EDEVLET,
+    'edevlet-sirketlerim': RETIRE_EDEVLET,
+    'edevlet-surucu-basvuru-durum': RETIRE_EDEVLET,
+    'edevlet-surucu-ceza-nokta-belgesi': RETIRE_EDEVLET,
+    'edevlet-tapu-harc': RETIRE_EDEVLET,
+    'edevlet-tapu-telefon-beyan': RETIRE_EDEVLET,
+    'edevlet-tuketici-sikayet': RETIRE_EDEVLET,
+    'edevlet-vergi-borcu': RETIRE_EDEVLET,
+    'edevlet-webtapu': RETIRE_EDEVLET,
+    'edevlet-yol-izin': RETIRE_EDEVLET,
 };
 
 const env = Object.fromEntries(

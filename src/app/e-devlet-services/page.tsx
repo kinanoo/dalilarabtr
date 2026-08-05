@@ -1,6 +1,5 @@
-import { supabase } from '@/lib/supabaseClient';
 import EDevletServicesHub from '@/components/EDevletServicesHub';
-import type { Article } from '@/lib/types';
+import { EDEVLET_SERVICES, EDEVLET_PREREQS, EDEVLET_STEPS, EDEVLET_TIPS } from '@/lib/edevletServices';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { MapPin, IdCard, FileText, Smartphone, HelpCircle, ChevronLeft } from 'lucide-react';
@@ -8,26 +7,28 @@ import ShareMenu from '@/components/ShareMenu';
 import ToolFooter from '@/components/tools/ToolFooter';
 import { SITE_CONFIG } from '@/lib/config';
 
-// ─── أشهر معاملات e-Devlet — colloquial task labels → the exact article ───────
-// Phrased the way people actually search («ورقة العنوان»، «أشيّك على نفوسي»)
-// and pointed at the real article slug (all verified to exist).
-const POPULAR_TASKS: { q: string; slug: string; icon: typeof MapPin }[] = [
-  { q: 'كيف أستخرج ورقة العنوان (سند إقامة / yerleşim yeri)؟', slug: 'edevlet-nvi-yerlesim-yeri', icon: MapPin },
-  { q: 'كيف أعرف إذا عندي عنوان مسجّل وأتحقّق من قيدي؟', slug: 'edevlet-ikamet-kisisel-bilgi', icon: MapPin },
-  { q: 'كيف أستخرج بيان قيد عائلي (سجل نفوس)؟', slug: 'edevlet-nvi-nufus-kayit-ornegi', icon: IdCard },
-  { q: 'كيف أطلع وثيقة خلو سوابق (لا حكم عليه)؟', slug: 'edevlet-adli-sicil-kaydi', icon: FileText },
-  { q: 'كيف أتحقّق من الخطوط المسجّلة باسمي؟', slug: 'edevlet-mobil-hat-sorgulama', icon: Smartphone },
-  { q: 'كيف أتأكّد من هاتفي والرقم التسلسلي IMEI؟', slug: 'edevlet-imei-sorgulama', icon: Smartphone },
-  { q: 'كيف أحجز موعد مستشفى عبر MHRS؟', slug: 'edevlet-mhrs', icon: FileText },
-  { q: 'كيف أشوف تقاريري الطبية (e-Nabız)؟', slug: 'edevlet-e-nabiz', icon: FileText },
-  { q: 'كيف أستعلم عن مخالفات سيارتي؟', slug: 'edevlet-plaka-ceza', icon: FileText },
-  { q: 'كيف أطلع وثيقة تسجيل في SGK؟', slug: 'edevlet-sgk-kayit-belgesi', icon: FileText },
-  { q: 'كيف أستخرج ورقة أعزب (أهلية زواج)؟', slug: 'edevlet-evlenme-ehliyet', icon: FileText },
-  { q: 'كيف أقدّم شكوى رسمية (CİMER)؟', slug: 'edevlet-cimer-basvuru', icon: FileText },
+// ─── أشهر معاملات e-Devlet — colloquial task labels → the card on this page ──
+// Phrased the way people actually search («ورقة العنوان»، «أشيّك على نفوسي»).
+// These used to link out to a separate article each; they now jump to the
+// service's card here, because that article was a template with ~38 words of
+// its own — see src/lib/edevletServices.ts.
+const POPULAR_TASKS: { q: string; anchor: string; icon: typeof MapPin }[] = [
+  { q: 'كيف أستخرج ورقة العنوان (سند إقامة / yerleşim yeri)؟', anchor: 'nvi-yerlesim-yeri', icon: MapPin },
+  { q: 'كيف أعرف إذا عندي عنوان مسجّل وأتحقّق من قيدي؟', anchor: 'ikamet-kisisel-bilgi', icon: MapPin },
+  { q: 'كيف أستخرج بيان قيد عائلي (سجل نفوس)؟', anchor: 'nvi-nufus-kayit-ornegi', icon: IdCard },
+  { q: 'كيف أطلع وثيقة خلو سوابق (لا حكم عليه)؟', anchor: 'adli-sicil-kaydi', icon: FileText },
+  { q: 'كيف أتحقّق من الخطوط المسجّلة باسمي؟', anchor: 'mobil-hat-sorgulama', icon: Smartphone },
+  { q: 'كيف أتأكّد من هاتفي والرقم التسلسلي IMEI؟', anchor: 'imei-sorgulama', icon: Smartphone },
+  { q: 'كيف أحجز موعد مستشفى عبر MHRS؟', anchor: 'mhrs', icon: FileText },
+  { q: 'كيف أشوف تقاريري الطبية (e-Nabız)؟', anchor: 'e-nabiz', icon: FileText },
+  { q: 'كيف أستعلم عن مخالفات سيارتي؟', anchor: 'plaka-ceza', icon: FileText },
+  { q: 'كيف أطلع وثيقة تسجيل في SGK؟', anchor: 'sgk-kayit-belgesi', icon: FileText },
+  { q: 'كيف أستخرج ورقة أعزب (أهلية زواج)؟', anchor: 'evlenme-ehliyet', icon: FileText },
+  { q: 'كيف أقدّم شكوى رسمية (CİMER)؟', anchor: 'cimer-basvuru', icon: FileText },
 ];
 
 // ─── FAQ — colloquial questions, short accurate answers, links to detail ─────
-const EDEVLET_FAQ: { q: string; a: string; slug?: string }[] = [
+const EDEVLET_FAQ: { q: string; a: string; anchor?: string }[] = [
   {
     q: 'ما هو e-Devlet وكيف أدخل إليه؟',
     a: 'e-Devlet (turkiye.gov.tr) هي بوابة الحكومة التركية الإلكترونية لإنجاز آلاف المعاملات الرسمية أونلاين. للدخول تحتاج رقم الكملك/الهوية وكلمة مرور e-Devlet التي تشتريها من أي مكتب بريد PTT برسم بسيط، ثم تدخل كل الخدمات من مكان واحد.',
@@ -35,22 +36,22 @@ const EDEVLET_FAQ: { q: string; a: string; slug?: string }[] = [
   {
     q: 'كيف أستخرج ورقة العنوان (إثبات السكن / yerleşim yeri belgesi)؟',
     a: 'من e-Devlet ابحث عن خدمة «Yerleşim Yeri (İkametgah) Belgesi» واستخرج الوثيقة واطبعها فوراً بلا مراجعة النفوس. الشرح بالخطوات في دليلنا المخصّص.',
-    slug: 'edevlet-nvi-yerlesim-yeri',
+    anchor: 'nvi-yerlesim-yeri',
   },
   {
     q: 'كيف أعرف إذا عندي عنوان مسجّل وأشيّك على نفوسي وقيدي؟',
     a: 'تقدر تستعلم عن معلومات عنوانك وإقامتك المسجّلة رسمياً عبر e-Devlet، فتعرف إن كان عندك عنوان مثبّت وما هو. راجع دليل الاستعلام عن معلومات الإقامة، ووثيقة العنوان لطباعتها.',
-    slug: 'edevlet-ikamet-kisisel-bilgi',
+    anchor: 'ikamet-kisisel-bilgi',
   },
   {
     q: 'كيف أستخرج بيان قيد عائلي (سجل النفوس / Nüfus Kayıt Örneği)؟',
     a: 'تُستخرج وثيقة قيد النفوس/البيان العائلي عبر خدمة «Nüfus Kayıt Örneği» على e-Devlet (متاحة غالباً لحاملي الجنسية التركية). التفاصيل والحالات في الدليل.',
-    slug: 'edevlet-nvi-nufus-kayit-ornegi',
+    anchor: 'nvi-nufus-kayit-ornegi',
   },
   {
     q: 'كيف أتحقّق من الخطوط والهواتف المسجّلة باسمي؟',
     a: 'من e-Devlet تعرف عدد خطوط الجوال المسجّلة باسمك (لتتجنّب استعمالاً غير مشروع)، وتتحقّق من حالة هاتفك عبر رقم IMEI. لكل منهما دليل منفصل بالخطوات.',
-    slug: 'edevlet-mobil-hat-sorgulama',
+    anchor: 'mobil-hat-sorgulama',
   },
   {
     q: 'هل خدمات e-Devlet مجانية وهل تحتاج كملك؟',
@@ -58,7 +59,7 @@ const EDEVLET_FAQ: { q: string; a: string; slug?: string }[] = [
   },
 ];
 
-function EDevletSeoSchema({ services }: { services: { title: string; slug?: string; id: string }[] }) {
+function EDevletSeoSchema({ services }: { services: { title: string; id: string }[] }) {
   const base = SITE_CONFIG.siteUrl;
   const itemList = {
     '@context': 'https://schema.org',
@@ -69,7 +70,7 @@ function EDevletSeoSchema({ services }: { services: { title: string; slug?: stri
       '@type': 'ListItem',
       position: i + 1,
       name: s.title,
-      url: `${base}/article/${s.slug || s.id}`,
+      url: `${base}/e-devlet-services#${s.id}`,
     })),
   };
   const faq = {
@@ -113,28 +114,11 @@ export const metadata: Metadata = {
 // all it ever needed.
 export const revalidate = 3600; // Revalidate every hour
 
-export default async function EDevletServicesPage() {
-  if (!supabase) return null;
-
-  const { data: articles } = await supabase
-    .from('articles')
-    .select('id, title, intro, last_update, source, slug')
-    .eq('category', 'خدمات e-Devlet')
-    .eq('status', 'approved');
-
-  const services = (articles || [])
-    .map((a: any) => ({
-      id: a.id,
-      title: a.title,
-      intro: a.intro,
-      lastUpdate: a.last_update,
-      source: a.source ?? undefined,
-      // Carry the slug through so cards link to the clean /article/<slug> URL
-      // instead of falling back to the UUID id (both resolve, but slug is the
-      // canonical, crawlable one).
-      slug: a.slug ?? undefined,
-    }))
-    .sort((a, b) => a.title.localeCompare(b.title, 'ar'));
+export default function EDevletServicesPage() {
+  // The directory is a static file now, not 33 table rows — see
+  // src/lib/edevletServices.ts for why. That also makes this page fully static:
+  // no Supabase read at all, on any visit.
+  const services = [...EDEVLET_SERVICES].sort((a, b) => a.title.localeCompare(b.title, 'ar'));
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -163,8 +147,8 @@ export default async function EDevletServicesPage() {
               const Icon = t.icon;
               return (
                 <Link
-                  key={t.slug}
-                  href={`/article/${t.slug}`}
+                  key={t.anchor}
+                  href={`#${t.anchor}`}
                   className="group flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all"
                 >
                   <span className="grid place-items-center w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -177,6 +161,27 @@ export default async function EDevletServicesPage() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+
+        {/* What every service on this page needs, said once instead of on
+            thirty-three near-identical pages. */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-3">ما تحتاجه لأي خدمة هنا</h2>
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {EDEVLET_PREREQS.map((p) => <li key={p}>• {p}</li>)}
+            </ul>
+            <h3 className="mt-4 mb-2 text-sm font-black text-slate-800 dark:text-slate-100">الخطوة المشتركة</h3>
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {EDEVLET_STEPS.map((p) => <li key={p}>• {p}</li>)}
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-3">نصائح تنطبق على كل الخدمات</h2>
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {EDEVLET_TIPS.map((p) => <li key={p}>• {p}</li>)}
+            </ul>
           </div>
         </section>
 
@@ -193,8 +198,8 @@ export default async function EDevletServicesPage() {
                   <ChevronLeft size={16} className="text-slate-400 shrink-0 transition-transform group-open:-rotate-90" />
                 </summary>
                 <p className="mt-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{f.a}</p>
-                {f.slug && (
-                  <Link href={`/article/${f.slug}`} className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+                {f.anchor && (
+                  <Link href={`#${f.anchor}`} className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
                     اقرأ الشرح المفصّل <ChevronLeft size={14} />
                   </Link>
                 )}

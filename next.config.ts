@@ -140,6 +140,47 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // e-Devlet directory: 33 pages that were one template published 33
+      // times. Measured, not guessed — on a 331-article site the 28 most
+      // textually similar PAIRS were all from this group, overlapping 50-65%,
+      // while outside it only two pairs anywhere passed 30%. Identical
+      // prerequisites, tips, fee line, warning and first step; ~38 words each
+      // of their own. A directory entry is not an article, so each now lands on
+      // its card on the hub — see src/lib/edevletServices.ts and
+      // sql/2026-08-05_retire_edevlet_template_pages.sql.
+      { source: '/article/edevlet-adima-tescilli-arac', destination: '/e-devlet-services#adima-tescilli-arac', permanent: true },
+      { source: '/article/edevlet-adli-sicil-kaydi', destination: '/e-devlet-services#adli-sicil-kaydi', permanent: true },
+      { source: '/article/edevlet-adres-degisikligi-bildirimi', destination: '/e-devlet-services#adres-degisikligi-bildirimi', permanent: true },
+      { source: '/article/edevlet-aile-hekim-bilgisi-sorgulama', destination: '/e-devlet-services#aile-hekim-bilgisi-sorgulama', permanent: true },
+      { source: '/article/edevlet-aracimin-cekildigi-otopark-bilgisi-sorgulama', destination: '/e-devlet-services#aracimin-cekildigi-otopark-bilgisi-sorgulama', permanent: true },
+      { source: '/article/edevlet-borc-durumu-sorgulama', destination: '/e-devlet-services#borc-durumu-sorgulama', permanent: true },
+      { source: '/article/edevlet-cimer-basvuru', destination: '/e-devlet-services#cimer-basvuru', permanent: true },
+      { source: '/article/edevlet-ck-bogazici-elektrik', destination: '/e-devlet-services#ck-bogazici-elektrik', permanent: true },
+      { source: '/article/edevlet-dava-dosyasi-sorgulama', destination: '/e-devlet-services#dava-dosyasi-sorgulama', permanent: true },
+      { source: '/article/edevlet-dogum-raporu', destination: '/e-devlet-services#dogum-raporu', permanent: true },
+      { source: '/article/edevlet-doviz', destination: '/e-devlet-services#doviz', permanent: true },
+      { source: '/article/edevlet-e-nabiz', destination: '/e-devlet-services#e-nabiz', permanent: true },
+      { source: '/article/edevlet-evlenme-ehliyet', destination: '/e-devlet-services#evlenme-ehliyet', permanent: true },
+      { source: '/article/edevlet-ikamet-kisisel-bilgi', destination: '/e-devlet-services#ikamet-kisisel-bilgi', permanent: true },
+      { source: '/article/edevlet-imei-sorgulama', destination: '/e-devlet-services#imei-sorgulama', permanent: true },
+      { source: '/article/edevlet-iski-su', destination: '/e-devlet-services#iski-su', permanent: true },
+      { source: '/article/edevlet-mhrs', destination: '/e-devlet-services#mhrs', permanent: true },
+      { source: '/article/edevlet-mobil-hat-sorgulama', destination: '/e-devlet-services#mobil-hat-sorgulama', permanent: true },
+      { source: '/article/edevlet-nvi-nufus-kayit-ornegi', destination: '/e-devlet-services#nvi-nufus-kayit-ornegi', permanent: true },
+      { source: '/article/edevlet-nvi-yerlesim-yeri', destination: '/e-devlet-services#nvi-yerlesim-yeri', permanent: true },
+      { source: '/article/edevlet-operator-debt', destination: '/e-devlet-services#operator-debt', permanent: true },
+      { source: '/article/edevlet-plaka-ceza', destination: '/e-devlet-services#plaka-ceza', permanent: true },
+      { source: '/article/edevlet-sgk-hizmet-dokumu', destination: '/e-devlet-services#sgk-hizmet-dokumu', permanent: true },
+      { source: '/article/edevlet-sgk-kayit-belgesi', destination: '/e-devlet-services#sgk-kayit-belgesi', permanent: true },
+      { source: '/article/edevlet-sirketlerim', destination: '/e-devlet-services#sirketlerim', permanent: true },
+      { source: '/article/edevlet-surucu-basvuru-durum', destination: '/e-devlet-services#surucu-basvuru-durum', permanent: true },
+      { source: '/article/edevlet-surucu-ceza-nokta-belgesi', destination: '/e-devlet-services#surucu-ceza-nokta-belgesi', permanent: true },
+      { source: '/article/edevlet-tapu-harc', destination: '/e-devlet-services#tapu-harc', permanent: true },
+      { source: '/article/edevlet-tapu-telefon-beyan', destination: '/e-devlet-services#tapu-telefon-beyan', permanent: true },
+      { source: '/article/edevlet-tuketici-sikayet', destination: '/e-devlet-services#tuketici-sikayet', permanent: true },
+      { source: '/article/edevlet-vergi-borcu', destination: '/e-devlet-services#vergi-borcu', permanent: true },
+      { source: '/article/edevlet-webtapu', destination: '/e-devlet-services#webtapu', permanent: true },
+      { source: '/article/edevlet-yol-izin', destination: '/e-devlet-services#yol-izin', permanent: true },
       // Syrian-consulate cluster — the site's highest-demand one, and the one
       // that was least accurate. Three URLs competed for «القنصلية السورية في
       // غازي عنتاب» (2,451 reads between them), and the most-read of the three

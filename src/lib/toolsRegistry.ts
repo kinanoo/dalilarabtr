@@ -438,11 +438,16 @@ export const TOOLS: Tool[] = [
       primary: { href: '/tools/kimlik-check', label: 'تحقّق من صلاحية كملكك' },
       secondary: { href: '/consultant', label: 'حدّد إجراءك عبر دليل المواقف' },
     },
+    // These four used to point at the yerleşim-yeri / MHRS / adli-sicil / IMEI
+    // pages, which were template entries and are now cards on this very hub —
+    // "related reading" that links back to the page you are on is noise. They
+    // now point at the e-Devlet articles that survived because they say
+    // something of their own.
     relatedArticles: [
-      a('edevlet-nvi-yerlesim-yeri', 'إثبات العنوان (Yerleşim yeri)'),
-      a('edevlet-mhrs', 'حجز موعد صحي عبر MHRS'),
-      a('edevlet-adli-sicil-kaydi', 'إخراج السجل العدلي (Adli sicil)'),
-      a('edevlet-imei-sorgulama', 'استعلام IMEI للهاتف'),
+      a('tryqa-thdyth-byanat-kht-alhatf-shrka', 'تحديث بيانات خط الهاتف (توركسل)'),
+      a('btk-ekayit-foreigners-phone-line-2026', 'تفعيل أو نقل خط هاتف للأجانب عبر BTK'),
+      a('edevlet-odeme-elektronik-para-hesap-sorgulama', 'المحافظ الرقمية المفتوحة باسمك'),
+      a('syrian-passport-renewal', 'تجديد جواز السفر السوري: الرسوم والأوراق'),
     ],
     relatedServices: [
       { href: '/request?service=phone-imei', label: 'مساعدة في تتريك الهاتف (IMEI)' },
