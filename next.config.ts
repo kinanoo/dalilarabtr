@@ -140,6 +140,21 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Address registration and closed neighbourhoods. The finding was not
+      // duplication but wiring: /zones is a searchable checker over 1,166
+      // neighbourhoods in 63 provinces, and twelve of the fifteen pages a
+      // reader lands on when searching «حيّي مغلق» never linked to it — they
+      // said "call 157, ask the muhtar". Two pillars survive because there are
+      // two questions (is my neighbourhood open / must I declare my address);
+      // five December-2025 pages restating one of them are folded in, and the
+      // December-2025 Istanbul page gives way to the June-2026 sourced list.
+      // See sql/2026-08-06_merge_address_cluster.sql.
+      { source: '/article/address-registration-problems', destination: '/article/address-registration-closed', permanent: true },
+      { source: '/article/identity-closed-address-reset', destination: '/article/address-registration-closed', permanent: true },
+      { source: '/article/identity-adres-beyani-20-days-uavt', destination: '/article/syrian-address-update-mandate-turkey', permanent: true },
+      { source: '/article/kimlik-address-proof', destination: '/article/syrian-address-update-mandate-turkey', permanent: true },
+      { source: '/article/edevlet-adres-belgesi', destination: '/article/syrian-address-update-mandate-turkey', permanent: true },
+      { source: '/article/istanbul-closed-areas', destination: '/article/istanbul-closed-neighborhoods-lift-2026', permanent: true },
       // e-Devlet directory: 33 pages that were one template published 33
       // times. Measured, not guessed — on a 331-article site the 28 most
       // textually similar PAIRS were all from this group, overlapping 50-65%,
