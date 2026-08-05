@@ -140,6 +140,26 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Visa cluster. Two pillars measured as genuinely separate survive —
+      // what a visa costs by nationality, and the seven types open to Syrians —
+      // and they now cross-link, which they never did. Under them: five
+      // 130-190-word type stubs overlapping each other 18-39% while the parent
+      // already tabulates all seven, four December-2025 pages restating "which
+      // visa do I need", and a treatment stub duplicating the medical page.
+      // The reason this mattered beyond its size: eight of these pages sourced
+      // their fees to a Facebook post, which CLAUDE.md forbids outright. See
+      // sql/2026-08-06_merge_visa_cluster.sql.
+      { source: '/article/turkey-transit-visa-syrians-2026', destination: '/article/syria-turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-business-visa-syrians-2026', destination: '/article/syria-turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-meeting-conference-visa-syrians-2026', destination: '/article/syria-turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-sailor-visa-syrians-2026', destination: '/article/syria-turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-truck-driver-visa-syrians-2026', destination: '/article/syria-turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-visa-from-syria', destination: '/article/syria-turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-treatment-visa-syrians-2026', destination: '/article/turkey-medical-visa', permanent: true },
+      { source: '/article/turkey-visa-overview', destination: '/article/turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-evisa-guide', destination: '/article/turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-visa-europe-foreigners', destination: '/article/turkey-visa-types-2026', permanent: true },
+      { source: '/article/turkey-visa-arab-countries', destination: '/article/turkey-visa-types-2026', permanent: true },
       // Address registration and closed neighbourhoods. The finding was not
       // duplication but wiring: /zones is a searchable checker over 1,166
       // neighbourhoods in 63 provinces, and twelve of the fifteen pages a
