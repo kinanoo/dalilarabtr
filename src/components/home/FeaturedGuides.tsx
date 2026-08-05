@@ -118,6 +118,19 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
                         </div>
                     ))}
                 </div>
+
+                {/* Way out of the section. Without it the six newest guides were
+                    the only ones a reader could reach: 9 of the 15 published
+                    guides had no entry point at all outside search. */}
+                <div className="mt-5 flex justify-center">
+                    <Link
+                        href="/guides"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-white dark:bg-slate-900 px-5 py-2.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-sm transition-all hover:-translate-y-[2px] hover:border-emerald-400 hover:shadow-[0_10px_26px_-14px_rgba(16,150,100,0.45)]"
+                    >
+                        كل الشروحات المصوّرة
+                        <ArrowLeft size={14} />
+                    </Link>
+                </div>
             </div>
         </section>
     );

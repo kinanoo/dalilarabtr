@@ -52,6 +52,7 @@ export type UpdateInput = {
   type: string;
   date: string;
   sortDate?: string;
+  sortTime?: string;
   image?: string;
   href?: string;
 };
@@ -94,6 +95,7 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
     // Truncated to YYYY-MM-DD so it compares like-for-like against the
     // updates, whose dates carry no time at all.
     sortDate: (a.published_at || a.created_at || '').slice(0, 10),
+    sortTime: a.created_at || '',
     href: `/article/${a.slug || a.id}`,
     image: a.image || undefined,
     featured: true,
@@ -110,6 +112,7 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
       type: u.type,
       dateLabel: u.date,
       sortDate: u.sortDate || u.date || '',
+      sortTime: u.sortTime || '',
       href: u.href || `/updates/${u.id}`,
       image: u.image,
       featured: false,
@@ -124,12 +127,18 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
   // presentation — the card still gets its ring from `featured` — not a reason
   // to outrank newer news.
   //
-  // Both sides are plain YYYY-MM-DD (articles.published_at is a DATE column,
-  // and the updates arrive already truncated to a day), so a string compare is
-  // the date compare. Equal days keep their arrival order, which leaves a
-  // featured item ahead of an update published the same day.
+  // Ordered by day first, then by clock time within that day. The day has to
+  // lead because it is the editorial date the owner controls — published_at
+  // and updates.date are DATE columns and can be set ahead of or behind when
+  // the row was actually written. But those columns carry no time at all, so
+  // sorting on the day alone left same-day items in whatever order the union
+  // produced: every featured article ahead of every update from the same day,
+  // whichever was really published first. created_at holds the real timestamp
+  // and breaks that tie.
+  const orderKey = (x: NewsItem) =>
+    `${x.sortDate || ''}T${(x.sortTime || '').slice(11, 19) || '00:00:00'}`;
   const items = [...featuredItems, ...updateItems]
-    .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''));
+    .sort((a, b) => orderKey(b).localeCompare(orderKey(a)));
   if (items.length === 0) return null;
 
   return <NewsAndUpdates items={items} />;

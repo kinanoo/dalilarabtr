@@ -59,7 +59,7 @@ async function getUpdates() {
       Promise.all([
         supabase
           .from('updates')
-          .select('id, title, date, type')
+          .select('id, title, date, type, created_at')
           .eq('active', true)
           .eq('type', 'news')
           .order('date', { ascending: false })
@@ -93,13 +93,14 @@ async function getUpdates() {
 
     const manualUpdates = (manualRes.data || [])
       .filter(u => u.date <= today)
-      .map(u => ({ ...u, sortDate: u.date, date: formatArabicDate(u.date), source: 'manual' as const, href: `/updates/${u.id}` }));
+      .map(u => ({ ...u, sortDate: u.date, sortTime: u.created_at || '', date: formatArabicDate(u.date), source: 'manual' as const, href: `/updates/${u.id}` }));
 
     const articleUpdates = (articlesRes.data || []).map(a => ({
       id: a.id,
       title: a.title,
       date: formatArabicDate((a.created_at || '').split('T')[0]),
       sortDate: (a.created_at || '').split('T')[0],
+      sortTime: a.created_at || '',
       type: 'مقال',
       source: 'auto' as const,
       event_type: 'new_article',
@@ -112,6 +113,7 @@ async function getUpdates() {
       title: s.title,
       date: formatArabicDate((s.created_at || '').split('T')[0]),
       sortDate: (s.created_at || '').split('T')[0],
+      sortTime: s.created_at || '',
       type: 'سيناريو',
       source: 'auto' as const,
       event_type: 'new_scenario',
@@ -119,8 +121,15 @@ async function getUpdates() {
     }));
 
     // Merge and sort by actual date descending, limit to 12
+    // Ordered by the editorial DAY first, then by the real clock time within
+    // that day. The day has to lead because `updates.date` is what the editor
+    // controls and can be set ahead of or behind the row's creation; the time
+    // then separates items published on the same day, which a day-only sort
+    // left in whatever order the union happened to produce.
+    const orderKey = (x: { sortDate?: string; sortTime?: string }) =>
+      `${x.sortDate || ''}T${(x.sortTime || '').slice(11, 19) || '00:00:00'}`;
     const merged = [...manualUpdates, ...articleUpdates, ...scenarioUpdates]
-      .sort((a, b) => (b.sortDate || '').localeCompare(a.sortDate || ''))
+      .sort((a, b) => orderKey(b).localeCompare(orderKey(a)))
       .slice(0, 12);
 
     return merged;

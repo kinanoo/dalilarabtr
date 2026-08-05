@@ -27,6 +27,7 @@ export type NewsItem = {
   type: string;
   dateLabel: string;
   sortDate: string;
+  sortTime?: string;
   href: string;
   image?: string;
   featured?: boolean;
