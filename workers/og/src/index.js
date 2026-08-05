@@ -147,9 +147,23 @@ function shapeArabic(text) {
 const MIRROR = { '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{', '<': '>', '>': '<', '«': '»', '»': '«' };
 const isLtrChar = (c) => /[A-Za-z0-9À-ÖØ-öø-ÿĞğİıŞşÇçÖöÜü]/.test(c);
 
+// Group each base letter with the marks that sit on it. A haraka is not an
+// independent character: it must follow its base, and it must stay in the same
+// box as its base. Reversing or splitting per character breaks both — which is
+// how «مجانياً» lost its tanween, the mark landing before the alef instead of
+// on it.
+function toClusters(text) {
+    const out = [];
+    for (const ch of text) {
+        if (isTransparent(ch) && out.length) out[out.length - 1] += ch;
+        else out.push(ch);
+    }
+    return out;
+}
+
 function visualOrder(text) {
     if (!/[؀-ۿ]/.test(text)) return text;
-    const chars = [...text];
+    const chars = toClusters(text);
     const out = [];
     let i = chars.length - 1;
     while (i >= 0) {
@@ -219,7 +233,7 @@ const h = (type, style, children) => ({ type, props: { style, children } });
 // A span holding only a plain space collapses to zero width, which ran every
 // word together. U+00A0 is the same advance and does not collapse.
 const arabicText = (text, style) =>
-    [...visualOrder(shapeArabic(text))].map((ch) => h('span', style || {}, ch === ' ' ? ' ' : ch));
+    toClusters(visualOrder(shapeArabic(text))).map((cl) => h('span', style || {}, cl === ' ' ? ' ' : cl));
 
 // Palette — deep olive-green (lightened from the very-dark ministry olive) with
 // muted gold accents. White title for maximum legibility on long Arabic titles;
@@ -269,7 +283,14 @@ function card(title, category) {
             border: '1px solid rgba(216,185,106,0.30)', position: 'relative',
         }, [
             h('span', { color: 'rgba(255,255,255,0.62)', fontSize: '21px', fontWeight: 400 }, 'dalilarabtr.com'),
-            h('div', { display: 'flex', flexDirection: 'row', color: GOLD, fontSize: '25px', fontWeight: 700 }, arabicText('دليل العرب في تركيا')),
+            // Must stay identical to SITE_CONFIG.name in src/lib/config.ts and
+            // to the Telegram channel title. This worker deploys separately and
+            // cannot import from the app, so the string is duplicated — and it
+            // had already drifted: the site said «دليل العرب والسوريين في
+            // تركيا» while the card said «دليل العرب في تركيا», which under a
+            // channel post read as a different publication from the one posting
+            // it. If you rename the site, change it here too.
+            h('div', { display: 'flex', flexDirection: 'row', color: GOLD, fontSize: '25px', fontWeight: 700 }, arabicText('دليل العرب والسوريين في تركيا')),
         ]),
     ]);
 }
