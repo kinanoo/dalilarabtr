@@ -31,6 +31,16 @@ export type SiteSettings = {
      * keeps working untouched.
      */
     contactEnabled: boolean;
+    /**
+     * Whether the reader sees the view-count chip on an article.
+     *
+     * Off by default, and off is also what a failed read returns. Hiding a
+     * number nobody promised is harmless; showing one the owner asked to
+     * remove is the exact failure he reported. Tracking is unaffected either
+     * way — the count keeps accumulating for the admin dashboard, it just
+     * stops being published to visitors.
+     */
+    showViewCounts: boolean;
 };
 
 const FALLBACK: SiteSettings = {
@@ -38,9 +48,10 @@ const FALLBACK: SiteSettings = {
     // Default ON so a failed read never silently hides the funnel; only an
     // explicit `false` in the database turns contact off.
     contactEnabled: true,
+    showViewCounts: false,
 };
 
-type SettingsRow = { whatsapp_number?: unknown; contact_enabled?: unknown } | null;
+type SettingsRow = { whatsapp_number?: unknown; contact_enabled?: unknown; show_view_counts?: unknown } | null;
 
 export async function getSiteSettings(): Promise<SiteSettings> {
     if (!supabase) return FALLBACK;
@@ -58,7 +69,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
         const full = await client
             .from('site_settings')
-            .select('whatsapp_number, contact_enabled')
+            .select('whatsapp_number, contact_enabled, show_view_counts')
             .eq('id', 1)
             .maybeSingle();
 
@@ -79,11 +90,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         }
 
         if (contactColumnMissing && row) {
-            // Column not deployed yet: keep the admin-set number, contact on.
+            // Columns not deployed yet: keep the admin-set number, contact on,
+            // counter hidden.
             const digitsOnly = typeof row.whatsapp_number === 'string'
                 ? row.whatsapp_number.replace(/\D/g, '') : '';
             const phone = digitsOnly.length >= 8 ? digitsOnly : FALLBACK.whatsapp;
-            return { whatsapp: phone, contactEnabled: phone.length >= 8 };
+            return { whatsapp: phone, contactEnabled: phone.length >= 8, showViewCounts: false };
         }
 
         const raw = row?.whatsapp_number;
@@ -97,7 +109,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
         // A switch that is on but has no usable number is still "off" in
         // practice — better to render nothing than a dead link.
-        return { whatsapp, contactEnabled: contactEnabled && whatsapp.length >= 8 };
+        // Only an explicit true shows the counter, so a database that has not
+        // run the migration yet behaves like "hidden" rather than like "on".
+        const showViewCounts = row?.show_view_counts === true;
+
+        return { whatsapp, contactEnabled: contactEnabled && whatsapp.length >= 8, showViewCounts };
     } catch (e) {
         logger.error('site_settings read threw:', e);
         return FALLBACK;

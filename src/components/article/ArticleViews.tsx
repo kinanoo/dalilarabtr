@@ -11,13 +11,18 @@
  *
  * Renders nothing until the count arrives, exactly like the old inline
  * version (views started as null and the span appeared after the fetch).
+ *
+ * `showCount` only controls what the READER sees. Tracking runs either way:
+ * the owner still needs the number in the admin dashboard, so hiding the chip
+ * must not also stop counting. That is why the gate is here and not a matter
+ * of the parent skipping this component.
  */
 
 import { useEffect, useState } from 'react';
 import { Eye } from 'lucide-react';
 import { formatViewCount } from '@/lib/articleMeta';
 
-export default function ArticleViews({ slug }: { slug: string }) {
+export default function ArticleViews({ slug, showCount }: { slug: string; showCount: boolean }) {
     const [views, setViews] = useState<number | null>(null);
 
     useEffect(() => {
@@ -38,7 +43,7 @@ export default function ArticleViews({ slug }: { slug: string }) {
         if (shouldTrack) localStorage.setItem(key, String(now));
     }, [slug]);
 
-    if (views == null || views <= 0) return null;
+    if (!showCount || views == null || views <= 0) return null;
 
     return (
         <span className="flex items-center gap-2"><Eye size={14} /> {formatViewCount(views)}</span>

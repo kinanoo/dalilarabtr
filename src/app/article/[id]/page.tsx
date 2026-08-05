@@ -7,6 +7,7 @@
 import { CATEGORY_SLUGS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import ArticleServiceCTA from '@/components/article/ArticleServiceCTA';
 import ArticleView from '@/components/ArticleViewPremium';
+import { getSiteSettings } from '@/lib/siteSettings';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { cache } from 'react';
@@ -534,6 +535,11 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
     permanentRedirect(`/article/${article.slug}`);
   }
 
+  // Read here rather than inside the view: ArticleViewPremium is a server
+  // component but not async, and this page already awaits data, so the setting
+  // rides the same ISR window instead of costing a query per visitor.
+  const { showViewCounts } = await getSiteSettings();
+
   const canonicalSlug = article.slug || params.id;
   const url = `${SITE_CONFIG.siteUrl}/article/${canonicalSlug}`;
   const categorySlug = getCategorySlugFromName(article.category);
@@ -611,7 +617,7 @@ export default async function ArticlePage(props: { params: Promise<{ id: string 
           body a second time into the inline RSC payload (self.__next_f) and
           push the LCP text behind that parse — the exact regression this
           split removed. Interactivity lives in small islands inside. */}
-      <ArticleView article={article} slug={params.id}>
+      <ArticleView article={article} slug={params.id} showViewCounts={showViewCounts}>
         {/* "Didn't understand? message us on WhatsApp" — on every article
             (not the services directory, which has its own contact buttons). */}
         {/* Bridge to the services funnel. Server-rendered so the links are

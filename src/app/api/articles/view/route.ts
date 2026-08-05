@@ -7,15 +7,12 @@ const svc = serviceRoleKey
     ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
     : null;
 
-// Deterministic seed (25–48) so no article ever shows "0 views"
-function viewSeed(id: string): number {
-    let h = 0;
-    for (let i = 0; i < id.length; i++) {
-        h = ((h << 5) - h) + id.charCodeAt(i);
-        h |= 0;
-    }
-    return 25 + (Math.abs(h) % 24);
-}
+// The count returned here is the count that was recorded. There used to be a
+// deterministic 25–48 padding added on top "so no article ever shows 0 views",
+// which meant the eye chip beside a fresh article was mostly invented readers.
+// A number presented to visitors as how many people read something has to be
+// how many people read it; the honest way to avoid showing a bare 0 is not to
+// show the chip, which is what the show_view_counts setting now controls.
 
 async function findArticle(decoded: string, fields: string): Promise<Record<string, any> | null> {
     if (!svc) return null;
@@ -45,14 +42,13 @@ export async function POST(req: NextRequest) {
             if (row) {
                 const newViews = (row.views || 0) + 1;
                 await svc.from('articles').update({ views: newViews }).eq('id', row.id);
-                return NextResponse.json({ views: newViews + viewSeed(row.id) });
+                return NextResponse.json({ views: newViews });
             }
         }
 
         // Just fetch current view count
         const row = await findArticle(decoded, 'id, views');
-        const real = row?.views || 0;
-        return NextResponse.json({ views: real + (row ? viewSeed(row.id) : 25) });
+        return NextResponse.json({ views: row?.views || 0 });
     } catch {
         return NextResponse.json({ views: null });
     }

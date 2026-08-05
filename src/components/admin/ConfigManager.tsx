@@ -800,6 +800,31 @@ function GeneralSettingsForm() {
                     </span>
                 </button>
 
+                {/* Reader-facing view counter. Off by default: a brand-new
+                    site shows single-digit counts, and the owner would rather
+                    show nothing than a number that reads as "nobody came".
+                    Counting itself never stops — the admin dashboard keeps its
+                    numbers either way. */}
+                <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, show_view_counts: !settings.show_view_counts })}
+                    className="w-full flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-right hover:border-emerald-400 transition-colors"
+                >
+                    <span className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${settings.show_view_counts ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${settings.show_view_counts ? 'right-0.5' : 'right-[22px]'}`} />
+                    </span>
+                    <span className="min-w-0">
+                        <span className="block text-sm font-black text-slate-800 dark:text-slate-100">
+                            {settings.show_view_counts ? 'عدّاد القرّاء ظاهر للزوّار' : 'عدّاد القرّاء مخفيّ عن الزوّار'}
+                        </span>
+                        <span className="block text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 mt-0.5">
+                            يتحكّم بأيقونة العين ورقم القرّاء أعلى المقال. العدّ لا يتوقّف عند الإخفاء —
+                            الأرقام تبقى تتراكم وتراها أنت في لوحة التحكم، لكن الزائر لا يراها.
+                            وهي الآن الأرقام الحقيقية: أُزيلت الإضافة الثابتة (25–48) التي كانت تُضاف فوق العدد المسجَّل.
+                        </span>
+                    </span>
+                </button>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label className={labelCls}>رقم التواصل (واتساب)</label>

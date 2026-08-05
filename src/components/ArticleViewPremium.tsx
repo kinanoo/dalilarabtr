@@ -131,7 +131,7 @@ function stripGalleryImages(details: string, heroImageCount: number): string {
   return out;
 }
 
-export default function ArticleView({ article, slug, children }: { article: ArticleViewData, slug: string, children?: React.ReactNode }) {
+export default function ArticleView({ article, slug, showViewCounts = false, children }: { article: ArticleViewData, slug: string, showViewCounts?: boolean, children?: React.ReactNode }) {
   const officialSources = getOfficialSourceUrls(article.source);
   const stepTexts = article.steps.map((s) => [s.title, s.description].filter(Boolean).join(' '));
   const readingTime = estimateReadingTime({ intro: article.intro, details: article.details, steps: stepTexts, tips: article.tips });
@@ -223,7 +223,7 @@ export default function ArticleView({ article, slug, children }: { article: Arti
                       only the update date is shown. */}
                   <span className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400" /> آخر تحديث: {article.lastUpdate}</span>
                   <span className="flex items-center gap-2"><Clock size={14} /> {readingTime} د قراءة</span>
-                  <ArticleViews slug={slug} />
+                  <ArticleViews slug={slug} showCount={showViewCounts} />
                   {officialSources.length > 0 && (
                     <a href={officialSources[0]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors border-b border-transparent hover:border-emerald-400 pb-0.5">
                       <ExternalLink size={14} /> المصدر الرسمي
