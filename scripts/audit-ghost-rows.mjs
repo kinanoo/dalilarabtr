@@ -16,6 +16,23 @@
  */
 import { readFileSync } from 'node:fs';
 
+/**
+ * The one legitimate window in which a ghost exists: the redirect ships with the
+ * code, but the row is deleted by a SQL file the site owner runs by hand, and
+ * the SQL has to run AFTER the deploy so readers are never sent to a 404. Each
+ * entry names the file that clears it, and the check below fails once the row is
+ * actually gone — so the entry has to be deleted rather than left to rot.
+ */
+const PENDING_SQL = {
+    'work-permit-application': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'work-permit-documents': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'work-permit-renewal': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'work-permit-fees-2026': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'work-permit-residence': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'employment-work-permit-kimlik-vs-tourist': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'exemption-work-permit-full-guide-2026-06': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+};
+
 const env = Object.fromEntries(
     readFileSync('.env.local', 'utf8')
         .split('\n')
@@ -50,13 +67,28 @@ for (let off = 0; ; off += 100) {
 
 const live = new Set(rows.map((r) => r.slug));
 const ghosts = [...sources].filter((s) => live.has(s));
+const pending = ghosts.filter((s) => s in PENDING_SQL);
+const real = ghosts.filter((s) => !(s in PENDING_SQL));
+// An allowlist entry whose row is already gone has done its job. Left in place
+// it would mask a future ghost with the same slug, so it is an error too — that
+// is what stops this list from quietly becoming permanent.
+const stale = Object.keys(PENDING_SQL).filter((s) => !live.has(s));
 
 console.log(`redirect sources : ${sources.size}`);
 console.log(`live articles    : ${live.size}`);
-if (ghosts.length) {
-    console.error(`\nGHOST ROWS (${ghosts.length}) — redirected but still in the database:`);
-    for (const g of ghosts) console.error(`  ${g}`);
-    console.error('\nDelete these rows, or drop the redirect if the page should stay.');
-    process.exit(1);
+
+if (pending.length) {
+    console.log(`\nawaiting SQL (${pending.length}) — redirect shipped, row deleted by a file the owner runs:`);
+    for (const g of pending) console.log(`  ${g}  ←  ${PENDING_SQL[g]}`);
 }
-console.log('\nno ghost rows ✓');
+if (stale.length) {
+    console.error(`\nSTALE ALLOWLIST (${stale.length}) — the row is already gone, remove the entry:`);
+    for (const s of stale) console.error(`  ${s}`);
+}
+if (real.length) {
+    console.error(`\nGHOST ROWS (${real.length}) — redirected but still in the database:`);
+    for (const g of real) console.error(`  ${g}`);
+    console.error('\nDelete these rows, or drop the redirect if the page should stay.');
+}
+if (real.length || stale.length) process.exit(1);
+console.log(pending.length ? '\nno unexpected ghost rows ✓' : '\nno ghost rows ✓');

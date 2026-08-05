@@ -140,6 +140,25 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Work-permit cluster: fourteen pages on one topic, six of them between
+      // 102 and 189 words asking the same question a different way (how do I
+      // apply / renew / what papers / what fees). Competitors publish ONE
+      // comprehensive page each, which is most of why they outrank us here.
+      // Facts moved into the two survivors first — see
+      // sql/2026-08-05_merge_work_permit_cluster.sql.
+      { source: '/article/work-permit-application', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/work-permit-documents', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/work-permit-renewal', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/work-permit-fees-2026', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/work-permit-residence', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/employment-work-permit-kimlik-vs-tourist', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/exemption-work-permit-full-guide-2026-06', destination: '/article/muafiyet-bilgi-formu-kimlik-work-permit-exemption-sgk-2026', permanent: true },
+      // NOTE: work-permit-exemption-2026, trader-leave-work-permit-turkey and
+      // work-permit-students are NOT here. They look like members of the cluster
+      // by slug and are not: the first is about law 6735's profession-based
+      // exemptions, the second is about a kimlik holder entering Syria and
+      // coming back (385 reads, nothing to do with permits despite the name),
+      // the third serves students on part-time work.
       // Lost-kimlik consolidation: three URLs competed for «ضاع الكملك، شو
       // بعمل؟». Their unique facts were folded into the 1,942-word canonical
       // (body AND card columns) before the rows were deleted — see

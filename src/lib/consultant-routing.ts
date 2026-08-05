@@ -96,7 +96,7 @@ export const SCENARIO_ROUTING: Record<string, { link?: string; articleId?: strin
     "link": "/article/yos-exam-guide"
   },
   "work-permit-employee": {
-    "link": "/article/work-permit-residence"
+    "link": "/article/work-permit-turkey-2026"
   },
   "work-permit-company": {},
   "work-permit-cost": {},
