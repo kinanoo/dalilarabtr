@@ -78,7 +78,10 @@ export function DataTable({
 
     useEffect(() => {
         fetchData(search);
-    }, [page, tableName, customFilter, refreshKey]); // refreshKey triggers manual refresh
+        // orderBy belongs here: it is read inside the query, so without it a
+        // page that switches sort order would keep showing the old order until
+        // something else happened to trigger a refetch.
+    }, [page, tableName, customFilter, refreshKey, orderBy]); // refreshKey triggers manual refresh
 
     // Debounced search — capture current search value to avoid stale closure
     useEffect(() => {
