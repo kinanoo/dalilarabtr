@@ -30,6 +30,9 @@ const staticPages = [
   // Index of every step-by-step guide. High priority: it is the only entry
   // point to the guides the homepage's newest-six section does not show.
   { path: '/guides', priority: 0.8 },
+  // Syrian consulates hub. The two most-read consulate articles pull 2,160
+  // reads between them, so the query is real and this is its landing page.
+  { path: '/consulates', priority: 0.8 },
   { path: '/tools', priority: 0.7 },
   { path: '/tools/kimlik-check', priority: 0.8 },
   { path: '/tools/pharmacy', priority: 0.7 },
