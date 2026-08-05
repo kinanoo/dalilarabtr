@@ -185,7 +185,7 @@ export default function ConsulatesPage() {
                         >
                             بوّابة الحجز الرسمية <ExternalLink size={12} />
                         </a>
-                        <Link href="/article/syrian-consular-appointments-app" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-400">
+                        <Link href="/article/syrian-consulate-appointment" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-400">
                             شرح التطبيق خطوة بخطوة <ArrowLeft size={12} />
                         </Link>
                     </div>
@@ -198,7 +198,7 @@ export default function ConsulatesPage() {
                             { href: '/article/syrian-consulate-services-turkey-2026', label: 'خدمات القنصلية السورية في تركيا' },
                             { href: '/article/document-attestation-turkey-to-syria-students-2026', label: 'تصديق الشهادات والأوراق من تركيا إلى سوريا' },
                             { href: '/article/lost-passport-turkey', label: 'فقدان جواز السفر في تركيا: المحضر والقنصلية' },
-                            { href: '/article/identity-passport-renewal-update', label: 'تجديد الجواز ثم تحديث بيانات الإقامة' },
+                            { href: '/article/syrian-passport-renewal', label: 'تجديد الجواز السوري: الأوراق والرسوم والخطوات' },
                         ].map((l) => (
                             <Link
                                 key={l.href}

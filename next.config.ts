@@ -140,6 +140,23 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Syrian-consulate cluster — the site's highest-demand one, and the one
+      // that was least accurate. Three URLs competed for «القنصلية السورية في
+      // غازي عنتاب» (2,451 reads between them), and the most-read of the three
+      // told readers to wait for a booking system the ministry's own page says
+      // is already live. Booking, attestation and passport renewal each had a
+      // second thin page restating them. Facts moved into the survivors and the
+      // contradictions fixed first — see
+      // sql/2026-08-05_merge_consulate_cluster.sql.
+      { source: '/article/gaziantep-syrian-consulate-opens-2026-06-11', destination: '/article/syrian-consulate-gaziantep-guide', permanent: true },
+      { source: '/article/alqnslya-alswrya-fy-ghazy-antab-mttlbat', destination: '/article/syrian-consulate-gaziantep-guide', permanent: true },
+      { source: '/article/syrian-consular-appointments-app', destination: '/article/syrian-consulate-appointment', permanent: true },
+      // Deleted rather than merged: it routed passport bookings through
+      // syrian-embassy.com, which is not a government domain. Nothing on it was
+      // worth carrying to the page that describes the real system.
+      { source: '/article/passport-booking-system-legacy', destination: '/article/syrian-consulate-appointment', permanent: true },
+      { source: '/article/agency-attestation-legacy', destination: '/article/syrian-document-attestation', permanent: true },
+      { source: '/article/identity-passport-renewal-update', destination: '/article/syrian-passport-renewal', permanent: true },
       // Work-permit cluster: fourteen pages on one topic, six of them between
       // 102 and 189 words asking the same question a different way (how do I
       // apply / renew / what papers / what fees). Competitors publish ONE

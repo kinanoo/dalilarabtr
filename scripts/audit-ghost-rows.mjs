@@ -23,14 +23,17 @@ import { readFileSync } from 'node:fs';
  * entry names the file that clears it, and the check below fails once the row is
  * actually gone — so the entry has to be deleted rather than left to rot.
  */
+// Empty is the normal state. Entries live here for one deploy and are removed
+// the moment their rows are deleted — which is what the stale check below
+// forces.
+const MERGE_CONSULATE = 'sql/2026-08-05_merge_consulate_cluster.sql';
 const PENDING_SQL = {
-    'work-permit-application': 'sql/2026-08-05_merge_work_permit_cluster.sql',
-    'work-permit-documents': 'sql/2026-08-05_merge_work_permit_cluster.sql',
-    'work-permit-renewal': 'sql/2026-08-05_merge_work_permit_cluster.sql',
-    'work-permit-fees-2026': 'sql/2026-08-05_merge_work_permit_cluster.sql',
-    'work-permit-residence': 'sql/2026-08-05_merge_work_permit_cluster.sql',
-    'employment-work-permit-kimlik-vs-tourist': 'sql/2026-08-05_merge_work_permit_cluster.sql',
-    'exemption-work-permit-full-guide-2026-06': 'sql/2026-08-05_merge_work_permit_cluster.sql',
+    'gaziantep-syrian-consulate-opens-2026-06-11': MERGE_CONSULATE,
+    'alqnslya-alswrya-fy-ghazy-antab-mttlbat': MERGE_CONSULATE,
+    'syrian-consular-appointments-app': MERGE_CONSULATE,
+    'passport-booking-system-legacy': MERGE_CONSULATE,
+    'agency-attestation-legacy': MERGE_CONSULATE,
+    'identity-passport-renewal-update': MERGE_CONSULATE,
 };
 
 const env = Object.fromEntries(
