@@ -46,9 +46,28 @@ if (vapidPublicKey && vapidPrivateKey) {
     }
 }
 
-// Look back further than the cron interval so a delayed tick never misses an
-// item; the dedupe pass makes the overlap harmless.
-export const LOOKBACK_MINUTES = 90;
+// How far back a scheduled run looks for content to announce.
+//
+// THE INVARIANT: this must exceed the LONGEST gap the scheduler can actually
+// go without running — not the interval it is configured with. Miss that and
+// items are not delayed, they are lost: an item published just after one tick
+// falls out of the window before the next tick arrives, and nothing ever looks
+// at it again.
+//
+// That is exactly what happened. This sat at 90 minutes, sized against a cron
+// declared as every 30 minutes — but the scheduler was GitHub Actions, which
+// ignored the interval and fired roughly every two hours. Measured on
+// 2026-08-05: 14 of the 22 active news items had NEVER been announced, going
+// back a month. The 2026-08-04 13:10 item is the clean example — the previous
+// run was 13:04, before it existed, and the next was 15:58, whose window
+// started at 14:28.
+//
+// A week is deliberately far more than the 5-minute Cloudflare cron needs. The
+// window costs nothing to widen — sendItems() filters against notifications
+// already written for the same link, so a wide window cannot double-post, and
+// MAX_PER_RUN caps any burst. What it buys is that an outage shorter than a
+// week now self-heals instead of silently dropping every item inside it.
+export const LOOKBACK_MINUTES = 60 * 24 * 7;
 // Hard cap on notifications emitted per run — a burst publish can't spam devices.
 export const MAX_PER_RUN = 5;
 
