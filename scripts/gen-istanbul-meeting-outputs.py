@@ -248,6 +248,7 @@ TH_ADD = (
     'فإن مضت المدّة ولم يُنفَّذ الحكم، راجع المديرية بنسخة القرار واسأل عن سبب عدم التنفيذ.</p></div>'
 )
 
+SCHOOL_ID = 'foreign-id-school-enrollment-istanbul-2026'
 NEWS_TITLE = ('إذن السفر للسوريين: 120 يوماً للعمل و90 للعلاج و7 أيام سنوياً للولايات المقيَّدة — '
               'مخرجات اجتماع هجرة إسطنبول')
 NEWS_SUMMARY = ('عرضت مديرية إدارة الهجرة في إسطنبول تفاصيل أذونات السفر: سبع فئات مؤهَّلة، وخمسة '
@@ -293,12 +294,116 @@ NEWS_CONTENT = (
     'الذين يصعب عليهم مراجعة المديريات.</li>'
     '</ul>'
 
+    '<h3>٥. الأطفال خارج المدرسة بسبب الرقم الأجنبي</h3>'
+    '<p>تُصدر المديرية رقم الهوية الأجنبي لمن لا رقم له من هؤلاء الأطفال، وتفعّل غير الفعّال، '
+    'وتسجّل العنوان، ثمّ تُشارك البيانات تلقائياً مع النفوس عبر <span dir="ltr">KPS</span> — '
+    'فالعائق في أكثر الحالات سجلٌّ ناقص لا حقٌّ منقوص. '
+    '<a href="/article/' + SCHOOL_ID + '">تفصيل ما أُعلن وما لم يُعلن</a>.</p>'
+
     '<p style="margin-top:1rem;"><a href="/article/travel-permit"><strong>الدليل الكامل لإذن '
     'السفر: الفئات والشروط وجدول المدد والولايات السبع عشرة ←</strong></a></p>'
 )
 
+# ── the one remaining uncovered item a parent can act on ──────────────────
+# The statement's second section is about children outside school. Nothing in
+# the corpus covers it: the only enrolment-adjacent page is MESEM (vocational
+# training, 5 views) and it never mentions a foreign ID number at all.
+#
+# What the directorate announced is narrow and I will not inflate it. It says
+# a child without a foreign identity number can be issued one; an inactive
+# number can be activated and an address registered; and the result is shared
+# automatically with the civil registry through KPS. It does NOT name the
+# documents a parent brings, and it does not describe a citizen-facing
+# application. So the page says exactly that — the barrier has a route, here is
+# where the route starts, and here is what the statement does not tell you.
+SCHOOL_TITLE = ('طفلك ممنوع من التسجيل في المدرسة بسبب الرقم الأجنبي؟ إسطنبول تعالج الحالة — '
+                'وهذا ما أُعلن بالضبط')
+SCHOOL_INTRO = ('كثير من الأطفال خارج المدرسة لا لأنّ المدرسة رفضتهم، بل لأنّ الرقم الأجنبي غير '
+                'موجود أو غير فعّال أو لا عنوان مسجَّلاً عليه. أعلنت مديرية إدارة الهجرة في '
+                'إسطنبول أنّها تعالج هذه الحالات: تُصدر الرقم لمن لا رقم له، وتفعّل غير الفعّال، '
+                'وتسجّل العنوان — ويُشارَك ذلك تلقائياً مع دائرة النفوس. وهذا شرح ما أُعلن، وما '
+                'لم يُعلن.')
+SCHOOL_DETAILS = (
+    '<div style="background:#ecfdf5;border:2px solid #10b981;border-radius:12px;padding:18px 22px;margin:0 0 20px;">'
+    '<p style="margin:0 0 10px;font-size:17px;"><strong>الخلاصة</strong></p>'
+    '<p style="margin:0;">إن كان طفلك خارج المدرسة بسبب مشكلة في <strong>الرقم الأجنبي</strong> '
+    '— غير موجود، أو غير فعّال، أو بلا عنوان مسجَّل — فالجهة التي تعالج ذلك هي '
+    '<strong>مديرية إدارة الهجرة في ولايتك</strong>، لا المدرسة ولا مديرية التربية.</p></div>'
+
+    '<h2>ما الذي أُعلن بالضبط</h2>'
+    '<p>ذكرت مديرية إدارة الهجرة في إسطنبول، في بند خاص بالأطفال خارج التعليم، أنّها تُجري '
+    'لهؤلاء الأطفال:</p>'
+    '<ul>'
+    '<li><strong>إصدار رقم هوية أجنبي</strong> لمن لا يملك رقماً.</li>'
+    '<li><strong>تفعيل الرقم</strong> إن كان موجوداً وغير فعّال.</li>'
+    '<li><strong>تسجيل العنوان</strong> على الرقم.</li>'
+    '<li>ثمّ <strong>مشاركة البيانات تلقائياً</strong> مع المديرية العامة للنفوس والجنسية عبر '
+    'نظام <span dir="ltr">KPS</span> — أي لا يُطلب منك أن تنقلها بنفسك بين الدائرتين.</li>'
+    '</ul>'
+
+    '<h2>لماذا يهمّ هذا؟</h2>'
+    '<p>لأنّ العائق في أكثر الحالات ليس قراراً بمنع الطفل من التعليم، بل حلقة مفقودة في السجلّ: '
+    'المدرسة تحتاج رقماً فعّالاً وعنواناً، والرقم عالق عند جهة أخرى. فيبقى الطفل خارج المدرسة '
+    'سنةً أو أكثر بسبب إجراء إداري، لا بسبب حقّ منقوص.</p>'
+    '<p>ومعرفة <em>الجهة الصحيحة</em> هي نصف الحلّ: من يراجع المدرسة أو مديرية التربية في هذه '
+    'الحالة يُعاد من حيث أتى، لأنّ المشكلة ليست عندهما.</p>'
+
+    '<div style="background:#fff7ed;border-right:4px solid #ea580c;padding:14px 18px;margin:18px 0;">'
+    '<p style="margin:0 0 8px;"><strong>وما لم يُعلَن — قُله لنفسك قبل أن تذهب</strong></p>'
+    '<p style="margin:0;">البيان يصف ما تفعله المديرية، ولا يذكر <strong>قائمة أوراق</strong> '
+    'يحضرها ولي الأمر، ولا يصف طلباً إلكترونياً لهذا الغرض. فلا تعتمد على قائمةٍ ينقلها أحد عن '
+    'أحد — اسأل مديرية ولايتك عن الأوراق المطلوبة لحالتك بعينها، واصطحب ما بيدك من وثائق الطفل '
+    'ووثيقة الحماية المؤقتة للأسرة وإثبات السكن.</p></div>'
+
+    '<h2>خطوة عملية</h2>'
+    '<p>راجع مديرية إدارة الهجرة في ولايتك واذكر الحالة صراحةً: «طفلي خارج المدرسة، ومشكلته في '
+    'رقم الهوية الأجنبي / تفعيله / تسجيل عنوانه». وفي إسطنبول '
+    '<a href="/article/immigration-offices-istanbul">هذه هي المراكز الخمسة</a>، '
+    'ويسبقها <a href="/article/istanbul-goc-randevu-noter-2026">حجز الموعد ومسار النوتر</a>.</p>'
+    '<p>وبعد أن يصير الرقم فعّالاً والعنوان مسجَّلاً، تُتابع التسجيل مع المدرسة أو مديرية التربية '
+    'في منطقتك.</p>'
+
+    '<p style="margin-top:1.2rem;">وللسياق: '
+    '<a href="/article/kimlik-temporary-protection-syria-2026">الكملك والحماية المؤقتة</a> • '
+    '<a href="/article/kimlik-data-update">تحديث بيانات الكملك والعنوان</a> • '
+    '<a href="/article/mesem-vocational-training-syrians-foreigners-turkey-2026">التعليم المهني MESEM</a></p>'
+)
+SCHOOL_STEPS = [
+    'حدّد المشكلة أوّلاً: هل الطفل بلا رقم هوية أجنبي أصلاً؟ أم الرقم موجود وغير فعّال؟ أم فعّال '
+    'وبلا عنوان مسجَّل؟ — فالجواب يوجّه المراجعة.',
+    'راجع مديرية إدارة الهجرة في ولايتك — لا المدرسة ولا مديرية التربية؛ فالسجلّ عند الهجرة.',
+    'اذكر الحالة صراحةً: أنّ الطفل خارج المدرسة وأنّ العائق في الرقم أو تفعيله أو تسجيل العنوان.',
+    'اسأل عن الأوراق المطلوبة لحالتك — فالبيان لم ينشر قائمةً، والقوائم المتداولة غير موثوقة.',
+    'اصطحب ما بيدك: وثائق الطفل، ووثيقة الحماية المؤقتة للأسرة، وإثبات السكن.',
+    'بعد إصدار الرقم أو تفعيله وتسجيل العنوان، تنتقل البيانات إلى النفوس تلقائياً عبر KPS.',
+    'ثمّ أكمل التسجيل مع المدرسة أو مديرية التربية في منطقتك.',
+]
+SCHOOL_TIPS = [
+    'الجهة الصحيحة هي إدارة الهجرة؛ ومراجعة المدرسة في هذه الحالة تُعيدك من حيث أتيت.',
+    'نقل البيانات إلى النفوس يتمّ تلقائياً عبر KPS — لا تدفع لمن يعرض «تسريع» هذا النقل.',
+    'البيان لم ينشر قائمة أوراق؛ فاسأل مديرية ولايتك ولا تعتمد على قائمة منقولة.',
+    'وثِّق كل مراجعة: تاريخها واسم الموظّف وما قيل لك — فهو ما تحتجّ به إن اختلفت الإفادات.',
+    'وهذا ما أُعلن في إسطنبول؛ إن كنت في ولاية أخرى فاسأل مديريتك قبل أن تبني عليه.',
+]
+SCHOOL_DOCS = [
+    'وثائق الطفل المتاحة لديك (شهادة ميلاد أو ما يقوم مقامها)',
+    'وثيقة الحماية المؤقتة للأسرة (الكملك)',
+    'إثبات السكن / سند الإقامة في العنوان',
+    'وما تطلبه مديرية ولايتك — اسأل عنه، فالبيان لم ينشر قائمة',
+]
+SCHOOL_FEES = ('لم يُعلَن رسمٌ لهذا الإجراء. ولا نشر رقماً لم يُنشر رسمياً — اسأل مديريتك. ومن '
+               'يطلب منك مالاً مقابل «إصدار الرقم» فهو وسيط لا صفة له.')
+SCHOOL_WARN = ('هذا البيان يصف ما تفعله المديرية، ولا يذكر قائمة الأوراق التي يحضرها ولي الأمر '
+               'ولا طلباً إلكترونياً لهذا الغرض. فاسأل مديرية ولايتك عن حالتك بعينها. وهو ما '
+               'أُعلن في إسطنبول — لا تفترض سريانه في ولاية أخرى قبل السؤال.')
+SCHOOL_SOURCE = ('مديرية إدارة الهجرة في ولاية إسطنبول (İstanbul İl Göç İdaresi Müdürlüğü) — بند '
+                 'الأطفال خارج التعليم من عرضٍ قُدِّم في اجتماع تنسيقي مع منظمات المجتمع المدني؛ '
+                 'نقله اتحاد منظمات المجتمع المدني للتنمية (UCSO) بوصفه مشاركاً في الاجتماع')
+SCHOOL_TAGS = ['تعليم', 'الحماية المؤقتة', 'الرقم الأجنبي', 'إسطنبول', 'دليل', '2026']
+
 # ── the self-check that stops a lying verification row ─────────────────────
 PREDICATES = [
+    ('school details', SCHOOL_DETAILS, ['KPS', 'إدارة الهجرة في ولايتك']),
     ('travel-permit details', TP_DETAILS, ['120 يوماً', 'A-99', 'باليكسير', 'سبعة أيام في السنة التقويمية']),
     ('travel-permit tips', ' '.join(TP_TIPS), ['ليست ممنوعة']),
     ('work-permit-exemption add', WPE_ADD, ['إلغاء نظام الحصص']),
@@ -386,6 +491,19 @@ UPDATE articles SET
     last_update = CURRENT_DATE
 WHERE slug = 'tahdit-entry-restriction-codes-how-to-object' AND details NOT LIKE '%%ثمانية أيام%%';
 
+-- المقال الثاني: الطفل خارج المدرسة بسبب الرقم الأجنبي
+-- (ON CONFLICT (id) — و articles.id هو نفسه الـslug، ولا قيد فريد على slug)
+INSERT INTO articles (id, slug, title, intro, details, steps, tips, documents,
+                      fees, warning, source, tags, category, status, last_update)
+VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, %s, '%s', '%s', '%s', %s,
+        'الكملك والحماية المؤقتة', 'approved', CURRENT_DATE)
+ON CONFLICT (id) DO UPDATE SET
+    title = EXCLUDED.title, intro = EXCLUDED.intro, details = EXCLUDED.details,
+    steps = EXCLUDED.steps, tips = EXCLUDED.tips, documents = EXCLUDED.documents,
+    fees = EXCLUDED.fees, warning = EXCLUDED.warning, source = EXCLUDED.source,
+    tags = EXCLUDED.tags, category = EXCLUDED.category, status = EXCLUDED.status,
+    last_update = EXCLUDED.last_update;
+
 INSERT INTO updates (type, title, summary, content, link, source_name, category, date, active, pinned)
 SELECT 'news', '%s', '%s', '%s', '/article/travel-permit',
        'مديرية إدارة الهجرة في ولاية إسطنبول (İstanbul İl Göç İdaresi Müdürlüğü) — اجتماع تنسيقي مع منظمات المجتمع المدني؛ نقله اتحاد منظمات المجتمع المدني للتنمية (UCSO) بوصفه مشاركاً',
@@ -419,12 +537,19 @@ UNION ALL
 SELECT 'court execution period added', (details LIKE '%%ثمانية أيام%%')
 FROM articles WHERE slug = 'tahdit-entry-restriction-codes-how-to-object'
 UNION ALL
+SELECT 'school-enrolment article created',
+       (status = 'approved' AND details LIKE '%%KPS%%')
+FROM articles WHERE slug = '%s'
+UNION ALL
 SELECT 'news inserted once', (count(*) = 1)::boolean FROM updates WHERE title = '%s';
 """ % (q(TP_DETAILS), arr(TP_STEPS), arr(TP_TIPS), arr(TP_DOCS),
        q(TP_FEES), q(TP_WARN), q(TP_SOURCE), arr(TP_TAGS),
        q(WPE_ADD), q(TH_ADD),
+       SCHOOL_ID, SCHOOL_ID, q(SCHOOL_TITLE), q(SCHOOL_INTRO), q(SCHOOL_DETAILS),
+       arr(SCHOOL_STEPS), arr(SCHOOL_TIPS), arr(SCHOOL_DOCS),
+       q(SCHOOL_FEES), q(SCHOOL_WARN), q(SCHOOL_SOURCE), arr(SCHOOL_TAGS),
        q(NEWS_TITLE), q(NEWS_SUMMARY), q(NEWS_CONTENT), q(NEWS_TITLE),
-       q(NEWS_TITLE), q(NEWS_TITLE))
+       q(NEWS_TITLE), SCHOOL_ID, q(NEWS_TITLE))
 
 path = os.path.join(REPO, 'sql', '2026-08-07_istanbul_meeting_outputs.sql')
 open(path, 'w', encoding='utf-8').write(sql)
@@ -438,6 +563,7 @@ print('الولايات       : 16 ← 17 (باليكسير كانت ناقصة)
 print('جديد كلّياً    : جدول المدد + الفئات السبع + الشروط الخمسة + A-99')
 print('الإعفاء        : 5 تسهيلات تُضاف (كوتا، رسوم، بدل ورق، مضاعفات الحد الأدنى، خطوة واحدة)')
 print('المحاكم        : تنفيذ أحكام الإلغاء خلال ثمانية أيام — لم تكن على الموقع')
+print('مقال ثانٍ     : %s — عقبة الرقم الأجنبي التي تمنع تسجيل الطفل' % SCHOOL_ID)
 print('الخبر          : مثبَّت، مربوط بـ/article/travel-permit')
 print('فحص الشروط     : %d شرطاً فُحص مقابل المحتوى الفعلي — لا شرط يكذب' % sum(len(n) for _, _, n in PREDICATES))
 print('quote parity   :', 'OK' if re.sub(r"''", '', _code).count("'") % 2 == 0 else '*** BROKEN ***')
