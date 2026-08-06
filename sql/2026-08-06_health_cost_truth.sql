@@ -130,7 +130,7 @@ WHERE id = 'family-pregnancy-birth' AND cost LIKE '%مع «مساهمة» وفق
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- التحقّق — كل صفّ يجب أن يعود true
-SELECT 'sgk-gss-health-insurance-turkey-2026' AS الصفحة, (details NOT LIKE '%23,782%' AND details NOT LIKE '%لازم يسجلوا ويدفعوا%' AND details LIKE '%33297%') AS سليمة FROM articles WHERE slug = 'sgk-gss-health-insurance-turkey-2026'
+SELECT 'sgk-gss-health-insurance-turkey-2026' AS الصفحة, (details NOT LIKE '%لازم يسجلوا ويدفعوا%' AND details LIKE '%فذلك خطأ%' AND details LIKE '%33297%') AS سليمة FROM articles WHERE slug = 'sgk-gss-health-insurance-turkey-2026'
 UNION ALL
 SELECT 'gss-premium-2026-foreigners-syrians' AS الصفحة, (title NOT LIKE '%مستثنون%' AND details LIKE '%10658%' AND details NOT LIKE '%الفحوصات والعمليات الأساسية مجانية%') AS سليمة FROM articles WHERE slug = 'gss-premium-2026-foreigners-syrians'
 UNION ALL

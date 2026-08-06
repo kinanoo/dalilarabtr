@@ -314,7 +314,7 @@ note("""UPDATE articles SET
 WHERE slug = 'sgk-gss-health-insurance-turkey-2026';""" % (
     q(D1), arr(S1), arr(T1), arr(DOC1), q(F1), q(W1), q(SRC1)))
 CHECKS.append(("sgk-gss-health-insurance-turkey-2026",
-               "details NOT LIKE '%23,782%' AND details NOT LIKE '%لازم يسجلوا ويدفعوا%' "
+               "details NOT LIKE '%لازم يسجلوا ويدفعوا%' AND details LIKE '%فذلك خطأ%' "
                "AND details LIKE '%33297%'"))
 
 # ═══════════════════════════════════════════════════════════════════════════
