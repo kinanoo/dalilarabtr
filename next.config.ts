@@ -140,6 +140,20 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Citizenship cluster. Almost no duplicate prose here — the problem was
+      // correct claims with nothing behind them: six pages had an empty source
+      // field, including the 228-read tracking hub and an 88-read page stating
+      // a three-year legal condition (which is real — law 5901 article 16 — and
+      // is now cited). The merges are small and follow one rule this cluster
+      // made explicit: the survivor is always the page with more PROSE, because
+      // the generator carries list items and deletes the page, so merging a long
+      // page into a short one destroys writing. The generator now asserts it.
+      // See sql/2026-08-06_merge_citizenship_cluster.sql.
+      { source: '/article/citizenship-track-status', destination: '/article/citizenship-track-general', permanent: true },
+      { source: '/article/citizenship-general', destination: '/article/turkish-citizenship-all-paths-2026', permanent: true },
+      { source: '/article/citizenship-by-residence-2025', destination: '/article/turkish-citizenship-all-paths-2026', permanent: true },
+      { source: '/article/citizenship-syrian-conditions', destination: '/article/citizenship-syrians', permanent: true },
+      { source: '/article/citizenship-investment', destination: '/article/real-estate-citizenship', permanent: true },
       // Phone-line verification. BTK decision 2026/İK-THD/125 gives foreign
       // subscribers until 25 December 2026, with graded restriction starting 5
       // September. Three pages answered that one question and the traffic sat
