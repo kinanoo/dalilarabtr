@@ -405,6 +405,10 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Marriage cluster: two civil-marriage stubs fold into the arts-12/13
+      // canonical (the sheikh-marriage warning migrated there first).
+      { source: '/article/marriage-registration', destination: '/article/civil-marriage-registration-turkey', permanent: true },
+      { source: '/article/family-civil-marriage-municipality', destination: '/article/civil-marriage-registration-turkey', permanent: true },
       // Birth cluster: two stubs merged into the rebuilt birth-registration guide.
       { source: '/article/kimlik-newborn-addition', destination: '/article/birth-registration-turkey', permanent: true },
       { source: '/article/family-birth-registration-flow', destination: '/article/birth-registration-turkey', permanent: true },
