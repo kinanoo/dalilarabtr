@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FileText, ArrowLeft, AlertCircle, Calendar, Loader2, FolderOpen, Search, X, Clock, RefreshCw } from 'lucide-react';
@@ -31,12 +30,52 @@ export default function CategoryArticlesList({
   categorySlug?: string;
   initialArticles: ArticlePreview[];
 }) {
-  // ?tag= is read HERE, not on the server. Reading searchParams in the page
-  // made it dynamic on every request — the category pages were served
-  // `no-store` and re-queried Supabase for every visitor. The filter is
-  // client-side anyway (line ~64), so nothing is lost and the page becomes
-  // statically generated + ISR.
-  const activeTag = useSearchParams().get('tag') || undefined;
+  // ?tag= is read from window.location AFTER mount — deliberately NOT with
+  // useSearchParams().
+  //
+  // The previous version used useSearchParams() here, moved off the server
+  // page to stop the route being dynamic. It achieved the opposite. In the App
+  // Router, useSearchParams() inside a client component that is not wrapped in
+  // a Suspense boundary opts the WHOLE ROUTE out of static rendering, so the
+  // prerendered HTML is an empty shell — including JSX that never left the
+  // server component.
+  //
+  // Measured live on all eleven categories before this change: 0 links to
+  // /article/, 0 ItemList JSON-LD, and no <main> element at all. Even the
+  // BreadcrumbList script — emitted unconditionally by page.tsx above any data
+  // check — was missing, which is what proves the deopt rather than an empty
+  // query: the server component's own output never reached the HTML. ~100KB of
+  // shell per page, and Google seeing eleven empty category hubs.
+  //
+  // Suspense would be the textbook fix and is not enough on this deployment.
+  // Reading the query string directly removes the dependency entirely, so the
+  // route cannot be deopted by this component again. The filter stays exactly
+  // as client-side as it was; the only change is one frame before an inbound
+  // ?tag= link applies — and the unfiltered list is what a crawler should see
+  // anyway.
+  const [activeTag, setActiveTag] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    const read = () => {
+      const t = new URLSearchParams(window.location.search).get('tag');
+      setActiveTag(t || undefined);
+    };
+    read();
+    // Back/forward between a filtered and unfiltered view.
+    window.addEventListener('popstate', read);
+    return () => window.removeEventListener('popstate', read);
+  }, []);
+
+  // Clearing the filter used to be a <Link> back to the bare category URL. That
+  // is a soft navigation which re-renders without remounting and without firing
+  // popstate, so the effect above would never re-read and the chip would stay.
+  // Clear the state and rewrite the URL in place instead — no round trip, and
+  // the back button still works because pushState leaves a history entry.
+  const clearTag = useCallback(() => {
+    setActiveTag(undefined);
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', window.location.pathname);
+    }
+  }, []);
   // The server already rendered this category's articles (initialArticles).
   // Skip the client fetch of the WHOLE articles table (full HTML bodies ×
   // ~310 rows) — the memo below already falls back to initialArticles when
@@ -137,13 +176,14 @@ export default function CategoryArticlesList({
             <span className="text-emerald-700 dark:text-emerald-200 font-black text-sm tracking-wide">
               {TAG_LABELS[activeTag] || activeTag}
             </span>
-            <Link
-              href={`/category/${categorySlug}`}
+            <button
+              type="button"
+              onClick={clearTag}
               className="flex items-center justify-center w-6 h-6 rounded-full bg-white/70 dark:bg-slate-800 text-slate-500 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-300 transition-colors"
               aria-label="إزالة الفلتر"
             >
               <X size={12} />
-            </Link>
+            </button>
           </div>
         )}
 

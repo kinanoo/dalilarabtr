@@ -130,7 +130,14 @@ export default async function CategoryPage(props: {
               "@type": "ItemList",
               "name": categoryName,
               "numberOfItems": initialArticles.length,
-              "itemListElement": initialArticles.slice(0, 20).map((a: any, i: number) => ({
+              // No cap. slice(0, 20) left 58 articles out of the structured
+              // data across six categories — work 16, kimlik 12, syrians 12,
+              // housing 9, official 7, residence 2 — while numberOfItems kept
+              // announcing the true total, so the list contradicted its own
+              // count. Nothing justified the twenty: enumerating a category is
+              // the entire purpose of this block, and thirty-six ListItems of
+              // {url, name} is a few kilobytes.
+              "itemListElement": initialArticles.map((a: any, i: number) => ({
                 "@type": "ListItem",
                 "position": i + 1,
                 "url": `${SITE_CONFIG.siteUrl}/article/${a.slug}`,
