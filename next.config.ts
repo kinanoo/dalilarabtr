@@ -140,6 +140,22 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Education — three pillars with 20-to-131-word cards orbiting them. The
+      // decision worth recording is the one NOT to merge: four scholarship pages
+      // (1,077 / 645 / 581 / 413 words, 24% measured overlap between two) look
+      // like a classic pile, and folding three into one would have destroyed
+      // 1,639 words of real writing. Overlap at that level across substantial
+      // guides is topical proximity, not duplication. They stay.
+      // See sql/2026-08-06_merge_education_cluster.sql.
+      { source: '/article/enroll-child-turkish-public-school', destination: '/article/school-registration-turkey', permanent: true },
+      { source: '/article/school-transfer', destination: '/article/school-registration-turkey', permanent: true },
+      { source: '/article/school-types-turkey', destination: '/article/school-registration-turkey', permanent: true },
+      { source: '/article/kimlik-school-enrollment', destination: '/article/school-registration-turkey', permanent: true },
+      { source: '/article/highschool-denklik', destination: '/article/diploma-denklik-syrians-arabs-2026', permanent: true },
+      { source: '/article/school-equivalency', destination: '/article/diploma-denklik-syrians-arabs-2026', permanent: true },
+      { source: '/article/education-universities', destination: '/article/study-in-turkey-universities-2026', permanent: true },
+      { source: '/article/yos-exam-guide', destination: '/article/yks-vs-yos-placement-by-schooling-2026', permanent: true },
+      { source: '/article/student-residence', destination: '/article/tourist-vs-student-residence-2025', permanent: true },
       // Leaving for Syria — the highest-consequence cluster on the site: a wrong
       // answer here costs a reader their temporary protection, not a wasted
       // trip. Two pages attached the WRONG security code to a consequence, and
