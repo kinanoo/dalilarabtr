@@ -111,12 +111,33 @@ export const SERVICES_LIST = [
     { id: 'provinces-paper', title: "تجهيز أوراق الولايات", desc: "خدمات خاصة في الولايات التركية.", icon: MapPin, color: "bg-orange-600" }
 ];
 
+/**
+ * Downloadable petition templates shown on /forms.
+ *
+ * Every URL here was fetched on 6 Aug 2026 and only the two that actually serve
+ * the document their label promises survived. What was removed, and why — so
+ * nobody restores it from git history without re-checking:
+ *
+ *   remove-ban-code      «عريضة إزالة أكواد المنع الأمنية (G-87, V-160)» pointed at
+ *                        `GÜMRÜK YÖNETMELİĞİ word.docx` — the Turkish customs
+ *                        regulation, from a university lecturer's course files —
+ *                        on a host that no longer resolves at all. Wrong document
+ *                        AND dead link. This is also why the V-160 audit found it.
+ *   rent-contract-pdf    404.
+ *   governor-petition    the Drive link returns a Google sign-in page, not a file.
+ *
+ * And `deportation-objection` was mislabelled: the file it serves is
+ * `gecici-koruma-basvuru-sahibi-kimlik-iadesi-dilekce` — a petition to get a
+ * confiscated temporary-protection card BACK, which is a genuinely useful form,
+ * just not an objection to a deportation order. It is now named for what it is.
+ *
+ * The rule this list runs on: a download whose label does not match its file is
+ * worse than no download, because the reader files the wrong petition. If a
+ * replacement cannot be verified, the entry goes.
+ */
 export const FORMS = [
-    { id: 'deportation-objection', name: "اعتراض ترحيل (Word)", type: "DOCX", size: "1 MB", desc: "نموذج اعتراض رسمي على قرار الترحيل (إعادة قسري) أو منع دخول.", url: "https://www.diyarbakirbarosu.org.tr/public/uploads/document/gecici-koruma-basvuru-sahibi-kimlik-iadesi-dilekce-1752759084.docx" },
-    { id: 'remove-ban-code', name: "إزالة كود منع (Word)", type: "DOCX", size: "1 MB", desc: "عريضة قانونية لطلب إزالة أكواد المنع الأمنية (G-87, V-160, etc).", url: "https://avys.omu.edu.tr/storage/app/public/tayfun.simsek/108160/G%C3%9CMR%C3%9CK%20Y%C3%96NETMEL%C4%B0%C4%9E%C4%B0%20word.docx" },
-    { id: 'rent-contract-pdf', name: "عقد إيجار (PDF)", type: "PDF", size: "2 MB", desc: "نموذج عقد إيجار تركي قياسي (النسخة المعتمدة لدى كتاب العدل).", url: "https://www.akademikhukuk.org/wp-content/uploads/2023/12/Kira-So%CC%88zles%CC%A7mesi-O%CC%88rneg%CC%86i-Kira-Kontrati-O%CC%88rneg%CC%86i-pdf.pdf" },
-    { id: 'cancel-deport-word', name: "إلغاء ترحيل (Word)", type: "PDF", size: "1.5 MB", desc: "صيغة دعوى إدارية لطلب إلغاء قرار الترحيل أمام المحكمة.", url: "https://www.secililaydasonmez.av.tr/wp-content/uploads/2024/07/Deport-Sinirdisi-Edilme-Kararinin-Kaldirilmasi-Dava-Dilekcesi-Ornegi-%E2%80%93-1.pdf" },
-    { id: 'governor-petition', name: "طلب استرحام (الوالي)", type: "Word", size: "1 MB", desc: "نموذج استرحام لتقديمه لمكتب الوالي لرفع المنع أو استعادة الكملك.", url: "https://drive.usercontent.google.com/download?id=1j2zvLkUMk3Ct_GWBZ5xKqFOCjgxkTpVF&export=download&authuser=0&confirm=t&uuid=5ab87785-3431-4f90-b2ad-d5f99c15de08&at=ANTm3cxp44pdLjLLzxhzukRf2OpV:1767559642031" },
+    { id: 'kimlik-return-petition', name: "طلب استعادة بطاقة الحماية المؤقتة (Word)", type: "DOCX", size: "1 MB", desc: "عريضة لطلب إعادة بطاقة الكملك المحتجَزة — من منشورات نقابة محامي ديار بكر.", url: "https://www.diyarbakirbarosu.org.tr/public/uploads/document/gecici-koruma-basvuru-sahibi-kimlik-iadesi-dilekce-1752759084.docx" },
+    { id: 'cancel-deport-word', name: "دعوى إلغاء قرار الترحيل (PDF)", type: "PDF", size: "1.5 MB", desc: "صيغة دعوى إدارية لطلب إلغاء قرار الترحيل أمام المحكمة الإدارية.", url: "https://www.secililaydasonmez.av.tr/wp-content/uploads/2024/07/Deport-Sinirdisi-Edilme-Kararinin-Kaldirilmasi-Dava-Dilekcesi-Ornegi-%E2%80%93-1.pdf" },
 ];
 
 export const OFFICIAL_SOURCES = [
