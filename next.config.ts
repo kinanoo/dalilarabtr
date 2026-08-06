@@ -405,6 +405,9 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Birth cluster: two stubs merged into the rebuilt birth-registration guide.
+      { source: '/article/kimlik-newborn-addition', destination: '/article/birth-registration-turkey', permanent: true },
+      { source: '/article/family-birth-registration-flow', destination: '/article/birth-registration-turkey', permanent: true },
       { source: '/article/bank-account-documents', destination: '/article/bank-account-opening', permanent: true },
       { source: '/article/kimlik-bank-sim', destination: '/article/bank-account-opening', permanent: true },
       { source: '/article/red-crescent-card', destination: '/article/kizilay-card-application', permanent: true },
