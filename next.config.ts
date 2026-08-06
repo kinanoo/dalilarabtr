@@ -140,6 +140,26 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Traffic and cars — the e-Devlet pattern again: seventeen of twenty-five
+      // pages were December-2025 cards of 18-51 words, folded into the six real
+      // guides written since. The page worth the trip was app-plate-turkey: 241
+      // reads on seventy words, no source, and the cluster largest numbers
+      // (140,000 lira for a fake plate, thirty days off the road). Every figure
+      // checks out against Law 7574 — right and uncheckable at once. It also
+      // omitted the early-payment discount, which costs its reader 35,000 lira.
+      // See sql/2026-08-06_merge_traffic_cluster.sql.
+      { source: '/article/auto-ehliyet-new-from-zero', destination: '/article/theory-exam-arabic-2026', permanent: true },
+      { source: '/article/driver-theory-prep', destination: '/article/theory-exam-arabic-2026', permanent: true },
+      { source: '/article/auto-ehliyet-conversion', destination: '/article/license-conversion-arab-countries-2026', permanent: true },
+      { source: '/article/driving-license', destination: '/article/license-conversion-arab-countries-2026', permanent: true },
+      { source: '/article/lost-driving-license', destination: '/article/driving-license-fees-2026', permanent: true },
+      { source: '/article/buying-car-foreigner', destination: '/article/car-registration', permanent: true },
+      { source: '/article/auto-noter-satis-transfer', destination: '/article/car-registration', permanent: true },
+      { source: '/article/auto-plates-foreigner-m-plaka', destination: '/article/car-registration', permanent: true },
+      { source: '/article/auto-mtv-payment', destination: '/article/car-registration', permanent: true },
+      { source: '/article/auto-ekspertiz-guide', destination: '/article/tramer-hasar-kaydi-kilometre-kontrol-turkiye-2026', permanent: true },
+      { source: '/article/tuvturk-appointment', destination: '/article/auto-tuvturk-inspection', permanent: true },
+      { source: '/article/auto-license-suspension-points-alcohol', destination: '/article/traffic-fines', permanent: true },
       // Health and insurance. No dramatic finding — this is where the site
       // wrote the same page twice and then wrote a long good version without
       // deleting the short ones. Three pages on compulsory earthquake cover,

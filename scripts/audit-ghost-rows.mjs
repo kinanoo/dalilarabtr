@@ -26,18 +26,20 @@ import { readFileSync } from 'node:fs';
 // Empty is the normal state. Entries live here for one deploy and are removed
 // the moment their rows are deleted — which is what the stale check below
 // forces.
-const MERGE_HEALTH = 'sql/2026-08-06_merge_health_cluster.sql';
+const MERGE_TRAFFIC = 'sql/2026-08-06_merge_traffic_cluster.sql';
 const PENDING_SQL = {
-    'earthquake-insurance': MERGE_HEALTH,
-    'housing-advanced-dask': MERGE_HEALTH,
-    'car-insurance': MERGE_HEALTH,
-    'auto-insurance-trafik-vs-kasko': MERGE_HEALTH,
-    'e-nabiz-guide': MERGE_HEALTH,
-    'hospital-appointment': MERGE_HEALTH,
-    'health-insurance-types': MERGE_HEALTH,
-    'edevlet-sgk-dokumu': MERGE_HEALTH,
-    'kimlik-health-services': MERGE_HEALTH,
-    'kimlik-work-and-sgk': MERGE_HEALTH,
+    'auto-ehliyet-new-from-zero': MERGE_TRAFFIC,
+    'driver-theory-prep': MERGE_TRAFFIC,
+    'auto-ehliyet-conversion': MERGE_TRAFFIC,
+    'driving-license': MERGE_TRAFFIC,
+    'lost-driving-license': MERGE_TRAFFIC,
+    'buying-car-foreigner': MERGE_TRAFFIC,
+    'auto-noter-satis-transfer': MERGE_TRAFFIC,
+    'auto-plates-foreigner-m-plaka': MERGE_TRAFFIC,
+    'auto-mtv-payment': MERGE_TRAFFIC,
+    'auto-ekspertiz-guide': MERGE_TRAFFIC,
+    'tuvturk-appointment': MERGE_TRAFFIC,
+    'auto-license-suspension-points-alcohol': MERGE_TRAFFIC,
 };
 
 const env = Object.fromEntries(
