@@ -250,9 +250,20 @@ for keep, _ in MERGES:
                       ensure_ascii=False)
     assert 'V-160' not in blob and 'G-87' not in blob, '%s already carries a code label' % keep
 
-codes_sql = ("UPDATE articles SET details = coalesce(details, '') || '%s', last_update = CURRENT_DATE\n"
-             "WHERE slug = 'travel-permit' AND coalesce(details, '') NOT LIKE '%%الأكواد المدقَّق%%';\n"
-             % q(CODES_BLOCK))
+# One block on EACH page that carried a wrong label: V-160 was on the internal
+# travel stub, G-87 on the Syria-visit stub. A first attempt wrote it only to
+# travel-permit, which left the correction off the 451-read border page where
+# readers actually land — see sql/2026-08-06_codes_block_border_page.sql for the
+# follow-up that fixed it in production.
+CODES_PAGES = ('travel-permit', 'syria-turkey-border-crossings-2026')
+codes_sql = '
+'.join(
+    "UPDATE articles SET details = coalesce(details, '') || '" + q(CODES_BLOCK) + "', "
+    "last_update = CURRENT_DATE
+"
+    "WHERE slug = '" + sl + "' AND coalesce(details, '') NOT LIKE '%الأكواد المدقَّق%';
+"
+    for sl in CODES_PAGES)
 
 header = """-- ============================================================================
 -- عنقود المغادرة إلى سوريا: 18 صفحة ← 9 (2026-08-06)

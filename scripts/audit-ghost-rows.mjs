@@ -26,16 +26,7 @@ import { readFileSync } from 'node:fs';
 // Empty is the normal state. Entries live here for one deploy and are removed
 // the moment their rows are deleted — which is what the stale check below
 // forces.
-const MERGE_RETURN = 'sql/2026-08-06_merge_return_cluster.sql';
-const PENDING_SQL = {
-    'travel-permit-2026': MERGE_RETURN,
-    'syria-visit-official': MERGE_RETURN,
-    'syria-travel-permits-kimlik-holders-2026': MERGE_RETURN,
-    'kimlik-leaving-turkey': MERGE_RETURN,
-    'leaving-turkey-final': MERGE_RETURN,
-    'exit-cancel-residence-return-card': MERGE_RETURN,
-    'exit-close-bank-accounts': MERGE_RETURN,
-};
+const PENDING_SQL = {};
 
 const env = Object.fromEntries(
     readFileSync('.env.local', 'utf8')
