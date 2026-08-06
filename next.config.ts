@@ -402,6 +402,11 @@ const nextConfig: NextConfig = {
       // «للتفاصيل الكاملة: <link>» pointers and left live, so they kept being
       // indexed and kept costing a reader a second click. Their unique content
       // is merged into the guide; these send the URLs there.
+      // Bank-account cluster: two stubs (174 and 325 chars) merged into the
+      // rebuilt bank-account-opening guide — same consolidation pattern as
+      // Kızılay below.
+      { source: '/article/bank-account-documents', destination: '/article/bank-account-opening', permanent: true },
+      { source: '/article/kimlik-bank-sim', destination: '/article/bank-account-opening', permanent: true },
       { source: '/article/red-crescent-card', destination: '/article/kizilay-card-application', permanent: true },
       { source: '/article/kizilay-card-problems', destination: '/article/kizilay-card-application', permanent: true },
       { source: '/article/kizilay-card-apply', destination: '/article/kizilay-card-application', permanent: true },
