@@ -64,6 +64,13 @@ def fetch(t, c, s):
     return json.load(urllib.request.urlopen(urllib.request.Request(u, headers=_H)))[0]
 
 
+# VERIFICATION RULE, learned three times in one session (the 23,782 figure, the
+# service worker's `.catch(() => hit)` marker, and this page's «يُفقدك حق الطعن»):
+# never assert the ABSENCE of a debunked string on a page whose fix works by
+# quoting it. The correction names the claim and kills it, so the words survive
+# on purpose and an absence check reports failure on a page that is correct.
+# Assert the presence of the REFUTATION; keep absence checks for text the fix
+# genuinely deletes.
 def q(s):
     return str(s if s is not None else '').replace("'", "''")
 
@@ -72,6 +79,10 @@ def arr(items):
     return 'ARRAY[%s]::text[]' % ', '.join("'%s'" % q(x) for x in items)
 
 
+# Single-use, like every generator in this audit: the asserts below are
+# preconditions on the PRE-FIX row, so re-running after the SQL has been
+# applied fails on purpose. The .sql file is the artifact; this file is the
+# record of how it was derived and why.
 a = fetch('articles', 'slug', 'return-code-v87')
 code = fetch('security_codes', 'code', 'V87')
 assert 'يمنع العودة لتركيا' in (code['description'] or ''), 'the audited entry changed'
@@ -235,13 +246,13 @@ SELECT 'the administrative route comes first',
 FROM articles WHERE slug = 'return-code-v87'
 UNION ALL
 SELECT 'the 60 days is scoped, not a door closing',
-       (details NOT LIKE '%%التأخير يُفقدك حق الطعن%%'
+       (details LIKE '%%ليس كذلك%%'
         AND details LIKE '%%يُسقط مهلة%%'
         AND warning LIKE '%%لا تمنعك بعد انقضائها%%')
 FROM articles WHERE slug = 'return-code-v87'
 UNION ALL
 SELECT 'no longer calls it a suspected violation',
-       (details NOT LIKE '%%الشك بمخالفة استوجبت العودة%%' AND details LIKE '%%تصنيفه%%إداري%%')
+       (details LIKE '%%ليس كود «مخالفة»%%' AND details LIKE '%%تصنيفه%%إداري%%')
 FROM articles WHERE slug = 'return-code-v87'
 UNION ALL
 SELECT 'every internal link is a live article', (count(*) = 3)::boolean

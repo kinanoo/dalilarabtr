@@ -64,13 +64,13 @@ SELECT 'the administrative route comes first',
 FROM articles WHERE slug = 'return-code-v87'
 UNION ALL
 SELECT 'the 60 days is scoped, not a door closing',
-       (details NOT LIKE '%التأخير يُفقدك حق الطعن%'
+       (details LIKE '%ليس كذلك%'
         AND details LIKE '%يُسقط مهلة%'
         AND warning LIKE '%لا تمنعك بعد انقضائها%')
 FROM articles WHERE slug = 'return-code-v87'
 UNION ALL
 SELECT 'no longer calls it a suspected violation',
-       (details NOT LIKE '%الشك بمخالفة استوجبت العودة%' AND details LIKE '%تصنيفه%إداري%')
+       (details LIKE '%ليس كود «مخالفة»%' AND details LIKE '%تصنيفه%إداري%')
 FROM articles WHERE slug = 'return-code-v87'
 UNION ALL
 SELECT 'every internal link is a live article', (count(*) = 3)::boolean
