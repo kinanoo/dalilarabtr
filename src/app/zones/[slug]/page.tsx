@@ -89,6 +89,7 @@ type Zone = {
     status: 'closed' | 'reopened' | 'pending' | string | null;
     is_banned: boolean | null;
     reopened_at: string | null;
+    updated_at?: string | null;
     community_reopened_count?: number;
     community_closed_count?: number;
 };
@@ -374,7 +375,7 @@ export default async function ZoneDetailPage({ params }: Props) {
     let groupItems: Zone[] = [];
     let title = '';
 
-    const ZONE_COLS = 'id, neighborhood, city, district, status, is_banned, reopened_at, community_reopened_count, community_closed_count';
+    const ZONE_COLS = 'id, neighborhood, city, district, status, is_banned, reopened_at, updated_at, community_reopened_count, community_closed_count';
 
     // Turkish-character-tolerant normalizer. Without this, /zones/Istanbul
     // misses /zones/İstanbul (the DB stores Turkish letters), /zones/Sanliurfa
@@ -580,12 +581,29 @@ export default async function ZoneDetailPage({ params }: Props) {
         // list for this province. Google picks this up for richer SERP cards
         // and surfaces it in Dataset Search. Updated/dateModified comes from
         // the most recent reopened_at among rows.
+        // dateModified is a machine-readable claim about the DATA, so it has to
+        // come from the data. It used to fall back to `new Date()` when no row
+        // carried a reopened_at — which is 58 of the 63 provinces, because only
+        // Şanlıurfa, Gaziantep, İstanbul, Konya and Adana have had a reopening
+        // recorded. Those 58 pages told Google their dataset was modified right
+        // now, refreshed every 10 minutes by `revalidate`, on rows untouched
+        // since 5 January 2026. A fabricated freshness signal in structured data
+        // is worse than none: it is the field a crawler trusts precisely because
+        // a human did not write it.
+        //
+        // Order of truth: the newest reopening, else the newest row edit, else
+        // nothing at all — an omitted dateModified is honest, an invented one is
+        // not.
         const lastUpdate = (() => {
-            const dates = groupItems
-                .map((z) => z.reopened_at)
-                .filter((d): d is string => !!d);
-            if (dates.length === 0) return new Date().toISOString();
-            return new Date(Math.max(...dates.map((d) => new Date(d).getTime()))).toISOString();
+            const pick = (key: 'reopened_at' | 'updated_at') => {
+                const dates = groupItems
+                    .map((z) => z[key])
+                    .filter((d): d is string => !!d)
+                    .map((d) => new Date(d).getTime())
+                    .filter((t) => Number.isFinite(t));
+                return dates.length ? new Date(Math.max(...dates)).toISOString() : null;
+            };
+            return pick('reopened_at') ?? pick('updated_at');
         })();
         const datasetJsonLd = {
             '@context': 'https://schema.org',
@@ -600,7 +618,10 @@ export default async function ZoneDetailPage({ params }: Props) {
                 'تسجيل نفوس تركيا',
                 'إقامة سوريين تركيا',
             ].join(', '),
-            dateModified: lastUpdate,
+            // Spread, not `dateModified: lastUpdate` — a literal null in JSON-LD
+            // is a malformed value, and the point of the change is to say
+            // nothing when we know nothing.
+            ...(lastUpdate ? { dateModified: lastUpdate } : {}),
             creator: { '@type': 'Organization', name: SITE_CONFIG.name, url: SITE_CONFIG.siteUrl },
             spatialCoverage: { '@type': 'Place', name: title, address: { '@type': 'PostalAddress', addressCountry: 'TR', addressRegion: title } },
             license: 'https://creativecommons.org/licenses/by-sa/4.0/',
