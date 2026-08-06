@@ -140,6 +140,24 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Leaving for Syria — the highest-consequence cluster on the site: a wrong
+      // answer here costs a reader their temporary protection, not a wasted
+      // trip. Two pages attached the WRONG security code to a consequence, and
+      // the site own audited 125-code table is what disproved them: V-160 is an
+      // address freeze, not a kimlik cancellation, and G-87 is a public-security
+      // code, not the result of an irregular crossing. Neither label is carried.
+      // One page was a broker route — apply through an unnamed organisation,
+      // cross on verbal approval — and is deleted with nothing carried, the only
+      // page in eleven passes handled that way.
+      // See sql/2026-08-06_merge_return_cluster.sql.
+      { source: '/article/travel-permit-2026', destination: '/article/travel-permit', permanent: true },
+      { source: '/article/syria-visit-official', destination: '/article/syria-turkey-border-crossings-2026', permanent: true },
+      { source: '/article/syria-travel-permits-kimlik-holders-2026', destination: '/article/syria-turkey-border-crossings-2026', permanent: true },
+      { source: '/article/kimlik-leaving-turkey', destination: '/article/voluntary-return-syria-procedure-2026', permanent: true },
+      { source: '/article/leaving-turkey-final', destination: '/article/voluntary-return-syria-procedure-2026', permanent: true },
+      { source: '/article/exit-cancel-residence-return-card', destination: '/article/voluntary-return-syria-procedure-2026', permanent: true },
+      { source: '/article/exit-close-bank-accounts', destination: '/article/voluntary-return-syria-procedure-2026', permanent: true },
+      { source: '/article/article-%D8%B9%D9%86%D8%AF%D9%8A-%D9%83%D9%85%D9%84%D9%83-%D8%AD%D9%85%D8%A7%D9%8A%D8%A9-%D9%85%D8%A4%D9%82%D8%AA%D8%A9-%D9%88-%D9%86%D8%B2%D9%84%D8%AA-%D8%B9%D9%88%D8%AF%D8%A9-%D8%B7%D9%88%D8%B9%D8%A8%D8%A9-%D8%A5%D9%84%D9%89-%D8%B3%D9%88%D8%B1%D9%8A%D8%A7-%D9%88-%D8%A3%D8%B1%D8%BA%D8%A8-%D8%A8%D8%A7%D9%84%D8%B9%D9%88%D8%AF%D8%A9-%D8%A5%D9%84%D9%89-%D8%AA%D8%B1%D9%83%D9%8A%D8%A7', destination: '/article/voluntary-return-syria-procedure-2026', permanent: true },
       // Traffic and cars — the e-Devlet pattern again: seventeen of twenty-five
       // pages were December-2025 cards of 18-51 words, folded into the six real
       // guides written since. The page worth the trip was app-plate-turkey: 241
