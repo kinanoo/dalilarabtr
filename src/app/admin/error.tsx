@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AlertTriangle, RefreshCw, Home, Copy } from 'lucide-react';
 import Link from 'next/link';
 import logger from '@/lib/logger';
+import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
 import { toast } from 'sonner';
 
 export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -11,6 +12,9 @@ export default function AdminError({ error, reset }: { error: Error & { digest?:
     useEffect(() => {
         logger.error('AdminError boundary caught:', error);
     }, [error]);
+    // A failed chunk fetch is transient, not a broken page — reload once
+    // instead of making the admin do it. See useChunkErrorRecovery.
+    useChunkErrorRecovery(error);
 
     // Show error message only in dev — production digest is opaque on purpose
     // (it maps to a server log entry that the team can look up).

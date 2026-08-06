@@ -119,9 +119,28 @@ const nextConfig: NextConfig = {
       // address. Declared here rather than with redirect() in the page: an
       // in-render redirect returns 200 on this deployment, config redirects
       // correctly return 308.
+      //
+      // ⚠ `1` IS EXCLUDED ON PURPOSE — this pair used to be an infinite 308 loop.
+      //
+      // Next appends any query string the destination did not consume, so with
+      // `\d+` matching page=1 the chain ran:
+      //     /articles?page=1        → /articles/page/1?page=1
+      //     /articles/page/1?page=1 → /articles?page=1        → …forever
+      // Verified live on 6 Aug 2026: two hops, then back to the start. The
+      // browser gives up with ERR_TOO_MANY_REDIRECTS and the page just hangs.
+      //
+      // The obvious fix — a separate page=1 rule pointing at `/articles?` to
+      // drop the query — was tried and is WRONG on this Next version: the
+      // trailing `?` is not honoured, the query is re-appended anyway, and
+      // `/articles?page=1` then redirected to itself in a single hop. Measured
+      // against a real `next start`, not assumed.
+      //
+      // So page 1 simply does not match. `/articles?page=1` renders the archive
+      // root with an ignored query parameter, `/articles/page/1` still 308s to
+      // `/articles`, and every chain terminates.
       {
         source: '/articles',
-        has: [{ type: 'query', key: 'page', value: '(?<n>\\d+)' }],
+        has: [{ type: 'query', key: 'page', value: '(?<n>[2-9]\\d*|[1-9]\\d+)' }],
         destination: '/articles/page/:n',
         permanent: true,
       },

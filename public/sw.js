@@ -77,19 +77,58 @@ self.addEventListener('fetch', (event) => {
     // on every deploy, so a cache hit is guaranteed fresh.
     if (!url.pathname.startsWith('/_next/static/')) return;
 
-    event.respondWith(
-        caches.open(STATIC_CACHE).then((cache) =>
-            cache.match(req).then((hit) => {
-                if (hit) return hit;
-                return fetch(req).then((res) => {
-                    // Only cache a clean, complete response.
-                    if (res && res.status === 200 && res.type === 'basic') {
-                        cache.put(req, res.clone()).then(() => trimStaticCache(cache));
-                    }
-                    return res;
-                }).catch(() => hit); // offline + not cached → let it fail naturally
+    // THE BUG THIS REPLACES — it is why "click a link → تعذّر تحميل المقالة →
+    // refresh two or three times" kept happening, and why it was invisible to
+    // curl and to every server-side check:
+    //
+    //     if (hit) return hit;
+    //     return fetch(req)….catch(() => hit);   // ← hit is undefined HERE
+    //
+    // Control only reaches that fetch when `hit` is falsy, so the catch resolved
+    // respondWith() with `undefined`. Per the Service Worker spec, resolving
+    // respondWith with a non-Response is a NETWORK ERROR — so one transient blip
+    // while pulling a JS chunk did not "fail naturally" as the old comment
+    // claimed. It failed harder than having no service worker at all: the
+    // browser's own HTTP stack never got to retry it. The router then threw
+    // ChunkLoadError for the segment it was navigating into, the nearest
+    // error.tsx rendered, and the layout stayed intact — exactly the reported
+    // screenshot. A manual refresh re-requested the chunk over a working
+    // connection and it worked, which is why it looked random.
+    //
+    // Now: one retry on a transient failure, then fall through to a plain
+    // network fetch so the request ends up exactly where it would have without
+    // a service worker in the path.
+    // `cache` may be null when the Cache API is unavailable (private mode,
+    // evicted storage, quota) — the asset must still be served, just not stored.
+    const fromNetwork = (cache) =>
+        fetch(req)
+            .then((res) => {
+                if (cache && res && res.status === 200 && res.type === 'basic') {
+                    cache.put(req, res.clone()).then(() => trimStaticCache(cache)).catch(() => {});
+                }
+                return res;
             })
-        )
+            // A dropped connection on a hashed asset is almost always one-shot.
+            // Retrying once here is what turns the reader's "refresh two or
+            // three times" into something they never see. If the second attempt
+            // also fails the promise REJECTS, which respondWith surfaces as a
+            // normal network error — the same thing the browser would show with
+            // no service worker at all. That is the correct end state; resolving
+            // with `undefined` was not.
+            .catch(() => fetch(req));
+
+    // Cache failures and network failures are kept apart on purpose. Wrapping
+    // the whole chain in one .catch(() => fetch(req)) — the first shape of this
+    // fix — made an offline device try the network three times instead of two,
+    // because the network chain's own rejection fell into the cache handler.
+    // Measured, not assumed: scripts/../sw fetch-handler test, four cases.
+    event.respondWith(
+        caches.open(STATIC_CACHE)
+            .catch(() => null)
+            .then((cache) =>
+                (cache ? cache.match(req).catch(() => undefined) : Promise.resolve(undefined))
+                    .then((hit) => hit || fromNetwork(cache)),
+            ),
     );
 });
 

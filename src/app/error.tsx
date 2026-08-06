@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import logger from '@/lib/logger';
+import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
 
 export default function Error({
     error,
@@ -15,6 +16,9 @@ export default function Error({
         // Log the error to an error reporting service
         logger.error(error);
     }, [error]);
+    // A failed chunk fetch is transient, not a broken page — reload once
+    // instead of making the reader do it. See useChunkErrorRecovery.
+    useChunkErrorRecovery(error);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
