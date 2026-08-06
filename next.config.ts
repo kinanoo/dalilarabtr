@@ -396,6 +396,15 @@ const nextConfig: NextConfig = {
       // Two of these are also targets of the consultant routing table
       // (src/lib/consultant-routing.ts), which links to /article/<slug>
       // directly — the redirects below are what keeps that flow off a 404.
+      // Kızılay/SUY was one topic spread over four URLs — the 2,406-character
+      // guide plus three stubs of 722, 516 and 491 characters holding 65 views
+      // between them. Two of the three had already been reduced to
+      // «للتفاصيل الكاملة: <link>» pointers and left live, so they kept being
+      // indexed and kept costing a reader a second click. Their unique content
+      // is merged into the guide; these send the URLs there.
+      { source: '/article/red-crescent-card', destination: '/article/kizilay-card-application', permanent: true },
+      { source: '/article/kizilay-card-problems', destination: '/article/kizilay-card-application', permanent: true },
+      { source: '/article/kizilay-card-apply', destination: '/article/kizilay-card-application', permanent: true },
       { source: '/article/travel-permit-medical', destination: '/article/travel-permit', permanent: true },
       { source: '/article/travel-permit-visit', destination: '/article/travel-permit', permanent: true },
       // These two pointed at e-Devlet pages that the directory pass later
