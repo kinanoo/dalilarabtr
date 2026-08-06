@@ -26,18 +26,7 @@ import { readFileSync } from 'node:fs';
 // Empty is the normal state. Entries live here for one deploy and are removed
 // the moment their rows are deleted — which is what the stale check below
 // forces.
-const MERGE_EDUCATION = 'sql/2026-08-06_merge_education_cluster.sql';
-const PENDING_SQL = {
-    'enroll-child-turkish-public-school': MERGE_EDUCATION,
-    'school-transfer': MERGE_EDUCATION,
-    'school-types-turkey': MERGE_EDUCATION,
-    'kimlik-school-enrollment': MERGE_EDUCATION,
-    'highschool-denklik': MERGE_EDUCATION,
-    'school-equivalency': MERGE_EDUCATION,
-    'education-universities': MERGE_EDUCATION,
-    'yos-exam-guide': MERGE_EDUCATION,
-    'student-residence': MERGE_EDUCATION,
-};
+const PENDING_SQL = {};
 
 const env = Object.fromEntries(
     readFileSync('.env.local', 'utf8')
@@ -52,6 +41,20 @@ const cfg = readFileSync('next.config.ts', 'utf8');
 const sources = new Set([
     ...[...cfg.matchAll(/source:\s*'\/article\/([a-z0-9-]+)'/g)].map((m) => m[1]),
 ]);
+
+// Every article redirect as a pair, whatever the destination looks like. The
+// first version of this check only collected /article/ -> /article/ pairs, so a
+// redirect landing on a page that was ITSELF redirected to a hub read as clean.
+// Two of those survived twelve consolidation passes that way: a rule pointing at
+// an e-Devlet page that a later pass retired became a two-hop hop to the hub.
+// Not broken — it resolves 200 — but it leaks link equity and is invisible in
+// review, which is precisely what this file exists to prevent.
+const pairs = [...cfg.matchAll(/source:\s*'\/article\/([^']+)'[^}]*?destination:\s*'([^']+)'/g)]
+    .map((m) => ({ from: decodeURIComponent(m[1]), to: m[2] }));
+const chains = pairs.filter((p) => {
+    const m = p.to.match(/^\/article\/([^#?]+)/);
+    return m && sources.has(decodeURIComponent(m[1]));
+});
 
 const base = env.NEXT_PUBLIC_SUPABASE_URL;
 const key = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -96,5 +99,20 @@ if (real.length) {
     for (const g of real) console.error(`  ${g}`);
     console.error('\nDelete these rows, or drop the redirect if the page should stay.');
 }
-if (real.length || stale.length) process.exit(1);
+if (chains.length) {
+    console.error(`\nREDIRECT CHAINS (${chains.length}) — destination is itself redirected:`);
+    for (const c of chains) console.error(`  ${c.from}  →  ${c.to}  →  …`);
+    console.error('\nPoint the first rule at the final destination.');
+}
+// A destination that is neither a live article nor a non-article path is a 404
+// behind a 308 — the one failure mode worse than no redirect at all.
+const deadEnds = pairs.filter((p) => {
+    const m = p.to.match(/^\/article\/([^#?]+)/);
+    return m && !live.has(decodeURIComponent(m[1])) && !sources.has(decodeURIComponent(m[1]));
+});
+if (deadEnds.length) {
+    console.error(`\nDEAD-END REDIRECTS (${deadEnds.length}) — destination is not a live article:`);
+    for (const d of deadEnds) console.error(`  ${d.from}  →  ${d.to}`);
+}
+if (real.length || stale.length || chains.length || deadEnds.length) process.exit(1);
 console.log(pending.length ? '\nno unexpected ghost rows ✓' : '\nno ghost rows ✓');

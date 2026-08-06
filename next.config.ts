@@ -379,9 +379,14 @@ const nextConfig: NextConfig = {
       // directly — the redirects below are what keeps that flow off a 404.
       { source: '/article/travel-permit-medical', destination: '/article/travel-permit', permanent: true },
       { source: '/article/travel-permit-visit', destination: '/article/travel-permit', permanent: true },
-      { source: '/article/consumer-rights-complaint', destination: '/article/edevlet-tuketici-sikayet', permanent: true },
+      // These two pointed at e-Devlet pages that the directory pass later
+      // retired, which turned them into two-hop redirects. They now land on the
+      // card directly. A redirect whose destination is itself redirected is not
+      // broken, but it leaks link equity and it is invisible in review — the
+      // ghost-row guard now fails on it.
+      { source: '/article/consumer-rights-complaint', destination: '/e-devlet-services#tuketici-sikayet', permanent: true },
       { source: '/article/newborn-registration', destination: '/article/birth-registration-turkey', permanent: true },
-      { source: '/article/mobile-lines-check', destination: '/article/edevlet-mobil-hat-sorgulama', permanent: true },
+      { source: '/article/mobile-lines-check', destination: '/e-devlet-services#mobil-hat-sorgulama', permanent: true },
       // Duplicate pair with reversed slugs, both thin, both competing for the
       // same query. kimlik-update-data was the weaker of the two AND stated the
       // address-change deadline as "45 days" — the law (5490, md. 50-51, and
