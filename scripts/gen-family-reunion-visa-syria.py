@@ -321,9 +321,15 @@ sql = """-- ====================================================================
 -- آمن لإعادة التشغيل: ON CONFLICT للمقال، وWHERE NOT EXISTS للخبر.
 -- ============================================================================
 
-INSERT INTO articles (slug, title, intro, details, steps, tips, documents, fees, warning, source, tags, category, status, last_update)
-VALUES ('%s', '%s', '%s', '%s', %s, %s, %s, '%s', '%s', '%s', %s, 'الفيزا والتأشيرات', 'approved', CURRENT_DATE)
-ON CONFLICT (slug) DO UPDATE SET
+-- id IS the slug on this table — the same text value, and it is the primary
+-- key. articles.slug carries no unique constraint of its own, so
+-- `ON CONFLICT (slug)` fails with 42P10: there is no unique or exclusion
+-- constraint matching the ON CONFLICT specification. CLAUDE.md documents the
+-- right form in one line — «ON CONFLICT (id) DO UPDATE للمقالات» — and this
+-- file did not follow it.
+INSERT INTO articles (id, slug, title, intro, details, steps, tips, documents, fees, warning, source, tags, category, status, last_update)
+VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, %s, '%s', '%s', '%s', %s, 'الفيزا والتأشيرات', 'approved', CURRENT_DATE)
+ON CONFLICT (id) DO UPDATE SET
     title = EXCLUDED.title, intro = EXCLUDED.intro, details = EXCLUDED.details,
     steps = EXCLUDED.steps, tips = EXCLUDED.tips, documents = EXCLUDED.documents,
     fees = EXCLUDED.fees, warning = EXCLUDED.warning, source = EXCLUDED.source,
@@ -381,7 +387,7 @@ SELECT 'residence article links to the visa', (details LIKE '%%family-reunion-vi
 UNION ALL
 SELECT 'news inserted once', (count(*) = 1)::boolean FROM updates WHERE title = '%s';
 """ % (
-    q(SLUG), q(TITLE), q(INTRO), q(DETAILS), arr(STEPS), arr(TIPS), arr(DOCUMENTS),
+    q(SLUG), q(SLUG), q(TITLE), q(INTRO), q(DETAILS), arr(STEPS), arr(TIPS), arr(DOCUMENTS),
     q(FEES), q(WARNING), q(SOURCE), arr(TAGS),
     q(BEIRUT_NEW),
     q('<div style="background:#ecfdf5;border-right:4px solid #10b981;padding:14px 18px;margin:18px 0;">'

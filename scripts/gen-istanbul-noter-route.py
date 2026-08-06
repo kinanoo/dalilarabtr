@@ -302,9 +302,15 @@ sql = """-- ====================================================================
 -- آمن لإعادة التشغيل: ON CONFLICT للمقال، وWHERE NOT EXISTS للخبر.
 -- ============================================================================
 
-INSERT INTO articles (slug, title, intro, details, steps, tips, documents, fees, warning, source, tags, category, status, last_update)
-VALUES ('%s', '%s', '%s', '%s', %s, %s, %s, '%s', '%s', '%s', %s, 'معاملات رسمية', 'approved', CURRENT_DATE)
-ON CONFLICT (slug) DO UPDATE SET
+-- id IS the slug on this table — the same text value, and it is the primary
+-- key. articles.slug carries no unique constraint of its own, so
+-- `ON CONFLICT (slug)` fails with 42P10: there is no unique or exclusion
+-- constraint matching the ON CONFLICT specification. CLAUDE.md documents the
+-- right form in one line — «ON CONFLICT (id) DO UPDATE للمقالات» — and this
+-- file did not follow it.
+INSERT INTO articles (id, slug, title, intro, details, steps, tips, documents, fees, warning, source, tags, category, status, last_update)
+VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, %s, '%s', '%s', '%s', %s, 'معاملات رسمية', 'approved', CURRENT_DATE)
+ON CONFLICT (id) DO UPDATE SET
     title = EXCLUDED.title, intro = EXCLUDED.intro, details = EXCLUDED.details,
     steps = EXCLUDED.steps, tips = EXCLUDED.tips, documents = EXCLUDED.documents,
     fees = EXCLUDED.fees, warning = EXCLUDED.warning, source = EXCLUDED.source,
@@ -351,7 +357,7 @@ SELECT 'news inserted once', (count(*) = 1)::boolean FROM updates WHERE title = 
 UNION ALL
 SELECT 'zones still shows exactly 5 closed in Istanbul', (count(*) = 5)::boolean FROM zones WHERE city = 'İstanbul' AND status = 'closed';
 """ % (
-    q(SLUG), q(TITLE), q(INTRO), q(DETAILS), arr(STEPS), arr(TIPS), arr(DOCUMENTS),
+    q(SLUG), q(SLUG), q(TITLE), q(INTRO), q(DETAILS), arr(STEPS), arr(TIPS), arr(DOCUMENTS),
     q(FEES), q(WARNING), q(SOURCE), arr(TAGS),
     q(LIFT_ADD),
     q(NEWS_TITLE), q(NEWS_SUMMARY), q(NEWS_CONTENT), q(SLUG), q(NEWS_TITLE),
