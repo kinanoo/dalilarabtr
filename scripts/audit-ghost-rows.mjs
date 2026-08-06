@@ -26,13 +26,18 @@ import { readFileSync } from 'node:fs';
 // Empty is the normal state. Entries live here for one deploy and are removed
 // the moment their rows are deleted — which is what the stale check below
 // forces.
-const MERGE_CITIZENSHIP = 'sql/2026-08-06_merge_citizenship_cluster.sql';
+const MERGE_HEALTH = 'sql/2026-08-06_merge_health_cluster.sql';
 const PENDING_SQL = {
-    'citizenship-track-status': MERGE_CITIZENSHIP,
-    'citizenship-general': MERGE_CITIZENSHIP,
-    'citizenship-by-residence-2025': MERGE_CITIZENSHIP,
-    'citizenship-syrian-conditions': MERGE_CITIZENSHIP,
-    'citizenship-investment': MERGE_CITIZENSHIP,
+    'earthquake-insurance': MERGE_HEALTH,
+    'housing-advanced-dask': MERGE_HEALTH,
+    'car-insurance': MERGE_HEALTH,
+    'auto-insurance-trafik-vs-kasko': MERGE_HEALTH,
+    'e-nabiz-guide': MERGE_HEALTH,
+    'hospital-appointment': MERGE_HEALTH,
+    'health-insurance-types': MERGE_HEALTH,
+    'edevlet-sgk-dokumu': MERGE_HEALTH,
+    'kimlik-health-services': MERGE_HEALTH,
+    'kimlik-work-and-sgk': MERGE_HEALTH,
 };
 
 const env = Object.fromEntries(

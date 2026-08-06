@@ -140,6 +140,26 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Health and insurance. No dramatic finding — this is where the site
+      // wrote the same page twice and then wrote a long good version without
+      // deleting the short ones. Three pages on compulsory earthquake cover,
+      // two on car insurance (neither of them the 1,025-word tariff page), two
+      // on e-Nabiz (one of 24 words), two on booking a hospital appointment,
+      // four restating the SGK/GSS pillar. Two boundaries were checked rather
+      // than assumed: the private residence-insurance price page is a different
+      // product from state GSS and is NOT merged into it, and the SGK-and-work
+      // stub is about working without a permit so it goes to the permit pillar.
+      // See sql/2026-08-06_merge_health_cluster.sql.
+      { source: '/article/earthquake-insurance', destination: '/article/dask-earthquake-insurance', permanent: true },
+      { source: '/article/housing-advanced-dask', destination: '/article/dask-earthquake-insurance', permanent: true },
+      { source: '/article/car-insurance', destination: '/article/zorunlu-trafik-sigortasi-tavan-basamak-2026', permanent: true },
+      { source: '/article/auto-insurance-trafik-vs-kasko', destination: '/article/zorunlu-trafik-sigortasi-tavan-basamak-2026', permanent: true },
+      { source: '/article/e-nabiz-guide', destination: '/article/e-nabiz-electronic-health-record-2026', permanent: true },
+      { source: '/article/hospital-appointment', destination: '/article/mhrs-guide-syrians-arabs-2026', permanent: true },
+      { source: '/article/health-insurance-types', destination: '/article/sgk-gss-health-insurance-turkey-2026', permanent: true },
+      { source: '/article/edevlet-sgk-dokumu', destination: '/article/sgk-gss-health-insurance-turkey-2026', permanent: true },
+      { source: '/article/kimlik-health-services', destination: '/article/syria-temporary-protection-health-2026', permanent: true },
+      { source: '/article/kimlik-work-and-sgk', destination: '/article/work-permit-turkey-2026', permanent: true },
       // Citizenship cluster. Almost no duplicate prose here — the problem was
       // correct claims with nothing behind them: six pages had an empty source
       // field, including the 228-read tracking hub and an 88-read page stating
