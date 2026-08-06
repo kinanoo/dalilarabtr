@@ -320,7 +320,7 @@ ON CONFLICT (id) DO UPDATE SET
 UPDATE articles SET
     details = details || '%s',
     last_update = CURRENT_DATE
-WHERE slug = 'istanbul-closed-neighborhoods-lift-2026' AND details NOT LIKE '%%GöçNet%%';
+WHERE slug = 'istanbul-closed-neighborhoods-lift-2026' AND details NOT LIKE '%%تأكيد لاحق%%';
 
 INSERT INTO updates (type, title, summary, content, link, source_name, category, date, active, pinned)
 SELECT 'news', '%s', '%s', '%s', '/article/%s',
@@ -351,7 +351,7 @@ $check$;
 
 SELECT 'guide created' AS البند, (count(*) = 1)::boolean AS سليم FROM articles WHERE slug = '%s' AND status = 'approved'
 UNION ALL
-SELECT 'lift article reconfirmed', (details LIKE '%%GöçNet%%') FROM articles WHERE slug = 'istanbul-closed-neighborhoods-lift-2026'
+SELECT 'lift article reconfirmed', (details LIKE '%%تأكيد لاحق%%') FROM articles WHERE slug = 'istanbul-closed-neighborhoods-lift-2026'
 UNION ALL
 SELECT 'news inserted once', (count(*) = 1)::boolean FROM updates WHERE title = '%s'
 UNION ALL
