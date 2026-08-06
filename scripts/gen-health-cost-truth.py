@@ -648,12 +648,20 @@ SC = [
 for sid, col, old, new in SC:
     row = fetch('consultant_scenarios', 'id', sid)
     if '.' in col:
+        # consultant_scenarios.steps and .docs are jsonb, NOT text[] — the first
+        # run of this file died here with
+        #   ERROR: 42883: function array_replace(jsonb, unknown, unknown) does not exist
+        # and Supabase rolled the whole script back, so nothing at all landed.
+        # The proven idiom in sql/2026-07-30_consultant_audit_final.sql is to
+        # write the entire array as a jsonb literal, so that is what we do: read
+        # the live array, swap the one element, emit the whole thing.
         base, idx = col.split('.')
         idx = int(idx)
-        cur = (row[base] or [])[idx]
-        assert cur == old, 'scenario %s.%s changed:\n  have %r\n  want %r' % (sid, col, cur, old)
-        note("UPDATE consultant_scenarios SET %s = array_replace(%s, '%s', '%s'), last_update = '2026-08'\n"
-             "WHERE id = '%s';" % (base, base, q(old), q(new), sid))
+        items = list(row[base] or [])
+        assert items[idx] == old, 'scenario %s.%s changed:\n  have %r\n  want %r' % (sid, col, items[idx], old)
+        items[idx] = new
+        note("UPDATE consultant_scenarios SET %s = '%s'::jsonb, last_update = '2026-08'\n"
+             "WHERE id = '%s';" % (base, q(json.dumps(items, ensure_ascii=False)), sid))
     else:
         cur = row[col] or ''
         assert cur.count(old) == 1, 'scenario %s.%s needle x%d' % (sid, col, cur.count(old))
