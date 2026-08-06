@@ -29,7 +29,13 @@ on:
     # Left running because the pipeline dedupes by link and caps at
     # MAX_PER_RUN, so a second caller costs a few HTTP requests and can only
     # help if the Cloudflare worker is ever down.
-    - cron: '*/5 * * * *'   # honoured as ~2h by GitHub; see above
+    # Asking hourly rather than every five minutes. The measurement above shows
+    # the request is ignored either way — actual firing stayed ~2h apart at both
+    # '*/30' and '*/5' — so the only thing the tighter expression bought was
+    # twelve times more scheduled runs queued against GitHub's runner pool, each
+    # one another chance to hit the allocation failure documented on the job
+    # below. Same delivery, less exposure.
+    - cron: '23 * * * *'   # honoured as ~2h by GitHub; see above
   workflow_dispatch:           # allow a manual run from the Actions tab
     inputs:
       tgtest:
@@ -49,6 +55,27 @@ concurrency:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    # This workflow is REDUNDANCY, not an alerting channel — so an infrastructure
+    # hiccup here must not email the owner.
+    #
+    # Run 31119976814 (2026-08-06 16:28 UTC) sat for 15m1s and then failed with
+    # GitHub's own annotation: "The job was not acquired by Runner of type hosted
+    # even after multiple attempts". No runner was ever allocated; the job never
+    # started. Nothing in this file, in CRON_SECRET, or on the site was involved,
+    # and there is no change here that would have prevented it. Every other run
+    # for the previous two days succeeded in 6-17 seconds.
+    #
+    # What it did do was send a red failure notification for a fallback whose
+    # only job is to duplicate a Cloudflare cron trigger that had already fired.
+    # continue-on-error keeps the run visible in the Actions tab — it still shows
+    # the step's output and exit code — while letting the workflow conclude
+    # cleanly, so the inbox stays for things the owner can act on.
+    #
+    # Real failures of the ENDPOINT are not hidden by this: the primary scheduler
+    # is workers/cron, whose wrangler.toml enables observability, and its
+    # console.error lands in Cloudflare logs. That is where a broken notifier
+    # shows up.
+    continue-on-error: true
     steps:
       - name: Trigger content notifications
         env:
