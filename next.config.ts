@@ -140,6 +140,17 @@ const nextConfig: NextConfig = {
       { source: '/article/family-reunion-conditions', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-documents', destination: '/article/family-reunion', permanent: true },
       { source: '/article/family-reunion-application', destination: '/article/family-reunion', permanent: true },
+      // Phone-line verification. BTK decision 2026/İK-THD/125 gives foreign
+      // subscribers until 25 December 2026, with graded restriction starting 5
+      // September. Three pages answered that one question and the traffic sat
+      // on the two that answered it worst: one (418 reads) opened with «عاجل
+      // ومهلة محدّدة» and never stated the deadline, and one (405 reads) had no
+      // source at all and advised waiting a week, on the strength of a phone
+      // call with an unnamed employee, five weeks before enforcement begins.
+      // The page that cites the decision and every date correctly absorbs both.
+      // See sql/2026-08-06_merge_phoneline_cluster.sql.
+      { source: '/article/turkcell-yabanci-hat-kimlik-dogrulama-2026-06', destination: '/article/gecici-koruma-hat-guncelleme-2026', permanent: true },
+      { source: '/article/tryqa-thdyth-byanat-kht-alhatf-shrka', destination: '/article/gecici-koruma-hat-guncelleme-2026', permanent: true },
       // Visa cluster. Two pillars measured as genuinely separate survive —
       // what a visa costs by nationality, and the seven types open to Syrians —
       // and they now cross-link, which they never did. Under them: five
