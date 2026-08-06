@@ -55,7 +55,21 @@ export type UpdateInput = {
   sortTime?: string;
   image?: string;
   href?: string;
+  /** 'news' | 'article' | 'scenario' — decides which card wins a collision. */
+  kind?: string;
+  /** For a news row: the article it announces (`updates.link`). Its own href
+   *  points at /updates/<id>, so this is the only field that ties it to the
+   *  article card for the same story. */
+  storyHref?: string;
 };
+
+/** Compare links as identities, not as strings: /article/foo, /article/foo/
+ *  and /article/foo?utm=x are one page. */
+function normHref(h?: string): string {
+  if (!h) return '';
+  const bare = h.split('#')[0].split('?')[0].replace(/\/+$/, '');
+  return bare.toLowerCase();
+}
 
 async function getFeatured(): Promise<FeaturedRow[]> {
   if (!supabase) return [];
@@ -117,6 +131,10 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
       image: u.image,
       featured: false,
       urgent: u.type === 'عاجل' || u.type === 'هام',
+      // carried through so the collision pass below can see what this item is
+      // and which story it belongs to
+      kind: u.kind,
+      storyHref: u.storyHref,
     }));
 
   // Sort the COMBINED list by date. This used to be a plain concatenation,
@@ -137,8 +155,46 @@ export default async function NewsHub({ updates }: { updates: UpdateInput[] }) {
   // and breaks that tie.
   const orderKey = (x: NewsItem) =>
     `${x.sortDate || ''}T${(x.sortTime || '').slice(11, 19) || '00:00:00'}`;
-  const items = [...featuredItems, ...updateItems]
-    .sort((a, b) => orderKey(b).localeCompare(orderKey(a)));
+
+  // ── one story, one card ────────────────────────────────────────────────
+  //
+  // The repo's publishing checklist requires every procedural news item to
+  // ship with a companion article, and `updates.link` to point at it. So each
+  // properly-published story arrives here twice: as a news row and as the
+  // article it announces. The only dedup was `seen` above, on normalised
+  // title — and the two are deliberately worded differently, an announcement
+  // against a guide heading, so it never fired. Measured against the live
+  // table: three of the five news rows in the rail pointed at an article the
+  // rail was already showing, which is the doubling in the carousel.
+  //
+  // Identity is the article URL. A news row contributes its `storyHref`
+  // (updates.link); an article card contributes its own href. Items with no
+  // article behind them — a news item with no companion, a scenario — key on
+  // their own href and can never collide.
+  //
+  // The winner is the article card, not the news card. Both describe the same
+  // event, but the article is the indexable page that carries the full
+  // procedure and the one Google ranks, while the news card leads to
+  // /updates/<id>. The news row keeps its place on /updates either way; what
+  // is dropped is a second homepage tile, not the item.
+  const rank = (x: NewsItem & { kind?: string }) =>
+    x.featured ? 0 : x.kind === 'article' ? 1 : 2;
+
+  const byStory = new Map<string, NewsItem>();
+  for (const item of [...featuredItems, ...updateItems]) {
+    const withKind = item as NewsItem & { kind?: string; storyHref?: string };
+    const key = normHref(withKind.storyHref || item.href) || `id:${item.id}`;
+    const held = byStory.get(key) as (NewsItem & { kind?: string }) | undefined;
+    if (
+      !held ||
+      rank(withKind) < rank(held) ||
+      (rank(withKind) === rank(held) && orderKey(item) > orderKey(held))
+    ) {
+      byStory.set(key, item);
+    }
+  }
+
+  const items = [...byStory.values()].sort((a, b) => orderKey(b).localeCompare(orderKey(a)));
   if (items.length === 0) return null;
 
   return <NewsAndUpdates items={items} />;

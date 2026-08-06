@@ -58,8 +58,14 @@ async function getUpdates() {
     const result = await withTimeout(
       Promise.all([
         supabase
+          // `link` is selected because it is the only reliable identity a news
+          // row shares with the article it announces. The rail deduped by
+          // normalised title, and the two are never worded the same: «إسطنبول:
+          // سلّم أوراق إقامتك لأي نوتر» against «تسليم أوراق الإقامة عبر النوتر
+          // في إسطنبول 2026». Measured on the live table, three of the five news
+          // rows in the rail pointed at an article the rail was already showing.
           .from('updates')
-          .select('id, title, date, type, created_at')
+          .select('id, title, date, type, created_at, link')
           .eq('active', true)
           .eq('type', 'news')
           .order('date', { ascending: false })
@@ -93,7 +99,7 @@ async function getUpdates() {
 
     const manualUpdates = (manualRes.data || [])
       .filter(u => u.date <= today)
-      .map(u => ({ ...u, sortDate: u.date, sortTime: u.created_at || '', date: formatArabicDate(u.date), source: 'manual' as const, href: `/updates/${u.id}` }));
+      .map(u => ({ ...u, sortDate: u.date, sortTime: u.created_at || '', date: formatArabicDate(u.date), source: 'manual' as const, href: `/updates/${u.id}`, kind: 'news' as const, storyHref: u.link || undefined }));
 
     const articleUpdates = (articlesRes.data || []).map(a => ({
       id: a.id,
@@ -106,6 +112,7 @@ async function getUpdates() {
       event_type: 'new_article',
       href: `/article/${a.slug || a.id}`,
       image: a.image || null,
+      kind: 'article' as const,
     }));
 
     const scenarioUpdates = (scenariosRes.data || []).map(s => ({
@@ -118,6 +125,7 @@ async function getUpdates() {
       source: 'auto' as const,
       event_type: 'new_scenario',
       href: `/consultant?scenario=${s.id}`,
+      kind: 'scenario' as const,
     }));
 
     // Merge and sort by actual date descending, limit to 12
