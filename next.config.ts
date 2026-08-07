@@ -405,6 +405,11 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Property batch: the vague Syrian-ownership stub folds into the 23K
+      // buying guide whose sourced section answers it decisively; the
+      // numarataj stub folds into the subscriptions guide.
+      { source: '/article/syrian-property-ownership', destination: '/article/buying-property-turkey-2026', permanent: true },
+      { source: '/article/numarataj-document', destination: '/article/home-subscriptions-turkey-2026', permanent: true },
       // Work batch: five stubs fold into canonicals that actually carry the
       // content (checked before retiring).
       { source: '/article/employment-worker-rights-kidem-alo170', destination: '/article/severance-pay-kidem-tazminati', permanent: true },

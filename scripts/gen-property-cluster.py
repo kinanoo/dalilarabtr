@@ -1,0 +1,304 @@
+# -*- coding: utf-8 -*-
+"""Property batch: the monster already holds the hard truth — feed it the rest.
+
+── the shape ──────────────────────────────────────────────────────────────
+
+buying-property-turkey-2026 (23,151 chars) already carries the decisive
+Syrian-ownership section, sourced and dated (verified 2026-07-11: the bar is
+fully in force, grounded in the 1927 reciprocity law No. 1062 + the 1939
+decree — not in refugee status; it covers inheritance and applies whatever
+card the buyer holds). So:
+
+  * syrian-property-ownership (444 chars, vague «قد تظهر تعقيدات») retires
+    INTO the monster — the stub hedges where the canonical answers.
+  * finance-luxury-property-tax (185 chars) is rebuilt as the real DKV page —
+    the monster does not cover the tax. Mechanism only: Değerli Konut
+    Vergisi (introduced by law 7194 into the property-tax law) hits
+    RESIDENTIAL property above an annually-revalued threshold (no figure
+    published — it changes every year), with the exemption that decides most
+    cases: a person's ONLY dwelling is exempt even above the threshold, and
+    for multiple dwellings the lowest-valued one is exempt. Declaration and
+    two instalments per year.
+  * numarataj-document (307 chars) folds into home-subscriptions-turkey-2026
+    as a section (the 21.5K guide covers meters/DASK/deposits but not the
+    numarataj paper — checked) and retires behind a 301.
+  * real-estate-residence (919 chars, a value-threshold topic) is DEFERRED
+    like business-licenses — left live, asserted, for a residence batch.
+
+All rows id == slug (checked); no inbound links to the retiring pair.
+"""
+import json, os, re, urllib.parse, urllib.request
+
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_env = {}
+for _l in open(os.path.join(REPO, '.env.local'), encoding='utf-8-sig').read().splitlines():
+    if '=' in _l and not _l.lstrip().startswith('#'):
+        _k, _v = _l.split('=', 1)
+        _env[_k.strip()] = _v.strip()
+_URL, _KEY = _env['NEXT_PUBLIC_SUPABASE_URL'], _env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
+_H = {'apikey': _KEY, 'Authorization': 'Bearer ' + _KEY}
+
+
+def get(p):
+    return json.load(urllib.request.urlopen(urllib.request.Request(_URL + '/rest/v1/' + p, headers=_H)))
+
+
+def q(s):
+    return str(s if s is not None else '').replace("'", "''")
+
+
+def arr(items):
+    return 'ARRAY[%s]::text[]' % ', '.join("'%s'" % q(x) for x in items)
+
+
+def _no_bare_percent(t):
+    for i, line in enumerate(t.splitlines(), 1):
+        if '%' in re.sub(r'%[s%]', '', line):
+            raise AssertionError('bare %% in SQL template, line %d: %s' % (i, line.strip()))
+    return t
+
+
+DKV = 'finance-luxury-property-tax'
+MONSTER = 'buying-property-turkey-2026'
+SUBS = 'home-subscriptions-turkey-2026'
+DEAD = ['syrian-property-ownership', 'numarataj-document']
+
+m = get('articles?select=status,details&slug=eq.' + MONSTER)[0]
+assert m['status'] == 'approved' and 'الوضع الخاص للسوريين' in m['details']
+dk = get('articles?select=id,slug,status,details&slug=eq.' + DKV)[0]
+assert dk['status'] == 'approved' and dk['id'] == dk['slug'] and len(dk['details'] or '') < 1000
+hs = get('articles?select=status,details&slug=eq.' + SUBS)[0]
+assert hs['status'] == 'approved' and 'نومراتاج' not in hs['details'] and len(hs['details']) > 15000
+for d in DEAD:
+    r = get('articles?select=id,slug,status&slug=eq.' + d)
+    assert r and r[0]['status'] == 'approved' and r[0]['id'] == r[0]['slug'], d
+rr = get('articles?select=status&slug=eq.real-estate-residence')[0]
+assert rr['status'] == 'approved'
+for s in ('real-estate-citizenship', 'kimlik-data-update'):
+    r = get('articles?select=status&slug=eq.' + s)
+    assert r and r[0]['status'] == 'approved', s + ' not live'
+
+# ── A. the DKV rebuild ───────────────────────────────────────────────────
+D_TITLE = 'ضريبة السكن الفاخر (Değerli Konut Vergisi) في تركيا 2026: من يدفعها فعلاً — وإعفاء المسكن الوحيد'
+D_INTRO = ('اشتريت أو تنوي شراء سكنٍ مرتفع القيمة في تركيا؟ توجد ضريبة سنوية خاصة تُصيب '
+           'المساكن التي تتجاوز قيمتها عتبةً تُحدَّث كل سنة — لكن أهمّ ما فيها ليس نسبها بل '
+           'إعفاؤها: مسكنك الوحيد معفى ولو تجاوز العتبة، ومن يملك أكثر من مسكن يُعفى أدناها '
+           'قيمة. هذا الدليل يشرح الآلية والإعفاء والمواعيد — بلا أرقام تتقادم.')
+D_DETAILS = (
+    '<div style="background:#ecfdf5;border:2px solid #10b981;border-radius:12px;padding:18px 22px;margin:0 0 20px;">'
+    '<p style="margin:0 0 10px;font-size:17px;"><strong>الخلاصة</strong></p>'
+    '<p style="margin:0;">ضريبة سنوية على <strong>المساكن</strong> التي تتجاوز قيمتها '
+    'المقدَّرة عتبة السنة — والعتبة تُحدَّث سنوياً فلا نحفظ رقماً. والإعفاء الذي يحسم أكثر '
+    'الحالات: <strong>المسكن الوحيد معفى</strong> ولو جاوز العتبة.</p></div>'
+
+    '<h2>ما هي — ومن تصيب؟</h2>'
+    '<p>ضريبة السكن الفاخر (<span dir="ltr">Değerli Konut Vergisi</span>) أُدخلت بالقانون '
+    '7194 على منظومة ضريبة العقارات، وتصيب العقارات <strong>السكنية</strong> '
+    '(<span dir="ltr">mesken</span>) التي تتجاوز قيمتها المعتمدة عتبة السنة الجارية. '
+    'خارجها: المحلات والمكاتب والأراضي — ليست «سكناً» فلا تدخل هذه الضريبة (ولها ضريبة '
+    'العقار العادية).</p>'
+    '<ul>'
+    '<li><strong>العتبة</strong>: تُعاد معايرتها كل سنة بإعادة التقييم — اعرف رقم سنتك من '
+    'مصلحة الضرائب أو محاسبك، ولا تعتمد رقماً متداولاً.</li>'
+    '<li><strong>النسب تصاعدية بالشرائح</strong> فوق العتبة — تُحصَّل بالألف على أجزاء '
+    'القيمة، لا على كاملها دفعةً واحدة.</li>'
+    '</ul>'
+
+    '<h2>الإعفاء الذي يحسم أكثر الحالات</h2>'
+    '<ul>'
+    '<li><strong>مسكن وحيد؟ معفى</strong> — من يملك في تركيا مسكناً واحداً لا يدفع هذه '
+    'الضريبة ولو تجاوزت قيمته العتبة.</li>'
+    '<li><strong>أكثر من مسكن فوق العتبة؟</strong> يُعفى <strong>أدناها قيمةً</strong> '
+    'ويُصرَّح عن الباقي.</li>'
+    '</ul>'
+    '<p>فقبل أي قلق: عدّ مساكنك. أكثر المشترين العرب — شقة سكن أو شقة استثمار واحدة — '
+    'خارج هذه الضريبة كلّياً إمّا بالعتبة وإمّا بإعفاء الوحيد.</p>'
+
+    '<h2>التصريح والدفع</h2>'
+    '<ol>'
+    '<li>من تجاوز مسكنُه العتبة (ولم يشمله الإعفاء) يقدّم <strong>تصريحاً سنوياً</strong> '
+    'لمصلحة الضرائب في المدّة المقرَّرة مطلع السنة.</li>'
+    '<li>الدفع على <strong>قسطين</strong> في السنة بالمواعيد الرسمية.</li>'
+    '<li>الإهمال يراكم غرامات تأخير — والمحاسب أرخص منها دائماً.</li>'
+    '</ol>'
+
+    '<h2>أسئلة متكرّرة</h2>'
+    '<h3>هل تعنيني وأنا مستأجر؟</h3>'
+    '<p>لا — الضريبة على المالك لا الساكن. وشأنك كمستأجرٍ صفحةُ '
+    '<a href="/article/renting-house">الاستئجار وحقوقه</a>.</p>'
+    '<h3>أشتري للاستثمار بقصد الجنسية — هل تغيّر حساباتي؟</h3>'
+    '<p>أدخلها في كلفة التملّك السنوية إن كان عقارك سكنياً فوق العتبة وليس وحيدك — '
+    'وتفاصيل مسار الاستثمار في '
+    '<a href="/article/real-estate-citizenship">الجنسية عبر الاستثمار العقاري</a> '
+    'و<a href="/article/buying-property-turkey-2026">دليل شراء العقار الكامل</a>.</p>'
+    '<h3>من يقدّر «قيمة» مسكني أصلاً؟</h3>'
+    '<p>القيمة المعتمدة لضريبة العقار (وتقديرات الجهات المختصة عند وجودها) هي الأساس — '
+    'لا سعر إعلانك ولا تخمين الوسيط. اطلب من محاسبك التحقّق قبل افتراض الخضوع أو '
+    'الإعفاء.</p>'
+)
+D_STEPS = [
+    'عدّ مساكنك في تركيا أولاً: مسكن وحيد = معفى مهما بلغت قيمته.',
+    'اعرف عتبة السنة الجارية من مصلحة الضرائب أو محاسبك — تُحدَّث سنوياً.',
+    'قارن القيمة المعتمدة (لا سعر السوق المعلن) بالعتبة.',
+    'إن خضعت: قدّم التصريح في مدّته مطلع السنة، وادفع على قسطين.',
+    'وثّق كل تصريح ودفعة — وكلّف محاسباً في الحالات المركّبة.',
+]
+D_TIPS = [
+    'الإعفاء الأهم: المسكن الوحيد معفى ولو فوق العتبة — عدّ مساكنك قبل القلق.',
+    'متعدّد المساكن: أدناها قيمةً يُعفى.',
+    'سكني فقط (mesken) — المحل والمكتب والأرض خارجها.',
+    'العتبة والنسب تُحدَّث سنوياً — لا تعتمد رقماً من صفحة قديمة.',
+    'القيمة المعتمدة رسمياً هي الأساس، لا سعر الإعلان.',
+    'غرامات التأخير أغلى من المحاسب.',
+]
+D_DOCS = [
+    'سند الطابو لكل مسكن تملكه',
+    'القيمة المعتمدة لضريبة العقار من البلدية',
+    'تصريح الضريبة عند الخضوع — يعدّه محاسبك عادةً',
+]
+D_FEES = ('لا ننشر عتبة ولا نسباً — تُحدَّث سنوياً بإعادة التقييم؛ مرجعك مصلحة الضرائب أو '
+          'محاسبك للسنة الجارية. والتصريح نفسه بلا رسم، وأتعاب المحاسب تعاقدية.')
+D_WARN = ('الضريبة على المساكن فقط وفوق عتبة سنوية متغيّرة — والمسكن الوحيد معفى بنصّ '
+          'القانون. لا تبنِ قراراً على رقم عتبة متداول، ولا تهمل التصريح إن خضعت: '
+          'الغرامات تتراكم.')
+D_SOURCE = ('ضريبة السكن الفاخر المستحدثة بالقانون رقم 7194 ضمن قانون ضريبة العقارات '
+            '(Emlak Vergisi Kanunu) — نطاق «المسكن»، والعتبة المعاد تقييمها سنوياً، '
+            'والشرائح التصاعدية، وإعفاء المسكن الوحيد وأدنى المساكن قيمةً لمتعدّدها، '
+            'والتصريح والقسطان السنويان — مصلحة الضرائب التركية (gib.gov.tr)')
+D_TAGS = ['ضريبة العقارات', 'شراء عقار', 'العمل والاستثمار', 'DKV', 'دليل', '2026']
+D_SEO_T = 'ضريبة السكن الفاخر في تركيا: المسكن الوحيد معفى — والعتبة سنوية'
+D_SEO_D = ('Değerli Konut Vergisi تصيب المساكن فوق عتبة تُحدَّث سنوياً — لكن مسكنك الوحيد '
+           'معفى ولو تجاوزها، ومتعدّد المساكن يُعفى أدناها. الآلية والتصريح والقسطان، '
+           'بلا أرقام تتقادم.')
+
+# ── B. the numarataj section for the subscriptions guide ─────────────────
+NUM_ADD = (
+    '<h2>ورقة النومراتاج (Numarataj): حين يطلبها موظف الاشتراك</h2>'
+    '<p>النومراتاج وثيقة من <strong>البلدية</strong> تثبت أنّ عنوان العقار — رقم البناء '
+    'والباب والشقة وكود العنوان — <strong>معرَّف رسمياً</strong> في نظامها. لا تحتاجها كل '
+    'مرة؛ تظهر عادةً في حالتين:</p>'
+    '<ul>'
+    '<li><strong>أول اشتراك</strong> كهرباء/ماء/غاز لعقار جديد أو عنوانٍ لم يسبق ربطه.</li>'
+    '<li><strong>لبس في العنوان</strong>: رقم شقة مكرَّر، أو بناء أعيد ترقيمه، أو اختلاف '
+    'بين ما في العقد وما في السجلّات.</li>'
+    '</ul>'
+    '<p><strong>من أين؟</strong> من وحدة النومراتاج في بلدية منطقتك (وبعض البلديات تتيحها '
+    'إلكترونياً عبر بوابتها) — اصطحب ما يعرّف العقار: عقد الإيجار أو الطابو وهويتك. '
+    'وإن طُلبت منك في معاملة نفوس أو هجرة فالمسار نفسه.</p>'
+    '<p>وتذكّر أنّ الورقة تعرّف <strong>العقار</strong>؛ أمّا تسجيل <strong>سكنك أنت</strong> '
+    'في العنوان فمساره في <a href="/article/kimlik-data-update">تحديث بيانات العنوان</a>.</p>'
+)
+
+for label, body, needles in [
+    ('dkv', D_DETAILS, ['7194', 'المسكن الوحيد معفى', 'mesken', 'buying-property-turkey-2026',
+                        'real-estate-citizenship', 'renting-house']),
+    ('numarataj', NUM_ADD, ['النومراتاج', 'kimlik-data-update', 'البلدية']),
+]:
+    for nd in needles:
+        assert nd in body, 'PREDICATE WOULD LIE: %r not in %s' % (nd, label)
+for dead in DEAD:
+    assert ('href="/article/%s"' % dead) not in D_DETAILS + NUM_ADD
+assert not re.search(r'\d[\d.,]*\s*(?:مليون|ليرة|TL)', D_DETAILS), 'a threshold figure leaked'
+
+sql = _no_bare_percent("""-- ============================================================================
+-- دفعة العقارات: الوحش يحمل الحقيقة الصعبة أصلاً — نطعمه الباقي
+-- ============================================================================
+-- buying-property-turkey-2026 (23,151 حرفاً) يحمل قسم «الوضع الخاص بالسوريين»
+-- الحاسم بمصادره وتاريخ تحقّقه (2026-07-11): المنع قائم بالكامل، وأساسه قانون
+-- المعاملة بالمثل 1062 لسنة 1927 وقرار 1939 لا صفة اللجوء، ويشمل الإرث.
+-- فنقض syrian-property-ownership الغامض («قد تظهر تعقيدات») يتقاعد إليه —
+-- النقض يتردّد حيث يجيب المرجعي.
+--
+-- والعمل الحقيقي فيما لا يغطّيه الوحش:
+--   * finance-luxury-property-tax يُبنى صفحة DKV الحقيقية: القانون 7194،
+--     والمساكن فقط فوق عتبة تُحدَّث سنوياً (بلا رقم — مؤكَّد آلياً)، والإعفاء
+--     الذي يحسم أكثر الحالات: المسكن الوحيد معفى ولو فوق العتبة، وأدنى
+--     المساكن قيمةً لمتعدّدها، والتصريح والقسطان.
+--   * دليل الاشتراكات (21.5 ألف حرف) يكسب قسم النومراتاج الناقص (محروس)،
+--     ويتقاعد نقضها إليه.
+--   * real-estate-residence (919 حرفاً بعتبة قيمية) مؤجَّلة كسابقاتها —
+--     تبقى حيّة لدفعة الإقامات، مؤكَّدة في الفحص.
+--
+-- الصفوف كلّها id == slug (فُحص)، ولا روابط واردة للمتقاعدَين.
+-- آمن لإعادة التشغيل.
+-- ============================================================================
+
+-- أ. صفحة DKV
+INSERT INTO articles (id, slug, title, intro, details, steps, tips, documents,
+                      fees, warning, source, tags, category, status,
+                      seo_title, seo_description, last_update)
+VALUES ('%s', '%s', '%s', '%s', '%s', %s, %s, %s, '%s', '%s', '%s', %s,
+        'العمل والاستثمار', 'approved', '%s', '%s', CURRENT_DATE)
+ON CONFLICT (id) DO UPDATE SET
+    title = EXCLUDED.title, intro = EXCLUDED.intro, details = EXCLUDED.details,
+    steps = EXCLUDED.steps, tips = EXCLUDED.tips, documents = EXCLUDED.documents,
+    fees = EXCLUDED.fees, warning = EXCLUDED.warning, source = EXCLUDED.source,
+    tags = EXCLUDED.tags, category = EXCLUDED.category, status = EXCLUDED.status,
+    seo_title = EXCLUDED.seo_title, seo_description = EXCLUDED.seo_description,
+    last_update = EXCLUDED.last_update;
+
+-- ب. قسم النومراتاج في دليل الاشتراكات (محروس)
+UPDATE articles SET details = details || '%s', last_update = CURRENT_DATE
+WHERE slug = '%s' AND details NOT LIKE '%%النومراتاج%%';
+
+-- ج. التقاعد
+UPDATE articles SET status = 'draft', last_update = CURRENT_DATE
+WHERE slug IN (%s) AND status = 'approved';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+DO $check$
+DECLARE n int;
+BEGIN
+    SELECT count(*) INTO n FROM articles
+     WHERE slug = '%s' AND status = 'approved'
+       AND details LIKE '%%7194%%' AND details LIKE '%%المسكن الوحيد معفى%%';
+    IF n <> 1 THEN RAISE EXCEPTION 'the DKV rebuild did not land'; END IF;
+
+    SELECT count(*) INTO n FROM articles
+     WHERE slug = '%s' AND details LIKE '%%النومراتاج%%' AND length(details) > 15000;
+    IF n <> 1 THEN RAISE EXCEPTION 'the numarataj section did not land intact'; END IF;
+
+    SELECT count(*) INTO n FROM articles
+     WHERE slug = '%s' AND status = 'approved' AND details LIKE '%%الوضع الخاص للسوريين%%';
+    IF n <> 1 THEN RAISE EXCEPTION 'the property monster is not intact'; END IF;
+
+    SELECT count(*) INTO n FROM articles WHERE slug IN (%s) AND status = 'approved';
+    IF n > 0 THEN RAISE EXCEPTION '%% stub(s) still approved', n; END IF;
+
+    SELECT count(*) INTO n FROM articles
+     WHERE slug = 'real-estate-residence' AND status = 'approved';
+    IF n <> 1 THEN RAISE EXCEPTION 'real-estate-residence must stay live'; END IF;
+END
+$check$;
+
+SELECT 'DKV page live (7194 + single-dwelling exemption, no figures)' AS البند,
+       (details LIKE '%%7194%%' AND details NOT LIKE '%%مليون%%')::text AS النتيجة
+FROM articles WHERE slug = '%s'
+UNION ALL
+SELECT 'subscriptions guide gained the numarataj section',
+       (details LIKE '%%النومراتاج%%')::text
+FROM articles WHERE slug = '%s'
+UNION ALL
+SELECT 'two stubs retired (want 0 approved)', count(*)::text
+FROM articles WHERE slug IN (%s) AND status = 'approved'
+UNION ALL
+SELECT 'real-estate-residence left live for the residence batch', status
+FROM articles WHERE slug = 'real-estate-residence';
+""") % (DKV, DKV, q(D_TITLE), q(D_INTRO), q(D_DETAILS), arr(D_STEPS), arr(D_TIPS),
+        arr(D_DOCS), q(D_FEES), q(D_WARN), q(D_SOURCE), arr(D_TAGS), q(D_SEO_T), q(D_SEO_D),
+        q(NUM_ADD), SUBS,
+        ', '.join("'%s'" % d for d in DEAD),
+        DKV, SUBS, MONSTER, ', '.join("'%s'" % d for d in DEAD),
+        DKV, SUBS, ', '.join("'%s'" % d for d in DEAD))
+
+path = os.path.join(REPO, 'sql', '2026-08-07_property_cluster.sql')
+open(path, 'w', encoding='utf-8', newline='').write(sql)
+
+_code = '\n'.join(l for l in sql.splitlines() if not l.lstrip().startswith('--'))
+print('DKV          : %s — %d ← %d حرفاً (7194 + إعفاء الوحيد، بلا أرقام)' % (DKV, len(dk['details'] or ''), len(D_DETAILS)))
+print('النومراتاج   : قسم %d حرفاً يُلحق بدليل الاشتراكات (محروس)' % len(NUM_ADD))
+print('يتقاعد       : %s' % ', '.join(DEAD))
+print('  السوريون   ← الوحش (قسمه الحاسم قائم بمصادره) | النومراتاج ← الاشتراكات')
+print('مؤجَّلة      : real-estate-residence — لدفعة الإقامات')
+print('quote parity :', 'OK' if re.sub(r"''", '', _code).count("'") % 2 == 0 else '*** BROKEN ***')
+print('written      :', path, len(sql), 'chars')
