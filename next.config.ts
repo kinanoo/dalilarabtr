@@ -405,6 +405,9 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Education finale: the 123-char removal-centres scrap folds into the
+      // 27K detention-rights guide — its exact topic.
+      { source: '/article/deportation-centers-rights', destination: '/article/detention-center-rights', permanent: true },
       // Health/phones batch: the duty-pharmacy stub folds into the honest
       // pharmacy tool; the IMEI-extension stub into the IMEI guide; the two
       // line stubs into the line canonical (which gained their section).
