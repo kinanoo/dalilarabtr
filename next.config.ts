@@ -405,6 +405,10 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Notary/e-Devlet batch: the icra stub folds into the combined UYAP
+      // page; the find-a-notary stub folds into the notary guide.
+      { source: '/article/uyap-execution-files', destination: '/article/uyap-case-inquiry', permanent: true },
+      { source: '/article/nearest-notary-map', destination: '/article/notary-fees', permanent: true },
       // Property batch: the vague Syrian-ownership stub folds into the 23K
       // buying guide whose sourced section answers it decisively; the
       // numarataj stub folds into the subscriptions guide.
