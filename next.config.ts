@@ -405,6 +405,11 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Medical tourism: the three per-treatment stubs (unsourced dollar price
+      // tables) fold into the authorization-framework guide.
+      { source: '/article/medical-tourism-dental', destination: '/article/medical-tourism-guide', permanent: true },
+      { source: '/article/medical-tourism-eyes', destination: '/article/medical-tourism-guide', permanent: true },
+      { source: '/article/hair-transplant-guide', destination: '/article/medical-tourism-guide', permanent: true },
       // HGS cluster: the OGS-titled stub (OGS was discontinued 31/03/2022) and
       // the plate-query stub fold into the rebuilt HGS guide.
       { source: '/article/auto-hgs-ogs', destination: '/article/hgs-highway-toll-system', permanent: true },
