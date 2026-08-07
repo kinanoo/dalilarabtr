@@ -405,6 +405,11 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Personal-finance batch: Findeks + the answered KKM question fold into
+      // the bank guide; KEP folds into the e-İmza page.
+      { source: '/article/finance-findeks-credit-score', destination: '/article/bank-account-opening', permanent: true },
+      { source: '/article/finance-kkm-status', destination: '/article/bank-account-opening', permanent: true },
+      { source: '/article/digital-kep', destination: '/article/digital-e-imza', permanent: true },
       // Housing batch: five rent stubs fold into the rebuilt renting guide;
       // the two utility stubs fold into the existing 21K-char subscriptions guide.
       { source: '/article/rent-increase-limit', destination: '/article/renting-house', permanent: true },
