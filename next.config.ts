@@ -405,6 +405,11 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Consumer cluster: the 14-day-return, frauds and cybercrime stubs fold
+      // into the arbitration-committee guide (the remedy is the spine).
+      { source: '/article/consumer-14-day-return', destination: '/article/consumer-arbitration-hakem-heyeti', permanent: true },
+      { source: '/article/consumer-common-frauds', destination: '/article/consumer-arbitration-hakem-heyeti', permanent: true },
+      { source: '/article/consumer-cybercrime-report', destination: '/article/consumer-arbitration-hakem-heyeti', permanent: true },
       // Medical tourism: the three per-treatment stubs (unsourced dollar price
       // tables) fold into the authorization-framework guide.
       { source: '/article/medical-tourism-dental', destination: '/article/medical-tourism-guide', permanent: true },
