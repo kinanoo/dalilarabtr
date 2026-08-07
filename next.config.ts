@@ -405,6 +405,10 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Residence batch: the what-is-it stub folds into the renewal guide;
+      // the property-residence stub folds into the buying monster.
+      { source: '/article/tourist-residence', destination: '/article/tourist-residence-renewal-turkey-2026', permanent: true },
+      { source: '/article/real-estate-residence', destination: '/article/buying-property-turkey-2026', permanent: true },
       // Education finale: the 123-char removal-centres scrap folds into the
       // 27K detention-rights guide — its exact topic.
       { source: '/article/deportation-centers-rights', destination: '/article/detention-center-rights', permanent: true },
