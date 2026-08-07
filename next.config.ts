@@ -405,6 +405,10 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // HGS cluster: the OGS-titled stub (OGS was discontinued 31/03/2022) and
+      // the plate-query stub fold into the rebuilt HGS guide.
+      { source: '/article/auto-hgs-ogs', destination: '/article/hgs-highway-toll-system', permanent: true },
+      { source: '/article/toll-violation-check', destination: '/article/hgs-highway-toll-system', permanent: true },
       // Marriage cluster: two civil-marriage stubs fold into the arts-12/13
       // canonical (the sheikh-marriage warning migrated there first).
       { source: '/article/marriage-registration', destination: '/article/civil-marriage-registration-turkey', permanent: true },
