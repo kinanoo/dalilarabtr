@@ -645,3 +645,41 @@ html.dark .card-hover:hover {
 .sb-veil { background: #FAF6EE; opacity: var(--sb-veil, 0.22); }
 .dark .sb-img { opacity: var(--sb-op-dark, 0.26); }
 .dark .sb-veil { background: #020617; opacity: 0.32; }
+
+/* ============================================
+   Line-height: the responsive-override bug, fixed at the root
+   ============================================
+   Tailwind v3 emits responsive font-size variants (sm:text-3xl, md:text-4xl)
+   AFTER the base leading-* utilities in the compiled sheet, and those
+   variants hardcode their own line-height (text-4xl → 2.5rem ≈ 1.11). Same
+   specificity, later in the file → an explicit leading-[1.5] on a headline
+   silently loses at sm/md+ widths. Arabic ascenders and dots then interleave
+   across two-line titles (reported on /updates/[id], present on every page
+   that pairs leading-* with responsive text sizes).
+
+   Fix A — re-declare every leading-* utility the codebase uses with a DOUBLED
+   selector (.x.x): specificity (0,2,0) beats the (0,1,0) size variants at any
+   position, and the minifier cannot merge it away (a plain re-emit after the
+   utilities was deduplicated by cssnano back to its original, losing
+   position — measured). Values are Tailwind's own.
+   Fix B — headings that carry no leading-* at all inherit the size utility's
+   cramped ratio; floor them at 1.5 (h1:not([class*="leading-"]) is
+   specificity (0,1,1), beating any (0,1,0) utility regardless of order).
+   Arabic needs the room — 1.5 is the floor, not a suggestion. */
+.leading-none.leading-none { line-height: 1; }
+.leading-tight.leading-tight { line-height: 1.25; }
+.leading-snug.leading-snug { line-height: 1.375; }
+.leading-normal.leading-normal { line-height: 1.5; }
+.leading-relaxed.leading-relaxed { line-height: 1.625; }
+.leading-loose.leading-loose { line-height: 2; }
+.leading-\[1\.25\].leading-\[1\.25\] { line-height: 1.25; }
+.leading-\[1\.4\].leading-\[1\.4\] { line-height: 1.4; }
+.leading-\[1\.5\].leading-\[1\.5\] { line-height: 1.5; }
+.leading-\[1\.6\].leading-\[1\.6\] { line-height: 1.6; }
+.leading-\[1\.9\].leading-\[1\.9\] { line-height: 1.9; }
+
+h1:not([class*="leading-"]),
+h2:not([class*="leading-"]),
+h3:not([class*="leading-"]) {
+  line-height: 1.5;
+}
