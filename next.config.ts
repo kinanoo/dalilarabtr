@@ -405,6 +405,15 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Housing batch: five rent stubs fold into the rebuilt renting guide;
+      // the two utility stubs fold into the existing 21K-char subscriptions guide.
+      { source: '/article/rent-increase-limit', destination: '/article/renting-house', permanent: true },
+      { source: '/article/deposit-return', destination: '/article/renting-house', permanent: true },
+      { source: '/article/digital-lease-contract', destination: '/article/renting-house', permanent: true },
+      { source: '/article/housing-advanced-aidat-dispute', destination: '/article/renting-house', permanent: true },
+      { source: '/article/housing-advanced-neighbor-noise', destination: '/article/renting-house', permanent: true },
+      { source: '/article/utilities-registration', destination: '/article/home-subscriptions-turkey-2026', permanent: true },
+      { source: '/article/exit-utility-deposit-refund', destination: '/article/home-subscriptions-turkey-2026', permanent: true },
       // Consumer cluster: the 14-day-return, frauds and cybercrime stubs fold
       // into the arbitration-committee guide (the remedy is the spine).
       { source: '/article/consumer-14-day-return', destination: '/article/consumer-arbitration-hakem-heyeti', permanent: true },
