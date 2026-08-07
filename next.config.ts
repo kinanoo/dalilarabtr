@@ -349,7 +349,9 @@ const nextConfig: NextConfig = {
       // syrian-embassy.com, which is not a government domain. Nothing on it was
       // worth carrying to the page that describes the real system.
       { source: '/article/passport-booking-system-legacy', destination: '/article/syrian-consulate-appointment', permanent: true },
-      { source: '/article/agency-attestation-legacy', destination: '/article/syrian-document-attestation', permanent: true },
+      // Was → syrian-document-attestation, which now 301s onward; point at
+      // the final home directly so no redirect chain forms.
+      { source: '/article/agency-attestation-legacy', destination: '/article/syrian-consulate-services-turkey-2026', permanent: true },
       { source: '/article/identity-passport-renewal-update', destination: '/article/syrian-passport-renewal', permanent: true },
       // Work-permit cluster: fourteen pages on one topic, six of them between
       // 102 and 189 words asking the same question a different way (how do I
@@ -405,6 +407,16 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Singles finale: every remaining scrap judged one by one — each fold
+      // goes to the page that actually carries its content.
+      { source: '/article/syrian-document-attestation', destination: '/article/syrian-consulate-services-turkey-2026', permanent: true },
+      { source: '/article/gaziantep-citizenship-decision-syrians-2026', destination: '/article/turkish-citizenship-all-paths-2026', permanent: true },
+      { source: '/article/family-cenaze-nakil', destination: '/article/family-death-procedures', permanent: true },
+      { source: '/article/internet-subscription', destination: '/article/home-subscriptions-turkey-2026', permanent: true },
+      { source: '/article/internet-debt-check', destination: '/article/uyap-case-inquiry', permanent: true },
+      { source: '/article/exit-sell-used-furniture-spotcu', destination: '/article/voluntary-return-syria-procedure-2026', permanent: true },
+      { source: '/article/identity-name-dob-fix', destination: '/article/kimlik-data-update', permanent: true },
+      { source: '/article/business-licenses-turkey', destination: '/article/open-company-turkey-2026', permanent: true },
       // Residence batch: the what-is-it stub folds into the renewal guide;
       // the property-residence stub folds into the buying monster.
       { source: '/article/tourist-residence', destination: '/article/tourist-residence-renewal-turkey-2026', permanent: true },
