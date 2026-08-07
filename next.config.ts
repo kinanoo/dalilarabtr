@@ -405,6 +405,15 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Transport batch: the two card stubs and three commercial-mobility
+      // stubs fold into the Istanbul transport canonical; the shopping-app
+      // stub folds into the consumer guide.
+      { source: '/article/istanbulkart-hes-code', destination: '/article/istanbulkart-mavi-kart-2026', permanent: true },
+      { source: '/article/istanbul-mavi-kart', destination: '/article/istanbulkart-mavi-kart-2026', permanent: true },
+      { source: '/article/bitaksi-app', destination: '/article/istanbulkart-mavi-kart-2026', permanent: true },
+      { source: '/article/tiktak-car-rental', destination: '/article/istanbulkart-mavi-kart-2026', permanent: true },
+      { source: '/article/marti-scooter-rental', destination: '/article/istanbulkart-mavi-kart-2026', permanent: true },
+      { source: '/article/cimri-price-compare', destination: '/article/consumer-arbitration-hakem-heyeti', permanent: true },
       // Personal-finance batch: Findeks + the answered KKM question fold into
       // the bank guide; KEP folds into the e-İmza page.
       { source: '/article/finance-findeks-credit-score', destination: '/article/bank-account-opening', permanent: true },
