@@ -405,6 +405,13 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Health/phones batch: the duty-pharmacy stub folds into the honest
+      // pharmacy tool; the IMEI-extension stub into the IMEI guide; the two
+      // line stubs into the line canonical (which gained their section).
+      { source: '/article/pharmacy-duty', destination: '/tools/pharmacy', permanent: true },
+      { source: '/article/digital-imei-120-days-extension', destination: '/article/phone-imei-register', permanent: true },
+      { source: '/article/digital-tourist-line-vs-normal', destination: '/article/gecici-koruma-hat-guncelleme-2026', permanent: true },
+      { source: '/article/digital-line-transfer-citizenship', destination: '/article/gecici-koruma-hat-guncelleme-2026', permanent: true },
       // Notary/e-Devlet batch: the icra stub folds into the combined UYAP
       // page; the find-a-notary stub folds into the notary guide.
       { source: '/article/uyap-execution-files', destination: '/article/uyap-case-inquiry', permanent: true },
