@@ -405,6 +405,13 @@ const nextConfig: NextConfig = {
       // Bank-account cluster: two stubs (174 and 325 chars) merged into the
       // rebuilt bank-account-opening guide — same consolidation pattern as
       // Kızılay below.
+      // Work batch: five stubs fold into canonicals that actually carry the
+      // content (checked before retiring).
+      { source: '/article/employment-worker-rights-kidem-alo170', destination: '/article/severance-pay-kidem-tazminati', permanent: true },
+      { source: '/article/employment-5-turks-rule', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/work-without-permit-risks-2025', destination: '/article/work-permit-turkey-2026', permanent: true },
+      { source: '/article/employment-freelance-legal', destination: '/article/bagimsiz-calisma-izni-2026', permanent: true },
+      { source: '/article/company-setup', destination: '/article/open-company-turkey-2026', permanent: true },
       // Transport batch: the two card stubs and three commercial-mobility
       // stubs fold into the Istanbul transport canonical; the shopping-app
       // stub folds into the consumer guide.
