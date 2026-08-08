@@ -517,6 +517,37 @@ const nextConfig: NextConfig = {
         destination: '/article/kimlik-data-update',
         permanent: true,
       },
+      // Search Console cleanup, 2026-08-08. These URLs still earned real
+      // impressions but rendered the app's 404 body with HTTP 200 on the
+      // OpenNext deployment. Point each known predecessor at the strongest
+      // live answer so users keep the answer and Google consolidates signals.
+      {
+        source: '/article/%D8%B7%D8%B1%D9%8A%D9%82%D8%A9-%D8%AA%D8%AD%D8%AF%D9%8A%D8%AB-%D8%A8%D9%8A%D8%A7%D9%86%D8%A7%D8%AA-%D8%AE%D8%B7-%D8%A7%D9%84%D9%87%D8%A7%D8%AA%D9%81-%D8%B4%D8%B1%D9%83%D8%A9-%D8%AA%D8%B1%D9%88%D9%83%D8%B3%D9%84',
+        destination: '/article/gecici-koruma-hat-guncelleme-2026',
+        permanent: true,
+      },
+      {
+        source: '/article/%D8%A7%D9%84%D9%82%D9%86%D8%B5%D9%84%D9%8A%D8%A9-%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A%D8%A9-%D9%81%D9%8A-%D8%BA%D8%A7%D8%B2%D9%8A-%D8%B9%D9%86%D8%AA%D8%A7%D8%A8-%D9%85%D8%AA%D8%B7%D9%84%D8%A8%D8%A7%D8%AA-%D8%A7%D8%B3%D8%AA%D8%AE%D8%B1%D8%A7%D8%AC-%D8%AC%D9%88%D8%A7%D8%B2-%D8%A7%D9%84%D8%B3%D9%81%D8%B1-%D8%A7%D9%84%D8%B3%D9%88%D8%B1%D9%8A',
+        destination: '/article/syrian-consulate-gaziantep-guide',
+        permanent: true,
+      },
+      {
+        source: '/article/kimlik-renewal-expired',
+        destination: '/article/kimlik-renewal-steps',
+        permanent: true,
+      },
+      // The housing audit chose renting-house as the single broad canonical.
+      // Keep these shared/indexed URLs useful while their rows are retired.
+      {
+        source: '/article/tenant-rights-rent-increase-cap',
+        destination: '/article/renting-house',
+        permanent: true,
+      },
+      {
+        source: '/article/rent-contract-tenant-rights-turkey-2026',
+        destination: '/article/renting-house',
+        permanent: true,
+      },
       // Codes index: Turkish edition moved from ?lang=tr to /codes/tr, same
       // reason. hreflang on both pages now points at these paths.
       {
