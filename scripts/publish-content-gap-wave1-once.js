@@ -212,7 +212,7 @@ async function main() {
   const allSlugs = [...UPDATED_SLUGS, ...NEW_SLUGS, ...RETIRED_SLUGS];
   const { data: currentRows, error: readError } = await supabase
     .from('articles')
-    .select('id,slug,status,active,last_update')
+    .select('id,slug,status,active,last_update,fees')
     .in('slug', allSlugs);
   if (readError) throw readError;
 
@@ -226,6 +226,9 @@ async function main() {
       const row = bySlug.get(slug);
       return row?.id === slug && row.status === 'approved' && row.active === true;
     }) &&
+    ['gss-premium-2026-foreigners-syrians', 'syria-temporary-protection-health-2026'].every(
+      (slug) => bySlug.get(slug)?.fees === updatePayloads.get(slug)?.fees,
+    ) &&
     RETIRED_SLUGS.every((slug) => bySlug.get(slug)?.status === 'draft');
 
   if (alreadyComplete) {
@@ -283,7 +286,7 @@ async function main() {
 
   const { data: verified, error: verifyError } = await supabase
     .from('articles')
-    .select('id,slug,status,active,last_update,details')
+    .select('id,slug,status,active,last_update,details,fees')
     .in('slug', allSlugs);
   if (verifyError) throw verifyError;
 
@@ -297,6 +300,11 @@ async function main() {
   }
   for (const slug of RETIRED_SLUGS) {
     if (verifiedBySlug.get(slug)?.status !== 'draft') throw new Error(`Retirement verification failed for ${slug}`);
+  }
+  for (const slug of ['gss-premium-2026-foreigners-syrians', 'syria-temporary-protection-health-2026']) {
+    if (verifiedBySlug.get(slug)?.fees !== updatePayloads.get(slug)?.fees) {
+      throw new Error(`Stale fees field remains on ${slug}`);
+    }
   }
 
   console.log('[gap-wave1] Published 4 rebuilds, 2 new guides, and retired 2 competing rent pages.');
