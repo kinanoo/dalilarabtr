@@ -559,6 +559,15 @@ const nextConfig: NextConfig = {
         destination: '/directory',
         permanent: true,
       },
+      // ── kimlik data-update consolidation (2026-08-08) ──────────────────
+      // The documents fragment split the «تحديث بيانات الكملك» query against
+      // the pillar; its content was merged into kimlik-data-update and the
+      // row retired (status='draft').
+      {
+        source: '/article/kimlik-renewal-documents',
+        destination: '/article/kimlik-data-update',
+        permanent: true,
+      },
     ];
   },
 
