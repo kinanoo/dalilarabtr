@@ -10,7 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "cf:build": "node scripts/publish-mofa-sy-appointment-article-once.js && opennextjs-cloudflare build",
+    "cf:build": "node scripts/publish-content-gap-wave1-once.js && node scripts/publish-mofa-sy-appointment-article-once.js && opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare deploy"
   },
