@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FolderOpen } from 'lucide-react';
 import { QUICK_ACTIONS } from '@/lib/constants';
+import RecentActivity from '@/components/home/RecentActivity';
 
 /**
  * QuickActionsGrid — Server Component (zero client JS).
@@ -24,7 +25,7 @@ const ICON_TINTS = [
 
 export default function QuickActionsGrid() {
     return (
-        <section className="px-4 py-12">
+        <section id="quick-actions" className="scroll-mt-24 px-4 py-12">
             <div className="max-w-7xl mx-auto">
                 {/* Header is provided by the homepage section wrapper (page.tsx
                     «اختصارات سريعة»); this renders the grid only. */}
@@ -53,6 +54,7 @@ export default function QuickActionsGrid() {
                         );
                     })}
                 </div>
+                <RecentActivity />
             </div>
         </section>
     );
