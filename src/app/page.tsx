@@ -22,16 +22,15 @@ import { getInitialTicker } from '@/lib/tickerServer';
 import HeroSection from '@/components/home/HeroSection';
 import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
-import HomeConsultantBtn from '@/components/home/HomeConsultantBtn';
-import LazyGlobalSearch from '@/components/home/LazyGlobalSearch';
-import GuidedJourney from '@/components/GuidedJourney';
+import HomePrimaryActions, { type HomeCoverageStats } from '@/components/home/HomePrimaryActions';
+import PopularNeeds from '@/components/home/PopularNeeds';
 // QuickActionsGrid + HomeFAQ are now Server Components (native markup, zero
 // client JS) so they're imported directly — the old client `dynamic()` wrappers
 // in LazyBelowFold only code-split them, they still hydrated on first load.
 import QuickActionsGrid from '@/components/home/QuickActionsGrid';
 import HomeFAQ from '@/components/home/HomeFAQ';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import { Sparkles, Wrench, MessageCircleQuestion, ChevronLeft } from 'lucide-react';
+import { Wrench, MessageCircleQuestion, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
@@ -45,7 +44,7 @@ const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو
 
 function formatArabicDate(isoDate: string): string {
   if (!isoDate) return '';
-  const [year, month, day] = isoDate.split('-').map(Number);
+  const [, month, day] = isoDate.split('-').map(Number);
   if (!day || !month) return isoDate;
   return `${day} ${AR_MONTHS[month - 1]}`;
 }
@@ -183,6 +182,31 @@ async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
   }
 }
 
+async function getHomeCoverageStats(): Promise<HomeCoverageStats | null> {
+  try {
+    if (!supabase) return null;
+    // Count-only HEAD requests add no row payload. They run only when the
+    // cached homepage regenerates, not on every visitor request.
+    const result = await withTimeout(
+      Promise.all([
+        supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+        supabase.from('service_providers').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+        supabase.from('zones').select('id', { count: 'exact', head: true }),
+      ]),
+      1800,
+    );
+    if (!result) return null;
+    return {
+      articles: result[0].count ?? null,
+      services: result[1].count ?? null,
+      zones: result[2].count ?? null,
+    };
+  } catch (error) {
+    logger.warn('getHomeCoverageStats: count request failed', error);
+    return null;
+  }
+}
+
 const HOME_DESCRIPTION = "معلومات عملية ومصادر رسمية للعرب والسوريين في تركيا: الكملك والإقامة، الجنسية، جواز السفر والقنصلية، إذن العمل، والأكواد الأمنية — في اسطنبول وغازي عنتاب وأنقرة وبورصة.";
 
 export const metadata: Metadata = {
@@ -209,7 +233,12 @@ export const metadata: Metadata = {
 // ============================================
 
 export default async function Home() {
-  const [updates, guides, ticker] = await Promise.all([getUpdates(), getFeaturedGuides(), getInitialTicker()]);
+  const [updates, guides, ticker, coverageStats] = await Promise.all([
+    getUpdates(),
+    getFeaturedGuides(),
+    getInitialTicker(),
+    getHomeCoverageStats(),
+  ]);
 
   const homeFaqSchema = {
     '@context': 'https://schema.org',
@@ -232,13 +261,9 @@ export default async function Home() {
           it renders full on first paint (no empty bar / pop-in flicker). */}
       <NewsTicker initialEntries={ticker.entries} initialHidden={ticker.hidden} />
 
-      {/* 1. HERO SECTION (Client) */}
+      {/* 1. HERO SECTION */}
       <HeroSection>
-        {/* Search is ABOVE the button as requested */}
-        <div id="search" className="w-full relative z-30 mb-5">
-          <LazyGlobalSearch />
-        </div>
-        <HomeConsultantBtn />
+        <HomePrimaryActions stats={coverageStats} />
       </HeroSection>
 
       {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
@@ -250,22 +275,13 @@ export default async function Home() {
       <NewsHub updates={updates} />
       <FeaturedGuides guides={guides} />
 
-      {/* The situation picker follows the latest news, matching the established
-          homepage reading order while keeping the compact mobile controls. */}
+      {/* Demand-led starting points follow the latest news. The section keeps
+          the established homepage order but replaces vague visitor states with
+          live destinations people repeatedly search for. */}
       <section className="relative bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-8 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-white" dir="rtl">
         <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
         <div className="max-w-7xl mx-auto px-4">
-          <div className="mb-5">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={17} className="text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-              <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">ابدأ من هنا</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">اختر وضعك</h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
-              اختر الحالة الأقرب إليك لنقودك إلى المعلومات والخطوات المناسبة مباشرة.
-            </p>
-          </div>
-          <GuidedJourney />
+          <PopularNeeds />
         </div>
       </section>
 

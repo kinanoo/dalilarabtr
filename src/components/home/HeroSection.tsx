@@ -37,7 +37,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         <span className="text-orange-700 dark:text-amber-300 font-bold">القانون والخدمات</span>.
                     </p>
 
-                    <div className="mt-5 max-w-xl mx-auto relative z-[25]">
+                    <div className="mt-5 max-w-3xl mx-auto relative z-[25]">
                         {children}
                     </div>
                 </div>

@@ -15,16 +15,18 @@ type SearchSuggestionsProps = {
   query: string;
   isOpen: boolean;
   onSuggestionClick: (text: string) => void;
+  embedded?: boolean;
 };
 
 /** Popular & Recent searches (shown when input focused, no query) */
 export function PopularSuggestions({
   recentSearches,
   onSuggestionClick,
-}: Pick<SearchSuggestionsProps, 'recentSearches' | 'onSuggestionClick'>) {
+  embedded = false,
+}: Pick<SearchSuggestionsProps, 'recentSearches' | 'onSuggestionClick' | 'embedded'>) {
   return (
     <div
-      className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
+      className={`${embedded ? 'relative mt-3' : 'absolute top-full mt-4 z-[200]'} w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900`}
     >
       {/* Recent searches */}
       {recentSearches.length > 0 && (
@@ -79,10 +81,11 @@ export function PopularSuggestions({
 export function AutocompleteSuggestions({
   suggestions,
   onSuggestionClick,
-}: Pick<SearchSuggestionsProps, 'suggestions' | 'onSuggestionClick'>) {
+  embedded = false,
+}: Pick<SearchSuggestionsProps, 'suggestions' | 'onSuggestionClick' | 'embedded'>) {
   return (
     <div
-      className="absolute top-full mt-4 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden"
+      className={`${embedded ? 'relative mt-3' : 'absolute top-full mt-4 z-[200]'} w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900`}
     >
       <div className="py-1">
         {suggestions.map((s) => (

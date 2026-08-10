@@ -15,6 +15,7 @@ type SearchResultsDropdownProps = {
   query: string;
   isSearching: boolean;
   onResultClick: (result: SearchResult, rank: number, action: 'open' | 'map') => void;
+  embedded?: boolean;
 };
 
 export default function SearchResultsDropdown({
@@ -22,6 +23,7 @@ export default function SearchResultsDropdown({
   query,
   isSearching,
   onResultClick,
+  embedded = false,
 }: SearchResultsDropdownProps) {
   return (
     // Height is capped just below a whole number of rows so the next result is
@@ -32,7 +34,7 @@ export default function SearchResultsDropdown({
       role="listbox"
       aria-label="نتائج البحث"
       aria-live="polite"
-      className="absolute top-full mt-3 z-[200] w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden max-h-[min(52vh,19rem)] overflow-y-auto overscroll-contain"
+      className={`${embedded ? 'relative mt-3 max-h-[calc(100dvh-12rem)] sm:max-h-[50dvh]' : 'absolute top-full mt-3 z-[200] max-h-[min(52vh,19rem)]'} w-full overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900`}
     >
       {results.length > 0 ? (
         <div>

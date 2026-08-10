@@ -31,12 +31,14 @@ export default function GlobalSearch({
   variant = 'default',
   autoFocus = false,
   initialQuery = '',
+  onNavigate,
 }: {
-  variant?: 'default' | 'hero';
+  variant?: 'default' | 'hero' | 'dialog';
   autoFocus?: boolean;
   /** Text the visitor typed into the placeholder field before this component
    *  finished downloading. Carried over so nothing they typed is lost. */
   initialQuery?: string;
+  onNavigate?: () => void;
 }) {
   const {
     query, setQuery, debouncedQuery,
@@ -50,6 +52,7 @@ export default function GlobalSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isHero = variant === 'hero';
+  const isDialog = variant === 'dialog';
   const lastTrackedSearch = useRef('');
 
   // Record the settled search, not each keystroke. Waiting for the remote
@@ -88,6 +91,7 @@ export default function GlobalSearch({
 
   // Click outside to close
   useEffect(() => {
+    if (isDialog) return;
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -96,7 +100,7 @@ export default function GlobalSearch({
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [setIsOpen, setShowSuggestions]);
+  }, [isDialog, setIsOpen, setShowSuggestions]);
 
   // Global keyboard shortcuts:
   //   "/"            → focus this search (skipped if a text field is already active)
@@ -141,6 +145,7 @@ export default function GlobalSearch({
       router.push(results[0].url);
       setIsOpen(false);
       setShowSuggestions(false);
+      onNavigate?.();
     }
   };
 
@@ -157,11 +162,12 @@ export default function GlobalSearch({
     setIsOpen(false);
     saveRecentSearch(query.trim());
     refreshRecent();
-  }, [setIsOpen, query, refreshRecent]);
+    onNavigate?.();
+  }, [setIsOpen, query, refreshRecent, onNavigate]);
 
   return (
-    <div ref={wrapperRef} className={isHero ? HERO_WRAPPER : 'relative mx-auto max-w-3xl md:max-w-3xl lg:max-w-2xl xl:max-w-2xl'}>
-      <form role="search" onSubmit={handleSubmit} className={isHero ? HERO_FORM : 'relative transform transition-all duration-300'}>
+    <div ref={wrapperRef} className={isHero ? HERO_WRAPPER : isDialog ? 'relative w-full' : 'relative mx-auto max-w-3xl md:max-w-3xl lg:max-w-2xl xl:max-w-2xl'}>
+      <form role="search" onSubmit={handleSubmit} className={isHero ? HERO_FORM : 'relative transition-all duration-200'}>
 
         {/* Glow Effect for Hero */}
         {isHero && <div className={HERO_GLOW} />}
@@ -183,10 +189,12 @@ export default function GlobalSearch({
           }}
           onFocus={() => { setShowSuggestions(true); if (debouncedQuery.trim().length >= 2) setIsOpen(true); }}
           placeholder={isHero ? HERO_PLACEHOLDER : 'ابحث بأي صيغة... (ضيعت كملك، فقدت جواز، بسبور ضاع...)'}
-          autoFocus={false}
+          autoFocus={autoFocus}
           className={isHero
             ? HERO_FIELD
-            : 'w-full transition-all outline-none border-0 appearance-none py-4 md:py-5 ps-11 md:ps-12 pe-16 rounded-2xl text-sm md:text-base shadow-sm focus:ring-4 focus:ring-accent-500/50 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-xs md:placeholder:text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400'
+            : isDialog
+              ? 'w-full appearance-none rounded-lg border border-slate-300 bg-white py-3.5 pe-16 ps-11 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 sm:text-base'
+              : 'w-full transition-all outline-none border-0 appearance-none py-4 md:py-5 ps-11 md:ps-12 pe-16 rounded-2xl text-sm md:text-base shadow-sm focus:ring-4 focus:ring-accent-500/50 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-xs md:placeholder:text-sm placeholder:text-slate-400 dark:placeholder:text-slate-400'
           }
         />
 
@@ -216,17 +224,17 @@ export default function GlobalSearch({
 
       {/* Popular + Recent (no query, input focused) */}
       {showSuggestions && !isOpen && query.length === 0 && (
-        <PopularSuggestions recentSearches={recentSearches} onSuggestionClick={handleSuggestionClick} />
+        <PopularSuggestions recentSearches={recentSearches} onSuggestionClick={handleSuggestionClick} embedded={isDialog} />
       )}
 
       {/* Autocomplete (typing, before results) */}
       {showSuggestions && query.length >= 1 && suggestions.length > 0 && !isOpen && (
-        <AutocompleteSuggestions suggestions={suggestions} onSuggestionClick={handleSuggestionClick} />
+        <AutocompleteSuggestions suggestions={suggestions} onSuggestionClick={handleSuggestionClick} embedded={isDialog} />
       )}
 
       {/* Search Results */}
       {isOpen && (results.length > 0 || query.length > 0) && (
-        <SearchResultsDropdown results={results} query={query} isSearching={isSearching} onResultClick={handleResultClick} />
+        <SearchResultsDropdown results={results} query={query} isSearching={isSearching} onResultClick={handleResultClick} embedded={isDialog} />
       )}
     </div>
   );

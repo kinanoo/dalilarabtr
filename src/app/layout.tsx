@@ -27,6 +27,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollRestoration from "@/components/ScrollRestoration";
 import TapFeedbackPulse from "@/components/TapFeedbackPulse";
+import SearchDialogProvider from "@/components/search/SearchDialogProvider";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schemaOrg";
 
 // Wrapper that delays rendering until browser is idle (~2.5s after page load)
@@ -228,8 +229,9 @@ export default async function RootLayout({
         <TapFeedbackPulse />
         <ThemeProviderWrapper>
          <SiteSettingsProvider value={siteSettings}>
-          <ScrollRestoration />
-          <div className="flex flex-col min-h-screen relative">
+          <SearchDialogProvider>
+           <ScrollRestoration />
+           <div className="flex flex-col min-h-screen relative">
             {/* Faint Istanbul photo behind everything (z-0, fixed) now mounts
                 from DeferredExtras: it imports the full supabase-js client for
                 its DB config, and importing it statically here put ~63KB gz of
@@ -247,7 +249,8 @@ export default async function RootLayout({
             <LazyGroup>
               <DeferredExtras />
             </LazyGroup>
-          </div>
+           </div>
+          </SearchDialogProvider>
          </SiteSettingsProvider>
         </ThemeProviderWrapper>
       </body>
