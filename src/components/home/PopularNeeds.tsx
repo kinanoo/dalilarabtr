@@ -1,151 +1,252 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import {
   type LucideIcon,
   ArrowLeft,
   BadgeCheck,
-  BriefcaseBusiness,
+  Banknote,
   Building2,
-  ChevronDown,
-  GraduationCap,
+  Calculator,
+  CalendarClock,
+  Coins,
+  FileText,
+  FolderOpen,
+  HeartPulse,
   Landmark,
+  Link2,
   MapPinned,
   Pill,
+  SearchCheck,
   ShieldAlert,
-  Stethoscope,
-  UsersRound,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  UserRoundSearch,
+  Wallet,
+  WalletCards,
+  X,
 } from 'lucide-react';
 
-type NeedLink = { title: string; href: string; note: string };
-type NeedHub = {
+type ToolLink = {
+  title: string;
+  href: string;
+  note: string;
+  icon: LucideIcon;
+};
+
+type ToolGroup = {
   id: string;
   title: string;
   note: string;
   icon: LucideIcon;
   tone: string;
-  links: NeedLink[];
+  iconTone: string;
+  accent: string;
+  tools: ToolLink[];
 };
 
-const DIRECT_NEEDS = [
+const DIRECT_TOOLS = [
   {
     title: 'المناطق وتثبيت النفوس',
-    note: 'اعرف المناطق المفتوحة والمحظورة حسب الولاية',
+    note: 'المفتوحة والمحظورة حسب الولاية',
     href: '/zones',
     icon: MapPinned,
     tone: 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/25 dark:text-rose-200',
   },
   {
-    title: 'التحقق من قيد الكملك',
-    note: 'افحص حالة القيد وما تعنيه النتيجة',
+    title: 'فحص قيد الكملك',
+    note: 'تحقق من الرقم واقرأ النتيجة',
     href: '/tools/kimlik-check',
     icon: BadgeCheck,
     tone: 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/25 dark:text-sky-200',
   },
   {
-    title: 'أقرب صيدلية مناوبة',
-    note: 'اعثر على الصيدلية المفتوحة الآن',
+    title: 'صيدلية مناوبة الآن',
+    note: 'اعثر على الأقرب إليك',
     href: '/tools/pharmacy',
     icon: Pill,
     tone: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-200',
   },
 ];
 
-const NEED_HUBS: NeedHub[] = [
+const TOOL_GROUPS: ToolGroup[] = [
   {
-    id: 'consulate',
-    title: 'القنصلية والجواز',
-    note: 'مواعيد ووثائق',
-    icon: Landmark,
-    tone: 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30',
-    links: [
-      { title: 'دليل السفارات والقنصليات', href: '/consulates', note: 'العناوين والخرائط وطرق التواصل' },
-      { title: 'استخراج وتجديد جواز السفر السوري', href: '/article/syrian-passport-renewal', note: 'الأوراق والخطوات العملية' },
-      { title: 'حجز موعد القنصلية السورية', href: '/article/syrian-consulate-appointment', note: 'شرح الحجز والاستعداد للموعد' },
+    id: 'identity',
+    title: 'الهوية والحماية',
+    note: 'الكملك، الأكواد والمنع',
+    icon: ShieldCheck,
+    tone: 'border-rose-200 hover:border-rose-400 dark:border-rose-900/70 dark:hover:border-rose-700',
+    iconTone: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
+    accent: 'bg-rose-500',
+    tools: [
+      { title: 'فحص قيد الكملك', href: '/tools/kimlik-check', note: 'تحقق من الرقم واقرأ حالة القيد', icon: BadgeCheck },
+      { title: 'دليل الأكواد الأمنية', href: '/codes', note: 'معاني الأكواد وطرق الاعتراض', icon: ShieldAlert },
+      { title: 'المناطق المحظورة', href: '/zones', note: 'ابحث حسب الولاية والحي', icon: MapPinned },
+      { title: 'حاسبة مدة منع الدخول', href: '/ban-calculator', note: 'احسب المدة وتاريخ انتهائها', icon: Calculator },
+      { title: 'دليل المواقف', href: '/consultant', note: 'شخّص حالتك واعرف خطوتك التالية', icon: SearchCheck },
     ],
   },
   {
-    id: 'residence',
-    title: 'الإقامة والفيزا',
-    note: 'تقديم وتجديد',
-    icon: Building2,
-    tone: 'text-cyan-700 bg-cyan-100 dark:text-cyan-300 dark:bg-cyan-900/30',
-    links: [
-      { title: 'كل موضوعات الإقامة', href: '/category/residence', note: 'الأنواع والشروط والإجراءات' },
-      { title: 'تجديد الإقامة السياحية 2026', href: '/article/tourist-residence-renewal-turkey-2026', note: 'دليل عملي خطوة بخطوة' },
-      { title: 'الاستعلام عن معلومات إقامتك', href: '/e-devlet-services#ikamet-kisisel-bilgi', note: 'الوصول إلى الخدمة وقراءة النتيجة' },
+    id: 'money',
+    title: 'المال والعمل',
+    note: 'راتب، تعويض وصرف',
+    icon: WalletCards,
+    tone: 'border-amber-200 hover:border-amber-400 dark:border-amber-900/70 dark:hover:border-amber-700',
+    iconTone: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+    accent: 'bg-amber-500',
+    tools: [
+      { title: 'أسعار الصرف والعملات', href: '/tools/currency', note: 'الليرة والعملات والذهب مع محوّل', icon: Banknote },
+      { title: 'حاسبة الراتب الصافي', href: '/tools/salary-calculator', note: 'حوّل بين الإجمالي والصافي', icon: Wallet },
+      { title: 'تعويض نهاية الخدمة', href: '/tools/severance-calculator', note: 'احسب التعويض حسب الراتب والمدة', icon: Coins },
+      { title: 'زيادة الإيجار القانونية', href: '/tools/rent-increase-calculator', note: 'اعرف الحد الأعلى للزيادة', icon: Building2 },
     ],
   },
   {
-    id: 'work',
-    title: 'العمل وحقوق العامل',
-    note: 'إذن وراتب وتأمين',
-    icon: BriefcaseBusiness,
-    tone: 'text-indigo-700 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30',
-    links: [
-      { title: 'إذن العمل في تركيا 2026', href: '/article/work-permit-turkey-2026', note: 'الأنواع والشروط والأوراق' },
-      { title: 'حقوق العامل في تركيا 2026', href: '/article/worker-rights-turkey-2026', note: 'الأجر والتأمين والإجازات والحماية' },
-      { title: 'حاسبة الراتب الصافي', href: '/tools/salary-calculator', note: 'حوّل الراتب بين الإجمالي والصافي' },
+    id: 'transactions',
+    title: 'الإقامة والمعاملات',
+    note: 'مدة، تكلفة وروابط رسمية',
+    icon: CalendarClock,
+    tone: 'border-violet-200 hover:border-violet-400 dark:border-violet-900/70 dark:hover:border-violet-700',
+    iconTone: 'bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300',
+    accent: 'bg-violet-500',
+    tools: [
+      { title: 'حاسبة أيام الإقامة', href: '/tools/residence-calculator', note: 'احسب أيام الإقامة والغياب', icon: CalendarClock },
+      { title: 'حاسبة تكاليف الإقامة', href: '/calculator', note: 'قدّر التكاليف حسب نوع الإقامة', icon: Calculator },
+      { title: 'خدمات الحكومة الإلكترونية', href: '/e-devlet-services', note: 'ابحث عن الخدمة المطلوبة', icon: Smartphone },
+      { title: 'الروابط الحكومية الرسمية', href: '/important-links', note: 'بوابات موثوقة في مكان واحد', icon: Link2 },
+      { title: 'النماذج الجاهزة', href: '/forms', note: 'نماذج ووثائق قابلة للتنزيل', icon: FileText },
     ],
   },
   {
-    id: 'legal',
-    title: 'الأكواد والحقوق',
-    note: 'تقييد وترحيل',
-    icon: ShieldAlert,
-    tone: 'text-rose-700 bg-rose-100 dark:text-rose-300 dark:bg-rose-900/30',
-    links: [
-      { title: 'دليل الأكواد الأمنية', href: '/codes', note: 'معنى كل كود وطريق الاعتراض' },
-      { title: 'مراكز الترحيل وحقوقك القانونية', href: '/article/detention-center-rights', note: 'ما الذي تفعله عند الاحتجاز' },
-      { title: 'إبطال الكملك وكود V-160', href: '/article/identity-kimlik-iptal-v160', note: 'الأسباب الشائعة وطريقة التعامل' },
-    ],
-  },
-  {
-    id: 'education',
-    title: 'المدرسة والمعادلة',
-    note: 'تسجيل ودراسة',
-    icon: GraduationCap,
-    tone: 'text-violet-700 bg-violet-100 dark:text-violet-300 dark:bg-violet-900/30',
-    links: [
-      { title: 'دليل التعليم في تركيا', href: '/education', note: 'المدارس والجامعات والمعادلات' },
-      { title: 'تسجيل الأطفال في المدرسة بالكملك', href: '/article/school-registration-turkey', note: 'الخطوات وأسباب الرفض الشائعة' },
-      { title: 'معادلة شهادة الثانوية', href: '/article/high-school-equivalency-turkey-2026', note: 'الأوراق وطريقة تقديم الطلب' },
-    ],
-  },
-  {
-    id: 'services',
-    title: 'مقدم خدمة قريب',
-    note: 'طبيب ومحامٍ ومترجم',
-    icon: UsersRound,
-    tone: 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/30',
-    links: [
-      { title: 'كل مقدمي الخدمات', href: '/services', note: 'ابحث بحسب المهنة والمدينة' },
-      { title: 'أطباء وعيادات', href: '/services/category/doctors', note: 'اعثر على طبيب وتواصل مباشرة' },
-      { title: 'محامون ومستشارون قانونيون', href: '/services/category/lawyers', note: 'اختر المدينة وقارن النتائج' },
+    id: 'nearby',
+    title: 'خدمات وأماكن',
+    note: 'صيدلية، قنصلية ومختص',
+    icon: MapPinned,
+    tone: 'border-emerald-200 hover:border-emerald-400 dark:border-emerald-900/70 dark:hover:border-emerald-700',
+    iconTone: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+    accent: 'bg-emerald-500',
+    tools: [
+      { title: 'الصيدليات المناوبة', href: '/tools/pharmacy', note: 'اعثر على المفتوح الآن حسب المدينة', icon: HeartPulse },
+      { title: 'أين يقع؟', href: '/places', note: 'قنصليات ودوائر على الخريطة', icon: MapPinned },
+      { title: 'دليل القنصليات', href: '/consulates', note: 'العناوين وطرق التواصل', icon: Landmark },
+      { title: 'مقدمو الخدمات', href: '/services', note: 'ابحث حسب المهنة والمدينة', icon: UserRoundSearch },
+      { title: 'الدليل الشامل', href: '/directory', note: 'قوائم الخدمات والمواقع المهمة', icon: FolderOpen },
     ],
   },
 ];
 
 export default function PopularNeeds() {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const activeHub = NEED_HUBS.find((hub) => hub.id === activeId);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const activeGroup = TOOL_GROUPS.find((group) => group.id === activeId) ?? null;
+
+  useEffect(() => {
+    if (!activeGroup) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveId(null);
+    };
+
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [activeGroup]);
+
+  const dialog = activeGroup && typeof document !== 'undefined'
+    ? createPortal(
+        <div
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/55 backdrop-blur-[2px] animate-fadeIn sm:items-center sm:p-5"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setActiveId(null);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tool-group-title"
+            className="relative max-h-[88dvh] w-full overflow-hidden rounded-t-3xl border border-white/70 bg-white shadow-2xl animate-slideInUp dark:border-slate-700 dark:bg-slate-900 sm:max-w-3xl sm:rounded-2xl"
+            dir="rtl"
+          >
+            <div className={`h-1.5 w-full ${activeGroup.accent}`} aria-hidden="true" />
+            <div className="mx-auto mt-2 h-1 w-12 rounded-full bg-slate-200 sm:hidden dark:bg-slate-700" aria-hidden="true" />
+
+            <header className="flex items-center gap-3 border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6">
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${activeGroup.iconTone}`}>
+                <activeGroup.icon size={24} aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 id="tool-group-title" className="text-xl font-black text-slate-950 dark:text-white sm:text-2xl">
+                  {activeGroup.title}
+                </h3>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">{activeGroup.note}</p>
+              </div>
+              <button
+                ref={closeButtonRef}
+                type="button"
+                onClick={() => setActiveId(null)}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                aria-label="إغلاق النافذة"
+              >
+                <X size={21} aria-hidden="true" />
+              </button>
+            </header>
+
+            <div className="max-h-[calc(88dvh-98px)] overflow-y-auto overscroll-contain p-3 sm:p-5">
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {activeGroup.tools.map((tool, index) => (
+                  <Link
+                    key={tool.href}
+                    href={tool.href}
+                    prefetch={false}
+                    onClick={() => setActiveId(null)}
+                    className={`group relative flex min-h-[76px] items-center gap-3 overflow-hidden rounded-xl border p-3.5 text-start transition duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-lg active:translate-y-0 active:scale-[0.99] dark:hover:border-slate-600 ${index === 0 ? 'border-slate-800 bg-slate-900 text-white dark:border-emerald-500 dark:bg-emerald-950/60' : 'border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-800 dark:bg-slate-950/60 dark:text-white'}`}
+                  >
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${index === 0 ? 'bg-white/10 text-white' : activeGroup.iconTone}`}>
+                      <tool.icon size={20} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <strong className="block text-sm font-black sm:text-[15px]">{tool.title}</strong>
+                      <span className={`mt-1 block text-[11px] leading-relaxed ${index === 0 ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                        {tool.note}
+                      </span>
+                    </span>
+                    <ArrowLeft size={17} className="shrink-0 opacity-45 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>,
+        document.body,
+      )
+    : null;
 
   return (
     <section aria-labelledby="popular-needs-title">
       <div className="mb-5">
         <div className="mb-2 flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-400">
-          <Stethoscope size={17} aria-hidden="true" />
-          ابدأ من حاجتك
+          <Sparkles size={17} aria-hidden="true" />
+          مركز الأدوات اليومية
         </div>
-        <h2 id="popular-needs-title" className="text-3xl font-black text-slate-900 dark:text-white sm:text-4xl">ماذا تحتاج الآن؟</h2>
+        <h2 id="popular-needs-title" className="text-3xl font-black text-slate-900 dark:text-white sm:text-4xl">
+          ماذا تحتاج الآن؟
+        </h2>
         <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-          أكثر ما يبحث عنه زوار الدليل، ثم بقية المعاملات والخدمات مرتبة في مكان واحد.
+          افتح أكثر الأدوات طلباً مباشرة، أو اختر المجموعة التي تناسب حاجتك.
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
-        {DIRECT_NEEDS.map((item, index) => (
+        {DIRECT_TOOLS.map((item, index) => (
           <Link
             key={item.href}
             href={item.href}
@@ -164,53 +265,40 @@ export default function PopularNeeds() {
         ))}
       </div>
 
-      <h3 className="mb-2 mt-6 text-sm font-black text-slate-800 dark:text-slate-100">كل ما يلزمك حسب الموضوع</h3>
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
-        {NEED_HUBS.map((hub) => {
-          const isActive = activeId === hub.id;
-          return (
-            <button
-              key={hub.id}
-              type="button"
-              aria-expanded={isActive}
-              aria-controls="popular-needs-panel"
-              onClick={() => setActiveId((current) => current === hub.id ? null : hub.id)}
-              className={`flex min-h-20 items-center gap-2.5 rounded-lg border p-3 text-start transition duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 ${isActive ? 'border-emerald-500 bg-emerald-50 shadow-sm dark:border-emerald-600 dark:bg-emerald-950/25' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'}`}
-            >
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${hub.tone}`}>
-                <hub.icon size={18} aria-hidden="true" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <strong className="block text-[13px] font-black text-slate-900 dark:text-white sm:text-sm">{hub.title}</strong>
-                <span className="mt-0.5 block text-[10px] text-slate-500 dark:text-slate-400 sm:text-[11px]">{hub.note}</span>
-              </span>
-              <ChevronDown size={16} className={`shrink-0 text-slate-400 transition-transform ${isActive ? 'rotate-180 text-emerald-600' : ''}`} aria-hidden="true" />
-            </button>
-          );
-        })}
+      <div className="mb-3 mt-6 flex items-end justify-between gap-3">
+        <div>
+          <h3 className="text-base font-black text-slate-900 dark:text-white sm:text-lg">أدواتك مرتبة حسب الحاجة</h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">اختر مجموعة للوصول إلى أدواتها وقوائمها.</p>
+        </div>
+        <span className="hidden items-center gap-1.5 text-xs font-bold text-emerald-700 sm:flex dark:text-emerald-400">
+          <Sparkles size={14} aria-hidden="true" />
+          وصول سريع
+        </span>
       </div>
 
-      {activeHub && (
-        <div id="popular-needs-panel" className="mt-4 animate-in fade-in slide-in-from-top-1 border-y border-emerald-200 bg-emerald-50/70 py-3 dark:border-emerald-900 dark:bg-emerald-950/20">
-          <div className="mb-2 flex items-center gap-2 px-3">
-            <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${activeHub.tone}`}>
-              <activeHub.icon size={17} aria-hidden="true" />
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        {TOOL_GROUPS.map((group) => (
+          <button
+            key={group.id}
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => setActiveId(group.id)}
+            className={`group relative isolate flex min-h-[92px] items-center gap-2.5 overflow-hidden rounded-xl border bg-white p-3 text-start shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-xl active:translate-y-0 active:scale-[0.99] dark:bg-slate-900 ${group.tone}`}
+          >
+            <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition duration-200 group-hover:scale-110 group-hover:-rotate-3 ${group.iconTone}`}>
+              <group.icon size={22} aria-hidden="true" />
             </span>
-            <strong className="text-sm font-black text-slate-900 dark:text-white">{activeHub.title}</strong>
-          </div>
-          <div className="divide-y divide-emerald-100 dark:divide-emerald-900/60">
-            {activeHub.links.map((link) => (
-              <Link key={link.href} href={link.href} prefetch={false} className="group flex min-h-14 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-white/75 dark:hover:bg-slate-900/60">
-                <span className="min-w-0 flex-1">
-                  <strong className="block text-sm font-bold text-slate-800 group-hover:text-emerald-800 dark:text-slate-100 dark:group-hover:text-emerald-300">{link.title}</strong>
-                  <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">{link.note}</span>
-                </span>
-                <ArrowLeft size={16} className="shrink-0 text-emerald-600 transition-transform group-hover:-translate-x-1 dark:text-emerald-400" aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+            <span className="min-w-0 flex-1">
+              <strong className="block text-[13px] font-black text-slate-900 dark:text-white sm:text-sm">{group.title}</strong>
+              <span className="mt-1 block text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 sm:text-[11px]">{group.note}</span>
+            </span>
+            <ArrowLeft size={16} className="shrink-0 text-slate-400 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
+            <span className={`absolute inset-x-3 bottom-0 h-1 origin-right scale-x-0 rounded-full transition-transform duration-300 group-hover:scale-x-100 ${group.accent}`} aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+
+      {dialog}
     </section>
   );
 }

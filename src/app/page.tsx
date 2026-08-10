@@ -24,14 +24,10 @@ import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
 import HomePrimaryActions from '@/components/home/HomePrimaryActions';
 import PopularNeeds from '@/components/home/PopularNeeds';
-// QuickActionsGrid + HomeFAQ are now Server Components (native markup, zero
-// client JS) so they're imported directly — the old client `dynamic()` wrappers
-// in LazyBelowFold only code-split them, they still hydrated on first load.
-import QuickActionsGrid from '@/components/home/QuickActionsGrid';
+// HomeFAQ is a Server Component (native markup, zero client JS).
 import HomeFAQ from '@/components/home/HomeFAQ';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import { Wrench, MessageCircleQuestion, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
+import { MessageCircleQuestion } from 'lucide-react';
 import { TOP_FAQS } from '@/lib/home-faq-data';
 import logger from '@/lib/logger';
 
@@ -259,45 +255,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="relative h-6 bg-gradient-to-b from-white to-emerald-50 dark:from-slate-950 dark:to-slate-900" aria-hidden="true">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-cyan-500/30 to-transparent" />
-      </div>
-
       {/* ═══════════════════════════════════════════════════════════
-          SECTION 3 — اختصارات سريعة
-          Light playful surface — sky blue tints, friendly heading
-          framed by parentheses for personality. Tools live in a grid
-          with their own colors so this section feels like a
-          dashboard, not just another article list.
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-gradient-to-b from-emerald-50/60 to-surface-light dark:from-slate-900 dark:to-slate-950 pt-12 pb-8" dir="rtl">
-        <div className="max-w-7xl mx-auto px-4 mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-              <Wrench size={18} />
-            </span>
-            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-blue-600 dark:text-blue-400">TOOLBOX · صندوق الأدوات</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-50 leading-tight">
-            <span className="text-slate-400 dark:text-slate-600 font-light">«</span>
-            {' '}اختصارات سريعة{' '}
-            <span className="text-slate-400 dark:text-slate-600 font-light">»</span>
-          </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl">
-            حاسبات وأدوات قانونية تُجيبك في ثوانٍ بدلاً من ساعات بحث.
-          </p>
-          <Link href="/tools" className="mt-4 inline-flex items-center gap-1.5 text-sm font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
-            تصفّح كل الأدوات
-            <ChevronLeft size={15} />
-          </Link>
-        </div>
-        <ScrollReveal>
-          <QuickActionsGrid />
-        </ScrollReveal>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          SECTION 4 — الأكثر سؤالاً
+          SECTION 3 — الأكثر سؤالاً
           Centered editorial pacing — a giant decorative quote mark
           behind the title to telegraph "FAQ / questions". Calm
           background on slate-50 lets the cards below pop.
