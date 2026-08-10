@@ -53,7 +53,7 @@ export default function BookmarksPage() {
         <main className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
             <PageHero
                 title="مفضلاتي"
-                description="المقالات التي قمت بحفظها للعودة إليها لاحقاً"
+                description="المقالات المحفوظة على هذا الجهاز للعودة إليها لاحقاً"
                 icon={<Bookmark className="w-10 h-10 md:w-12 md:h-12 text-accent-500" />}
             />
 
