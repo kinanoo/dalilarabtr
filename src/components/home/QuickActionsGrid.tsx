@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { FolderOpen } from 'lucide-react';
 import { QUICK_ACTIONS } from '@/lib/constants';
-import RecentActivity from '@/components/home/RecentActivity';
 
 /**
  * QuickActionsGrid — Server Component (zero client JS).
@@ -54,7 +53,6 @@ export default function QuickActionsGrid() {
                         );
                     })}
                 </div>
-                <RecentActivity />
             </div>
         </section>
     );

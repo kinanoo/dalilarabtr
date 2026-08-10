@@ -28,7 +28,6 @@ const BackToTop = lazy(() => import('@/components/BackToTop'));
 const CookieConsent = lazy(() => import('@/components/CookieConsent'));
 const BodyImageGallery = lazy(() => import('@/components/article/BodyImageGallery'));
 const ProseContrastGuard = lazy(() => import('@/components/article/ProseContrastGuard'));
-const RecentActivityTracker = lazy(() => import('@/components/RecentActivityTracker'));
 
 export default function DeferredExtras() {
   const pathname = usePathname();
@@ -60,7 +59,6 @@ export default function DeferredExtras() {
   return (
     <Suspense fallback={null}>
       <ConsentAwareAnalytics />
-      <RecentActivityTracker />
       <CopyProtection />
       <BodyImageGallery />
       <ProseContrastGuard />

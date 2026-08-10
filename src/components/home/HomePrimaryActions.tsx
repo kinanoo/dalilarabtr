@@ -4,20 +4,8 @@ import Link from 'next/link';
 import { BriefcaseBusiness, MessageCircleQuestion, Search } from 'lucide-react';
 import { useSearchDialog } from '@/components/search/SearchDialogProvider';
 
-export type HomeCoverageStats = {
-  articles: number | null;
-  services: number | null;
-  zones: number | null;
-};
-
-export default function HomePrimaryActions({ stats }: { stats: HomeCoverageStats | null }) {
+export default function HomePrimaryActions() {
   const { openSearch } = useSearchDialog();
-
-  const coverage = [
-    stats?.articles ? `${stats.articles} مقالاً ودليلاً` : null,
-    stats?.services ? `${stats.services} مقدم خدمة` : null,
-    stats?.zones ? `${stats.zones} منطقة وحياً` : null,
-  ].filter(Boolean) as string[];
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -48,16 +36,6 @@ export default function HomePrimaryActions({ stats }: { stats: HomeCoverageStats
         </Link>
       </div>
 
-      {coverage.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 sm:text-xs" aria-label="حجم محتوى الدليل الحالي">
-          {coverage.map((item, index) => (
-            <span key={item} className="inline-flex items-center gap-3">
-              {index > 0 && <span aria-hidden="true" className="h-1 w-1 rounded-full bg-emerald-500" />}
-              {item}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

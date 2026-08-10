@@ -22,7 +22,7 @@ import { getInitialTicker } from '@/lib/tickerServer';
 import HeroSection from '@/components/home/HeroSection';
 import NewsHub from '@/components/home/NewsHub';
 import FeaturedGuides, { type FeaturedGuide } from '@/components/home/FeaturedGuides';
-import HomePrimaryActions, { type HomeCoverageStats } from '@/components/home/HomePrimaryActions';
+import HomePrimaryActions from '@/components/home/HomePrimaryActions';
 import PopularNeeds from '@/components/home/PopularNeeds';
 // QuickActionsGrid + HomeFAQ are now Server Components (native markup, zero
 // client JS) so they're imported directly — the old client `dynamic()` wrappers
@@ -182,31 +182,6 @@ async function getFeaturedGuides(): Promise<FeaturedGuide[]> {
   }
 }
 
-async function getHomeCoverageStats(): Promise<HomeCoverageStats | null> {
-  try {
-    if (!supabase) return null;
-    // Count-only HEAD requests add no row payload. They run only when the
-    // cached homepage regenerates, not on every visitor request.
-    const result = await withTimeout(
-      Promise.all([
-        supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-        supabase.from('service_providers').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-        supabase.from('zones').select('id', { count: 'exact', head: true }),
-      ]),
-      1800,
-    );
-    if (!result) return null;
-    return {
-      articles: result[0].count ?? null,
-      services: result[1].count ?? null,
-      zones: result[2].count ?? null,
-    };
-  } catch (error) {
-    logger.warn('getHomeCoverageStats: count request failed', error);
-    return null;
-  }
-}
-
 const HOME_DESCRIPTION = "معلومات عملية ومصادر رسمية للعرب والسوريين في تركيا: الكملك والإقامة، الجنسية، جواز السفر والقنصلية، إذن العمل، والأكواد الأمنية — في اسطنبول وغازي عنتاب وأنقرة وبورصة.";
 
 export const metadata: Metadata = {
@@ -233,11 +208,10 @@ export const metadata: Metadata = {
 // ============================================
 
 export default async function Home() {
-  const [updates, guides, ticker, coverageStats] = await Promise.all([
+  const [updates, guides, ticker] = await Promise.all([
     getUpdates(),
     getFeaturedGuides(),
     getInitialTicker(),
-    getHomeCoverageStats(),
   ]);
 
   const homeFaqSchema = {
@@ -263,7 +237,7 @@ export default async function Home() {
 
       {/* 1. HERO SECTION */}
       <HeroSection>
-        <HomePrimaryActions stats={coverageStats} />
+        <HomePrimaryActions />
       </HeroSection>
 
       {/* Hero → "ابدأ من هنا" seam. Both surfaces are dark, so a single
