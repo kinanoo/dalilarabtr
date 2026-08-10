@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Download, X, Share, Plus } from 'lucide-react';
 import { getAnalyticsConsent, ANALYTICS_CONSENT_EVENT } from '@/lib/consent';
+import { trackPwaEvent } from '@/lib/analytics';
 
 export default function PWAInstallPrompt() {
     // The cookie bar and this card are both pinned to the bottom-right at
@@ -56,8 +57,8 @@ export default function PWAInstallPrompt() {
         if (iOSInstallable) {
             // No install event on iOS — surface the instructions on a timer once
             // the visitor has spent a little time on the site.
-            setIsIOS(true);
             showTimer = setTimeout(() => {
+                setIsIOS(true);
                 setShowInstallBanner(true);
                 hideTimer = setTimeout(() => setShowInstallBanner(false), 15_000);
             }, 45_000);
@@ -77,6 +78,7 @@ export default function PWAInstallPrompt() {
         };
 
         const onInstalled = () => {
+            trackPwaEvent('installed', iOSInstallable ? 'ios' : 'android');
             setShowInstallBanner(false);
             setDeferredPrompt(null);
         };
@@ -92,19 +94,26 @@ export default function PWAInstallPrompt() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!showInstallBanner || !consentAnswered) return;
+        trackPwaEvent('shown', isIOS ? 'ios' : 'android');
+    }, [showInstallBanner, consentAnswered, isIOS]);
+
     const handleDismiss = useCallback(() => {
+        trackPwaEvent('dismissed', isIOS ? 'ios' : 'android');
         setShowInstallBanner(false);
         try {
             const count = parseInt(localStorage.getItem('pwa_dismiss_count') || '0', 10);
             localStorage.setItem('pwa_dismissed_at', Date.now().toString());
             localStorage.setItem('pwa_dismiss_count', (count + 1).toString());
         } catch { /* ignore */ }
-    }, []);
+    }, [isIOS]);
 
     const handleInstall = useCallback(async () => {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
+        const choice = await deferredPrompt.userChoice;
+        trackPwaEvent(choice?.outcome === 'accepted' ? 'accepted' : 'declined', 'android');
         setDeferredPrompt(null);
         setShowInstallBanner(false);
     }, [deferredPrompt]);

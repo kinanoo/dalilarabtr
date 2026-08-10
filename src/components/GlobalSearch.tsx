@@ -12,6 +12,8 @@ import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGlobalSearch, saveRecentSearch } from '@/hooks/useGlobalSearch';
+import { trackSearch, trackSearchResultClick } from '@/lib/analytics';
+import type { SearchResult } from '@/lib/searchIndex';
 import { PopularSuggestions, AutocompleteSuggestions } from '@/components/search/SearchSuggestions';
 import SearchResultsDropdown from '@/components/search/SearchResultsDropdown';
 import {
@@ -48,6 +50,27 @@ export default function GlobalSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const isHero = variant === 'hero';
+  const lastTrackedSearch = useRef('');
+
+  // Record the settled search, not each keystroke. Waiting for the remote
+  // index prevents a temporary local zero from being reported as a content gap.
+  useEffect(() => {
+    const normalized = debouncedQuery.trim();
+    if (normalized.length < 2) {
+      lastTrackedSearch.current = '';
+      return;
+    }
+    if (isSearching || !isOpen || lastTrackedSearch.current === normalized) return;
+
+    // A short quiet window also covers the render in which the remote effect
+    // has started but its isSearching state has not painted yet.
+    const timer = window.setTimeout(() => {
+      if (lastTrackedSearch.current === normalized) return;
+      lastTrackedSearch.current = normalized;
+      trackSearch(normalized, results.length);
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [debouncedQuery, isSearching, isOpen, results.length]);
 
   // A layout effect, not an effect + rAF: this runs after the DOM is in place
   // but BEFORE the browser paints, so the visitor never sees a frame where the
@@ -114,6 +137,7 @@ export default function GlobalSearch({
     if (results.length > 0) {
       saveRecentSearch(query.trim());
       refreshRecent();
+      trackSearchResultClick(query, results[0], 1, 'submit');
       router.push(results[0].url);
       setIsOpen(false);
       setShowSuggestions(false);
@@ -128,7 +152,8 @@ export default function GlobalSearch({
     refreshRecent();
   }, [setQuery, setIsOpen, setShowSuggestions, refreshRecent]);
 
-  const handleResultClick = useCallback(() => {
+  const handleResultClick = useCallback((result: SearchResult, rank: number, action: 'open' | 'map') => {
+    trackSearchResultClick(query, result, rank, action);
     setIsOpen(false);
     saveRecentSearch(query.trim());
     refreshRecent();

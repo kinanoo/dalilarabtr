@@ -1,4 +1,5 @@
 import { hasAnalyticsConsent } from '@/lib/consent';
+import { sanitizeSearchQuery } from '@/lib/analyticsPrivacy';
 
 // ============================================
 // 📊 Google Analytics Helper Functions
@@ -33,6 +34,29 @@ export const trackEvent = (
     }
 };
 
+function trackFirstPartyEvent(eventName: string, meta: Record<string, unknown> = {}) {
+    if (typeof window === 'undefined') return;
+    try {
+        const body = JSON.stringify({
+            event_name: eventName,
+            page_path: window.location.pathname,
+            analytics_consent: hasAnalyticsConsent(),
+            meta,
+        });
+        const sent = navigator.sendBeacon?.('/api/track', new Blob([body], { type: 'application/json' })) ?? false;
+        if (!sent) {
+            fetch('/api/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body,
+                keepalive: true,
+            }).catch(() => {});
+        }
+    } catch {
+        /* analytics must never affect the visitor's task */
+    }
+}
+
 // ============================================
 // 📱 WhatsApp Events
 // ============================================
@@ -59,23 +83,7 @@ export const trackWhatsAppMessageSent = (messageType: string) => {
 export const trackToolUse = (toolId: string) => {
     // Google Analytics remains consent-gated through trackEvent.
     trackEvent('tool_use', 'tools', toolId);
-    if (typeof window === 'undefined') return;
-    try {
-        const body = JSON.stringify({
-            event_name: 'tool_use',
-            page_path: window.location.pathname,
-            analytics_consent: hasAnalyticsConsent(),
-            meta: { tool: toolId },
-        });
-        // sendBeacon survives navigation away from the tool page; fetch is the fallback.
-        if (navigator.sendBeacon) {
-            navigator.sendBeacon('/api/track', new Blob([body], { type: 'application/json' }));
-        } else {
-            fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
-        }
-    } catch {
-        /* tracking must never throw into the UI */
-    }
+    trackFirstPartyEvent('tool_use', { tool: toolId });
 };
 
 // ============================================
@@ -106,12 +114,42 @@ export const trackReviewHelpful = (reviewId: string) => {
 // 🔍 Search Events
 // ============================================
 
-export const trackSearch = (query: string) => {
-    trackEvent('search', 'engagement', query);
+export const trackSearch = (query: string, resultCount: number) => {
+    const safeQuery = sanitizeSearchQuery(query);
+    if (!safeQuery) return;
+    trackEvent('search', 'engagement', safeQuery, resultCount);
+    trackFirstPartyEvent('search', {
+        query: safeQuery,
+        result_count: Math.max(0, Math.min(100, Math.round(resultCount))),
+        outcome: resultCount > 0 ? 'results' : 'zero',
+    });
 };
 
-export const trackSearchResultClick = (query: string, resultTitle: string) => {
-    trackEvent('search_result_click', 'engagement', `${query} -> ${resultTitle}`);
+export const trackSearchResultClick = (
+    query: string,
+    result: { id: string; type: string; url: string },
+    rank: number,
+    action: 'open' | 'map' | 'submit' = 'open',
+) => {
+    const safeQuery = sanitizeSearchQuery(query);
+    if (!safeQuery) return;
+    trackEvent('search_result_click', 'engagement', `${safeQuery} -> ${result.type}`);
+    trackFirstPartyEvent('search_result_click', {
+        query: safeQuery,
+        result_id: result.id,
+        result_type: result.type,
+        result_url: result.url,
+        rank: Math.max(1, Math.min(100, Math.round(rank))),
+        action,
+    });
+};
+
+export const trackPwaEvent = (
+    action: 'shown' | 'dismissed' | 'accepted' | 'declined' | 'installed',
+    platform: 'android' | 'ios' | 'other',
+) => {
+    trackEvent(`pwa_${action}`, 'pwa', platform);
+    trackFirstPartyEvent(`pwa_${action}`, { platform });
 };
 
 // ============================================

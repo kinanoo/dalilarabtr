@@ -14,7 +14,7 @@ type SearchResultsDropdownProps = {
   results: SearchResult[];
   query: string;
   isSearching: boolean;
-  onResultClick: () => void;
+  onResultClick: (result: SearchResult, rank: number, action: 'open' | 'map') => void;
 };
 
 export default function SearchResultsDropdown({
@@ -48,7 +48,7 @@ export default function SearchResultsDropdown({
             >
               <Link
                 href={result.url}
-                onClick={onResultClick}
+                onClick={() => onResultClick(result, i + 1, 'open')}
                 role="option"
                 aria-label={`${result.title} — ${result.type}`}
                 className="flex flex-1 min-w-0 items-center gap-2.5 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
@@ -96,7 +96,7 @@ export default function SearchResultsDropdown({
                   href={result.mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={onResultClick}
+                  onClick={() => onResultClick(result, i + 1, 'map')}
                   aria-label={`افتح موقع ${result.title} على خرائط جوجل`}
                   title="افتح على خرائط جوجل"
                   className="flex items-center gap-1 px-2.5 sm:px-3 border-s border-slate-100 dark:border-slate-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors shrink-0"

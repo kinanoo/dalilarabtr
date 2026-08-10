@@ -16,6 +16,7 @@ import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import SitePulse from '@/components/admin/SitePulse';
 import SitePerformance from '@/components/admin/SitePerformance';
+import SearchNeeds from '@/components/admin/SearchNeeds';
 
 const QUICK_LINKS = [
   { title: 'المقالات', icon: FileText, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400', href: '/admin/articles' },
@@ -88,7 +89,10 @@ export default function AdminDashboard() {
       {/* 2. Site pulse — live traffic + growth. */}
       <SitePulse />
 
-      {/* 3. Real-user performance — measured on our own visitors (no CrUX, no
+      {/* What visitors ask for, especially the searches with no answer. */}
+      <SearchNeeds />
+
+      {/* 4. Real-user performance — measured on our own visitors (no CrUX, no
              consent gate), naming the exact pages to fix. */}
       <SitePerformance />
 

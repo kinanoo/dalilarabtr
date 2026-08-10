@@ -3,6 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
+import {
+  sanitizeAnalyticsMeta,
+  sanitizeAnalyticsPath,
+} from '@/lib/analyticsPrivacy';
 
 // Use service role key on server to bypass RLS
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -76,20 +80,28 @@ export async function POST(req: NextRequest) {
     } catch {
       return new NextResponse(null, { status: 204 });
     }
-    const { event_name, page_path, duration_seconds, meta, analytics_consent } = body;
+    const { analytics_consent } = body;
     const consented = analytics_consent === true;
+    const event_name = typeof body.event_name === 'string'
+      ? body.event_name.trim().slice(0, 64)
+      : '';
+    const page_path = sanitizeAnalyticsPath(body.page_path);
+    const meta = sanitizeAnalyticsMeta(body.meta);
+    const duration = typeof body.duration_seconds === 'number' && Number.isFinite(body.duration_seconds)
+      ? Math.max(0, Math.min(86_400, body.duration_seconds))
+      : null;
 
     // Without consent, retain only aggregate traffic counts. Stable browser
     // identifiers are removed server-side even if a client sends them.
     const visitor_id = consented ? (body.visitor_id || '') : '';
     const session_id = consented ? (body.session_id || '') : '';
 
-    if (!event_name) {
+    if (!event_name || !/^[a-z0-9_:-]+$/i.test(event_name)) {
       return NextResponse.json({ error: 'missing event_name' }, { status: 400 });
     }
 
     // Validate meta size to prevent DB bloat (max 2KB)
-    if (meta && JSON.stringify(meta).length > 2048) {
+    if (JSON.stringify(meta).length > 2048) {
       return NextResponse.json({ error: 'meta too large' }, { status: 400 });
     }
 
@@ -106,7 +118,9 @@ export async function POST(req: NextRequest) {
 
     // ─── Extract real IP (Cloudflare-trusted, not the spoofable XFF) ──
     const ip = getClientIp(req);
-    const ip_hash = ip !== 'unknown' ? hashIP(ip, ua) : null;
+    // Aggregate events remain useful without consent, but must not be linkable
+    // across visits. A stable one-way identifier is retained only after consent.
+    const ip_hash = consented && ip !== 'unknown' ? hashIP(ip, ua) : null;
 
     // ─── Geolocation headers (Cloudflare) ───────────────────────────
     // cf-ipcountry is always available on Cloudflare. City/region require the
@@ -127,14 +141,14 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── Merge server geo into client meta ──────────────────────────
-    const enrichedMeta = {
+    const enrichedMeta: Record<string, unknown> = {
       ...meta,
       // Server-side geo (accurate, from IP)
       ip_country: ip_country,
       ip_city: ip_city,
       ip_region: region || undefined,
       // Keep client-side country as fallback reference
-      tz_country: meta?.country,
+      tz_country: meta.country,
     };
     // Remove old 'country' key to avoid confusion
     delete enrichedMeta.country;
@@ -150,7 +164,7 @@ export async function POST(req: NextRequest) {
       page_path,
       visitor_id,
       session_id,
-      duration_seconds: duration_seconds || null,
+      duration_seconds: duration,
       ip_hash,
       ip_country,
       ip_city,

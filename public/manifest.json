@@ -37,24 +37,24 @@
             "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
         },
         {
-            "name": "الأخبار والتحديثات",
-            "short_name": "الأخبار",
-            "description": "أحدث القرارات والأخبار الرسمية",
-            "url": "/updates",
+            "name": "المناطق المحظورة",
+            "short_name": "المناطق",
+            "description": "البحث في المناطق المحظورة والمفتوحة للأجانب",
+            "url": "/zones",
             "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
         },
         {
-            "name": "أسئلة وأجوبة",
-            "short_name": "أسئلة",
-            "description": "مجتمع الأسئلة والأجوبة",
-            "url": "/qa",
+            "name": "التحقق من الكملك",
+            "short_name": "فحص الكملك",
+            "description": "التحقق من حالة بيانات الكملك",
+            "url": "/tools/kimlik-check",
             "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
         },
         {
-            "name": "الأكواد والرموز",
-            "short_name": "الأكواد",
-            "description": "أكواد ورموز الكملك والإقامة",
-            "url": "/codes",
+            "name": "صيدليات المناوبة",
+            "short_name": "الصيدليات",
+            "description": "الوصول إلى صيدليات المناوبة القريبة",
+            "url": "/tools/pharmacy",
             "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
         }
     ],

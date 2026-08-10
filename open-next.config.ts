@@ -69,7 +69,7 @@ import r2IncrementalCache from '@opennextjs/cloudflare/overrides/incremental-cac
 import { withRegionalCache } from '@opennextjs/cloudflare/overrides/incremental-cache/regional-cache';
 import doShardedTagCache from '@opennextjs/cloudflare/overrides/tag-cache/do-sharded-tag-cache';
 
-export default defineCloudflareConfig({
+const cloudflareConfig = defineCloudflareConfig({
   incrementalCache: withRegionalCache(r2IncrementalCache, { mode: 'long-lived' }),
   tagCache: doShardedTagCache({
     // 4 shards is the adapter default and far more than this site's write
@@ -79,3 +79,11 @@ export default defineCloudflareConfig({
     regionalCacheTtlSec: 5,
   }),
 });
+
+// Turbopack currently leaves unresolved external-module shims when OpenNext
+// builds this project on Windows. Webpack is deterministic on both the local
+// verification machine and Cloudflare Linux builds, so keep the adapter's
+// production build on that path until the upstream Windows issue is fixed.
+cloudflareConfig.buildCommand = 'npm run build:cloudflare';
+
+export default cloudflareConfig;

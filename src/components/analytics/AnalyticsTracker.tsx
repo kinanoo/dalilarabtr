@@ -140,7 +140,10 @@ export function AnalyticsTracker({ anonymous = false }: { anonymous?: boolean })
                 visitor_id: visitorId || undefined,
                 session_id: sessionId || undefined,
                 meta: {
-                    query: searchParams.toString() || undefined,
+                    // Query-string values can contain one-time codes or contact
+                    // details. Product analytics only needs to know that a page
+                    // was opened with parameters, never their contents.
+                    query_present: searchParams.toString().length > 0,
                     referrer: document.referrer || undefined,
                     screen: `${window.screen.width}x${window.screen.height}`,
                     device: getDeviceType(),
