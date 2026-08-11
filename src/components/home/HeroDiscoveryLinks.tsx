@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 type DiscoveryLink = {
@@ -72,6 +72,7 @@ function randomLinks() {
 export default function HeroDiscoveryLinks() {
   const [links, setLinks] = useState(() => linksFromHrefs(DEFAULT_HREFS));
   const [ready, setReady] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let selected: DiscoveryLink[] = [];
@@ -95,11 +96,18 @@ export default function HeroDiscoveryLinks() {
       }
     }
 
+    let alignFrame = 0;
     const revealFrame = requestAnimationFrame(() => {
       setLinks(selected);
-      setReady(true);
+      alignFrame = requestAnimationFrame(() => {
+        if (scrollerRef.current) scrollerRef.current.scrollLeft = 0;
+        setReady(true);
+      });
     });
-    return () => cancelAnimationFrame(revealFrame);
+    return () => {
+      cancelAnimationFrame(revealFrame);
+      cancelAnimationFrame(alignFrame);
+    };
   }, []);
 
   return (
@@ -107,7 +115,10 @@ export default function HeroDiscoveryLinks() {
       aria-label="استكشف أقسام وأدوات الدليل"
       className={`mx-auto w-full transition-opacity duration-300 ${ready ? 'opacity-100' : 'opacity-0'}`}
     >
-      <div className="flex min-h-10 snap-x snap-mandatory gap-2 overflow-x-auto px-0.5 pb-1 scrollbar-hide sm:flex-wrap sm:justify-center sm:overflow-visible">
+      <div
+        ref={scrollerRef}
+        className="flex min-h-10 snap-x snap-mandatory gap-2 overflow-x-auto px-0.5 pb-1 scrollbar-hide sm:flex-wrap sm:justify-center sm:overflow-visible"
+      >
         {links.map((item, index) => (
           <Link
             key={item.href}
