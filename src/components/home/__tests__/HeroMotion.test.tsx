@@ -10,6 +10,12 @@ const STORED_LINKS = [
   '/e-devlet-services',
   '/tools/currency',
   '/places',
+  '/updates',
+  '/articles',
+  '/guides',
+  '/forms',
+  '/services/category/doctors',
+  '/services/category/translators',
 ];
 
 describe('homepage hero motion', () => {
@@ -28,7 +34,7 @@ describe('homepage hero motion', () => {
   });
 
   it('reuses the same discovery links throughout the browser session', async () => {
-    sessionStorage.setItem('daleel.hero-discovery-links.v1', JSON.stringify(STORED_LINKS));
+    sessionStorage.setItem('daleel.hero-discovery-links.v2', JSON.stringify(STORED_LINKS));
     const firstRender = render(<HeroDiscoveryLinks />);
 
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
@@ -44,7 +50,7 @@ describe('homepage hero motion', () => {
 
   it('drops destinations that are already available in the primary actions', async () => {
     sessionStorage.setItem(
-      'daleel.hero-discovery-links.v1',
+      'daleel.hero-discovery-links.v2',
       JSON.stringify(['/consultant', '/services', ...STORED_LINKS]),
     );
 
@@ -52,8 +58,22 @@ describe('homepage hero motion', () => {
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
 
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
-    expect(hrefs).toHaveLength(6);
+    expect(hrefs).toHaveLength(12);
     expect(hrefs).not.toContain('/consultant');
     expect(hrefs).not.toContain('/services');
+  });
+
+  it('presents twelve discovery destinations as text links without boxes', async () => {
+    sessionStorage.setItem('daleel.hero-discovery-links.v2', JSON.stringify(STORED_LINKS));
+    render(<HeroDiscoveryLinks />);
+
+    await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
+    const links = screen.getAllByRole('link');
+
+    expect(links).toHaveLength(12);
+    links.forEach((link) => {
+      const classes = link.className.split(/\s+/);
+      expect(classes.some((className) => /^(?:bg-|border(?:-|$)|rounded-)/.test(className))).toBe(false);
+    });
   });
 });

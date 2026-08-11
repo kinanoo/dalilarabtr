@@ -3,48 +3,75 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+type DiscoveryKind = 'tool' | 'guide' | 'content' | 'service' | 'place';
+
 type DiscoveryLink = {
   title: string;
   href: string;
+  kind: DiscoveryKind;
 };
 
 const DISCOVERY_LINKS: DiscoveryLink[] = [
-  { title: 'فحص الكملك', href: '/tools/kimlik-check' },
-  { title: 'الأكواد الأمنية', href: '/codes' },
-  { title: 'المناطق المحظورة', href: '/zones' },
-  { title: 'أسعار الصرف', href: '/tools/currency' },
-  { title: 'الصيدليات المناوبة', href: '/tools/pharmacy' },
-  { title: 'حاسبة الراتب', href: '/tools/salary-calculator' },
-  { title: 'تعويض نهاية الخدمة', href: '/tools/severance-calculator' },
-  { title: 'زيادة الإيجار', href: '/tools/rent-increase-calculator' },
-  { title: 'حاسبة أيام الإقامة', href: '/tools/residence-calculator' },
-  { title: 'تكاليف الإقامة', href: '/calculator' },
-  { title: 'خدمات الحكومة الإلكترونية', href: '/e-devlet-services' },
-  { title: 'روابط حكومية', href: '/important-links' },
-  { title: 'القنصليات', href: '/consulates' },
-  { title: 'أين يقع؟', href: '/places' },
-  { title: 'أطباء', href: '/services/category/doctors' },
-  { title: 'محامون', href: '/services/category/lawyers' },
-  { title: 'مترجمون', href: '/services/category/translators' },
-  { title: 'الإقامات', href: '/residence' },
-  { title: 'العمل في تركيا', href: '/work' },
-  { title: 'الصحة والتأمين', href: '/health' },
-  { title: 'التعليم والجامعات', href: '/education' },
-  { title: 'السكن والإيجار', href: '/housing' },
-  { title: 'النماذج الجاهزة', href: '/forms' },
-  { title: 'دليل المدن', href: '/city' },
-  { title: 'الأسئلة الشائعة', href: '/faq' },
-  { title: 'الدليل الشامل', href: '/directory' },
+  { title: 'فحص الكملك', href: '/tools/kimlik-check', kind: 'tool' },
+  { title: 'معاني الأكواد الأمنية', href: '/codes', kind: 'tool' },
+  { title: 'المناطق المحظورة', href: '/zones', kind: 'tool' },
+  { title: 'أسعار الصرف اليوم', href: '/tools/currency', kind: 'tool' },
+  { title: 'الصيدليات المناوبة', href: '/tools/pharmacy', kind: 'tool' },
+  { title: 'احسب راتبك الصافي', href: '/tools/salary-calculator', kind: 'tool' },
+  { title: 'احسب تعويض نهاية الخدمة', href: '/tools/severance-calculator', kind: 'tool' },
+  { title: 'احسب زيادة الإيجار', href: '/tools/rent-increase-calculator', kind: 'tool' },
+  { title: 'احسب أيام الإقامة', href: '/tools/residence-calculator', kind: 'tool' },
+  { title: 'تكاليف الإقامة', href: '/calculator', kind: 'tool' },
+  { title: 'خدمات الحكومة الإلكترونية', href: '/e-devlet-services', kind: 'tool' },
+  { title: 'نماذج جاهزة للتحميل', href: '/forms', kind: 'tool' },
+
+  { title: 'دليل الإقامات في تركيا', href: '/residence', kind: 'guide' },
+  { title: 'العمل وإذن العمل', href: '/work', kind: 'guide' },
+  { title: 'الصحة والتأمين والمشافي', href: '/health', kind: 'guide' },
+  { title: 'التعليم والجامعات', href: '/education', kind: 'guide' },
+  { title: 'السكن والإيجار', href: '/housing', kind: 'guide' },
+  { title: 'كل المعاملات حسب الموضوع', href: '/directory', kind: 'guide' },
+  { title: 'شروحات مصورة خطوة بخطوة', href: '/guides', kind: 'guide' },
+  { title: 'الأسئلة الأكثر تكراراً', href: '/faq', kind: 'guide' },
+  { title: 'أسئلة الناس وإجاباتها', href: '/qa', kind: 'guide' },
+
+  { title: 'آخر القرارات في تركيا', href: '/updates', kind: 'content' },
+  { title: 'أحدث المقالات والأدلة', href: '/articles', kind: 'content' },
+  { title: 'نقل الكملك بين الولايات', href: '/article/syrian-kimlik-transfer', kind: 'content' },
+  { title: 'تحويل الإقامة إلى إذن عمل', href: '/article/tourist-to-work-permit-2026', kind: 'content' },
+  { title: 'تسجيل العنوان والمناطق المغلقة', href: '/article/address-registration-closed', kind: 'content' },
+  { title: 'حقوق المحتجز في تركيا', href: '/article/detention-center-rights', kind: 'content' },
+  { title: 'الجامعات الخاصة في تركيا', href: '/article/private-universities-turkey-2026', kind: 'content' },
+  { title: 'فحص السيارة في تركيا', href: '/article/auto-tuvturk-inspection', kind: 'content' },
+  { title: 'تأمين الزلازل الإلزامي', href: '/article/dask-earthquake-insurance', kind: 'content' },
+  { title: 'حلول تجاوز مدة الإقامة', href: '/article/overstay-solutions', kind: 'content' },
+
+  { title: 'أطباء يتحدثون العربية', href: '/services/category/doctors', kind: 'service' },
+  { title: 'محامون يتحدثون العربية', href: '/services/category/lawyers', kind: 'service' },
+  { title: 'مترجمون في تركيا', href: '/services/category/translators', kind: 'service' },
+
+  { title: 'السفارات والقنصليات', href: '/consulates', kind: 'place' },
+  { title: 'دوائر ومؤسسات قريبة', href: '/places', kind: 'place' },
+  { title: 'دليل المدن التركية', href: '/city', kind: 'place' },
+  { title: 'روابط حكومية مهمة', href: '/important-links', kind: 'place' },
+  { title: 'مصادر المعلومات الرسمية', href: '/sources', kind: 'place' },
 ];
 
-const STORAGE_KEY = 'daleel.hero-discovery-links.v1';
-const VISIBLE_LINKS = 6;
+const STORAGE_KEY = 'daleel.hero-discovery-links.v2';
+const VISIBLE_LINKS = 12;
+const DISCOVERY_KINDS: DiscoveryKind[] = ['tool', 'guide', 'content', 'service', 'place'];
 const DEFAULT_HREFS = [
   '/codes',
   '/tools/pharmacy',
   '/e-devlet-services',
-  '/tools/currency',
+  '/article/syrian-kimlik-transfer',
+  '/updates',
+  '/guides',
+  '/services/category/doctors',
+  '/services/category/translators',
+  '/consulates',
   '/places',
+  '/forms',
   '/tools/kimlik-check',
 ];
 
@@ -56,15 +83,24 @@ function linksFromHrefs(hrefs: string[]) {
     .slice(0, VISIBLE_LINKS);
 }
 
-function randomLinks() {
-  const shuffled = [...DISCOVERY_LINKS];
+function shuffle<T>(items: T[]) {
+  const shuffled = [...items];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
     const randomBuffer = new Uint32Array(1);
     crypto.getRandomValues(randomBuffer);
     const target = randomBuffer[0] % (index + 1);
     [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
   }
-  return shuffled.slice(0, VISIBLE_LINKS);
+  return shuffled;
+}
+
+function randomLinks() {
+  const requiredKinds = DISCOVERY_KINDS.map(
+    (kind) => shuffle(DISCOVERY_LINKS.filter((item) => item.kind === kind))[0],
+  );
+  const requiredHrefs = new Set(requiredKinds.map((item) => item.href));
+  const remaining = shuffle(DISCOVERY_LINKS.filter((item) => !requiredHrefs.has(item.href)));
+  return shuffle([...requiredKinds, ...remaining.slice(0, VISIBLE_LINKS - requiredKinds.length)]);
 }
 
 export default function HeroDiscoveryLinks() {
@@ -80,7 +116,7 @@ export default function HeroDiscoveryLinks() {
       try {
         sessionStorage.removeItem(STORAGE_KEY);
       } catch {
-        // Ignore storage restrictions and use an in-memory selection instead.
+        // Storage can be unavailable in strict privacy modes.
       }
     }
 
@@ -89,7 +125,7 @@ export default function HeroDiscoveryLinks() {
       try {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selected.map((item) => item.href)));
       } catch {
-        // Discovery links still work when browser storage is unavailable.
+        // The discovery links still work with an in-memory selection.
       }
     }
 
@@ -105,18 +141,19 @@ export default function HeroDiscoveryLinks() {
       aria-label="استكشف أقسام وأدوات الدليل"
       className={`mx-auto w-full transition-opacity duration-300 ${ready ? 'opacity-100' : 'opacity-0'}`}
     >
-      <div className="grid grid-cols-2 gap-2 max-[340px]:grid-cols-1 md:grid-cols-3 lg:grid-cols-6">
-        {links.map((item, index) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            prefetch={false}
-            className={`group relative flex h-12 w-full items-center justify-center overflow-hidden rounded-lg border px-2.5 py-1.5 text-center text-xs font-black leading-4 shadow-sm transition duration-200 after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:rounded-full after:transition-transform after:duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(22,101,52,0.13)] hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:after:scale-x-100 active:translate-y-0 active:scale-[0.97] active:after:scale-x-100 ${index === 0 ? 'border-amber-300 bg-amber-50 text-amber-950 after:bg-amber-700 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/45 dark:text-amber-100 dark:after:bg-amber-400' : 'border-slate-200 bg-white/90 text-slate-700 after:bg-emerald-800 hover:border-emerald-300 hover:text-emerald-900 dark:border-slate-700 dark:bg-slate-900/85 dark:text-slate-100 dark:after:bg-emerald-400 dark:hover:border-emerald-700 dark:hover:text-emerald-200'}`}
-          >
-            {item.title}
-          </Link>
+      <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 sm:gap-x-7 sm:gap-y-1.5">
+        {links.map((item) => (
+          <li key={item.href} className="min-w-0">
+            <Link
+              href={item.href}
+              prefetch={false}
+              className="group relative inline-flex min-h-9 max-w-full items-center py-1 text-center text-sm font-bold leading-5 text-slate-700 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-right after:scale-x-0 after:bg-emerald-700 after:transition-transform after:duration-300 hover:text-emerald-800 hover:after:scale-x-100 focus-visible:text-emerald-800 focus-visible:outline-none focus-visible:after:scale-x-100 active:scale-[0.97] dark:text-slate-200 dark:after:bg-emerald-400 dark:hover:text-emerald-300 dark:focus-visible:text-emerald-300"
+            >
+              {item.title}
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </nav>
   );
 }
