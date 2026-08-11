@@ -24,11 +24,11 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
                     <div className="mt-2" />
 
-                    <p className="text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-2 leading-relaxed font-medium">
+                    <p className="text-base md:text-lg text-slate-700 dark:text-slate-200 max-w-2xl mx-auto mb-2 leading-relaxed font-semibold">
                         معلومات عملية ومصادر رسمية حول{' '}
-                        <span className="text-emerald-700 dark:text-emerald-300 font-bold">الإقامة والكملك</span>،{' '}
-                        <span className="text-sky-700 dark:text-cyan-300 font-bold">العمل والتعليم</span>،{' '}
-                        <span className="text-orange-700 dark:text-amber-300 font-bold">القانون والخدمات</span>.
+                        <span className="font-black">الإقامة والكملك</span>،{' '}
+                        <span className="font-black">العمل والتعليم</span>،{' '}
+                        <span className="font-black">القانون والخدمات</span>.
                     </p>
 
                     <div className="mt-4 max-w-4xl mx-auto relative z-[25]">

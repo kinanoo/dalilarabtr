@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 type DiscoveryLink = {
@@ -9,7 +9,6 @@ type DiscoveryLink = {
 };
 
 const DISCOVERY_LINKS: DiscoveryLink[] = [
-  { title: 'دليل المواقف', href: '/consultant' },
   { title: 'فحص الكملك', href: '/tools/kimlik-check' },
   { title: 'الأكواد الأمنية', href: '/codes' },
   { title: 'المناطق المحظورة', href: '/zones' },
@@ -24,7 +23,6 @@ const DISCOVERY_LINKS: DiscoveryLink[] = [
   { title: 'روابط حكومية', href: '/important-links' },
   { title: 'القنصليات', href: '/consulates' },
   { title: 'أين يقع؟', href: '/places' },
-  { title: 'مقدمو الخدمات', href: '/services' },
   { title: 'أطباء', href: '/services/category/doctors' },
   { title: 'محامون', href: '/services/category/lawyers' },
   { title: 'مترجمون', href: '/services/category/translators' },
@@ -44,10 +42,10 @@ const VISIBLE_LINKS = 6;
 const DEFAULT_HREFS = [
   '/codes',
   '/tools/pharmacy',
-  '/services',
   '/e-devlet-services',
   '/tools/currency',
   '/places',
+  '/tools/kimlik-check',
 ];
 
 function linksFromHrefs(hrefs: string[]) {
@@ -72,7 +70,6 @@ function randomLinks() {
 export default function HeroDiscoveryLinks() {
   const [links, setLinks] = useState(() => linksFromHrefs(DEFAULT_HREFS));
   const [ready, setReady] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let selected: DiscoveryLink[] = [];
@@ -96,18 +93,11 @@ export default function HeroDiscoveryLinks() {
       }
     }
 
-    let alignFrame = 0;
     const revealFrame = requestAnimationFrame(() => {
       setLinks(selected);
-      alignFrame = requestAnimationFrame(() => {
-        if (scrollerRef.current) scrollerRef.current.scrollLeft = 0;
-        setReady(true);
-      });
+      setReady(true);
     });
-    return () => {
-      cancelAnimationFrame(revealFrame);
-      cancelAnimationFrame(alignFrame);
-    };
+    return () => cancelAnimationFrame(revealFrame);
   }, []);
 
   return (
@@ -115,16 +105,13 @@ export default function HeroDiscoveryLinks() {
       aria-label="استكشف أقسام وأدوات الدليل"
       className={`mx-auto w-full transition-opacity duration-300 ${ready ? 'opacity-100' : 'opacity-0'}`}
     >
-      <div
-        ref={scrollerRef}
-        className="flex min-h-10 snap-x snap-mandatory gap-2 overflow-x-auto px-0.5 pb-1 scrollbar-hide sm:flex-wrap sm:justify-center sm:overflow-visible"
-      >
+      <div className="grid grid-cols-2 gap-2 max-[340px]:grid-cols-1 md:grid-cols-3 lg:grid-cols-6">
         {links.map((item, index) => (
           <Link
             key={item.href}
             href={item.href}
             prefetch={false}
-            className={`group relative flex min-h-10 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border px-3.5 py-2 text-xs font-black shadow-sm transition duration-200 after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:rounded-full after:transition-transform after:duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(22,101,52,0.16)] hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:after:scale-x-100 active:translate-y-0 active:scale-[0.97] active:after:scale-x-100 ${index === 0 ? 'border-emerald-700 bg-emerald-800 text-white after:bg-amber-400 dark:border-emerald-500 dark:bg-emerald-900' : 'border-slate-200 bg-white/90 text-slate-700 after:bg-emerald-800 hover:border-emerald-300 hover:text-emerald-900 dark:border-slate-700 dark:bg-slate-900/85 dark:text-slate-100 dark:after:bg-emerald-400 dark:hover:border-emerald-700 dark:hover:text-emerald-200'}`}
+            className={`group relative flex h-12 w-full items-center justify-center overflow-hidden rounded-lg border px-2.5 py-1.5 text-center text-xs font-black leading-4 shadow-sm transition duration-200 after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-right after:scale-x-0 after:rounded-full after:transition-transform after:duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(22,101,52,0.13)] hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:after:scale-x-100 active:translate-y-0 active:scale-[0.97] active:after:scale-x-100 ${index === 0 ? 'border-amber-300 bg-amber-50 text-amber-950 after:bg-amber-700 hover:border-amber-400 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/45 dark:text-amber-100 dark:after:bg-amber-400' : 'border-slate-200 bg-white/90 text-slate-700 after:bg-emerald-800 hover:border-emerald-300 hover:text-emerald-900 dark:border-slate-700 dark:bg-slate-900/85 dark:text-slate-100 dark:after:bg-emerald-400 dark:hover:border-emerald-700 dark:hover:text-emerald-200'}`}
           >
             {item.title}
           </Link>

@@ -32,7 +32,7 @@ export default function HomePrimaryActions() {
           className="flex min-h-12 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white/85 px-3 py-3 text-sm font-bold text-slate-800 transition hover:-translate-y-0.5 hover:border-cyan-400 hover:text-cyan-800 active:translate-y-0 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-cyan-600 dark:hover:text-cyan-300"
         >
           <BriefcaseBusiness size={18} aria-hidden="true" />
-          مقدمو الخدمات
+          ابحث عن خدمة
         </Link>
       </div>
 

@@ -22,7 +22,9 @@ export default defineConfig([
     },
     globalIgnores([
         '.next/**',
+        '.next.stale*/**',
         '.open-next/**',
+        '.open-next.stale*/**',
         'open-next/**',
         'out/**',
         'build/**',

@@ -6,7 +6,6 @@ const PREFIX = 'دليلك ';
 const EMPHASIS = 'الشامل';
 const SUFFIX = ' في تركيا';
 const FULL_TITLE = `${PREFIX}${EMPHASIS}${SUFFIX}`;
-const INTRO_STORAGE_KEY = 'daleel.hero-title-intro.v1';
 
 function titleParts(text: string) {
   const prefix = text.slice(0, Math.min(text.length, PREFIX.length));
@@ -42,26 +41,11 @@ export default function AnimatedHeroTitle() {
         return;
       }
 
-      let introWasSeen = false;
-      try {
-        introWasSeen = sessionStorage.getItem(INTRO_STORAGE_KEY) === '1';
-      } catch {
-        introWasSeen = false;
-      }
-      if (introWasSeen) {
-        setVisibleText(FULL_TITLE);
-      } else {
-        const characters = Array.from(FULL_TITLE);
-        await sleep(260);
-        for (let index = 1; index <= characters.length && !cancelled; index += 1) {
-          setVisibleText(characters.slice(0, index).join(''));
-          await sleep(index === PREFIX.length ? 105 : 58);
-        }
-        try {
-          sessionStorage.setItem(INTRO_STORAGE_KEY, '1');
-        } catch {
-          // The animation still works when browser storage is unavailable.
-        }
+      const characters = Array.from(FULL_TITLE);
+      await sleep(160);
+      for (let index = 1; index <= characters.length && !cancelled; index += 1) {
+        setVisibleText(characters.slice(0, index).join(''));
+        await sleep(index === PREFIX.length ? 105 : 58);
       }
 
       if (cancelled) return;

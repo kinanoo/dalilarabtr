@@ -61,7 +61,7 @@ export default async function CategoryPage(props: {
   let initialArticles: any[] = [];
   if (supabase && categoryName) {
     try {
-      let query = supabase
+      const query = supabase
         .from('articles')
         .select('id, slug, title, intro, last_update, category, image, tags')
         .eq('category', categoryName)

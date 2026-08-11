@@ -6,7 +6,7 @@ import HeroDiscoveryLinks from '@/components/home/HeroDiscoveryLinks';
 const STORED_LINKS = [
   '/codes',
   '/tools/pharmacy',
-  '/services',
+  '/tools/kimlik-check',
   '/e-devlet-services',
   '/tools/currency',
   '/places',
@@ -40,5 +40,20 @@ describe('homepage hero motion', () => {
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
 
     expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(STORED_LINKS);
+  });
+
+  it('drops destinations that are already available in the primary actions', async () => {
+    sessionStorage.setItem(
+      'daleel.hero-discovery-links.v1',
+      JSON.stringify(['/consultant', '/services', ...STORED_LINKS]),
+    );
+
+    render(<HeroDiscoveryLinks />);
+    await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
+
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
+    expect(hrefs).toHaveLength(6);
+    expect(hrefs).not.toContain('/consultant');
+    expect(hrefs).not.toContain('/services');
   });
 });
