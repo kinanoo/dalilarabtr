@@ -44,6 +44,7 @@ const ALLOWED_PATHS: RegExp[] = [
     /^\/tag\/[a-zA-Z0-9_\-%]+$/,
     /^\/updates$/,
     /^\/updates\/[a-zA-Z0-9_\-%]+$/,
+    /^\/faq$/,
 ];
 
 const MAX_PATHS = 20;
