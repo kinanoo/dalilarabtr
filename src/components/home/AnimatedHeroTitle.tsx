@@ -91,7 +91,14 @@ export default function AnimatedHeroTitle() {
     >
       <span className="sr-only">{FULL_TITLE}</span>
       <span className="relative inline-grid max-w-full" aria-hidden="true" dir="rtl">
-        <span className="invisible col-start-1 row-start-1 whitespace-nowrap">{FULL_TITLE}</span>
+        <span className="invisible col-start-1 row-start-1 whitespace-nowrap">
+          {PREFIX}
+          <span className="inline-block align-baseline" style={{ fontSize: 'calc(1em + 2px)' }}>
+            {EMPHASIS}
+          </span>
+          {SUFFIX}
+          <span className="ms-1 inline-block h-[0.9em] w-0.5 translate-y-[0.08em] align-baseline" />
+        </span>
         <span className="col-start-1 row-start-1 whitespace-nowrap text-right">
           {parts.prefix}
           <span className="relative inline-grid align-baseline">
