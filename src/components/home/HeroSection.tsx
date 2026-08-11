@@ -1,4 +1,6 @@
 import { ReactNode } from 'react';
+import AnimatedHeroTitle from '@/components/home/AnimatedHeroTitle';
+import HeroDiscoveryLinks from '@/components/home/HeroDiscoveryLinks';
 
 /**
  * Homepage introduction. It names the audience and the practical value in the
@@ -18,15 +20,7 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
 
             <div className="max-w-4xl mx-auto text-center relative z-[25]">
                 <div>
-                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-black mb-0 leading-[1.4] text-slate-900 dark:text-white pt-2">
-                        دليلك{' '}
-                        <span
-                            className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 via-teal-500 to-cyan-600 dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300"
-                            style={{ fontSize: 'calc(1em + 2px)' }}
-                        >
-                            الشامل والموثوق
-                        </span>
-                    </h1>
+                    <AnimatedHeroTitle />
 
                     <div className="mt-2" />
 
@@ -37,7 +31,11 @@ export default function HeroSection({ children }: { children?: ReactNode }) {
                         <span className="text-orange-700 dark:text-amber-300 font-bold">القانون والخدمات</span>.
                     </p>
 
-                    <div className="mt-5 max-w-3xl mx-auto relative z-[25]">
+                    <div className="mt-4 max-w-4xl mx-auto relative z-[25]">
+                        <HeroDiscoveryLinks />
+                    </div>
+
+                    <div className="mt-3 max-w-3xl mx-auto relative z-[25]">
                         {children}
                     </div>
                 </div>
