@@ -95,8 +95,8 @@ export default function AnimatedHeroTitle() {
         aria-hidden="true"
         dir="rtl"
       >
-        <span className="absolute inset-0 flex items-baseline justify-start whitespace-nowrap text-right">
-          {parts.prefix}
+        <span className="absolute inset-0 flex items-baseline justify-start whitespace-pre text-right">
+          <span>{parts.prefix}</span>
           <span className="relative inline-block align-baseline">
             <span
               className="bg-gradient-to-l from-emerald-600 via-teal-500 to-cyan-600 bg-clip-text text-transparent dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300"
@@ -109,7 +109,7 @@ export default function AnimatedHeroTitle() {
               aria-hidden="true"
             />
           </span>
-          {parts.suffix}
+          <span>{parts.suffix}</span>
           <span
             className={`ms-1 inline-block h-[0.9em] w-0.5 translate-y-[0.08em] bg-emerald-700 align-baseline transition-opacity dark:bg-emerald-300 ${isTyping ? 'animate-pulse opacity-100' : 'opacity-0'}`}
             aria-hidden="true"
