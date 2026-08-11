@@ -7,9 +7,11 @@ import {
     cityVariantsForDirectory,
     directorySearchVariants,
     sanitizeDirectorySearch,
+    type DirectoryProvider,
 } from '@/lib/serviceDirectory';
 import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 import logger from '@/lib/logger';
+import { isPublicServiceProvider } from '@/lib/serviceProviderQuality';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -63,7 +65,9 @@ export async function GET(request: NextRequest) {
         let query = supabase
             .from('service_providers')
             .select(SELECT_FIELDS, { count: 'exact' })
-            .eq('status', 'approved');
+            .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '');
 
         const cityVariants = cityVariantsForDirectory(city);
         if (cityVariants.length > 0) query = query.in('city', cityVariants);
@@ -114,7 +118,7 @@ export async function GET(request: NextRequest) {
         const total = count || 0;
         return NextResponse.json(
             {
-                rows: data || [],
+                rows: ((data || []) as unknown as DirectoryProvider[]).filter(isPublicServiceProvider),
                 total,
                 page,
                 limit,

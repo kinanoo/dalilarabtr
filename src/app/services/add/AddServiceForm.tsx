@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { Loader2, Send, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { TR_CITIES } from '@/lib/turkishCities';
+import {
+    SERVICE_DESCRIPTION_MIN_WORDS,
+    countServiceDescriptionWords,
+    isValidExplicitWhatsApp,
+} from '@/lib/serviceProviderQuality';
 
 const FIELD = 'w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all';
 const LABEL = 'block font-bold text-sm mb-1.5 text-slate-700 dark:text-slate-300';
@@ -15,8 +20,9 @@ export default function AddServiceForm() {
     const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState({
         name: '', profession: '', category: 'خدمات عامة', city: '', district: '',
-        phone: '', description: '', website: '', // `website` = honeypot (hidden)
+        whatsapp: '', description: '', website: '', // `website` = honeypot (hidden)
     });
+    const descriptionWords = countServiceDescriptionWords(form.description);
 
     const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
         setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -24,6 +30,14 @@ export default function AddServiceForm() {
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        if (!isValidExplicitWhatsApp(form.whatsapp)) {
+            setError('أدخل رقم واتساب صحيحاً مع رمز الدولة، مثال: +905551234567.');
+            return;
+        }
+        if (descriptionWords < SERVICE_DESCRIPTION_MIN_WORDS) {
+            setError(`اكتب وصفاً حقيقياً من ${SERVICE_DESCRIPTION_MIN_WORDS} كلمة على الأقل يشرح الخدمة والخبرة ونطاق العمل.`);
+            return;
+        }
         setLoading(true);
         try {
             const res = await fetch('/api/services/submit', {
@@ -31,8 +45,11 @@ export default function AddServiceForm() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),
             });
+            const result = await res.json().catch(() => ({}));
             if (res.ok) { setDone(true); return; }
             if (res.status === 429) setError('حاولت كثيراً خلال وقت قصير — انتظر قليلاً ثم أعد المحاولة.');
+            else if (result.error === 'invalid_whatsapp') setError('رقم واتساب غير صحيح. أضف رمز الدولة وتأكد من الرقم.');
+            else if (result.error === 'weak_description') setError(`الوصف يجب أن يكون أصلياً ومفيداً وألا يقل عن ${SERVICE_DESCRIPTION_MIN_WORDS} كلمة.`);
             else setError('تعذّر إرسال الطلب. تأكّد من تعبئة الحقول المطلوبة وحاول مجدداً.');
         } catch {
             setError('تعذّر الاتصال. تحقّق من الإنترنت وحاول مجدداً.');
@@ -55,7 +72,7 @@ export default function AddServiceForm() {
                     <Link href="/services" className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition-colors">
                         تصفّح دليل الخدمات
                     </Link>
-                    <button onClick={() => { setForm({ name: '', profession: '', category: 'خدمات عامة', city: '', district: '', phone: '', description: '', website: '' }); setDone(false); }} className="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <button onClick={() => { setForm({ name: '', profession: '', category: 'خدمات عامة', city: '', district: '', whatsapp: '', description: '', website: '' }); setDone(false); }} className="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         إضافة خدمة أخرى
                     </button>
                 </div>
@@ -94,8 +111,9 @@ export default function AddServiceForm() {
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="f-phone" className={LABEL}>رقم الواتساب / الجوال *</label>
-                    <input id="f-phone" name="phone" type="tel" inputMode="tel" required value={form.phone} onChange={set('phone')} placeholder="مثال: 905551234567" className={`${FIELD} ltr text-left`} />
+                    <label htmlFor="f-whatsapp" className={LABEL}>رقم واتساب الفعّال *</label>
+                    <input id="f-whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" required value={form.whatsapp} onChange={set('whatsapp')} placeholder="مثال: +905551234567" className={`${FIELD} ltr text-left`} aria-describedby="whatsapp-help" />
+                    <p id="whatsapp-help" className="mt-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">لن تُنشر الخدمة قبل التأكد من أن الرقم مخصص لواتساب.</p>
                 </div>
             </div>
 
@@ -114,8 +132,14 @@ export default function AddServiceForm() {
             </div>
 
             <div>
-                <label htmlFor="f-desc" className={LABEL}>نبذة عن خدمتك *</label>
-                <textarea id="f-desc" name="description" required rows={5} value={form.description} onChange={set('description')} placeholder="اكتب تفاصيل خدماتك وخبرتك وأوقات العمل، وما يميّزك…" className={`${FIELD} resize-none`} />
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                    <label htmlFor="f-desc" className={`${LABEL} mb-0`}>وصف مهني حقيقي *</label>
+                    <span className={`text-xs font-black tabular-nums ${descriptionWords >= SERVICE_DESCRIPTION_MIN_WORDS ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                        {descriptionWords} / {SERVICE_DESCRIPTION_MIN_WORDS} كلمة
+                    </span>
+                </div>
+                <textarea id="f-desc" name="description" required rows={7} value={form.description} onChange={set('description')} placeholder="اشرح الخدمات التي تقدمها، خبرتك، المدن أو المناطق التي تغطيها، أوقات العمل، وكيف يستفيد العميل منك. لا تكتب جملة عامة أو إعلاناً مكرراً." className={`${FIELD} resize-y`} aria-describedby="description-help" />
+                <p id="description-help" className="mt-1.5 text-xs font-bold leading-5 text-slate-500 dark:text-slate-400">الحد الأدنى {SERVICE_DESCRIPTION_MIN_WORDS} كلمة. الوصف المفيد يساعد العميل وغوغل على فهم خدمتك.</p>
             </div>
 
             {/* Honeypot — hidden from humans, catches bots. Not `type=hidden` so

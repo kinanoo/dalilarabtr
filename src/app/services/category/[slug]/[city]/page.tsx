@@ -31,6 +31,8 @@ async function fetchCategoryProviders(cat: ServiceCategory): Promise<Row[]> {
             .from('service_providers')
             .select('id, slug, name, profession, category, description, city, phone, whatsapp, image, is_verified, verification_level, is_featured, rating, review_count')
             .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '')
             .in('category', cat.variants)
             .order('is_verified', { ascending: false })
             .order('rating', { ascending: false });
@@ -49,6 +51,8 @@ async function fetchCityProviders(city: TRCity): Promise<Row[]> {
             .from('service_providers')
             .select('id, slug, name, profession, category, description, city, phone, whatsapp, image, is_verified, verification_level, is_featured, rating, review_count')
             .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '')
             .in('city', cityVariants)
             .order('is_verified', { ascending: false })
             .order('rating', { ascending: false })

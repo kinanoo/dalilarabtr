@@ -11,6 +11,12 @@ import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import logger from '@/lib/logger';
+import {
+    SERVICE_DESCRIPTION_MIN_WORDS,
+    countServiceDescriptionWords,
+    isValidExplicitWhatsApp,
+    normalizeWhatsAppNumber,
+} from '@/lib/serviceProviderQuality';
 
 // Single source of truth for professions (mirrors the public form + landings).
 const CATEGORIES = SERVICE_CATEGORIES.map((c) => ({ value: c.name, label: c.labelAr }));
@@ -26,12 +32,13 @@ export default function AddServicePage() {
         category: 'خدمات عامة',
         city: 'إسطنبول',
         district: '',
-        phone: '',
+        whatsapp: '',
         description: '',
         image: '',
         lat: 0,
         lng: 0,
     });
+    const descriptionWords = countServiceDescriptionWords(formData.description);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,6 +47,14 @@ export default function AddServicePage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!supabase) return;
+        if (!isValidExplicitWhatsApp(formData.whatsapp)) {
+            toast.error('أدخل رقم واتساب صحيحاً مع رمز الدولة');
+            return;
+        }
+        if (descriptionWords < SERVICE_DESCRIPTION_MIN_WORDS) {
+            toast.error(`الوصف يجب ألا يقل عن ${SERVICE_DESCRIPTION_MIN_WORDS} كلمة`);
+            return;
+        }
         setLoading(true);
 
         const user = await getClientUser();
@@ -60,7 +75,8 @@ export default function AddServicePage() {
                         category: formData.category,
                         city: formData.city,
                         district: formData.district,
-                        phone: formData.phone,
+                        phone: null,
+                        whatsapp: `+${normalizeWhatsAppNumber(formData.whatsapp)}`,
                         description: formData.description,
                         image: formData.image,
                         lat: formData.lat || null,
@@ -173,11 +189,11 @@ export default function AddServicePage() {
                             <label className="block font-bold text-sm mb-2 text-slate-700 dark:text-slate-300">رقم التواصل (واتساب) *</label>
                             <input
                                 type="tel"
-                                name="phone"
+                                name="whatsapp"
                                 required
-                                value={formData.phone}
+                                value={formData.whatsapp}
                                 onChange={handleChange}
-                                placeholder="مثال: 905551234567"
+                                placeholder="مثال: +905551234567"
                                 className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all ltr text-left"
                             />
                         </div>
@@ -227,15 +243,20 @@ export default function AddServicePage() {
 
                     {/* Bio */}
                     <div>
-                        <label className="block font-bold text-sm mb-2 text-slate-700 dark:text-slate-300">نبذة عن الخدمة *</label>
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                            <label className="block font-bold text-sm text-slate-700 dark:text-slate-300">وصف مهني حقيقي *</label>
+                            <span className={`text-xs font-black tabular-nums ${descriptionWords >= SERVICE_DESCRIPTION_MIN_WORDS ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                {descriptionWords} / {SERVICE_DESCRIPTION_MIN_WORDS} كلمة
+                            </span>
+                        </div>
                         <textarea
                             name="description"
                             required
-                            rows={5}
+                            rows={7}
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="اكتب هنا تفاصيل خدماتك، خبراتك، وأوقات العمل..."
-                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-none"
+                            placeholder="اشرح خدماتك وخبرتك ونطاق العمل وأوقات التواصل، وما يحتاج العميل إلى معرفته قبل التواصل."
+                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-y"
                         />
                     </div>
 

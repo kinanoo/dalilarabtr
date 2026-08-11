@@ -8,7 +8,8 @@ import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 import type { ProviderCardData } from './ProviderCard';
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
-import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
+import { displayServiceProfession } from '@/lib/serviceText';
+import { publicServiceDescription } from '@/lib/serviceProviderQuality';
 
 /**
  * ProviderRow — compact, scannable single-row layout for the "list" view of
@@ -23,7 +24,7 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
     const hasReviews = !!(p.review_count && p.review_count > 0);
     const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
     const profession = displayServiceProfession(p.profession);
-    const description = cleanServiceText(p.description);
+    const description = publicServiceDescription(p.description);
     const startTouchFeedback = () => {
         if (touchTimer.current) clearTimeout(touchTimer.current);
         setTouchActive(true);
@@ -80,7 +81,7 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
                         <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400"><Star size={11} className="fill-amber-400 text-amber-400" />{p.rating ? Number(p.rating).toFixed(1) : '5.0'}</span>
                     ) : null}
                 </div>
-                <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">{description}</p>
+                {description && <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">{description}</p>}
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">

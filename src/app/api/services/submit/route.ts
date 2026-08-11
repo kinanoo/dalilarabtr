@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getClientIp, isRateLimited } from '@/lib/rate-limit';
 import { categoryForName } from '@/lib/serviceCategories';
+import { canonicalCity } from '@/lib/turkishCities';
+import {
+    SERVICE_DESCRIPTION_MIN_WORDS,
+    countServiceDescriptionWords,
+    isGeneratedServiceDescription,
+    isValidExplicitWhatsApp,
+    normalizeWhatsAppNumber,
+} from '@/lib/serviceProviderQuality';
 import logger from '@/lib/logger';
 
 /**
@@ -21,11 +29,22 @@ import logger from '@/lib/logger';
  */
 export const runtime = 'nodejs';
 
-const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
-const digitsOnly = (v: string) => v.replace(/[^\d+]/g, '');
+const str = (v: unknown, max: number) => (typeof v === 'string'
+    ? v.normalize('NFKC').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max)
+    : '');
 
 export async function POST(request: Request) {
     try {
+        const contentType = request.headers.get('content-type') || '';
+        const contentLength = Number(request.headers.get('content-length') || 0);
+        if (!contentType.toLowerCase().includes('application/json') || contentLength > 20_000) {
+            return NextResponse.json({ error: 'bad_request' }, { status: 400 });
+        }
+        const origin = request.headers.get('origin');
+        if (origin && new URL(origin).host !== new URL(request.url).host) {
+            return NextResponse.json({ error: 'invalid_origin' }, { status: 403 });
+        }
+
         const ip = getClientIp(request);
         // Best-effort abuse control: 4 per 10 min AND 15 per day per IP.
         if (
@@ -48,13 +67,25 @@ export async function POST(request: Request) {
         const name = str(b.name, 120);
         const profession = str(b.profession, 120);
         const rawCategory = str(b.category, 60);
-        const city = str(b.city, 60);
+        const city = canonicalCity(str(b.city, 60));
         const district = str(b.district, 80);
-        const phone = digitsOnly(str(b.phone, 40));
+        // `phone` remains accepted for one release so an already-open old form
+        // can submit, but it is stored explicitly as WhatsApp, never inferred later.
+        const rawWhatsApp = str(b.whatsapp ?? b.phone, 40);
+        const whatsapp = normalizeWhatsAppNumber(rawWhatsApp);
         const description = str(b.description, 1500);
 
-        if (!name || !profession || !city || description.length < 10 || phone.length < 7) {
+        if (!name || !profession || !city) {
             return NextResponse.json({ error: 'missing_fields' }, { status: 400 });
+        }
+        if (!isValidExplicitWhatsApp(rawWhatsApp)) {
+            return NextResponse.json({ error: 'invalid_whatsapp' }, { status: 400 });
+        }
+        if (
+            countServiceDescriptionWords(description) < SERVICE_DESCRIPTION_MIN_WORDS ||
+            isGeneratedServiceDescription(description)
+        ) {
+            return NextResponse.json({ error: 'weak_description' }, { status: 400 });
         }
 
         // Map the submitted category to a canonical taxonomy value so it filters
@@ -72,10 +103,12 @@ export async function POST(request: Request) {
             category,
             city,
             district: district || null,
-            phone,
+            phone: null,
+            whatsapp: `+${whatsapp}`,
             description,
             status: 'pending',   // invisible until an admin approves
             is_verified: false,  // never self-serve verified
+            verification_level: 'listed',
             active: true,
         }]);
 

@@ -52,11 +52,11 @@ export default function IntegrityMonitor() {
         if (!supabase) return;
         try {
             const [
-                { count: servicesNoPhone },
+                { count: servicesNoWhatsapp },
                 { count: servicesNoCity },
                 { count: zonesCount }
             ] = await Promise.all([
-                supabase.from('service_providers').select('*', { count: 'exact', head: true }).or('phone.is.null,phone.eq.""'),
+                supabase.from('service_providers').select('*', { count: 'exact', head: true }).or('whatsapp.is.null,whatsapp.eq.""'),
                 supabase.from('service_providers').select('*', { count: 'exact', head: true }).or('city.is.null,city.eq.""'),
                 supabase.from('zones').select('*', { count: 'exact', head: true }).or('notes.is.null,notes.eq.""')
             ]);
@@ -64,7 +64,7 @@ export default function IntegrityMonitor() {
             const fallbackReport = {
                 timestamp: new Date().toISOString(),
                 issues: [
-                    { type: 'service_contact', severity: 'critical', label: 'خدمات بدون رقم هاتف', count: servicesNoPhone || 0, table: 'service_providers' },
+                    { type: 'service_contact', severity: 'critical', label: 'خدمات بدون رقم واتساب صريح', count: servicesNoWhatsapp || 0, table: 'service_providers' },
                     { type: 'service_location', severity: 'high', label: 'خدمات بدون مدينة', count: servicesNoCity || 0, table: 'service_providers' },
                     { type: 'zone_info', severity: 'medium', label: 'مناطق بدون ملاحظات', count: zonesCount || 0, table: 'zones' }
                 ]

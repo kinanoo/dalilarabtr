@@ -40,7 +40,9 @@ async function countProviders(categoryName: string): Promise<number> {
             .from('service_providers')
             .select('id', { count: 'exact', head: true })
             .eq('category', categoryName)
-            .eq('status', 'approved');
+            .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '');
         if (error) {
             logger.error('provider count failed:', error);
             return 0;

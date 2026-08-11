@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { SERVICE_CATEGORIES, categorySlugForName } from '@/lib/serviceCategories';
 import { citySlugForName } from '@/lib/turkishCities';
+import { isIndexableServiceProvider, isPublicServiceProvider } from '@/lib/serviceProviderQuality';
 
 /**
  * Sitemap — مقدمي الخدمات (Service Providers) + category landing pages.
@@ -23,15 +24,18 @@ const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://dalilarabtr.com').
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function GET() {
-  let services: Array<{ id: string; slug?: string | null; created_at?: string; is_verified?: boolean; category?: string; city?: string }> = [];
+  type SitemapProvider = { id: string; slug?: string | null; created_at?: string; is_verified?: boolean; category?: string; city?: string; whatsapp?: string | null; description?: string | null };
+  let publicServices: SitemapProvider[] = [];
 
   if (supabase) {
     try {
       const { data } = await supabase
         .from('service_providers')
-        .select('id, slug, created_at, is_verified, category, city')
-        .eq('status', 'approved');
-      services = data || [];
+        .select('id, slug, created_at, is_verified, category, city, whatsapp, description')
+        .eq('status', 'approved')
+        .not('whatsapp', 'is', null)
+        .neq('whatsapp', '');
+      publicServices = ((data || []) as SitemapProvider[]).filter(isPublicServiceProvider);
     } catch {
       // Fail silently
     }
@@ -47,7 +51,7 @@ export async function GET() {
   // Category+city pages — only the combos that actually have a provider, so
   // we never list empty (noindex) pages. e.g. /services/category/doctors/istanbul
   const combos = new Set<string>();
-  for (const s of services) {
+  for (const s of publicServices) {
     const cat = categorySlugForName(s.category);
     const city = citySlugForName(s.city);
     if (cat && city) combos.add(`${cat}/${city}`);
@@ -61,7 +65,7 @@ export async function GET() {
   // Detail route resolves by id only — keep loc on /services/<id>. Verified
   // providers + fresh listings get a higher priority / faster crawl hint.
   const now = Date.now();
-  const providerUrls = services.map(s => {
+  const providerUrls = publicServices.filter(isIndexableServiceProvider).map(s => {
     const created = new Date(s.created_at || now).getTime();
     const fresh = now - created < WEEK_MS;
     return `  <url>

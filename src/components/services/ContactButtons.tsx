@@ -5,6 +5,7 @@ import type { ProviderCardData } from './ProviderCard';
 import { SITE_CONFIG } from '@/lib/config';
 import { hasAnalyticsConsent } from '@/lib/consent';
 import DirectWhatsAppLink from './DirectWhatsAppLink';
+import { isValidExplicitWhatsApp } from '@/lib/serviceProviderQuality';
 import { displayServiceProfession } from '@/lib/serviceText';
 
 /**
@@ -38,7 +39,7 @@ function trackContact(p: ProviderCardData, channel: 'whatsapp' | 'call') {
 }
 
 const waText = (p: ProviderCardData) => {
-    const whatsapp = p.whatsapp || p.phone;
+    const whatsapp = p.whatsapp;
     if (!whatsapp) return '';
     // Include the provider's own listing link so they instantly see the client
     // came from دليل العرب + exactly which service page — builds trust and lets
@@ -51,12 +52,12 @@ const waText = (p: ProviderCardData) => {
 
 // Returns a fragment (WhatsApp + call) so the parent card/row controls layout.
 export default function ContactButtons({ p, compact = false }: { p: ProviderCardData; compact?: boolean }) {
-    const hasWhatsApp = Boolean(p.whatsapp || p.phone);
+    const hasWhatsApp = isValidExplicitWhatsApp(p.whatsapp);
     return (
         <>
             {hasWhatsApp && (
             <DirectWhatsAppLink
-                phone={p.whatsapp || p.phone || ''}
+                phone={p.whatsapp || ''}
                 text={waText(p)}
                 aria-label={`تواصل عبر واتساب مع ${p.name}`}
                 onClick={() => trackContact(p, 'whatsapp')}

@@ -14,7 +14,13 @@ import { canonicalCity, cityBySlug, citySlugForName } from '@/lib/turkishCities'
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
 import ProviderAvatar from '@/components/services/ProviderAvatar';
 import DirectWhatsAppLink from '@/components/services/DirectWhatsAppLink';
-import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
+import { displayServiceProfession } from '@/lib/serviceText';
+import {
+    isIndexableServiceProvider,
+    isPublicServiceProvider,
+    normalizeWhatsAppNumber,
+    publicServiceDescription,
+} from '@/lib/serviceProviderQuality';
 import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
 
 export const revalidate = 60;
@@ -64,7 +70,7 @@ const fetchProviderData = cache(async (id: string): Promise<ProviderRow | null> 
         throwSupabaseQueryError('service provider detail', error);
     }
 
-    return data;
+    return data && isPublicServiceProvider(data) ? data : null;
 });
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -82,7 +88,8 @@ export async function generateMetadata(
     // "| <brand>" once. Adding "| دليل العرب" here produced a doubled brand.
     const profession = displayServiceProfession(data.profession);
     const title = `${data.name} - ${profession} في ${data.city}`;
-    const description = cleanServiceText(data.description)?.substring(0, 160) ||
+    const qualityDescription = publicServiceDescription(data.description);
+    const description = qualityDescription.substring(0, 160) ||
         `تواصل مع ${data.name} للحصول على خدمات ${data.category} في ${data.city}.`;
     const ogImage = getOgImage(data.image, { title });
 
@@ -90,6 +97,9 @@ export async function generateMetadata(
         title,
         description,
         alternates: { canonical: `/services/${canonicalId}` },
+        robots: isIndexableServiceProvider(data)
+            ? { index: true, follow: true }
+            : { index: false, follow: true },
         openGraph: {
             title,
             description,
@@ -119,9 +129,9 @@ export default async function ServiceDetailsPage(
         provider.is_verified,
     );
     const cleanPhone = (provider.phone || '').replace(/\D/g, '');
-    const cleanWhatsApp = (provider.whatsapp || provider.phone || '').replace(/\D/g, '');
+    const cleanWhatsApp = normalizeWhatsAppNumber(provider.whatsapp);
     const providerProfession = displayServiceProfession(provider.profession);
-    const providerDescription = cleanServiceText(provider.description);
+    const providerDescription = publicServiceDescription(provider.description);
     const providerCity = canonicalCity(provider.city);
     const providerCitySlug = citySlugForName(provider.city);
     const category = categoryForName(provider.category);
@@ -171,7 +181,7 @@ export default async function ServiceDetailsPage(
         name: `${providerProfession} - ${provider.name}`,
         serviceType: providerProfession,
         category: categoryLabel,
-        description: providerDescription || `خدمات ${categoryLabel} في ${providerCity || 'تركيا'}`,
+        ...(providerDescription ? { description: providerDescription } : {}),
         provider: { '@id': `${listingUrl}#provider` },
         areaServed: { '@type': 'City', name: providerCity || 'تركيا' },
         url: listingUrl,
@@ -181,7 +191,7 @@ export default async function ServiceDetailsPage(
         '@id': `${listingUrl}#webpage`,
         url: listingUrl,
         name: `${provider.name} - ${providerProfession}`,
-        description: providerDescription || `تواصل مع ${provider.name} للحصول على ${categoryLabel} في ${providerCity || 'تركيا'}.`,
+        ...(providerDescription ? { description: providerDescription } : {}),
         inLanguage: 'ar',
         isPartOf: { '@id': `${SITE_CONFIG.siteUrl}/#website` },
         mainEntity: { '@id': `${listingUrl}#service` },
@@ -214,6 +224,8 @@ export default async function ServiceDetailsPage(
             .from('service_providers')
             .select('id, slug, name, profession, category, city, image, is_verified, rating, review_count')
             .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '')
             .eq('category', provider.category)
             .neq('id', realId)
             .order('is_verified', { ascending: false })
@@ -237,6 +249,8 @@ export default async function ServiceDetailsPage(
                 .from('service_providers')
                 .select('id, slug, name, profession, category, city, image, is_verified, rating, review_count')
                 .eq('status', 'approved')
+                .not('whatsapp', 'is', null)
+                .neq('whatsapp', '')
                 .in('city', cityVariants)
                 .neq('id', realId)
                 .order('is_verified', { ascending: false })
@@ -336,7 +350,7 @@ export default async function ServiceDetailsPage(
                     <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">نبذة عن الخدمة</h2>
                         <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {providerDescription || 'لم يتم إضافة نبذة تفصيلية بعد.'}
+                            {providerDescription || 'لم يضف مقدم الخدمة وصفاً مهنياً كافياً بعد. أبقينا صفحة التواصل متاحة، ولن نعرض وصفاً آلياً أو ننسب إليه معلومات لم يكتبها.'}
                         </div>
                     </div>
 
@@ -352,7 +366,7 @@ export default async function ServiceDetailsPage(
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             {cleanWhatsApp && (
                                 <DirectWhatsAppLink
-                                    phone={provider.whatsapp || provider.phone || ''}
+                                    phone={provider.whatsapp || ''}
                                     text={whatsappText}
                                     className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-800 active:scale-95"
                                 >

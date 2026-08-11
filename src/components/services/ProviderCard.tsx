@@ -8,7 +8,8 @@ import { toLatinDigits } from '@/lib/digits';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
 import { serviceVerificationCopy } from '@/lib/serviceVerification';
-import { cleanServiceText, displayServiceProfession } from '@/lib/serviceText';
+import { displayServiceProfession } from '@/lib/serviceText';
+import { publicServiceDescription } from '@/lib/serviceProviderQuality';
 
 export interface ProviderCardData {
     id: string;
@@ -41,7 +42,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
     const hasReviews = !!(p.review_count && p.review_count > 0);
     const verification = serviceVerificationCopy(p.verification_level, p.is_verified);
     const profession = displayServiceProfession(p.profession);
-    const description = cleanServiceText(p.description);
+    const description = publicServiceDescription(p.description);
     const startTouchFeedback = () => {
         if (touchTimer.current) clearTimeout(touchTimer.current);
         setTouchActive(true);
@@ -119,9 +120,11 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             </div>
 
             {/* Description */}
-            <p className="mt-3 flex-1 text-[13px] leading-6 text-slate-600 line-clamp-2 dark:text-slate-300 sm:min-h-[40px]">
-                {toLatinDigits(description) || 'اضغط لعرض التفاصيل الكاملة وطرق التواصل.'}
-            </p>
+            {description && (
+                <p className="mt-3 flex-1 text-[13px] leading-6 text-slate-600 line-clamp-2 dark:text-slate-300 sm:min-h-[40px]">
+                    {toLatinDigits(description)}
+                </p>
+            )}
 
             {/* Actions */}
             <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">

@@ -43,6 +43,8 @@ async function getCityData(slug: string) {
                 .from('service_providers')
                 .select('id, slug, name, profession, city, image, is_verified, rating')
                 .eq('status', 'approved')
+                .not('whatsapp', 'is', null)
+                .neq('whatsapp', '')
                 .order('is_verified', { ascending: false })
                 .order('rating', { ascending: false })
                 .limit(500);

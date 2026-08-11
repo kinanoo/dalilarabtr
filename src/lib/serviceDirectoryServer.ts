@@ -15,44 +15,30 @@ export interface ServiceDirectoryFacetSummary {
     verifiedCount: number;
 }
 
-/**
- * Prefer a grouped database RPC so facet cost stays nearly constant as the
- * directory grows. The fallback keeps deployments compatible while the new
- * migration is being applied.
- */
+/** Build facets only from providers that have an explicit WhatsApp number. */
 export async function getServiceDirectoryFacetSummary(
     client: SupabaseClient,
 ): Promise<ServiceDirectoryFacetSummary> {
-    const rpcResult = await client.rpc('get_service_directory_facets');
-    if (!rpcResult.error && rpcResult.data) {
-        const payload = rpcResult.data as {
-            rows?: DirectoryFacetRow[];
-            directoryTotal?: number;
-            verifiedCount?: number;
-        };
-        const rows = Array.isArray(payload.rows) ? payload.rows : [];
-        return {
-            ...buildDirectoryFacets(rows),
-            popularSearches: buildPopularDirectorySearches(rows),
-            directoryTotal: Number(payload.directoryTotal) || 0,
-            verifiedCount: Number(payload.verifiedCount) || 0,
-        };
-    }
-
     const [rowsResult, totalResult, verifiedResult] = await Promise.all([
         client
             .from('service_providers')
             .select('city, category')
             .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '')
             .limit(2000),
         client
             .from('service_providers')
             .select('id', { count: 'exact', head: true })
-            .eq('status', 'approved'),
+            .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', ''),
         client
             .from('service_providers')
             .select('id', { count: 'exact', head: true })
             .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '')
             .eq('is_verified', true),
     ]);
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { isIndexableServiceProvider } from '@/lib/serviceProviderQuality';
 
 /**
  * Image sitemap — surfaces article + service hero images to Google Images.
@@ -83,16 +84,19 @@ export async function GET() {
         try {
             const { data } = await supabase
                 .from('service_providers')
-                .select('id, name, profession, image')
+                .select('id, slug, name, profession, image, whatsapp, description')
                 .eq('status', 'approved')
+                .not('whatsapp', 'is', null)
+                .neq('whatsapp', '')
                 .not('image', 'is', null);
-            for (const s of (data || []) as Array<{ id: string; name?: string; profession?: string; image?: string }>) {
+            for (const s of (data || []) as Array<{ id: string; slug?: string | null; name?: string; profession?: string; image?: string; whatsapp?: string | null; description?: string | null }>) {
+                if (!isIndexableServiceProvider(s)) continue;
                 if (!isUsableImage(s.image)) continue;
                 const key = `service:${s.image}`;
                 if (seen.has(key)) continue;
                 seen.add(key);
                 entries.push({
-                    pageUrl: `${baseUrl}/services/${s.id}`,
+                    pageUrl: `${baseUrl}/services/${s.slug || s.id}`,
                     imageUrl: s.image,
                     caption: s.profession ? `${s.name} — ${s.profession}` : s.name,
                     title: s.name || undefined,

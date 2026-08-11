@@ -15,6 +15,11 @@ import {
     providerFingerprint,
 } from '@/lib/serviceDirectory';
 import logger from '@/lib/logger';
+import {
+    isValidExplicitWhatsApp,
+    normalizeWhatsAppNumber,
+    serviceProviderQualityIssues,
+} from '@/lib/serviceProviderQuality';
 
 export const runtime = 'nodejs';
 
@@ -81,7 +86,7 @@ const normalizeCandidate = (value: unknown) => {
     const city = canonicalCity(text(row.city, 80));
     const phoneDigits = normalizeTurkishPhone(text(row.phone, 50));
     const rawWhatsapp = text(row.whatsapp, 50);
-    const whatsappDigits = normalizeTurkishPhone(rawWhatsapp);
+    const whatsappDigits = normalizeWhatsAppNumber(rawWhatsapp);
     const description = text(row.description, 1500);
     const sources = normalizeSources(row.sources);
 
@@ -92,7 +97,7 @@ const normalizeCandidate = (value: unknown) => {
         !description ||
         phoneDigits.length < 10 ||
         phoneDigits.length > 12 ||
-        (rawWhatsapp && (whatsappDigits.length < 10 || whatsappDigits.length > 12)) ||
+        (rawWhatsapp && !isValidExplicitWhatsApp(rawWhatsapp)) ||
         sources.length === 0
     ) {
         return null;
@@ -142,12 +147,14 @@ const normalizeCandidate = (value: unknown) => {
         image: safeUrl(row.image) || null,
     };
 
+    const qualityReady = serviceProviderQualityIssues(candidateData).length === 0;
+
     return {
         fingerprint: providerFingerprint({ name, city, phone }),
         candidateData,
         sources,
         confidence,
-        status: officialSource && confidence >= 70 ? 'ready' : 'needs_review',
+        status: officialSource && confidence >= 70 && qualityReady ? 'ready' : 'needs_review',
     };
 };
 
@@ -322,6 +329,19 @@ export async function POST(request: Request) {
 
             for (const candidate of candidates || []) {
                 const data = candidate.candidate_data as Record<string, unknown>;
+                const qualityIssues = serviceProviderQualityIssues(data);
+                if (qualityIssues.length > 0) {
+                    failures.push({ id: candidate.id, error: qualityIssues.join('، ') });
+                    await gate.svc
+                        .from('service_provider_candidates')
+                        .update({
+                            status: 'needs_review',
+                            review_notes: qualityIssues.join('، '),
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', candidate.id);
+                    continue;
+                }
                 const phone = normalizeTurkishPhone(String(data.phone || ''));
                 const nameCityKey = providerFingerprint({
                     name: text(data.name, 160),

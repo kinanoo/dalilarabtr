@@ -8,6 +8,8 @@ import {
     MapPin,
     Navigation,
     Phone,
+    CircleAlert,
+    CircleCheck,
 } from 'lucide-react';
 import { Field } from '../ui/Field';
 import { inputStyles, textareaStyles, ltrInputStyles } from '../ui/styles';
@@ -15,6 +17,12 @@ import { ServiceForm } from '@/lib/schemas';
 import { ImageUploader } from '../ui/ImageUploader';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { TR_CITIES } from '@/lib/turkishCities';
+import {
+    SERVICE_DESCRIPTION_MIN_WORDS,
+    countServiceDescriptionWords,
+    isGeneratedServiceDescription,
+    isValidExplicitWhatsApp,
+} from '@/lib/serviceProviderQuality';
 
 type VerificationLevel = 'listed' | 'source_checked' | 'claimed' | 'credential_verified';
 
@@ -48,6 +56,12 @@ const VERIFICATION_LEVELS: Array<{
 
 export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
     const languagesValue = Array.isArray(form.languages) ? form.languages.join('، ') : '';
+    const descriptionWords = countServiceDescriptionWords(form.description);
+    const validWhatsApp = isValidExplicitWhatsApp(form.whatsapp);
+    const generatedDescription = isGeneratedServiceDescription(form.description);
+    const readyToPublish = validWhatsApp &&
+        descriptionWords >= SERVICE_DESCRIPTION_MIN_WORDS &&
+        !generatedDescription;
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
@@ -113,9 +127,8 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
                     />
                 </Field>
 
-                <Field label="رقم الاتصال" icon={Phone}>
+                <Field label="رقم الاتصال العادي - اختياري" icon={Phone}>
                     <input
-                        required
                         inputMode="tel"
                         className={`${ltrInputStyles} font-mono text-base text-emerald-700`}
                         value={form.phone || ''}
@@ -124,7 +137,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
                     />
                 </Field>
 
-                <Field label="واتساب - إن كان مختلفاً" icon={Phone}>
+                <Field label="رقم واتساب المؤكد - مطلوب للنشر" icon={Phone}>
                     <input
                         inputMode="tel"
                         className={`${ltrInputStyles} font-mono text-base`}
@@ -135,15 +148,25 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
                 </Field>
 
                 <div className="md:col-span-2">
-                    <Field label="وصف مختصر ودقيق" icon={Clock}>
+                    <Field label="وصف مهني حقيقي" icon={Clock}>
                         <textarea
                             required
-                            className={`${textareaStyles} h-28`}
+                            className={`${textareaStyles} h-40`}
                             value={form.description || ''}
                             onChange={(event) => setForm({ ...form, description: event.target.value })}
-                            placeholder="ما الذي يقدمه؟ ولمن؟ من دون مبالغات أو ادعاءات غير مثبتة."
+                            placeholder="اشرح الخدمات والخبرة ونطاق العمل وأوقات التواصل وما يحتاج العميل إلى معرفته. الحد الأدنى 40 كلمة."
                         />
                     </Field>
+                    <div className={`mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs font-bold ${readyToPublish ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-200' : 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-200'}`}>
+                        <span className="inline-flex items-center gap-2">
+                            {readyToPublish ? <CircleCheck size={16} /> : <CircleAlert size={16} />}
+                            {readyToPublish ? 'جاهز للنشر العام والفهرسة' : 'غير جاهز للنشر العام'}
+                        </span>
+                        <span className="tabular-nums">
+                            الوصف: {descriptionWords}/{SERVICE_DESCRIPTION_MIN_WORDS} كلمة · واتساب: {validWhatsApp ? 'صحيح' : 'ناقص أو غير صحيح'}
+                        </span>
+                        {generatedDescription && <span className="w-full">هذا وصف آلي قديم؛ استبدله بوصف كتبه مقدم الخدمة أو راجعته الإدارة.</span>}
+                    </div>
                 </div>
 
                 <div className="md:col-span-2">
@@ -256,7 +279,7 @@ export const ServiceEditor = ({ form, setForm }: ServiceEditorProps) => {
                     <Field label="حالة النشر" icon={BadgeCheck}>
                         <select
                             className={inputStyles}
-                            value={form.status || 'approved'}
+                            value={form.status || 'pending'}
                             onChange={(event) => setForm({ ...form, status: event.target.value })}
                         >
                             <option value="draft">مسودة</option>

@@ -3,7 +3,12 @@ import { requireAdmin } from '@/lib/api/adminAuth';
 import logger from '@/lib/logger';
 import { categoryForName } from '@/lib/serviceCategories';
 import { canonicalCity } from '@/lib/turkishCities';
-import { normalizeTurkishPhone } from '@/lib/serviceDirectory';
+import {
+    hasQualityServiceDescription,
+    isGeneratedServiceDescription,
+    isValidExplicitWhatsApp,
+    normalizeWhatsAppNumber,
+} from '@/lib/serviceProviderQuality';
 
 /**
  * POST /api/admin/services — create/update a service provider.
@@ -40,6 +45,12 @@ export async function POST(request: Request) {
         const gate = await requireAdmin();
         if (!gate.ok) return gate.res;
 
+        const contentType = request.headers.get('content-type') || '';
+        const contentLength = Number(request.headers.get('content-length') || 0);
+        if (!contentType.toLowerCase().includes('application/json') || contentLength > 50_000) {
+            return NextResponse.json({ error: 'طلب غير صالح' }, { status: 400 });
+        }
+
         const body = await request.json().catch(() => ({}));
         const id = typeof body?.id === 'string' && body.id && body.id !== 'new' ? body.id : null;
         const input = body?.data && typeof body.data === 'object' ? body.data as Record<string, unknown> : {};
@@ -61,23 +72,49 @@ export async function POST(request: Request) {
         clean.city = city;
         clean.description = description;
 
+        if (typeof clean.status === 'string' && !['draft', 'pending', 'approved', 'rejected'].includes(clean.status)) {
+            return NextResponse.json({ error: 'حالة النشر غير صالحة' }, { status: 400 });
+        }
+
         const rawCategory = typeof clean.category === 'string'
             ? clean.category
             : typeof clean.profession === 'string' ? clean.profession : '';
         clean.category = categoryForName(rawCategory)?.name || rawCategory || 'خدمات عامة';
 
-        const phone = normalizeTurkishPhone(typeof clean.phone === 'string' ? clean.phone : '');
-        if (phone.length < 10 || phone.length > 12) {
-            return NextResponse.json({ error: 'رقم الهاتف التركي غير صحيح' }, { status: 400 });
+        const rawPhone = typeof clean.phone === 'string' ? clean.phone.trim() : '';
+        if (rawPhone) {
+            const phone = normalizeWhatsAppNumber(rawPhone);
+            if (!isValidExplicitWhatsApp(rawPhone)) {
+                return NextResponse.json({ error: 'رقم الاتصال غير صحيح' }, { status: 400 });
+            }
+            clean.phone = `+${phone}`;
+        } else {
+            clean.phone = null;
         }
-        clean.phone = `+${phone}`;
 
-        if (typeof clean.whatsapp === 'string' && clean.whatsapp.trim()) {
-            const whatsapp = normalizeTurkishPhone(clean.whatsapp);
-            if (whatsapp.length < 10 || whatsapp.length > 12) {
+        const rawWhatsApp = typeof clean.whatsapp === 'string' ? clean.whatsapp.trim() : '';
+        if (rawWhatsApp) {
+            const whatsapp = normalizeWhatsAppNumber(rawWhatsApp);
+            if (!isValidExplicitWhatsApp(rawWhatsApp)) {
                 return NextResponse.json({ error: 'رقم واتساب غير صحيح' }, { status: 400 });
             }
             clean.whatsapp = `+${whatsapp}`;
+        } else {
+            clean.whatsapp = null;
+        }
+
+        const targetStatus = typeof clean.status === 'string' ? clean.status : 'pending';
+        clean.status = targetStatus;
+        if (targetStatus === 'approved') {
+            if (!isValidExplicitWhatsApp(rawWhatsApp)) {
+                return NextResponse.json({ error: 'لا يمكن النشر قبل إضافة رقم واتساب صحيح ومؤكد' }, { status: 400 });
+            }
+            if (isGeneratedServiceDescription(description)) {
+                return NextResponse.json({ error: 'الوصف الآلي القديم غير مقبول. اكتب وصفاً حقيقياً عن الخدمة' }, { status: 400 });
+            }
+            if (!hasQualityServiceDescription(description)) {
+                return NextResponse.json({ error: 'لا يمكن النشر قبل كتابة وصف حقيقي من 40 كلمة على الأقل' }, { status: 400 });
+            }
         }
 
         for (const key of ['website', 'google_maps_url'] as const) {

@@ -14,6 +14,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import logger from '@/lib/logger';
 import { extractErrorMessage } from '@/lib/errors';
 import ServiceResearchQueue from '@/components/admin/ServiceResearchQueue';
+import {
+    isGeneratedServiceDescription,
+    isValidExplicitWhatsApp,
+    serviceProviderQualityIssues,
+    hasQualityServiceDescription,
+} from '@/lib/serviceProviderQuality';
 
 type ServiceFormData = ServiceEditorForm &
     Record<string, string | boolean | string[] | null | undefined>;
@@ -27,8 +33,9 @@ interface ServiceStats {
     total: number;
     approved: number;
     pending: number;
-    missingPhone: number;
+    missingWhatsapp: number;
     missingCity: number;
+    weakDescriptions: number;
     featured: number;
 }
 
@@ -78,7 +85,8 @@ export default function AdminServicesPage() {
     const [statsLoading, setStatsLoading] = useState(false);
 
     const issueLabels: Record<string, string> = {
-        missing_phone: 'خدمات بدون هاتف',
+        missing_whatsapp: 'خدمات بلا واتساب صالح',
+        weak_description: 'أوصاف آلية أو ضعيفة',
         missing_city: 'خدمات بدون مدينة',
         pending: 'بانتظار المراجعة',
         approved: 'الخدمات المنشورة',
@@ -117,16 +125,22 @@ export default function AdminServicesPage() {
                     if (error) throw error;
                     return count || 0;
                 };
-                const [total, approved, pending, missingPhone, missingCity, featured] = await Promise.all([
+                const [total, approved, pending, missingCity, featured, qualityResult] = await Promise.all([
                     countRows(),
                     countRows((q) => q.eq('status', 'approved')),
                     countRows((q) => q.eq('status', 'pending')),
-                    countRows((q) => q.or('phone.is.null,phone.eq.""')),
                     countRows((q) => q.or('city.is.null,city.eq.""')),
                     countRows((q) => q.eq('is_featured', true)),
+                    client.from('service_providers').select('whatsapp, description').limit(2000),
                 ]);
+                if (qualityResult.error) throw qualityResult.error;
+                const qualityRows = qualityResult.data || [];
+                const missingWhatsapp = qualityRows.filter((row) => !isValidExplicitWhatsApp(row.whatsapp)).length;
+                const weakDescriptions = qualityRows.filter((row) =>
+                    !String(row.description || '').trim() || isGeneratedServiceDescription(row.description),
+                ).length;
                 if (mounted) {
-                    setStats({ total, approved, pending, missingPhone, missingCity, featured });
+                    setStats({ total, approved, pending, missingWhatsapp, missingCity, weakDescriptions, featured });
                 }
             } catch (err) {
                 logger.error('services stats failed:', err);
@@ -139,8 +153,11 @@ export default function AdminServicesPage() {
     }, [refreshKey]);
 
     const customFilter = useMemo<((query: any) => any) | undefined>(() => {
-        if (issueType === 'missing_phone') {
-            return (q: { or: (filter: string) => unknown }) => q.or('phone.is.null,phone.eq.""');
+        if (issueType === 'missing_whatsapp') {
+            return (q: { or: (filter: string) => unknown }) => q.or('whatsapp.is.null,whatsapp.eq.""');
+        }
+        if (issueType === 'weak_description') {
+            return (q: { or: (filter: string) => unknown }) => q.or('description.is.null,description.eq."",description.ilike.%يعرّف عن%,description.ilike.%ويتيح التواصل%');
         }
         if (issueType === 'missing_city') {
             return (q: { or: (filter: string) => unknown }) => q.or('city.is.null,city.eq.""');
@@ -184,6 +201,12 @@ export default function AdminServicesPage() {
             if (!clean.name) { toast.error("يرجى إدخال اسم الخدمة"); throw new Error("اسم الخدمة مطلوب"); }
             if (!clean.city) { toast.error("يرجى إدخال المدينة"); throw new Error("المدينة مطلوبة"); }
             if (!clean.description) { toast.error("يرجى إدخال الوصف"); throw new Error("الوصف مطلوب"); }
+            if (clean.status === 'approved') {
+                const issues = serviceProviderQualityIssues(clean);
+                if (issues.length > 0) {
+                    throw new Error(`لا يمكن النشر: ${issues.join('، ')}`);
+                }
+            }
 
             // Auto-fill category if missing (DB constraint)
             if (!clean.category) {
@@ -239,7 +262,8 @@ export default function AdminServicesPage() {
         { label: 'كل الخدمات', value: stats?.total ?? 0, icon: Briefcase, href: '/admin/services', tone: 'slate' },
         { label: 'منشورة', value: stats?.approved ?? 0, icon: CheckCircle2, href: '/admin/services?issue=approved', tone: 'emerald' },
         { label: 'بانتظار المراجعة', value: stats?.pending ?? 0, icon: Clock, href: '/admin/services?issue=pending', tone: 'amber' },
-        { label: 'بدون هاتف', value: stats?.missingPhone ?? 0, icon: PhoneCall, href: '/admin/services?issue=missing_phone', tone: 'rose' },
+        { label: 'واتساب ناقص', value: stats?.missingWhatsapp ?? 0, icon: PhoneCall, href: '/admin/services?issue=missing_whatsapp', tone: 'rose' },
+        { label: 'وصف آلي أو فارغ', value: stats?.weakDescriptions ?? 0, icon: Clock, href: '/admin/services?issue=weak_description', tone: 'amber' },
         { label: 'بدون مدينة', value: stats?.missingCity ?? 0, icon: MapPin, href: '/admin/services?issue=missing_city', tone: 'sky' },
         { label: 'مميزة', value: stats?.featured ?? 0, icon: Star, href: '/admin/services?issue=featured', tone: 'violet' },
     ];
@@ -254,7 +278,7 @@ export default function AdminServicesPage() {
                 eyebrow="دليل"
             />
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
                 {statCards.map((item) => {
                     const Icon = item.icon;
                     const active = item.href.includes(`issue=${issueType}`) || (!issueType && item.href === '/admin/services');
@@ -317,6 +341,15 @@ export default function AdminServicesPage() {
                         { key: 'category', label: 'التصنيف' },
                         { key: 'profession', label: 'الخدمة' },
                         {
+                            key: 'description',
+                            label: 'جودة الوصف',
+                            render: (value) => hasQualityServiceDescription(value) ? (
+                                <span className="inline-flex rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">مكتمل</span>
+                            ) : (
+                                <span className="inline-flex rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">يحتاج كتابة</span>
+                            ),
+                        },
+                        {
                             key: 'city',
                             label: 'المدينة',
                             render: (value) => value ? (
@@ -330,12 +363,12 @@ export default function AdminServicesPage() {
                         {
                             key: 'phone',
                             label: 'التواصل',
-                            render: (value, row) => value || row.whatsapp ? (
+                            render: (_value, row) => isValidExplicitWhatsApp(row.whatsapp) ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
-                                    <PhoneCall size={12} /> موجود
+                                    <PhoneCall size={12} /> واتساب جاهز
                                 </span>
                             ) : (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">ناقص</span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">غير منشور للعامة</span>
                             ),
                         },
                         {
@@ -353,9 +386,9 @@ export default function AdminServicesPage() {
                             },
                         },
                     ]}
-                    searchFields={['name', 'category', 'profession', 'description', 'city', 'phone']}
+                    searchFields={['name', 'category', 'profession', 'description', 'city', 'phone', 'whatsapp']}
                     onEdit={(item) => openEditor({ id: item.id, data: item })}
-                    onCreate={() => openEditor({ id: 'new', data: { profession: '', status: 'approved', verification_level: 'listed' } })}
+                    onCreate={() => openEditor({ id: 'new', data: { profession: '', status: 'pending', verification_level: 'listed' } })}
                 />
             </div>
 

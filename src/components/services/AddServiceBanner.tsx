@@ -26,6 +26,8 @@ export default function AddServiceBanner() {
             .from('service_providers')
             .select('id', { count: 'exact', head: true })
             .eq('status', 'approved')
+            .not('whatsapp', 'is', null)
+            .neq('whatsapp', '')
             .then(({ count }) => setCount(count ?? null));
     }, []);
 
