@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
 type DiscoveryKind = 'tool' | 'guide' | 'content' | 'service' | 'place';
 
@@ -141,15 +142,20 @@ export default function HeroDiscoveryLinks() {
       aria-label="استكشف أقسام وأدوات الدليل"
       className={`mx-auto w-full transition-opacity duration-300 ${ready ? 'opacity-100' : 'opacity-0'}`}
     >
-      <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 sm:gap-x-7 sm:gap-y-1.5">
+      <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 sm:gap-x-6 sm:gap-y-1">
         {links.map((item) => (
           <li key={item.href} className="min-w-0">
             <Link
               href={item.href}
               prefetch={false}
-              className="group relative inline-flex min-h-9 max-w-full items-center py-1 text-center text-sm font-bold leading-5 text-slate-700 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-right after:scale-x-0 after:bg-emerald-700 after:transition-transform after:duration-300 hover:text-emerald-800 hover:after:scale-x-100 focus-visible:text-emerald-800 focus-visible:outline-none focus-visible:after:scale-x-100 active:scale-[0.97] dark:text-slate-200 dark:after:bg-emerald-400 dark:hover:text-emerald-300 dark:focus-visible:text-emerald-300"
+              className="group relative inline-flex min-h-8 max-w-full items-center gap-0.5 py-0.5 text-center text-[11px] font-bold leading-4 text-slate-600 transition-colors duration-200 after:absolute after:inset-x-2 after:bottom-0 after:h-px after:origin-right after:scale-x-[0.35] after:bg-emerald-500/70 after:transition-transform after:duration-300 hover:text-emerald-800 hover:after:scale-x-100 focus-visible:text-emerald-800 focus-visible:outline-none focus-visible:after:scale-x-100 active:scale-[0.97] sm:text-xs dark:text-slate-300 dark:after:bg-emerald-400/70 dark:hover:text-emerald-300 dark:focus-visible:text-emerald-300"
             >
-              {item.title}
+              <span>{item.title}</span>
+              <ChevronLeft
+                aria-hidden="true"
+                className="h-3 w-3 shrink-0 text-emerald-600/75 transition-transform duration-200 group-hover:-translate-x-0.5 group-focus-visible:-translate-x-0.5 dark:text-emerald-400/80"
+                strokeWidth={2.5}
+              />
             </Link>
           </li>
         ))}
