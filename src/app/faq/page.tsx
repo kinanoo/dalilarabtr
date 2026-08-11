@@ -57,23 +57,57 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-const SECTION_ICONS: Record<string, { icon: typeof Home; text: string }> = {
-  top: { icon: Flame, text: 'text-orange-600 dark:text-orange-400' },
-  newcomers: { icon: Sparkles, text: 'text-cyan-600 dark:text-cyan-400' },
-  kimlik: { icon: Shield, text: 'text-red-600 dark:text-red-400' },
-  residence: { icon: Home, text: 'text-blue-600 dark:text-blue-400' },
-  work: { icon: Briefcase, text: 'text-amber-600 dark:text-amber-400' },
-  money: { icon: Wallet, text: 'text-lime-600 dark:text-lime-400' },
-  housing: { icon: Building2, text: 'text-pink-600 dark:text-pink-400' },
-  health: { icon: Stethoscope, text: 'text-teal-600 dark:text-teal-400' },
-  education: { icon: GraduationCap, text: 'text-violet-600 dark:text-violet-400' },
-  cars: { icon: Car, text: 'text-slate-600 dark:text-slate-400' },
-  travel: { icon: Plane, text: 'text-sky-600 dark:text-sky-400' },
-  digital: { icon: Smartphone, text: 'text-indigo-600 dark:text-indigo-400' },
-  law: { icon: Scale, text: 'text-rose-600 dark:text-rose-400' },
-  daily: { icon: LifeBuoy, text: 'text-emerald-600 dark:text-emerald-400' },
+const SECTION_ICONS: Record<string, { icon: typeof Home; text: string; edge: string }> = {
+  top: { icon: Flame, text: 'text-orange-600 dark:text-orange-400', edge: 'border-s-orange-400' },
+  newcomers: { icon: Sparkles, text: 'text-cyan-600 dark:text-cyan-400', edge: 'border-s-cyan-400' },
+  kimlik: { icon: Shield, text: 'text-red-600 dark:text-red-400', edge: 'border-s-red-400' },
+  residence: { icon: Home, text: 'text-blue-600 dark:text-blue-400', edge: 'border-s-blue-400' },
+  work: { icon: Briefcase, text: 'text-amber-600 dark:text-amber-400', edge: 'border-s-amber-400' },
+  money: { icon: Wallet, text: 'text-lime-600 dark:text-lime-400', edge: 'border-s-lime-400' },
+  housing: { icon: Building2, text: 'text-pink-600 dark:text-pink-400', edge: 'border-s-pink-400' },
+  health: { icon: Stethoscope, text: 'text-teal-600 dark:text-teal-400', edge: 'border-s-teal-400' },
+  education: { icon: GraduationCap, text: 'text-violet-600 dark:text-violet-400', edge: 'border-s-violet-400' },
+  cars: { icon: Car, text: 'text-slate-600 dark:text-slate-400', edge: 'border-s-slate-400' },
+  travel: { icon: Plane, text: 'text-sky-600 dark:text-sky-400', edge: 'border-s-sky-400' },
+  digital: { icon: Smartphone, text: 'text-indigo-600 dark:text-indigo-400', edge: 'border-s-indigo-400' },
+  law: { icon: Scale, text: 'text-rose-600 dark:text-rose-400', edge: 'border-s-rose-400' },
+  daily: { icon: LifeBuoy, text: 'text-emerald-600 dark:text-emerald-400', edge: 'border-s-emerald-400' },
 };
-const DEFAULT_ICON = { icon: HelpCircle, text: 'text-slate-500 dark:text-slate-400' };
+const DEFAULT_ICON = {
+  icon: HelpCircle,
+  text: 'text-slate-500 dark:text-slate-400',
+  edge: 'border-s-slate-300',
+};
+
+// How many questions each section shows before its native "show the rest"
+// expander. Everything stays in the served HTML either way — the expander is
+// a <details>, not pagination — but the page reads as 14 varied compact
+// blocks instead of 471 identical rows (the owner's monotony note).
+const VISIBLE_PER_SECTION = 5;
+
+function FaqItemRow({ q }: { q: { id: string; q: string; a: string } }) {
+  return (
+    <details
+      id={`faq-${q.id}`}
+      data-faq
+      className="group border-b border-slate-100 dark:border-slate-800 last:border-0"
+    >
+      <summary className="flex items-start gap-3 p-4 sm:p-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-colors">
+        <h3 className="flex-1 text-[15px] sm:text-base font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
+          {q.q}
+        </h3>
+        <ChevronDown
+          size={18}
+          className="shrink-0 mt-1 text-slate-400 transition-transform duration-200 group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <div className="px-4 sm:px-5 pb-4 sm:pb-5 -mt-1 text-[15px] sm:text-base text-slate-600 dark:text-slate-300 leading-loose font-medium break-words border-t border-dashed border-slate-100 dark:border-slate-800 pt-3">
+        {q.a}
+      </div>
+    </details>
+  );
+}
 
 export default async function FAQPage() {
   let sections: FaqSection[] = [];
@@ -189,29 +223,34 @@ export default async function FAQPage() {
                       {sec.blurb}
                     </p>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                      {sec.questions.map((q) => (
-                        <details
-                          key={q.id}
-                          id={`faq-${q.id}`}
-                          data-faq
-                          className="group border-b border-slate-100 dark:border-slate-800 last:border-0"
-                        >
-                          <summary className="flex items-start gap-3 p-4 sm:p-5 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-colors">
-                            <h3 className="flex-1 text-[15px] sm:text-base font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
-                              {q.q}
-                            </h3>
+                    <div
+                      className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 border-s-4 ${style.edge} shadow-sm overflow-hidden`}
+                    >
+                      {sec.questions.slice(0, VISIBLE_PER_SECTION).map((q) => (
+                        <FaqItemRow key={q.id} q={q} />
+                      ))}
+                      {sec.questions.length > VISIBLE_PER_SECTION && (
+                        <details data-faq-more className="group/more">
+                          <summary
+                            className={`flex items-center justify-center gap-2 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-sm font-black ${style.text} bg-slate-50/80 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
+                          >
+                            <span className="group-open/more:hidden">
+                              عرض بقية أسئلة الباب ({sec.questions.length - VISIBLE_PER_SECTION})
+                            </span>
+                            <span className="hidden group-open/more:inline">إخفاء الأسئلة الإضافية</span>
                             <ChevronDown
-                              size={18}
-                              className="shrink-0 mt-1 text-slate-400 transition-transform duration-200 group-open:rotate-180"
+                              size={16}
+                              className="transition-transform duration-200 group-open/more:rotate-180"
                               aria-hidden="true"
                             />
                           </summary>
-                          <div className="px-4 sm:px-5 pb-4 sm:pb-5 -mt-1 text-[15px] sm:text-base text-slate-600 dark:text-slate-300 leading-loose font-medium break-words border-t border-dashed border-slate-100 dark:border-slate-800 pt-3">
-                            {q.a}
+                          <div className="border-t border-slate-100 dark:border-slate-800">
+                            {sec.questions.slice(VISIBLE_PER_SECTION).map((q) => (
+                              <FaqItemRow key={q.id} q={q} />
+                            ))}
                           </div>
                         </details>
-                      ))}
+                      )}
                     </div>
                   </section>
                 );

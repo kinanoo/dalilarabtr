@@ -49,6 +49,14 @@ export default function FaqFilter({ total }: { total: number }) {
         el.open = searching && match;
         if (match) visible++;
       }
+      // Per-section "show the rest" expanders: while searching, open the ones
+      // holding a match and hide the ones holding none (their summary row
+      // would otherwise dangle); on clear, restore them closed and visible.
+      for (const more of document.querySelectorAll<HTMLDetailsElement>('details[data-faq-more]')) {
+        const hasMatch = !!more.querySelector('details[data-faq]:not([hidden])');
+        more.open = searching && hasMatch;
+        more.hidden = searching && !hasMatch;
+      }
       for (const sec of document.querySelectorAll<HTMLElement>('[data-faq-section]')) {
         sec.hidden = !sec.querySelector('details[data-faq]:not([hidden])');
       }
