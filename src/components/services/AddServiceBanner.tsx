@@ -9,7 +9,7 @@ import { Briefcase, MessageCircle, Search, BadgeCheck, ArrowLeft, Users } from '
  * AddServiceBanner — the primary "list your business free" conversion CTA on
  * the services directory. Shown to EVERYONE (guests and members), not just
  * guests, so a professional who's already logged in still gets a one-tap path
- * to add their listing. Light, on-brand (gov-red stripe + emerald), with a
+ * to add their listing. Light, calm and consistent with the directory, with a
  * real value proposition and live social proof (count of listed professionals)
  * so a professional understands the platform's reach before signing up.
  */
@@ -45,9 +45,8 @@ export default function AddServiceBanner() {
 
     return (
         <div className="container mx-auto px-4 max-w-6xl mt-6">
-            <div className="relative overflow-hidden rounded-2xl border border-emerald-200/70 dark:border-emerald-900/50 bg-gradient-to-l from-emerald-50 via-white to-teal-50/60 dark:from-emerald-950/30 dark:via-slate-900 dark:to-slate-900 p-6 sm:p-8 shadow-sm">
-                {/* Official colour stripe */}
-                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-emerald-600" />
 
                 <div className="relative flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
                     {/* Text + value props */}

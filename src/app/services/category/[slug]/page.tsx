@@ -135,8 +135,8 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
             {/* Hero */}
-            <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 dark:text-white pt-6 pb-8 lg:pt-8">
-                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
+            <section className="relative overflow-hidden border-b border-slate-200 bg-white pb-8 pt-6 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-white lg:pt-8">
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 z-20 h-1 bg-emerald-600" />
                 <div className="container mx-auto px-4 relative z-10 max-w-4xl">
                     <nav className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 mb-4" aria-label="مسار التنقّل">
                         <Link href="/" className="hover:text-emerald-600">الرئيسية</Link>
@@ -149,7 +149,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <CategoryIcon slug={cat.slug} size={24} />
                     </span>
                     <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cat.labelAr}</span> عرب في تركيا
+                        <span className="text-emerald-700 dark:text-emerald-400">{cat.labelAr}</span> عرب في تركيا
                     </h1>
                     <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
                         {cat.blurb} في {POPULAR_CITIES.slice(0, 4).join('، ')} وكل المدن. تواصل مباشر عبر واتساب أو اتصال.

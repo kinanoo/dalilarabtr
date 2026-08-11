@@ -185,8 +185,8 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-            <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 dark:text-white pt-6 pb-7 lg:pt-8">
-                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
+            <section className="relative overflow-hidden border-b border-slate-200 bg-white pb-7 pt-6 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-white lg:pt-8">
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 z-20 h-1 bg-emerald-600" />
                 <div className="container mx-auto px-4 relative z-10 max-w-6xl">
                     <nav className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 mb-4 flex-wrap" aria-label="مسار التنقّل">
                         <Link href="/" className="hover:text-emerald-600">الرئيسية</Link><span>/</span>
@@ -201,7 +201,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                                 دليل {cat.labelAr} في {cityObj.ar}
                             </div>
                             <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
-                                {cat.labelAr} في <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">{cityObj.ar}</span>
+                                {cat.labelAr} في <span className="text-emerald-700 dark:text-emerald-400">{cityObj.ar}</span>
                             </h1>
                             <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
                                 اختر مزود خدمة مناسباً، راجع الوصف وطرق التواصل، ثم تواصل مباشرة عبر واتساب أو اتصال.
@@ -216,16 +216,16 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                             </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/70 bg-white/80 p-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
-                            <div className="rounded-xl bg-emerald-50 p-3 text-center dark:bg-emerald-950/30">
-                                <div className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-300">{providers.length}</div>
+                            <div className="rounded-xl bg-slate-50 p-3 text-center ring-1 ring-inset ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                                <div className="text-2xl font-black tabular-nums text-slate-900 dark:text-slate-100">{providers.length}</div>
                                 <div className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">نتيجة</div>
                             </div>
-                            <div className="rounded-xl bg-cyan-50 p-3 text-center dark:bg-cyan-950/30">
-                                <div className="text-2xl font-black tabular-nums text-cyan-700 dark:text-cyan-300">{cityCategoryLinks.length}</div>
+                            <div className="rounded-xl bg-slate-50 p-3 text-center ring-1 ring-inset ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                                <div className="text-2xl font-black tabular-nums text-slate-900 dark:text-slate-100">{cityCategoryLinks.length}</div>
                                 <div className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">خدمة قريبة</div>
                             </div>
-                            <div className="rounded-xl bg-amber-50 p-3 text-center dark:bg-amber-950/30">
-                                <div className="text-2xl font-black tabular-nums text-amber-700 dark:text-amber-300">{siblingCities.length}</div>
+                            <div className="rounded-xl bg-slate-50 p-3 text-center ring-1 ring-inset ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+                                <div className="text-2xl font-black tabular-nums text-slate-900 dark:text-slate-100">{siblingCities.length}</div>
                                 <div className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">مدينة</div>
                             </div>
                         </div>

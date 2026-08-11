@@ -433,9 +433,9 @@ export default function ServicesClient({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
-      <section className="relative overflow-hidden border-b border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-900 dark:border-slate-800 dark:bg-[linear-gradient(180deg,#020617_0%,#0f172a_100%)] dark:text-white">
-        <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue" />
-        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-emerald-200 to-transparent dark:via-emerald-900" />
+      <section className="relative overflow-hidden border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-emerald-600" />
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-slate-200 dark:bg-slate-800" />
 
         <div className="mx-auto grid max-w-screen-2xl grid-cols-1 gap-3 px-4 py-3 md:gap-5 md:py-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
           <div className="min-w-0 text-center lg:text-right">
@@ -452,12 +452,12 @@ export default function ServicesClient({
               <span className="hidden sm:inline">أطباء، محامون، مترجمون، عقارات، شحن، مطاعم وخدمات يومية في مدن تركيا. ابحث عن الخدمة أو اختر المدينة وتواصل مباشرة، وإن كنت تقدم خدمة فسجّلها ليصل إليك العملاء من الموقع.</span>
             </p>
             <div className="mx-auto mt-3 hidden max-w-3xl flex-wrap items-center justify-center gap-2 text-[12px] font-black text-slate-600 dark:text-slate-300 sm:flex lg:mx-0 lg:justify-start">
-              <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-sky-50 px-3 text-sky-800 ring-1 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-200 dark:ring-sky-900/50">
-                <Briefcase size={14} />
+              <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800">
+                <Briefcase size={14} className="text-emerald-600" />
                 ابحث حسب المهنة والمدينة
               </span>
-              <span className="hidden min-h-8 items-center gap-1.5 rounded-full bg-amber-50 px-3 text-amber-800 ring-1 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/50 sm:inline-flex">
-                <BadgeCheck size={14} />
+              <span className="hidden min-h-8 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800 sm:inline-flex">
+                <BadgeCheck size={14} className="text-emerald-600" />
                 سجّل خدمتك ليجدك العملاء
               </span>
             </div>
@@ -592,12 +592,12 @@ export default function ServicesClient({
                 <div className="text-[10px] font-bold text-slate-500">خدمة</div>
               </div>
               <div className="rounded-xl bg-white p-3 text-center ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
-                <MapPin size={16} className="mx-auto text-gov-red" />
+                <MapPin size={16} className="mx-auto text-emerald-600" />
                 <div className="mt-1 text-xl font-black tabular-nums">{stats.cities}</div>
                 <div className="text-[10px] font-bold text-slate-500">مدينة</div>
               </div>
               <div className="rounded-xl bg-white p-3 text-center ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
-                <BadgeCheck size={16} className="mx-auto text-blue-500" />
+                <BadgeCheck size={16} className="mx-auto text-emerald-600" />
                 <div className="mt-1 text-xl font-black tabular-nums">{stats.verified}</div>
                 <div className="text-[10px] font-bold text-slate-500">{SERVICE_VERIFICATION_LABEL}</div>
               </div>
@@ -737,7 +737,7 @@ export default function ServicesClient({
                   setActiveCategory('all');
                   setPage(1);
                 }}
-                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-sky-50 px-3 text-xs font-bold text-sky-800 dark:bg-sky-950/30 dark:text-sky-300"
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50 px-3 text-xs font-bold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
               >
                 <Briefcase size={13} />
                 {activeCategoryLabel}
@@ -751,7 +751,7 @@ export default function ServicesClient({
                   setSearchQuery('');
                   setPage(1);
                 }}
-                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-amber-50 px-3 text-xs font-bold text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+                className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50 px-3 text-xs font-bold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
               >
                 <Search size={13} />
                 {searchQuery.trim()}
@@ -855,7 +855,7 @@ export default function ServicesClient({
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col gap-1">
             <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-900 dark:text-slate-100">
-              <HelpCircle size={18} className="text-sky-600" />
+              <HelpCircle size={18} className="text-emerald-600" />
               أسئلة سريعة قبل التواصل
             </h2>
             <p className="text-xs font-bold leading-6 text-slate-500 dark:text-slate-400">
@@ -870,7 +870,7 @@ export default function ServicesClient({
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-slate-800 dark:text-slate-100">
                   <span>{item.question}</span>
-                  <ChevronLeft size={16} className="shrink-0 text-slate-400 transition group-open:-rotate-90 group-open:text-sky-600" />
+                  <ChevronLeft size={16} className="shrink-0 text-slate-400 transition group-open:-rotate-90 group-open:text-emerald-600" />
                 </summary>
                 <p className="mt-2 text-xs font-bold leading-6 text-slate-600 dark:text-slate-300">
                   {item.answer}

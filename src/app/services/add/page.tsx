@@ -28,14 +28,14 @@ export default function AddServicePage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
             {/* Hero */}
-            <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:from-slate-900 dark:via-emerald-950 dark:to-slate-950 dark:text-white pt-8 pb-10">
-                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
+            <section className="relative overflow-hidden border-b border-slate-200 bg-white pb-10 pt-8 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-white">
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 z-20 h-1 bg-emerald-600" />
                 <div className="container mx-auto px-4 relative z-10 max-w-3xl text-center">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 text-[11px] font-black tracking-wider uppercase mb-3">
                         للمهنيّين وأصحاب الحرف والمشاريع
                     </span>
                     <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
-                        أضف خدمتك إلى <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-400 dark:to-cyan-400">دليل العرب</span> مجاناً
+                        أضف خدمتك إلى <span className="text-emerald-700 dark:text-emerald-400">دليل العرب</span> مجاناً
                     </h1>
                     <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto">
                         سجّل نشاطك في دقيقة — بدون حساب وبدون رسوم — ووصلك آلاف العملاء العرب في تركيا.

@@ -70,15 +70,15 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
             onMouseDown={startTouchFeedback}
             onMouseUp={finishTouchFeedback}
             onClickCapture={flashTouchFeedback}
-            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-3 shadow-sm outline-none transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-3 before:top-0 before:h-1 before:rounded-b-full before:bg-gradient-to-l before:from-emerald-500 before:via-cyan-500 before:to-amber-400 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-1 hover:shadow-xl hover:before:opacity-100 active:scale-[0.985] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:bg-slate-900 dark:active:bg-emerald-950/20 sm:p-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${touchActive ? '-translate-y-1 border-emerald-300 bg-emerald-50/40 shadow-xl shadow-emerald-500/10 before:opacity-100 dark:bg-emerald-950/20' : ''} ${
+            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-white p-3 shadow-sm outline-none transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-3 before:top-0 before:h-1 before:rounded-b-full before:bg-emerald-600 before:opacity-0 before:transition-opacity before:duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/10 hover:before:opacity-100 active:scale-[0.985] active:border-emerald-300 active:bg-emerald-50/40 active:before:opacity-100 focus-within:ring-2 focus-within:ring-emerald-400/25 dark:bg-slate-900 dark:active:bg-emerald-950/20 sm:p-4 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${touchActive ? '-translate-y-1 border-emerald-300 bg-emerald-50/40 shadow-lg shadow-slate-900/10 before:opacity-100 dark:bg-emerald-950/20' : ''} ${
             p.is_featured
-                ? 'border-amber-300 dark:border-amber-700/60 ring-1 ring-amber-200/70 dark:ring-amber-800/40 hover:shadow-amber-500/10 hover:border-amber-400'
+                ? 'border-slate-300 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700'
                 : 'border-slate-200 dark:border-slate-800 hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-700'
         }`}
         >
             {/* Featured (paid) ribbon */}
             {p.is_featured && (
-                <span className="absolute -top-2 start-3 z-10 inline-flex items-center gap-1 bg-gradient-to-l from-amber-500 to-yellow-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm shadow-amber-500/40">
+                <span className="absolute -top-2 start-3 z-10 inline-flex items-center gap-1 rounded-full bg-amber-600 px-2.5 py-0.5 text-[10px] font-black text-white shadow-sm">
                     <Star size={10} className="fill-white text-white" /> مميّز
                 </span>
             )}
@@ -92,7 +92,7 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
                             title={verification.explanation}
                             aria-label={`${verification.label}: ${verification.explanation}`}
                         >
-                            <BadgeCheck size={16} className="text-blue-500" aria-hidden="true" />
+                            <BadgeCheck size={16} className="text-emerald-600" aria-hidden="true" />
                         </span>
                     )}
                 </Link>

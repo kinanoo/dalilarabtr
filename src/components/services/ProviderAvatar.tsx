@@ -4,14 +4,8 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { getSupabaseImageUrl } from '@/lib/supabaseImage';
 
-// Coloured-initials avatar with a real onError fallback: if a provider's photo
-// URL 404s, we swap to the gradient initials instead of leaving a broken-image
-// icon. Colour is stable per name. Shared by ProviderCard + ProviderRow.
-const GRADS = [
-    'from-emerald-500 to-teal-600', 'from-blue-500 to-cyan-600', 'from-violet-500 to-purple-600',
-    'from-amber-500 to-orange-600', 'from-rose-500 to-pink-600', 'from-sky-500 to-indigo-600',
-];
-function gradFor(s: string) { let h = 0; for (const c of s || '?') h = (h * 31 + c.charCodeAt(0)) >>> 0; return GRADS[h % GRADS.length]; }
+// Neutral-initials avatar with a real onError fallback: if a provider's photo
+// URL fails, keep the directory calm and show initials instead of a broken image.
 function initials(name: string) { return (name || '؟').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join(''); }
 
 function ProviderAvatarImage({
@@ -48,7 +42,7 @@ function ProviderAvatarImage({
                     }}
                 />
             ) : (
-                <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(name)} text-white font-black`}>
+                <div className="flex h-full w-full items-center justify-center bg-slate-100 font-black text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
                     {initials(name)}
                 </div>
             )}
@@ -65,7 +59,7 @@ export default function ProviderAvatar({ name, image, className }: { name: strin
     if (!image || !optimizedSource) {
         return (
             <div className={`relative overflow-hidden shadow-sm ${className || 'w-14 h-14 rounded-2xl'}`}>
-                <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${gradFor(name)} text-white font-black`}>
+                <div className="flex h-full w-full items-center justify-center bg-slate-100 font-black text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
                     {initials(name)}
                 </div>
             </div>

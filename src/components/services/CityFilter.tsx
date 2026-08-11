@@ -245,7 +245,7 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
                             : 'rounded-xl w-full lg:w-auto bg-white text-slate-700 border-slate-200 hover:border-emerald-300 dark:bg-slate-800/60 dark:text-slate-200 dark:border-slate-700'
                             }`}
                     >
-                        <MapPin size={15} className={!isAll ? 'text-white' : 'text-gov-red'} />
+                        <MapPin size={15} className={!isAll ? 'text-white' : 'text-slate-500'} />
                         <span className="truncate">{isAll ? 'كل المدن' : value}</span>
                         <span className="tabular-nums text-[11px] opacity-70">{isAll ? totalCount : (counts[value] ?? '')}</span>
                         <ChevronDown size={16} className="ms-auto opacity-70" />

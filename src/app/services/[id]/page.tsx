@@ -252,9 +252,8 @@ export default async function ServiceDetailsPage(
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo pb-20" dir="rtl">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             {/* Header / Cover */}
-            <div className="bg-gradient-to-l from-emerald-50 via-surface-light to-sky-50 text-slate-900 dark:bg-slate-900 dark:bg-none dark:text-white pt-8 pb-32 relative overflow-hidden">
-                <div aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-gov-red via-brand-orange to-brand-blue z-20" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-blue/10 via-transparent to-brand-magenta/10 dark:from-blue-900/40 dark:via-slate-900 dark:to-emerald-900/20" />
+            <div className="relative overflow-hidden border-b border-slate-200 bg-white pb-32 pt-8 text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-white">
+                <div aria-hidden="true" className="absolute inset-x-0 top-0 z-20 h-1 bg-emerald-600" />
                 <div className="container mx-auto px-4 relative z-10 max-w-5xl">
                     <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400" aria-label="مسار التنقّل">
                         <Link href="/" className="hover:text-emerald-600">الرئيسية</Link><span>/</span>
@@ -277,7 +276,7 @@ export default async function ServiceDetailsPage(
 
             {/* Profile Card */}
             <div className="container mx-auto px-4 relative z-20 -mt-24 max-w-4xl">
-                <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 sm:p-10 mb-8">
+                <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 sm:p-10">
                     <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
                         {/* Avatar */}
                         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-slate-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl shrink-0 overflow-hidden relative flex items-center justify-center -mt-16 sm:-mt-20 z-30">
@@ -299,7 +298,7 @@ export default async function ServiceDetailsPage(
                                     <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
                                         {provider.name}
                                         {verification.visible && (
-                                            <CheckCircle className="text-blue-500 shrink-0" size={24} />
+                                            <CheckCircle className="shrink-0 text-emerald-600" size={24} />
                                         )}
                                     </h1>
                                     <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg mt-1">
@@ -342,7 +341,7 @@ export default async function ServiceDetailsPage(
                     </div>
 
                     {/* Contact + trust */}
-                    <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                    <div className="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
                         <div className="mb-3 flex items-center justify-between gap-3">
                             <div>
                                 <h2 className="text-lg font-black text-slate-900 dark:text-white">تواصل مع مقدم الخدمة</h2>
@@ -378,8 +377,8 @@ export default async function ServiceDetailsPage(
                     </div>
 
                     {verification.visible && (
-                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-200">
-                            <ShieldCheck size={20} className="mt-0.5 shrink-0" />
+                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200">
+                            <ShieldCheck size={20} className="mt-0.5 shrink-0 text-emerald-600" />
                             <p>
                                 <span className="font-black">{verification.label}:</span>{' '}
                                 {verification.explanation}
@@ -414,7 +413,7 @@ export default async function ServiceDetailsPage(
                                         href={mapUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition-colors hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                                     >
                                         <Navigation size={17} />
                                         فتح الخريطة
@@ -468,7 +467,7 @@ export default async function ServiceDetailsPage(
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-1 font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">
                                         <span className="truncate">{r.name}</span>
-                                        {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
+                                        {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="shrink-0 text-emerald-600" />}
                                     </div>
                                     {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{displayServiceProfession(r.profession)}</p>}
                                     <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
@@ -502,7 +501,7 @@ export default async function ServiceDetailsPage(
                                 <Link
                                     key={r.id}
                                     href={`/services/${r.slug || r.id}`}
-                                    className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex items-start gap-3 hover:border-cyan-400 dark:hover:border-cyan-600 hover:shadow-md transition-all"
+                                    className="group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700"
                                 >
                                     <ProviderAvatar
                                         name={r.name}
@@ -510,14 +509,14 @@ export default async function ServiceDetailsPage(
                                         className="h-14 w-14 shrink-0 rounded-xl"
                                     />
                                     <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-1 font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors leading-tight">
+                                        <div className="flex items-center gap-1 font-bold leading-tight text-slate-900 transition-colors group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-400">
                                             <span className="truncate">{r.name}</span>
-                                            {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="text-blue-500 shrink-0" />}
+                                            {serviceVerificationCopy(null, r.is_verified).visible && <CheckCircle size={14} className="shrink-0 text-emerald-600" />}
                                         </div>
                                         {r.profession && <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{displayServiceProfession(r.profession)}</p>}
                                         <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
                                             {relatedCatSlug && providerCitySlug && (
-                                                <span className="rounded-full bg-cyan-50 px-2 py-1 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-300">
+                                                <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                                                     {relatedCat?.labelAr}
                                                 </span>
                                             )}
