@@ -86,25 +86,20 @@ export default function AnimatedHeroTitle() {
 
   return (
     <h1
-      className="mb-0 pt-2 text-3xl font-black leading-[1.4] text-slate-900 dark:text-white sm:text-4xl md:text-6xl"
+      className="mb-0 h-[calc(1.4em+0.5rem)] pt-2 text-3xl font-black leading-[1.4] text-slate-900 dark:text-white max-[300px]:text-2xl sm:text-4xl md:text-6xl"
       aria-label={FULL_TITLE}
     >
       <span className="sr-only">{FULL_TITLE}</span>
-      <span className="relative inline-grid max-w-full" aria-hidden="true" dir="rtl">
-        <span className="invisible col-start-1 row-start-1 whitespace-nowrap">
-          {PREFIX}
-          <span className="inline-block align-baseline" style={{ fontSize: 'calc(1em + 2px)' }}>
-            {EMPHASIS}
-          </span>
-          {SUFFIX}
-          <span className="ms-1 inline-block h-[0.9em] w-0.5 translate-y-[0.08em] align-baseline" />
-        </span>
-        <span className="col-start-1 row-start-1 whitespace-nowrap text-right">
+      <span
+        className="relative inline-block h-[1.4em] w-[9em] max-w-full overflow-visible align-top"
+        aria-hidden="true"
+        dir="rtl"
+      >
+        <span className="absolute inset-0 flex items-baseline justify-start whitespace-nowrap text-right">
           {parts.prefix}
-          <span className="relative inline-grid align-baseline">
-            <span className="invisible col-start-1 row-start-1">{EMPHASIS}</span>
+          <span className="relative inline-block align-baseline">
             <span
-              className="col-start-1 row-start-1 bg-gradient-to-l from-emerald-600 via-teal-500 to-cyan-600 bg-clip-text text-transparent dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300"
+              className="bg-gradient-to-l from-emerald-600 via-teal-500 to-cyan-600 bg-clip-text text-transparent dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300"
               style={{ fontSize: 'calc(1em + 2px)' }}
             >
               {parts.emphasis}
