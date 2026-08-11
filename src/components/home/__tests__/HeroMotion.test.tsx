@@ -39,13 +39,15 @@ describe('homepage hero motion', () => {
 
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
     const firstHrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
-    expect(firstHrefs).toEqual(STORED_LINKS);
+    expect(firstHrefs).toEqual(STORED_LINKS.slice(0, 9));
 
     firstRender.unmount();
     render(<HeroDiscoveryLinks />);
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
 
-    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(STORED_LINKS);
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(
+      STORED_LINKS.slice(0, 9),
+    );
   });
 
   it('drops destinations that are already available in the primary actions', async () => {
@@ -58,19 +60,19 @@ describe('homepage hero motion', () => {
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
 
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
-    expect(hrefs).toHaveLength(12);
+    expect(hrefs).toHaveLength(9);
     expect(hrefs).not.toContain('/consultant');
     expect(hrefs).not.toContain('/services');
   });
 
-  it('presents twelve discovery destinations as text links without boxes', async () => {
+  it('presents nine discovery destinations as text links without boxes', async () => {
     sessionStorage.setItem('daleel.hero-discovery-links.v2', JSON.stringify(STORED_LINKS));
     render(<HeroDiscoveryLinks />);
 
     await waitFor(() => expect(screen.getByRole('navigation')).toHaveClass('opacity-100'));
     const links = screen.getAllByRole('link');
 
-    expect(links).toHaveLength(12);
+    expect(links).toHaveLength(9);
     links.forEach((link) => {
       const classes = link.className.split(/\s+/);
       expect(classes.some((className) => /^(?:bg-|border(?:-|$)|rounded-)/.test(className))).toBe(false);

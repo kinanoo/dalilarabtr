@@ -59,7 +59,7 @@ const DISCOVERY_LINKS: DiscoveryLink[] = [
 ];
 
 const STORAGE_KEY = 'daleel.hero-discovery-links.v2';
-const VISIBLE_LINKS = 12;
+const VISIBLE_LINKS = 9;
 const DISCOVERY_KINDS: DiscoveryKind[] = ['tool', 'guide', 'content', 'service', 'place'];
 const DEFAULT_HREFS = [
   '/codes',
@@ -148,14 +148,18 @@ export default function HeroDiscoveryLinks() {
             <Link
               href={item.href}
               prefetch={false}
-              className="group relative inline-flex min-h-8 max-w-full items-center gap-0.5 py-0.5 text-center text-[11px] font-bold leading-4 text-slate-600 transition-colors duration-200 after:absolute after:inset-x-2 after:bottom-0 after:h-px after:origin-right after:scale-x-[0.35] after:bg-emerald-500/70 after:transition-transform after:duration-300 hover:text-emerald-800 hover:after:scale-x-100 focus-visible:text-emerald-800 focus-visible:outline-none focus-visible:after:scale-x-100 active:scale-[0.97] sm:text-xs dark:text-slate-300 dark:after:bg-emerald-400/70 dark:hover:text-emerald-300 dark:focus-visible:text-emerald-300"
+              className="group inline-flex min-h-8 max-w-full items-center gap-0.5 py-0.5 text-center text-[11px] font-bold leading-4 text-slate-600 transition-colors duration-200 hover:text-emerald-800 focus-visible:text-emerald-800 focus-visible:outline-none active:scale-[0.97] sm:text-xs dark:text-slate-300 dark:hover:text-emerald-300 dark:focus-visible:text-emerald-300"
             >
-              <span>{item.title}</span>
-              <ChevronLeft
-                aria-hidden="true"
-                className="h-3 w-3 shrink-0 text-emerald-600/75 transition-transform duration-200 group-hover:-translate-x-0.5 group-focus-visible:-translate-x-0.5 dark:text-emerald-400/80"
-                strokeWidth={2.5}
-              />
+              <span className="transition-transform duration-200 group-hover:-translate-y-0.5 group-focus-visible:-translate-y-0.5">
+                {item.title}
+              </span>
+              <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center before:absolute before:inset-0 before:rounded-full before:bg-emerald-200/70 before:opacity-0 before:transition-all before:duration-300 group-hover:before:scale-150 group-hover:before:opacity-100 group-focus-visible:before:scale-150 group-focus-visible:before:opacity-100 dark:before:bg-emerald-700/50">
+                <ChevronLeft
+                  aria-hidden="true"
+                  className="relative z-10 h-3 w-3 text-emerald-600/75 transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:scale-110 group-focus-visible:-translate-x-0.5 group-focus-visible:scale-110 dark:text-emerald-400/80"
+                  strokeWidth={2.5}
+                />
+              </span>
             </Link>
           </li>
         ))}
