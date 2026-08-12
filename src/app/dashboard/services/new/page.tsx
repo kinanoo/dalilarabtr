@@ -12,8 +12,6 @@ import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import logger from '@/lib/logger';
 import {
-    SERVICE_DESCRIPTION_MIN_WORDS,
-    countServiceDescriptionWords,
     isValidExplicitWhatsApp,
     normalizeWhatsAppNumber,
 } from '@/lib/serviceProviderQuality';
@@ -38,8 +36,6 @@ export default function AddServicePage() {
         lat: 0,
         lng: 0,
     });
-    const descriptionWords = countServiceDescriptionWords(formData.description);
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -49,10 +45,6 @@ export default function AddServicePage() {
         if (!supabase) return;
         if (!isValidExplicitWhatsApp(formData.whatsapp)) {
             toast.error('أدخل رقم واتساب صحيحاً مع رمز الدولة');
-            return;
-        }
-        if (descriptionWords < SERVICE_DESCRIPTION_MIN_WORDS) {
-            toast.error(`الوصف يجب ألا يقل عن ${SERVICE_DESCRIPTION_MIN_WORDS} كلمة`);
             return;
         }
         setLoading(true);
@@ -243,19 +235,13 @@ export default function AddServicePage() {
 
                     {/* Bio */}
                     <div>
-                        <div className="mb-2 flex items-center justify-between gap-3">
-                            <label className="block font-bold text-sm text-slate-700 dark:text-slate-300">وصف مهني حقيقي *</label>
-                            <span className={`text-xs font-black tabular-nums ${descriptionWords >= SERVICE_DESCRIPTION_MIN_WORDS ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                                {descriptionWords} / {SERVICE_DESCRIPTION_MIN_WORDS} كلمة
-                            </span>
-                        </div>
+                        <label className="mb-2 block text-sm font-bold text-slate-700 dark:text-slate-300">وصف مختصر (اختياري)</label>
                         <textarea
                             name="description"
-                            required
-                            rows={7}
+                            rows={4}
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="اشرح خدماتك وخبرتك ونطاق العمل وأوقات التواصل، وما يحتاج العميل إلى معرفته قبل التواصل."
+                            placeholder="اكتب ما تود أن يعرفه العميل عن خدمتك، أو اتركه فارغاً وأضفه لاحقاً."
                             className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-y"
                         />
                     </div>

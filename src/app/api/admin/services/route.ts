@@ -5,8 +5,6 @@ import logger from '@/lib/logger';
 import { categoryForName } from '@/lib/serviceCategories';
 import { canonicalCity } from '@/lib/turkishCities';
 import {
-    hasQualityServiceDescription,
-    isGeneratedServiceDescription,
     isValidExplicitWhatsApp,
     normalizeWhatsAppNumber,
 } from '@/lib/serviceProviderQuality';
@@ -68,7 +66,6 @@ export async function POST(request: Request) {
         const description = typeof clean.description === 'string' ? clean.description.trim() : '';
         if (!name) return NextResponse.json({ error: 'اسم الخدمة مطلوب' }, { status: 400 });
         if (!city) return NextResponse.json({ error: 'المدينة مطلوبة' }, { status: 400 });
-        if (!description) return NextResponse.json({ error: 'الوصف مطلوب' }, { status: 400 });
         clean.name = name;
         clean.city = city;
         clean.description = description;
@@ -109,12 +106,6 @@ export async function POST(request: Request) {
         if (targetStatus === 'approved') {
             if (!isValidExplicitWhatsApp(rawWhatsApp)) {
                 return NextResponse.json({ error: 'لا يمكن النشر قبل إضافة رقم واتساب صحيح ومؤكد' }, { status: 400 });
-            }
-            if (isGeneratedServiceDescription(description)) {
-                return NextResponse.json({ error: 'الوصف الآلي القديم غير مقبول. اكتب وصفاً حقيقياً عن الخدمة' }, { status: 400 });
-            }
-            if (!hasQualityServiceDescription(description)) {
-                return NextResponse.json({ error: 'لا يمكن النشر قبل كتابة وصف حقيقي من 40 كلمة على الأقل' }, { status: 400 });
             }
         }
 

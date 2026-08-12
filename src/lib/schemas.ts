@@ -28,7 +28,7 @@ export const serviceSchema = z.object({
     name: requiredString.min(2, { message: "الاسم مطلوب" }),
     city: requiredString, // Replaces location
     bio: z.string().trim().max(150, { message: "النبذة يجب ألا تتجاوز 150 حرفاً" }).optional().transform(v => v === '' ? null : v),
-    description: requiredString,
+    description: optionalString,
     category: z.string().optional(),
     profession: z.string().trim().min(1, { message: "التخصص مطلوب" }),
     image: optionalString,

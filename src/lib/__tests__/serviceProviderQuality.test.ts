@@ -1,7 +1,4 @@
 import {
-    SERVICE_DESCRIPTION_MIN_WORDS,
-    countServiceDescriptionWords,
-    hasQualityServiceDescription,
     isGeneratedServiceDescription,
     isIndexableServiceProvider,
     isPublicServiceProvider,
@@ -32,16 +29,10 @@ describe('service provider publication quality', () => {
         expect(publicServiceDescription(description)).toBe('');
     });
 
-    it('requires at least forty original words for indexable provider copy', () => {
-        const description = Array.from(
-            { length: SERVICE_DESCRIPTION_MIN_WORDS },
-            (_, index) => `كلمة${index + 1}`,
-        ).join(' ');
-
-        expect(countServiceDescriptionWords(description)).toBe(SERVICE_DESCRIPTION_MIN_WORDS);
-        expect(hasQualityServiceDescription(description)).toBe(true);
+    it('does not require a description to publish or index a reachable provider', () => {
         expect(isPublicServiceProvider({ whatsapp: '+905551234567' })).toBe(true);
-        expect(isIndexableServiceProvider({ whatsapp: '+905551234567', description })).toBe(true);
-        expect(isIndexableServiceProvider({ whatsapp: '+905551234567', description: 'وصف قصير' })).toBe(false);
+        expect(isIndexableServiceProvider({ whatsapp: '+905551234567' })).toBe(true);
+        expect(isIndexableServiceProvider({ whatsapp: '+905551234567', description: 'وصف قصير' })).toBe(true);
+        expect(publicServiceDescription('وصف قصير')).toBe('وصف قصير');
     });
 });

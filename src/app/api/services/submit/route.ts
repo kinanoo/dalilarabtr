@@ -4,9 +4,6 @@ import { getClientIp, isRateLimited } from '@/lib/rate-limit';
 import { categoryForName } from '@/lib/serviceCategories';
 import { canonicalCity } from '@/lib/turkishCities';
 import {
-    SERVICE_DESCRIPTION_MIN_WORDS,
-    countServiceDescriptionWords,
-    isGeneratedServiceDescription,
     isValidExplicitWhatsApp,
     normalizeWhatsAppNumber,
 } from '@/lib/serviceProviderQuality';
@@ -81,13 +78,6 @@ export async function POST(request: Request) {
         if (!isValidExplicitWhatsApp(rawWhatsApp)) {
             return NextResponse.json({ error: 'invalid_whatsapp' }, { status: 400 });
         }
-        if (
-            countServiceDescriptionWords(description) < SERVICE_DESCRIPTION_MIN_WORDS ||
-            isGeneratedServiceDescription(description)
-        ) {
-            return NextResponse.json({ error: 'weak_description' }, { status: 400 });
-        }
-
         // Map the submitted category to a canonical taxonomy value so it filters
         // and lands on the right category page; fall back to general.
         const category = categoryForName(rawCategory)?.name || rawCategory || 'خدمات عامة';

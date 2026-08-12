@@ -18,7 +18,6 @@ import ServiceResearchQueue from '@/components/admin/ServiceResearchQueue';
 import {
     isValidExplicitWhatsApp,
     serviceProviderQualityIssues,
-    hasQualityServiceDescription,
 } from '@/lib/serviceProviderQuality';
 
 type ServiceFormData = ServiceEditorForm &
@@ -35,13 +34,11 @@ interface ServiceStats {
     pending: number;
     missingWhatsapp: number;
     missingCity: number;
-    weakDescriptions: number;
     featured: number;
 }
 
 interface QualityIssueIds {
     missingWhatsapp: string[];
-    weakDescriptions: string[];
 }
 
 // Copied SaveBar for independence
@@ -90,12 +87,10 @@ export default function AdminServicesPage() {
     const [statsLoading, setStatsLoading] = useState(false);
     const [qualityIssueIds, setQualityIssueIds] = useState<QualityIssueIds>({
         missingWhatsapp: [],
-        weakDescriptions: [],
     });
 
     const issueLabels: Record<string, string> = {
         missing_whatsapp: 'خدمات بلا واتساب صالح',
-        weak_description: 'أوصاف آلية أو ضعيفة',
         missing_city: 'خدمات بدون مدينة',
         pending: 'بانتظار المراجعة',
         approved: 'الخدمات المنشورة',
@@ -154,20 +149,16 @@ export default function AdminServicesPage() {
                     countRows((q) => q.eq('status', 'pending')),
                     countRows((q) => q.or('city.is.null,city.eq.""')),
                     countRows((q) => q.eq('is_featured', true)),
-                    client.from('service_providers').select('id, whatsapp, description').limit(2000),
+                    client.from('service_providers').select('id, whatsapp').limit(2000),
                 ]);
                 if (qualityResult.error) throw qualityResult.error;
                 const qualityRows = qualityResult.data || [];
                 const missingWhatsappIds = qualityRows
                     .filter((row) => !isValidExplicitWhatsApp(row.whatsapp))
                     .map((row) => String(row.id));
-                const weakDescriptionIds = qualityRows
-                    .filter((row) => !hasQualityServiceDescription(row.description))
-                    .map((row) => String(row.id));
                 if (mounted) {
                     setQualityIssueIds({
                         missingWhatsapp: missingWhatsappIds,
-                        weakDescriptions: weakDescriptionIds,
                     });
                     setStats({
                         total,
@@ -175,7 +166,6 @@ export default function AdminServicesPage() {
                         pending,
                         missingWhatsapp: missingWhatsappIds.length,
                         missingCity,
-                        weakDescriptions: weakDescriptionIds.length,
                         featured,
                     });
                 }
@@ -195,11 +185,6 @@ export default function AdminServicesPage() {
                 ? q.in('id', qualityIssueIds.missingWhatsapp)
                 : q.eq('id', '__no_missing_whatsapp__');
         }
-        if (issueType === 'weak_description') {
-            return (q: any) => qualityIssueIds.weakDescriptions.length > 0
-                ? q.in('id', qualityIssueIds.weakDescriptions)
-                : q.eq('id', '__no_weak_descriptions__');
-        }
         if (issueType === 'missing_city') {
             return (q: { or: (filter: string) => unknown }) => q.or('city.is.null,city.eq.""');
         }
@@ -214,7 +199,7 @@ export default function AdminServicesPage() {
         }
         return undefined;
     })();
-    const customFilterKey = `${issueType || 'all'}:${qualityIssueIds.missingWhatsapp.join(',')}:${qualityIssueIds.weakDescriptions.join(',')}`;
+    const customFilterKey = `${issueType || 'all'}:${qualityIssueIds.missingWhatsapp.join(',')}`;
 
     const openEditor = (item: SelectedItem) => {
         setSelectedItem(item);
@@ -242,7 +227,6 @@ export default function AdminServicesPage() {
             // Validation
             if (!clean.name) { toast.error("يرجى إدخال اسم الخدمة"); throw new Error("اسم الخدمة مطلوب"); }
             if (!clean.city) { toast.error("يرجى إدخال المدينة"); throw new Error("المدينة مطلوبة"); }
-            if (!clean.description) { toast.error("يرجى إدخال الوصف"); throw new Error("الوصف مطلوب"); }
             if (clean.status === 'approved') {
                 const issues = serviceProviderQualityIssues(clean);
                 if (issues.length > 0) {
@@ -307,7 +291,6 @@ export default function AdminServicesPage() {
     ];
     const qualityActions = [
         { label: 'واتساب غير صالح', value: stats?.missingWhatsapp ?? 0, icon: PhoneCall, href: '/admin/services?issue=missing_whatsapp' },
-        { label: 'وصف يحتاج كتابة', value: stats?.weakDescriptions ?? 0, icon: CircleAlert, href: '/admin/services?issue=weak_description' },
         { label: 'مدينة ناقصة', value: stats?.missingCity ?? 0, icon: MapPin, href: '/admin/services?issue=missing_city' },
         { label: 'خدمة مميزة', value: stats?.featured ?? 0, icon: Star, href: '/admin/services?issue=featured' },
     ];
@@ -389,7 +372,7 @@ export default function AdminServicesPage() {
                             </button>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {qualityActions.map((item) => {
                             const Icon = item.icon;
                             const active = item.href.includes(`issue=${issueType}`);
@@ -442,15 +425,6 @@ export default function AdminServicesPage() {
                         { key: 'name', label: 'الاسم' },
                         { key: 'category', label: 'التصنيف' },
                         { key: 'profession', label: 'الخدمة' },
-                        {
-                            key: 'description',
-                            label: 'جودة الوصف',
-                            render: (value) => hasQualityServiceDescription(value) ? (
-                                <span className="inline-flex rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">مكتمل</span>
-                            ) : (
-                                <span className="inline-flex rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">يحتاج كتابة</span>
-                            ),
-                        },
                         {
                             key: 'city',
                             label: 'المدينة',
