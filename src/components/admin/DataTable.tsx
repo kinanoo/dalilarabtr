@@ -26,8 +26,10 @@ interface DataTableProps {
     idField?: string; // Default: 'id'
     searchFields?: string[]; // Columns to search in
     customFilter?: (query: any) => any; // New: Allow external filtering
+    customFilterKey?: string; // Stable identity when the filter function is rebuilt on render
     refreshKey?: number; // Increment to trigger a data refresh
     toggleField?: string; // Boolean field to toggle inline (e.g. 'is_active', 'active')
+    onMutation?: () => void; // Notify parent so summary counters can refresh
 }
 
 export function DataTable({
@@ -42,10 +44,11 @@ export function DataTable({
     idField = 'id',
     searchFields,
     customFilter,
+    customFilterKey,
     refreshKey,
-    toggleField
+    toggleField,
+    onMutation,
 }: DataTableProps) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [data, setData] = useState<Record<string, any>[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
@@ -68,20 +71,24 @@ export function DataTable({
     }
 
     // Reset to page 0 when customFilter changes (e.g., switching filter modes in services page)
-    const prevCustomFilter = useRef(customFilter);
+    const filterIdentity = customFilterKey ?? customFilter;
+    const prevCustomFilter = useRef(filterIdentity);
     useEffect(() => {
-        if (customFilter !== prevCustomFilter.current) {
-            prevCustomFilter.current = customFilter;
+        if (filterIdentity !== prevCustomFilter.current) {
+            prevCustomFilter.current = filterIdentity;
             setPage(0);
         }
-    }, [customFilter]);
+    }, [filterIdentity]);
 
     useEffect(() => {
         fetchData(search);
         // orderBy belongs here: it is read inside the query, so without it a
         // page that switches sort order would keep showing the old order until
         // something else happened to trigger a refetch.
-    }, [page, tableName, customFilter, refreshKey, orderBy]); // refreshKey triggers manual refresh
+    // Search has its own debounced effect below; including it here would issue
+    // a second request on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, tableName, filterIdentity, refreshKey, orderBy]); // refreshKey triggers manual refresh
 
     // Debounced search — capture current search value to avoid stale closure
     useEffect(() => {
@@ -91,6 +98,9 @@ export function DataTable({
             fetchData(currentSearch);
         }, 500);
         return () => clearTimeout(timer);
+    // fetchData intentionally follows the latest render after the debounce;
+    // adding it as a dependency would restart this timer on unrelated renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     async function fetchData(searchTerm?: string) {
@@ -161,6 +171,7 @@ export function DataTable({
             if (!res.ok) throw new Error(result.error || 'فشل الحذف');
             toast.success('تم الحذف بنجاح');
             fetchData();
+            onMutation?.();
         } catch (err) {
             toast.error('خطأ في الحذف: ' + (extractErrorMessage(err)));
         } finally {
@@ -178,6 +189,7 @@ export function DataTable({
             if (error) throw error;
             toast.success(currentValue ? 'تم التعطيل' : 'تم التفعيل');
             fetchData();
+            onMutation?.();
         } catch (err) {
             toast.error('خطأ: ' + (extractErrorMessage(err)));
         } finally {
@@ -189,18 +201,21 @@ export function DataTable({
     // owner's preferred layout sticks across every content section.
     const [view, setView] = useState<'rows' | 'grid' | 'table'>('rows');
     useEffect(() => {
-        try {
-            const v = localStorage.getItem('admin_dt_view');
-            if (v === 'grid' || v === 'table' || v === 'rows') setView(v);
-        } catch { /* ignore */ }
-    }, []);
+        const timer = window.setTimeout(() => {
+            try {
+                const v = localStorage.getItem('admin_dt_view');
+                if (type === 'service' && v === 'grid') setView('rows');
+                else if (v === 'grid' || v === 'table' || v === 'rows') setView(v);
+            } catch { /* ignore */ }
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, [type]);
     const changeView = (v: 'rows' | 'grid' | 'table') => {
         setView(v);
         try { localStorage.setItem('admin_dt_view', v); } catch { /* ignore */ }
     };
 
     // Compact action cluster reused by the grid + table layouts.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function compactActions(row: Record<string, any>) {
         const id = row[idField];
         return (
@@ -238,7 +253,10 @@ export function DataTable({
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 shrink-0">
-                        {([['rows', List], ['grid', LayoutGrid], ['table', Table2]] as const).map(([v, Icon]) => (
+                        {(type === 'service'
+                            ? ([['rows', List], ['table', Table2]] as const)
+                            : ([['rows', List], ['grid', LayoutGrid], ['table', Table2]] as const)
+                        ).map(([v, Icon]) => (
                             <button key={v} onClick={() => changeView(v)} aria-label={v} title={v === 'rows' ? 'صفوف' : v === 'grid' ? 'شبكة' : 'جدول'} className={`p-2 rounded-lg transition-all ${view === v ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>
                                 <Icon size={16} />
                             </button>
@@ -338,10 +356,10 @@ export function DataTable({
                             type === 'code'
                                 ? 'bg-gradient-to-l from-rose-400 via-red-400 to-rose-500'
                                 : type === 'service'
-                                    ? 'bg-gradient-to-l from-blue-400 via-cyan-400 to-blue-500'
+                                    ? 'bg-emerald-600'
                                     : 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500';
                         return (
-                        <div key={rowId || index} className={`relative group bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 sm:p-4 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-400/60 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
+                        <div key={rowId || index} className={`relative group border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 rounded-lg p-3 sm:p-4 hover:shadow-md hover:border-emerald-400/60 transition-all duration-200 overflow-hidden ${isPending ? 'opacity-60 pointer-events-none' : ''}`}>
                             {/* Top accent stripe per type */}
                             <div
                                 aria-hidden="true"
@@ -354,9 +372,9 @@ export function DataTable({
                             )}
                             <div className="relative flex items-start gap-3">
                                 {/* Icon / Leading */}
-                                <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center text-base sm:text-lg font-black shadow-sm group-hover:scale-105 transition-transform duration-300
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg flex items-center justify-center text-base sm:text-lg font-black transition-transform duration-200
                                     ${type === 'code' ? 'bg-gradient-to-br from-rose-100 to-red-100 text-rose-700 dark:from-rose-900/30 dark:to-red-900/20 dark:text-rose-300' :
-                                        type === 'service' ? 'bg-gradient-to-br from-blue-100 to-cyan-100 text-blue-700 dark:from-blue-900/30 dark:to-cyan-900/20 dark:text-blue-300' :
+                                        type === 'service' ? 'bg-slate-100 text-emerald-700 dark:bg-slate-800 dark:text-emerald-300' :
                                             'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-700 dark:from-emerald-900/30 dark:to-teal-900/20 dark:text-emerald-300'}`}>
                                     {type === 'code' ? (row.code || 'C') : type === 'service' ? (row.name?.charAt(0) || 'S') : (row.title?.charAt(0) || 'A')}
                                 </div>
@@ -409,7 +427,10 @@ export function DataTable({
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[11px] sm:text-xs text-slate-400 font-medium">
-                                        {columns.map(col => {
+                                        {(type === 'service'
+                                            ? columns.filter((column) => ['description', 'city', 'phone', 'status'].includes(column.key))
+                                            : columns
+                                        ).map(col => {
                                             if (col.key === 'title' || col.key === 'name' || col.key === 'question') return null;
                                             const val = col.render ? col.render(row[col.key], row) : String(row[col.key] || '-');
                                             return (

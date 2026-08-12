@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/api/adminAuth';
 import logger from '@/lib/logger';
 import { categoryForName } from '@/lib/serviceCategories';
@@ -136,12 +137,25 @@ export async function POST(request: Request) {
         }
 
         const payload = id ? { id, ...clean } : clean;
-        const { error } = await gate.svc.from('service_providers').upsert(payload);
+        const { data: saved, error } = await gate.svc
+            .from('service_providers')
+            .upsert(payload)
+            .select('id, slug')
+            .single();
         if (error) {
             logger.error('admin/services upsert:', error);
             return NextResponse.json({ error: 'فشل حفظ الخدمة' }, { status: 500 });
         }
-        return NextResponse.json({ ok: true });
+
+        // Keep the public directory and the services sitemap in sync with the
+        // admin action. Revalidation runs only after the database write has
+        // succeeded, so a failed save can never evict healthy cached pages.
+        revalidatePath('/services');
+        revalidatePath('/sitemap-services.xml');
+        const publicId = saved?.slug || saved?.id;
+        if (publicId) revalidatePath(`/services/${publicId}`);
+
+        return NextResponse.json({ ok: true, provider: saved });
     } catch (err) {
         logger.error('admin/services POST unhandled:', err);
         return NextResponse.json({ error: 'خطأ داخلي في الخادم' }, { status: 500 });

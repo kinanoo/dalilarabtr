@@ -45,6 +45,10 @@ const ALLOWED_PATHS: RegExp[] = [
     /^\/updates$/,
     /^\/updates\/[a-zA-Z0-9_\-%]+$/,
     /^\/faq$/,
+    /^\/services$/,
+    /^\/services\/[a-zA-Z0-9_\-%]+$/,
+    /^\/services\/category\/[a-zA-Z0-9_\-%]+(?:\/[a-zA-Z0-9_\-%]+)?$/,
+    /^\/sitemap-services\.xml$/,
 ];
 
 const MAX_PATHS = 20;

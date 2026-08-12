@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { DataTable } from '@/components/admin/DataTable';
-import { Briefcase, ArrowRight, Loader2, Save, Trash2, X, CheckCircle2, Clock, MapPin, PhoneCall, Star } from 'lucide-react';
+import { Briefcase, Loader2, Save, Trash2, X, CheckCircle2, Clock, MapPin, PhoneCall, Star, Plus, ExternalLink, RefreshCw, CircleAlert } from 'lucide-react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import {
     ServiceEditor,
@@ -15,7 +16,6 @@ import logger from '@/lib/logger';
 import { extractErrorMessage } from '@/lib/errors';
 import ServiceResearchQueue from '@/components/admin/ServiceResearchQueue';
 import {
-    isGeneratedServiceDescription,
     isValidExplicitWhatsApp,
     serviceProviderQualityIssues,
     hasQualityServiceDescription,
@@ -39,35 +39,40 @@ interface ServiceStats {
     featured: number;
 }
 
+interface QualityIssueIds {
+    missingWhatsapp: string[];
+    weakDescriptions: string[];
+}
+
 // Copied SaveBar for independence
 const SaveBar = ({ onSave, onDelete, onCancel, loading, isNew }: { onSave: () => void, onDelete: () => void, onCancel: () => void, loading: boolean, isNew: boolean }) => (
-    <div className="p-3 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <div className="sticky bottom-0 z-10 flex items-center gap-2 border-t border-slate-200 bg-white p-3 shadow-[0_-4px_10px_-6px_rgba(15,23,42,0.25)] sm:p-4 dark:border-slate-800 dark:bg-slate-900">
         {!isNew && (
             <button
                 onClick={onDelete}
                 disabled={loading}
-                className="flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold transition-all disabled:opacity-50"
+                title="حذف الخدمة"
+                aria-label="حذف الخدمة"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-red-100 bg-red-50 text-red-600 transition hover:bg-red-100 disabled:opacity-50 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-300"
             >
-                <Trash2 size={18} /> حذف
+                <Trash2 size={18} />
             </button>
         )}
-        <div className="flex gap-2 sm:gap-3 mr-auto w-full sm:w-auto justify-end">
-            <button
-                onClick={onCancel}
-                disabled={loading}
-                className="min-h-11 px-4 sm:px-6 py-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-bold transition-all"
-            >
-                إلغاء
-            </button>
-            <button
-                onClick={onSave}
-                disabled={loading}
-                className="flex-1 sm:flex-none flex min-h-11 items-center justify-center gap-2 px-6 sm:px-10 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-70 active:scale-95"
-            >
-                {loading ? <Loader2 className="animate-spin" size={22} /> : <Save size={22} />}
-                {loading ? 'جاري الحفظ...' : 'حفظ التعديلات'}
-            </button>
-        </div>
+        <button
+            onClick={onCancel}
+            disabled={loading}
+            className="h-11 shrink-0 rounded-lg px-3 text-sm font-bold text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+        >
+            إلغاء
+        </button>
+        <button
+            onClick={onSave}
+            disabled={loading}
+            className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-black text-white shadow-sm transition hover:bg-emerald-800 disabled:opacity-70 active:scale-[0.98] sm:mr-auto sm:max-w-64"
+        >
+            {loading ? <Loader2 className="animate-spin" size={19} /> : <Save size={19} />}
+            {loading ? 'جاري الحفظ...' : isNew ? 'إضافة المزوّد' : 'حفظ التعديلات'}
+        </button>
     </div>
 );
 
@@ -83,6 +88,10 @@ export default function AdminServicesPage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [stats, setStats] = useState<ServiceStats | null>(null);
     const [statsLoading, setStatsLoading] = useState(false);
+    const [qualityIssueIds, setQualityIssueIds] = useState<QualityIssueIds>({
+        missingWhatsapp: [],
+        weakDescriptions: [],
+    });
 
     const issueLabels: Record<string, string> = {
         missing_whatsapp: 'خدمات بلا واتساب صالح',
@@ -110,6 +119,20 @@ export default function AdminServicesPage() {
     }, [editId]);
 
     useEffect(() => {
+        if (!selectedItem) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !saving) setSelectedItem(null);
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [saving, selectedItem]);
+
+    useEffect(() => {
         let mounted = true;
         async function loadStats() {
             const client = supabase;
@@ -131,16 +154,30 @@ export default function AdminServicesPage() {
                     countRows((q) => q.eq('status', 'pending')),
                     countRows((q) => q.or('city.is.null,city.eq.""')),
                     countRows((q) => q.eq('is_featured', true)),
-                    client.from('service_providers').select('whatsapp, description').limit(2000),
+                    client.from('service_providers').select('id, whatsapp, description').limit(2000),
                 ]);
                 if (qualityResult.error) throw qualityResult.error;
                 const qualityRows = qualityResult.data || [];
-                const missingWhatsapp = qualityRows.filter((row) => !isValidExplicitWhatsApp(row.whatsapp)).length;
-                const weakDescriptions = qualityRows.filter((row) =>
-                    !String(row.description || '').trim() || isGeneratedServiceDescription(row.description),
-                ).length;
+                const missingWhatsappIds = qualityRows
+                    .filter((row) => !isValidExplicitWhatsApp(row.whatsapp))
+                    .map((row) => String(row.id));
+                const weakDescriptionIds = qualityRows
+                    .filter((row) => !hasQualityServiceDescription(row.description))
+                    .map((row) => String(row.id));
                 if (mounted) {
-                    setStats({ total, approved, pending, missingWhatsapp, missingCity, weakDescriptions, featured });
+                    setQualityIssueIds({
+                        missingWhatsapp: missingWhatsappIds,
+                        weakDescriptions: weakDescriptionIds,
+                    });
+                    setStats({
+                        total,
+                        approved,
+                        pending,
+                        missingWhatsapp: missingWhatsappIds.length,
+                        missingCity,
+                        weakDescriptions: weakDescriptionIds.length,
+                        featured,
+                    });
                 }
             } catch (err) {
                 logger.error('services stats failed:', err);
@@ -152,12 +189,16 @@ export default function AdminServicesPage() {
         return () => { mounted = false; };
     }, [refreshKey]);
 
-    const customFilter = useMemo<((query: any) => any) | undefined>(() => {
+    const customFilter: ((query: any) => any) | undefined = (() => {
         if (issueType === 'missing_whatsapp') {
-            return (q: { or: (filter: string) => unknown }) => q.or('whatsapp.is.null,whatsapp.eq.""');
+            return (q: any) => qualityIssueIds.missingWhatsapp.length > 0
+                ? q.in('id', qualityIssueIds.missingWhatsapp)
+                : q.eq('id', '__no_missing_whatsapp__');
         }
         if (issueType === 'weak_description') {
-            return (q: { or: (filter: string) => unknown }) => q.or('description.is.null,description.eq."",description.ilike.%يعرّف عن%,description.ilike.%ويتيح التواصل%');
+            return (q: any) => qualityIssueIds.weakDescriptions.length > 0
+                ? q.in('id', qualityIssueIds.weakDescriptions)
+                : q.eq('id', '__no_weak_descriptions__');
         }
         if (issueType === 'missing_city') {
             return (q: { or: (filter: string) => unknown }) => q.or('city.is.null,city.eq.""');
@@ -172,7 +213,8 @@ export default function AdminServicesPage() {
             return (q: { eq: (key: string, value: boolean) => unknown }) => q.eq('is_featured', true);
         }
         return undefined;
-    }, [issueType]);
+    })();
+    const customFilterKey = `${issueType || 'all'}:${qualityIssueIds.missingWhatsapp.join(',')}:${qualityIssueIds.weakDescriptions.join(',')}`;
 
     const openEditor = (item: SelectedItem) => {
         setSelectedItem(item);
@@ -258,28 +300,60 @@ export default function AdminServicesPage() {
         }
     };
 
-    const statCards = [
-        { label: 'كل الخدمات', value: stats?.total ?? 0, icon: Briefcase, href: '/admin/services', tone: 'slate' },
-        { label: 'منشورة', value: stats?.approved ?? 0, icon: CheckCircle2, href: '/admin/services?issue=approved', tone: 'emerald' },
-        { label: 'بانتظار المراجعة', value: stats?.pending ?? 0, icon: Clock, href: '/admin/services?issue=pending', tone: 'amber' },
-        { label: 'واتساب ناقص', value: stats?.missingWhatsapp ?? 0, icon: PhoneCall, href: '/admin/services?issue=missing_whatsapp', tone: 'rose' },
-        { label: 'وصف آلي أو فارغ', value: stats?.weakDescriptions ?? 0, icon: Clock, href: '/admin/services?issue=weak_description', tone: 'amber' },
-        { label: 'بدون مدينة', value: stats?.missingCity ?? 0, icon: MapPin, href: '/admin/services?issue=missing_city', tone: 'sky' },
-        { label: 'مميزة', value: stats?.featured ?? 0, icon: Star, href: '/admin/services?issue=featured', tone: 'violet' },
+    const summaryStats = [
+        { label: 'كل السجلات', value: stats?.total ?? 0, icon: Briefcase, href: '/admin/services' },
+        { label: 'منشورة', value: stats?.approved ?? 0, icon: CheckCircle2, href: '/admin/services?issue=approved' },
+        { label: 'قيد المراجعة', value: stats?.pending ?? 0, icon: Clock, href: '/admin/services?issue=pending' },
+    ];
+    const qualityActions = [
+        { label: 'واتساب غير صالح', value: stats?.missingWhatsapp ?? 0, icon: PhoneCall, href: '/admin/services?issue=missing_whatsapp' },
+        { label: 'وصف يحتاج كتابة', value: stats?.weakDescriptions ?? 0, icon: CircleAlert, href: '/admin/services?issue=weak_description' },
+        { label: 'مدينة ناقصة', value: stats?.missingCity ?? 0, icon: MapPin, href: '/admin/services?issue=missing_city' },
+        { label: 'خدمة مميزة', value: stats?.featured ?? 0, icon: Star, href: '/admin/services?issue=featured' },
     ];
 
     return (
-        <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <div className="mx-auto max-w-7xl space-y-4 p-3 sm:p-6">
             <AdminPageHeader
                 icon={Briefcase}
-                theme="blue"
+                theme="emerald"
                 title="الخدمات والمهن"
-                subtitle="إدارة مقدمي الخدمات والأطباء والمحامين"
+                subtitle="إضافة مقدمي الخدمات ومراجعة جاهزيتهم للنشر"
                 eyebrow="دليل"
+                actions={(
+                    <div className="grid grid-cols-[auto_auto_1fr] gap-2 sm:flex sm:items-center">
+                        <button
+                            type="button"
+                            onClick={() => setRefreshKey((key) => key + 1)}
+                            aria-label="تحديث البيانات"
+                            title="تحديث البيانات"
+                            className="grid h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                        >
+                            <RefreshCw size={17} className={statsLoading ? 'animate-spin' : ''} />
+                        </button>
+                        <Link
+                            href="/services"
+                            target="_blank"
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        >
+                            <ExternalLink size={16} />
+                            <span className="hidden sm:inline">فتح الدليل</span>
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={() => openEditor({ id: 'new', data: { profession: '', status: 'pending', verification_level: 'listed' } })}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-black text-white shadow-sm transition hover:bg-emerald-800 active:scale-[0.98]"
+                        >
+                            <Plus size={17} />
+                            إضافة مزوّد
+                        </button>
+                    </div>
+                )}
             />
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
-                {statCards.map((item) => {
+            <section className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                <div className="grid grid-cols-3 divide-x divide-x-reverse divide-slate-200 dark:divide-slate-800">
+                {summaryStats.map((item) => {
                     const Icon = item.icon;
                     const active = item.href.includes(`issue=${issueType}`) || (!issueType && item.href === '/admin/services');
                     return (
@@ -287,55 +361,83 @@ export default function AdminServicesPage() {
                             key={item.label}
                             type="button"
                             onClick={() => router.push(item.href)}
-                            className={`min-h-24 rounded-2xl border bg-white p-3 text-right shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 ${active ? 'border-emerald-300 ring-2 ring-emerald-100 dark:border-emerald-700 dark:ring-emerald-900/40' : 'border-slate-200 dark:border-slate-800'}`}
+                            className={`flex min-h-16 items-center gap-2 px-3 py-2 text-right transition sm:px-5 ${active ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/25 dark:text-emerald-100' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
                         >
-                            <span className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl ${item.tone === 'emerald' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : item.tone === 'amber' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300' : item.tone === 'rose' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300' : item.tone === 'sky' ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300' : item.tone === 'violet' ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}`}>
-                                <Icon size={18} />
+                            <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 sm:inline-flex dark:bg-slate-800 dark:text-slate-300">
+                                <Icon size={17} />
                             </span>
-                            <span className="block text-xs font-bold text-slate-500 dark:text-slate-400">{item.label}</span>
-                            <span className="mt-1 block text-2xl font-black tabular-nums text-slate-950 dark:text-white">
-                                {statsLoading && !stats ? '...' : item.value}
+                            <span className="min-w-0">
+                                <span className="block truncate text-[10px] font-bold text-slate-500 sm:text-xs dark:text-slate-400">{item.label}</span>
+                                <span className="block text-lg font-black tabular-nums text-slate-950 sm:text-xl dark:text-white">
+                                    {statsLoading && !stats ? '...' : item.value}
+                                </span>
                             </span>
                         </button>
                     );
                 })}
-            </div>
+                </div>
+
+                <div className="border-t border-slate-200 px-3 py-3 sm:px-5 dark:border-slate-800">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-sm font-black text-slate-900 dark:text-white">قائمة العمل</h2>
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">اختر مشكلة لعرض السجلات التي تحتاج إصلاحاً فقط.</p>
+                        </div>
+                        {issueType && (
+                            <button type="button" onClick={() => router.push('/admin/services')} className="text-xs font-black text-emerald-700 hover:underline dark:text-emerald-300">
+                                عرض الكل
+                            </button>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {qualityActions.map((item) => {
+                            const Icon = item.icon;
+                            const active = item.href.includes(`issue=${issueType}`);
+                            return (
+                                <button
+                                    key={item.label}
+                                    type="button"
+                                    onClick={() => router.push(item.href)}
+                                    className={`flex min-h-11 items-center gap-2 rounded-lg border px-3 text-right transition ${active
+                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/25 dark:text-emerald-100'
+                                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200'
+                                    }`}
+                                >
+                                    <Icon size={15} className="shrink-0 text-slate-500 dark:text-slate-400" />
+                                    <span className="min-w-0 flex-1 truncate text-[11px] font-black sm:text-xs">{item.label}</span>
+                                    <span className="text-sm font-black tabular-nums">{statsLoading && !stats ? '...' : item.value}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
 
             {issueType && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2">
-                    <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
-                        <ArrowRight className="rotate-180" size={20} />
-                        <span className="font-bold">
-                            وضع الإصلاح: {issueLabels[issueType] || 'فلتر مخصص'}
-                        </span>
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-100">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <CircleAlert size={17} className="shrink-0" />
+                        <span className="truncate text-sm font-black">المعروض الآن: {issueLabels[issueType] || 'فلتر مخصص'}</span>
                     </div>
                     <button
                         onClick={() => router.push('/admin/services')}
-                        className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 rounded-lg text-sm font-bold shadow-sm"
+                        className="shrink-0 rounded-lg bg-white px-3 py-2 text-xs font-black shadow-sm hover:bg-slate-50 dark:bg-slate-800"
                     >
-                        إلغاء الفلتر
+                        إلغاء
                     </button>
                 </div>
             )}
 
-            <details className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <summary className="list-none cursor-pointer p-4 sm:px-6 flex items-center justify-between gap-3">
-                    <span className="font-black text-slate-900 dark:text-white">دفعات البحث والاستيراد</span>
-                    <span className="text-xs font-bold text-slate-400 group-open:hidden">فتح</span>
-                    <span className="text-xs font-bold text-slate-400 hidden group-open:inline">إغلاق</span>
-                </summary>
-                <div className="border-t border-slate-100 dark:border-slate-800 p-4 sm:p-6">
-                    <ServiceResearchQueue />
-                </div>
-            </details>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-3 sm:p-6 shadow-sm">
+            <section className="rounded-lg border border-slate-200 bg-white p-3 sm:p-5 dark:border-slate-800 dark:bg-slate-900">
                 <DataTable
                     tableName="service_providers"
-                    title="قائمة الخدمات"
+                    title="مقدمو الخدمات"
+                    searchPlaceholder="ابحث بالاسم أو المهنة أو المدينة أو الرقم..."
                     type="service"
                     customFilter={customFilter}
+                    customFilterKey={customFilterKey}
                     refreshKey={refreshKey}
+                    onMutation={() => setRefreshKey((key) => key + 1)}
                     columns={[
                         { key: 'name', label: 'الاسم' },
                         { key: 'category', label: 'التصنيف' },
@@ -388,24 +490,34 @@ export default function AdminServicesPage() {
                     ]}
                     searchFields={['name', 'category', 'profession', 'description', 'city', 'phone', 'whatsapp']}
                     onEdit={(item) => openEditor({ id: item.id, data: item })}
-                    onCreate={() => openEditor({ id: 'new', data: { profession: '', status: 'pending', verification_level: 'listed' } })}
                 />
-            </div>
+            </section>
+
+            <details className="group rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 sm:px-5">
+                    <span>
+                        <span className="block text-sm font-black text-slate-900 dark:text-white">أدوات البحث والاستيراد</span>
+                        <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">للإضافات الجماعية فقط؛ لا تحتاجها في العمل اليومي.</span>
+                    </span>
+                    <span className="text-xs font-bold text-slate-400 group-open:hidden">فتح</span>
+                    <span className="hidden text-xs font-bold text-slate-400 group-open:inline">إغلاق</span>
+                </summary>
+                <div className="border-t border-slate-100 p-4 sm:p-6 dark:border-slate-800">
+                    <ServiceResearchQueue />
+                </div>
+            </details>
 
             {/* Editor Modal */}
             {selectedItem && (
-                <div className="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm flex justify-center items-end md:items-center overflow-hidden md:py-10" onClick={() => setSelectedItem(null)}>
-                    <div className="w-full max-w-5xl bg-white dark:bg-slate-900 shadow-2xl md:rounded-2xl border-t md:border border-slate-200 dark:border-slate-800 flex flex-col relative h-[90vh] md:h-auto md:max-h-[85vh]" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[60] flex items-end justify-center overflow-hidden bg-slate-950/55 backdrop-blur-sm md:items-center md:p-6" onClick={() => { if (!saving) setSelectedItem(null); }}>
+                    <div role="dialog" aria-modal="true" aria-labelledby="service-editor-title" className="relative flex h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col rounded-t-xl border-t border-slate-200 bg-white shadow-2xl md:h-auto md:max-h-[88vh] md:rounded-xl md:border dark:border-slate-800 dark:bg-slate-900" onClick={e => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-                            <div>
-                                <h3 className="font-bold text-xl">{selectedItem.id === 'new' ? 'إضافة خدمة جديدة' : 'تعديل خدمة'}</h3>
-                                <p className="text-xs text-slate-400 font-mono mt-1">{selectedItem.id === 'new' ? 'New Entry' : selectedItem.id}</p>
-                            </div>
-                            <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full" aria-label="إغلاق"><X size={20} /></button>
+                        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-5 dark:border-slate-800 dark:bg-slate-900">
+                            <h3 id="service-editor-title" className="text-lg font-black text-slate-950 dark:text-white">{selectedItem.id === 'new' ? 'إضافة مقدم خدمة' : 'تعديل مقدم الخدمة'}</h3>
+                            <button disabled={saving} onClick={() => setSelectedItem(null)} className="grid h-10 w-10 place-items-center rounded-lg bg-white text-slate-600 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300" aria-label="إغلاق"><X size={19} /></button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6 max-h-[70vh]">
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                             <ServiceEditor form={form} setForm={setForm} />
                         </div>
 

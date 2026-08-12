@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import logger from '@/lib/logger';
 
 // Allowed tables for admin deletion (whitelist for safety)
@@ -88,6 +89,15 @@ export async function POST(request: NextRequest) {
         // Perform delete with service client — whitelist allowed ID field names
         const ALLOWED_ID_FIELDS = ['id', 'code', 'slug', 'key'];
         const deleteField = (typeof idField === 'string' && ALLOWED_ID_FIELDS.includes(idField)) ? idField : 'id';
+        let deletedServiceSlug: string | null = null;
+        if (table === 'service_providers') {
+            const { data: serviceRow } = await serviceClient
+                .from('service_providers')
+                .select('slug')
+                .eq(deleteField, id)
+                .maybeSingle();
+            deletedServiceSlug = typeof serviceRow?.slug === 'string' ? serviceRow.slug : null;
+        }
         const { error } = await serviceClient
             .from(table)
             .delete()
@@ -96,6 +106,15 @@ export async function POST(request: NextRequest) {
         if (error) {
             logger.error('Admin delete error:', error);
             return NextResponse.json({ error: 'delete_failed' }, { status: 500 });
+        }
+
+        if (table === 'service_providers') {
+            revalidatePath('/services');
+            revalidatePath('/sitemap-services.xml');
+            revalidatePath(`/services/${encodeURIComponent(String(id))}`);
+            if (deletedServiceSlug) {
+                revalidatePath(`/services/${encodeURIComponent(deletedServiceSlug)}`);
+            }
         }
 
         // Clean up related notifications & activity log (best-effort, don't block response)

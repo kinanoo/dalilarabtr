@@ -10,11 +10,11 @@ import {
 import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 import { displayServiceProfession } from '@/lib/serviceText';
 
-// The services directory changes from the admin/database and must not show
-// stale HTML to users or crawlers after providers are edited.
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
-export const revalidate = 0;
+// Cache the first directory view at the edge instead of reading Supabase on
+// every visit. Admin service writes call revalidatePath('/services'), so edits
+// remain visible on the next request without paying a database round-trip for
+// every visitor. The five-minute window is only a fallback for external writes.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
     title: { absolute: 'دليل الخدمات العربية في تركيا: أطباء، محامون، مترجمون ومهن يومية | دليل العرب' },
