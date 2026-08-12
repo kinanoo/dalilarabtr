@@ -10,6 +10,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Clock, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { stripHtml } from '@/lib/stripHtml';
 
 interface RelatedArticle {
     id: string;
@@ -84,8 +85,8 @@ export default async function RelatedArticles({
                             <h3 className="font-black text-lg mb-3 text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">
                                 {article.title}
                             </h3>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 mb-4 leading-relaxed flex-grow">
-                                {article.intro?.replace(/<[^>]*>/g, '')}
+                            <p dir="auto" className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 mb-4 leading-relaxed flex-grow [unicode-bidi:plaintext]">
+                                {stripHtml(article.intro)}
                             </p>
                             <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-200 dark:border-slate-700/50">
                                 <div className="flex items-center gap-1 text-slate-400 text-xs tabular-nums" dir="ltr">

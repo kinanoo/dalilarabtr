@@ -14,6 +14,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Sparkles, Calendar } from 'lucide-react';
+import { stripHtml } from '@/lib/stripHtml';
 
 export type HubTheme = 'emerald' | 'blue' | 'rose' | 'amber' | 'violet' | 'cyan' | 'indigo';
 
@@ -166,8 +167,8 @@ export default function CategoryHubCard({
                 <h3 className={`text-xl font-black text-slate-800 dark:text-slate-100 mb-3 ${t.titleHover} transition-colors leading-snug`}>
                     {article.title}
                 </h3>
-                <p className="text-slate-500 dark:text-slate-300 text-sm mb-6 flex-grow line-clamp-3 leading-relaxed">
-                    {article.intro?.replace(/<[^>]*>/g, '')}
+                <p dir="auto" className="text-slate-500 dark:text-slate-300 text-sm mb-6 flex-grow line-clamp-3 leading-relaxed [unicode-bidi:plaintext]">
+                    {stripHtml(article.intro)}
                 </p>
                 <div className={`flex items-center ${t.readMore} font-black text-sm mt-auto`}>
                     اقرأ الدليل الكامل

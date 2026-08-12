@@ -26,6 +26,7 @@ import type { Article, PlanResult } from '@/lib/types';
 // withTimeout comes from its own module for the same reason.
 import { getSupabase } from '@/lib/supabaseLazy';
 import { withTimeout } from '@/lib/withTimeout';
+import { stripHtml } from '@/lib/stripHtml';
 
 type Props = {
   initialComments?: any[]; // Keep any for comments flexible
@@ -54,7 +55,7 @@ const mapArticleToPlan = (article: Article, key: string, scenario: PlanResult): 
     id: staticBase.id,
     title: article.title || staticBase.title,
     risk: dynamicRisk,
-    desc: article.intro?.replace(/<[^>]*>/g, '') || staticBase.desc || (staticBase as any).description || '',
+    desc: stripHtml(article.intro) || staticBase.desc || (staticBase as any).description || '',
     steps: article.steps?.length ? article.steps : (staticBase.steps || []),
     docs: article.documents?.length ? article.documents : (staticBase.docs || []),
     cost: article.fees || staticBase.cost || '',

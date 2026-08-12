@@ -9,6 +9,7 @@ import BookmarkButton from '@/components/BookmarkButton';
 import PageHero from '@/components/PageHero';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabaseClient';
+import { stripHtml } from '@/lib/stripHtml';
 
 export default function BookmarksPage() {
     const { bookmarks, isLoaded } = useBookmarks();
@@ -91,7 +92,7 @@ export default function BookmarksPage() {
                                         </Link>
                                         <BookmarkButton id={article.id} mini className="shrink-0 relative z-10" />
                                     </div>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">{article.intro?.replace(/<[^>]*>/g, '')}</p>
+                                    <p dir="auto" className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed [unicode-bidi:plaintext]">{stripHtml(article.intro)}</p>
                                     <div className="flex items-center gap-3 text-xs">
                                         <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg font-black text-[10px]">
                                             {article.category}

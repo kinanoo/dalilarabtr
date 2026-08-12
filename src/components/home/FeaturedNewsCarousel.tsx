@@ -59,6 +59,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Flame, ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { plainTextExcerpt } from '@/lib/stripHtml';
 
 // No framer-motion here ON PURPOSE (JS-diet round 4): this carousel sits in
 // the HOMEPAGE critical graph, and it was the last always-loaded public
@@ -348,13 +349,6 @@ function formatDate(iso: string | null): string {
     return `${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function stripHtml(html: string | null, max = 160): string {
-    if (!html) return '';
-    const text = html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-    if (text.length <= max) return text;
-    return text.slice(0, max - 1).trim() + '…';
-}
-
 const DISPLAY_MS = 5000;      // article visible duration once the cycle runs
 // Owner request (2026-07-17): the strip must sit COMPLETELY STILL right after
 // a page load/refresh — no progress-bar fill, no swap — because instant motion
@@ -408,7 +402,7 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
 
     const article = articles[index];
     const date = formatDate(article.published_at);
-    const summary = stripHtml(article.intro, 160);
+    const summary = plainTextExcerpt(article.intro, 160);
     // Fallback chain — newer rows populate `slug`, older rows only have
     // `id`. Without this guard the link ended up as /article/null and
     // 404'd (user-reported when they clicked "اقرأ التفاصيل" on a
@@ -587,7 +581,7 @@ export default function FeaturedNewsCarousel({ articles }: Props) {
                             {/* Summary — clamped to 2 lines on phones to keep
                                 strip compact; allowed up to 3 on desktop. */}
                             {summary && (
-                                <p className="mt-2 text-xs sm:text-sm text-white/75 leading-relaxed line-clamp-2 sm:line-clamp-3">
+                                <p dir="auto" className="mt-2 text-xs sm:text-sm text-white/75 leading-relaxed line-clamp-2 sm:line-clamp-3 [unicode-bidi:plaintext]">
                                     {summary}
                                 </p>
                             )}

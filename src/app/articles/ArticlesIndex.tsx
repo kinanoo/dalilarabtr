@@ -4,6 +4,7 @@ import { FileText, ArrowLeft, ArrowRight, Calendar, Newspaper } from 'lucide-rea
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import logger from '@/lib/logger';
+import { stripHtml } from '@/lib/stripHtml';
 
 // Fresh list without hammering the DB on every hit. The bell's grouped
 // "تم نشر N مقالات" notification links here (see notify_on_new_content),
@@ -26,8 +27,6 @@ type Row = {
     image: string | null;
     image_url: string | null;
 };
-
-const stripHtml = (s?: string | null) => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
 function isNew(published?: string | null): boolean {
     if (!published) return false;

@@ -11,6 +11,7 @@ import { normalizeArabic, arabicSpellingVariants } from '@/lib/arabicSearch';
 import { intelligentTokenize } from '@/lib/intelligentSearch';
 import { supabase } from '@/lib/supabaseClient';
 import logger from '@/lib/logger';
+import { plainTextExcerpt } from '@/lib/stripHtml';
 import {
   getOptimalDebounceTime,
   useSearchIndex,
@@ -264,7 +265,7 @@ export function useGlobalSearch(initialQuery = '') {
               type: 'مقال',
               url: `/article/${a.slug || a.id}`,
               icon: FileText,
-              desc: a.category || (a.intro ? a.intro.replace(/<[^>]*>/g, '').slice(0, 80) : ''),
+              desc: a.category || plainTextExcerpt(a.intro, 80),
               typeKey: 'article',
               haystack: normalizeArabic(searchable),
               _score: stats.score,
@@ -284,7 +285,7 @@ export function useGlobalSearch(initialQuery = '') {
           faqsRes.data.forEach((f: any) => {
             const qStats = calculateRelevance(f.question, searchTokens, expandedTokens, f.question);
             const aStats = calculateRelevance(f.answer, searchTokens, expandedTokens);
-            const answerSnippet = f.answer ? f.answer.replace(/<[^>]*>/g, '').slice(0, 80) + (f.answer.length > 80 ? '...' : '') : '';
+            const answerSnippet = plainTextExcerpt(f.answer, 80);
             newResults.push({ id: `faq-${f.id}`, title: f.question, type: 'سؤال وجواب', url: `/faq?q=${encodeURIComponent(f.question)}`, icon: FileText, desc: answerSnippet || 'إجابة مباشرة', typeKey: 'article', haystack: '', _score: Math.max(qStats.score, aStats.score), _matchedTokens: Math.max(qStats.matchedTokens, aStats.matchedTokens) } as any);
           });
         }

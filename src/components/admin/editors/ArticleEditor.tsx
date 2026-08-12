@@ -7,6 +7,7 @@ import { ArticleForm } from '@/lib/schemas';
 import { ImageUploader } from '../ui/ImageUploader';
 import { CATEGORY_SLUGS, SITE_CONFIG } from '@/lib/config';
 import dynamic from 'next/dynamic';
+import { stripHtml } from '@/lib/stripHtml';
 
 const RichTextEditor = dynamic(() => import('../ui/RichTextEditor'), { ssr: false });
 
@@ -120,7 +121,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
     function insertNewsTemplate() {
         // Only fill if the body is essentially empty — never clobber existing
         // content. Empty = no characters or just the default <p></p> shell.
-        const current = (form.details || '').replace(/<[^>]*>/g, '').trim();
+        const current = stripHtml(form.details);
         if (current.length > 0) {
             if (!confirm('سيتمّ استبدال محتوى التفاصيل الحالي بقالب الخبر. متابعة؟')) return;
         }

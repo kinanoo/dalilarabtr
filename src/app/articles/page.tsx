@@ -28,11 +28,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
     };
 }
-
-
-
-const stripHtml = (s?: string | null) => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-
 function isNew(created?: string | null): boolean {
     if (!created) return false;
     const t = new Date(created).getTime();

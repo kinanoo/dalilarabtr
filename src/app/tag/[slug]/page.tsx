@@ -25,6 +25,7 @@ import { TAG_LABELS, SITE_CONFIG, getOgImage } from '@/lib/config';
 import { supabase } from '@/lib/supabaseClient';
 import PageHero from '@/components/PageHero';
 import { Calendar, Tag as TagIcon } from 'lucide-react';
+import { stripHtml } from '@/lib/stripHtml';
 
 export const revalidate = 600; // 10 min ISR
 
@@ -204,8 +205,8 @@ function ArticleCard({ article }: { article: ArticleLite }) {
                     {article.title}
                 </h2>
                 {article.intro && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
-                        {article.intro}
+                    <p dir="auto" className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed [unicode-bidi:plaintext]">
+                        {stripHtml(article.intro)}
                     </p>
                 )}
                 {article.last_update && (

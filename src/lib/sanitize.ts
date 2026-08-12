@@ -1,3 +1,5 @@
+import { stripHtml } from './stripHtml';
+
 /**
  * 🛡️ تنظيف المدخلات (Input Sanitization)
  * ==========================================
@@ -21,18 +23,8 @@
  */
 export function sanitizeText(text: string): string {
   if (!text || typeof text !== 'string') return '';
-  
-  return text
-    // إزالة HTML tags
-    .replace(/<[^>]*>/g, '')
-    // إزالة JavaScript events
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-    // إزالة script tags
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // إزالة style tags
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    // تنظيف المسافات الزائدة
-    .trim();
+
+  return stripHtml(text);
 }
 
 /**

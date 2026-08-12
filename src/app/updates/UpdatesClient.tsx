@@ -7,7 +7,7 @@ import {
   Newspaper, AlertTriangle, Rss, Search, ChevronDown, Clock, ArrowLeft, Loader2,
 } from 'lucide-react';
 import { AUTO_EVENT_CONFIG } from '@/lib/updateUtils';
-import { stripHtml } from '@/lib/stripHtml';
+import { plainTextExcerpt, stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG } from '@/lib/config';
 import { SchemaScript } from '@/lib/schemaOrg';
 
@@ -86,9 +86,7 @@ function remainingLabel(n: number): string {
 
 /** Summary if present, else a plain-text excerpt of the HTML content. */
 function excerptOf(row: any, max = 160): string {
-  const text = row?.summary ? String(row.summary).trim() : stripHtml(row?.content || '');
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).trim()}…`;
+  return plainTextExcerpt(row?.summary || row?.content || '', max);
 }
 
 function hostnameOf(url?: string | null): string {
@@ -101,7 +99,11 @@ function hostnameOf(url?: string | null): string {
 }
 
 function sourceLabel(row: any): string {
-  return row?.source_name || hostnameOf(row?.source_url);
+  return plainTextExcerpt(row?.source_name || hostnameOf(row?.source_url), 72);
+}
+
+function fullSourceLabel(row: any): string {
+  return stripHtml(row?.source_name || hostnameOf(row?.source_url));
 }
 
 function hrefOf(row: any): string {
@@ -445,7 +447,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                   {leadStory.title}
                 </h2>
                 {excerptOf(leadStory, 200) && (
-                  <p className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
+                  <p dir="auto" className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 [unicode-bidi:plaintext]">
                     {excerptOf(leadStory, 200)}
                   </p>
                 )}
@@ -455,7 +457,11 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                     {relativeOrAbsolute(leadStory.sortDate)}
                   </time>
                   {sourceLabel(leadStory) && (
-                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold">
+                    <span
+                      dir="auto"
+                      title={fullSourceLabel(leadStory)}
+                      className="max-w-full px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold truncate [unicode-bidi:plaintext]"
+                    >
                       {sourceLabel(leadStory)}
                     </span>
                   )}
@@ -562,7 +568,7 @@ function NewsRow({ item }: { item: any }) {
           {item.title}
         </h3>
         {excerpt && (
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+          <p dir="auto" className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 [unicode-bidi:plaintext]">
             {excerpt}
           </p>
         )}
@@ -607,7 +613,7 @@ function AlertRow({ item }: { item: any }) {
           {item.title}
         </h3>
         {excerpt && (
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+          <p dir="auto" className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 [unicode-bidi:plaintext]">
             {excerpt}
           </p>
         )}
@@ -636,8 +642,8 @@ function SiteRow({ item }: { item: any }) {
         {item.title}
       </h3>
       {item.detail && (
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
-          {item.detail}
+        <p dir="auto" className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 [unicode-bidi:plaintext]">
+          {stripHtml(item.detail)}
         </p>
       )}
     </Link>

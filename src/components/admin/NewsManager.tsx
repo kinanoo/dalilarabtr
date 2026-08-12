@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import dynamic from 'next/dynamic';
 import logger from '@/lib/logger';
+import { stripHtml } from '@/lib/stripHtml';
 
 const RichTextEditor = dynamic(() => import('@/components/admin/ui/RichTextEditor'), { ssr: false });
 
@@ -580,7 +581,7 @@ export default function NewsManager() {
                   </div>
                   <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 truncate">{u.title}</h4>
                   {u.summary && (
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{u.summary}</p>
+                    <p dir="auto" className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1 [unicode-bidi:plaintext]">{stripHtml(u.summary)}</p>
                   )}
                 </div>
               </div>

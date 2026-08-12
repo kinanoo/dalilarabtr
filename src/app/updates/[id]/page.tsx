@@ -9,7 +9,7 @@ import UniversalComments from '@/components/community/UniversalCommentsLazy';
 import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
-import { stripHtml } from '@/lib/stripHtml';
+import { plainTextExcerpt, stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
 import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
@@ -111,11 +111,11 @@ export async function generateMetadata(
 
     return {
         title: data.title,
-        description: data.summary || stripHtml(data.content).substring(0, 160) || data.title,
+        description: plainTextExcerpt(data.summary || data.content, 160) || data.title,
         alternates: { canonical: `/updates/${id}` },
         openGraph: {
             title: data.title,
-            description: stripHtml(data.content).substring(0, 200),
+            description: plainTextExcerpt(data.summary || data.content, 200),
             images: [{ url: getOgImage(undefined, { title: data.title, category: 'أخبار وتحديثات' }), width: 1200, height: 630, alt: data.title }],
         },
     };

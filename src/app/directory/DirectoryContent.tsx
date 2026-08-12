@@ -17,6 +17,7 @@ import SectionDivider from '@/components/ui/SectionDivider';
 import { getFAQData, type FAQCategory } from '@/lib/faq';
 import { SERVICES_LIST, OFFICIAL_SOURCES } from '@/lib/constants';
 import logger from '@/lib/logger';
+import { stripHtml } from '@/lib/stripHtml';
 
 export type DirectoryArticle = {
   slug: string;
@@ -463,8 +464,8 @@ export default function DirectoryContent({ initialArticles = [] }: { initialArti
                                       {article.title}
                                     </h4>
 
-                                    <p className="text-xs sm:text-sm md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2 md:line-clamp-3 mb-2 sm:mb-3 md:mb-4 flex-grow leading-relaxed">
-                                      {article.intro?.replace(/<[^>]*>/g, '')}
+                                    <p dir="auto" className="text-xs sm:text-sm md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2 md:line-clamp-3 mb-2 sm:mb-3 md:mb-4 flex-grow leading-relaxed [unicode-bidi:plaintext]">
+                                      {stripHtml(article.intro)}
                                     </p>
 
                                     <div className="flex items-center justify-between mt-auto pt-2 sm:pt-2.5 md:pt-3 border-t border-slate-100 dark:border-slate-800">

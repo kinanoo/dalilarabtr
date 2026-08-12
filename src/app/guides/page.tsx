@@ -6,6 +6,7 @@ import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { getSupabaseImageUrl } from '@/lib/supabaseImage';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import logger from '@/lib/logger';
+import { plainTextExcerpt } from '@/lib/stripHtml';
 
 /**
  * /guides — every illustrated step-by-step guide, not just the newest six.
@@ -81,9 +82,6 @@ export async function generateMetadata(): Promise<Metadata> {
         },
     };
 }
-
-const stripHtml = (s?: string | null) =>
-    (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
 export default async function GuidesPage() {
     const guides = await getGuides();
@@ -184,7 +182,7 @@ export default async function GuidesPage() {
                                                     {g.title}
                                                 </h3>
                                                 <span className="mt-1 block text-[12px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                                                    {stripHtml(g.intro).slice(0, 110)}
+                                                    {plainTextExcerpt(g.intro, 110)}
                                                 </span>
                                                 <span className="mt-1.5 inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                                                     اقرأ الشرح

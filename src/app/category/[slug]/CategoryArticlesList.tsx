@@ -9,6 +9,7 @@ import type { AdminArticle } from '@/lib/types';
 import { TAG_LABELS } from '@/lib/config';
 import PageHero from '@/components/PageHero';
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import { stripHtml } from '@/lib/stripHtml';
 
 type ArticlePreview = {
   slug: string;
@@ -264,8 +265,8 @@ export default function CategoryArticlesList({
                     {article.title}
                   </h3>
 
-                  <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed">
-                    {article.intro?.replace(/<[^>]*>/g, '')}
+                  <p dir="auto" className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-6 flex-grow leading-relaxed [unicode-bidi:plaintext]">
+                    {stripHtml(article.intro)}
                   </p>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">

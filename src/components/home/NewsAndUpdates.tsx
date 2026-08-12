@@ -19,6 +19,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Flame } from 'lucide-react';
+import { stripHtml } from '@/lib/stripHtml';
 
 export type NewsItem = {
   id: string;
@@ -33,10 +34,6 @@ export type NewsItem = {
   featured?: boolean;
   urgent?: boolean;
 };
-
-function stripHtml(s?: string): string {
-  return (s || '').replace(/<[^>]*>/g, '').trim();
-}
 
 const NEWS_TYPE_LABELS: Record<string, string> = {
   education: 'تعليم',
@@ -371,7 +368,7 @@ function NewsCard({ item, active }: { item: NewsItem; active: boolean }) {
         {item.title}
       </h3>
 
-      <p className="text-[13px] text-slate-600 dark:text-slate-400 line-clamp-4 leading-relaxed flex-grow">
+      <p dir="auto" className="text-[13px] text-slate-600 dark:text-slate-400 line-clamp-4 leading-relaxed flex-grow [unicode-bidi:plaintext]">
         {intro || item.title}
       </p>
 

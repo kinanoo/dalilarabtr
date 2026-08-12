@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { isRateLimited, getClientIp } from '@/lib/rate-limit';
 import logger from '@/lib/logger';
+import { stripHtml } from '@/lib/stripHtml';
 
 // Use service role for server-side notification inserts (bypasses RLS safely)
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -82,8 +83,8 @@ export async function POST(request: NextRequest) {
         // or a CMS proxies the content, the attacker payload is already
         // stored. Strip tags + < / > characters at write time so the
         // stored payload is text-only by contract.
-        body.title = title.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').slice(0, 200);
-        body.message = message.replace(/<[^>]*>/g, '').replace(/[<>]/g, '').slice(0, 1000);
+        body.title = stripHtml(title).slice(0, 200);
+        body.message = stripHtml(message).slice(0, 1000);
 
         // Links must be a same-origin path. The previous check accepted any
         // string starting with '/', which left an open-redirect window:
