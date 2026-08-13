@@ -1,0 +1,114 @@
+# تطبيق ملفات SQL الجديدة على Supabase تلقائياً عند الدمج في main.
+#
+# لماذا: المحتوى يُنشر عبر ملفات SQL في sql/، وكان كل ملف يتطلّب نسخاً ولصقاً
+# يدوياً في SQL Editor. هذا الـworkflow يطبّق أي ملف لم يُطبَّق بعد، بالترتيب،
+# ويسجّله في جدول public.sql_migrations كي لا يُعاد تطبيقه.
+#
+# الأمان:
+#   * لا يعمل إلا على main، ولا يُشغَّل من fork (pull_request مستبعد عمداً).
+#   * كل ملف يُطبَّق داخل معاملة واحدة (--single-transaction): إمّا كلّه أو
+#     لا شيء منه. الفشل يُسقط المعاملة ويُفشل الـworkflow دون تسجيل الملف.
+#   * ملف يحتاج تنفيذاً خارج معاملة (VACUUM، CREATE INDEX CONCURRENTLY،
+#     cron.schedule في بعض النسخ) يضع في أول سطر: -- @no-transaction
+#   * الملفات المطبَّقة سابقاً لا تُلمس. تعديل ملف مطبَّق لا يُعيد تطبيقه،
+#     لكن يُسجَّل تحذير بتغيّر البصمة — التعديل يحتاج ملفاً جديداً.
+#
+# الإعداد المطلوب مرّة واحدة:
+#   1. شغّل sql/2026-08-12_migration_ledger_bootstrap.sql يدوياً (آخر تشغيل يدوي).
+#   2. أضف سرّاً باسم SUPABASE_DB_URL في:
+#      GitHub ← Settings ← Secrets and variables ← Actions ← New repository secret
+#      قيمته من: Supabase ← Project Settings ← Database ← Connection string ← URI
+#      (استخدم Session pooler، وأضف ?sslmode=require إن لم تكن موجودة)
+
+name: Apply SQL to Supabase
+
+on:
+  push:
+    branches: [main]
+    paths: ['sql/**.sql']
+  workflow_dispatch:
+
+# دفعتان متزامنتان قد تطبّقان الملف نفسه مرّتين — امنع التزامن.
+concurrency:
+  group: apply-sql
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: تثبيت psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: تطبيق الملفات غير المطبَّقة
+        env:
+          PGURL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PGURL:-}" ]; then
+            echo "::error::السرّ SUPABASE_DB_URL غير مضبوط. راجع تعليقات هذا الملف."
+            exit 1
+          fi
+
+          psql "$PGURL" -v ON_ERROR_STOP=1 -q -c "
+            CREATE TABLE IF NOT EXISTS public.sql_migrations (
+              filename   text PRIMARY KEY,
+              checksum   text NOT NULL,
+              applied_at timestamptz NOT NULL DEFAULT now()
+            );"
+
+          applied_list="$(psql "$PGURL" -tAc 'SELECT filename FROM public.sql_migrations')"
+          applied_count=0
+          skipped_count=0
+
+          # ترتيب أبجدي = ترتيب زمني، لأن الأسماء مسبوقة بالتاريخ.
+          for path in $(ls -1 sql/*.sql | sort); do
+            name="$(basename "$path")"
+            sum="$(sha256sum "$path" | cut -c1-16)"
+
+            if printf '%s\n' "$applied_list" | grep -Fxq "$name"; then
+              prev="$(psql "$PGURL" -tAc "SELECT checksum FROM public.sql_migrations WHERE filename = '$name'")"
+              # البصمات الرمزية تخصّ ملفات سُجّلت دون أن يحسب النظام بصمتها
+              # (ملف التهيئة نفسه، وما شُغّل يدوياً قبل الأتمتة). مقارنتها
+              # بالبصمة الحقيقية تُنتج تحذيراً كاذباً في كل تشغيل إلى الأبد.
+              case "$prev" in bootstrap|ran-manually) prev="$sum" ;; esac
+              if [ "$prev" != "$sum" ]; then
+                echo "::warning file=$path::الملف مطبَّق سابقاً لكنه تغيّر بعد التطبيق. التغيير لا يُطبَّق — أنشئ ملفاً جديداً بدلاً من تعديل ملف مطبَّق."
+              fi
+              skipped_count=$((skipped_count + 1))
+              continue
+            fi
+
+            echo "▶ تطبيق $name"
+            if head -n 1 "$path" | grep -q '^-- @no-transaction'; then
+              psql "$PGURL" -v ON_ERROR_STOP=1 -f "$path"
+            else
+              psql "$PGURL" -v ON_ERROR_STOP=1 --single-transaction -f "$path"
+            fi
+
+            psql "$PGURL" -v ON_ERROR_STOP=1 -q \
+              -v fname="$name" -v csum="$sum" \
+              -c "INSERT INTO public.sql_migrations (filename, checksum) VALUES (:'fname', :'csum')"
+
+            echo "✔ تمّ $name"
+            applied_count=$((applied_count + 1))
+          done
+
+          echo "── الخلاصة: طُبِّق $applied_count ملفاً، وتُخطّي $skipped_count مطبَّقاً سابقاً."
+
+          # set -u يُفشل السكربت على متغيّر غير معرَّف. GITHUB_STEP_SUMMARY
+          # موجود داخل Actions ومفقود عند التشغيل محلياً — اجعله اختيارياً.
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "### تطبيق SQL"
+              echo "- طُبِّق: **$applied_count**"
+              echo "- مطبَّق سابقاً: $skipped_count"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

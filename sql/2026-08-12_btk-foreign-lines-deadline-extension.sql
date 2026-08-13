@@ -19,6 +19,15 @@
 --      خطّاً سيُغلق له.
 --   2) التأجيل ليس إلغاءً: من لم يوثّق يُغلق خطّه خلال شهر من انتهاء المهلة.
 --
+-- تصحيح بعد فشل أول تشغيل: كان الملف يفترض وجود المقال
+-- turkcell-yabanci-hat-kimlik-dogrulama-2026-06 اعتماداً على
+-- scripts/_article-corpus.json — وهي لقطة قديمة لا مصدر حقيقة، والمقال غير
+-- موجود في القاعدة فعلياً. فأسقط بلوك التحقّق العملية كلَّها وضاع الخبر معها.
+--
+-- الآن: الخبر هو المُخرَج الأساسي ولا يُسقطه شيء. تحديث المقال أصبح
+-- «أفضل جهد» يُطبَّق على أي دليل موجود من قائمة مرشّحين، والرابط يُحسم إلى
+-- مقال موجود فعلاً أو يُترك فارغاً — فلا رابط مكسور ولا خبر ضائع.
+--
 -- ملاحظة إشعارات: خبر واحد بـ created_at = NOW() => إشعار واحد للمشتركين.
 -- شغّله مرّة واحدة في Supabase <- SQL Editor. آمن لإعادة التشغيل (idempotent).
 -- ============================================================================
@@ -50,7 +59,8 @@ SELECT
   'official',
   $n$هيئة تكنولوجيا المعلومات والاتصالات (BTK) — عبر التغطية التركية$n$,
   'https://www.donanimhaber.com/btk-mobil-hat-kisitlamalarini-6-ay-erteledi-iste-yeni-tarihler--209234',
-  '/article/turkcell-yabanci-hat-kimlik-dogrulama-2026-06',
+  -- الرابط يُحسم أدناه إلى مقال موجود فعلاً؛ NULL هنا أفضل من رابط يُنتج 404.
+  NULL,
   CURRENT_DATE,
   true,
   false
@@ -59,9 +69,9 @@ WHERE NOT EXISTS (
   WHERE title = $t$6 أشهر إضافية لتوثيق خطوط الأجانب: المهلة تمتدّ إلى 23 نيسان 2027 — والسقف خطّ واحد لمن يحمل جواز سفر فقط$t$
 );
 
--- ─── 2) تحديث مقال التوثيق بالمواعيد الجديدة ───
--- ضروري: المقال منشور بالمواعيد القديمة (أيلول/تشرين الأول 2026)، وتركها
--- يجعل الدليل نفسه يضلّل القارئ بموعد انقضى معناه.
+-- ─── 2) تحديث أي دليل موجود من مرشّحي أدلّة الخطوط ───
+-- قائمة مرشّحين لا slug واحد: أسماء الأدلّة تتبدّل، والدليل الصحيح قد يكون
+-- أيّاً منها. يُحدَّث كل موجود منها، ولا يفشل شيء إن لم يوجد أيّ منها.
 UPDATE public.articles
 SET
   details = details || $$
@@ -76,30 +86,79 @@ SET
 <p><strong>سقف عدد الخطوط:</strong> 6 خطوط للمواطن التركي، و<strong>3 للأجنبي صاحب الرقم الأجنبي</strong> (كملك أو إقامة)، و<strong>خطّ واحد فقط لمن يتعامل بجواز سفره</strong> دون رقم أجنبي. الخلط بين الحالتين شائع، والفرق يقرّر كم خطّاً سيُغلق.</p>
 <p><strong>التأجيل ليس إلغاءً:</strong> الخطّ غير الموثَّق يُغلق <strong>خلال شهر واحد</strong> من انتهاء المهلة. ولا تنتظر الأسابيع الأخيرة — الازدحام على المحلّات ومديريات الهجرة يشتدّ حينها، والتوثيق اليوم يستغرق دقائق.</p>$$,
   last_update = '2026-08-12'
-WHERE slug = 'turkcell-yabanci-hat-kimlik-dogrulama-2026-06'
+WHERE slug IN (
+    'turkcell-yabanci-hat-kimlik-dogrulama-2026-06',
+    'turkcell-hat-dogrulama-resimli-rehber-2026-06',
+    'btk-ekayit-foreigners-phone-line-2026',
+    'mobile-lines-check',
+    'edevlet-mobil-hat-sorgulama'
+  )
+  AND status = 'approved'
   AND position($$تحديث (12 آب/أغسطس 2026): المهلة مُدّدت ستة أشهر$$ in details) = 0;
 
+-- ─── 3) حسم رابط «إكمال الخبر» إلى مقال موجود فعلاً ───
+UPDATE public.updates u
+SET link = '/article/' || (
+  SELECT a.slug FROM public.articles a
+  WHERE a.status = 'approved'
+    AND a.slug IN (
+      'turkcell-yabanci-hat-kimlik-dogrulama-2026-06',
+      'turkcell-hat-dogrulama-resimli-rehber-2026-06',
+      'btk-ekayit-foreigners-phone-line-2026',
+      'mobile-lines-check',
+      'edevlet-mobil-hat-sorgulama'
+    )
+  ORDER BY array_position(ARRAY[
+      'turkcell-yabanci-hat-kimlik-dogrulama-2026-06',
+      'turkcell-hat-dogrulama-resimli-rehber-2026-06',
+      'btk-ekayit-foreigners-phone-line-2026',
+      'mobile-lines-check',
+      'edevlet-mobil-hat-sorgulama'
+    ]::text[], a.slug)
+  LIMIT 1
+)
+WHERE u.title = $t$6 أشهر إضافية لتوثيق خطوط الأجانب: المهلة تمتدّ إلى 23 نيسان 2027 — والسقف خطّ واحد لمن يحمل جواز سفر فقط$t$
+  AND EXISTS (
+    SELECT 1 FROM public.articles a
+    WHERE a.status = 'approved'
+      AND a.slug IN (
+        'turkcell-yabanci-hat-kimlik-dogrulama-2026-06',
+        'turkcell-hat-dogrulama-resimli-rehber-2026-06',
+        'btk-ekayit-foreigners-phone-line-2026',
+        'mobile-lines-check',
+        'edevlet-mobil-hat-sorgulama'
+      )
+  );
+
 -- ─── تحقّق نهائي ───
+-- الخبر إلزامي. تحديث المقال ليس كذلك: غياب الدليل لا يبرّر إسقاط الخبر —
+-- وهذا بالضبط ما أفشل التشغيل السابق.
 DO $check$
 DECLARE
-  n_update  integer;
-  n_article integer;
+  n_update   integer;
+  n_articles integer;
+  v_link     text;
 BEGIN
   SELECT COUNT(*) INTO n_update FROM public.updates
   WHERE title = $t$6 أشهر إضافية لتوثيق خطوط الأجانب: المهلة تمتدّ إلى 23 نيسان 2027 — والسقف خطّ واحد لمن يحمل جواز سفر فقط$t$
     AND active = true;
 
-  SELECT COUNT(*) INTO n_article FROM public.articles
-  WHERE slug = $t$turkcell-yabanci-hat-kimlik-dogrulama-2026-06$t$
-    AND position($t$تحديث (12 آب/أغسطس 2026): المهلة مُدّدت ستة أشهر$t$ in details) > 0;
-
   IF n_update <> 1 THEN
     RAISE EXCEPTION 'FAILED: expected 1 active news row, found %', n_update;
   END IF;
-  IF n_article <> 1 THEN
-    RAISE EXCEPTION 'FAILED: مقال توثيق الخط لم يُحدَّث (found %) — تحقّق من وجود slug turkcell-yabanci-hat-kimlik-dogrulama-2026-06', n_article;
+
+  SELECT COUNT(*) INTO n_articles FROM public.articles
+  WHERE position($t$تحديث (12 آب/أغسطس 2026): المهلة مُدّدت ستة أشهر$t$ in details) > 0;
+
+  SELECT link INTO v_link FROM public.updates
+  WHERE title = $t$6 أشهر إضافية لتوثيق خطوط الأجانب: المهلة تمتدّ إلى 23 نيسان 2027 — والسقف خطّ واحد لمن يحمل جواز سفر فقط$t$;
+
+  RAISE NOTICE 'OK: الخبر منشور. أدلّة حُدِّثت: %. الرابط: %',
+    n_articles, COALESCE(v_link, '(بلا رابط — لم يوجد دليل مطابق)');
+
+  IF n_articles = 0 THEN
+    RAISE NOTICE 'تنبيه: لم يوجد أي دليل من قائمة المرشّحين. الخبر منشور بلا رابط داخلي — أرسل لي أسماء أدلّة الخطوط الموجودة لأربطه.';
   END IF;
-  RAISE NOTICE 'OK: الخبر أُدرج ومقال التوثيق حُدِّث بالمواعيد الجديدة.';
 END
 $check$;
 
