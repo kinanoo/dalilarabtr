@@ -195,6 +195,15 @@ html.dark .tiptap h3, html.dark .prose-content h3 { color: #e2e8f0; }
 }
 html.dark .tiptap a, html.dark .prose-content a { color: #5eead4; }
 html.dark .tiptap a:hover, html.dark .prose-content a:hover { color: #99f6e4; }
+/* Public bodies use the accent token, which is a step darker than the editor's
+   teal for a measured reason: #0d9488 on white is 3.58:1 — under the WCAG AA
+   floor of 4.5:1 for body-size text, so links were the one thing on the page
+   a reader with weaker sight could not comfortably resolve. #0f766e measures
+   5.5:1 on white and 5.3:1 on the callout surface, and stays visibly teal.
+   Dark mode already passed at 9.9:1 and is left alone. */
+.prose-content a { color: var(--accent); }
+.prose-content a:hover { color: #115e59; }
+html.dark .prose-content a:hover { color: #99f6e4; }
 
 /* Bold & Strong */
 .tiptap strong, .prose-content strong {
