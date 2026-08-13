@@ -48,13 +48,13 @@ export default function AdminError({ error, reset }: { error: Error & { digest?:
             )}
 
             {error.digest && (
-                <p className="text-xs text-slate-400 dark:text-slate-500 mb-4 font-mono" dir="ltr">
+                <p className="text-xs text-slate-400 dark:text-slate-400 mb-4 font-mono" dir="ltr">
                     Ref: {error.digest}
                 </p>
             )}
 
             <div className="flex flex-wrap gap-3 justify-center">
-                <button onClick={reset} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition">
+                <button onClick={reset} className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl font-bold transition">
                     <RefreshCw size={18} /> إعادة المحاولة
                 </button>
                 <Link href="/admin" className="flex items-center gap-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold transition hover:bg-slate-300">

@@ -341,7 +341,7 @@ export default async function UpdateDetailPage(
                                     <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                                         <Link
                                             href={update.link}
-                                            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
+                                            className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
                                         >
                                             اقرأ المزيد
                                             <ChevronLeft size={16} />

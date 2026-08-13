@@ -56,7 +56,7 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <p className="pt-3 text-center text-xs text-slate-400 dark:text-slate-500">
+        <p className="pt-3 text-center text-xs text-slate-400 dark:text-slate-400">
           آخر تحديث: 17 يوليو 2026.
         </p>
       </div>

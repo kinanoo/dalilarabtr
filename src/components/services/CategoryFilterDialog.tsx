@@ -157,7 +157,7 @@ export default function CategoryFilterDialog({
                                     : 'border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-emerald-700 dark:hover:bg-slate-800'
                                 }`}
                             >
-                                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${active ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'}`}>
+                                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${active ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'}`}>
                                     <Icon size={17} />
                                 </span>
                                 <span className="min-w-0 flex-1">

@@ -16,7 +16,7 @@ export default function CodesLangToggle({
 }) {
     const base =
         'px-3.5 py-1.5 rounded-full text-xs font-black transition-all';
-    const active = 'bg-emerald-600 text-white shadow-sm';
+    const active = 'bg-emerald-700 text-white shadow-sm';
     const idle = 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200';
     return (
         <div

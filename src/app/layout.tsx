@@ -215,7 +215,7 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema(siteSettings.whatsapp, siteSettings.contactEnabled)) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }} />
         {/* Skip to main content for keyboard/screen reader users */}
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-600 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[9999] focus:bg-emerald-700 focus:text-white focus:p-3 focus:rounded-xl focus:font-bold">
           تخطي إلى المحتوى الرئيسي
         </a>
         {/* Eastern-Arabic → Latin digit normalizer. Walks every text node

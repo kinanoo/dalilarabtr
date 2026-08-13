@@ -211,7 +211,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                                 اختر مزود خدمة مناسباً، راجع الوصف وطرق التواصل، ثم تواصل مباشرة عبر واتساب أو اتصال.
                             </p>
                             <div className="mt-5 flex flex-wrap gap-2">
-                                <a href="#city-category-results" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-black text-white transition hover:bg-emerald-700 active:scale-95 dark:bg-white dark:text-slate-950">
+                                <a href="#city-category-results" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-black text-white transition hover:bg-emerald-800 active:scale-95 dark:bg-white dark:text-slate-950">
                                     عرض النتائج <ChevronLeft size={16} />
                                 </a>
                                 <Link href={`/services/category/${cat.slug}`} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
@@ -271,7 +271,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                                 : `لا يوجد ${cat.labelAr} مسجّلون في ${cityObj.ar} بعد — كن أوّل من يضيف خدمته.`}
                         </p>
                     </div>
-                    <Link href="/services/add" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white transition hover:bg-emerald-700 active:scale-95">
+                    <Link href="/services/add" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white transition hover:bg-emerald-800 active:scale-95">
                         أضف خدمتك <Briefcase size={16} />
                     </Link>
                 </div>
@@ -343,7 +343,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                             <MapPin size={16} className="text-emerald-600" /> {cat.labelAr} في مدن أخرى
                         </h2>
                         <div className="flex flex-wrap gap-2">
-                            <Link href={`/services/category/${cat.slug}`} className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">كل المدن</Link>
+                            <Link href={`/services/category/${cat.slug}`} className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors">كل المدن</Link>
                             {siblingCities.slice(0, 14).map((cs) => {
                                 const co = cityBySlug(cs);
                                 return co ? (

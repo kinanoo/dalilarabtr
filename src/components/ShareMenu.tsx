@@ -223,7 +223,7 @@ export default function ShareMenu({ title, text, url, mini = false, variant = 'd
               setIsOpen(true);
             }
           }}
-          className={`bg-emerald-500/20 hover:bg-emerald-500/40 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-emerald-400/30 text-emerald-300 hover:text-white ${customClass}`}
+          className={`bg-emerald-700/20 hover:bg-emerald-800/40 px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md border border-emerald-400/30 text-emerald-300 hover:text-white ${customClass}`}
         >
           <Share2 size={14} /> <span>مشاركة</span>
         </button>

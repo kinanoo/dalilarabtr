@@ -552,7 +552,7 @@ export default function ServicesClient({
               <SlidersHorizontal size={16} />
               {activeCategoryLabel || 'اختر التخصص'}
               {activeFiltersCount > 0 && (
-                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] text-white">
+                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-700 px-1.5 py-0.5 text-[10px] text-white">
                   {activeFiltersCount}
                 </span>
               )}
@@ -582,7 +582,7 @@ export default function ServicesClient({
                 key={need.label}
                 type="button"
                 onClick={() => applyNeed(need.query, need.category)}
-                className="relative min-h-7 text-xs font-black text-slate-600 transition after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-right after:scale-x-0 after:bg-emerald-600 after:transition-transform hover:text-slate-950 hover:after:scale-x-100 active:text-emerald-700 dark:text-slate-300 dark:hover:text-white"
+                className="relative min-h-7 text-xs font-black text-slate-600 transition after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-right after:scale-x-0 after:bg-emerald-700 after:transition-transform hover:text-slate-950 hover:after:scale-x-100 active:text-emerald-700 dark:text-slate-300 dark:hover:text-white"
               >
                 {need.label}
               </button>
@@ -658,10 +658,10 @@ export default function ServicesClient({
                   <option value="name">أبجديّاً</option>
                 </select>
                 <div className="inline-flex h-10 items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
-                  <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                  <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'grid' ? 'bg-emerald-700 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
                     <LayoutGrid size={16} />
                   </button>
-                  <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'list' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                  <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'list' ? 'bg-emerald-700 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
                     <ListIcon size={16} />
                   </button>
                 </div>
@@ -812,7 +812,7 @@ export default function ServicesClient({
                       <button
                         onClick={() => goPage(n)}
                         className={`min-w-9 h-9 px-2 rounded-lg text-sm font-black transition-colors ${n === pageClamped
-                          ? 'bg-emerald-600 text-white'
+                          ? 'bg-emerald-700 text-white'
                           : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-emerald-300'}`}
                       >
                         {n}
@@ -925,12 +925,12 @@ export default function ServicesClient({
                   href={`/services/category/${c.slug}`}
                   className="group/link flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:border-emerald-300 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-emerald-700 dark:hover:bg-slate-900"
                 >
-                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-slate-200 transition group-hover/link:bg-emerald-600 group-hover/link:text-white dark:bg-slate-900 dark:text-emerald-300 dark:ring-slate-800">
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-slate-200 transition group-hover/link:bg-emerald-700 group-hover/link:text-white dark:bg-slate-900 dark:text-emerald-300 dark:ring-slate-800">
                     <Icon size={17} />
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-[13px] font-black leading-tight text-slate-800 dark:text-slate-100">{c.labelAr}</span>
-                    <span className="block truncate text-[10px] font-bold leading-tight text-slate-400 dark:text-slate-500">
+                    <span className="block truncate text-[10px] font-bold leading-tight text-slate-400 dark:text-slate-400">
                       {liveCategoryCounts[c.name]
                         ? `${liveCategoryCounts[c.name]} نتيجة`
                         : c.blurb}

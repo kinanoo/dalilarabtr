@@ -307,7 +307,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
             <div className="relative overflow-hidden rounded-2xl border border-emerald-200 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/60 dark:from-emerald-900/20 dark:via-slate-900 dark:to-emerald-900/10 p-5 md:p-6 shadow-sm">
               <div aria-hidden="true" className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-400/10 rounded-full blur-3xl" />
               <div className="relative flex items-start gap-3">
-                <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 shrink-0">
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-700 text-white shadow-lg shadow-emerald-500/30 shrink-0">
                   <Sparkles size={20} />
                 </span>
                 <div className="flex-1 min-w-0">
@@ -362,7 +362,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
                   type="button"
                   onClick={() => setStatusFilter('reopened')}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black transition-all ${statusFilter === 'reopened'
-                    ? 'bg-emerald-600 text-white shadow-md'
+                    ? 'bg-emerald-700 text-white shadow-md'
                     : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-900/40'
                   }`}
                 >
@@ -508,7 +508,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
                               </span>
                             )}
                             {hasReopen && (
-                              <span className="inline-flex items-center gap-0.5 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums whitespace-nowrap shadow-sm shadow-emerald-600/30">
+                              <span className="inline-flex items-center gap-0.5 bg-emerald-700 text-white text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums whitespace-nowrap shadow-sm shadow-emerald-600/30">
                                 <span className="tabular-nums">{reopenedCount}</span> فُتح
                               </span>
                             )}
@@ -660,7 +660,7 @@ export default function ZonesPage({ initialData }: { initialData?: ClosedAreasPa
                 </div>
               )}
 
-              <p className="mt-5 text-center text-[11px] md:text-xs text-slate-500 dark:text-slate-500">
+              <p className="mt-5 text-center text-[11px] md:text-xs text-slate-500 dark:text-slate-400">
                 * البيانات مرجعية وتعتمد على قوائم "المناطق/الأحياء المغلقة" الرسمية. تحقق دائماً من آخر تحديث عند الجهات الرسمية.
               </p>
             </div>

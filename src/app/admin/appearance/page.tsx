@@ -167,7 +167,7 @@ export default function AdminAppearancePage() {
             </div>
 
             {/* Save */}
-            <button onClick={save} disabled={saving} className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50">
+            <button onClick={save} disabled={saving} className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50">
               {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
               حفظ التغييرات
             </button>

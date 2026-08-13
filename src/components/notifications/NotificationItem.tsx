@@ -85,7 +85,7 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
                     {isGrouped ? (
                         <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                             <span className="text-lg">{getTypeIcon()}</span>
-                            <span className="absolute -bottom-1 -left-1 bg-emerald-600 text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-0.5">
+                            <span className="absolute -bottom-1 -left-1 bg-emerald-700 text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-0.5">
                                 {notification.group_count}
                             </span>
                         </div>
@@ -114,7 +114,7 @@ export default function NotificationItem({ notification, onMarkAsRead, onClose }
                     <div className={`text-xs mb-2 line-clamp-2 leading-relaxed ${
                         isUnread
                             ? 'text-slate-600 dark:text-slate-300'
-                            : 'text-slate-400 dark:text-slate-500'
+                            : 'text-slate-400 dark:text-slate-400'
                     }`}>
                         {notification.message}
                     </div>

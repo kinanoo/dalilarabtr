@@ -779,3 +779,57 @@ h2:not([class*="leading-"]),
 h3:not([class*="leading-"]) {
   line-height: 1.5;
 }
+
+/* ============================================
+   Light-mode contrast floor for the two lightest grey text steps
+   ============================================
+   The page ground is cream (#faf6ee), not white — about 8% darker — and that
+   is enough to push Tailwind's two lightest grey text utilities under the
+   WCAG AA floor of 4.5:1. Measured in the browser on this site, light mode:
+
+       text-slate-500  →  4.41:1   (needs 4.5)
+       text-slate-400  →  2.44:1   (needs 4.5)
+
+   Those two utilities appear 559 times across 144 public components, so the
+   floor is set once here instead of rewriting every call site — and it stays
+   one place to audit. Two distinct steps are kept so the visual hierarchy
+   (body vs. meta) survives; both now clear AA on cream and on white:
+
+       slate-500  →  #475569   6.9:1 on cream
+       slate-400  →  #5a6675   5.4:1 on cream
+
+   Dark mode is NOT touched: measured there, slate-400 on slate-900 is 5.5:1
+   and already passes — darkening it would make dark mode worse.
+
+   The footer is excluded because it is a DARK surface even in light mode
+   (slate-950), so there the light greys are the correct choice; darkening
+   them would drop that text from 8.8:1 to 3.5:1. If another dark-on-light
+   surface appears, add it to the exception list below — and measure it. */
+:root:not(.dark) .text-slate-500,
+:root:not(.dark) .text-gray-500,
+:root:not(.dark) .text-zinc-500,
+:root:not(.dark) .text-neutral-500 { color: #475569; }
+
+:root:not(.dark) .text-slate-400,
+:root:not(.dark) .text-gray-400,
+:root:not(.dark) .text-zinc-400,
+:root:not(.dark) .text-neutral-400 { color: #5a6675; }
+
+/* Dark surfaces that exist inside light mode keep Tailwind's own values. */
+:root:not(.dark) footer .text-slate-500,
+:root:not(.dark) footer .text-gray-500 { color: #64748b; }
+:root:not(.dark) footer .text-slate-400,
+:root:not(.dark) footer .text-gray-400 { color: #94a3b8; }
+
+/* The brand accent as TEXT has the same problem, from the other end: emerald-600
+   is 3.76:1 on white and 3.62:1 on the cream ground — fine as a filled surface
+   behind white text, too light as ink. It is used unprefixed 242 times as link
+   and label colour, so the floor is set here rather than at every call site.
+   emerald-700 measures 5.55:1 on white and 5.15:1 on cream.
+
+   Light mode only, again on purpose: in dark mode emerald-600 sits on slate-900
+   at 4.77:1 and passes, while emerald-700 there would drop to 3.23:1 — the same
+   change that helps one theme would break the other. Buttons are unaffected;
+   they carry `bg-emerald-700` with white text (5.55:1) and are set in the
+   markup, not here. */
+:root:not(.dark) .text-emerald-600 { color: #047857; }

@@ -180,7 +180,7 @@ export default function AddReviewModal({
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-900/20"
+                            className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-400 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-900/20"
                         >
                             {submitting ? (
                                 <>جاري الإرسال...</>

@@ -337,7 +337,7 @@ export default function InlineStarRating({
                             <button
                                 onClick={popupMode === 'edit' ? handleUpdate : handleSubmit}
                                 disabled={submitting || selectedRating === 0}
-                                className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm active:scale-95 shadow-md"
+                                className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm active:scale-95 shadow-md"
                             >
                                 {submitting ? (
                                     <span>جاري الإرسال...</span>
@@ -451,7 +451,7 @@ export default function InlineStarRating({
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/login"
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
                             >
                                 <LogIn size={18} />
                                 تسجيل الدخول

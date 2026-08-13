@@ -70,7 +70,7 @@ export function MobileBottomNav({ onMore }: { onMore: () => void }) {
                             <span className="relative">
                                 <Icon
                                     size={20}
-                                    className={active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}
+                                    className={active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-400'}
                                 />
                                 {it.exact && pending > 0 && (
                                     <span className="absolute -top-2 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-sm shadow-red-500/40 tabular-nums">
@@ -88,7 +88,7 @@ export function MobileBottomNav({ onMore }: { onMore: () => void }) {
                     type="button"
                     onClick={onMore}
                     aria-label="المزيد من الأقسام"
-                    className="flex flex-col items-center justify-center gap-1 active:scale-90 transition-transform text-slate-400 dark:text-slate-500"
+                    className="flex flex-col items-center justify-center gap-1 active:scale-90 transition-transform text-slate-400 dark:text-slate-400"
                 >
                     <Menu size={20} />
                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">المزيد</span>

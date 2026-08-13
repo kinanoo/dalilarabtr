@@ -548,7 +548,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 {/* Message bubble */}
                 <div className={`relative max-w-[90%] sm:max-w-[85%] rounded-2xl px-3 sm:px-3.5 py-2.5 ${
                   msg.role === 'user'
-                    ? 'bg-emerald-600 text-white rounded-tr-sm'
+                    ? 'bg-emerald-700 text-white rounded-tr-sm'
                     : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-tl-sm border border-slate-200 dark:border-slate-800 group/msg'
                 }`}>
                   {msg.role === 'user' ? (

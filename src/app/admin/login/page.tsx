@@ -190,7 +190,7 @@ export default function AdminLoginPage() {
                         <button
                             type="submit"
                             disabled={loading || isLocked}
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 disabled:active:scale-100"
+                            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.2)] hover:shadow-[0_0_25px_rgba(5,150,105,0.4)] active:scale-[0.98] flex items-center justify-center gap-3 mt-6 border border-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-800 disabled:active:scale-100"
                         >
                             {isLocked
                                 ? <><Timer size={20} /><span className="text-base font-mono">

@@ -54,7 +54,7 @@ export default function AddServiceBanner() {
                     {/* Text + value props */}
                     <div className="flex-1 text-center lg:text-right">
                         <div className="inline-flex items-center gap-2 mb-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white shadow-sm">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-700 text-white shadow-sm">
                                 <Briefcase size={16} />
                             </span>
                             <span className="text-[11px] font-black tracking-[0.18em] uppercase text-emerald-700 dark:text-emerald-400">
@@ -89,7 +89,7 @@ export default function AddServiceBanner() {
                     <div className="shrink-0 w-full lg:w-auto">
                         <Link
                             href={href}
-                            className="w-full lg:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-black px-8 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-600/25 text-sm"
+                            className="w-full lg:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-black px-8 py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-600/25 text-sm"
                         >
                             <Briefcase size={18} />
                             {ctaLabel}

@@ -81,7 +81,7 @@ export default function ErrorState({
                 {displayActionHref && (
                     <Link
                         href={displayActionHref}
-                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-all btn-hover-lift"
+                        className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-6 rounded-lg transition-all btn-hover-lift"
                     >
                         <Home size={20} />
                         {displayActionLabel}

@@ -39,7 +39,7 @@ export default function Tabs({
 
         if (variant === 'pills') {
             return `${baseClasses} rounded-lg ${isActive
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-emerald-700 text-white'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`;
         }

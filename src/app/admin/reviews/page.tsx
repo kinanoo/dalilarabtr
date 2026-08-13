@@ -369,7 +369,7 @@ export default function AdminReviewsPage() {
                                                 placeholder="اكتب رد الإدارة..."
                                                 autoFocus
                                             />
-                                            <button onClick={() => handleReply(review.id)} className="bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-700">إرسال</button>
+                                            <button onClick={() => handleReply(review.id)} className="bg-emerald-700 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-800">إرسال</button>
                                             <button onClick={() => setReplyingTo(null)} className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">إلغاء</button>
                                         </div>
                                     ) : (

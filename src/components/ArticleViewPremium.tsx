@@ -324,7 +324,7 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
               >
                 <span className="absolute top-0 right-0 h-full w-1 bg-slate-900 dark:bg-slate-300 opacity-80" />
                 <h3 className="flex items-center text-lg lg:text-xl font-black text-slate-900 dark:text-white mb-4 gap-2">
-                  <Info className="text-slate-400 dark:text-slate-500 flex-shrink-0" size={22} /> ملخص الإجراء
+                  <Info className="text-slate-400 dark:text-slate-400 flex-shrink-0" size={22} /> ملخص الإجراء
                 </h3>
 
                 {/* 👇 الجزء الظاهر دائماً - العنوان/المقدمة */}
@@ -467,7 +467,7 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
               {/* التحذير القانوني (Subtle Accordion Footer) */}
               <div className="pt-8 mt-8 border-t border-slate-100 dark:border-slate-800">
                 <details className="group open:p-4 rounded-xl transition-all duration-300">
-                  <summary className="flex items-center gap-2 font-medium text-xs text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 cursor-pointer select-none list-none opacity-70 hover:opacity-100 transition-opacity">
+                  <summary className="flex items-center gap-2 font-medium text-xs text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-300 cursor-pointer select-none list-none opacity-70 hover:opacity-100 transition-opacity">
                     <AlertTriangle size={14} />
                     <span>إخلاء مسؤولية قانوني وشروط الاستخدام</span>
                     <ChevronDown size={14} className="mr-auto transition-transform group-open:rotate-180" />

@@ -58,7 +58,7 @@ export default function AddServiceForm() {
                     سيراجع فريق الإدارة بياناتك وينشر خدمتك قريباً على دليل العرب. لا حاجة لأي خطوة أخرى منك.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Link href="/services" className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition-colors">
+                    <Link href="/services" className="inline-flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-xl transition-colors">
                         تصفّح دليل الخدمات
                     </Link>
                     <button onClick={() => { setForm({ name: '', profession: '', category: 'خدمات عامة', city: '', district: '', whatsapp: '', description: '', website: '' }); setDone(false); }} className="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold px-6 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
@@ -137,11 +137,11 @@ export default function AddServiceForm() {
                 </p>
             )}
 
-            <button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-black py-4 rounded-xl transition-colors shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 text-lg">
+            <button type="submit" disabled={loading} className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white font-black py-4 rounded-xl transition-colors shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 text-lg">
                 {loading ? <Loader2 className="animate-spin" size={22} /> : <Send size={20} />}
                 إرسال الطلب مجاناً
             </button>
-            <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+            <p className="text-center text-xs text-slate-400 dark:text-slate-400">
                 عندك حساب وتريد إدارة خدماتك؟ <Link href="/dashboard/services/new" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline">أضِفها من لوحتك</Link>
             </p>
         </form>

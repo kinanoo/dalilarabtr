@@ -98,17 +98,17 @@ export const TOOLS_MENU = [
 export const TOP_NAVIGATION: any[] = [];
 
 export const SERVICES_LIST = [
-    { id: 'syria-docs', title: "جلب أوراق من سوريا", desc: "إخراج قيد، بيان عائلي، ووثائق رسمية.", icon: ScrollText, color: "bg-green-600" },
-    { id: 'flight-booking', title: "حجوزات طيران عالمية", desc: "أرخص الأسعار لكل دول العالم.", icon: Plane, color: "bg-sky-500" },
-    { id: 'single-paper', title: "استخراج ورقة عزوبية", desc: "لازمة لتثبيت الزواج في البلدية.", icon: FileCheck, color: "bg-pink-500" },
-    { id: 'newspaper-ad', title: "إعلان جريدة (فقدان)", desc: "نشر إعلان فقدان هوية أو جواز.", icon: Newspaper, color: "bg-gray-600" },
-    { id: 'translation', title: "ترجمة محلفة ومعتمدة", desc: "ترجمة كافة الوثائق للغات مع تصديق.", icon: Languages, color: "bg-blue-500" },
-    { id: 'attestation', title: "تصديق الأوراق", desc: "تسيير معاملات التصديق في الوالي.", icon: Stamp, color: "bg-purple-500" },
-    { id: 'appointments', title: "حجز مواعيد قنصلية / تحديث بيانات / سفارات وقنصليات", desc: "حجز مواعيد قنصلية، تحديث بيانات، سفارات وقنصليات.", icon: CalendarClock, color: "bg-red-500" },
-    { id: 'insurance', title: "تأمين شامل", desc: "إصدار بوالص التأمين بأفضل الأسعار.", icon: Shield, color: "bg-emerald-500" },
-    { id: 'phone-imei', title: "تتريك هواتف (IMEI)", desc: "مساعدة في دفع وتسجيل الهواتف.", icon: Smartphone, color: "bg-teal-600" },
-    { id: 'company-setup', title: "تأسيس شركات", desc: "تخليص معاملات التأسيس كاملة.", icon: Building2, color: "bg-indigo-600" },
-    { id: 'provinces-paper', title: "تجهيز أوراق الولايات", desc: "خدمات خاصة في الولايات التركية.", icon: MapPin, color: "bg-orange-600" }
+    { id: 'syria-docs', title: "جلب أوراق من سوريا", desc: "إخراج قيد، بيان عائلي، ووثائق رسمية.", icon: ScrollText, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'flight-booking', title: "حجوزات طيران عالمية", desc: "أرخص الأسعار لكل دول العالم.", icon: Plane, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'single-paper', title: "استخراج ورقة عزوبية", desc: "لازمة لتثبيت الزواج في البلدية.", icon: FileCheck, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'newspaper-ad', title: "إعلان جريدة (فقدان)", desc: "نشر إعلان فقدان هوية أو جواز.", icon: Newspaper, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'translation', title: "ترجمة محلفة ومعتمدة", desc: "ترجمة كافة الوثائق للغات مع تصديق.", icon: Languages, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'attestation', title: "تصديق الأوراق", desc: "تسيير معاملات التصديق في الوالي.", icon: Stamp, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'appointments', title: "حجز مواعيد قنصلية / تحديث بيانات / سفارات وقنصليات", desc: "حجز مواعيد قنصلية، تحديث بيانات، سفارات وقنصليات.", icon: CalendarClock, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'insurance', title: "تأمين شامل", desc: "إصدار بوالص التأمين بأفضل الأسعار.", icon: Shield, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'phone-imei', title: "تتريك هواتف (IMEI)", desc: "مساعدة في دفع وتسجيل الهواتف.", icon: Smartphone, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'company-setup', title: "تأسيس شركات", desc: "تخليص معاملات التأسيس كاملة.", icon: Building2, color: "bg-emerald-600 dark:bg-emerald-700" },
+    { id: 'provinces-paper', title: "تجهيز أوراق الولايات", desc: "خدمات خاصة في الولايات التركية.", icon: MapPin, color: "bg-emerald-600 dark:bg-emerald-700" }
 ];
 
 /**

@@ -184,7 +184,7 @@ export default async function DirectoryPage() {
           <h2 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 mb-1">
             فهرس المحتوى الكامل
           </h2>
-          <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-5">
+          <p className="text-xs font-bold text-slate-400 dark:text-slate-400 mb-5">
             كل الأدلة والمقالات المنشورة — مرتّبة حسب القسم
           </p>
           <div className="space-y-6">

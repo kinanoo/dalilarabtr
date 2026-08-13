@@ -70,7 +70,7 @@ export default function CalculatorPage() {
                 href={OFFICIAL_FEE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
               >
                 المصدر الرسمي للرسوم (e-ikamet)
                 <ExternalLink size={16} />

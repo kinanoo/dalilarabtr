@@ -315,7 +315,7 @@ export default function MonetizationPage() {
                                         <Trash2 size={16} /> حذف
                                     </button>
                                 ) : <span />}
-                                <button onClick={saveBanner} disabled={savingB} className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-black text-sm shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50">
+                                <button onClick={saveBanner} disabled={savingB} className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl font-black text-sm shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50">
                                     {savingB ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} حفظ البانر
                                 </button>
                             </div>

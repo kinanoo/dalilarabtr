@@ -178,7 +178,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                 ) : (
                     <button
                         onClick={handleAddReviewClick}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-95"
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-95"
                     >
                         <MessageCircle size={20} />
                         أضف تقييمك
@@ -379,7 +379,7 @@ export default function ServiceReviews({ serviceId, serviceName = "الخدمة"
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/login"
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
                             >
                                 <LogIn size={18} />
                                 تسجيل الدخول

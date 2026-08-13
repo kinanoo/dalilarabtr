@@ -31,7 +31,7 @@ export function PopularSuggestions({
       {/* Recent searches */}
       {recentSearches.length > 0 && (
         <div className="px-4 pt-4 pb-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 mb-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-400 mb-3">
             <Clock size={13} />
             <span>عمليات بحث سابقة</span>
           </div>
@@ -56,7 +56,7 @@ export function PopularSuggestions({
           recentSearches.length > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800 mt-2' : 'pt-4'
         }`}
       >
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 mb-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-400 mb-3">
           <TrendingUp size={13} />
           <span>الأكثر بحثاً</span>
         </div>

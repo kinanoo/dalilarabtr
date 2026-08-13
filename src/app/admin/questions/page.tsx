@@ -174,7 +174,7 @@ export default function AdminQuestionsPage() {
                             onClick={() => setFilter(f)}
                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
                                 isActive
-                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    ? 'bg-emerald-700 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
@@ -310,7 +310,7 @@ export default function AdminQuestionsPage() {
                                             type="button"
                                             onClick={() => answer(q.id)}
                                             disabled={busy === q.id || !(draftAnswers[q.id] || '').trim()}
-                                            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs disabled:opacity-50"
+                                            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 px-3 rounded-lg text-xs disabled:opacity-50"
                                         >
                                             {busy === q.id ? (
                                                 <Loader2 size={14} className="animate-spin" />

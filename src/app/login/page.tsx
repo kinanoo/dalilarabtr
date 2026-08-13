@@ -155,7 +155,7 @@ export default function LoginPage() {
 
                     <div className="flex items-center gap-4 mb-6">
                         <div className="flex-1 h-px bg-gradient-to-l from-transparent via-slate-300 to-transparent dark:via-slate-700"></div>
-                        <span className="text-[10px] font-black tracking-[0.18em] uppercase text-slate-400 dark:text-slate-500">أو بالبريد</span>
+                        <span className="text-[10px] font-black tracking-[0.18em] uppercase text-slate-400 dark:text-slate-400">أو بالبريد</span>
                         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-700"></div>
                     </div>
 
@@ -201,7 +201,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-md shadow-emerald-600/20 hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-black py-4 rounded-xl transition-all shadow-md shadow-emerald-600/20 hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 mt-4 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? <Loader2 className="animate-spin" /> : <LogIn size={24} />}
                             {loading ? 'جاري التحقق...' : 'دخول'}

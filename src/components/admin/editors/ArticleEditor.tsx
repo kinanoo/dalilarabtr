@@ -349,7 +349,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                             <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 break-all" dir="ltr">
                                 {SITE_CONFIG.siteUrl}/article/{form.slug || '…'}
                             </p>
-                            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+                            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-400">
                                 اتركه فارغاً = رابط عربي تلقائي. لو غيّرته على مقال قديم، رابطه القديم يبقى يعمل ويُحوّل للجديد تلقائياً (بلا كسر أو خسارة SEO).
                             </p>
                         </Field>
@@ -536,7 +536,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                             <div
                                 className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
                                     isGuide
-                                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-400/40'
+                                        ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-400/40'
                                         : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                 }`}
                             >
@@ -556,7 +556,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                                             : 'اعرض هذا المقال كشرح مصوّر خطوة بخطوة بالرئيسية'}
                                     </span>
                                     {isGuide && enoughSteps && (
-                                        <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full">
+                                        <span className="inline-flex items-center gap-1 bg-emerald-700 text-white text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full">
                                             <ListChecks size={11} />
                                             دليل
                                         </span>

@@ -147,7 +147,7 @@ export default function ConsulatesPage() {
                                     </a>
                                 ))}
                                 {m.guide && (
-                                    <Link href={m.guide.href} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-700">
+                                    <Link href={m.guide.href} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-800">
                                         {m.guide.label}
                                         <ArrowLeft size={12} />
                                     </Link>
@@ -181,7 +181,7 @@ export default function ConsulatesPage() {
                             href="https://mofaex.gov.sy/eservices-app"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-800"
                         >
                             بوّابة الحجز الرسمية <ExternalLink size={12} />
                         </a>

@@ -52,13 +52,13 @@ function getCategoryTheme(category?: string) {
         case 'مقال':
             return {
                 Icon: FileText,
-                iconClass: 'text-blue-500',
-                iconBg: 'bg-blue-50 dark:bg-blue-900/30',
-                stripe: 'bg-gradient-to-l from-blue-400 via-blue-500 to-indigo-500',
-                pill: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 border-blue-200/60 dark:border-blue-800/40',
-                hoverBorder: 'hover:border-blue-400 dark:hover:border-blue-600',
-                shadow: 'hover:shadow-blue-500/10',
-                hoverText: 'group-hover:text-blue-600 dark:group-hover:text-blue-400',
+                iconClass: 'text-slate-500',
+                iconBg: 'bg-slate-50 dark:bg-slate-900/30',
+                stripe: 'bg-gradient-to-l from-slate-400 via-slate-500 to-slate-500',
+                pill: 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/30 border-slate-200/60 dark:border-slate-800/40',
+                hoverBorder: 'hover:border-emerald-400 dark:hover:border-emerald-600',
+                shadow: 'hover:shadow-emerald-500/10',
+                hoverText: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400',
             };
         case 'service':
         case 'خدمة':

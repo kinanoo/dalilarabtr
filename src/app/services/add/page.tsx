@@ -52,7 +52,7 @@ export default function AddServicePage() {
                                 <Icon size={19} />
                             </span>
                             <h2 className="text-[13px] font-black text-slate-800 dark:text-slate-100 leading-tight">{title}</h2>
-                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-tight mt-0.5">{desc}</p>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-400 leading-tight mt-0.5">{desc}</p>
                         </div>
                     ))}
                 </div>

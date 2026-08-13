@@ -59,7 +59,7 @@ export default function Footer() {
 
             {/* القسم 2: أقسام تهمك (Dynamic) */}
             <div>
-              <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-emerald-500 before:rounded-full">أقسام تهمك</h2>
+              <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2 before:content-[''] before:w-1.5 before:h-5 before:bg-emerald-700 before:rounded-full">أقسام تهمك</h2>
               <ul className="space-y-2.5 text-sm">
                 <FooterMenuSection section="section1">
                   {/* Default Fallback — includes the 5 section hubs so they're
@@ -159,7 +159,10 @@ export default function Footer() {
                 </Link>
               </div>
             </div>
-            <p className="text-center text-xs text-slate-600 mt-4">
+            {/* slate-600 on the footer's slate-950 ground measured 2.4:1 —
+                dark-on-dark in BOTH themes. The footer is always dark, so it
+                takes the light grey. */}
+            <p className="text-center text-xs text-slate-400 mt-4">
               صُنع بـ <span className="text-rose-400">♥</span> للسوريين والعرب في تركيا
             </p>
           </div>

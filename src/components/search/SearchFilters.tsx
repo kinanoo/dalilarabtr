@@ -105,7 +105,7 @@ export default function SearchFilters({
                                             key={cat.value}
                                             onClick={() => onCategoryChange?.(cat.value)}
                                             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === cat.value
-                                                    ? 'bg-emerald-500 text-white'
+                                                    ? 'bg-emerald-700 text-white'
                                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                                 }`}
                                         >
@@ -141,7 +141,7 @@ export default function SearchFilters({
                         <div className="p-4 border-t border-slate-200 dark:border-slate-700">
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition-all btn-hover-lift"
+                                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg transition-all btn-hover-lift"
                             >
                                 تطبيق الفلاتر
                             </button>

@@ -73,7 +73,7 @@ export default function JoinPage() {
                         <strong className="text-emerald-600 dark:text-emerald-400 block mt-2 text-base">{email}</strong><br />
                         يرجى تفقد صندوق الوارد (أو مجلد الرسائل المزعجة Spam) والنقر على الرابط لتفعيل حسابك، ثم تسجيل الدخول.
                     </p>
-                    <Link href="/login" className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-xl transition-colors shadow-md shadow-emerald-600/20 w-full sm:w-auto">
+                    <Link href="/login" className="inline-flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-8 py-3.5 rounded-xl transition-colors shadow-md shadow-emerald-600/20 w-full sm:w-auto">
                         الذهاب لصفحة الدخول
                     </Link>
                 </div>
@@ -122,7 +122,7 @@ export default function JoinPage() {
 
                     <div className="flex items-center gap-4 mb-6">
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
-                        <span className="text-xs text-slate-400 dark:text-slate-500 font-bold">أو بالطريقة التقليدية</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-400 font-bold">أو بالطريقة التقليدية</span>
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
                     </div>
 
@@ -179,7 +179,7 @@ export default function JoinPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-black py-4 rounded-xl transition-colors shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 mt-4 text-lg"
+                            className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white font-black py-4 rounded-xl transition-colors shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 mt-4 text-lg"
                         >
                             {loading ? <Loader2 className="animate-spin" /> : <UserPlus size={24} />}
                             انضم إلينا الآن

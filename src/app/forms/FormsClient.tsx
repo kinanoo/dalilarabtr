@@ -57,7 +57,7 @@ export default function FormsClient({ initialForms = [] }: { initialForms?: Admi
                     href={form.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors whitespace-nowrap"
+                    className="shrink-0 inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors whitespace-nowrap"
                   >
                     <Download size={16} /> تحميل الملف
                   </a>

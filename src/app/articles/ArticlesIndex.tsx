@@ -226,7 +226,7 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                                         <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
                                             {(a.last_update || a.published_at) && (
                                                 <span
-                                                    className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1"
+                                                    className="text-[11px] text-slate-400 dark:text-slate-400 flex items-center gap-1"
                                                     title={revised ? 'آخر تعديل على هذا الدليل' : 'تاريخ النشر'}
                                                 >
                                                     <Calendar size={11} />
@@ -313,7 +313,7 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                                         <span
                                             key={p}
                                             aria-current="page"
-                                            className="min-w-9 text-center px-3 py-2 rounded-lg bg-emerald-600 text-white font-black text-sm tabular-nums select-none"
+                                            className="min-w-9 text-center px-3 py-2 rounded-lg bg-emerald-700 text-white font-black text-sm tabular-nums select-none"
                                         >
                                             {p}
                                         </span>

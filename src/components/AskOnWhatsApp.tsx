@@ -58,7 +58,7 @@ export default function AskOnWhatsApp({ topic, lang = 'ar' }: { topic?: string; 
 
     return (
         <div className="my-6 flex flex-col items-center gap-4 rounded-2xl border border-emerald-200 bg-gradient-to-l from-emerald-50 to-teal-50/50 p-5 text-center dark:border-emerald-900/50 dark:from-emerald-950/30 dark:to-slate-900 sm:flex-row sm:text-start">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-500/30">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-700 text-white shadow-lg shadow-emerald-500/30">
                 <MessageCircle size={24} />
             </div>
             <div className="min-w-0 flex-1">
@@ -70,7 +70,7 @@ export default function AskOnWhatsApp({ topic, lang = 'ar' }: { topic?: string; 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => { e.preventDefault(); openWithContext(); }}
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-95"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-black text-white shadow-md shadow-emerald-600/25 transition-all hover:bg-emerald-800 active:scale-95"
             >
                 <MessageCircle size={18} />
                 {t.button}

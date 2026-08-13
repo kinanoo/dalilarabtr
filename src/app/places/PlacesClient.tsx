@@ -59,7 +59,7 @@ function PlaceCard({ place }: { place: OfficialPlace }) {
                     </span>
                     {/* The address when we have one — more actionable on a list
                         than the Turkish name, which the detail page still shows. */}
-                    <span className="block text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5" dir="ltr" lang="tr">
+                    <span className="block text-[11px] text-slate-400 dark:text-slate-400 truncate mt-0.5" dir="ltr" lang="tr">
                         {place.contact?.address || place.tr}
                     </span>
                     {place.missionType === 'honorary' && (
@@ -224,7 +224,7 @@ export default function PlacesClient() {
                                         aria-selected={region === t.id}
                                         onClick={() => setRegion(t.id)}
                                         className={`px-4 py-2 rounded-xl text-sm font-black transition-colors ${region === t.id
-                                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                                            ? 'bg-emerald-700 text-white shadow-sm shadow-emerald-600/20'
                                             : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300'
                                             }`}
                                     >

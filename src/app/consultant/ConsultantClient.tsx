@@ -483,19 +483,21 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                   </div>
 
                   {(() => {
-                    // Per-accent style map so every scenario button gets a
-                    // matching top stripe + hover glow tint. All class
-                    // strings are LITERAL so Tailwind JIT picks them up at
-                    // build time — no dynamic interpolation that would purge.
-                    const ACCENT_STYLES: Record<string, { stripe: string; glow: string; hoverBorder: string }> = {
-                      emerald: { stripe: 'from-emerald-400 to-teal-500', glow: 'bg-emerald-400/20', hoverBorder: 'hover:border-emerald-400 dark:hover:border-emerald-600' },
-                      blue:    { stripe: 'from-blue-400 to-indigo-500',  glow: 'bg-blue-400/20',    hoverBorder: 'hover:border-blue-400 dark:hover:border-blue-600' },
-                      amber:   { stripe: 'from-amber-400 to-orange-500', glow: 'bg-amber-400/20',   hoverBorder: 'hover:border-amber-400 dark:hover:border-amber-600' },
-                      violet:  { stripe: 'from-violet-400 to-purple-500', glow: 'bg-violet-400/20', hoverBorder: 'hover:border-violet-400 dark:hover:border-violet-600' },
-                      cyan:    { stripe: 'from-cyan-400 to-sky-500',     glow: 'bg-cyan-400/20',    hoverBorder: 'hover:border-cyan-400 dark:hover:border-cyan-600' },
-                      orange:  { stripe: 'from-orange-400 to-red-500',   glow: 'bg-orange-400/20',  hoverBorder: 'hover:border-orange-400 dark:hover:border-orange-600' },
-                      rose:    { stripe: 'from-rose-400 to-pink-500',    glow: 'bg-rose-400/20',    hoverBorder: 'hover:border-rose-400 dark:hover:border-rose-600' },
-                      pink:    { stripe: 'from-pink-400 to-fuchsia-500', glow: 'bg-pink-400/20',    hoverBorder: 'hover:border-pink-400 dark:hover:border-pink-600' },
+                    // One treatment for all eight buttons. This used to be
+                    // eight accents (emerald/blue/amber/violet/cyan/orange/
+                    // rose/pink) — eight hues in one 2×4 grid, and the hue
+                    // said nothing about which situation the reader is in.
+                    // The emoji and the label carry that. Class strings stay
+                    // LITERAL so Tailwind JIT keeps them at build time.
+                    const BUTTON_STYLE = {
+                      stripe: 'from-emerald-400 to-teal-500',
+                      glow: 'bg-emerald-400/20',
+                      hoverBorder: 'hover:border-emerald-400 dark:hover:border-emerald-600',
+                    };
+                    const ACCENT_STYLES: Record<string, typeof BUTTON_STYLE> = {
+                      emerald: BUTTON_STYLE, blue: BUTTON_STYLE, amber: BUTTON_STYLE,
+                      violet: BUTTON_STYLE, cyan: BUTTON_STYLE, orange: BUTTON_STYLE,
+                      rose: BUTTON_STYLE, pink: BUTTON_STYLE,
                     };
                     const BUTTONS = [
                       { id: 'syrian', icon: '🪪', t: 'سوري (كملك)', d: 'حماية مؤقتة', accent: 'emerald' },
@@ -1192,7 +1194,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                   </p>
                   <button
                     onClick={reset}
-                    className="px-6 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl bg-emerald-700 text-white font-bold hover:bg-emerald-800 transition flex items-center gap-2"
                   >
                     <ArrowLeft size={18} />
                     عودة للبدء
@@ -1206,11 +1208,19 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                     {/* Tools for Result Card */}
 
 
+                    {/* The ONE place colour still earns its keep: risk is what
+                        the reader came here to learn. Three semantic steps
+                        (calm / caution / danger) instead of the old four hues
+                        (green→yellow→orange→red, which asked the reader to
+                        rank yellow against orange); the critical step inverts
+                        to solid red so it also reads without colour vision.
+                        Dark variants added — the old chips had none and stayed
+                        light-mode pastels on a dark page. */}
                     <div
-                      className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold mb-3 sm:mb-4 ${shownResult.risk === 'safe' ? 'bg-green-100 text-green-700' :
-                        shownResult.risk === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          shownResult.risk === 'high' ? 'bg-orange-100 text-orange-700' :
-                            'bg-red-100 text-red-700 animate-pulse'
+                      className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-bold mb-3 sm:mb-4 ${shownResult.risk === 'safe' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' :
+                        shownResult.risk === 'medium' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200' :
+                          shownResult.risk === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200' :
+                            'bg-red-700 text-white dark:bg-red-800 animate-pulse'
                         }`}
                     >
                       {shownResult.risk === 'safe' ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
@@ -1344,7 +1354,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
 
                   {/* إخلاء مسؤولية */}
                   <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-400 leading-relaxed">
                       <strong>تنبيه:</strong> المعلومات الواردة هنا لأغراض توجيهية فقط ولا تُشكّل استشارة قانونية رسمية.
                       القوانين والرسوم تتغير دورياً — تحقق دائماً من الجهة الرسمية المختصة قبل اتخاذ أي إجراء.{' '}
                       <Link href="/disclaimer" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">إخلاء المسؤولية الكامل</Link>
@@ -1363,7 +1373,7 @@ export default function ConsultantClient({ initialScenarios = [] }: Props) {
                       href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`السلام عليكم، أحتاج مساعدة بخصوص:\n${shownResult.title}\n${SITE_CONFIG.siteUrl}/consultant?scenario=${shownResult.id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-colors w-full text-sm"
+                      className="flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3 rounded-xl font-bold transition-colors w-full text-sm"
                     >
                       <MessageCircle size={18} />
                       تواصل معنا عبر واتساب

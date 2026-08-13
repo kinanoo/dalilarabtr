@@ -81,7 +81,7 @@ export default function InteractiveMap({ services, center = [39.9334, 32.8597], 
                                 <p className="text-emerald-600 text-xs font-bold mb-2">{service.profession}</p>
                                 <Link
                                     href={`/services/${service.id}`}
-                                    className="inline-flex items-center gap-1 bg-slate-900 text-white text-[10px] px-3 py-1.5 rounded-full hover:bg-emerald-600 transition-colors"
+                                    className="inline-flex items-center gap-1 bg-slate-900 text-white text-[10px] px-3 py-1.5 rounded-full hover:bg-emerald-800 transition-colors"
                                 >
                                     التفاصيل <ArrowRight size={10} />
                                 </Link>

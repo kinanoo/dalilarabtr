@@ -21,7 +21,7 @@ export default function NotFound() {
     return (
         <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 py-12">
             <div className="bg-slate-100 dark:bg-slate-800 p-6 rounded-full mb-6">
-                <FileQuestion size={56} className="text-slate-400 dark:text-slate-500" />
+                <FileQuestion size={56} className="text-slate-400 dark:text-slate-400" />
             </div>
 
             <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mb-2">
@@ -49,7 +49,7 @@ export default function NotFound() {
 
             <Link
                 href="/"
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg"
+                className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg"
             >
                 <Home size={20} />
                 عودة للرئيسية

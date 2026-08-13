@@ -42,7 +42,7 @@ export default function GlobalError({
 
             <Link
               href="/"
-              className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2 text-center"
+              className="w-full bg-emerald-700 text-white py-3 rounded-xl font-bold hover:bg-emerald-800 transition flex items-center justify-center gap-2 text-center"
             >
               <Home size={18} />
               العودة للرئيسية

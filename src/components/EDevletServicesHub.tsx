@@ -102,7 +102,7 @@ export default function EDevletServicesHub({
               aria-pressed={!activeCategory}
               className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                 !activeCategory
-                  ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  ? 'border-emerald-500 bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
                   : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
               }`}
             >
@@ -117,7 +117,7 @@ export default function EDevletServicesHub({
                 aria-pressed={activeCategory === cat.label}
                 className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                   activeCategory === cat.label
-                    ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                    ? 'border-emerald-500 bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
                     : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
                 }`}
               >
@@ -185,7 +185,7 @@ export default function EDevletServicesHub({
                   href={service.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-auto self-start bg-emerald-600 text-white px-4 py-2 rounded-xl font-black hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm"
+                  className="mt-auto self-start bg-emerald-700 text-white px-4 py-2 rounded-xl font-black hover:bg-emerald-800 transition-colors flex items-center gap-2 text-sm"
                 >
                   افتح الخدمة الرسمية
                   <ExternalLink size={16} />

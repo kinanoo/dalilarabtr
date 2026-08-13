@@ -448,7 +448,7 @@ function CategoryView({ category, onBack, onNavigate }: { category: string, onBa
                     <button onClick={onBack} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200" aria-label="رجوع"><ArrowRight size={20} /></button>
                     <h2 className="text-xl font-bold">تصفح: {category}</h2>
                 </div>
-                <button onClick={() => onNavigate('edit-article:new')} className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex gap-2">
+                <button onClick={() => onNavigate('edit-article:new')} className="bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex gap-2">
                     <Plus size={16} /> مقال جديد
                 </button>
             </div>
@@ -522,7 +522,7 @@ function ArticleEditor({ articleId, categoryContext, onBack }: { articleId: stri
                 <div><label className="text-xs font-bold block mb-1">التفاصيل الكاملة</label><textarea rows={5} className="w-full border p-2 rounded" value={form.details} onChange={e => setForm({ ...form, details: e.target.value })} /></div>
 
                 <div className="pt-4 flex gap-2">
-                    <button type="submit" className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700">حفظ المقال</button>
+                    <button type="submit" className="flex-1 bg-emerald-700 text-white py-3 rounded-lg font-bold hover:bg-emerald-800">حفظ المقال</button>
                     <button type="button" onClick={onBack} className="px-6 py-3 text-slate-500">إلغاء</button>
                 </div>
             </form>

@@ -65,7 +65,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               
               <Link
                 href="/"
-                className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition flex items-center justify-center gap-2"
+                className="w-full bg-emerald-700 text-white py-3 rounded-xl font-bold hover:bg-emerald-800 transition flex items-center justify-center gap-2"
               >
                 <Home size={18} />
                 العودة للرئيسية
@@ -123,7 +123,7 @@ export function ErrorBoundaryWrapper({ children }: { children: ReactNode }) {
               setError(null);
               window.location.reload();
             }}
-            className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition"
+            className="w-full bg-emerald-700 text-white py-3 rounded-xl font-bold hover:bg-emerald-800 transition"
           >
             حاول مجدداً
           </button>

@@ -50,7 +50,7 @@ export default function NewsletterCard({ tone = 'compact', source = 'unknown' }:
 
             <div className="relative">
                 <div className="flex items-center gap-3 mb-3">
-                    <span className={`inline-flex items-center justify-center ${isHero ? 'w-12 h-12' : 'w-10 h-10'} rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30`}>
+                    <span className={`inline-flex items-center justify-center ${isHero ? 'w-12 h-12' : 'w-10 h-10'} rounded-2xl bg-emerald-700 text-white shadow-lg shadow-emerald-500/30`}>
                         <Mail size={isHero ? 24 : 20} />
                     </span>
                     <div>
@@ -81,7 +81,7 @@ export default function NewsletterCard({ tone = 'compact', source = 'unknown' }:
 
                 <NewsletterForm source={source} />
 
-                <p className={`${isHero ? 'mt-4' : 'mt-3'} text-[11px] text-slate-400 dark:text-slate-500`}>
+                <p className={`${isHero ? 'mt-4' : 'mt-3'} text-[11px] text-slate-400 dark:text-slate-400`}>
                     بالاشتراك توافق على استخدام بريدك لإرسال النشرة، ويمكنك التوقف في أي وقت. راجع{' '}
                     <Link href="/privacy" className="font-bold text-emerald-700 underline dark:text-emerald-400">
                         سياسة الخصوصية

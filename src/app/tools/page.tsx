@@ -109,7 +109,7 @@ export default function ToolsPage() {
             <p className="text-slate-600 dark:text-slate-300 mb-4">أخبرنا بالأداة التي تريدها وسنعمل على إضافتها.</p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
+              className="inline-flex items-center gap-2 bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-800 transition"
             >
               اقترح أداة <ArrowLeft size={16} />
             </Link>

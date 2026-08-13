@@ -358,7 +358,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                 onClick={() => selectTab(tab.key)}
                 className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full border text-sm font-bold transition-all ${
                   active
-                    ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
+                    ? 'border-emerald-600 bg-emerald-700 text-white shadow-sm'
                     : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-emerald-300 dark:hover:border-emerald-700'
                 }`}
               >
@@ -388,7 +388,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                   onClick={() => { setActiveCategory(cat.key); setVisibleCount(20); }}
                   className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-bold transition-all ${
                     active
-                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      ? 'border-emerald-600 bg-emerald-700 text-white'
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
@@ -594,14 +594,14 @@ function AlertRow({ item }: { item: any }) {
   return (
     <Link
       href={hrefOf(item)}
-      className="flex items-start gap-3 py-4 px-2 -mx-2 rounded-xl hover:bg-rose-50/60 dark:hover:bg-rose-950/20 transition-colors group"
+      className="flex items-start gap-3 py-4 px-2 -mx-2 rounded-xl hover:bg-emerald-50/60 dark:hover:bg-emerald-950/20 transition-colors group"
     >
-      <div className="w-9 h-9 flex-shrink-0 rounded-lg bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center mt-0.5">
+      <div className="w-9 h-9 flex-shrink-0 rounded-lg bg-slate-50 dark:bg-slate-950/40 flex items-center justify-center mt-0.5">
         <AlertTriangle size={16} className="text-rose-600" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1.5">
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300">
             تنبيه
           </span>
           <time dateTime={item.sortDate} className="text-[11px] text-slate-400 flex items-center gap-1">
@@ -609,7 +609,7 @@ function AlertRow({ item }: { item: any }) {
             {relativeOrAbsolute(item.sortDate)}
           </time>
         </div>
-        <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors">
+        <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
           {item.title}
         </h3>
         {excerpt && (

@@ -93,7 +93,7 @@ export default function NewsletterForm({ onSubmit, source = 'unknown' }: Newslet
                     disabled={isSubmitting}
                     className="
                         px-4 py-2
-                        bg-emerald-600 hover:bg-emerald-700
+                        bg-emerald-600 hover:bg-emerald-800
                         text-white
                         rounded-xl
                         transition-all

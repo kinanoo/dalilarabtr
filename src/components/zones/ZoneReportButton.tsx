@@ -186,7 +186,7 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
                             type="button"
                             onClick={handleConfirmedReport}
                             disabled={sending}
-                            className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors"
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors"
                         >
                             {sending ? (
                                 <Loader2 size={12} className="animate-spin" />
@@ -213,7 +213,7 @@ export default function ZoneReportButton({ zoneId, initialCount, status }: Props
             {hasReports && (
                 <div className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 ${
                     nearThreshold
-                        ? 'bg-emerald-500 text-white animate-pulse'
+                        ? 'bg-emerald-700 text-white animate-pulse'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                 }`}>
                     <Users size={10} />

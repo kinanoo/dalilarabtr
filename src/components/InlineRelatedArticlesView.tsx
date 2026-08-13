@@ -43,7 +43,7 @@ export default function InlineRelatedArticlesView({ articles }: { articles: Inli
                                 {a.title}
                             </span>
                             {a.intro && (
-                                <p dir="auto" className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 mt-0.5 [unicode-bidi:plaintext]">
+                                <p dir="auto" className="text-[11px] text-slate-400 dark:text-slate-400 line-clamp-1 mt-0.5 [unicode-bidi:plaintext]">
                                     {stripHtml(a.intro)}
                                 </p>
                             )}

@@ -148,7 +148,7 @@ export default function PWAInstallPrompt() {
 
                 <ol className="flex flex-col gap-2 text-xs text-slate-700 dark:text-slate-200">
                     <li className="flex items-center gap-2">
-                        <span className="w-5 h-5 shrink-0 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] font-bold">1</span>
+                        <span className="w-5 h-5 shrink-0 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[11px] font-bold">1</span>
                         <span className="flex items-center gap-1">
                             اضغط زر المشاركة
                             <Share size={15} className="inline text-sky-500" aria-hidden="true" />
@@ -156,7 +156,7 @@ export default function PWAInstallPrompt() {
                         </span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <span className="w-5 h-5 shrink-0 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] font-bold">2</span>
+                        <span className="w-5 h-5 shrink-0 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[11px] font-bold">2</span>
                         <span className="flex items-center gap-1">
                             اختر
                             <span className="inline-flex items-center gap-1 font-semibold">«إضافة إلى الشاشة الرئيسية» <Plus size={13} className="inline text-slate-500" aria-hidden="true" /></span>
@@ -195,7 +195,7 @@ export default function PWAInstallPrompt() {
             <button
                 type="button"
                 onClick={handleInstall}
-                className="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
+                className="w-full mt-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
             >
                 تثبيت التطبيق مجاناً
             </button>

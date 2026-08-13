@@ -172,7 +172,7 @@ export default async function GuidesPage() {
                                                         <ListChecks size={30} />
                                                     </span>
                                                 )}
-                                                <span className="absolute top-1 right-1 z-10 bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
+                                                <span className="absolute top-1 right-1 z-10 bg-emerald-700 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
                                                     {g.steps!.length} خطوات
                                                 </span>
                                             </span>

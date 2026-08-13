@@ -9,14 +9,25 @@ export interface Badge {
     color: string;
 }
 
+/**
+ * Rank reads from WEIGHT, not from hue. These chips used to run
+ * slate→blue→purple→amber→amber→emerald→amber-gradient, which put six colours
+ * under one comment thread and still left the reader guessing which badge
+ * outranked which. Every tier now shares the quiet chip; the two top tiers
+ * invert to ink so seniority is legible at a glance — and stays legible to a
+ * reader who cannot separate blue from purple.
+ */
+const CHIP = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+const CHIP_TOP = 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900';
+
 const BADGE_DEFINITIONS: Record<BadgeType, Badge> = {
-    newcomer: { type: 'newcomer', label: 'مشارك جديد', icon: '💬', color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400' },
-    active: { type: 'active', label: 'مساهم نشط', icon: '🗣️', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
-    voice: { type: 'voice', label: 'صوت المجتمع', icon: '📢', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' },
-    reviewer: { type: 'reviewer', label: 'مُقيّم', icon: '⭐', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' },
-    expert_reviewer: { type: 'expert_reviewer', label: 'مُقيّم متمرس', icon: '🌟', color: 'bg-amber-200 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' },
-    corrector: { type: 'corrector', label: 'مُصحح', icon: '✅', color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
-    top_contributor: { type: 'top_contributor', label: 'مساهم مميز', icon: '🏆', color: 'bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 text-amber-800 dark:text-amber-300' },
+    newcomer: { type: 'newcomer', label: 'مشارك جديد', icon: '💬', color: CHIP },
+    active: { type: 'active', label: 'مساهم نشط', icon: '🗣️', color: CHIP },
+    voice: { type: 'voice', label: 'صوت المجتمع', icon: '📢', color: CHIP },
+    reviewer: { type: 'reviewer', label: 'مُقيّم', icon: '⭐', color: CHIP },
+    expert_reviewer: { type: 'expert_reviewer', label: 'مُقيّم متمرس', icon: '🌟', color: CHIP_TOP },
+    corrector: { type: 'corrector', label: 'مُصحح', icon: '✅', color: CHIP },
+    top_contributor: { type: 'top_contributor', label: 'مساهم مميز', icon: '🏆', color: CHIP_TOP },
 };
 
 export function computeBadges(stats: { comments: number; reviews: number; corrections: number }): Badge[] {

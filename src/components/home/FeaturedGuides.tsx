@@ -96,7 +96,7 @@ export default function FeaturedGuides({ guides }: { guides: FeaturedGuide[] }) 
                                             <ListChecks size={30} className="transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3" />
                                         </span>
                                     )}
-                                    <span className="absolute top-1 right-1 z-10 bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
+                                    <span className="absolute top-1 right-1 z-10 bg-emerald-700 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
                                         {g.stepCount} خطوات
                                     </span>
                                 </span>

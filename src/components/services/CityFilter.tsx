@@ -156,7 +156,7 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
 
     const chipCls = (active: boolean) =>
         `shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${active
-            ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
+            ? 'bg-emerald-700 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
             : 'bg-white/90 text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700 dark:hover:border-emerald-700'
         }`;
 
@@ -241,7 +241,7 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
                         aria-expanded={open}
                         onClick={() => (open ? close() : openPanel())}
                         className={`inline-flex h-11 flex-1 items-center gap-2 px-4 text-sm font-bold border transition-all ${compact ? 'lg:w-full' : 'lg:flex-initial'} ${!isAll
-                            ? 'rounded-s-xl bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
+                            ? 'rounded-s-xl bg-emerald-700 text-white border-emerald-600 shadow-md shadow-emerald-500/30'
                             : 'rounded-xl w-full lg:w-auto bg-white text-slate-700 border-slate-200 hover:border-emerald-300 dark:bg-slate-800/60 dark:text-slate-200 dark:border-slate-700'
                             }`}
                     >
@@ -255,7 +255,7 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
                             type="button"
                             aria-label="إعادة لكل المدن"
                             onClick={() => onChange('all')}
-                            className="grid h-11 w-11 shrink-0 place-items-center rounded-e-xl border border-s-0 border-emerald-600 bg-emerald-600 text-white transition-colors hover:bg-emerald-700"
+                            className="grid h-11 w-11 shrink-0 place-items-center rounded-e-xl border border-s-0 border-emerald-600 bg-emerald-700 text-white transition-colors hover:bg-emerald-800"
                         >
                             <X size={16} />
                         </button>
@@ -270,7 +270,7 @@ export default function CityFilter({ value, onChange, cities, counts, totalCount
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-    return <div className="px-3 pb-1 pt-3 text-[11px] font-black tracking-wide text-slate-400 dark:text-slate-500">{children}</div>;
+    return <div className="px-3 pb-1 pt-3 text-[11px] font-black tracking-wide text-slate-400 dark:text-slate-400">{children}</div>;
 }
 
 function Row({ label, count, active, onClick, icon }: { label: string; count?: number; active: boolean; onClick: () => void; icon?: boolean }) {
@@ -287,7 +287,7 @@ function Row({ label, count, active, onClick, icon }: { label: string; count?: n
         >
             {icon && <MapPin size={15} className={active ? 'text-emerald-500' : 'text-slate-400'} />}
             <span className="min-w-0 flex-1 truncate text-start">{label}</span>
-            {count != null && <span className="tabular-nums text-xs text-slate-400 dark:text-slate-500">{count}</span>}
+            {count != null && <span className="tabular-nums text-xs text-slate-400 dark:text-slate-400">{count}</span>}
             {active && <Check size={16} className="shrink-0 text-emerald-500" />}
         </button>
     );

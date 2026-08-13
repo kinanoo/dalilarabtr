@@ -302,7 +302,7 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                             </div>
                             <div className="mt-4 flex flex-wrap gap-2.5">
                                 {cityMissions.length > 0 && (
-                                    <Link href={`/places/${cityMissions[0].slug}`} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black px-4 py-2.5 transition-colors">
+                                    <Link href={`/places/${cityMissions[0].slug}`} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-black px-4 py-2.5 transition-colors">
                                         <Landmark size={16} /> السفارات والقنصليات في {city.ar}
                                     </Link>
                                 )}
@@ -317,14 +317,14 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                 {/* Pharmacies on duty */}
                 <section>
                     <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
-                        <Pill size={20} className="text-green-600" /> الصيدليات المناوبة في {city.ar}
+                        <Pill size={20} className="text-emerald-600" /> الصيدليات المناوبة في {city.ar}
                     </h2>
                     <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
                         <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed mb-4">
                             لمعرفة أقرب صيدلية مناوبة (nöbetçi eczane) مفتوحة الآن في {city.ar} على مدار الساعة، افتح الأداة واختر ولاية {city.ar} — تعرض القائمة الرسمية المحدّثة يومياً مع العناوين وأرقام الهاتف.
                         </p>
                         <div className="flex flex-wrap gap-2.5">
-                            <Link href={pharmacyCityBySlug(slug) ? `/tools/pharmacy/${slug}` : '/tools/pharmacy'} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black px-4 py-2.5 transition-colors">
+                            <Link href={pharmacyCityBySlug(slug) ? `/tools/pharmacy/${slug}` : '/tools/pharmacy'} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-black px-4 py-2.5 transition-colors">
                                 <Pill size={16} /> صيدليات {city.ar} المناوبة الآن
                             </Link>
                             <a href="https://www.turkiye.gov.tr/saglik-titck-nobetci-eczane-sorgulama" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm font-black px-4 py-2.5 hover:border-emerald-300 transition-colors">
@@ -390,14 +390,14 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                             { href: '/important-links', label: 'كل الروابط والمنظمات', note: 'مصادر موثوقة إضافية', internal: true },
                         ].map((l) => (
                             l.internal ? (
-                                <Link key={l.href} href={l.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-blue-300 transition-all">
-                                    <Home size={18} className="text-blue-500 shrink-0" />
+                                <Link key={l.href} href={l.href} className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-emerald-300 transition-all">
+                                    <Home size={18} className="text-slate-500 shrink-0" />
                                     <div className="min-w-0 flex-1"><p className="font-black text-sm text-slate-900 dark:text-slate-100">{l.label}</p><p className="text-xs text-slate-500 dark:text-slate-400">{l.note}</p></div>
                                     <ArrowLeft size={15} className="text-slate-300 shrink-0" />
                                 </Link>
                             ) : (
-                                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-blue-300 transition-all">
-                                    <ExternalLink size={18} className="text-blue-500 shrink-0" />
+                                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-emerald-300 transition-all">
+                                    <ExternalLink size={18} className="text-slate-500 shrink-0" />
                                     <div className="min-w-0 flex-1"><p className="font-black text-sm text-slate-900 dark:text-slate-100">{l.label}</p><p className="text-xs text-slate-500 dark:text-slate-400">{l.note}</p></div>
                                 </a>
                             )
@@ -409,13 +409,13 @@ export default async function CityHubPage({ params }: { params: Promise<{ slug: 
                 {residenceArticles.length > 0 && (
                     <section>
                         <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
-                            <IdCard size={20} className="text-blue-500" /> صفحات مرتبطة بالكملك والإقامة
+                            <IdCard size={20} className="text-slate-500" /> صفحات مرتبطة بالكملك والإقامة
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {residenceArticles.map((a) => (
                                 <Link key={a.slug} href={`/article/${a.slug}`}
-                                    className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all">
-                                    <IdCard size={18} className="text-blue-500 shrink-0" />
+                                    className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all">
+                                    <IdCard size={18} className="text-slate-500 shrink-0" />
                                     <span className="font-bold text-sm text-slate-800 dark:text-slate-100 line-clamp-2 flex-1">{a.title}</span>
                                     <ArrowLeft size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
                                 </Link>

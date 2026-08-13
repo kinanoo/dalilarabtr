@@ -30,7 +30,7 @@ export default function AdminArticlesPage() {
             onClick={() => setOrderBy(key)}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
                 orderBy === key
-                    ? 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-emerald-700 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
         >

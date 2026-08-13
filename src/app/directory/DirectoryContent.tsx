@@ -33,30 +33,30 @@ export type DirectoryArticle = {
 
 // الأقسام الرئيسية للمقالات
 const PRIMARY_SECTIONS: Array<{ key: string; title: string; icon: any; color: string; categoryName?: string; isScenario?: boolean }> = [
-  { key: 'kimlik', title: 'خدمات الكملك', icon: IdCard, color: 'bg-cyan-500 dark:bg-cyan-600', categoryName: CATEGORY_SLUGS.kimlik },
-  { key: 'residence', title: 'الإقامة', icon: FileText, color: 'bg-blue-500 dark:bg-blue-600', categoryName: CATEGORY_SLUGS.residence },
-  { key: 'scenarios', title: 'دليل الإجراءات والحلول', icon: BrainCircuit, color: 'bg-emerald-500 dark:bg-emerald-600', isScenario: true },
-  { key: 'official', title: 'معاملات رسمية', icon: Scale, color: 'bg-slate-500 dark:bg-slate-600' },
-  { key: 'edevlet', title: 'خدمات e-Devlet', icon: Smartphone, color: 'bg-red-500 dark:bg-red-600' },
-  { key: 'housing', title: 'السكن والحياة', icon: Home, color: 'bg-orange-500 dark:bg-orange-600' },
-  { key: 'daily', title: 'الحياة اليومية', icon: Coffee, color: 'bg-emerald-500 dark:bg-emerald-600' },
-  { key: 'visa', title: 'الفيزا', icon: Plane, color: 'bg-purple-500 dark:bg-purple-600', categoryName: CATEGORY_SLUGS.visa },
-  { key: 'work', title: 'العمل', icon: Briefcase, color: 'bg-amber-500 dark:bg-amber-600', categoryName: CATEGORY_SLUGS.work },
-  { key: 'health', title: 'الصحة', icon: HeartPulse, color: 'bg-rose-500 dark:bg-rose-600', categoryName: CATEGORY_SLUGS.health },
-  { key: 'education', title: 'الدراسة', icon: GraduationCap, color: 'bg-indigo-500 dark:bg-indigo-600', categoryName: CATEGORY_SLUGS.education },
+  { key: 'kimlik', title: 'خدمات الكملك', icon: IdCard, color: 'bg-emerald-600 dark:bg-emerald-700', categoryName: CATEGORY_SLUGS.kimlik },
+  { key: 'residence', title: 'الإقامة', icon: FileText, color: 'bg-emerald-600 dark:bg-emerald-700', categoryName: CATEGORY_SLUGS.residence },
+  { key: 'scenarios', title: 'دليل الإجراءات والحلول', icon: BrainCircuit, color: 'bg-emerald-600 dark:bg-emerald-700', isScenario: true },
+  { key: 'official', title: 'معاملات رسمية', icon: Scale, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'edevlet', title: 'خدمات e-Devlet', icon: Smartphone, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'housing', title: 'السكن والحياة', icon: Home, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'daily', title: 'الحياة اليومية', icon: Coffee, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'visa', title: 'الفيزا', icon: Plane, color: 'bg-emerald-600 dark:bg-emerald-700', categoryName: CATEGORY_SLUGS.visa },
+  { key: 'work', title: 'العمل', icon: Briefcase, color: 'bg-emerald-600 dark:bg-emerald-700', categoryName: CATEGORY_SLUGS.work },
+  { key: 'health', title: 'الصحة', icon: HeartPulse, color: 'bg-emerald-600 dark:bg-emerald-700', categoryName: CATEGORY_SLUGS.health },
+  { key: 'education', title: 'الدراسة', icon: GraduationCap, color: 'bg-emerald-600 dark:bg-emerald-700', categoryName: CATEGORY_SLUGS.education },
 ];
 
 // أقسام إضافية لصفحات الموقع
 const ADDITIONAL_SECTIONS: Array<{ key: string; title: string; description: string; href: string; icon: any; color: string }> = [
-  { key: 'consultant', title: 'دليل المواقف', description: 'حدّد إجراءاتك القانونية خطوة بخطوة حسب حالتك', href: '/consultant', icon: BrainCircuit, color: 'bg-emerald-500 dark:bg-emerald-600' },
-  { key: 'codes', title: 'دليل الأكواد', description: 'معرفة معنى الكود الأمني وسبب الرفض أو المنع', href: '/codes', icon: ShieldAlert, color: 'bg-red-500 dark:bg-red-600' },
-  { key: 'ban-calculator', title: 'حاسبة مدة المنع', description: 'احسب المدة القانونية لمنع الدخول إلى تركيا', href: '/ban-calculator', icon: Calculator, color: 'bg-orange-500 dark:bg-orange-600' },
-  { key: 'zones', title: 'المناطق المحظورة', description: 'التحقق من المناطق المفتوحة لتسجيل الأجانب', href: '/zones', icon: MapPin, color: 'bg-pink-500 dark:bg-pink-600' },
-  { key: 'faq', title: 'الأسئلة الشائعة', description: 'أكثر من 471 سؤال وجواب حول القوانين والإجراءات', href: '/faq', icon: BookOpen, color: 'bg-green-500 dark:bg-green-600' },
-  { key: 'updates', title: 'الأخبار والتحديثات', description: 'آخر الأخبار والتغييرات في قوانين تركيا', href: '/updates', icon: Bell, color: 'bg-yellow-500 dark:bg-yellow-600' },
-  { key: 'e-devlet', title: 'دليل خدمات اي دولات', description: 'شرح مفصل لخدمات البوابة الإلكترونية الحكومية', href: '/e-devlet-services', icon: Smartphone, color: 'bg-teal-500 dark:bg-teal-600' },
-  { key: 'important-links', title: 'الروابط الهامة', description: 'روابط مباشرة وموثوقة للخدمات الحكومية والمنظمات', href: '/important-links', icon: Link2, color: 'bg-sky-500 dark:bg-sky-600' },
-  { key: 'services', title: 'اطلب خدمة', description: 'خدماتنا الخاصة لإنجاز معاملاتك', href: '/services', icon: Briefcase, color: 'bg-violet-500 dark:bg-violet-600' },
+  { key: 'consultant', title: 'دليل المواقف', description: 'حدّد إجراءاتك القانونية خطوة بخطوة حسب حالتك', href: '/consultant', icon: BrainCircuit, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'codes', title: 'دليل الأكواد', description: 'معرفة معنى الكود الأمني وسبب الرفض أو المنع', href: '/codes', icon: ShieldAlert, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'ban-calculator', title: 'حاسبة مدة المنع', description: 'احسب المدة القانونية لمنع الدخول إلى تركيا', href: '/ban-calculator', icon: Calculator, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'zones', title: 'المناطق المحظورة', description: 'التحقق من المناطق المفتوحة لتسجيل الأجانب', href: '/zones', icon: MapPin, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'faq', title: 'الأسئلة الشائعة', description: 'أكثر من 471 سؤال وجواب حول القوانين والإجراءات', href: '/faq', icon: BookOpen, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'updates', title: 'الأخبار والتحديثات', description: 'آخر الأخبار والتغييرات في قوانين تركيا', href: '/updates', icon: Bell, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'e-devlet', title: 'دليل خدمات اي دولات', description: 'شرح مفصل لخدمات البوابة الإلكترونية الحكومية', href: '/e-devlet-services', icon: Smartphone, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'important-links', title: 'الروابط الهامة', description: 'روابط مباشرة وموثوقة للخدمات الحكومية والمنظمات', href: '/important-links', icon: Link2, color: 'bg-emerald-600 dark:bg-emerald-700' },
+  { key: 'services', title: 'اطلب خدمة', description: 'خدماتنا الخاصة لإنجاز معاملاتك', href: '/services', icon: Briefcase, color: 'bg-emerald-600 dark:bg-emerald-700' },
 ];
 
 // الأدوات والخدمات الذكية — بطاقات مدمجة بدل المربعات الملوّنة
@@ -452,7 +452,7 @@ export default function DirectoryContent({ initialArticles = [] }: { initialArti
 
                                         {/* New Badge for Articles */}
                                         {article.type !== 'scenario' && article.createdAt && isNewContent(article.createdAt) && (
-                                          <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
+                                          <span className="bg-emerald-700 text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full">
                                             جديد
                                           </span>
                                         )}
@@ -511,7 +511,7 @@ export default function DirectoryContent({ initialArticles = [] }: { initialArti
               {OFFICIAL_SOURCES.map((source, idx) => (
                 <a key={idx} href={source.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
                   <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">{source.name}</span>
-                  <ArrowLeft size={16} className="text-slate-400 dark:text-slate-500" />
+                  <ArrowLeft size={16} className="text-slate-400 dark:text-slate-400" />
                 </a>
               ))}
             </div>

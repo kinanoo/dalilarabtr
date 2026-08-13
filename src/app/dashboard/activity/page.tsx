@@ -129,9 +129,9 @@ export default function ActivityPage() {
 
     const statCards = [
         { label: 'تقييمات', count: stats.reviews_count, icon: Star, iconClasses: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400', accent: 'bg-amber-500', surface: 'from-white to-amber-50/40 dark:from-slate-800 dark:to-amber-950/20', shadowHover: 'hover:shadow-amber-500/15' },
-        { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, iconClasses: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400', accent: 'bg-blue-500', surface: 'from-white to-blue-50/40 dark:from-slate-800 dark:to-blue-950/20', shadowHover: 'hover:shadow-blue-500/15' },
+        { label: 'تعليقات', count: stats.comments_count, icon: MessageCircle, iconClasses: 'bg-slate-100 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400', accent: 'bg-slate-500', surface: 'from-white to-slate-50/40 dark:from-slate-800 dark:to-slate-950/20', shadowHover: 'hover:shadow-emerald-500/15' },
         { label: 'خدمات', count: stats.services_count, icon: Briefcase, iconClasses: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400', accent: 'bg-emerald-500', surface: 'from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20', shadowHover: 'hover:shadow-emerald-500/15' },
-        { label: 'مقالات', count: stats.articles_count, icon: FileText, iconClasses: 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400', accent: 'bg-violet-500', surface: 'from-white to-violet-50/40 dark:from-slate-800 dark:to-violet-950/20', shadowHover: 'hover:shadow-violet-500/15' },
+        { label: 'مقالات', count: stats.articles_count, icon: FileText, iconClasses: 'bg-slate-100 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400', accent: 'bg-slate-500', surface: 'from-white to-slate-50/40 dark:from-slate-800 dark:to-slate-950/20', shadowHover: 'hover:shadow-emerald-500/15' },
     ];
 
     const tabs = [
@@ -285,7 +285,7 @@ export default function ActivityPage() {
                     <ArrowRight size={16} />
                     العودة للوحة
                 </Link>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-300 rounded-full text-[10px] font-black tracking-wider uppercase mb-2">
                     <Sparkles size={10} />
                     نشاطك
                 </span>

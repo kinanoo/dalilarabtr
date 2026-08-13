@@ -47,7 +47,7 @@ export default function ToolFooter({ toolId }: { toolId: string }) {
             <div className="mt-4 flex flex-wrap gap-2.5">
               <Link
                 href={tool.cta.primary.href}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black px-5 py-3 shadow-sm shadow-emerald-600/20 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-black px-5 py-3 shadow-sm shadow-emerald-600/20 transition-colors"
               >
                 {tool.cta.primary.label}
                 <ArrowLeft size={16} />

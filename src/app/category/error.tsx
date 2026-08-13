@@ -20,7 +20,7 @@ export default function ArticleError({ error, reset }: { error: Error & { digest
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">تعذّر تحميل القسم</h2>
             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md">حدث خطأ أثناء تحميل مقالات هذا القسم. جرّب مرة أخرى.</p>
             <div className="flex gap-3">
-                <button onClick={reset} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition">
+                <button onClick={reset} className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-xl font-bold transition">
                     <RefreshCw size={18} /> إعادة المحاولة
                 </button>
                 <Link href="/" className="flex items-center gap-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold transition hover:bg-slate-300">

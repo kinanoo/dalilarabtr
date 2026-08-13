@@ -130,7 +130,7 @@ export default function RatingModal({ isOpen, onClose, serviceId, serviceName }:
 
                             <button
                                 disabled={loading || rating === 0}
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? <Loader2 className="animate-spin" /> : <Send size={18} />}
                                 إرسال التقييم

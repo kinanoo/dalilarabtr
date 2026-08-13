@@ -85,7 +85,7 @@ export default function CopyrightComplaintForm() {
             <button
                 type="submit"
                 disabled={!confirmed}
-                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 font-black text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 px-5 font-black text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 <Scale className="h-5 w-5" />
                 إرسال الطلب للمراجعة

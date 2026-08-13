@@ -19,11 +19,14 @@ type FinanceTool = {
     color: string;
 };
 
+/** One chip for all four — the icon says which calculator this is. */
+const CHIP = 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
+
 const FINANCE_TOOLS: FinanceTool[] = [
-    { id: 'currency', title: 'أسعار الصرف والعملات', desc: 'الدولار واليورو والذهب مقابل الليرة + محوّل فوري', href: '/tools/currency', icon: Banknote, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' },
-    { id: 'salary', title: 'حاسبة الراتب الصافي', desc: 'تحويل الراتب بين الإجمالي والصافي (Net ⇄ Brüt) 2026', href: '/tools/salary-calculator', icon: Wallet, color: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' },
-    { id: 'severance', title: 'تعويض نهاية الخدمة', desc: 'احسب Kıdem و İhbar حسب راتبك ومدة عملك', href: '/tools/severance-calculator', icon: Coins, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20' },
-    { id: 'rent', title: 'زيادة الإيجار القانونية', desc: 'الحد الأقصى القانوني لزيادة إيجارك حسب TÜFE', href: '/tools/rent-increase-calculator', icon: Home, color: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20' },
+    { id: 'currency', title: 'أسعار الصرف والعملات', desc: 'الدولار واليورو والذهب مقابل الليرة + محوّل فوري', href: '/tools/currency', icon: Banknote, color: CHIP },
+    { id: 'salary', title: 'حاسبة الراتب الصافي', desc: 'تحويل الراتب بين الإجمالي والصافي (Net ⇄ Brüt) 2026', href: '/tools/salary-calculator', icon: Wallet, color: CHIP },
+    { id: 'severance', title: 'تعويض نهاية الخدمة', desc: 'احسب Kıdem و İhbar حسب راتبك ومدة عملك', href: '/tools/severance-calculator', icon: Coins, color: CHIP },
+    { id: 'rent', title: 'زيادة الإيجار القانونية', desc: 'الحد الأقصى القانوني لزيادة إيجارك حسب TÜFE', href: '/tools/rent-increase-calculator', icon: Home, color: CHIP },
 ];
 
 export default function RelatedFinanceTools({ current }: { current: string }) {

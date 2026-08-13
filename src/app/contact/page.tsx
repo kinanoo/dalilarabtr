@@ -184,7 +184,7 @@ export default function ContactPage() {
               disabled={!isValid}
               className={`w-full py-3.5 rounded-xl font-bold text-base transition shadow-lg flex items-center justify-center gap-2
                 ${isValid
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                  ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-emerald-600/20'
                   : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
               `}
             >
@@ -196,7 +196,7 @@ export default function ContactPage() {
         </div>
 
         {/* Response Note */}
-        <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+        <p className="text-center text-xs text-slate-400 dark:text-slate-400">
           نردّ عادةً خلال 24 ساعة عبر واتساب. إذا كان طلبك متعلقاً بخدمة محددة، استخدم صفحة{' '}
           <Link href="/request" className="underline hover:text-slate-600 dark:hover:text-slate-300 transition-colors">طلب خدمة</Link>.
         </p>

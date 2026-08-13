@@ -193,7 +193,7 @@ function CommentItem({
                             {isOwner && (
                                 <button
                                     onClick={() => { setEditing(true); setEditText(comment.content); }}
-                                    className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 transition-colors"
                                     title="تعديل"
                                 >
                                     <Pencil size={13} />
@@ -218,7 +218,7 @@ function CommentItem({
                         <textarea
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-700 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                             rows={3}
                             autoFocus
                         />
@@ -226,7 +226,7 @@ function CommentItem({
                             <button
                                 onClick={handleEditSubmit}
                                 disabled={editSubmitting || !editText.trim()}
-                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1"
+                                className="bg-slate-600 hover:bg-emerald-800 disabled:bg-slate-300 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1"
                             >
                                 {editSubmitting ? '...' : <><Pencil size={12} /> حفظ</>}
                             </button>
@@ -285,8 +285,8 @@ function CommentItem({
                             onClick={() => (isReplyActive ? onCancelReply() : onReply(comment.id))}
                             className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
                                 isReplyActive
-                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400'
+                                    ? 'bg-slate-100 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400'
                             }`}
                         >
                             <Reply size={13} />
@@ -327,7 +327,7 @@ function CommentItem({
                     <button
                         type="submit"
                         disabled={submittingReply}
-                        className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1 shrink-0 transition-colors"
+                        className="bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-800 disabled:opacity-50 flex items-center gap-1 shrink-0 transition-colors"
                     >
                         {submittingReply ? '...' : <><Send size={12} /> إرسال</>}
                     </button>
@@ -625,7 +625,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                         </div>
                         <button
                             type="button"
-                            className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 flex items-center gap-2 transition-colors"
+                            className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-emerald-800 flex items-center gap-2 transition-colors"
                         >
                             <Send size={16} /> إرسال
                         </button>
@@ -669,7 +669,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                            className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                         >
                             {submitting ? 'جاري الإرسال...' : <><Send size={16} /> إرسال</>}
                         </button>
@@ -710,7 +710,7 @@ export default function UniversalComments({ entityType, entityId, title = 'ال�
                         <div className="flex flex-col gap-2">
                             <Link
                                 href="/login"
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
                             >
                                 <LogIn size={18} />
                                 تسجيل الدخول

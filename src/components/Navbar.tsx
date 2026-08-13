@@ -72,7 +72,7 @@ function DrawerRow({ item, active, dot, onClick }: {
     >
       {active && <span aria-hidden="true" className="absolute start-0 inset-y-2 w-[3px] rounded-full bg-emerald-600 dark:bg-emerald-400" />}
       <span className={`relative grid place-items-center shrink-0 w-8 h-8 rounded-lg ${active
-        ? 'bg-emerald-600 text-white dark:bg-emerald-400 dark:text-emerald-950'
+        ? 'bg-emerald-700 text-white dark:bg-emerald-400 dark:text-emerald-950'
         : 'bg-emerald-600/10 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300'
       }`}>
         <Icon size={18} />
@@ -97,7 +97,7 @@ function DrawerAccount({ onNavigate }: { onNavigate: () => void }) {
         onClick={onNavigate}
         className="mx-3 flex items-center gap-3 rounded-2xl p-3 bg-emerald-600/[0.07] ring-1 ring-emerald-600/15 dark:bg-emerald-400/10 dark:ring-emerald-400/20"
       >
-        <span className="grid place-items-center w-10 h-10 rounded-xl bg-emerald-600 text-white dark:bg-emerald-400 dark:text-emerald-950 shrink-0"><UserRound size={20} /></span>
+        <span className="grid place-items-center w-10 h-10 rounded-xl bg-emerald-700 text-white dark:bg-emerald-400 dark:text-emerald-950 shrink-0"><UserRound size={20} /></span>
         <span className="flex-1 min-w-0">
           <span className="block text-[15px] font-bold text-emerald-900 dark:text-emerald-100">حسابي</span>
           <span className="block text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">لوحة التحكّم والإشعارات</span>
@@ -115,7 +115,9 @@ function DrawerAccount({ onNavigate }: { onNavigate: () => void }) {
       <span className="grid place-items-center w-10 h-10 rounded-xl bg-[#d8b96a] text-white shrink-0"><LogIn size={20} /></span>
       <span className="flex-1 min-w-0">
         <span className="block text-[15px] font-bold text-[#6d5518] dark:text-[#e7cd8f]">تسجيل الدخول</span>
-        <span className="block text-[12px] text-[#9a8144] dark:text-[#b89a5a] mt-0.5">سجّل لحفظ مفضّلتك ومتابعة طلباتك</span>
+        {/* #9a8144 measured 3.56:1 on the drawer's cream panel — under AA.
+            #7a6634 is the same gold two steps down and measures 5.2:1. */}
+        <span className="block text-[12px] text-[#7a6634] dark:text-[#b89a5a] mt-0.5">سجّل لحفظ مفضّلتك ومتابعة طلباتك</span>
       </span>
       <ChevronLeft size={16} className="shrink-0 text-[#c2a878]" />
     </Link>
@@ -373,7 +375,7 @@ export default function Navbar() {
                   <Image src="/logo.png" alt="شعار دليل العرب" width={30} height={30} className="w-[30px] h-[30px] object-contain shrink-0" />
                   <div className="min-w-0">
                     <span className="block text-[15px] font-extrabold leading-tight text-emerald-900 dark:text-emerald-100 truncate">{SITE_CONFIG.name}</span>
-                    <span className="block text-[10px] text-slate-400 dark:text-slate-500">دليلك الموثوق في تركيا</span>
+                    <span className="block text-[10px] text-slate-400 dark:text-slate-400">دليلك الموثوق في تركيا</span>
                   </div>
                 </div>
                 <button
@@ -390,11 +392,11 @@ export default function Navbar() {
               <div className="flex-1 overflow-y-auto overscroll-contain pb-4 custom-scrollbar">
 
                 {/* حسابك */}
-                <div className="px-4 pt-4 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-500">حسابك</div>
+                <div className="px-4 pt-4 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-400">حسابك</div>
                 <DrawerAccount onNavigate={() => setIsOpen(false)} />
 
                 {/* الخدمات — its own prominent section (owner request) */}
-                <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-500">الخدمات</div>
+                <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-400">الخدمات</div>
                 <Link
                   href="/services"
                   onClick={() => setIsOpen(false)}
@@ -409,7 +411,7 @@ export default function Navbar() {
                 </Link>
 
                 {/* الوصول السريع */}
-                <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-500">الوصول السريع</div>
+                <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-400">الوصول السريع</div>
                 <div className="mx-3 rounded-2xl bg-white dark:bg-slate-900/40 ring-1 ring-black/[0.04] dark:ring-white/[0.06] divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
                   <DrawerRow item={{ name: 'الرئيسية', href: '/', icon: Home }} active={pathname === '/'} onClick={() => setIsOpen(false)} />
                   <DrawerRow item={{ name: 'الأخبار', href: '/updates', icon: Newspaper }} active={!!pathname?.startsWith('/updates')} dot={hasNewUpdates} onClick={() => setIsOpen(false)} />
@@ -468,7 +470,7 @@ export default function Navbar() {
 
               {/* Footer — slogan + labeled theme toggle, safe-area aware */}
               <div className="flex-none border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]">
-                <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 mb-2.5">{SITE_CONFIG.slogan}</p>
+                <p className="text-[11px] text-center text-slate-400 dark:text-slate-400 mb-2.5">{SITE_CONFIG.slogan}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">المظهر</span>
                   <ThemeToggle />

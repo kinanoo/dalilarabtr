@@ -109,7 +109,7 @@ export default function RentIncreaseCalculatorClient() {
                                 <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">%</span>
                             </div>
                         )}
-                        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+                        <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-400">
                             السقف = متوسط TÜFE لاثني عشر شهراً في شهر التجديد. النِسب لأشهر لاحقة تُنشر مطلع كل شهر عبر TÜİK.
                         </p>
                     </div>

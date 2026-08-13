@@ -243,7 +243,7 @@ export default function AdminZonesPage() {
                             onClick={() => setFilterStatus(s)}
                             className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                                 filterStatus === s
-                                    ? 'bg-emerald-600 text-white'
+                                    ? 'bg-emerald-700 text-white'
                                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
@@ -375,7 +375,7 @@ function ZoneRowItem({
                         type="button"
                         disabled={busy}
                         onClick={() => onFlip('reopened')}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg disabled:opacity-50 transition-colors"
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-bold px-2 py-1 rounded-lg disabled:opacity-50 transition-colors"
                         title="افتح هذه المنطقة"
                     >
                         {busy ? <Loader2 size={10} className="animate-spin" /> : 'افتح'}

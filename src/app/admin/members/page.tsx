@@ -165,7 +165,7 @@ export default function AdminMembersPage() {
                             key={r}
                             type="button"
                             onClick={() => setRoleFilter(r)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${roleFilter === r ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${roleFilter === r ? 'bg-emerald-700 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             {r === 'all' ? 'الكلّ' : r === 'admin' ? 'المديرون' : 'الأعضاء'}
                         </button>

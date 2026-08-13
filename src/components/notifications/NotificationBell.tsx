@@ -322,7 +322,7 @@ function TabButton({ label, active, badge, onClick }: {
             className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition-colors ${
                 active
                     ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                    : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
             }`}
         >
             {label}

@@ -70,7 +70,7 @@ export default function SearchResultsDropdown({
                     <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 truncate leading-snug">
                       {result.title}
                     </h4>
-                    <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
+                    <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                       {result.type}
                     </span>
                   </div>

@@ -530,7 +530,7 @@ export function ActiveVisitorsBell() {
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0, opacity: 0 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-[#0f172a]"
+                                className="absolute -top-1 -right-1 bg-emerald-700 text-white text-[9px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ring-2 ring-[#0f172a]"
                             >
                                 {activeCount > 9 ? '9+' : activeCount}
                             </motion.span>

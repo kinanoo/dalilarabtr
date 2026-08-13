@@ -309,7 +309,7 @@ export default function NewsManager() {
   const pill = (isOn: boolean) =>
     `px-3 py-1.5 rounded-full text-xs font-black transition-colors ${
       isOn
-        ? 'bg-emerald-600 text-white'
+        ? 'bg-emerald-700 text-white'
         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
     }`;
 
@@ -384,7 +384,7 @@ export default function NewsManager() {
               placeholder="خلاصة قصيرة تلخّص الخبر"
               className={inputCls}
             />
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+            <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">
               يظهر في قائمة الأخبار — اجعله خلاصة من سطرين
             </p>
           </div>
@@ -437,7 +437,7 @@ export default function NewsManager() {
               title="رابط داخلي يبدأ بـ / (مثل ‎/article/123) أو رابط كامل يبدأ بـ https://"
               className={inputCls}
             />
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+            <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">
               إن وُضع، يفتح الخبر هذا الرابط بدل صفحة التفاصيل
             </p>
           </div>
@@ -459,7 +459,7 @@ export default function NewsManager() {
                 <button
                   type="button"
                   onClick={() => setGoLive(true)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-black transition-all ${goLive ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-black transition-all ${goLive ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                 >
                   <Eye size={14} /> نشر الآن
                 </button>
@@ -508,7 +508,7 @@ export default function NewsManager() {
             className={`w-full py-3 rounded-xl font-black text-white flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all disabled:opacity-60 active:scale-[0.99] ${
               !editingRow && !goLive
                 ? 'bg-amber-500 hover:bg-amber-600'
-                : 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-emerald-600 hover:bg-emerald-800'
             }`}
           >
             {submitting
@@ -581,7 +581,7 @@ export default function NewsManager() {
                   </div>
                   <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 truncate">{u.title}</h4>
                   {u.summary && (
-                    <p dir="auto" className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1 [unicode-bidi:plaintext]">{stripHtml(u.summary)}</p>
+                    <p dir="auto" className="text-xs text-slate-400 dark:text-slate-400 mt-0.5 line-clamp-1 [unicode-bidi:plaintext]">{stripHtml(u.summary)}</p>
                   )}
                 </div>
               </div>

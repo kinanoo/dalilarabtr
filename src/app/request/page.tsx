@@ -41,7 +41,7 @@ export default async function RequestPage() {
             بالعربية والتواصل معهم مباشرةً.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/services" className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 transition-colors">
+            <Link href="/services" className="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800 transition-colors">
               دليل مقدّمي الخدمات
             </Link>
             <Link href="/consultant" className="rounded-xl border border-slate-300 dark:border-slate-700 px-5 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-400 transition-colors">
@@ -90,7 +90,7 @@ export default async function RequestPage() {
             href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('مرحباً، أريد طلب خدمة من دليل العرب.')}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-7 py-3.5 shadow-lg shadow-emerald-600/25 transition-colors w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base px-7 py-3.5 shadow-lg shadow-emerald-600/25 transition-colors w-full sm:w-auto"
           >
             <MessageCircle size={20} />
             راسلنا مباشرة على واتساب

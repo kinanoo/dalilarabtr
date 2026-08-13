@@ -78,7 +78,7 @@ export default function EmptyState({
             {displayActionHref && displayActionLabel && (
                 <Link
                     href={displayActionHref}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg transition-all btn-hover-lift"
+                    className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-5 rounded-lg transition-all btn-hover-lift"
                 >
                     <Sparkles size={18} />
                     {displayActionLabel}

@@ -90,7 +90,7 @@ export default async function ArticleServiceCTA({ slug, category, tags }: Props)
                 {match && hasProviders && (
                     <Link
                         href={`/services/category/${match.slug}`}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800 transition-colors"
                     >
                         <Users size={15} />
                         {match.labelAr} في الدليل
@@ -104,7 +104,7 @@ export default async function ArticleServiceCTA({ slug, category, tags }: Props)
                     className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
                         match && hasProviders
                             ? 'border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-emerald-400'
-                            : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                            : 'bg-emerald-700 text-white hover:bg-emerald-800'
                     }`}
                 >
                     اطلب توجيهاً لحالتك

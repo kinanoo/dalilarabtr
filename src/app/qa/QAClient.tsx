@@ -117,7 +117,7 @@ export default function QAClient({
                 <button
                     type="button"
                     onClick={() => setShowAsk(true)}
-                    className="mt-4 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-md shadow-emerald-600/20 transition-all"
+                    className="mt-4 inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-6 rounded-xl shadow-md shadow-emerald-600/20 transition-all"
                 >
                     <Plus size={18} /> اطرح سؤالك الآن
                 </button>
@@ -150,7 +150,7 @@ export default function QAClient({
                 type="button"
                 onClick={() => setShowAsk(true)}
                 aria-label="اطرح سؤالاً جديداً"
-                className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-emerald-600 text-white font-bold px-5 py-3 rounded-full shadow-2xl shadow-emerald-600/40 border-2 border-white/40"
+                className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-emerald-700 text-white font-bold px-5 py-3 rounded-full shadow-2xl shadow-emerald-600/40 border-2 border-white/40"
             >
                 <Plus size={18} /> سؤال جديد
             </button>
@@ -232,7 +232,7 @@ function QACard({
                     className={`shrink-0 mt-1 transition-transform duration-300 ${
                         isOpen
                             ? 'rotate-180 text-emerald-500'
-                            : 'text-slate-400 dark:text-slate-500 group-hover:text-emerald-500'
+                            : 'text-slate-400 dark:text-slate-400 group-hover:text-emerald-500'
                     }`}
                 />
             </button>
@@ -240,7 +240,7 @@ function QACard({
                 <div className="px-4 sm:px-5 pb-5 pt-1 animate-in fade-in slide-in-from-top-1 duration-300">
                     <div className="rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-4">
                         <div className="flex items-start gap-2.5">
-                            <span className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white font-black text-xs">
+                            <span className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-700 text-white font-black text-xs">
                                 ج
                             </span>
                             <div
@@ -270,13 +270,13 @@ function EmptyState({ query, onAsk }: { query: string; onAsk: () => void }) {
             <p className="text-slate-600 dark:text-slate-400 font-bold mb-1">
                 {query ? `لا أسئلة مُجابة تطابق «${query}»` : 'لا أسئلة مُجابة بعد'}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-500 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                 كن أوّل من يسأل — وسنجيبك بأسرع وقت.
             </p>
             <button
                 type="button"
                 onClick={onAsk}
-                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl"
+                className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-5 rounded-xl"
             >
                 <Plus size={16} /> اطرح سؤالك
             </button>
@@ -364,7 +364,7 @@ function AskModal({ onClose }: { onClose: () => void }) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl"
+                            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-6 rounded-xl"
                         >
                             تمام
                         </button>
@@ -463,7 +463,7 @@ function AskModal({ onClose }: { onClose: () => void }) {
                         <button
                             type="submit"
                             disabled={result.state === 'sending'}
-                            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
                         >
                             {result.state === 'sending' ? (
                                 <>

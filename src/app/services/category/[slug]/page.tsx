@@ -149,7 +149,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <span>/</span>
                         <span className="text-slate-800 dark:text-slate-200">{cat.labelAr}</span>
                     </nav>
-                    <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/25 mb-3">
+                    <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-700 text-white shadow-md shadow-emerald-600/25 mb-3">
                         <CategoryIcon slug={cat.slug} size={24} />
                     </span>
                     <h1 className="text-3xl md:text-4xl font-black mb-3 leading-tight">
@@ -237,7 +237,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <Briefcase size={16} className="text-emerald-600" /> تصفّح حسب التخصّص
                     </h2>
                     <div className="flex flex-wrap gap-2">
-                        <Link href="/services" className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">كل الخدمات</Link>
+                        <Link href="/services" className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors">كل الخدمات</Link>
                         {SERVICE_CATEGORIES.filter((c) => c.slug !== cat.slug).map((c) => (
                             <Link key={c.slug} href={`/services/category/${c.slug}`} className="px-4 py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
                                 {c.labelAr}

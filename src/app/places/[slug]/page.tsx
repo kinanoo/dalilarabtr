@@ -238,7 +238,7 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                             href={mapUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
                         >
                             <MapPin className="w-5 h-5" />
                             <span>افتح الموقع على خرائط جوجل</span>
@@ -300,13 +300,13 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                                     href={place.appointment.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 text-sm font-black text-blue-700 dark:text-blue-400 hover:underline"
+                                    className="inline-flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-400 hover:underline"
                                 >
                                     <CalendarClock className="w-4 h-4" />
                                     {place.appointment.label}
                                     <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
-                                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                                <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">
                                     احجز موعدك قبل التوجّه — المراجعة بدون موعد قد تُرفض.
                                 </p>
                             </div>
@@ -335,16 +335,16 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
 
                     {/* ── ماذا تنجز هنا ───────────────────────────────────── */}
                     <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-blue-500" />
+                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-slate-500" />
                         <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400">
                                 <Info size={16} />
                             </span>
                             ماذا تنجز في {place.shortAr}؟
                         </h2>
                         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{place.what}</p>
                         {group && (
-                            <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+                            <p className="mt-3 text-xs text-slate-400 dark:text-slate-400">
                                 القسم: {group.ar} — {group.subtitle}
                             </p>
                         )}
@@ -403,7 +403,7 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                     {place.kind === 'nearby' && alsoInCity.length > 0 && (
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
                             <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2">
-                                <Building2 size={15} className="text-blue-600 dark:text-blue-400" />
+                                <Building2 size={15} className="text-slate-600 dark:text-slate-400" />
                                 دوائر أخرى في {place.cityAr}
                             </h2>
                             <div className="flex flex-wrap gap-2">
@@ -411,7 +411,7 @@ export default async function PlacePage({ params }: { params: Promise<{ slug: st
                                     <Link
                                         key={p.slug}
                                         href={`/places/${p.slug}`}
-                                        className="text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 hover:border-blue-300 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+                                        className="text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors"
                                     >
                                         {p.shortAr}
                                     </Link>

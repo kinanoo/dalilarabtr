@@ -180,7 +180,7 @@ export default function CategoryArticlesList({
             <button
               type="button"
               onClick={clearTag}
-              className="flex items-center justify-center w-6 h-6 rounded-full bg-white/70 dark:bg-slate-800 text-slate-500 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-300 transition-colors"
+              className="flex items-center justify-center w-6 h-6 rounded-full bg-white/70 dark:bg-slate-800 text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-300 transition-colors"
               aria-label="إزالة الفلتر"
             >
               <X size={12} />
@@ -214,7 +214,7 @@ export default function CategoryArticlesList({
                     isNew
                       ? 'bg-gradient-to-l from-emerald-400 via-teal-400 to-emerald-500'
                       : isUpdated
-                        ? 'bg-gradient-to-l from-blue-400 via-cyan-400 to-blue-500'
+                        ? 'bg-gradient-to-l from-slate-400 via-slate-400 to-slate-500'
                         : 'bg-slate-200/70 dark:bg-slate-800/40'
                   }`}
                 />
@@ -250,7 +250,7 @@ export default function CategoryArticlesList({
                         </span>
                       )}
                       {isUpdated && (
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 text-[10px] font-black tracking-wide uppercase px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-200/60 dark:border-blue-800/40">
+                        <span className="bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-200 text-[10px] font-black tracking-wide uppercase px-2 py-0.5 rounded-full flex items-center gap-1 border border-slate-200/60 dark:border-slate-800/40">
                           <RefreshCw size={9} /> محدّث
                         </span>
                       )}
@@ -271,7 +271,7 @@ export default function CategoryArticlesList({
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
                     {article.lastUpdate && (
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1" title="آخر تحديث">
+                      <span className="text-[11px] text-slate-400 dark:text-slate-400 flex items-center gap-1" title="آخر تحديث">
                         <Calendar size={11} />
                         {article.lastUpdate}
                       </span>

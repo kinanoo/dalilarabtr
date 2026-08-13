@@ -184,7 +184,7 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                         <span className="block font-bold text-sm text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                             {dTitle(item)}
                         </span>
-                        <span className="block text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                        <span className="block text-xs text-slate-400 dark:text-slate-400 truncate mt-0.5">
                             {dDesc(item)}
                         </span>
                         {dur && (
@@ -253,7 +253,7 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                         aria-pressed={familyFilter === 'all'}
                                         className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                                             familyFilter === 'all'
-                                                ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                                                ? 'border-emerald-500 bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
                                                 : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
                                         }`}
                                     >
@@ -269,7 +269,7 @@ export default function CodesClient({ initialCodes, lang = 'ar' }: { initialCode
                                             title={f.topCats.join(' · ')}
                                             className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-sm font-black transition-all ${
                                                 familyFilter === f.letter
-                                                    ? 'border-emerald-500 bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                                                    ? 'border-emerald-500 bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
                                                     : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-300 dark:hover:border-emerald-700'
                                             }`}
                                         >

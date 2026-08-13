@@ -156,7 +156,7 @@ export default function SalaryCalculatorClient() {
                         </div>
                     </label>
 
-                    <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-500">
+                    <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-400">
                         الحد الأدنى للأجور 2026: <strong className="text-slate-500 dark:text-slate-300">33,030</strong> إجمالي = <strong className="text-slate-500 dark:text-slate-300">28,075.50</strong> صافي.
                     </p>
                 </div>

@@ -24,7 +24,7 @@ export default function Button({
     const baseClasses = 'inline-flex items-center justify-center gap-2 font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed btn-hover-lift';
 
     const variantClasses = {
-        primary: 'bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-500 shadow-md hover:shadow-lg',
+        primary: 'bg-emerald-700 hover:bg-emerald-800 text-white focus:ring-emerald-500 shadow-md hover:shadow-lg',
         secondary: 'bg-slate-600 hover:bg-slate-700 text-white focus:ring-slate-500 shadow-md hover:shadow-lg',
         outline: 'border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 focus:ring-emerald-500',
         ghost: 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-slate-500',

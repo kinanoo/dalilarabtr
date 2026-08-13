@@ -292,7 +292,7 @@ export default function AdminCommunityPage() {
                                     <button
                                         onClick={() => handleReply(c)}
                                         disabled={!replyContent.trim()}
-                                        className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 transition disabled:opacity-50 flex items-center gap-1.5"
+                                        className="bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-800 transition disabled:opacity-50 flex items-center gap-1.5"
                                     >
                                         <Send size={14} /> إرسال
                                     </button>

@@ -18,86 +18,33 @@ import { stripHtml } from '@/lib/stripHtml';
 
 export type HubTheme = 'emerald' | 'blue' | 'rose' | 'amber' | 'violet' | 'cyan' | 'indigo';
 
-const THEME: Record<HubTheme, {
-    accent: string;
-    surface: string;
-    borderHover: string;
-    shadowHover: string;
-    eyebrowBg: string;
-    eyebrowText: string;
-    titleHover: string;
-    readMore: string;
-}> = {
-    emerald: {
-        accent: 'bg-emerald-500',
-        surface: 'from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20',
-        borderHover: 'hover:border-emerald-400',
-        shadowHover: 'hover:shadow-emerald-500/10',
-        eyebrowBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-        eyebrowText: 'text-emerald-700 dark:text-emerald-300',
-        titleHover: 'group-hover:text-emerald-600',
-        readMore: 'text-emerald-600',
-    },
-    blue: {
-        accent: 'bg-blue-500',
-        surface: 'from-white to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20',
-        borderHover: 'hover:border-blue-400',
-        shadowHover: 'hover:shadow-blue-500/10',
-        eyebrowBg: 'bg-blue-100 dark:bg-blue-900/30',
-        eyebrowText: 'text-blue-700 dark:text-blue-300',
-        titleHover: 'group-hover:text-blue-600',
-        readMore: 'text-blue-600',
-    },
-    rose: {
-        accent: 'bg-rose-500',
-        surface: 'from-white to-rose-50/40 dark:from-slate-900 dark:to-rose-950/20',
-        borderHover: 'hover:border-rose-400',
-        shadowHover: 'hover:shadow-rose-500/10',
-        eyebrowBg: 'bg-rose-100 dark:bg-rose-900/30',
-        eyebrowText: 'text-rose-700 dark:text-rose-300',
-        titleHover: 'group-hover:text-rose-600',
-        readMore: 'text-rose-600',
-    },
-    amber: {
-        accent: 'bg-amber-500',
-        surface: 'from-white to-amber-50/40 dark:from-slate-900 dark:to-amber-950/20',
-        borderHover: 'hover:border-amber-400',
-        shadowHover: 'hover:shadow-amber-500/10',
-        eyebrowBg: 'bg-amber-100 dark:bg-amber-900/30',
-        eyebrowText: 'text-amber-700 dark:text-amber-300',
-        titleHover: 'group-hover:text-amber-600',
-        readMore: 'text-amber-600',
-    },
-    violet: {
-        accent: 'bg-violet-500',
-        surface: 'from-white to-violet-50/40 dark:from-slate-900 dark:to-violet-950/20',
-        borderHover: 'hover:border-violet-400',
-        shadowHover: 'hover:shadow-violet-500/10',
-        eyebrowBg: 'bg-violet-100 dark:bg-violet-900/30',
-        eyebrowText: 'text-violet-700 dark:text-violet-300',
-        titleHover: 'group-hover:text-violet-600',
-        readMore: 'text-violet-600',
-    },
-    cyan: {
-        accent: 'bg-cyan-500',
-        surface: 'from-white to-cyan-50/40 dark:from-slate-900 dark:to-cyan-950/20',
-        borderHover: 'hover:border-cyan-400',
-        shadowHover: 'hover:shadow-cyan-500/10',
-        eyebrowBg: 'bg-cyan-100 dark:bg-cyan-900/30',
-        eyebrowText: 'text-cyan-700 dark:text-cyan-300',
-        titleHover: 'group-hover:text-cyan-600',
-        readMore: 'text-cyan-600',
-    },
-    indigo: {
-        accent: 'bg-indigo-500',
-        surface: 'from-white to-indigo-50/40 dark:from-slate-900 dark:to-indigo-950/20',
-        borderHover: 'hover:border-indigo-400',
-        shadowHover: 'hover:shadow-indigo-500/10',
-        eyebrowBg: 'bg-indigo-100 dark:bg-indigo-900/30',
-        eyebrowText: 'text-indigo-700 dark:text-indigo-300',
-        titleHover: 'group-hover:text-indigo-600',
-        readMore: 'text-indigo-600',
-    },
+/**
+ * ONE system, not one costume per hub. The five hubs used to differ only by
+ * hue (blue / rose / amber / violet / emerald), which read as five sites
+ * rather than five sections of one. Colour now carries meaning instead of
+ * decoration: ink for structure, the brand accent for what responds to a
+ * click. The map is kept keyed by HubTheme so callers stay unchanged and a
+ * theme that one day means something real can diverge deliberately.
+ */
+const HUB_CARD = {
+    accent: 'bg-slate-900 dark:bg-slate-300',
+    surface: 'from-white to-slate-50/70 dark:from-slate-900 dark:to-slate-950',
+    borderHover: 'hover:border-emerald-400 dark:hover:border-emerald-600',
+    shadowHover: 'hover:shadow-slate-900/10',
+    eyebrowBg: 'bg-slate-100 dark:bg-slate-800',
+    eyebrowText: 'text-slate-700 dark:text-slate-300',
+    titleHover: 'group-hover:text-emerald-700 dark:group-hover:text-emerald-400',
+    readMore: 'text-emerald-700 dark:text-emerald-400',
+} as const;
+
+const THEME: Record<HubTheme, typeof HUB_CARD> = {
+    emerald: HUB_CARD,
+    blue: HUB_CARD,
+    rose: HUB_CARD,
+    amber: HUB_CARD,
+    violet: HUB_CARD,
+    cyan: HUB_CARD,
+    indigo: HUB_CARD,
 };
 
 function isNewContent(dateStr: string): boolean {

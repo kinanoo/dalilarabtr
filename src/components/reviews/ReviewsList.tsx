@@ -44,7 +44,7 @@ export default function ReviewsList({ serviceId, limit = 10 }: ReviewsListProps)
                 <div className="text-slate-500 dark:text-slate-400 mb-2">
                     لا توجد تقييمات بعد
                 </div>
-                <div className="text-sm text-slate-400 dark:text-slate-500">
+                <div className="text-sm text-slate-400 dark:text-slate-400">
                     كن أول من يُقيّم هذه الخدمة!
                 </div>
             </div>

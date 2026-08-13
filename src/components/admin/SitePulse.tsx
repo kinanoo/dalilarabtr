@@ -406,7 +406,7 @@ export default function SitePulse() {
                                 </div>
                             )}
                             {insights?.tracking_since && (
-                                <p className="flex items-start gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                                <p className="flex items-start gap-1.5 text-[10px] text-slate-400 dark:text-slate-400 leading-relaxed">
                                     <Info size={12} className="shrink-0 mt-0.5" />
                                     <span>«العائدون» = زوّار ظهروا في يومين مختلفين على الأقل (عادوا فعلاً). التتبّع الدقيق للزائر بدأ {insights.tracking_since}؛ لذلك يرتفع رقم العائدين تدريجياً كلما تراكمت الأيام.</span>
                                 </p>
@@ -423,7 +423,7 @@ export default function SitePulse() {
                                                 <button
                                                     key={p}
                                                     onClick={() => setPagesPeriod(p)}
-                                                    className={`px-2 py-0.5 transition-colors ${pagesPeriod === p ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-emerald-600'}`}
+                                                    className={`px-2 py-0.5 transition-colors ${pagesPeriod === p ? 'bg-emerald-700 text-white' : 'text-slate-500 hover:text-emerald-600'}`}
                                                 >
                                                     {p === 'week' ? 'أسبوع' : 'شهر'}
                                                 </button>

@@ -147,7 +147,7 @@ export default function ScenarioEditPage({ params }: { params: Promise<{ id: str
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="px-8 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+                    className="px-8 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2"
                 >
                     {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                     {saving ? 'جاري الحفظ...' : 'حفظ'}

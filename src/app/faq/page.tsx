@@ -57,21 +57,33 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+/**
+ * Fourteen sections, ONE ink. Each section used to carry its own hue
+ * (orange / cyan / red / blue / amber / lime / pink / teal / violet / slate /
+ * sky / indigo / rose / emerald) — thirteen colours down a single page, on a
+ * surface whose whole job is to be scanned calmly. The icon and the heading
+ * name the section; the edge rule marks it. Colour adds nothing here.
+ */
+const SECTION_INK = {
+  text: 'text-slate-600 dark:text-slate-400',
+  edge: 'border-s-slate-300 dark:border-s-slate-600',
+} as const;
+
 const SECTION_ICONS: Record<string, { icon: typeof Home; text: string; edge: string }> = {
-  top: { icon: Flame, text: 'text-orange-600 dark:text-orange-400', edge: 'border-s-orange-400' },
-  newcomers: { icon: Sparkles, text: 'text-cyan-600 dark:text-cyan-400', edge: 'border-s-cyan-400' },
-  kimlik: { icon: Shield, text: 'text-red-600 dark:text-red-400', edge: 'border-s-red-400' },
-  residence: { icon: Home, text: 'text-blue-600 dark:text-blue-400', edge: 'border-s-blue-400' },
-  work: { icon: Briefcase, text: 'text-amber-600 dark:text-amber-400', edge: 'border-s-amber-400' },
-  money: { icon: Wallet, text: 'text-lime-600 dark:text-lime-400', edge: 'border-s-lime-400' },
-  housing: { icon: Building2, text: 'text-pink-600 dark:text-pink-400', edge: 'border-s-pink-400' },
-  health: { icon: Stethoscope, text: 'text-teal-600 dark:text-teal-400', edge: 'border-s-teal-400' },
-  education: { icon: GraduationCap, text: 'text-violet-600 dark:text-violet-400', edge: 'border-s-violet-400' },
-  cars: { icon: Car, text: 'text-slate-600 dark:text-slate-400', edge: 'border-s-slate-400' },
-  travel: { icon: Plane, text: 'text-sky-600 dark:text-sky-400', edge: 'border-s-sky-400' },
-  digital: { icon: Smartphone, text: 'text-indigo-600 dark:text-indigo-400', edge: 'border-s-indigo-400' },
-  law: { icon: Scale, text: 'text-rose-600 dark:text-rose-400', edge: 'border-s-rose-400' },
-  daily: { icon: LifeBuoy, text: 'text-emerald-600 dark:text-emerald-400', edge: 'border-s-emerald-400' },
+  top: { icon: Flame, ...SECTION_INK },
+  newcomers: { icon: Sparkles, ...SECTION_INK },
+  kimlik: { icon: Shield, ...SECTION_INK },
+  residence: { icon: Home, ...SECTION_INK },
+  work: { icon: Briefcase, ...SECTION_INK },
+  money: { icon: Wallet, ...SECTION_INK },
+  housing: { icon: Building2, ...SECTION_INK },
+  health: { icon: Stethoscope, ...SECTION_INK },
+  education: { icon: GraduationCap, ...SECTION_INK },
+  cars: { icon: Car, ...SECTION_INK },
+  travel: { icon: Plane, ...SECTION_INK },
+  digital: { icon: Smartphone, ...SECTION_INK },
+  law: { icon: Scale, ...SECTION_INK },
+  daily: { icon: LifeBuoy, ...SECTION_INK },
 };
 const DEFAULT_ICON = {
   icon: HelpCircle,
@@ -268,7 +280,7 @@ export default async function FAQPage() {
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
                   href="/articles"
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-colors"
                 >
                   تصفح الأدلة الكاملة
                 </Link>

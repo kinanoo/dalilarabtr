@@ -693,7 +693,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                                 href={`/city/${citySlug}`}
                                 className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/70 dark:bg-emerald-950/20 p-4 hover:border-emerald-400 hover:shadow-md transition-all group"
                             >
-                                <span className="grid place-items-center w-11 h-11 rounded-xl bg-emerald-600 text-white shrink-0">
+                                <span className="grid place-items-center w-11 h-11 rounded-xl bg-emerald-700 text-white shrink-0">
                                     <MapPin size={20} />
                                 </span>
                                 <span className="flex-1 min-w-0">
@@ -737,7 +737,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                         <div className="mb-6 relative overflow-hidden rounded-2xl border border-emerald-200 dark:border-emerald-900/40 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/20 dark:to-slate-900 p-4 sm:p-5">
                             <div className="absolute -top-8 -right-8 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl" aria-hidden="true" />
                             <div className="relative flex items-start gap-3">
-                                <div className="bg-emerald-500 text-white p-2 rounded-xl shrink-0">
+                                <div className="bg-emerald-700 text-white p-2 rounded-xl shrink-0">
                                     <Sparkles size={20} />
                                 </div>
                                 <div>
@@ -825,7 +825,7 @@ export default async function ZoneDetailPage({ params }: Props) {
                                             className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-600 transition-colors"
                                         >
                                             {district}
-                                            <span className="text-slate-400 dark:text-slate-500 font-normal tabular-nums"> ({n.toLocaleString('en-US')})</span>
+                                            <span className="text-slate-400 dark:text-slate-400 font-normal tabular-nums"> ({n.toLocaleString('en-US')})</span>
                                         </Link>
                                     ))}
                                 </div>

@@ -102,7 +102,7 @@ export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string;
                             href={OFFICIAL_EDEVLET}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
                         >
                             <ShieldCheck className="w-5 h-5" />
                             <span>القائمة الرسمية — وزارة الصحة</span>
@@ -111,7 +111,7 @@ export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string;
                         <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                             تفتح صفحة الحكومة الإلكترونية. اختر الولاية (İl) ثم المنطقة (İlçe) — فتظهر أسماء الصيدليات المناوبة وعناوينها وأرقام هواتفها ووقت المناوبة.
                             <br />
-                            <span className="text-slate-400 dark:text-slate-500">بلا تسجيل دخول وبلا رسوم.</span>
+                            <span className="text-slate-400 dark:text-slate-400">بلا تسجيل دخول وبلا رسوم.</span>
                         </p>
 
                         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -123,7 +123,7 @@ export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string;
                                 <MapIcon className="w-4 h-4" />
                                 أو افتح خريطة الصيدليات القريبة منك
                             </button>
-                            <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                            <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-400">
                                 يفتح خرائط غوغل عند موقعك. أسرع للوصول، لكنه لا يؤكّد أيّها المناوبة الليلة — تحقّق من القائمة الرسمية قبل أن تقطع مسافة.
                             </p>
                         </div>
@@ -169,9 +169,9 @@ export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string;
 
                     {/* Turkish phrases — the part only we provide. */}
                     <div className="relative overflow-hidden mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-indigo-500" />
+                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-slate-500" />
                         <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400">
                                 <Languages size={16} />
                             </span>
                             ماذا تقول عند الصيدلية؟
@@ -181,7 +181,7 @@ export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string;
                             {PHRASES.map((p) => (
                                 <li key={p.tr} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3">
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{p.ar}</p>
-                                    <p dir="ltr" className="mt-1 text-sm text-indigo-700 dark:text-indigo-300 text-start font-medium">{p.tr}</p>
+                                    <p dir="ltr" className="mt-1 text-sm text-slate-700 dark:text-slate-300 text-start font-medium">{p.tr}</p>
                                 </li>
                             ))}
                         </ul>
@@ -189,9 +189,9 @@ export default function PharmacyPage({ faqs }: { faqs: Array<{ question: string;
 
                     {/* If it is shut / it is serious */}
                     <div className="relative overflow-hidden mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-blue-500" />
+                        <span aria-hidden="true" className="absolute inset-y-0 start-0 w-1 bg-slate-500" />
                         <h2 className="text-base font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400">
                                 <Info size={16} />
                             </span>
                             وصلت ووجدتها مغلقة؟

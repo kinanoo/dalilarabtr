@@ -186,7 +186,7 @@ export default function RequestForm() {
           disabled={!isValid}
           className={`w-full py-4 rounded-xl font-bold text-lg transition shadow-lg flex items-center justify-center gap-2
             ${isValid
-              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+              ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-emerald-600/20'
               : 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed'}
           `}
         >
@@ -194,7 +194,7 @@ export default function RequestForm() {
           {copied ? <Copy size={20} /> : <Send size={20} />}
         </button>
 
-        <p className="text-xs text-center text-slate-400 dark:text-slate-500 mt-4">
+        <p className="text-xs text-center text-slate-400 dark:text-slate-400 mt-4">
           * الخدمة والاستشارة ليست مجانية؛ تُطبَّق رسوم حسب نوع المعاملة يُتفق عليها معك قبل البدء.
         </p>
 

@@ -105,7 +105,7 @@ export default function PlaceAddressCard({
             )}
 
             {/* Freshness, stated rather than implied. */}
-            <p className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-start gap-2 text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed">
+            <p className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-start gap-2 text-[11px] text-slate-400 dark:text-slate-400 leading-relaxed">
                 <ShieldCheck size={13} className="shrink-0 mt-0.5" />
                 <span>
                     تم التحقق من هذا العنوان بتاريخ {formatIsoDate(contact.verifiedOn)} ({contact.source}).

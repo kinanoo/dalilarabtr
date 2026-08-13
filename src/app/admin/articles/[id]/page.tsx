@@ -296,7 +296,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                         type="button"
                         onClick={() => setStatus('approved')}
                         className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
-                            isPublished ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            isPublished ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                         }`}
                     >
                         <Globe size={14} /> منشور
@@ -340,7 +340,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                     disabled={saving}
                     className={`px-5 sm:px-7 py-2 text-white rounded-xl font-black shadow-lg flex items-center gap-2 text-sm disabled:opacity-60 ${
                         isPublished
-                            ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
+                            ? 'bg-emerald-600 hover:bg-emerald-800 shadow-emerald-600/20'
                             : 'bg-slate-600 hover:bg-slate-700 shadow-slate-600/20'
                     }`}
                 >

@@ -184,7 +184,7 @@ export default function ConfigManager() {
                                                 </span>
                                                 <span className="font-bold text-slate-700 dark:text-slate-300">{menu.label}</span>
                                                 <span className="text-xs text-slate-400 font-mono hidden sm:inline">{menu.href}</span>
-                                                <span className="text-xs bg-slate-100 px-1 rounded dark:text-slate-500">#{menu.sort_order}</span>
+                                                <span className="text-xs bg-slate-100 px-1 rounded dark:text-slate-400">#{menu.sort_order}</span>
                                             </div>
                                             <div className="flex gap-1">
                                                 <button
@@ -245,7 +245,7 @@ export default function ConfigManager() {
                                             <div className="flex items-center gap-3 flex-1">
                                                 <span className="text-xs text-slate-400 font-mono w-24">{cat.slug}</span>
                                                 <span className="font-bold text-slate-700 dark:text-slate-300 flex-1">{cat.title}</span>
-                                                <span className="text-xs bg-slate-100 px-1 rounded dark:text-slate-500">#{cat.sort_order}</span>
+                                                <span className="text-xs bg-slate-100 px-1 rounded dark:text-slate-400">#{cat.sort_order}</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 <button

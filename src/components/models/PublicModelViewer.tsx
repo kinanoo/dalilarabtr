@@ -85,7 +85,7 @@ function LockedPanel({
             type="button"
             onClick={onUnlock}
             disabled={unlocking}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-black text-white hover:bg-emerald-500 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-black text-white hover:bg-emerald-800 disabled:opacity-60"
           >
             <Unlock size={16} />
             فتح

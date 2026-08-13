@@ -130,7 +130,7 @@ export default async function PharmacyCityPage({ params }: { params: Promise<{ c
                             href={dutyMapUrl(city.tr)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-base md:text-lg font-bold px-8 py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition-colors"
                         >
                             <MapPin className="w-5 h-5" />
                             <span>خريطة الصيدليات المناوبة في {city.ar} الآن</span>
@@ -150,7 +150,7 @@ export default async function PharmacyCityPage({ params }: { params: Promise<{ c
                                         قائمة اليوم الرسمية — {city.odaName}
                                         <ExternalLink className="w-3.5 h-3.5" />
                                     </a>
-                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">القائمة المعتمدة من غرفة الصيادلة: أسماء الصيدليات المناوبة اليوم بالعناوين وأرقام الهاتف.</p>
+                                    <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5">القائمة المعتمدة من غرفة الصيادلة: أسماء الصيدليات المناوبة اليوم بالعناوين وأرقام الهاتف.</p>
                                 </div>
                             )}
                             <div>
@@ -165,7 +165,7 @@ export default async function PharmacyCityPage({ params }: { params: Promise<{ c
                                     <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                             </div>
-                            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-slate-400 dark:text-slate-400">
                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> المناوبة تتبدل يومياً</span>
                                 <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> بدون تسجيل دخول</span>
                             </div>

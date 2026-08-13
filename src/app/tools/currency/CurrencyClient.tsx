@@ -292,7 +292,7 @@ export default function CurrencyClient() {
                     </div>
 
                     {updated && (
-                        <p className="text-center text-[11px] text-slate-400 dark:text-slate-500">
+                        <p className="text-center text-[11px] text-slate-400 dark:text-slate-400">
                             آخر تحديث للأسعار: <span dir="ltr">{updated}</span> — تُحدَّث تلقائياً كل بضع دقائق
                         </p>
                     )}

@@ -1196,7 +1196,7 @@ export default function AdminModelsPage() {
                     type="button"
                     onClick={() => void changeGalleryPassword()}
                     disabled={galleryPasswordSaving || !galleryPassword || !galleryPasswordConfirm}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 text-xs font-black text-white hover:bg-slate-800 disabled:opacity-50 dark:bg-emerald-700 dark:hover:bg-emerald-800"
                   >
                     {galleryPasswordSaving ? <Loader2 className="animate-spin" size={15} /> : <ShieldCheck size={15} />}
                     تغيير كلمة السر
@@ -1454,7 +1454,7 @@ export default function AdminModelsPage() {
                     type="button"
                     onClick={() => void saveCollection()}
                     disabled={saving || !form.title.trim()}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50 sm:w-auto"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-800 disabled:opacity-50 sm:w-auto"
                   >
                     {saving ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
                     حفظ ونشر
@@ -1663,7 +1663,7 @@ export default function AdminModelsPage() {
                               type="button"
                               onClick={() => void copySelectedMainShareUrl()}
                               disabled={saving || selected.assets.length === 0}
-                              className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-emerald-600 text-white disabled:opacity-50 sm:w-10"
+                              className="grid h-10 w-full shrink-0 place-items-center rounded-xl bg-emerald-700 text-white disabled:opacity-50 sm:w-10"
                               aria-label={activeMainLink?.url ? 'نسخ' : 'إنشاء ونسخ'}
                             >
                               <Copy size={16} />
@@ -1684,7 +1684,7 @@ export default function AdminModelsPage() {
                           type="button"
                           onClick={() => void createMainLink()}
                           disabled={saving || selected.assets.length === 0}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:opacity-50"
                         >
                           {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
                           إنشاء الرابط الرئيسي
@@ -1718,7 +1718,7 @@ export default function AdminModelsPage() {
                           type="button"
                           onClick={() => void extendLink(mainLink.id)}
                           disabled={saving || selected.assets.length === 0}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:opacity-50"
                         >
                           {saving ? <Loader2 className="animate-spin" size={18} /> : <ShieldCheck size={18} />}
                           تمديد
@@ -1786,7 +1786,7 @@ export default function AdminModelsPage() {
                           type="button"
                           onClick={() => void generateLink()}
                           disabled={saving || selected.assets.length === 0}
-                          className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                          className="rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-800 disabled:opacity-50"
                         >
                           توليد رابط مؤقت
                         </button>
@@ -1946,7 +1946,7 @@ function QuickPublishPanel({
           type="button"
           onClick={onSubmit}
           disabled={!canSubmit}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-black text-white hover:bg-emerald-800 disabled:opacity-50"
         >
           {busy ? <Loader2 className="animate-spin" size={17} /> : <Save size={17} />}
           حفظ دائم
@@ -2315,7 +2315,7 @@ function AdminGalleryLightbox({
           </p>
         </div>
         <div className="grid grid-cols-5 gap-2 sm:flex sm:items-center">
-          <button type="button" onClick={onCopyShare} disabled={!item.asset.is_active} className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white disabled:opacity-40" aria-label={item.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'} title={item.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'}>
+          <button type="button" onClick={onCopyShare} disabled={!item.asset.is_active} className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-700 text-white disabled:opacity-40" aria-label={item.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'} title={item.shareUrl ? 'نسخ رابط العميل' : 'إنشاء ونسخ رابط العميل'}>
             <Link2 size={17} />
           </button>
           <button type="button" onClick={onCopyImage} disabled={!item.asset.preview_url} className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-500 text-white disabled:opacity-40" aria-label="نسخ رابط الصورة" title="نسخ رابط الصورة">

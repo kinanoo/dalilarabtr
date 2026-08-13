@@ -166,7 +166,7 @@ export default function RequestsPage() {
                             <span className={`absolute top-0 right-0 h-full w-1 ${req.type === 'service' ? 'bg-emerald-500' : 'bg-blue-500'} opacity-70`} />
 
                             {/* Type Badge */}
-                            <div className={`absolute top-3 left-3 px-3 py-1 text-[10px] font-black tracking-wider uppercase rounded-lg shadow-sm ${req.type === 'service' ? 'bg-emerald-500 text-white' : 'bg-blue-500 text-white'}`}>
+                            <div className={`absolute top-3 left-3 px-3 py-1 text-[10px] font-black tracking-wider uppercase rounded-lg shadow-sm ${req.type === 'service' ? 'bg-emerald-700 text-white' : 'bg-blue-500 text-white'}`}>
                                 {req.type === 'service' ? 'خدمة' : 'مقال'}
                             </div>
 

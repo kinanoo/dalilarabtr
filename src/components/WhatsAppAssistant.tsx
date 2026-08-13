@@ -76,7 +76,7 @@ export default function WhatsAppAssistant() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setOpen(false)}
-            className="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-md flex items-center justify-center transition-all duration-200"
+            className="w-8 h-8 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white shadow-md flex items-center justify-center transition-all duration-200"
             aria-label="تواصل عبر واتساب"
           >
             <MessageCircle size={14} />
@@ -88,7 +88,7 @@ export default function WhatsAppAssistant() {
       <button
         type="button"
         onClick={() => setOpen(prev => !prev)}
-        className={`w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-600/20 flex items-center justify-center transition-all duration-300 active:scale-90${!open ? ' animate-pulse' : ''}`}
+        className={`w-12 h-12 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 flex items-center justify-center transition-all duration-300 active:scale-90${!open ? ' animate-pulse' : ''}`}
         aria-label={open ? 'إغلاق القائمة' : 'تواصل معنا'}
         aria-expanded={open ? 'true' : 'false'}
       >
