@@ -202,6 +202,17 @@ export default function ServicesClient({
   useEffect(() => {
     if (!urlStateReady) return;
 
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+      setPage(1);
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [searchQuery, urlStateReady]);
+
+  useEffect(() => {
+    if (!urlStateReady) return;
+
     const matchesInitialDirectory = page === 1 &&
       sortBy === 'recommended' &&
       activeCategory === 'all' &&
@@ -460,9 +471,9 @@ export default function ServicesClient({
               event.preventDefault();
               submitSearch();
             }}
-            className="mx-auto mt-4 grid max-w-5xl grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_220px_132px]"
+            className="mx-auto mt-4 grid max-w-4xl grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_220px]"
           >
-            <div className="relative z-40">
+            <div className="relative z-50">
               <Search size={20} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="search"
@@ -491,7 +502,7 @@ export default function ServicesClient({
                 <div
                   id="service-search-suggestions"
                   role="listbox"
-                  className="absolute inset-x-0 top-[calc(100%+8px)] z-50 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 text-right shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+                  className="absolute inset-x-0 top-[calc(100%+8px)] z-[70] max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 text-right shadow-2xl dark:border-slate-700 dark:bg-slate-900"
                 >
                   {searchSuggestions.slice(0, 6).map((suggestion) => (
                     <button
@@ -514,12 +525,14 @@ export default function ServicesClient({
               )}
             </div>
 
-            <div className="relative z-50">
+            <div className="relative z-30">
               <CityFilter
                 compact
                 value={draftCity}
                 onChange={(city) => {
                   setDraftCity(city);
+                  setActiveCity(city);
+                  setPage(1);
                   setSearchFocused(false);
                 }}
                 cities={availableCities}
@@ -527,13 +540,6 @@ export default function ServicesClient({
                 totalCount={totalCount}
               />
             </div>
-            <button
-              type="submit"
-              className="relative z-50 inline-flex h-[52px] items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-900/15 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-emerald-700/20 active:translate-y-0 active:scale-[0.98] dark:bg-emerald-700 dark:hover:bg-emerald-800 sm:h-14"
-            >
-              <Search size={18} />
-              ابحث
-            </button>
           </form>
         </div>
       </section>
