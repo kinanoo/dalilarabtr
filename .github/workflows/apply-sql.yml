@@ -74,7 +74,8 @@ jobs:
             sum="$(sha256sum "$path" | cut -c1-16)"
 
             if printf '%s\n' "$applied_list" | grep -Fxq "$name"; then
-              prev="$(psql "$PGURL" -tAc "SELECT checksum FROM public.sql_migrations WHERE filename = '$name'")"
+              prev="$(printf '%s\n' "SELECT checksum FROM public.sql_migrations WHERE filename = :'fname';" \
+                | psql "$PGURL" -tA -v fname="$name" -f -)"
               # البصمات الرمزية تخصّ ملفات سُجّلت دون أن يحسب النظام بصمتها
               # (ملف التهيئة نفسه، وما شُغّل يدوياً قبل الأتمتة). مقارنتها
               # بالبصمة الحقيقية تُنتج تحذيراً كاذباً في كل تشغيل إلى الأبد.
@@ -93,9 +94,11 @@ jobs:
               psql "$PGURL" -v ON_ERROR_STOP=1 --single-transaction -f "$path"
             fi
 
-            psql "$PGURL" -v ON_ERROR_STOP=1 -q \
-              -v fname="$name" -v csum="$sum" \
-              -c "INSERT INTO public.sql_migrations (filename, checksum) VALUES (:'fname', :'csum')"
+            # عبر stdin لا -c: psql يفسّر :'var' عند القراءة من ملف أو stdin
+            # فقط. مع -c يمرّ النصّ كما هو إلى الخادم فيرفض ':' — وهو ما أفشل
+            # أول تشغيل طبّق ملفاً فعلياً. والاقتباس :'var' يهرّب القيمة أيضاً.
+            printf '%s\n' "INSERT INTO public.sql_migrations (filename, checksum) VALUES (:'fname', :'csum');" \
+              | psql "$PGURL" -v ON_ERROR_STOP=1 -q -v fname="$name" -v csum="$sum" -f -
 
             echo "✔ تمّ $name"
             applied_count=$((applied_count + 1))
