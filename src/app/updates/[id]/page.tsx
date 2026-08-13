@@ -305,7 +305,7 @@ export default async function UpdateDetailPage(
                                     priority
                                     hint="label"
                                     containerClassName="h-56 w-full rounded-none sm:h-72 md:h-80"
-                                    imageClassName="object-contain"
+                                    imageClassName="object-cover object-center"
                                 />
                             )}
 

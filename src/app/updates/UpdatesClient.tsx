@@ -425,7 +425,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                   priority
                   hint="label"
                   containerClassName="h-52 w-full rounded-none sm:h-72"
-                  imageClassName="object-contain"
+                  imageClassName="object-cover object-center"
                 />
               )}
               <Link href={updateHrefOf(leadStory)} className="group block p-5 sm:p-7">
