@@ -48,3 +48,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Throwaway probes from content/audit sessions — REST dumps, one-off scripts,
+# scraped HTML, id lists. They accumulate at the repo root and are worthless a
+# day later, but `git add -A` would happily commit them.
+#
+# This is not only tidiness: a 208-byte `_key.txt` was sitting here untracked,
+# exactly the shape of a service-role token. One careless `add -A` publishes a
+# credential to a public repo. Ignoring the pattern makes that impossible.
+# Delete the file itself too — ignoring hides it, it does not remove it.
+/_*.json
+/_*.py
+/_*.txt
+/_*.html
+/_dumps/
+/.tmp/
+
+# Same, from the pre-underscore era.
+/full.json
+/lu.json
+/pillar.json
+/sw.json
+/vl.json
+/pcount.txt
