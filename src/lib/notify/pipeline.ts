@@ -331,15 +331,16 @@ export async function runNotifyPipeline(
             .limit(20),
     ]);
 
+    // The headline IS the notification — for articles exactly as for news.
+    // A generic «مقال جديد على دليل العرب 📖» / «تحديث جديد ⚡» banner wasted
+    // the first line of every Telegram post and the push title, pushed the
+    // actual subject down, and said nothing the reader could not see from the
+    // channel name itself.
     const items: NotifyItem[] = [];
     for (const a of (artRes.data as { id: string; slug: string | null; title: string }[] | null) || []) {
-        items.push({ link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title });
+        items.push({ link: `/article/${a.slug || a.id}`, title: a.title, message: '' });
     }
     for (const u of (updRes.data as { id: string; title: string }[] | null) || []) {
-        // The headline IS the notification. A generic «تحديث جديد ⚡» prefix
-        // above it wasted the first line of every Telegram post and the push
-        // title, pushing the actual news down — and said nothing the reader
-        // could not see from the channel name.
         items.push({ link: `/updates/${u.id}`, title: u.title, message: '' });
     }
 
@@ -363,7 +364,7 @@ export async function notifyArticle(svc: SupabaseClient, articleId: string): Pro
     if (!a) return { ok: true, newItems: 0, sent: 0, note: 'article not found', tgEnabled };
     if (a.status !== 'approved') return { ok: true, newItems: 0, sent: 0, note: 'article not approved', tgEnabled };
 
-    const item: NotifyItem = { link: `/article/${a.slug || a.id}`, title: 'مقال جديد على دليل العرب 📖', message: a.title };
+    const item: NotifyItem = { link: `/article/${a.slug || a.id}`, title: a.title, message: '' };
     return sendItems(svc, [item], {});
 }
 
