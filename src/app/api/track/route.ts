@@ -40,6 +40,29 @@ function hashIP(ip: string, ua: string): string {
   return createHash('sha256').update(`${ip}|${ua}|${VISITOR_SALT}`).digest('hex').slice(0, 16);
 }
 
+// ─── Cookieless key for EVERY visitor — no consent required ─────────
+// The stable key above answers "did this person come back next week", which
+// genuinely needs consent. But it left the ordinary questions — how many
+// people visited, where they landed, what they read — answerable only for
+// the minority who accept a banner, and the dashboard collapsed everyone
+// else into a single phantom visitor.
+//
+// This is the industry-standard cookieless identifier (Plausible, Fathom,
+// Matomo's cookieless mode): sha256(ip | user-agent | salt | TODAY). Three
+// properties make it consent-free rather than merely undeclared — nothing is
+// written to or read from the visitor's device, the raw IP never reaches the
+// database, and the salt carries the calendar day so the key CANNOT link a
+// person across days. It identifies a visit, not a person.
+//
+// Istanbul is UTC+3 year-round (no DST since 2016). The same offset defines
+// "today" in every dashboard function, so the key rotates exactly on the
+// boundary the counters use — a visitor is never split across two days.
+const ISTANBUL_OFFSET_MS = 3 * 60 * 60 * 1000;
+function anonKey(ip: string, ua: string): string {
+  const day = new Date(Date.now() + ISTANBUL_OFFSET_MS).toISOString().slice(0, 10);
+  return createHash('sha256').update(`${ip}|${ua}|${VISITOR_SALT}|${day}`).digest('hex').slice(0, 16);
+}
+
 // ─── Cloudflare Geo → Country Name ──────────────────────────────────
 const COUNTRY_NAMES: Record<string, string> = {
   TR: 'Turkey', SY: 'Syria', LB: 'Lebanon', IQ: 'Iraq', JO: 'Jordan',
@@ -121,6 +144,10 @@ export async function POST(req: NextRequest) {
     // Aggregate events remain useful without consent, but must not be linkable
     // across visits. A stable one-way identifier is retained only after consent.
     const ip_hash = consented && ip !== 'unknown' ? hashIP(ip, ua) : null;
+    // Written for everyone, consent or not — see anonKey() above. Without a
+    // usable IP there is nothing to hash; hashing the user-agent alone would
+    // merge thousands of strangers into one key, which is worse than a gap.
+    const anon_key = ip !== 'unknown' ? anonKey(ip, ua) : null;
 
     // ─── Geolocation headers (Cloudflare) ───────────────────────────
     // cf-ipcountry is always available on Cloudflare. City/region require the
@@ -159,17 +186,32 @@ export async function POST(req: NextRequest) {
     if (!supabase) {
       return NextResponse.json({ error: 'server_config' }, { status: 500 });
     }
-    const { error } = await supabase.from('analytics_events').insert({
+    const row = {
       event_name,
       page_path,
       visitor_id,
       session_id,
       duration_seconds: duration,
       ip_hash,
+      anon_key,
       ip_country,
       ip_city,
       meta: enrichedMeta,
-    });
+    };
+
+    let { error } = await supabase.from('analytics_events').insert(row);
+
+    // The anon_key column and this code ship in the same merge, but they land
+    // through two independent pipelines (the SQL workflow and the Worker
+    // build) and neither waits for the other. If the Worker wins the race,
+    // every insert would fail on an unknown column and the site would record
+    // NOTHING until the migration caught up. Drop the column and retry once:
+    // one degraded field beats a blind window.
+    if (error && /anon_key/i.test(error.message)) {
+      const { anon_key: _dropped, ...legacyRow } = row;
+      ({ error } = await supabase.from('analytics_events').insert(legacyRow));
+      if (!error) logger.warn('[track] anon_key column not migrated yet — inserted without it');
+    }
 
     if (error) {
       logger.error('[track] insert error:', error.message);
