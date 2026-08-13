@@ -5,12 +5,15 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import logger from '@/lib/logger';
 import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
 import { useEffect } from 'react';
+import PageRecovery from '@/components/PageRecovery';
 
 export default function ArticleError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
     useEffect(() => { logger.error(error); }, [error]);
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the reader do it. See useChunkErrorRecovery.
-    useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error);
+
+    if (recovering) return <PageRecovery />;
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import logger from '@/lib/logger';
 import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
+import PageRecovery from '@/components/PageRecovery';
 
 export default function Error({
     error,
@@ -18,7 +19,11 @@ export default function Error({
     }, [error]);
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the reader do it. See useChunkErrorRecovery.
-    useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error);
+
+    if (recovering) {
+        return <PageRecovery minHeightClass="min-h-[70vh]" />;
+    }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">

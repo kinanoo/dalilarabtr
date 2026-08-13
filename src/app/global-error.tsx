@@ -2,6 +2,8 @@
 
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import PageRecovery from '@/components/PageRecovery';
+import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
 
 export default function GlobalError({
   error,
@@ -10,6 +12,21 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const recovering = useChunkErrorRecovery(error);
+
+  if (recovering) {
+    return (
+      <html lang="ar" dir="rtl">
+        <head>
+          <title>جاري استعادة الصفحة</title>
+        </head>
+        <body className="min-h-screen bg-white font-cairo dark:bg-slate-950">
+          <PageRecovery minHeightClass="min-h-screen" />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="ar" dir="rtl">
       <head>
