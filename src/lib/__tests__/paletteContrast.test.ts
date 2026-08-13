@@ -95,13 +95,48 @@ describe('palette contrast contract', () => {
         // Measured: 2.6:1 and 3.8:1 — both under the 4.5:1 floor for label
         // text. Buttons carry bg-emerald-700 (5.5:1). Gradients are exempt:
         // there the emerald end holds a white ICON, which needs only 3:1.
+        //
+        // The pairing has to be checked PER VARIANT CONTEXT, not per line. A
+        // line reading `text-white … dark:hover:bg-emerald-500
+        // dark:hover:text-slate-950` is correct — the white label belongs to
+        // the light-mode slate button, and the bright dark-mode hover carries
+        // an ink label (7.9:1). Matching `text-white` anywhere against
+        // `bg-emerald-500` anywhere flagged exactly that, three times, on
+        // buttons that render fine. So: for each emerald surface, look only at
+        // the text colour that actually applies in ITS context.
+        const badPairing = (line: string): boolean => {
+            if (line.includes('gradient')) return false;
+            const SURFACE = /\b((?:[\w-]+:)*)bg-emerald-(?:500|600)\b/g;
+            for (const m of line.matchAll(SURFACE)) {
+                const variant = m[1];                           // '' | 'dark:hover:' | …
+                if (variant) {
+                    const esc = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    // A text colour declared in the surface's own context wins.
+                    if (new RegExp(`\\b${esc}text-(?!white\\b)[\\w-]+`).test(line)) continue;
+                    if (new RegExp(`\\b${esc}text-white\\b`).test(line)) return true;
+                }
+                // Otherwise the base text colour is what paints the label.
+                if (/(?:^|["'\s{])text-white\b/.test(line)) return true;
+            }
+            return false;
+        };
+
+        // The detector is itself pinned, so a future "fix" that quietly stops
+        // detecting anything fails here rather than passing silently.
+        expect(badPairing('className="bg-emerald-600 text-white"')).toBe(true);
+        expect(badPairing("? 'bg-emerald-500 text-white' : ''")).toBe(true);
+        expect(badPairing('className="bg-emerald-700 text-white"')).toBe(false);
+        expect(badPairing(
+            'className="bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950 ' +
+            'dark:hover:bg-emerald-500 dark:hover:text-slate-950"')).toBe(false);
+        expect(badPairing(
+            'className="bg-slate-950 text-white dark:hover:bg-emerald-500 ' +
+            'dark:hover:text-white"')).toBe(true);
+
         const offenders: string[] = [];
         for (const file of walk(join(process.cwd(), 'src'))) {
             readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
-                if (line.includes('gradient')) return;
-                if (/text-white/.test(line) && /\bbg-emerald-(500|600)\b/.test(line)) {
-                    offenders.push(`${file.replace(process.cwd(), '')}:${i + 1}`);
-                }
+                if (badPairing(line)) offenders.push(`${file.replace(process.cwd(), '')}:${i + 1}`);
             });
         }
         expect(offenders).toEqual([]);

@@ -3,11 +3,14 @@
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';
 import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
+import PageRecovery from '@/components/PageRecovery';
 
 export default function DashboardError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the reader do it. See useChunkErrorRecovery.
-    useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error);
+
+    if (recovering) return <PageRecovery />;
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">

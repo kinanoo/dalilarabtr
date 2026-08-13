@@ -51,7 +51,15 @@ const waText = (p: ProviderCardData) => {
 };
 
 // Returns a fragment (WhatsApp + call) so the parent card/row controls layout.
-export default function ContactButtons({ p, compact = false }: { p: ProviderCardData; compact?: boolean }) {
+export default function ContactButtons({
+    p,
+    compact = false,
+    subtle = false,
+}: {
+    p: ProviderCardData;
+    compact?: boolean;
+    subtle?: boolean;
+}) {
     const hasWhatsApp = isValidExplicitWhatsApp(p.whatsapp);
     return (
         <>
@@ -61,7 +69,7 @@ export default function ContactButtons({ p, compact = false }: { p: ProviderCard
                 text={waText(p)}
                 aria-label={`تواصل عبر واتساب مع ${p.name}`}
                 onClick={() => trackContact(p, 'whatsapp')}
-                className={`${compact ? 'h-10 px-3 sm:px-4' : 'flex-1 py-2.5'} inline-flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-black text-xs shadow-sm shadow-emerald-600/20 active:scale-95 transition-all`}
+                className={`${compact ? 'h-10 px-3 sm:px-4' : 'flex-1 py-2.5'} ${subtle ? 'border border-slate-200 bg-white text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-950/30' : 'bg-emerald-700 text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-800'} inline-flex items-center justify-center gap-1.5 rounded-xl text-xs font-black transition-all active:scale-95`}
             >
                 <MessageCircle size={15} /><span className={compact ? 'hidden sm:inline' : ''}>واتساب</span>
             </DirectWhatsAppLink>

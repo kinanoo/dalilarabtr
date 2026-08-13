@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Calendar, Clock, ChevronLeft, Newspaper, AlertTriangle, ExternalLink } from 'lucide-react';
 import UniversalComments from '@/components/community/UniversalCommentsLazy';
@@ -10,6 +9,7 @@ import AskOnWhatsApp from '@/components/AskOnWhatsApp';
 import ShareMenu from '@/components/ShareMenu';
 import HtmlContent from '@/components/ui/HtmlContent';
 import { plainTextExcerpt, stripHtml } from '@/lib/stripHtml';
+import ZoomableImage from '@/components/ui/ZoomableImage';
 import { SITE_CONFIG, getOgImage } from '@/lib/config';
 import { SchemaScript, generateBreadcrumbSchema, toISODate } from '@/lib/schemaOrg';
 import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
@@ -109,14 +109,31 @@ export async function generateMetadata(
     // Pre-stream notFound() → real HTTP 404 (see codes/[code] note).
     if (!data) notFound();
 
+    const canonicalUrl = `${SITE_CONFIG.siteUrl}/updates/${id}`;
+    const description = plainTextExcerpt(data.summary || data.content, 200) || data.title;
+    const socialImage = getOgImage(data.image, {
+        title: data.title,
+        category: 'أخبار وتحديثات',
+    });
+
     return {
         title: data.title,
         description: plainTextExcerpt(data.summary || data.content, 160) || data.title,
-        alternates: { canonical: `/updates/${id}` },
+        alternates: { canonical: canonicalUrl },
         openGraph: {
             title: data.title,
-            description: plainTextExcerpt(data.summary || data.content, 200),
-            images: [{ url: getOgImage(undefined, { title: data.title, category: 'أخبار وتحديثات' }), width: 1200, height: 630, alt: data.title }],
+            description,
+            type: 'article',
+            url: canonicalUrl,
+            images: [{ url: socialImage, alt: data.title }],
+            publishedTime: toISODate(data.created_at || data.date || ''),
+            modifiedTime: toISODate(data.date || data.created_at || ''),
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: data.title,
+            description,
+            images: [socialImage],
         },
     };
 }
@@ -298,16 +315,15 @@ export default async function UpdateDetailPage(
 
                             {/* Image */}
                             {update.image && (
-                                <div className="relative w-full h-48 sm:h-64 md:h-72">
-                                    <Image
-                                        src={update.image}
-                                        alt={update.title || 'صورة التحديث'}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 768px) 100vw, 768px"
-                                        priority
-                                    />
-                                </div>
+                                <ZoomableImage
+                                    src={update.image}
+                                    alt={update.title || 'صورة التحديث'}
+                                    sizes="(max-width: 768px) 100vw, 768px"
+                                    priority
+                                    hint="label"
+                                    containerClassName="h-56 w-full rounded-none sm:h-72 md:h-80"
+                                    imageClassName="object-cover object-center"
+                                />
                             )}
 
                             <div className="p-5 sm:p-8">
@@ -328,7 +344,7 @@ export default async function UpdateDetailPage(
 
                                 {/* Main content */}
                                 {update.content && (
-                                    <div className="prose-update">
+                                    <div className="prose-content prose-update">
                                         <HtmlContent
                                             html={update.content}
                                             className="text-slate-700 dark:text-slate-300 text-base sm:text-lg leading-[1.9]"
@@ -336,14 +352,17 @@ export default async function UpdateDetailPage(
                                     </div>
                                 )}
 
-                                {/* Link button if exists */}
+                                {/* The older guide is optional and separate from the news itself. */}
                                 {update.link && (
                                     <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                                            شرح سابق مرتبط بموضوع الخبر، وفتحه اختياري.
+                                        </p>
                                         <Link
                                             href={update.link}
                                             className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors"
                                         >
-                                            اقرأ المزيد
+                                            اقرأ المقال المرتبط بالخبر
                                             <ChevronLeft size={16} />
                                         </Link>
                                     </div>
@@ -369,35 +388,30 @@ export default async function UpdateDetailPage(
                                 </h3>
                                 <div className="space-y-3">
                                     {relatedUpdates.map((item) => (
-                                        <Link
-                                            key={item.id}
-                                            href={`/updates/${item.id}`}
-                                            className="block group"
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                {item.image ? (
-                                                    <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                                        <Image
-                                                            src={item.image}
-                                                            alt={item.title || "تحديث ذو صلة"}
-                                                            fill
-                                                            className="object-cover"
-                                                            sizes="48px"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className={`w-12 h-12 flex-shrink-0 rounded-lg flex items-center justify-center ${
-                                                        item.type === 'alert'
-                                                            ? 'bg-red-50 dark:bg-red-900/20'
-                                                            : 'bg-amber-50 dark:bg-amber-900/20'
-                                                    }`}>
-                                                        {item.type === 'alert'
-                                                            ? <AlertTriangle size={18} className="text-red-500" />
-                                                            : <Newspaper size={18} className="text-amber-500" />
-                                                        }
-                                                    </div>
-                                                )}
-                                                <div className="flex-1 min-w-0">
+                                        <article key={item.id} className="flex items-start gap-3">
+                                            {item.image ? (
+                                                <ZoomableImage
+                                                    src={item.image}
+                                                    alt={item.title || 'صورة خبر آخر'}
+                                                    sizes="48px"
+                                                    hint="none"
+                                                    containerClassName="h-12 w-12 flex-shrink-0 rounded-lg"
+                                                    imageClassName="object-cover"
+                                                />
+                                            ) : (
+                                                <div className={`w-12 h-12 flex-shrink-0 rounded-lg flex items-center justify-center ${
+                                                    item.type === 'alert'
+                                                        ? 'bg-red-50 dark:bg-red-900/20'
+                                                        : 'bg-amber-50 dark:bg-amber-900/20'
+                                                }`}>
+                                                    {item.type === 'alert'
+                                                        ? <AlertTriangle size={18} className="text-red-500" />
+                                                        : <Newspaper size={18} className="text-amber-500" />
+                                                    }
+                                                </div>
+                                            )}
+                                            <Link href={`/updates/${item.id}`} className="group min-w-0 flex-1">
+                                                <div className="min-w-0">
                                                     <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">
                                                         {item.title}
                                                     </h4>
@@ -406,8 +420,8 @@ export default async function UpdateDetailPage(
                                                         {getRelativeDate(item.date)}
                                                     </span>
                                                 </div>
-                                            </div>
-                                        </Link>
+                                            </Link>
+                                        </article>
                                     ))}
                                 </div>
 

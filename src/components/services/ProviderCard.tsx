@@ -128,15 +128,15 @@ export default function ProviderCard({ p }: { p: ProviderCardData }) {
 
             {/* Actions */}
             <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-                <ContactButtons p={p} />
                 <Link
                     href={href}
                     aria-label="عرض التفاصيل"
-                    className="inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition-all hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:h-[42px]"
+                    className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-950 px-4 text-xs font-black text-white transition-all hover:bg-emerald-700 active:scale-[0.98] dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-emerald-500 dark:hover:text-slate-950 sm:h-[42px]"
                 >
-                    المزيد
+                    عرض التفاصيل
                     <ChevronLeft size={16} aria-hidden="true" />
                 </Link>
+                <ContactButtons p={p} compact subtle />
             </div>
         </article>
     );

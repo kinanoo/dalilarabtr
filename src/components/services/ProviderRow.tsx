@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { MapPin, Star, BadgeCheck } from 'lucide-react';
+import { ChevronLeft, MapPin, Star, BadgeCheck } from 'lucide-react';
 import { canonicalCity } from '@/lib/turkishCities';
 import ProviderAvatar from './ProviderAvatar';
 import ContactButtons from './ContactButtons';
@@ -85,7 +85,15 @@ export default function ProviderRow({ p }: { p: ProviderCardData }) {
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-                <ContactButtons p={p} compact />
+                <Link
+                    href={href}
+                    aria-label={`عرض تفاصيل ${p.name}`}
+                    className="inline-flex h-10 items-center justify-center gap-1 rounded-xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-emerald-700 active:scale-[0.98] dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-emerald-500 dark:hover:text-slate-950"
+                >
+                    <span className="hidden sm:inline">التفاصيل</span>
+                    <ChevronLeft size={15} />
+                </Link>
+                <ContactButtons p={p} compact subtle />
             </div>
         </article>
     );

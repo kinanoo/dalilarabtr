@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Recover automatically from a failed JS chunk load instead of asking the reader
@@ -25,12 +25,12 @@ import { useEffect } from 'react';
  * failure inside that window falls through and shows the error UI — the reader
  * sees an honest message instead of a flickering page.
  *
- * Returns nothing; call it at the top of an error boundary.
+ * Returns whether the boundary should show the neutral recovery state.
  */
 
 // Message shapes browsers use when a dynamic import or chunk fetch fails.
 // Chrome, Firefox and Safari each word it differently, and webpack adds its own.
-const CHUNK_ERROR = /ChunkLoadError|Loading chunk [\w-]+ failed|Loading CSS chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|'text\/html' is not a valid JavaScript MIME type/i;
+const CHUNK_ERROR = /ChunkLoadError|Loading chunk [\w-]+ failed|Loading CSS chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|'text\/html' is not a valid JavaScript MIME type|Failed to load resource|Failed to fetch|fetch failed|NetworkError|Load failed/i;
 
 const WINDOW_MS = 30_000;
 
@@ -40,28 +40,60 @@ export function isChunkLoadError(error: unknown): boolean {
     return CHUNK_ERROR.test(`${e.name ?? ''} ${e.message ?? ''}`);
 }
 
-export function useChunkErrorRecovery(error: unknown): void {
-    useEffect(() => {
-        if (!isChunkLoadError(error)) return;
-        if (typeof window === 'undefined') return;
+type RecoverableError = { digest?: string; message?: string; name?: string };
 
-        const key = `chunk-reload:${window.location.pathname}`;
+export function isLikelyNavigationError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const value = error as RecoverableError;
+    const text = `${value.name ?? ''} ${value.message ?? ''}`;
+
+    // Client navigation and RSC failures are not always surfaced as a named
+    // ChunkLoadError. In production Next may redact the message and expose only
+    // a digest, although a hard document request for the same URL succeeds.
+    return isChunkLoadError(error)
+        || /RSC|React Server Component|server component|navigation|network|fetch|load/i.test(text)
+        || Boolean(value.digest);
+}
+
+/**
+ * Tries one clean document load before an error page is shown to the reader.
+ * Returns true while that recovery is in progress so the boundary can render a
+ * calm loading state instead of flashing a red failure screen.
+ */
+export function useChunkErrorRecovery(error: unknown): boolean {
+    const [recovering, setRecovering] = useState(() => isLikelyNavigationError(error));
+
+    useEffect(() => {
+        if (!isLikelyNavigationError(error) || typeof window === 'undefined') return;
+
+        const stopRecoveryOnNextFrame = () => {
+            const timer = window.setTimeout(() => setRecovering(false), 0);
+            return () => window.clearTimeout(timer);
+        };
+
+        const key = `navigation-recovery:${window.location.pathname}${window.location.search}`;
         let last = 0;
         try {
             last = Number(window.sessionStorage.getItem(key)) || 0;
         } catch {
-            // Private mode / storage disabled: reloading blind could loop, so
-            // do nothing and let the error UI render.
-            return;
+            return stopRecoveryOnNextFrame();
         }
 
-        if (Date.now() - last < WINDOW_MS) return;
+        if (Date.now() - last < WINDOW_MS) {
+            return stopRecoveryOnNextFrame();
+        }
 
         try {
             window.sessionStorage.setItem(key, String(Date.now()));
         } catch {
-            return;
+            return stopRecoveryOnNextFrame();
         }
-        window.location.reload();
+
+        // Give the boundary one paint so the visitor sees a neutral recovery
+        // state, then bypass the client router/module registry completely.
+        const timer = window.setTimeout(() => window.location.reload(), 80);
+        return () => window.clearTimeout(timer);
     }, [error]);
+
+    return recovering;
 }

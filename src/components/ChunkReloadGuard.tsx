@@ -22,7 +22,7 @@ const RELOAD_KEY = 'cf-chunk-reload-ts';
 
 function isChunkLoadError(message?: string): boolean {
     if (!message) return false;
-    return /ChunkLoadError|Loading chunk [\d]+ failed|Loading CSS chunk [\d]+ failed|Failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed/i.test(
+    return /ChunkLoadError|Loading chunk [\w-]+ failed|Loading CSS chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|'text\/html' is not a valid JavaScript MIME type/i.test(
         message,
     );
 }

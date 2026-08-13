@@ -10,6 +10,7 @@ import CategoryFilterDialog from '@/components/services/CategoryFilterDialog';
 import ProviderCard from '@/components/services/ProviderCard';
 import ProviderRow from '@/components/services/ProviderRow';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
+import ServiceProviderInvite from '@/components/services/ServiceProviderInvite';
 import {
   DIRECTORY_PAGE_SIZE,
   type DirectoryPopularSearch,
@@ -150,6 +151,7 @@ export default function ServicesClient({
   const [retryKey, setRetryKey] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeCity, setActiveCity] = useState('all');
+  const [draftCity, setDraftCity] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -187,6 +189,7 @@ export default function ServicesClient({
       setSearchQuery(normalizedQuery);
       setDebouncedSearch(normalizedQuery);
       setActiveCity(city);
+      setDraftCity(city);
       setActiveCategory(category);
       if (requestedSort && ['recommended', 'rating', 'newest', 'name'].includes(requestedSort)) {
         setSortBy(requestedSort as typeof sortBy);
@@ -197,11 +200,6 @@ export default function ServicesClient({
 
     return () => window.clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
-    return () => window.clearTimeout(timer);
-  }, [searchQuery]);
 
   useEffect(() => {
     if (!urlStateReady) return;
@@ -308,16 +306,13 @@ export default function ServicesClient({
   }, []);
 
   // --- Filter state helpers ---
-  const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || searchQuery.trim() !== '';
-  const activeFiltersCount = [
-    activeCategory !== 'all',
-    activeCity !== 'all',
-    searchQuery.trim() !== '',
-  ].filter(Boolean).length;
+  const hasActiveFilters = activeCategory !== 'all' || activeCity !== 'all' || debouncedSearch !== '';
   const clearFilters = () => {
     setActiveCategory('all');
     setActiveCity('all');
+    setDraftCity('all');
     setSearchQuery('');
+    setDebouncedSearch('');
     setPage(1);
   };
 
@@ -348,18 +343,11 @@ export default function ServicesClient({
       }))
       .filter((category) => category.count > 0),
   ];
-  const primaryNeeds = QUICK_NEEDS.slice(0, 5);
   const directoryGuideLinks = popularSearches.slice(0, 24);
-  const topSuggestionCities = useMemo(
-    () => [...availableCities]
-      .sort((a, b) => (liveCityCounts[b] || 0) - (liveCityCounts[a] || 0))
-      .slice(0, 3),
-    [availableCities, liveCityCounts],
-  );
   const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
     const rawQuery = searchQuery.trim();
     const normalizedQuery = normalizeSuggestionText(rawQuery);
-    const defaultCity = activeCity !== 'all' ? activeCity : topSuggestionCities[0];
+    const defaultCity = draftCity !== 'all' ? draftCity : undefined;
     const suggestions: SearchSuggestion[] = [];
     const seen = new Set<string>();
     const addSuggestion = (item: SearchSuggestion) => {
@@ -416,17 +404,17 @@ export default function ServicesClient({
 
     if (rawQuery && suggestions.length < 7) {
       addSuggestion({
-        key: `free-${rawQuery}-${activeCity}`,
+        key: `free-${rawQuery}-${draftCity}`,
         label: `البحث عن "${rawQuery}"`,
-        hint: activeCity !== 'all' ? activeCity : 'كل المدن',
+        hint: draftCity !== 'all' ? draftCity : 'كل المدن',
         query: rawQuery,
         category: activeCategory,
-        city: activeCity !== 'all' ? activeCity : undefined,
+        city: draftCity !== 'all' ? draftCity : undefined,
       });
     }
 
     return suggestions.slice(0, 7);
-  }, [activeCategory, activeCity, liveCategoryCounts, popularSearches, searchQuery, topSuggestionCities]);
+  }, [activeCategory, draftCity, liveCategoryCounts, popularSearches, searchQuery]);
   const applyCategory = (category: string) => {
     setActiveCategory(category);
     setPage(1);
@@ -436,16 +424,13 @@ export default function ServicesClient({
     setSearchQuery(suggestion.query);
     setDebouncedSearch(suggestion.query);
     setActiveCategory(suggestion.category);
-    if (suggestion.city) setActiveCity(suggestion.city);
+    if (suggestion.city) {
+      setActiveCity(suggestion.city);
+      setDraftCity(suggestion.city);
+    }
     setPage(1);
     setSearchFocused(false);
     window.setTimeout(scrollToResults, 40);
-  };
-  const applyNeed = (query: string, category: string) => {
-    setSearchQuery('');
-    setDebouncedSearch('');
-    setActiveCategory(category);
-    setPage(1);
   };
   const goPage = (pp: number) => {
     setPage(Math.min(Math.max(1, pp), totalPages));
@@ -454,13 +439,20 @@ export default function ServicesClient({
   const scrollToResults = () => {
     if (typeof document !== 'undefined') document.getElementById('svc-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+  const submitSearch = () => {
+    setDebouncedSearch(searchQuery.trim());
+    setActiveCity(draftCity);
+    setPage(1);
+    setSearchFocused(false);
+    window.setTimeout(scrollToResults, 40);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-cairo" dir="rtl">
 
-      <section className="relative z-30 border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+      <section className="relative z-30 overflow-visible border-b border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-emerald-600" />
-        <div className="mx-auto max-w-7xl px-4 py-5 md:py-8">
+        <div className="mx-auto max-w-7xl px-4 py-5 md:py-7">
           <div className="mx-auto max-w-4xl text-center">
             <span className="inline-flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-300">
               <Sparkles size={14} />
@@ -470,11 +462,18 @@ export default function ServicesClient({
               دليل المهن والخدمات العربية في تركيا
             </h1>
             <p className="mx-auto mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-600 sm:text-base dark:text-slate-300">
-              ابحث عن الخدمة واختر المدينة، ثم تواصل مباشرة مع مقدمها. ويمكن لأصحاب المهن تسجيل خدماتهم للوصول إلى عملاء جدد.
+              اكتب ما تحتاجه واختر مدينتك لنظهر لك مقدمي الخدمة المناسبين.
             </p>
           </div>
 
-          <div className="mx-auto mt-4 grid max-w-4xl grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_230px]">
+          <form
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitSearch();
+            }}
+            className="mx-auto mt-4 grid max-w-5xl grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_220px_132px]"
+          >
             <div className="relative z-40">
               <Search size={20} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -489,8 +488,8 @@ export default function ServicesClient({
                 onBlur={() => window.setTimeout(() => setSearchFocused(false), 140)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
-                    setSearchFocused(false);
-                    scrollToResults();
+                    event.preventDefault();
+                    submitSearch();
                   }
                   if (event.key === 'Escape') setSearchFocused(false);
                 }}
@@ -527,72 +526,27 @@ export default function ServicesClient({
               )}
             </div>
 
-            <CityFilter
-              compact
-              value={activeCity}
-              onChange={(city) => {
-                setActiveCity(city);
-                setPage(1);
-                setSearchFocused(false);
-              }}
-              cities={availableCities}
-              counts={liveCityCounts}
-              totalCount={totalCount}
-            />
-          </div>
-
-          <div className="mx-auto mt-3 flex max-w-4xl flex-wrap items-center justify-center gap-2">
+            <div className="relative z-50">
+              <CityFilter
+                compact
+                value={draftCity}
+                onChange={(city) => {
+                  setDraftCity(city);
+                  setSearchFocused(false);
+                }}
+                cities={availableCities}
+                counts={liveCityCounts}
+                totalCount={totalCount}
+              />
+            </div>
             <button
-              type="button"
-              onClick={() => setFiltersOpen(true)}
-              aria-haspopup="dialog"
-              aria-expanded={filtersOpen}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-black text-white transition hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-slate-950"
+              type="submit"
+              className="relative z-50 inline-flex h-[52px] items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-900/15 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-800 hover:shadow-emerald-700/20 active:translate-y-0 active:scale-[0.98] dark:bg-emerald-700 dark:hover:bg-emerald-800 sm:h-14"
             >
-              <SlidersHorizontal size={16} />
-              {activeCategoryLabel || 'اختر التخصص'}
-              {activeFiltersCount > 0 && (
-                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-700 px-1.5 py-0.5 text-[10px] text-white">
-                  {activeFiltersCount}
-                </span>
-              )}
+              <Search size={18} />
+              ابحث
             </button>
-            <Link
-              href="/services/add"
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              <Briefcase size={16} />
-              سجّل خدمتك
-            </Link>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="inline-flex min-h-10 items-center justify-center gap-1 rounded-lg px-3 text-xs font-black text-slate-500 transition hover:bg-slate-100 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                <X size={14} />
-                مسح الاختيارات
-              </button>
-            )}
-          </div>
-
-          <div className="mx-auto mt-3 flex max-w-4xl flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            {primaryNeeds.map((need) => (
-              <button
-                key={need.label}
-                type="button"
-                onClick={() => applyNeed(need.query, need.category)}
-                className="relative min-h-7 text-xs font-black text-slate-600 transition after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-right after:scale-x-0 after:bg-emerald-700 after:transition-transform hover:text-slate-950 hover:after:scale-x-100 active:text-emerald-700 dark:text-slate-300 dark:hover:text-white"
-              >
-                {need.label}
-              </button>
-            ))}
-          </div>
-
-          <p className="mx-auto mt-3 flex max-w-4xl items-center justify-center gap-1.5 text-center text-[11px] font-bold text-slate-500 dark:text-slate-400">
-            <BadgeCheck size={14} className="shrink-0 text-emerald-600" />
-            تحقّق من التفاصيل والسعر قبل الدفع؛ التواصل والاتفاق يتمان مباشرة مع مقدم الخدمة.
-          </p>
+          </form>
         </div>
       </section>
 
@@ -633,6 +587,19 @@ export default function ServicesClient({
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                aria-haspopup="dialog"
+                aria-expanded={filtersOpen}
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs font-black text-slate-700 transition hover:border-emerald-300 hover:bg-white hover:text-emerald-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <SlidersHorizontal size={15} />
+                {activeCategoryLabel || 'التخصص'}
+                {activeCategory !== 'all' && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
+                )}
+              </button>
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
@@ -679,6 +646,7 @@ export default function ServicesClient({
                 type="button"
                 onClick={() => {
                   setActiveCity('all');
+                  setDraftCity('all');
                   setPage(1);
                 }}
                 className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-emerald-50 px-3 text-xs font-bold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
@@ -702,17 +670,18 @@ export default function ServicesClient({
                 <X size={13} />
               </button>
             )}
-            {searchQuery.trim() && (
+            {debouncedSearch && (
               <button
                 type="button"
                 onClick={() => {
                   setSearchQuery('');
+                  setDebouncedSearch('');
                   setPage(1);
                 }}
                 className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50 px-3 text-xs font-bold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"
               >
                 <Search size={13} />
-                {searchQuery.trim()}
+                {debouncedSearch}
                 <X size={13} />
               </button>
             )}
@@ -864,6 +833,8 @@ export default function ServicesClient({
       </section>
 
       <AddServiceBanner />
+
+      <ServiceProviderInvite />
 
       {directoryGuideLinks.length > 0 && (
         <section className="mx-auto max-w-screen-2xl px-4 pb-4 pt-1 w-full">

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import logger from '@/lib/logger';
 import { useChunkErrorRecovery } from '@/lib/useChunkErrorRecovery';
 import { toast } from 'sonner';
+import PageRecovery from '@/components/PageRecovery';
 
 export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
     // Surface the error to logs so we have a trail even if the admin reloads.
@@ -14,7 +15,9 @@ export default function AdminError({ error, reset }: { error: Error & { digest?:
     }, [error]);
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the admin do it. See useChunkErrorRecovery.
-    useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error);
+
+    if (recovering) return <PageRecovery />;
 
     // Show error message only in dev — production digest is opaque on purpose
     // (it maps to a server log entry that the team can look up).
