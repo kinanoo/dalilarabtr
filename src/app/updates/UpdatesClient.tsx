@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   Newspaper, AlertTriangle, Rss, Search, ChevronDown, Clock, ArrowLeft, Loader2,
@@ -10,6 +9,7 @@ import { AUTO_EVENT_CONFIG } from '@/lib/updateUtils';
 import { plainTextExcerpt, stripHtml } from '@/lib/stripHtml';
 import { SITE_CONFIG } from '@/lib/config';
 import { SchemaScript } from '@/lib/schemaOrg';
+import ZoomableImage from '@/components/ui/ZoomableImage';
 
 const TAGLINE = 'ما الذي تغيّر في تركيا؟ قرارات وتعديلات وأخبار موثّقة تهمّ العرب والسوريين.';
 
@@ -106,8 +106,9 @@ function fullSourceLabel(row: any): string {
   return stripHtml(row?.source_name || hostnameOf(row?.source_url));
 }
 
-function hrefOf(row: any): string {
-  return row?.link || `/updates/${row?.id}`;
+function updateHrefOf(row: any): string {
+  const id = String(row?.id || '').trim();
+  return id ? `/updates/${encodeURIComponent(id)}` : '/updates';
 }
 
 function groupByDate(items: any[]): { label: string; items: any[] }[] {
@@ -134,13 +135,10 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
   const [visibleCount, setVisibleCount] = useState(20);
   const [autoEvents, setAutoEvents] = useState<any[]>([]);
   const [autoLoading, setAutoLoading] = useState(true);
-  const [todayLine, setTodayLine] = useState('');
-
-  // Live date line — computed client-side to match the reader's clock.
-  useEffect(() => {
+  const [todayLine] = useState(() => {
     const now = new Date();
-    setTodayLine(`${AR_WEEKDAYS[now.getDay()]} ${now.getDate()} ${AR_MONTHS[now.getMonth()]} ${now.getFullYear()}`);
-  }, []);
+    return `${AR_WEEKDAYS[now.getDay()]} ${now.getDate()} ${AR_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  });
 
   // Auto site events (published articles, codes, ...) — only for «جديد الموقع».
   useEffect(() => {
@@ -186,7 +184,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
       detail: excerptOf(r, 140),
       sortDate: r.sortDate,
       typeLabel: 'ميزة جديدة',
-      href: hrefOf(r),
+      href: updateHrefOf(r),
     }));
     const autos = autoEvents.map(e => {
       const cfg = AUTO_EVENT_CONFIG[e.event_type];
@@ -324,7 +322,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
               {freshAlerts.slice(0, 4).map(a => (
                 <li key={a.id}>
                   <Link
-                    href={hrefOf(a)}
+                    href={updateHrefOf(a)}
                     className="text-sm font-bold text-amber-900 dark:text-amber-100 hover:text-amber-700 dark:hover:text-amber-300 hover:underline leading-snug"
                   >
                     {a.title}
@@ -418,21 +416,19 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
 
         {/* Lead story */}
         {showLead && leadStory && (
-          <Link href={hrefOf(leadStory)} className="block mb-8 group">
-            <article className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
+          <article className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700">
               {leadStory.image && (
-                <div className="relative w-full h-52 sm:h-72">
-                  <Image
-                    src={leadStory.image}
-                    alt={leadStory.title || 'صورة الخبر'}
-                    fill
-                    priority
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 768px"
-                  />
-                </div>
+                <ZoomableImage
+                  src={leadStory.image}
+                  alt={leadStory.title || 'صورة الخبر'}
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  priority
+                  hint="label"
+                  containerClassName="h-52 w-full rounded-none sm:h-72"
+                  imageClassName="object-contain"
+                />
               )}
-              <div className="p-5 sm:p-7">
+              <Link href={updateHrefOf(leadStory)} className="group block p-5 sm:p-7">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                     {CATEGORY_LABELS[leadStory.category] || CATEGORY_LABELS.general}
@@ -470,9 +466,8 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                     <ArrowLeft size={13} />
                   </span>
                 </div>
-              </div>
-            </article>
-          </Link>
+              </Link>
+          </article>
         )}
 
         {/* Feed */}
@@ -550,11 +545,8 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
 function NewsRow({ item }: { item: any }) {
   const excerpt = excerptOf(item, 140);
   return (
-    <Link
-      href={hrefOf(item)}
-      className="flex items-start gap-4 py-4 px-2 -mx-2 rounded-xl hover:bg-white dark:hover:bg-slate-900/60 transition-colors group"
-    >
-      <div className="flex-1 min-w-0">
+    <article className="-mx-2 flex items-start gap-4 rounded-xl px-2 py-4 transition-colors hover:bg-white dark:hover:bg-slate-900/60">
+      <Link href={updateHrefOf(item)} className="group min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2 mb-1.5">
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
             {CATEGORY_LABELS[item.category] || CATEGORY_LABELS.general}
@@ -572,19 +564,17 @@ function NewsRow({ item }: { item: any }) {
             {excerpt}
           </p>
         )}
-      </div>
+      </Link>
       {item.image && (
-        <div className="relative w-24 h-[72px] flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
-          <Image
-            src={item.image}
-            alt={item.title || 'صورة الخبر'}
-            fill
-            className="object-cover"
-            sizes="96px"
-          />
-        </div>
+        <ZoomableImage
+          src={item.image}
+          alt={item.title || 'صورة الخبر'}
+          sizes="96px"
+          containerClassName="h-[72px] w-24 flex-shrink-0 rounded-lg"
+          imageClassName="object-cover"
+        />
       )}
-    </Link>
+    </article>
   );
 }
 
@@ -593,7 +583,7 @@ function AlertRow({ item }: { item: any }) {
   const excerpt = excerptOf(item, 140);
   return (
     <Link
-      href={hrefOf(item)}
+      href={updateHrefOf(item)}
       className="flex items-start gap-3 py-4 px-2 -mx-2 rounded-xl hover:bg-rose-50/60 dark:hover:bg-rose-950/20 transition-colors group"
     >
       <div className="w-9 h-9 flex-shrink-0 rounded-lg bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center mt-0.5">

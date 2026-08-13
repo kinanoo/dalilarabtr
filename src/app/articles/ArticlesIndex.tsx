@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { FileText, ArrowLeft, ArrowRight, Calendar, Newspaper } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { SITE_CONFIG, getOgImage } from '@/lib/config';
+import { SITE_CONFIG } from '@/lib/config';
 import logger from '@/lib/logger';
 import { stripHtml } from '@/lib/stripHtml';
+import ZoomableImage from '@/components/ui/ZoomableImage';
 
 // Fresh list without hammering the DB on every hit. The bell's grouped
 // "تم نشر N مقالات" notification links here (see notify_on_new_content),
@@ -164,9 +164,8 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                             const revised = !fresh && isRevised(a.published_at, a.last_update);
                             const summary = stripHtml(a.intro) || stripHtml(a.excerpt);
                             return (
-                                <Link
+                                <article
                                     key={slug}
-                                    href={`/article/${slug}`}
                                     className="group relative bg-gradient-to-br from-white to-slate-50/60 dark:from-slate-900 dark:to-slate-950 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden"
                                 >
                                     <div
@@ -179,19 +178,16 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                                     />
 
                                     {hasImg && (
-                                        <div className="relative w-full h-40 overflow-hidden">
-                                            <Image
-                                                src={img as string}
-                                                alt={a.title}
-                                                fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            />
-                                            <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
-                                        </div>
+                                        <ZoomableImage
+                                            src={img as string}
+                                            alt={a.title}
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            containerClassName="h-40 w-full rounded-none"
+                                            imageClassName="object-cover"
+                                        />
                                     )}
 
-                                    <div className="p-6 flex flex-col flex-grow relative">
+                                    <Link href={`/article/${slug}`} className="p-6 flex flex-col flex-grow relative">
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 text-emerald-600 dark:text-emerald-300 group-hover:from-emerald-100 group-hover:to-teal-100 dark:group-hover:from-emerald-900/30 dark:group-hover:to-teal-900/20 group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-300 shadow-sm">
                                                 <FileText size={22} />
@@ -238,8 +234,8 @@ export default async function ArticlesIndex({ page }: { page: number }) {
                                                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                                             </span>
                                         </div>
-                                    </div>
-                                </Link>
+                                    </Link>
+                                </article>
                             );
                         })}
                     </div>
