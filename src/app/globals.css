@@ -119,7 +119,34 @@ h1, h2, h3, h4, h5, h6,
   overflow-wrap: break-word;
 }
 
-/* Headings */
+/* ── The reading palette ──────────────────────────────────────────────────
+   One ink, one accent. Body copy is near-black; the single accent (the brand
+   teal) is reserved for LINKS — the one colour that carries meaning, because
+   it tells the reader what is clickable. Everything else — headings, list
+   markers, quote rules, callout boxes — is ink or grey.
+
+   Why: article bodies had drifted into 72 different inline hues (green boxes,
+   orange warnings, blue notes, yellow highlights) so each guide looked like a
+   different website and the reader had no idea which colour meant anything.
+   Colour is now a signal, not decoration. */
+.prose-content {
+  --ink: #111827;          /* body + headings */
+  --ink-soft: #374151;     /* secondary text */
+  --muted: #6b7280;        /* captions, quote text */
+  --rule: #e5e7eb;         /* every border in the body */
+  --surface: #f9fafb;      /* every callout background */
+  --accent: #0f766e;       /* links ONLY */
+}
+html.dark .prose-content {
+  --ink: #f1f5f9;
+  --ink-soft: #cbd5e1;
+  --muted: #94a3b8;
+  --rule: #334155;
+  --surface: #1e293b;
+  --accent: #5eead4;
+}
+
+/* Headings — hierarchy by SIZE and WEIGHT, not by colour. */
 .tiptap h1, .prose-content h1 {
   font-size: 1.75rem;
   font-weight: 800;
@@ -129,9 +156,9 @@ h1, h2, h3, h4, h5, h6,
 }
 .tiptap h2, .prose-content h2 {
   font-size: 1.4rem;
-  font-weight: 700;
-  margin: 1.25rem 0 0.5rem;
-  color: #0d9488;
+  font-weight: 800;
+  margin: 1.6rem 0 0.5rem;
+  color: #0f172a;
   line-height: 1.4;
 }
 .tiptap h3, .prose-content h3 {
@@ -141,8 +168,10 @@ h1, h2, h3, h4, h5, h6,
   color: #1e293b;
   line-height: 1.4;
 }
+.prose-content h2 { color: var(--ink); }
+.prose-content h3 { color: var(--ink); }
 html.dark .tiptap h1, html.dark .prose-content h1 { color: #f1f5f9; }
-html.dark .tiptap h2, html.dark .prose-content h2 { color: #5eead4; }
+html.dark .tiptap h2 { color: #f1f5f9; }
 html.dark .tiptap h3, html.dark .prose-content h3 { color: #e2e8f0; }
 
 /* Paragraphs — generous bottom spacing + a tall line-height tuned for
@@ -197,6 +226,10 @@ html.dark .tiptap strong, html.dark .prose-content strong { color: #f8fafc; }
 html.dark .tiptap li::marker, html.dark .prose-content li::marker {
   color: #5eead4;
 }
+/* Public bodies: grey markers. A hundred teal bullets down a long guide is
+   noise; the words are the content. (The editor keeps its teal markers.) */
+.prose-content li::marker { color: #9ca3af; }
+html.dark .prose-content li::marker { color: #64748b; }
 
 /* Blockquote */
 .tiptap blockquote, .prose-content blockquote {
@@ -214,6 +247,60 @@ html.dark .tiptap blockquote, html.dark .prose-content blockquote {
   color: #94a3b8;
   background: rgba(20, 184, 166, 0.06);
 }
+.prose-content blockquote {
+  border-right-color: var(--rule);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+html.dark .prose-content blockquote {
+  border-right-color: var(--rule);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+/* ── Authored callout boxes ───────────────────────────────────────────────
+   The sanitizer strips every colour an author put on these (see sanitize.ts);
+   what survives is the SHAPE — padding, radius, border width. Here they all
+   receive the same skin, so a «مهم» box looks the same in every guide on the
+   site instead of green in one and orange in the next.
+
+   Matching by inline `padding` is deliberate: authored callouts always set it,
+   while structural wrappers (the image carousel) set `display` and are excluded. */
+.prose-content div[style*="padding"]:not([style*="display"]),
+.prose-content section[style*="padding"],
+.prose-content aside[style*="padding"],
+.prose-content p[style*="padding"] {
+  background: var(--surface) !important;
+  border-color: var(--rule) !important;
+  color: var(--ink-soft);
+  border-radius: 0.75rem;
+}
+/* Any border an author left behind resolves to the one rule colour…        */
+.prose-content [style*="border"]:not([style*="display"]) { border-color: var(--rule); }
+/* …EXCEPT the side rule (the classic «‌|‌ ملاحظة» bar), which is the author's
+   structural emphasis and survives in ink.
+   The doubled `.prose-content.prose-content` is load-bearing, not a typo: a
+   callout box carries BOTH `padding` and `border-right`, so it also matches the
+   box rule above whose `border-color: !important` scores (0,3,1) — one type
+   selector more than a plain `.prose-content [attr]:not([attr])` at (0,3,0).
+   Two !important declarations are settled by specificity, so without the extra
+   class the bar silently renders grey (measured, 2026-08-12). Doubling takes
+   this to (0,4,0) and it wins. Same trick as the leading-* fix further down. */
+.prose-content.prose-content [style*="border-right"]:not([style*="display"]) {
+  border-right-color: var(--ink) !important;
+}
+.prose-content.prose-content [style*="border-left"]:not([style*="display"]) {
+  border-left-color: var(--ink) !important;
+}
+/* Text inside a callout follows the body ink — never an inherited hue. */
+.prose-content div[style*="padding"] p,
+.prose-content div[style*="padding"] li,
+.prose-content div[style*="padding"] span,
+.prose-content section[style*="padding"] p,
+.prose-content aside[style*="padding"] p { color: inherit; }
+.prose-content div[style*="padding"] strong,
+.prose-content section[style*="padding"] strong,
+.prose-content aside[style*="padding"] strong { color: var(--ink); }
 
 /* Horizontal Rule */
 .tiptap hr, .prose-content hr {

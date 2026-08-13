@@ -317,17 +317,14 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
                 />
               ) : null}
 
-              {/* ✅ ملخص الإجراء — accent stripe on right (RTL) + gradient surface */}
+              {/* ✅ ملخص الإجراء — the article's own surface: white, one ink
+                  rule, no tint. */}
               <div
-                className="relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm scroll-mt-20"
+                className="relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm scroll-mt-20"
               >
-                <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500 opacity-80" />
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
-                  <Sparkles size={12} />
-                  نظرة سريعة
-                </span>
-                <h3 className="flex items-center text-lg lg:text-xl font-black text-gray-900 dark:text-white mb-4 gap-2">
-                  <Info className="text-emerald-500 flex-shrink-0" size={22} /> ملخص الإجراء
+                <span className="absolute top-0 right-0 h-full w-1 bg-slate-900 dark:bg-slate-300 opacity-80" />
+                <h3 className="flex items-center text-lg lg:text-xl font-black text-slate-900 dark:text-white mb-4 gap-2">
+                  <Info className="text-slate-400 dark:text-slate-500 flex-shrink-0" size={22} /> ملخص الإجراء
                 </h3>
 
                 {/* 👇 الجزء الظاهر دائماً - العنوان/المقدمة */}
@@ -356,42 +353,47 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
                   />
 
 
-                  {/* أهم الأوراق + الخطة السريعة — accent stripes per type */}
+                  {/* أهم الأوراق + الخطة السريعة.
+                      One neutral card style for both. These used to be a green
+                      card and a blue card with coloured rails, icons and number
+                      chips — four hues on one screen before the reader had read
+                      a word. Structure (heading, icon, numbers) does the work;
+                      colour is spent only where it means something. */}
                   <div className="grid grid-cols-1 gap-6">
-                    <div className="group relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-800 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5 hover:shadow-md hover:shadow-emerald-500/10 transition-shadow">
-                      <span className="absolute top-0 right-0 h-full w-1 bg-emerald-500 opacity-70" />
-                      <div className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 group-hover:rotate-3 transition-transform">
+                    <div className="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5">
+                      <span className="absolute top-0 right-0 h-full w-1 bg-slate-900 dark:bg-slate-300 opacity-80" />
+                      <div className="text-sm font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
                           <FileText size={16} />
                         </span>
                         أهم الأوراق
                       </div>
-                      <ul className="space-y-2 text-sm text-gray-700 dark:text-slate-300">
+                      <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                         {article.documents.map((doc, i) => (
                           <li key={i} className="flex gap-3">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 flex-shrink-0"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 mt-2 flex-shrink-0"></div>
                             <span className="leading-relaxed font-medium">{doc}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/40 dark:from-slate-800 dark:to-blue-950/20 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5 hover:shadow-md hover:shadow-blue-500/10 transition-shadow">
-                      <span className="absolute top-0 right-0 h-full w-1 bg-blue-500 opacity-70" />
-                      <div className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:rotate-3 transition-transform">
+                    <div className="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5">
+                      <span className="absolute top-0 right-0 h-full w-1 bg-slate-900 dark:bg-slate-300 opacity-80" />
+                      <div className="text-sm font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
                           <ListOrdered size={16} />
                         </span>
                         الخطة السريعة
                       </div>
-                      <ol className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
+                      <ol className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
                         {article.steps.map((step, i) => (
                           <li key={i} className="flex gap-3">
-                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-black flex-shrink-0 mt-0.5 shadow-sm shadow-blue-500/30 tabular-nums" dir="ltr">{i + 1}</span>
+                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-200 text-white dark:text-slate-900 text-xs font-black flex-shrink-0 mt-0.5 tabular-nums" dir="ltr">{i + 1}</span>
                             <div className="leading-relaxed flex-1 min-w-0">
-                              <div className="font-bold text-gray-900 dark:text-slate-100">{step.title}</div>
+                              <div className="font-bold text-slate-900 dark:text-slate-100">{step.title}</div>
                               {step.description && (
-                                <div className="mt-0.5 text-xs text-gray-600 dark:text-slate-400 leading-relaxed">{step.description}</div>
+                                <div className="mt-0.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{step.description}</div>
                               )}
                             </div>
                           </li>
@@ -400,11 +402,15 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
                     </div>
                   </div>
 
-                  {/* التنبيه المهم — accent stripe + gradient */}
+                  {/* التنبيه المهم — the ONE place red survives, because here it
+                      carries meaning: this is the sentence that costs the reader
+                      money or status if ignored. Restrained to the rule + icon
+                      over a neutral surface, so it reads as a warning rather
+                      than as one more coloured block among many. */}
                   {article.warning && (
-                    <div className="relative overflow-hidden mt-6 p-5 bg-gradient-to-br from-red-50 to-rose-50/50 dark:from-red-900/15 dark:to-rose-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl text-sm font-medium text-red-700 dark:text-red-300 flex gap-3 items-start">
-                      <span className="absolute top-0 right-0 h-full w-1 bg-red-500 opacity-70" />
-                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 shrink-0">
+                    <div className="relative overflow-hidden mt-6 p-5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 flex gap-3 items-start">
+                      <span className="absolute top-0 right-0 h-full w-1 bg-red-600" />
+                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 shrink-0">
                         <AlertTriangle size={18} />
                       </span>
                       <p className="leading-relaxed pt-1.5">{article.warning}</p>
@@ -418,47 +424,39 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
               {/* قد يهمك أيضاً — Mid-article related articles */}
               <InlineRelatedArticlesServer currentArticleId={slug} category={article.category} />
 
-              {/* التكلفة — accent stripe + light orb */}
+              {/* التكلفة — a figure, not a poster. The gradient slab with a
+                  yellow coin and a glowing orb competed with the article for
+                  attention; the number is what the reader came for, so it gets
+                  the emphasis (size + weight) and nothing else does. */}
               {article.fees && (
-                <div className="bg-gradient-to-br from-primary-800 via-primary-800 to-emerald-900 text-white p-5 lg:p-7 rounded-2xl shadow-xl shadow-primary-900/30 relative overflow-hidden">
-                  <span className="absolute top-0 right-0 h-full w-1.5 bg-white/25" />
-                  <span className="absolute -left-10 -top-10 w-40 h-40 bg-yellow-400/10 rounded-full blur-2xl pointer-events-none" />
-                  <div className="relative z-10 flex items-start gap-4">
-                    <div className="p-3 bg-white/15 backdrop-blur-sm rounded-2xl flex-shrink-0">
-                      <Coins size={28} className="text-yellow-400" />
+                <div className="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 lg:p-6 shadow-sm">
+                  <span className="absolute top-0 right-0 h-full w-1 bg-slate-900 dark:bg-slate-300 opacity-80" />
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex-shrink-0">
+                      <Coins size={24} />
                     </div>
                     <div className="min-w-0">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 backdrop-blur text-white/95 rounded-full text-[10px] font-black tracking-wider uppercase mb-1.5">
-                        رسوم رسمية
-                      </span>
-                      <h3 className="text-primary-100/85 text-sm mb-1 font-bold">التكلفة التقديرية</h3>
-                      <p className="text-xl lg:text-2xl font-black tracking-wide break-words">{article.fees}</p>
+                      <h3 className="text-slate-500 dark:text-slate-400 text-xs mb-1 font-bold tracking-wide">التكلفة التقديرية</h3>
+                      <p className="text-lg lg:text-xl font-black text-slate-900 dark:text-white break-words leading-relaxed">{article.fees}</p>
                     </div>
-                  </div>
-                  <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-4 translate-y-4 pointer-events-none">
-                    <Coins size={120} />
                   </div>
                 </div>
               )}
 
-              {/* النصائح الذهبية — RTL right accent + gradient */}
+              {/* النصائح — same neutral card as everything else. */}
               {article.tips.length > 0 && (
-                <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100/40 dark:from-amber-900/15 dark:to-amber-900/5 border border-amber-200 dark:border-amber-900/30 p-6 rounded-2xl">
-                  <span className="absolute top-0 right-0 h-full w-1 bg-gradient-to-b from-amber-400 to-amber-500 opacity-80" />
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-200/60 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full text-[11px] font-black tracking-wider uppercase mb-3">
-                    <Sparkles size={12} />
-                    خبراتنا
-                  </span>
-                  <h3 className="font-black text-amber-900 dark:text-amber-100 text-base lg:text-lg mb-4 flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-200/70 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
-                      <Lightbulb className="fill-amber-400 text-amber-500 flex-shrink-0" size={20} />
+                <div className="relative overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm">
+                  <span className="absolute top-0 right-0 h-full w-1 bg-slate-900 dark:bg-slate-300 opacity-80" />
+                  <h3 className="font-black text-slate-900 dark:text-white text-base lg:text-lg mb-4 flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                      <Lightbulb size={20} />
                     </span>
-                    نصائح ذهبية
+                    نصائح من خبرتنا
                   </h3>
                   <ul className="space-y-3">
                     {article.tips.map((tip, i) => (
-                      <li key={i} className="flex gap-3 text-amber-800 dark:text-amber-200 font-medium text-sm">
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-200/70 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-[10px] font-black flex-shrink-0 mt-0.5 tabular-nums" dir="ltr">{i + 1}</span>
+                      <li key={i} className="flex gap-3 text-slate-700 dark:text-slate-300 font-medium text-sm">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-900 dark:bg-slate-200 text-white dark:text-slate-900 text-[10px] font-black flex-shrink-0 mt-0.5 tabular-nums" dir="ltr">{i + 1}</span>
                         <span className="leading-relaxed">{tip}</span>
                       </li>
                     ))}

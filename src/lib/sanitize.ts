@@ -246,30 +246,46 @@ import sanitizeHtmlLib from 'sanitize-html';
 // script), javascript:, @import, behaviour:, and stray angle brackets.
 const SAFE_CSS_VALUE = /^(?!.*(?:url\(|expression|javascript:|@import|behaviou?r:|<|>))[#0-9a-z%.,()/\s_+-]+$/i;
 
-// Layout / visual CSS properties that article + page bodies legitimately use:
-// designed info-boxes (padding / border / background gradients), tables, and the
-// step-by-step image carousel (flex + scroll-snap). Without these whitelisted,
-// sanitize-html silently strips them and every styled box renders as bare text —
-// a site-wide visual regression. Each maps to SAFE_CSS_VALUE.
+// Layout CSS properties that article + page bodies legitimately use: designed
+// info-boxes (padding / borders), tables, and the step-by-step image carousel
+// (flex + scroll-snap). Without these whitelisted, sanitize-html silently
+// strips them and every styled box renders as bare text.
+//
+// ⚠ COLOUR IS DELIBERATELY ABSENT — see the note above `HTML_SANITIZE_OPTIONS`.
+// `background`, `background-image`, `border-color`, `box-shadow` and the
+// `color` / `background-color` entries were REMOVED on 2026-08-12: article
+// bodies had accumulated 1,783 inline colour values across 72 different hues,
+// so each guide arrived at the reader in its author's palette. Shape survives
+// (padding, radius, border width/style); the skin is the site's, applied once
+// in globals.css. Re-adding any colour property here re-opens that door.
 const SAFE_LAYOUT_PROPS = [
     'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
     'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
     'width', 'max-width', 'min-width', 'height', 'max-height', 'min-height', 'box-sizing',
     'display', 'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-basis', 'flex-grow', 'flex-shrink',
     'gap', 'row-gap', 'column-gap', 'align-items', 'align-self', 'justify-content', 'justify-items', 'order',
-    'border', 'border-top', 'border-right', 'border-bottom', 'border-left',
-    'border-width', 'border-style', 'border-color',
+    'border-width', 'border-style',
     'border-radius', 'border-top-left-radius', 'border-top-right-radius',
     'border-bottom-left-radius', 'border-bottom-right-radius',
-    'background', 'background-image', 'background-position', 'background-size', 'background-repeat',
+    'background-position', 'background-size', 'background-repeat',
     'overflow', 'overflow-x', 'overflow-y', 'scroll-snap-type', 'scroll-snap-align', '-webkit-overflow-scrolling',
     'position', 'top', 'right', 'bottom', 'left', 'inset', 'inset-inline-start', 'inset-inline-end', 'z-index',
-    'box-shadow', 'opacity', 'line-height', 'font-size', 'font-style', 'letter-spacing',
+    'opacity', 'line-height', 'font-size', 'font-style', 'letter-spacing',
     'white-space', 'word-break', 'overflow-wrap', 'text-overflow', 'list-style', 'list-style-type',
     'border-collapse', 'border-spacing', 'vertical-align', 'table-layout', 'caption-side',
 ];
 const SAFE_LAYOUT_STYLES: Record<string, RegExp[]> = Object.fromEntries(
     SAFE_LAYOUT_PROPS.map((p) => [p, [SAFE_CSS_VALUE]]),
+);
+
+// Border shorthands keep WIDTH + STYLE and drop anything with a colour token —
+// `border-right: 4px solid #ea580c` would otherwise smuggle an accent hue back
+// in through the shorthand. The surviving `border-right: 4px solid` inherits
+// its colour from the neutral rule in globals.css.
+const BORDER_NO_COLOUR = /^\s*(?:0|[0-9.]+(?:px|rem|em))\s+(?:solid|dashed|dotted|double|none)\s*$/i;
+const SAFE_BORDER_STYLES: Record<string, RegExp[]> = Object.fromEntries(
+    ['border', 'border-top', 'border-right', 'border-bottom', 'border-left']
+        .map((p) => [p, [BORDER_NO_COLOUR]]),
 );
 
 const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
@@ -311,16 +327,38 @@ const HTML_SANITIZE_OPTIONS: sanitizeHtmlLib.IOptions = {
     allowedStyles: {
         '*': {
             'text-align': [/^left$/, /^right$/, /^center$/, /^justify$/, /^start$/, /^end$/],
-            'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*\d+%?(\s*,\s*\d+%?){2}\s*\)$/, /^[a-z]+$/i],
-            'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*\d+%?(\s*,\s*\d+%?){2}\s*\)$/, /^[a-z]+$/i],
             'font-weight': [/^(normal|bold|bolder|lighter|\d{3})$/],
             'text-decoration': [/^(underline|line-through|none|overline)$/],
-            // Safe layout + visual properties (designed boxes, tables, the
-            // image carousel) — values constrained by SAFE_CSS_VALUE.
+            // Layout only — colour is applied by the site, never by the body.
             ...SAFE_LAYOUT_STYLES,
+            ...SAFE_BORDER_STYLES,
         },
     },
     transformTags: {
+        // Runs BEFORE style filtering: strip the colour token out of border
+        // shorthands so the declaration survives as width+style. Without this,
+        // `border-right: 4px solid #f59e0b` fails BORDER_NO_COLOUR and the whole
+        // side rule vanishes — losing the author's structural emphasis along
+        // with the hue. The surviving `border-right: 4px solid` picks up the
+        // site's neutral rule colour from globals.css.
+        '*': (tagName, attribs) => {
+            if (attribs.style && /border/i.test(attribs.style)) {
+                attribs.style = attribs.style.replace(
+                    /(border(?:-top|-right|-bottom|-left)?\s*:)([^;]*)/gi,
+                    (_m, prop: string, value: string) => {
+                        const cleaned = value
+                            .replace(/#[0-9a-f]{3,8}\b/gi, ' ')
+                            .replace(/\b(?:rgba?|hsla?)\([^)]*\)/gi, ' ')
+                            .replace(/\b(?:currentcolor|transparent|inherit|[a-z]{3,20})\b/gi, (w) =>
+                                /^(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden|thin|medium|thick)$/i.test(w) ? w : ' ')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+                        return prop + (cleaned ? ' ' + cleaned : ' 0');
+                    },
+                );
+            }
+            return { tagName, attribs };
+        },
         a: (tagName, attribs) => {
             // Add rel=noopener if target=_blank is present without rel (safety net;
             // TipTap link extension sets both, but pasted/imported HTML may not).
