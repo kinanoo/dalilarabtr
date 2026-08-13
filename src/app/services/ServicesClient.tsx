@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Briefcase, X, LayoutGrid, List as ListIcon, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, Sparkles, Stethoscope, Home, Truck, GraduationCap, HelpCircle, RefreshCw, CircleAlert } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, Sparkles, Stethoscope, Home, Truck, GraduationCap, HelpCircle, RefreshCw, CircleAlert } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
 import CategoryFilterDialog from '@/components/services/CategoryFilterDialog';
 import ProviderCard from '@/components/services/ProviderCard';
-import ProviderRow from '@/components/services/ProviderRow';
 import AddServiceBanner from '@/components/services/AddServiceBanner';
 import ServiceProviderInvite from '@/components/services/ServiceProviderInvite';
 import {
@@ -155,7 +154,6 @@ export default function ServicesClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'recommended' | 'rating' | 'newest' | 'name'>('recommended');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
@@ -315,16 +313,6 @@ export default function ServicesClient({
     setDebouncedSearch('');
     setPage(1);
   };
-
-  // Grid/list preference is cosmetic, so it is restored after the first paint.
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const saved = localStorage.getItem('services_view');
-      if (saved === 'list' || saved === 'grid') setView(saved);
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
-  const changeView = (v: 'grid' | 'list') => { setView(v); localStorage.setItem('services_view', v); };
 
   const activeCategoryLabel = activeCategory === 'all'
     ? ''
@@ -561,7 +549,7 @@ export default function ServicesClient({
       {/* Results */}
       <section id="svc-results" className="mx-auto w-full max-w-7xl scroll-mt-4 px-4 pb-8 pt-4 md:pb-10">
 
-        {/* Results count + view toggle + clear filters */}
+        {/* Results count, sorting, and filters */}
         {(!loading || services.length > 0) && (
           <div className="relative z-20 mb-3 overflow-hidden rounded-lg border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur md:sticky md:top-[52px] md:p-3 dark:border-slate-800 dark:bg-slate-900/95">
             {refreshing && (
@@ -624,14 +612,6 @@ export default function ServicesClient({
                   <option value="newest">الأحدث</option>
                   <option value="name">أبجديّاً</option>
                 </select>
-                <div className="inline-flex h-10 items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
-                  <button onClick={() => changeView('grid')} aria-label="عرض شبكة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'grid' ? 'bg-emerald-700 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
-                    <LayoutGrid size={16} />
-                  </button>
-                  <button onClick={() => changeView('list')} aria-label="عرض قائمة" className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${view === 'list' ? 'bg-emerald-700 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
-                    <ListIcon size={16} />
-                  </button>
-                </div>
                 </>
               )}
             </div>
@@ -710,7 +690,7 @@ export default function ServicesClient({
           // height during the client fetch — otherwise the browser's scroll
           // restoration on refresh overshoots a short page and jumps to the
           // bottom. Also nicer than a lone spinner.
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {Array.from({ length: 15 }).map((_, i) => (
               <div key={i} className="animate-pulse rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex items-start gap-3">
@@ -748,19 +728,11 @@ export default function ServicesClient({
           </div>
         ) : (
           <>
-            {view === 'grid' ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {services.map((provider) => (
-                  <ProviderCard key={provider.id} p={provider} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3 max-w-4xl mx-auto">
-                {services.map((provider) => (
-                  <ProviderRow key={provider.id} p={provider} />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {services.map((provider) => (
+                <ProviderCard key={provider.id} p={provider} />
+              ))}
+            </div>
 
             {/* Pagination — keeps a 50-per-city list to a few pages */}
             {totalPages > 1 && (

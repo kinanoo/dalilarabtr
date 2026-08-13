@@ -55,10 +55,12 @@ export default function ContactButtons({
     p,
     compact = false,
     subtle = false,
+    showCompactLabel = false,
 }: {
     p: ProviderCardData;
     compact?: boolean;
     subtle?: boolean;
+    showCompactLabel?: boolean;
 }) {
     const hasWhatsApp = isValidExplicitWhatsApp(p.whatsapp);
     return (
@@ -71,7 +73,8 @@ export default function ContactButtons({
                 onClick={() => trackContact(p, 'whatsapp')}
                 className={`${compact ? 'h-10 px-3 sm:px-4' : 'flex-1 py-2.5'} ${subtle ? 'border border-slate-200 bg-white text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-950/30' : 'bg-emerald-700 text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-800'} inline-flex items-center justify-center gap-1.5 rounded-xl text-xs font-black transition-all active:scale-95`}
             >
-                <MessageCircle size={15} /><span className={compact ? 'hidden sm:inline' : ''}>واتساب</span>
+                <MessageCircle size={15} />
+                <span className={compact && !showCompactLabel ? 'hidden sm:inline' : ''}>واتساب</span>
             </DirectWhatsAppLink>
             )}
             {p.phone && (
