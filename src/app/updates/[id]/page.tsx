@@ -109,14 +109,31 @@ export async function generateMetadata(
     // Pre-stream notFound() → real HTTP 404 (see codes/[code] note).
     if (!data) notFound();
 
+    const canonicalUrl = `${SITE_CONFIG.siteUrl}/updates/${id}`;
+    const description = plainTextExcerpt(data.summary || data.content, 200) || data.title;
+    const socialImage = getOgImage(data.image, {
+        title: data.title,
+        category: 'أخبار وتحديثات',
+    });
+
     return {
         title: data.title,
         description: plainTextExcerpt(data.summary || data.content, 160) || data.title,
-        alternates: { canonical: `/updates/${id}` },
+        alternates: { canonical: canonicalUrl },
         openGraph: {
             title: data.title,
-            description: plainTextExcerpt(data.summary || data.content, 200),
-            images: [{ url: getOgImage(undefined, { title: data.title, category: 'أخبار وتحديثات' }), width: 1200, height: 630, alt: data.title }],
+            description,
+            type: 'article',
+            url: canonicalUrl,
+            images: [{ url: socialImage, alt: data.title }],
+            publishedTime: toISODate(data.created_at || data.date || ''),
+            modifiedTime: toISODate(data.date || data.created_at || ''),
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: data.title,
+            description,
+            images: [socialImage],
         },
     };
 }
