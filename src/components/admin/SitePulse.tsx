@@ -408,7 +408,7 @@ export default function SitePulse() {
                             {insights?.tracking_since && (
                                 <p className="flex items-start gap-1.5 text-[10px] text-slate-400 dark:text-slate-400 leading-relaxed">
                                     <Info size={12} className="shrink-0 mt-0.5" />
-                                    <span>«العائدون» = زوّار ظهروا في يومين مختلفين على الأقل (عادوا فعلاً). التتبّع الدقيق للزائر بدأ {insights.tracking_since}؛ لذلك يرتفع رقم العائدين تدريجياً كلما تراكمت الأيام.</span>
+                                    <span>«الزوّار» و«المشاهدات» تشمل كل من زار الموقع، بموافقة على التتبّع أو بدونها — بمفتاح مجهول يتبدّل يومياً ولا يُخزَّن على جهاز أحد. أمّا «العائدون» (ظهروا في يومين مختلفين) فيقتصر على من وافق، لأن معرفة عودة الشخص تتطلّب تعرّفاً عليه عبر الأيام. التتبّع الدقيق للزائر بدأ {insights.tracking_since}.</span>
                                 </p>
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
