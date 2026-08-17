@@ -6,7 +6,8 @@
  * SitePulse answers "how is the site doing" with one number for everything.
  * This answers the question that number can't: the owner published a news item
  * this morning — did anyone read it? It lists the newest articles, news and
- * services with per-item readers today, readers this week, and lifetime views.
+ * services with one intentionally simple number: how many people entered each
+ * item today or during the last seven days.
  *
  * One RPC call returns the whole panel (site totals + the item list). The
  * Supabase quota is finite and this panel sits under a dashboard the owner
@@ -14,20 +15,15 @@
  * it loads once and refreshes on demand. Publishing is not a per-30-seconds
  * event; a manual refresh button matches how the data actually changes.
  *
- * Honest numbers, deliberately:
- *   • readers today / this week are TRUE unique readers from raw events, and
- *     include visitors who never accepted tracking (cookieless anon_key).
- *   • lifetime is VIEWS, not readers. Raw events are pruned at 45 days, so
- *     deduplicating one person across months is impossible after the fact.
- *     Summing daily uniques would give "reader-days" dressed up as readers —
- *     a number that looks precise and isn't. We show what we can defend.
+ * The displayed number is a true unique visitor count from raw events and also
+ * includes cookieless visits. Repeat opens by the same person do not inflate it.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-    Eye, Users, RefreshCw, FileText, Newspaper, Store, ArrowUpRight,
-    BarChart3, Info,
+    Users, RefreshCw, FileText, Newspaper, Store, ArrowUpRight,
+    BarChart3, Trophy,
 } from 'lucide-react';
 
 type Kind = 'article' | 'update' | 'service';
@@ -37,21 +33,12 @@ interface Item {
     title: string | null;
     path: string;
     published_at: string | null;
-    views_today: number | string;
     readers_today: number | string;
-    views_week: number | string;
     readers_week: number | string;
-    views_total: number | string;
-    first_day: string | null;
 }
 interface SiteTotals {
-    views_today?: number | string;
     readers_today?: number | string;
-    views_week?: number | string;
     readers_week?: number | string;
-    views_total?: number | string;
-    pages_tracked?: number | string;
-    tracking_since?: string | null;
 }
 interface Payload { site?: SiteTotals; items?: Item[] }
 
@@ -108,18 +95,14 @@ export default function ContentPerformance() {
     const items = (data?.items ?? []).filter((i) => kind === 'all' || i.kind === kind);
 
     const readersKey = range === 'today' ? 'readers_today' : 'readers_week';
-    const viewsKey   = range === 'today' ? 'views_today'   : 'views_week';
-
     // Ranked by the selected window so "what worked today" is the top row —
     // the newest item is not always the one being read.
     const ranked = [...items].sort((a, b) => num(b[readersKey]) - num(a[readersKey]));
     const max = Math.max(1, ...ranked.map((i) => num(i[readersKey])));
 
     const totals = [
-        { label: 'قرّاء اليوم',        value: fmt(site.readers_today), sub: 'شخص فريد',        icon: Users, cls: 'from-blue-500 to-cyan-600' },
-        { label: 'مشاهدات اليوم',      value: fmt(site.views_today),   sub: 'صفحة',            icon: Eye,   cls: 'from-violet-500 to-purple-600' },
-        { label: 'قرّاء آخر 7 أيام',   value: fmt(site.readers_week),  sub: 'شخص فريد',        icon: Users, cls: 'from-emerald-500 to-teal-600' },
-        { label: 'إجمالي المشاهدات',   value: fmt(site.views_total),   sub: site.tracking_since ? `منذ ${site.tracking_since}` : 'كل الصفحات', icon: BarChart3, cls: 'from-amber-500 to-orange-600' },
+        { label: 'دخلوا اليوم',       value: fmt(site.readers_today), icon: Users, cls: 'from-blue-500 to-cyan-600' },
+        { label: 'دخلوا آخر 7 أيام',  value: fmt(site.readers_week),  icon: Users, cls: 'from-emerald-500 to-teal-600' },
     ];
 
     return (
@@ -127,7 +110,7 @@ export default function ContentPerformance() {
             <div className="flex items-center justify-between gap-2">
                 <h2 className="text-[11px] font-black text-blue-600 dark:text-blue-400 flex items-center gap-1.5 tracking-[0.2em] uppercase">
                     <BarChart3 size={13} />
-                    ماذا قرأ الناس — لكل منشور على حدة
+                    المنشورات الأقوى
                 </h2>
                 <button
                     onClick={() => load(true)}
@@ -139,8 +122,8 @@ export default function ContentPerformance() {
             </div>
 
             {loading ? (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    {Array.from({ length: 2 }).map((_, i) => (
                         <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
                     ))}
                 </div>
@@ -156,7 +139,7 @@ export default function ContentPerformance() {
             ) : (
                 <>
                     {/* Site-wide totals — the context that makes one item's number readable. */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                         {totals.map((c) => {
                             const Icon = c.icon;
                             return (
@@ -167,7 +150,6 @@ export default function ContentPerformance() {
                                     </span>
                                     <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums leading-none">{c.value}</div>
                                     <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300 mt-1">{c.label}</div>
-                                    <div className="text-[10px] text-slate-400">{c.sub}</div>
                                 </div>
                             );
                         })}
@@ -205,11 +187,10 @@ export default function ContentPerformance() {
                             <p className="text-[12px] text-slate-400 p-6 text-center">لا منشورات في هذا التصنيف بعد.</p>
                         ) : (
                             <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {ranked.map((it) => {
+                                {ranked.map((it, index) => {
                                     const meta = KIND[it.kind];
                                     const Icon = meta?.icon ?? FileText;
                                     const readers = num(it[readersKey]);
-                                    const views = num(it[viewsKey]);
                                     return (
                                         <li key={it.path} className="p-3 sm:p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                                             <div className="flex items-start gap-3">
@@ -231,6 +212,11 @@ export default function ContentPerformance() {
                                                         <span className="text-[10px] font-bold text-slate-400 shrink-0">
                                                             {meta?.label} · نُشر {since(it.published_at)}
                                                         </span>
+                                                        {index < 3 && readers > 0 && (
+                                                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 text-[9.5px] font-black text-amber-700 dark:text-amber-300">
+                                                                <Trophy size={10} /> رقم {index + 1}
+                                                            </span>
+                                                        )}
                                                     </div>
 
                                                     {/* Proportion bar, scaled to the best performer in this window. */}
@@ -242,19 +228,9 @@ export default function ContentPerformance() {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-3 sm:gap-4 shrink-0 text-left">
-                                                    <div className="min-w-[3.2rem]">
-                                                        <div className="text-base font-black text-slate-900 dark:text-white tabular-nums leading-none">{fmt(readers)}</div>
-                                                        <div className="text-[9.5px] font-bold text-slate-500 dark:text-slate-400">قارئ</div>
-                                                    </div>
-                                                    <div className="min-w-[3.2rem]">
-                                                        <div className="text-base font-black text-slate-500 dark:text-slate-400 tabular-nums leading-none">{fmt(views)}</div>
-                                                        <div className="text-[9.5px] font-bold text-slate-400">مشاهدة</div>
-                                                    </div>
-                                                    <div className="min-w-[3.6rem] hidden sm:block">
-                                                        <div className="text-base font-black text-amber-600 dark:text-amber-400 tabular-nums leading-none">{fmt(it.views_total)}</div>
-                                                        <div className="text-[9.5px] font-bold text-slate-400">إجمالاً</div>
-                                                    </div>
+                                                <div className="min-w-[4.25rem] shrink-0 rounded-xl bg-blue-50 dark:bg-blue-900/20 px-2.5 py-2 text-center">
+                                                    <div className="text-lg font-black text-blue-700 dark:text-blue-300 tabular-nums leading-none">{fmt(readers)}</div>
+                                                    <div className="mt-1 text-[10px] font-black text-blue-600 dark:text-blue-400">دخلوا</div>
                                                 </div>
                                             </div>
                                         </li>
@@ -264,15 +240,8 @@ export default function ContentPerformance() {
                         )}
                     </div>
 
-                    {/* dark:text-slate-400 not -500: on the dark ground the
-                        darker grey loses contrast — pinned by paletteContrast. */}
-                    <p className="flex items-start gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                        <Info size={12} className="shrink-0 mt-0.5" />
-                        <span>
-                            «قارئ» = شخص فريد فعلاً، ويشمل من لم يوافق على التتبّع (مفتاح مجهول يتبدّل يومياً، لا يُخزَّن على جهاز أحد).
-                            و«إجمالاً» عدد <strong>مشاهدات</strong> لا أشخاص: الأحداث الخام تُحذف بعد 45 يوماً، فدمج الشخص نفسه عبر شهور صار مستحيلاً — وجمع الأيام كان سيعطي «قارئ-يوم» بثوب قارئ.
-                            الترتيب بحسب النافذة المختارة لا بتاريخ النشر، فالأحدث ليس دائماً الأكثر قراءةً.
-                        </span>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                        كل شخص يُحسب مرة واحدة ضمن المدة المختارة، والمنشورات مرتبة من الأقوى إلى الأضعف.
                     </p>
                 </>
             )}
