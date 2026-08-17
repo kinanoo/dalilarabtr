@@ -119,6 +119,12 @@ export async function generateMetadata(
     return {
         title: data.title,
         description: plainTextExcerpt(data.summary || data.content, 160) || data.title,
+        keywords: [
+            data.title,
+            CATEGORY_LABELS[data.category] || 'أخبار تركيا',
+            'أخبار العرب في تركيا',
+            'أخبار السوريين في تركيا',
+        ],
         alternates: { canonical: canonicalUrl },
         openGraph: {
             title: data.title,
@@ -174,13 +180,15 @@ export default async function UpdateDetailPage(
             const relatedResponse = await retrySupabaseQuery('related updates', () =>
                 client
                     .from('updates')
-                    .select('id, title, type, date, image')
+                    .select('id, title, type, date, image, category, summary')
                     .eq('active', true)
                     .neq('id', id)
                     .order('date', { ascending: false })
-                    .limit(4),
+                    .limit(8),
             );
-            relatedUpdates = relatedResponse.data;
+            relatedUpdates = (relatedResponse.data || [])
+                .sort((a, b) => Number(b.category === update.category) - Number(a.category === update.category))
+                .slice(0, 4);
         }
     } catch (error) {
         logger.warn('related updates failed', error);
@@ -203,8 +211,11 @@ export default async function UpdateDetailPage(
     const articleSchema = {
         '@context': 'https://schema.org',
         '@type': update.type === 'news' ? 'NewsArticle' : 'Article',
+        url: updateUrl,
         headline: update.title,
         description,
+        articleSection: CATEGORY_LABELS[update.category] || 'أخبار تركيا',
+        isAccessibleForFree: true,
         datePublished: publishedISO,
         dateModified: modifiedISO,
         image: {
@@ -228,6 +239,7 @@ export default async function UpdateDetailPage(
             '@type': 'WebPage',
             '@id': updateUrl,
         },
+        thumbnailUrl: imageUrl,
         inLanguage: 'ar',
     };
 
@@ -291,6 +303,11 @@ export default async function UpdateDetailPage(
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.5] text-balance">
                         {bindNumbersToWords(update.title)}
                     </h1>
+                    {update.summary && (
+                        <p dir="auto" className="mt-4 max-w-3xl text-sm leading-[1.9] text-white/75 sm:text-base [unicode-bidi:plaintext]">
+                            {stripHtml(update.summary)}
+                        </p>
+                    )}
                 </div>
             </div>
 

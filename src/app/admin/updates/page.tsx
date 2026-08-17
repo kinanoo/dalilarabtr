@@ -2,7 +2,6 @@
 
 import NewsManager from '@/components/admin/NewsManager';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
-import AdminCard from '@/components/admin/AdminCard';
 import { Newspaper } from 'lucide-react';
 
 export default function UpdatesAdminPage() {
@@ -16,9 +15,7 @@ export default function UpdatesAdminPage() {
         eyebrow="أخبار"
       />
 
-      <AdminCard theme="amber">
-        <NewsManager />
-      </AdminCard>
+      <NewsManager />
     </div>
   );
 }
