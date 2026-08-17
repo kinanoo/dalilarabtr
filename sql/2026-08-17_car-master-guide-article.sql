@@ -81,17 +81,25 @@ $fn$;
 COMMENT ON FUNCTION public.strip_dead_article_links(text) IS
   'تُزيل من متن HTML أي رابط /article/<slug> لا يقابله مقال معتمَد، وتُبقي نصّ الرابط. استعملها على كل متن قبل الإدراج بدل الاعتماد على لقطة الـcorpus.';
 
--- ─── 1) المقال ──────────────────────────────────────────────────────────────
-INSERT INTO public.articles (
-  id, slug, title, category, intro, details, steps, documents, tips,
-  fees, warning, source, last_update, status, is_active
-) VALUES (
-  'car-in-turkey-complete-guide-2026',
-  'car-in-turkey-complete-guide-2026',
-  $t$سيارتك في تركيا 2026: التأمين والمخالفات والطرق السريعة والمعاينة — الدليل الجامع بالأرقام الرسمية$t$,
-  $g$المرور والسيارات$g$,
-  $i$خريطة واحدة لكل ما يخصّ سيارتك في تركيا: ما هو إلزامي وما هو اختياري، وكم يكلّف في 2026، ومن أين تستعلم وتدفع رسمياً. مع تصحيح خطأين شائعين: مهلة خصم المخالفات صارت شهراً لا 15 يوماً، وحامل الكملك يدفع ضرائب السيارة كالمواطن التركي تماماً.$i$,
-  $c$<p>امتلاك سيارة في تركيا ليس معاملةً واحدة، بل <strong>خمس التزامات متوازية</strong> لكلٍّ منها موعدٌ وجهةٌ وغرامةٌ مختلفة: التأمين الإلزامي، والضريبة السنوية (MTV)، والمعاينة الدورية، ورسوم الطرق (HGS)، والمخالفات. من يعرف الخمسة يدفع أقلّ ممّن يكتشفها واحدةً واحدةً عند نقطة تفتيش.</p>
+-- ─── 1) الأعمدة الفعلية للجدول — تُطبع كي يتوقّف التخمين ────────────────────
+-- سبب فشل أول تشغيل لهذا الملف: بُنيت قائمة الأعمدة على sql/supabase_schema.sql
+-- وهو ملفٌ قديم يذكر is_active — وهو عمود غير موجود في القاعدة. الدرس أن
+-- المخطّط المكتوب في المستودع ليس مصدر حقيقة، تماماً كلقطة الـcorpus.
+-- فالمطبوعة أدناه تُثبّت الحقيقة في السجل لكل ملف قادم.
+SELECT string_agg(column_name || ':' || data_type, ' · ' ORDER BY ordinal_position)
+       AS أعمدة_جدول_المقالات
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'articles';
+
+-- ─── 2) المقال — إدراج يتكيّف مع الأعمدة الموجودة فعلاً ────────────────────
+-- الحقول الإلزامية وحدها في الإدراج، وكل حقل إضافي يُضبط بعده **إن وُجد عموده**.
+-- فعمود مفقود يُتخطّى بدل أن يُسقط المقال كلَّه — وهو ما حدث بـis_active.
+DO $art$
+DECLARE
+  v_slug     text := 'car-in-turkey-complete-guide-2026';
+  v_title    text := $t$سيارتك في تركيا 2026: التأمين والمخالفات والطرق السريعة والمعاينة — الدليل الجامع بالأرقام الرسمية$t$;
+  v_cat      text := $g$المرور والسيارات$g$;
+  v_details  text := $c$<p>امتلاك سيارة في تركيا ليس معاملةً واحدة، بل <strong>خمس التزامات متوازية</strong> لكلٍّ منها موعدٌ وجهةٌ وغرامةٌ مختلفة: التأمين الإلزامي، والضريبة السنوية (MTV)، والمعاينة الدورية، ورسوم الطرق (HGS)، والمخالفات. من يعرف الخمسة يدفع أقلّ ممّن يكتشفها واحدةً واحدةً عند نقطة تفتيش.</p>
 
 <p>هذه الصفحة خريطةٌ لا شرحٌ مفصّل: تعطيك الرقم والموعد والبوابة الرسمية، وتحيلك إلى الشرح المفصّل عند كل بند.</p>
 
@@ -203,54 +211,98 @@ INSERT INTO public.articles (
 <li><strong>شراء بلا فحص خبرة وبلا استعلام TRAMER.</strong> الحوادث المُصلَحة لا تُرى بالعين.</li>
 </ol>
 
-<p><strong>ملاحظة تحريرية:</strong> الأرقام أعلاه هي المعلنة لعام 2026 وتُراجَع سنوياً بمعدّل إعادة التقييم، وبعضها يختلف بحسب نوع المركبة. المرجع النافذ دائماً هو ورقة التبليغ أو البوابة الرسمية، لا هذه الصفحة. نحدّثها مع كل تعديل رسمي. — هيئة تحرير دليل العرب</p>$c$,
-  ARRAY[
-    $s1$تحقّق أولاً من الأساسيات الثلاثة لسيارتك مجاناً: أرسل TRAFIK ورقم لوحتك إلى 5664 لمعرفة إن كان التأمين سارياً، وافتح e-Devlet للمخالفات والسيارات المسجّلة باسمك، وwebihlaltakip.kgm.gov.tr لمخالفات الطرق.$s1$,
-    $s2$سدّد أي مخالفة قائمة خلال شهر من تاريخ التبليغ لتدفع 75% فقط. تاريخ التبليغ هو المرجع لا تاريخ المخالفة.$s2$,
-    $s3$افتح dijital.gib.gov.tr وتحقّق من دَين MTV. القسط الأول حتى 31 كانون الثاني والثاني في تموز — والدَين يعطّل نقل الملكية والمعاينة.$s3$,
-    $s4$اعرف موعد معاينتك القادم: أول معاينة بعد 3 سنوات من التسجيل ثم كل سنتين. احجز موعد TÜVTÜRK مسبقاً، وميزانيتها نحو 4,110 ليرة في 2026.$s4$,
-    $s5$اشحن شارة HGS قبل أي سفر طويل، واستعلم بعد الرحلة. الدفع خلال 15 يوماً يُلغي الغرامة كاملةً.$s5$,
-    $s6$قبل شراء أي سيارة مستعملة: فحص خبرة (ekspertiz) + استعلام سجلّ الأضرار TRAMER عبر SBM + التأكّد من خلوّها من دَين أو حجز، ثم النوتر — واسأل عن رسم النوتر مسبقاً فهو نسبيّ على سعر البيع منذ 2026.$s6$
-  ],
-  ARRAY[
-    $d1$رخصة السيارة (Araç Ruhsatı)$d1$,
-    $d2$بطاقة الهوية أو الكملك أو الإقامة$d2$,
-    $d3$الرقم الضريبي (Vergi Numarası)$d3$,
-    $d4$رخصة قيادة سارية معترف بها$d4$,
-    $d5$بوليصة تأمين المرور الإلزامي$d5$,
-    $d6$تقرير المعاينة الدورية الساري$d6$
-  ],
-  ARRAY[
-    $p1$خصم 25% على المخالفة متاح خلال شهر من التبليغ — لا 15 يوماً كما يشيع.$p1$,
-    $p2$البوليصة التي لا تظهر في SBM غير موجودة. تحقّق بعد أي شراء تأمين.$p2$,
-    $p3$عبور HGS واحد منسيّ 45 يوماً يكلّفك خمسة أمثال رسمه.$p3$,
-    $p4$دَين MTV أو مخالفة قائمة قد يعطّل نقل الملكية والمعاينة — سدّد قبل أن تحتاج المعاملة.$p4$,
-    $p5$رسم النوتر لبيع السيارات صار نسبياً على سعر البيع منذ 2026 لا ثابتاً — اسأل قبل الموعد.$p5$
-  ],
-  $f$أرقام 2026: قيادة بلا تأمين إلزامي 1,246 ليرة + منع السيارة من السير · بلا معاينة 2,717 · الهاتف أثناء القيادة 2,719 · الإشارة الحمراء 2,719 · السرعة حتى 30% 2,719 وحتى 50% 5,662 · الكحول 11,632 ثم 14,583 ثم 23,442 مع إلغاء الرخصة. المعاينة الدورية نحو 3,288 + 460 للعادم ≈ 4,110. خصم 25% عند الدفع خلال شهر من التبليغ، وغرامة تأخير نحو 3.7% شهرياً.$f$,
-  $w$الأرقام معلنة لعام 2026 وتُراجَع سنوياً بمعدّل إعادة التقييم، وتختلف بحسب نوع المركبة. المرجع النافذ هو ورقة التبليغ أو البوابة الرسمية لا هذه الصفحة. وتنبيه خاصّ: المواقع التي تطلب بيانات رخصة سيارتك لعرض أسعار تأمين هي وسطاء تجاريون؛ للتحقّق من وجود بوليصة استعمل e-Devlet أو 5664 أو SBM مجاناً.$w$,
-  $src$وزارة الداخلية التركية (تمديد مهلة الخصم إلى شهر) · المديرية العامة للطرق KGM · مركز معلومات ومراقبة التأمين SBM · رئاسة الإيرادات GİB · TÜVTÜRK · وكالة الأناضول — خطّ التحقّق (نفي ادّعاء الإعفاء الضريبي للسوريين)$src$,
-  '2026-08-17',
-  'approved',
-  true
-)
-ON CONFLICT (id) DO UPDATE SET
-  slug        = EXCLUDED.slug,
-  title       = EXCLUDED.title,
-  category    = EXCLUDED.category,
-  intro       = EXCLUDED.intro,
-  details     = EXCLUDED.details,
-  steps       = EXCLUDED.steps,
-  documents   = EXCLUDED.documents,
-  tips        = EXCLUDED.tips,
-  fees        = EXCLUDED.fees,
-  warning     = EXCLUDED.warning,
-  source      = EXCLUDED.source,
-  last_update = EXCLUDED.last_update,
-  status      = EXCLUDED.status,
-  is_active   = EXCLUDED.is_active;
+<p><strong>ملاحظة تحريرية:</strong> الأرقام أعلاه هي المعلنة لعام 2026 وتُراجَع سنوياً بمعدّل إعادة التقييم، وبعضها يختلف بحسب نوع المركبة. المرجع النافذ دائماً هو ورقة التبليغ أو البوابة الرسمية، لا هذه الصفحة. نحدّثها مع كل تعديل رسمي. — هيئة تحرير دليل العرب</p>$c$;
+  id_type    text;
+  id_default text;
+  cols       text := 'slug, title, category, details, status';
+  vals       text := '$1, $2, $3, $4, $5';
+  f          record;
+  applied    text[] := ARRAY[]::text[];
+  skipped    text[] := ARRAY[]::text[];
+BEGIN
+  SELECT c.data_type, c.column_default INTO id_type, id_default
+  FROM information_schema.columns c
+  WHERE c.table_schema = 'public' AND c.table_name = 'articles' AND c.column_name = 'id';
 
--- ─── 2) الروابط الداخلية: تُضاف ثم يُنزَع الميت منها ────────────────────────
+  IF EXISTS (SELECT 1 FROM public.articles WHERE slug = v_slug) THEN
+    UPDATE public.articles
+    SET title = v_title, category = v_cat, details = v_details, status = 'approved'
+    WHERE slug = v_slug;
+    RAISE NOTICE 'المقال موجود — حُدِّثت حقوله الأساسية.';
+  ELSE
+    -- عمود id: إن كان له افتراضي فاتركه له؛ وإن كان uuid فولّد؛ وإن كان نصّياً
+    -- فاجعله الـslug (وهو نمط المستودع في ON CONFLICT (id)).
+    IF id_default IS NULL AND id_type IS NOT NULL THEN
+      IF id_type = 'uuid' THEN
+        cols := 'id, ' || cols; vals := 'gen_random_uuid(), ' || vals;
+      ELSE
+        cols := 'id, ' || cols; vals := '$1, ' || vals;
+      END IF;
+    END IF;
+
+    EXECUTE format('INSERT INTO public.articles (%s) VALUES (%s)', cols, vals)
+      USING v_slug, v_title, v_cat, v_details, 'approved';
+    RAISE NOTICE 'المقال أُدرج (id_type=%, له افتراضي=%).', id_type, (id_default IS NOT NULL);
+  END IF;
+
+  -- الحقول الاختيارية: نصّية ثم مصفوفات ثم منطقية، كلٌّ إن وُجد عموده.
+  FOR f IN
+    SELECT * FROM (VALUES
+      ('intro',       $i$خريطة واحدة لكل ما يخصّ سيارتك في تركيا: ما هو إلزامي وما هو اختياري، وكم يكلّف في 2026، ومن أين تستعلم وتدفع رسمياً. مع تصحيح خطأين شائعين: مهلة خصم المخالفات صارت شهراً لا 15 يوماً، وحامل الكملك يدفع ضرائب السيارة كالمواطن التركي تماماً.$i$),
+      ('fees',        $f$أرقام 2026: قيادة بلا تأمين إلزامي 1,246 ليرة + منع السيارة من السير · بلا معاينة 2,717 · الهاتف أثناء القيادة 2,719 · الإشارة الحمراء 2,719 · السرعة حتى 30% 2,719 وحتى 50% 5,662 · الكحول 11,632 ثم 14,583 ثم 23,442 مع إلغاء الرخصة. المعاينة الدورية نحو 3,288 + 460 للعادم ≈ 4,110. خصم 25% عند الدفع خلال شهر من التبليغ، وغرامة تأخير نحو 3.7% شهرياً.$f$),
+      ('warning',     $w$الأرقام معلنة لعام 2026 وتُراجَع سنوياً بمعدّل إعادة التقييم، وتختلف بحسب نوع المركبة. المرجع النافذ هو ورقة التبليغ أو البوابة الرسمية لا هذه الصفحة. وتنبيه خاصّ: المواقع التي تطلب بيانات رخصة سيارتك لعرض أسعار تأمين هي وسطاء تجاريون؛ للتحقّق من وجود بوليصة استعمل e-Devlet أو 5664 أو SBM مجاناً.$w$),
+      ('source',      $src$وزارة الداخلية التركية (تمديد مهلة الخصم إلى شهر) · المديرية العامة للطرق KGM · مركز معلومات ومراقبة التأمين SBM · رئاسة الإيرادات GİB · TÜVTÜRK · وكالة الأناضول — خطّ التحقّق (نفي ادّعاء الإعفاء الضريبي للسوريين)$src$),
+      ('last_update', '2026-08-17')
+    ) AS t(col, val)
+  LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.columns c
+               WHERE c.table_schema='public' AND c.table_name='articles' AND c.column_name=f.col) THEN
+      EXECUTE format('UPDATE public.articles SET %I = $1 WHERE slug = $2', f.col)
+        USING f.val, v_slug;
+      applied := applied || f.col;
+    ELSE
+      skipped := skipped || f.col;
+    END IF;
+  END LOOP;
+
+  FOR f IN
+    SELECT * FROM (VALUES
+      ('steps',     ARRAY[$s1$تحقّق أولاً من الأساسيات الثلاثة لسيارتك مجاناً: أرسل TRAFIK ورقم لوحتك إلى 5664 لمعرفة إن كان التأمين سارياً، وافتح e-Devlet للمخالفات والسيارات المسجّلة باسمك، وwebihlaltakip.kgm.gov.tr لمخالفات الطرق.$s1$, $s2$سدّد أي مخالفة قائمة خلال شهر من تاريخ التبليغ لتدفع 75% فقط. تاريخ التبليغ هو المرجع لا تاريخ المخالفة.$s2$, $s3$افتح dijital.gib.gov.tr وتحقّق من دَين MTV. القسط الأول حتى 31 كانون الثاني والثاني في تموز — والدَين يعطّل نقل الملكية والمعاينة.$s3$, $s4$اعرف موعد معاينتك القادم: أول معاينة بعد 3 سنوات من التسجيل ثم كل سنتين. احجز موعد TÜVTÜRK مسبقاً، وميزانيتها نحو 4,110 ليرة في 2026.$s4$, $s5$اشحن شارة HGS قبل أي سفر طويل، واستعلم بعد الرحلة. الدفع خلال 15 يوماً يُلغي الغرامة كاملةً.$s5$, $s6$قبل شراء أي سيارة مستعملة: فحص خبرة (ekspertiz) + استعلام سجلّ الأضرار TRAMER عبر SBM + التأكّد من خلوّها من دَين أو حجز، ثم النوتر — واسأل عن رسم النوتر مسبقاً فهو نسبيّ على سعر البيع منذ 2026.$s6$]::text[]),
+      ('documents', ARRAY[$d1$رخصة السيارة (Araç Ruhsatı)$d1$, $d2$بطاقة الهوية أو الكملك أو الإقامة$d2$, $d3$الرقم الضريبي (Vergi Numarası)$d3$, $d4$رخصة قيادة سارية معترف بها$d4$, $d5$بوليصة تأمين المرور الإلزامي$d5$, $d6$تقرير المعاينة الدورية الساري$d6$]::text[]),
+      ('tips',      ARRAY[$p1$خصم 25% على المخالفة متاح خلال شهر من التبليغ — لا 15 يوماً كما يشيع.$p1$, $p2$البوليصة التي لا تظهر في SBM غير موجودة. تحقّق بعد أي شراء تأمين.$p2$, $p3$عبور HGS واحد منسيّ 45 يوماً يكلّفك خمسة أمثال رسمه.$p3$, $p4$دَين MTV أو مخالفة قائمة قد يعطّل نقل الملكية والمعاينة — سدّد قبل أن تحتاج المعاملة.$p4$, $p5$رسم النوتر لبيع السيارات صار نسبياً على سعر البيع منذ 2026 لا ثابتاً — اسأل قبل الموعد.$p5$]::text[]),
+      ('tags',      ARRAY['دليل','سيارات','مرور','تأمين','مخالفات','HGS','معاينة']::text[])
+    ) AS t(col, val)
+  LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.columns c
+               WHERE c.table_schema='public' AND c.table_name='articles' AND c.column_name=f.col) THEN
+      EXECUTE format('UPDATE public.articles SET %I = $1 WHERE slug = $2', f.col)
+        USING f.val, v_slug;
+      applied := applied || f.col;
+    ELSE
+      skipped := skipped || f.col;
+    END IF;
+  END LOOP;
+
+  -- المستودع استعمل is_active تاريخياً وقد يكون الاسم الحالي active — يُضبط
+  -- الموجود منهما ولا يُفترض أيّهما.
+  FOR f IN SELECT * FROM (VALUES ('is_active'), ('active')) AS t(col)
+  LOOP
+    IF EXISTS (SELECT 1 FROM information_schema.columns c
+               WHERE c.table_schema='public' AND c.table_name='articles' AND c.column_name=f.col) THEN
+      EXECUTE format('UPDATE public.articles SET %I = true WHERE slug = $1', f.col) USING v_slug;
+      applied := applied || f.col;
+    END IF;
+  END LOOP;
+
+  RAISE NOTICE 'حقول مضبوطة: %', array_to_string(applied, ', ');
+  IF array_length(skipped, 1) > 0 THEN
+    RAISE NOTICE 'حقول متخطّاة (لا عمود لها): %', array_to_string(skipped, ', ');
+  END IF;
+END
+$art$;
+
+
+-- ─── 2ب) الروابط الداخلية: تُضاف ثم يُنزَع الميت منها ────────────────────────
 -- تُضاف بعد الإدراج لا قبله، كي تُقاس صلاحيتها بحالة القاعدة الآن — وليس بلقطة
 -- corpus قديمة. أي slug غير موجود يُفقد رابطه ويبقى نصّه.
 UPDATE public.articles
@@ -278,28 +330,7 @@ SET details = public.strip_dead_article_links(details || $link$
 WHERE slug = 'car-in-turkey-complete-guide-2026'
   AND position('التفاصيل الكاملة لكل بند' in details) = 0;
 
--- ─── 3) الوسوم (إن كان العمود موجوداً) ──────────────────────────────────────
--- ديناميكي عمداً: عمود tags قد لا يكون موجوداً في كل بيئة، وغيابه يجب أن
--- يُتخطّى لا أن يُسقط المقال كلَّه.
-DO $tags$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns c
-    WHERE c.table_schema = 'public' AND c.table_name = 'articles' AND c.column_name = 'tags'
-  ) THEN
-    EXECUTE $x$
-      UPDATE public.articles
-      SET tags = ARRAY['دليل','سيارات','مرور','تأمين','مخالفات','HGS','معاينة']
-      WHERE slug = 'car-in-turkey-complete-guide-2026'
-    $x$;
-    RAISE NOTICE 'OK: أُضيفت الوسوم (يشمل «دليل» — والمقال فيه 6 خطوات، والحدّ 3).';
-  ELSE
-    RAISE NOTICE 'تخطٍّ: عمود tags غير موجود في هذه القاعدة.';
-  END IF;
-END
-$tags$;
-
--- ─── 4) تحقّق ───────────────────────────────────────────────────────────────
+-- ─── 3) تحقّق ───────────────────────────────────────────────────────────────
 DO $check$
 DECLARE
   n         integer;
@@ -347,11 +378,18 @@ BEGIN
 END
 $check$;
 
--- ─── 5) مراجعة ──────────────────────────────────────────────────────────────
-SELECT slug, category, status, last_update,
-       length(details) AS طول_المتن,
+-- ─── 4) مراجعة ──────────────────────────────────────────────────────────────
+-- to_jsonb لا قائمة أعمدة مكتوبة بيدي: هذه المراجعة تعرض ما هو موجود فعلاً
+-- أيّاً كانت أسماؤه، فلا تفشل بعمود مفقود. (وهو الخطأ نفسه الذي أفشل أول
+-- تشغيل: قائمة أعمدة مفترضة بدل قائمة مقروءة.)
+SELECT jsonb_pretty(to_jsonb(a) - 'details' - 'intro') AS المقال_بلا_المتن
+FROM public.articles a
+WHERE a.slug = 'car-in-turkey-complete-guide-2026';
+
+SELECT length(details) AS طول_المتن,
        array_length(steps, 1) AS خطوات
-FROM public.articles WHERE slug = 'car-in-turkey-complete-guide-2026';
+FROM public.articles
+WHERE slug = 'car-in-turkey-complete-guide-2026';
 
 SELECT DISTINCT m[1] AS الروابط_الداخلية_الباقية
 FROM public.articles a, LATERAL regexp_matches(a.details, 'href="/article/([^"]+)"', 'g') AS m
