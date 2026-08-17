@@ -51,12 +51,34 @@ Cloudflare Workers عبر OpenNext.
    `status`, `tags`). ملفٌ بُنيت قائمة أعمدته عليه فشل فعلاً بـ
    `column "is_active" does not exist`.
 
+   **أعمدة `public.articles` الفعلية** (مقروءة من القاعدة يوم 2026-08-17 —
+   لاحظ `active` لا `is_active`، و`last_update`/`published_at` من نوع `date`
+   لا نصّ):
+
+   ```
+   id:text (له افتراضي) · slug:text · title:text · category:text · status:text
+   intro:text · details:text · content:text · excerpt:text
+   steps:text[] · documents:text[] · tips:text[] · tags:text[]
+   fees:text · warning:text · source:text · active:boolean · views:integer
+   last_update:date · published_at:date · created_at:timestamptz · user_id:uuid
+   image:text · image_url:text · seo_title · seo_description · seo_keywords:text[] · seo_image
+   ```
+
    لذلك: **لا تكتب قائمة أعمدة مفترضة.** أدرِج الأعمدة المؤكَّدة وحدها
    (`slug`, `title`, `category`, `details`, `status`)، واضبط كل حقل إضافي في
-   `UPDATE` مشروط بوجود عموده في `information_schema.columns`. وفي المراجعة
-   استعمل `to_jsonb(a) - 'details'` بدل تسمية الأعمدة — تعرض الموجود أيّاً
-   كان ولا تفشل بعمود مفقود. النمط كاملاً في
+   `UPDATE` مشروط بوجود عموده. و**حوّل إلى نوع العمود الفعلي**: تمرير نصّ
+   مُعلَّم (`USING`) إلى عمود `date` يرفع
+   `column is of type date but expression is of type text` — الحرفيّة غير
+   المُعلَمة تُقبل ضمنياً والمُعلَمة لا تُقبل. اقرأ النوع من
+   `pg_catalog.format_type` وابنِ `$1::<النوع>`.
+
+   وفي المراجعة استعمل `to_jsonb(a) - 'details'` بدل تسمية الأعمدة — تعرض
+   الموجود أيّاً كان ولا تفشل بعمود مفقود. النمط كاملاً في
    `sql/2026-08-17_car-master-guide-article.sql`.
+
+   **واختبر على مخطّط منقول من القاعدة لا من فرضياتك.** فشل هذا الملف مرّتين
+   لأن جدول الاختبار كان مبنيّاً على المخطّط القديم نفسه الذي أخطأ الملف
+   باعتماده — فأكّد الفرضية بدل أن يكسرها.
 
 4. **الروابط الداخلية: `scripts/_article-corpus.json` لقطة قديمة لا مصدر
    حقيقة.** وجود slug فيه لا يعني وجوده في القاعدة — حدث فعلاً أن مقالاً
