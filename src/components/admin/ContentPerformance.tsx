@@ -22,7 +22,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-    Users, RefreshCw, FileText, Newspaper, Store, ArrowUpRight,
+    RefreshCw, FileText, Newspaper, Store, ArrowUpRight,
     BarChart3, Trophy,
 } from 'lucide-react';
 
@@ -36,11 +36,7 @@ interface Item {
     readers_today: number | string;
     readers_week: number | string;
 }
-interface SiteTotals {
-    readers_today?: number | string;
-    readers_week?: number | string;
-}
-interface Payload { site?: SiteTotals; items?: Item[] }
+interface Payload { items?: Item[] }
 
 const num = (v: number | string | undefined | null): number => Number(v ?? 0);
 const fmt = (v: number | string | undefined | null): string => num(v).toLocaleString('en-US');
@@ -91,7 +87,6 @@ export default function ContentPerformance() {
 
     useEffect(() => { void load(); }, [load]);
 
-    const site = data?.site ?? {};
     const items = (data?.items ?? []).filter((i) => kind === 'all' || i.kind === kind);
 
     const readersKey = range === 'today' ? 'readers_today' : 'readers_week';
@@ -99,11 +94,6 @@ export default function ContentPerformance() {
     // the newest item is not always the one being read.
     const ranked = [...items].sort((a, b) => num(b[readersKey]) - num(a[readersKey]));
     const max = Math.max(1, ...ranked.map((i) => num(i[readersKey])));
-
-    const totals = [
-        { label: 'دخلوا اليوم',       value: fmt(site.readers_today), icon: Users, cls: 'from-blue-500 to-cyan-600' },
-        { label: 'دخلوا آخر 7 أيام',  value: fmt(site.readers_week),  icon: Users, cls: 'from-emerald-500 to-teal-600' },
-    ];
 
     return (
         <div className="space-y-3">
@@ -122,11 +112,7 @@ export default function ContentPerformance() {
             </div>
 
             {loading ? (
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                    {Array.from({ length: 2 }).map((_, i) => (
-                        <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
-                    ))}
-                </div>
+                <div className="h-36 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
             ) : failed ? (
                 <div className="rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4">
                     <p className="text-[12px] font-bold text-amber-800 dark:text-amber-300">
@@ -138,23 +124,6 @@ export default function ContentPerformance() {
                 </div>
             ) : (
                 <>
-                    {/* Site-wide totals — the context that makes one item's number readable. */}
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                        {totals.map((c) => {
-                            const Icon = c.icon;
-                            return (
-                                <div key={c.label} className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm">
-                                    <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-l ${c.cls}`} />
-                                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br ${c.cls} text-white shadow-sm mb-1.5`}>
-                                        <Icon size={15} />
-                                    </span>
-                                    <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums leading-none">{c.value}</div>
-                                    <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300 mt-1">{c.label}</div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
                     {/* Filters */}
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden text-[11px] font-black">
