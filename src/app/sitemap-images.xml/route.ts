@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { isIndexableServiceProvider } from '@/lib/serviceProviderQuality';
 
 /**
- * Image sitemap — surfaces article + service hero images to Google Images.
+ * Image sitemap — surfaces article, news, and service hero images to Google Images.
  *
  * Why a separate sitemap rather than embedding <image:image> inside the
  * existing sitemap-articles / sitemap-services files?
@@ -78,6 +78,30 @@ export async function GET() {
             }
         } catch {
             // Fail open — empty image sitemap rather than 500
+        }
+
+        // News/update images — the visual often carries the official notice,
+        // so make it discoverable independently in Google Images as well.
+        try {
+            const { data } = await supabase
+                .from('updates')
+                .select('id, title, image')
+                .eq('active', true)
+                .not('image', 'is', null);
+            for (const update of (data || []) as Array<{ id: string; title?: string; image?: string }>) {
+                if (!isUsableImage(update.image)) continue;
+                const key = `update:${update.image}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                entries.push({
+                    pageUrl: `${baseUrl}/updates/${update.id}`,
+                    imageUrl: update.image,
+                    caption: update.title || undefined,
+                    title: update.title || undefined,
+                });
+            }
+        } catch {
+            // ignore
         }
 
         // Service provider images — only approved providers

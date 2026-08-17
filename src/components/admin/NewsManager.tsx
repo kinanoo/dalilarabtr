@@ -17,12 +17,13 @@ import { adminUpsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import {
   Newspaper, Loader2, Trash2, Pencil, Send, Eye, EyeOff, Pin, X,
   Search, Users, CalendarDays, ExternalLink, RefreshCw, ImageOff,
+  Sparkles, CheckCircle2, AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import dynamic from 'next/dynamic';
 import logger from '@/lib/logger';
-import { stripHtml } from '@/lib/stripHtml';
+import { plainTextExcerpt, stripHtml } from '@/lib/stripHtml';
 
 const RichTextEditor = dynamic(() => import('@/components/admin/ui/RichTextEditor'), { ssr: false });
 
@@ -45,6 +46,9 @@ type DBUpdate = {
   source_url?: string | null;
   source_name?: string | null;
   pinned?: boolean | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_keywords?: string[] | null;
 };
 
 type FormState = {
@@ -58,6 +62,9 @@ type FormState = {
   source_name: string;
   source_url: string;
   pinned: boolean;
+  seo_title: string;
+  seo_description: string;
+  seo_keywords: string;
 };
 
 const EMPTY_FORM: FormState = {
@@ -71,6 +78,9 @@ const EMPTY_FORM: FormState = {
   source_name: '',
   source_url: '',
   pinned: false,
+  seo_title: '',
+  seo_description: '',
+  seo_keywords: '',
 };
 
 // Fixed UI list — the value is what gets stored in updates.category.
@@ -109,6 +119,8 @@ const isMissingColumnError = (err: { code?: string; message?: string }) =>
 
 const MIGRATION_TOAST = 'أعمدة الأخبار الجديدة غير مفعّلة بعد — شغّل ملف SQL في Supabase';
 const MIGRATION_FILE = 'sql/2026-07-09_news_page_v2.sql';
+const SEO_MIGRATION_TOAST = 'تم حفظ الخبر، لكن حقول SEO المخصّصة تحتاج ترحيل قاعدة البيانات';
+const SEO_MIGRATION_FILE = 'sql/2026-08-17_update_seo_fields.sql';
 
 const inputCls =
   'w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all';
@@ -230,6 +242,9 @@ export default function NewsManager() {
       source_name: fullRow.source_name || '',
       source_url: fullRow.source_url || '',
       pinned: !!fullRow.pinned,
+      seo_title: fullRow.seo_title || '',
+      seo_description: fullRow.seo_description || '',
+      seo_keywords: (fullRow.seo_keywords || []).join('، '),
     });
     composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -257,7 +272,7 @@ export default function NewsManager() {
       };
       if (editingRow) basePayload.id = editingRow.id;
 
-      const fullPayload = {
+      const newsPayload = {
         ...basePayload,
         category: form.category || 'general',
         summary: form.summary.trim() || null,
@@ -266,13 +281,31 @@ export default function NewsManager() {
         pinned: form.pinned,
       };
 
-      // Try the full payload first; if the new columns are missing in the DB,
-      // retry with the base columns only and point the admin at the migration.
+      const fullPayload = {
+        ...newsPayload,
+        seo_title: form.seo_title.trim() || null,
+        seo_description: form.seo_description.trim() || null,
+        seo_keywords: form.seo_keywords
+          .split(/[,،\n]/)
+          .map((keyword) => keyword.trim())
+          .filter(Boolean)
+          .slice(0, 12),
+      };
+
+      // Deployments can briefly race the automatic SQL workflow. Keep the
+      // one-click publishing path alive: first drop only the optional SEO
+      // columns, then (for a very old schema) drop the v2 newsroom columns.
       let { error } = await adminUpsert('updates', fullPayload);
       if (error && isMissingColumnError(error)) {
-        const retry = await adminUpsert('updates', basePayload);
-        error = retry.error;
-        if (!error) toast.warning(MIGRATION_TOAST, { description: MIGRATION_FILE });
+        const seoRetry = await adminUpsert('updates', newsPayload);
+        error = seoRetry.error;
+        if (!error) {
+          toast.warning(SEO_MIGRATION_TOAST, { description: SEO_MIGRATION_FILE });
+        } else if (isMissingColumnError(error)) {
+          const legacyRetry = await adminUpsert('updates', basePayload);
+          error = legacyRetry.error;
+          if (!error) toast.warning(MIGRATION_TOAST, { description: MIGRATION_FILE });
+        }
       }
       if (error) {
         toast.error('فشل الحفظ: ' + error.message);
@@ -286,7 +319,7 @@ export default function NewsManager() {
       // Fire-and-forget: a failed purge just means the page waits for its
       // next ISR tick, so it must never block or fail the save.
       try {
-        const paths = ['/', '/updates'];
+        const paths = ['/', '/updates', '/sitemap-news.xml', '/sitemap-updates.xml', '/sitemap-images.xml'];
         if (editingRow?.id) paths.push(`/updates/${editingRow.id}`);
         void fetch('/api/admin/revalidate', {
           method: 'POST',
@@ -343,6 +376,13 @@ export default function NewsManager() {
     } else {
       toast.success('تم الحذف', { id: toastId });
       if (editingRow?.id === u.id) resetForm();
+      void fetch('/api/admin/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paths: ['/', '/updates', `/updates/${u.id}`, '/sitemap-news.xml', '/sitemap-updates.xml', '/sitemap-images.xml'],
+        }),
+      }).catch(() => { /* sitemap/page caches expire on their normal window */ });
       void fetchUpdates();
       void fetchPerformance();
     }
@@ -358,7 +398,7 @@ export default function NewsManager() {
     void fetch('/api/admin/revalidate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths: ['/', '/updates', `/updates/${u.id}`] }),
+      body: JSON.stringify({ paths: ['/', '/updates', `/updates/${u.id}`, '/sitemap-news.xml', '/sitemap-updates.xml', '/sitemap-images.xml'] }),
     }).catch(() => { /* falls back to the ISR window */ });
     void fetchUpdates();
     void fetchPerformance();
@@ -410,6 +450,25 @@ export default function NewsManager() {
         ? 'bg-emerald-700 text-white'
         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
     }`;
+
+  const automaticSeoTitle = plainTextExcerpt(form.title, 65);
+  const automaticSeoDescription = plainTextExcerpt(form.summary || form.content, 160)
+    || automaticSeoTitle;
+  const seoPreviewTitle = form.seo_title.trim() || automaticSeoTitle || 'عنوان الخبر سيظهر هنا';
+  const seoPreviewDescription = form.seo_description.trim()
+    || automaticSeoDescription
+    || 'اكتب خلاصة قصيرة ليظهر وصف واضح ومفيد تحت عنوان الخبر في نتائج البحث.';
+  const seoTitleLength = seoPreviewTitle.length;
+  const seoDescriptionLength = seoPreviewDescription.length;
+  const seoChecks = [
+    seoTitleLength >= 30 && seoTitleLength <= 70,
+    seoDescriptionLength >= 80 && seoDescriptionLength <= 180,
+    stripHtml(form.content).trim().length >= 250,
+    Boolean(form.image.trim()),
+    Boolean(form.source_url.trim()),
+  ];
+  const seoScore = seoChecks.filter(Boolean).length * 20;
+  const seoScoreLabel = seoScore >= 80 ? 'جاهز للظهور' : seoScore >= 60 ? 'جيد ويحتاج لمسة' : 'يحتاج استكمالاً';
 
   return (
     <div className="space-y-4">
@@ -547,6 +606,111 @@ export default function NewsManager() {
             bucket="public"
             path="updates"
           />
+
+          <details className="group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/30 overflow-hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors">
+              <span className="flex min-w-0 items-center gap-2.5">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                  <Search size={15} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-black text-slate-800 dark:text-slate-100">ظهور الخبر في Google</span>
+                  <span className="block text-[11px] text-slate-500 dark:text-slate-400">تلقائي دائماً، والتخصيص اختياري</span>
+                </span>
+              </span>
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ${
+                seoScore >= 80
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+                  : seoScore >= 60
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                    : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+              }`}>
+                {seoScore}% · {seoScoreLabel}
+              </span>
+            </summary>
+
+            <div className="space-y-4 border-t border-slate-200 dark:border-slate-700 p-3.5 sm:p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2 rounded-lg bg-white dark:bg-slate-900 px-3.5 py-3 border border-slate-200 dark:border-slate-700">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-slate-400 mb-1">معاينة تقريبية لنتيجة البحث</p>
+                  <p className="text-[15px] sm:text-base font-bold text-blue-800 dark:text-blue-300 leading-6 line-clamp-1">{seoPreviewTitle}</p>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5" dir="ltr">dalilarabtr.com/updates/...</p>
+                  <p className="text-xs leading-5 text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">{seoPreviewDescription}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForm({
+                    ...form,
+                    seo_title: automaticSeoTitle,
+                    seo_description: automaticSeoDescription,
+                  })}
+                  disabled={!automaticSeoTitle}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-2 text-[11px] font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:opacity-40"
+                >
+                  <Sparkles size={13} /> استخدم الاقتراح
+                </button>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <label className="text-xs font-black text-slate-700 dark:text-slate-200">عنوان Google</label>
+                  <span className={`text-[11px] font-bold ${seoTitleLength >= 30 && seoTitleLength <= 70 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {seoTitleLength}/70
+                  </span>
+                </div>
+                <input
+                  value={form.seo_title}
+                  onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
+                  placeholder={automaticSeoTitle || 'يُستخدم عنوان الخبر تلقائياً'}
+                  maxLength={120}
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <label className="text-xs font-black text-slate-700 dark:text-slate-200">وصف Google والمشاركة</label>
+                  <span className={`text-[11px] font-bold ${seoDescriptionLength >= 80 && seoDescriptionLength <= 180 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {seoDescriptionLength}/180
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  value={form.seo_description}
+                  onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
+                  placeholder={automaticSeoDescription || 'يُستخدم ملخص الخبر تلقائياً'}
+                  maxLength={300}
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200">عبارات البحث المرتبطة (اختياري)</label>
+                <input
+                  value={form.seo_keywords}
+                  onChange={(e) => setForm({ ...form, seo_keywords: e.target.value })}
+                  placeholder="مثال: تحديث بيانات الخط، توثيق خطوط الأجانب"
+                  className={inputCls}
+                />
+                <p className="mt-1 text-[11px] text-slate-400">افصل بينها بفاصلة. لا تؤثر وحدها في الترتيب؛ فائدتها تنظيم موضوع الخبر وبياناته.</p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px]">
+                {[
+                  ['عنوان مناسب', seoChecks[0]],
+                  ['وصف واضح', seoChecks[1]],
+                  ['نص كافٍ', seoChecks[2]],
+                  ['صورة', seoChecks[3]],
+                  ['مصدر', seoChecks[4]],
+                ].map(([label, done]) => (
+                  <span key={String(label)} className={`flex items-center gap-1.5 rounded-lg px-2 py-2 font-bold ${done ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>
+                    {done ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </details>
 
           <div className="space-y-2">
             {/* Publish state — new items only. Default "نشر الآن" keeps the
