@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import SitePulse from '@/components/admin/SitePulse';
+import ContentPerformance from '@/components/admin/ContentPerformance';
 import SitePerformance from '@/components/admin/SitePerformance';
 import SearchNeeds from '@/components/admin/SearchNeeds';
 
@@ -88,6 +89,11 @@ export default function AdminDashboard() {
 
       {/* 2. Site pulse — live traffic + growth. */}
       <SitePulse />
+
+      {/* 3. Per-item reach — SitePulse says the site got 900 views; this says
+             which news item earned them. Sits right under it because "did the
+             thing I just published land?" is the question the totals raise. */}
+      <ContentPerformance />
 
       {/* What visitors ask for, especially the searches with no answer. */}
       <SearchNeeds />
