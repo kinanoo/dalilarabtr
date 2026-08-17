@@ -1,0 +1,101 @@
+# الصيانة الليلية لقاعدة البيانات: تجميع ثم تنظيف.
+#
+# لماذا هذا الملف موجود:
+#   ملفات SQL في sql/ تجدول هذه المهامّ عبر pg_cron داخل القاعدة، لكن كل واحد
+#   منها كان يكتفي بـRAISE NOTICE إن لم تكن الإضافة مفعّلة. وسجل تشغيل
+#   2026-08-17 كشف أنها **ليست** مفعّلة على قاعدة الإنتاج، أي أن الجدولة لم
+#   تعمل يوماً: التجميع اليومي لم يجرِ، وسياسة الاحتفاظ لم تُنفَّذ إلا في
+#   اللحظة التي طُبّق فيها ملفها يدوياً.
+#
+#   الإشعار لم يكن كافياً لأنه لا أحد يقرأ NOTICE من تشغيل نجح. فالجدولة تنتقل
+#   هنا: تعمل بلا إضافات، ولها سجل مرئي، وفشلها يُنتج علامة حمراء بدل صمت.
+#
+# الترتيب داخل السكربت مقصود ولا يجوز عكسه:
+#   1) rollup_page_daily     — أداء كل صفحة (للوح «ماذا قرأ الناس»)
+#   2) rollup_analytics_daily — منحنى الموقع اليومي
+#   3) prune_log_tables       — الحذف، بعد أن ثبت الملخّصان
+#   التنظيف قبل التجميع يجمّع فراغاً ويحرق التاريخ بلا رجعة.
+#
+# آمن للتكرار: التجميع يدمج بـGREATEST، والتنظيف يحذف ما تجاوز النافذة فقط.
+
+name: Nightly DB Maintenance
+
+on:
+  schedule:
+    # 03:00 UTC = 06:00 بتوقيت إسطنبول — بعد انقضاء اليوم المحلّي بساعات،
+    # وفي أدنى نقطة من حركة الزوّار.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-maintenance
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: تثبيت psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: تجميع ثم تنظيف
+        env:
+          PGURL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PGURL:-}" ]; then
+            echo "::error::السرّ SUPABASE_DB_URL غير مضبوط."
+            exit 1
+          fi
+
+          # دالتا التجميع تُستدعيان إن وُجدتا فقط: قاعدة لم تُطبَّق عليها ملفات
+          # SQL بعد يجب أن تتخطّى المهمّة لا أن تُفشل التشغيل كل ليلة.
+          #
+          # أمّا prune_log_tables فتُستدعى بلا شرط، عمداً: هذا الـworkflow لا
+          # يخاطب إلا قاعدة الإنتاج (سرّ واحد، قاعدة واحدة)، وغيابُ دالة
+          # الاحتفاظ هناك ليس حالةً تُتخطّى بل عطبٌ يملأ الحصّة بصمت. علامة
+          # حمراء أفضل من تنظيف لا يجري وأحد يظنّه يجري — وهو بالضبط ما حدث
+          # مع pg_cron.
+          psql "$PGURL" -v ON_ERROR_STOP=1 <<'SQL'
+          \timing on
+          DO $$
+          BEGIN
+            IF to_regprocedure('public.rollup_page_daily(int)') IS NOT NULL THEN
+              RAISE NOTICE 'تجميع الصفحات: % صفّاً.', public.rollup_page_daily(3);
+            ELSE
+              RAISE NOTICE 'تخطٍّ: rollup_page_daily غير موجودة.';
+            END IF;
+
+            IF to_regprocedure('public.rollup_analytics_daily(int)') IS NOT NULL THEN
+              RAISE NOTICE 'التجميع اليومي: % صفّاً.', public.rollup_analytics_daily(3);
+            ELSE
+              RAISE NOTICE 'تخطٍّ: rollup_analytics_daily غير موجودة.';
+            END IF;
+          END
+          $$;
+
+          -- التنظيف بعد التجميع، ومخرجاته تُطبع كي يُرى المحذوف في السجل.
+          SELECT * FROM public.prune_log_tables();
+
+          -- لقطة حجم بعد العملية: ارتفاعٌ مطّرد هنا إنذار مبكّر قبل امتلاء الحصّة.
+          SELECT s.relname AS الجدول,
+                 pg_size_pretty(pg_total_relation_size(c.oid)) AS الحجم,
+                 s.n_live_tup AS الصفوف
+          FROM pg_stat_user_tables s
+          JOIN pg_class c ON c.oid = s.relid
+          WHERE s.schemaname = 'public'
+          ORDER BY pg_total_relation_size(c.oid) DESC
+          LIMIT 5;
+          SQL
+
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "### الصيانة الليلية"
+              echo "تمّ التجميع ثم التنظيف. راجع سجل الخطوة للأرقام."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
