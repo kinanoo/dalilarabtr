@@ -9,6 +9,7 @@ import {
 } from '@/lib/serviceDirectory';
 import { getServiceDirectoryFacetSummary } from '@/lib/serviceDirectoryServer';
 import { displayServiceProfession } from '@/lib/serviceText';
+import ServicesBelowFold from './ServicesBelowFold';
 
 // Cache the first directory view at the edge instead of reading Supabase on
 // every visit. Admin service writes call revalidatePath('/services'), so edits
@@ -48,6 +49,7 @@ async function getDirectory() {
             };
         }
         const BASE = 'id, slug, name, profession, category, description, city, image, phone, whatsapp, is_verified, verification_level, rating, review_count, status, created_at';
+        const facetPromise = getServiceDirectoryFacetSummary(supabase);
         let firstPage: { data: unknown; count: number | null; error: unknown } = await supabase
             .from('service_providers')
             .select(`${BASE}, is_featured`, { count: 'exact' })
@@ -75,7 +77,7 @@ async function getDirectory() {
         }
         if (firstPage.error) throw firstPage.error;
 
-        const facetSummary = await getServiceDirectoryFacetSummary(supabase);
+        const facetSummary = await facetPromise;
 
         const rows = (firstPage.data as DirectoryProvider[]) || [];
         return {
@@ -239,6 +241,7 @@ export default async function ServicesPage() {
                 categoryCounts={categoryCounts}
                 initialPopularSearches={popularSearches}
             />
+            <ServicesBelowFold popularSearches={popularSearches} categoryCounts={categoryCounts} />
         </>
     );
 }

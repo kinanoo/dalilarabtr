@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { adminUpsert } from '@/lib/adminApi';
+import { adminUpdate, adminUpsert } from '@/lib/adminApi';
 import { useRouter } from 'next/navigation';
 import { ArticleEditor } from '@/components/admin/editors/ArticleEditor';
 import { Loader2, ArrowRight, Save, Send, Globe, FileEdit } from 'lucide-react';
@@ -48,6 +48,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
     const [loading, setLoading] = useState(!isNew);
     const [saving, setSaving] = useState(false);
     const [sendPush, setSendPush] = useState(false);
+    const [sourceUpdateId, setSourceUpdateId] = useState<string | null>(null);
 
     // Initial Form State — a brand-new admin article defaults to `approved`
     // (live) EXPLICITLY. The workflow <select> only *displayed* "approved" via
@@ -89,6 +90,50 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
             fetchData();
         }
     }, [id, isNew, router]);
+
+    useEffect(() => {
+        if (!isNew || !supabase) return;
+        const updateId = new URLSearchParams(window.location.search).get('fromUpdate');
+        if (!updateId) return;
+        const loadSourceUpdate = async () => {
+            if (!supabase) return;
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('updates')
+                .select('title,summary,content,image,source_url,category')
+                .eq('id', updateId)
+                .maybeSingle();
+            if (error || !data) {
+                toast.error('تعذّر تحميل الخبر لإنشاء المرجع');
+                setLoading(false);
+                return;
+            }
+            setSourceUpdateId(updateId);
+            const categoryMap: Record<string, string> = {
+                official: 'معاملات رسمية',
+                residence: 'الإقامة',
+                work: 'العمل',
+                education: 'التعليم',
+                health: 'الصحة',
+                security: 'معاملات رسمية',
+                general: 'عام',
+            };
+            setForm((current) => ({
+                ...current,
+                title: data.title || '',
+                intro: data.summary || '',
+                details: data.content || '',
+                image: data.image || '',
+                source: data.source_url || '',
+                category: categoryMap[data.category || 'general'] || 'عام',
+                status: 'pending',
+                tags: ['مرجع دائم'],
+            }));
+            setLoading(false);
+            toast.success('تم تجهيز مسودة من الخبر؛ راجعها ثم انشرها');
+        };
+        void loadSourceUpdate();
+    }, [isNew]);
 
     // Save
     const handleSave = async () => {
@@ -153,6 +198,18 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
 
             if (error) throw error;
 
+            // A news item remains a self-contained public page. Once its
+            // accompanying reference is actually published, attach that
+            // article as the optional deeper-reading link beneath the news.
+            // Drafts are never linked, avoiding a public link to a hidden URL.
+            if (sourceUpdateId && payload.status === 'approved') {
+                const slugForReference = String(payload.slug || payload.id || '');
+                const linkResult = await adminUpdate('updates', { link: `/article/${slugForReference}` }, sourceUpdateId);
+                if (linkResult.error) {
+                    toast.warning('نُشر المقال، لكن تعذّر ربط الخبر به تلقائياً');
+                }
+            }
+
             // Bust ISR cache so the homepage carousel, articles list, tag
             // pages, and the article URL itself pick up the change on the
             // VERY NEXT request — not after the 5-minute revalidate window.
@@ -178,6 +235,7 @@ export default function ArticleEditPage({ params }: { params: Promise<{ id: stri
                     '/',
                     '/articles',
                     '/updates',
+                    sourceUpdateId ? `/updates/${sourceUpdateId}` : '',
                     slugForPath ? `/article/${slugForPath}` : '',
                     ...tagPaths,
                 ].filter(Boolean);

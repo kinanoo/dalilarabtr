@@ -13,7 +13,7 @@ import {
   Home, Briefcase, FileText, Info, Building2, Smartphone,
   ShieldAlert, FolderOpen, MapPin, BookOpen, Calculator,
   UserCheck, HeartPulse, Link as LinkIcon, ScrollText, Newspaper,
-  Compass, CalendarClock, Wallet, Banknote, Ban, Pill, LogIn, UserRound,
+  Compass, CalendarClock, CalendarDays, Wallet, Banknote, Ban, Pill, LogIn, UserRound,
   LayoutGrid, Wrench, type LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
@@ -399,6 +399,7 @@ export default function Navbar() {
                 <div className="px-4 pt-5 pb-1.5 text-[11px] font-bold tracking-wide text-slate-400 dark:text-slate-400">الوصول السريع</div>
                 <div className="mx-3 rounded-2xl bg-white dark:bg-slate-900/40 ring-1 ring-black/[0.04] dark:ring-white/[0.06] divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden">
                   <DrawerRow item={{ name: 'الرئيسية', href: '/', icon: Home }} active={pathname === '/'} onClick={() => setIsOpen(false)} />
+                  <DrawerRow item={{ name: 'مركز اليوم', href: '/today', icon: CalendarDays }} active={pathname === '/today'} onClick={() => setIsOpen(false)} />
                   <DrawerRow item={{ name: 'الأخبار', href: '/updates', icon: Newspaper }} active={!!pathname?.startsWith('/updates')} dot={hasNewUpdates} onClick={() => setIsOpen(false)} />
                   <DrawerRow item={{ name: 'دليل المواقف', href: '/consultant', icon: Compass }} active={pathname === '/consultant'} onClick={() => setIsOpen(false)} />
                 </div>
@@ -533,6 +534,14 @@ export default function Navbar() {
 
             {/* الأقسام — mega-menu */}
             <NavMegaMenu title="الأقسام" items={SECTIONS_MENU} />
+
+            <Link
+              href="/today"
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${pathname === '/today' ? 'bg-white text-[hsl(200,45%,26%)] shadow-sm' : 'text-white/90 hover:bg-white/15 hover:text-white'}`}
+            >
+              <CalendarDays size={16} />
+              <span>اليوم</span>
+            </Link>
 
             {/* الأدوات — dropdown */}
             <NavDropdown

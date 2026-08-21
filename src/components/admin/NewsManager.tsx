@@ -17,7 +17,7 @@ import { adminUpsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import {
   Newspaper, Loader2, Trash2, Pencil, Send, Eye, EyeOff, Pin, X,
   Search, Users, CalendarDays, ExternalLink, RefreshCw, ImageOff,
-  Sparkles, CheckCircle2, AlertCircle,
+  Sparkles, CheckCircle2, AlertCircle, FilePlus2, BookOpenCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
@@ -146,6 +146,8 @@ type PerformancePayload = {
   items?: PerformanceItem[];
 };
 
+type ArticleReference = { id: string; slug?: string | null; title: string };
+
 const asNumber = (value: number | string | null | undefined) => Number(value ?? 0);
 
 export default function NewsManager() {
@@ -168,6 +170,7 @@ export default function NewsManager() {
   const [performance, setPerformance] = useState<PerformancePayload | null>(null);
   const [performanceLoading, setPerformanceLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(20);
+  const [articleReferences, setArticleReferences] = useState<ArticleReference[]>([]);
   const composerRef = useRef<HTMLDivElement>(null);
 
   const fetchUpdates = useCallback(async () => {
@@ -207,6 +210,15 @@ export default function NewsManager() {
   useEffect(() => {
     void fetchUpdates();
     void fetchPerformance();
+    if (supabase) {
+      void supabase
+        .from('articles')
+        .select('id,slug,title')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(300)
+        .then(({ data }) => setArticleReferences((data || []) as ArticleReference[]));
+    }
   }, [fetchUpdates, fetchPerformance]);
 
   const resetForm = () => {
@@ -579,8 +591,14 @@ export default function NewsManager() {
             </div>
           </div>
 
-          <div>
-            <label className={labelCls}>رابط توجيه بديل (اختياري)</label>
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-slate-700 dark:bg-slate-800/30">
+            <div className="mb-2 flex items-center gap-2">
+              <BookOpenCheck size={16} className="text-emerald-700 dark:text-emerald-300" />
+              <div>
+                <label className="block text-sm font-black text-slate-800 dark:text-slate-100">المرجع الدائم للخبر</label>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">اربط القرار أو الإجراء بمقال يبقى مفيداً بعد انتهاء الخبر. الرابط يظهر أسفل الخبر ولا يستبدل صفحته.</p>
+              </div>
+            </div>
             {/* type="text": the value is usually an INTERNAL path (/article/…) which
                 type="url" rejects natively, blocking the whole save. The pattern
                 still validates the two legal shapes. */}
@@ -589,14 +607,18 @@ export default function NewsManager() {
               dir="ltr"
               value={form.link}
               onChange={(e) => setForm({ ...form, link: e.target.value })}
-              placeholder="/article/123"
+              placeholder="ابحث عن مقال موجود أو اتركه فارغاً"
               pattern="(/.*|https?://.*)"
+              list="approved-article-references"
               title="رابط داخلي يبدأ بـ / (مثل ‎/article/123) أو رابط كامل يبدأ بـ https://"
               className={inputCls}
             />
-            <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">
-              مقال أو شرح سابق يظهر كرابط اختياري أسفل الخبر؛ ولا يستبدل صفحة الخبر.
-            </p>
+            <datalist id="approved-article-references">
+              {articleReferences.map((article) => (
+                <option key={article.id} value={`/article/${article.slug || article.id}`}>{article.title}</option>
+              ))}
+            </datalist>
+            {form.link.startsWith('/article/') && <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-black text-emerald-700 dark:text-emerald-300"><CheckCircle2 size={13} /> هذا الخبر مرتبط بمرجع دائم</p>}
           </div>
 
           <ImageUploader
@@ -926,11 +948,24 @@ export default function NewsManager() {
                     {issues.length > 0 && (
                       <span className="text-amber-700 dark:text-amber-400">ناقص: {issues.join('، ')}</span>
                     )}
+                    {u.link?.startsWith('/article/') && (
+                      <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300"><BookOpenCheck size={12} /> مرجع دائم</span>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
+                {!u.link?.startsWith('/article/') && (
+                  <a
+                    href={`/admin/articles/new?fromUpdate=${encodeURIComponent(u.id)}`}
+                    title="إنشاء مسودة مرجعية من هذا الخبر"
+                    aria-label="إنشاء مسودة مرجعية من هذا الخبر"
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-amber-50 px-2.5 text-[11px] font-black text-amber-800 transition hover:bg-amber-100 dark:bg-amber-950/25 dark:text-amber-300"
+                  >
+                    <FilePlus2 size={15} /> مرجع
+                  </a>
+                )}
                 {u.active ? (
                   <a
                     href={`/updates/${u.id}`}

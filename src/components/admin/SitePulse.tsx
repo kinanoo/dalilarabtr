@@ -16,7 +16,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import {
-    Users, TrendingUp, TrendingDown, Activity, RefreshCw,
+    Users, TrendingUp, TrendingDown, RefreshCw,
     Share2, MapPin, Smartphone, ChevronDown,
 } from 'lucide-react';
 
@@ -269,7 +269,6 @@ export default function SitePulse() {
     const growthUp = (growth ?? 0) >= 0;
 
     const cards = [
-        { key: 'now', label: 'الزوار الآن', value: fmt(stats?.active_users_now), sub: 'نشط آخر 5 دقائق', icon: Activity, cls: 'from-emerald-500 to-teal-600', live: true },
         { key: 'today', label: 'دخلوا اليوم', value: fmt(stats?.today_unique_visitors), sub: 'شخص مختلف', icon: Users, cls: 'from-blue-500 to-cyan-600' },
         { key: 'week', label: 'دخلوا آخر 7 أيام', value: fmt(insights?.week?.active_visitors), sub: 'شخص مختلف', icon: Users, cls: 'from-indigo-500 to-blue-600' },
         { key: 'growth', label: 'نموّ الزيارات', value: growth == null ? '—' : `${growthUp ? '+' : ''}${Math.round(growth)}%`, sub: 'مقابل الأسبوع الماضي', icon: growthUp ? TrendingUp : TrendingDown, cls: growthUp ? 'from-emerald-500 to-green-600' : 'from-rose-500 to-red-600' },
@@ -292,11 +291,11 @@ export default function SitePulse() {
 
             {/* KPI strip */}
             {loading ? (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                    {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />)}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />)}
                 </div>
             ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {cards.map((c) => {
                         const Icon = c.icon;
                         return (
@@ -306,12 +305,6 @@ export default function SitePulse() {
                                     <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br ${c.cls} text-white shadow-sm`}>
                                         <Icon size={15} />
                                     </span>
-                                    {c.live && (
-                                        <span className="relative inline-flex items-center justify-center w-2 h-2">
-                                            <span className="absolute inline-flex w-2 h-2 rounded-full bg-emerald-500 opacity-75 animate-ping" />
-                                            <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-500" />
-                                        </span>
-                                    )}
                                 </div>
                                 <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums leading-none">{c.value}</div>
                                 <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300 mt-1">{c.label}</div>
@@ -322,14 +315,8 @@ export default function SitePulse() {
                 </div>
             )}
 
-            {/* Growth curve — stays OUT of the collapsible section on purpose.
-                The KPI cards each answer "how is today?"; none of them answers
-                "are we growing?", which is the owner's actual goal. One short
-                row is a fair price for the only tile that shows a trend. */}
-            {!loading && daily.length > 0 && <GrowthChart data={daily} />}
-
-            {/* Live mini-panels — collapsible detail. Toggle keeps the dashboard
-                compact by default; owner expands to see the full breakdown. */}
+            {/* The first screen stays limited to decisions + three numbers.
+                The chart and traffic breakdowns remain available on demand. */}
             {!loading && (
                 <>
                     <button
@@ -338,10 +325,11 @@ export default function SitePulse() {
                         aria-expanded={showDetails}
                     >
                         <ChevronDown size={14} className={`transition-transform ${showDetails ? 'rotate-180' : ''}`} />
-                        {showDetails ? 'إخفاء تفاصيل الزوّار' : 'من أين يأتي الزوّار؟'}
+                        {showDetails ? 'إخفاء تفاصيل الزيارات' : 'تفاصيل الزيارات'}
                     </button>
                     {showDetails && (
                         <div className="space-y-2 sm:space-y-3">
+                            {daily.length > 0 && <GrowthChart data={daily} />}
                             {detailsLoading && !detailsLoaded ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                                     {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-32 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />)}

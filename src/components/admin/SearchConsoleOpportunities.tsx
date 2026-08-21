@@ -10,12 +10,21 @@ type Payload = { configured?: boolean; period?: { start: string; end: string }; 
 export default function SearchConsoleOpportunities() {
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const response = await fetch('/api/admin/search-console', { cache: 'no-store' });
-    setData(response.ok ? await response.json() : null);
-    setLoading(false);
+    setFailed(false);
+    try {
+      const response = await fetch('/api/admin/search-console', { cache: 'no-store' });
+      if (!response.ok) throw new Error('search-console-request-failed');
+      setData(await response.json());
+    } catch {
+      setData(null);
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
   useEffect(() => {
     const timer = window.setTimeout(() => void load(), 0);
@@ -31,6 +40,15 @@ export default function SearchConsoleOpportunities() {
         </div>
         <button onClick={() => void load()} aria-label="تحديث" className="p-2 text-slate-400 hover:text-emerald-600"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /></button>
       </div>
+
+      {loading && <div className="mt-3 h-20 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />}
+
+      {!loading && failed && (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-bold text-red-800 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-200">
+          <p>تعذّر جلب بيانات غوغل الآن. اتصال الموقع ما زال سليماً ويمكنك المحاولة مجدداً.</p>
+          <button type="button" onClick={() => void load()} className="mt-2 min-h-9 rounded-lg bg-red-800 px-4 text-white">إعادة المحاولة</button>
+        </div>
+      )}
 
       {!loading && data?.configured === false && (
         <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs font-bold leading-6 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
