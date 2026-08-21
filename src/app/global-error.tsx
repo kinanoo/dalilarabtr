@@ -12,7 +12,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const recovering = useChunkErrorRecovery(error);
+  const recovering = useChunkErrorRecovery(error, reset);
 
   if (recovering) {
     return (

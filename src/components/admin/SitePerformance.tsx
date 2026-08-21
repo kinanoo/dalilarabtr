@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Gauge, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Gauge, RefreshCw, AlertTriangle, CheckCircle2, ChevronDown } from 'lucide-react';
 
 type Overall = { lcp: number | null; cls: number | null; inp: number | null; fcp: number | null; ttfb: number | null };
 type PageRow = { path: string; samples: number; lcp: number | null; cls: number | null; inp: number | null };
@@ -52,6 +52,7 @@ export default function SitePerformance() {
     const [data, setData] = useState<Payload | null>(null);
     const [loading, setLoading] = useState(true);
     const [failed, setFailed] = useState(false);
+    const [expanded, setExpanded] = useState(false);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -77,32 +78,60 @@ export default function SitePerformance() {
         { key: 'inp', label: 'INP', hint: 'سرعة الاستجابة للنقر', value: o?.inp ?? null, fmt: fmtMs },
         { key: 'cls', label: 'CLS', hint: 'ثبات العناصر أثناء التحميل', value: o?.cls ?? null, fmt: fmtCls },
     ];
+    const issueCount = HEADLINE.filter((m) => {
+        const result = grade(m.key, m.value);
+        return result === 'ni' || result === 'poor';
+    }).length;
 
     return (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-            <div className="flex items-center justify-between gap-2 mb-3">
-                <h2 className="text-[11px] font-black text-slate-500 dark:text-slate-400 tracking-[0.2em] uppercase flex items-center gap-1.5">
-                    <Gauge size={13} className="text-emerald-600" /> أداء الموقع الفعلي
-                    <span className="tracking-normal normal-case font-bold text-slate-400">
-                        (آخر 28 يوماً · {samples.toLocaleString('en-US')} قياس)
-                    </span>
-                </h2>
-                <button onClick={load} aria-label="تحديث" className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-                </button>
+            <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                    <h2 className="text-[11px] font-black text-slate-600 dark:text-slate-300 tracking-[0.15em] uppercase flex items-center gap-1.5">
+                        <Gauge size={13} className="text-emerald-600" /> صحة الموقع
+                    </h2>
+                    {!loading && !failed && samples > 0 && (
+                        <p className={`mt-1 text-[11px] font-bold ${issueCount === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                            {issueCount === 0 ? 'السرعة والاستجابة والثبات جيدة' : `${issueCount} مؤشرات تحتاج انتباهاً`}
+                            <span className="text-slate-400 font-medium"> · آخر 28 يوماً</span>
+                        </p>
+                    )}
+                </div>
+                <div className="flex items-center gap-1">
+                    <button onClick={load} aria-label="تحديث" className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                    {!loading && !failed && samples > 0 && (
+                        <button
+                            onClick={() => setExpanded((value) => !value)}
+                            aria-expanded={expanded}
+                            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-black text-slate-500 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                            التفاصيل
+                            <ChevronDown size={13} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {failed ? (
-                <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+            {loading ? (
+                <div className="mt-3 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+            ) : failed ? (
+                <p className="mt-3 text-xs font-bold text-slate-500 flex items-center gap-1.5">
                     <AlertTriangle size={13} className="text-amber-500" /> تعذّر تحميل بيانات الأداء.
                 </p>
             ) : samples === 0 ? (
-                <p className="text-xs font-bold text-slate-500 leading-6">
+                <p className="mt-3 text-xs font-bold text-slate-500 leading-6">
                     لا توجد قياسات بعد. القياس يبدأ تلقائياً مع أول الزيارات بعد النشر — راجع الصفحة بعد ساعات.
                 </p>
+            ) : !expanded ? (
+                <div className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${issueCount === 0 ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400' : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400'}`}>
+                    {issueCount === 0 ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />}
+                    {issueCount === 0 ? 'لا يوجد خلل ظاهر يحتاج تدخلاً الآن.' : 'افتح التفاصيل لمعرفة المؤشرات والصفحات الأولى بالإصلاح.'}
+                </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 mb-4">
                         {HEADLINE.map((m) => {
                             const g = grade(m.key, m.value);
                             return (

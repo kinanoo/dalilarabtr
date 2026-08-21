@@ -12,14 +12,13 @@ export interface ServiceDirectoryFacetSummary {
     extraCategories: string[];
     popularSearches: DirectoryPopularSearch[];
     directoryTotal: number;
-    verifiedCount: number;
 }
 
 /** Build facets only from providers that have an explicit WhatsApp number. */
 export async function getServiceDirectoryFacetSummary(
     client: SupabaseClient,
 ): Promise<ServiceDirectoryFacetSummary> {
-    const [rowsResult, totalResult, verifiedResult] = await Promise.all([
+    const [rowsResult, totalResult] = await Promise.all([
         client
             .from('service_providers')
             .select('city, category')
@@ -33,13 +32,6 @@ export async function getServiceDirectoryFacetSummary(
             .eq('status', 'approved')
             .not('whatsapp', 'is', null)
             .neq('whatsapp', ''),
-        client
-            .from('service_providers')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'approved')
-            .not('whatsapp', 'is', null)
-            .neq('whatsapp', '')
-            .eq('is_verified', true),
     ]);
 
     if (rowsResult.error) throw rowsResult.error;
@@ -48,6 +40,5 @@ export async function getServiceDirectoryFacetSummary(
         ...buildDirectoryFacets(rows),
         popularSearches: buildPopularDirectorySearches(rows),
         directoryTotal: totalResult.count || rows.length,
-        verifiedCount: verifiedResult.count || 0,
     };
 }

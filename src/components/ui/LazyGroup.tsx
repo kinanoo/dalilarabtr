@@ -11,7 +11,10 @@ export default function LazyGroup({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if ('requestIdleCallback' in window) {
-            const id = (window as any).requestIdleCallback(() => setReady(true));
+            // A permanently busy mobile browser may never have an idle slot.
+            // The timeout keeps non-critical controls (consent, accessibility
+            // helpers and recovery UI) available without joining first paint.
+            const id = (window as any).requestIdleCallback(() => setReady(true), { timeout: 2500 });
             return () => (window as any).cancelIdleCallback(id);
         }
         const t = setTimeout(() => setReady(true), 2500);

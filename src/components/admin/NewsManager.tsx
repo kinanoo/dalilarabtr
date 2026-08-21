@@ -16,12 +16,14 @@ import { supabase } from '@/lib/supabaseClient';
 import { adminUpsert, adminUpdate, adminDelete } from '@/lib/adminApi';
 import {
   Newspaper, Loader2, Trash2, Pencil, Send, Eye, EyeOff, Pin, X,
+  Search, Users, CalendarDays, ExternalLink, RefreshCw, ImageOff,
+  Sparkles, CheckCircle2, AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUploader } from '@/components/admin/ui/ImageUploader';
 import dynamic from 'next/dynamic';
 import logger from '@/lib/logger';
-import { stripHtml } from '@/lib/stripHtml';
+import { plainTextExcerpt, stripHtml } from '@/lib/stripHtml';
 
 const RichTextEditor = dynamic(() => import('@/components/admin/ui/RichTextEditor'), { ssr: false });
 
@@ -32,7 +34,7 @@ type DBUpdate = {
   id: string;
   title: string;
   type: UpdateType;
-  content: string;
+  content?: string;
   date: string;
   active: boolean;
   link?: string | null;
@@ -44,6 +46,9 @@ type DBUpdate = {
   source_url?: string | null;
   source_name?: string | null;
   pinned?: boolean | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_keywords?: string[] | null;
 };
 
 type FormState = {
@@ -57,6 +62,9 @@ type FormState = {
   source_name: string;
   source_url: string;
   pinned: boolean;
+  seo_title: string;
+  seo_description: string;
+  seo_keywords: string;
 };
 
 const EMPTY_FORM: FormState = {
@@ -70,6 +78,9 @@ const EMPTY_FORM: FormState = {
   source_name: '',
   source_url: '',
   pinned: false,
+  seo_title: '',
+  seo_description: '',
+  seo_keywords: '',
 };
 
 // Fixed UI list — the value is what gets stored in updates.category.
@@ -108,6 +119,8 @@ const isMissingColumnError = (err: { code?: string; message?: string }) =>
 
 const MIGRATION_TOAST = 'أعمدة الأخبار الجديدة غير مفعّلة بعد — شغّل ملف SQL في Supabase';
 const MIGRATION_FILE = 'sql/2026-07-09_news_page_v2.sql';
+const SEO_MIGRATION_TOAST = 'تم حفظ الخبر، لكن حقول SEO المخصّصة تحتاج ترحيل قاعدة البيانات';
+const SEO_MIGRATION_FILE = 'sql/2026-08-17_update_seo_fields.sql';
 
 const inputCls =
   'w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all';
@@ -116,11 +129,30 @@ const labelCls =
 
 type TypeFilter = 'all' | UpdateType;
 type StatusFilter = 'all' | 'visible' | 'hidden';
+type ReaderRange = 'today' | 'week';
+
+type PerformanceItem = {
+  ref: string;
+  readers_today: number | string;
+  readers_week: number | string;
+  views_total?: number | string;
+};
+
+type PerformancePayload = {
+  summary?: {
+    readers_today?: number | string;
+    readers_week?: number | string;
+  };
+  items?: PerformanceItem[];
+};
+
+const asNumber = (value: number | string | null | undefined) => Number(value ?? 0);
 
 export default function NewsManager() {
   const [updates, setUpdates] = useState<DBUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editingLoading, setEditingLoading] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   // Original row while editing — preserves date + active on save.
   const [editingRow, setEditingRow] = useState<DBUpdate | null>(null);
@@ -131,6 +163,11 @@ export default function NewsManager() {
   const [goLive, setGoLive] = useState(true);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [query, setQuery] = useState('');
+  const [readerRange, setReaderRange] = useState<ReaderRange>('week');
+  const [performance, setPerformance] = useState<PerformancePayload | null>(null);
+  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(20);
   const composerRef = useRef<HTMLDivElement>(null);
 
   const fetchUpdates = useCallback(async () => {
@@ -138,15 +175,39 @@ export default function NewsManager() {
     setLoading(true);
     const { data, error } = await supabase
       .from('updates')
-      .select('*')
+      .select('id,title,type,date,active,link,image,created_at,category,summary,source_url,source_name,pinned')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(250);
     if (error) toast.error('فشل تحميل الأخبار: ' + error.message);
     if (data) setUpdates(data as DBUpdate[]);
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchUpdates(); }, [fetchUpdates]);
+  const fetchPerformance = useCallback(async () => {
+    if (!supabase) { setPerformanceLoading(false); return; }
+    setPerformanceLoading(true);
+
+    // Dedicated RPC covers the full newsroom. During the first deployment,
+    // fall back to the older mixed-content RPC until the SQL migration lands.
+    const dedicated = await supabase.rpc('get_update_performance');
+    if (!dedicated.error && dedicated.data) {
+      setPerformance(dedicated.data as PerformancePayload);
+      setPerformanceLoading(false);
+      return;
+    }
+
+    const fallback = await supabase.rpc('get_content_performance', { p_limit: 100 });
+    if (!fallback.error && fallback.data) {
+      const payload = fallback.data as { items?: Array<PerformanceItem & { kind?: string }> };
+      setPerformance({ items: (payload.items || []).filter((item) => item.kind === 'update') });
+    }
+    setPerformanceLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void fetchUpdates();
+    void fetchPerformance();
+  }, [fetchUpdates, fetchPerformance]);
 
   const resetForm = () => {
     setEditingRow(null);
@@ -155,19 +216,35 @@ export default function NewsManager() {
     setGoLive(true);
   };
 
-  const startEdit = (u: DBUpdate) => {
-    setEditingRow(u);
+  const startEdit = async (u: DBUpdate) => {
+    if (!supabase) return;
+    setEditingLoading(u.id);
+    const { data, error } = await supabase
+      .from('updates')
+      .select('*')
+      .eq('id', u.id)
+      .maybeSingle();
+    setEditingLoading(null);
+    if (error || !data) {
+      toast.error('تعذّر تحميل نص الخبر للتعديل');
+      return;
+    }
+    const fullRow = data as DBUpdate;
+    setEditingRow(fullRow);
     setForm({
-      title: u.title || '',
-      type: u.type || 'news',
-      category: u.category || 'general',
-      summary: u.summary || '',
-      content: u.content || '',
-      link: u.link || '',
-      image: u.image || '',
-      source_name: u.source_name || '',
-      source_url: u.source_url || '',
-      pinned: !!u.pinned,
+      title: fullRow.title || '',
+      type: fullRow.type || 'news',
+      category: fullRow.category || 'general',
+      summary: fullRow.summary || '',
+      content: fullRow.content || '',
+      link: fullRow.link || '',
+      image: fullRow.image || '',
+      source_name: fullRow.source_name || '',
+      source_url: fullRow.source_url || '',
+      pinned: !!fullRow.pinned,
+      seo_title: fullRow.seo_title || '',
+      seo_description: fullRow.seo_description || '',
+      seo_keywords: (fullRow.seo_keywords || []).join('، '),
     });
     composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -195,7 +272,7 @@ export default function NewsManager() {
       };
       if (editingRow) basePayload.id = editingRow.id;
 
-      const fullPayload = {
+      const newsPayload = {
         ...basePayload,
         category: form.category || 'general',
         summary: form.summary.trim() || null,
@@ -204,13 +281,31 @@ export default function NewsManager() {
         pinned: form.pinned,
       };
 
-      // Try the full payload first; if the new columns are missing in the DB,
-      // retry with the base columns only and point the admin at the migration.
+      const fullPayload = {
+        ...newsPayload,
+        seo_title: form.seo_title.trim() || null,
+        seo_description: form.seo_description.trim() || null,
+        seo_keywords: form.seo_keywords
+          .split(/[,،\n]/)
+          .map((keyword) => keyword.trim())
+          .filter(Boolean)
+          .slice(0, 12),
+      };
+
+      // Deployments can briefly race the automatic SQL workflow. Keep the
+      // one-click publishing path alive: first drop only the optional SEO
+      // columns, then (for a very old schema) drop the v2 newsroom columns.
       let { error } = await adminUpsert('updates', fullPayload);
       if (error && isMissingColumnError(error)) {
-        const retry = await adminUpsert('updates', basePayload);
-        error = retry.error;
-        if (!error) toast.warning(MIGRATION_TOAST, { description: MIGRATION_FILE });
+        const seoRetry = await adminUpsert('updates', newsPayload);
+        error = seoRetry.error;
+        if (!error) {
+          toast.warning(SEO_MIGRATION_TOAST, { description: SEO_MIGRATION_FILE });
+        } else if (isMissingColumnError(error)) {
+          const legacyRetry = await adminUpsert('updates', basePayload);
+          error = legacyRetry.error;
+          if (!error) toast.warning(MIGRATION_TOAST, { description: MIGRATION_FILE });
+        }
       }
       if (error) {
         toast.error('فشل الحفظ: ' + error.message);
@@ -224,7 +319,7 @@ export default function NewsManager() {
       // Fire-and-forget: a failed purge just means the page waits for its
       // next ISR tick, so it must never block or fail the save.
       try {
-        const paths = ['/', '/updates'];
+        const paths = ['/', '/updates', '/sitemap-news.xml', '/sitemap-updates.xml', '/sitemap-images.xml'];
         if (editingRow?.id) paths.push(`/updates/${editingRow.id}`);
         void fetch('/api/admin/revalidate', {
           method: 'POST',
@@ -264,7 +359,8 @@ export default function NewsManager() {
       }
 
       resetForm();
-      fetchUpdates();
+      void fetchUpdates();
+      void fetchPerformance();
     } finally {
       setSubmitting(false);
     }
@@ -280,7 +376,15 @@ export default function NewsManager() {
     } else {
       toast.success('تم الحذف', { id: toastId });
       if (editingRow?.id === u.id) resetForm();
-      fetchUpdates();
+      void fetch('/api/admin/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paths: ['/', '/updates', `/updates/${u.id}`, '/sitemap-news.xml', '/sitemap-updates.xml', '/sitemap-images.xml'],
+        }),
+      }).catch(() => { /* sitemap/page caches expire on their normal window */ });
+      void fetchUpdates();
+      void fetchPerformance();
     }
   };
 
@@ -294,17 +398,51 @@ export default function NewsManager() {
     void fetch('/api/admin/revalidate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths: ['/', '/updates', `/updates/${u.id}`] }),
+      body: JSON.stringify({ paths: ['/', '/updates', `/updates/${u.id}`, '/sitemap-news.xml', '/sitemap-updates.xml', '/sitemap-images.xml'] }),
     }).catch(() => { /* falls back to the ISR window */ });
-    fetchUpdates();
+    void fetchUpdates();
+    void fetchPerformance();
   };
 
   const filtered = useMemo(() => updates.filter((u) => {
     if (typeFilter !== 'all' && u.type !== typeFilter) return false;
     if (statusFilter === 'visible' && !u.active) return false;
     if (statusFilter === 'hidden' && u.active) return false;
+    const needle = query.trim().toLocaleLowerCase('ar');
+    if (needle) {
+      const haystack = [u.title, u.summary, u.content, u.source_name, categoryLabel(u.category)]
+        .filter(Boolean)
+        .map((value) => stripHtml(String(value)).toLocaleLowerCase('ar'))
+        .join(' ');
+      if (!haystack.includes(needle)) return false;
+    }
     return true;
-  }), [updates, typeFilter, statusFilter]);
+  }), [updates, typeFilter, statusFilter, query]);
+
+  const performanceById = useMemo(() => new Map(
+    (performance?.items || []).map((item) => [String(item.ref), item]),
+  ), [performance]);
+
+  const readersKey = readerRange === 'today' ? 'readers_today' : 'readers_week';
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
+    const readersA = asNumber(performanceById.get(String(a.id))?.[readersKey]);
+    const readersB = asNumber(performanceById.get(String(b.id))?.[readersKey]);
+    if (readersB !== readersA) return readersB - readersA;
+    return String(b.created_at || b.date || '').localeCompare(String(a.created_at || a.date || ''));
+  }), [filtered, performanceById, readersKey]);
+
+  const visibleRows = sorted.slice(0, visibleCount);
+  const visibleNews = updates.filter((item) => item.active).length;
+  const hiddenNews = updates.length - visibleNews;
+  const newsroomReaders = asNumber(performance?.summary?.[readersKey]);
+
+  const qualityIssues = (item: DBUpdate) => {
+    const missing: string[] = [];
+    if (!item.image) missing.push('صورة');
+    if (!stripHtml(item.summary || '').trim()) missing.push('خلاصة');
+    if (!item.source_url) missing.push('مصدر');
+    return missing;
+  };
 
   const pill = (isOn: boolean) =>
     `px-3 py-1.5 rounded-full text-xs font-black transition-colors ${
@@ -312,6 +450,25 @@ export default function NewsManager() {
         ? 'bg-emerald-700 text-white'
         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
     }`;
+
+  const automaticSeoTitle = plainTextExcerpt(form.title, 65);
+  const automaticSeoDescription = plainTextExcerpt(form.summary || form.content, 160)
+    || automaticSeoTitle;
+  const seoPreviewTitle = form.seo_title.trim() || automaticSeoTitle || 'عنوان الخبر سيظهر هنا';
+  const seoPreviewDescription = form.seo_description.trim()
+    || automaticSeoDescription
+    || 'اكتب خلاصة قصيرة ليظهر وصف واضح ومفيد تحت عنوان الخبر في نتائج البحث.';
+  const seoTitleLength = seoPreviewTitle.length;
+  const seoDescriptionLength = seoPreviewDescription.length;
+  const seoChecks = [
+    seoTitleLength >= 30 && seoTitleLength <= 70,
+    seoDescriptionLength >= 80 && seoDescriptionLength <= 180,
+    stripHtml(form.content).trim().length >= 250,
+    Boolean(form.image.trim()),
+    Boolean(form.source_url.trim()),
+  ];
+  const seoScore = seoChecks.filter(Boolean).length * 20;
+  const seoScoreLabel = seoScore >= 80 ? 'جاهز للظهور' : seoScore >= 60 ? 'جيد ويحتاج لمسة' : 'يحتاج استكمالاً';
 
   return (
     <div className="space-y-4">
@@ -438,7 +595,7 @@ export default function NewsManager() {
               className={inputCls}
             />
             <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1">
-              إن وُضع، يفتح الخبر هذا الرابط بدل صفحة التفاصيل
+              مقال أو شرح سابق يظهر كرابط اختياري أسفل الخبر؛ ولا يستبدل صفحة الخبر.
             </p>
           </div>
 
@@ -449,6 +606,111 @@ export default function NewsManager() {
             bucket="public"
             path="updates"
           />
+
+          <details className="group rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/30 overflow-hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors">
+              <span className="flex min-w-0 items-center gap-2.5">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                  <Search size={15} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-black text-slate-800 dark:text-slate-100">ظهور الخبر في Google</span>
+                  <span className="block text-[11px] text-slate-500 dark:text-slate-400">تلقائي دائماً، والتخصيص اختياري</span>
+                </span>
+              </span>
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ${
+                seoScore >= 80
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+                  : seoScore >= 60
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                    : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+              }`}>
+                {seoScore}% · {seoScoreLabel}
+              </span>
+            </summary>
+
+            <div className="space-y-4 border-t border-slate-200 dark:border-slate-700 p-3.5 sm:p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2 rounded-lg bg-white dark:bg-slate-900 px-3.5 py-3 border border-slate-200 dark:border-slate-700">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-slate-400 mb-1">معاينة تقريبية لنتيجة البحث</p>
+                  <p className="text-[15px] sm:text-base font-bold text-blue-800 dark:text-blue-300 leading-6 line-clamp-1">{seoPreviewTitle}</p>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5" dir="ltr">dalilarabtr.com/updates/...</p>
+                  <p className="text-xs leading-5 text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">{seoPreviewDescription}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForm({
+                    ...form,
+                    seo_title: automaticSeoTitle,
+                    seo_description: automaticSeoDescription,
+                  })}
+                  disabled={!automaticSeoTitle}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-2 text-[11px] font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:opacity-40"
+                >
+                  <Sparkles size={13} /> استخدم الاقتراح
+                </button>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <label className="text-xs font-black text-slate-700 dark:text-slate-200">عنوان Google</label>
+                  <span className={`text-[11px] font-bold ${seoTitleLength >= 30 && seoTitleLength <= 70 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {seoTitleLength}/70
+                  </span>
+                </div>
+                <input
+                  value={form.seo_title}
+                  onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
+                  placeholder={automaticSeoTitle || 'يُستخدم عنوان الخبر تلقائياً'}
+                  maxLength={120}
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <label className="text-xs font-black text-slate-700 dark:text-slate-200">وصف Google والمشاركة</label>
+                  <span className={`text-[11px] font-bold ${seoDescriptionLength >= 80 && seoDescriptionLength <= 180 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {seoDescriptionLength}/180
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  value={form.seo_description}
+                  onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
+                  placeholder={automaticSeoDescription || 'يُستخدم ملخص الخبر تلقائياً'}
+                  maxLength={300}
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-black mb-1.5 block text-slate-700 dark:text-slate-200">عبارات البحث المرتبطة (اختياري)</label>
+                <input
+                  value={form.seo_keywords}
+                  onChange={(e) => setForm({ ...form, seo_keywords: e.target.value })}
+                  placeholder="مثال: تحديث بيانات الخط، توثيق خطوط الأجانب"
+                  className={inputCls}
+                />
+                <p className="mt-1 text-[11px] text-slate-400">افصل بينها بفاصلة. لا تؤثر وحدها في الترتيب؛ فائدتها تنظيم موضوع الخبر وبياناته.</p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px]">
+                {[
+                  ['عنوان مناسب', seoChecks[0]],
+                  ['وصف واضح', seoChecks[1]],
+                  ['نص كافٍ', seoChecks[2]],
+                  ['صورة', seoChecks[3]],
+                  ['مصدر', seoChecks[4]],
+                ].map(([label, done]) => (
+                  <span key={String(label)} className={`flex items-center gap-1.5 rounded-lg px-2 py-2 font-bold ${done ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400'}`}>
+                    {done ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </details>
 
           <div className="space-y-2">
             {/* Publish state — new items only. Default "نشر الآن" keeps the
@@ -526,26 +788,87 @@ export default function NewsManager() {
 
       {/* ===== List ===== */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100">
-            سجل الأخبار
-            <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full text-[10px] font-black tabular-nums" dir="ltr">
-              {filtered.length}
-            </span>
+        <div className="border-b border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100">
+                سجل الأخبار
+                <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full text-[10px] font-black tabular-nums" dir="ltr">
+                  {updates.length}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                رتّب حسب من دخلوا فعلياً، وافتح الخبر أو عدّله من السطر نفسه.
+              </p>
+            </div>
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 p-1 text-xs font-black">
+              <button
+                type="button"
+                onClick={() => setReaderRange('today')}
+                className={`rounded-lg px-3 py-1.5 transition-colors ${readerRange === 'today' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'text-slate-500'}`}
+              >
+                اليوم
+              </button>
+              <button
+                type="button"
+                onClick={() => setReaderRange('week')}
+                className={`rounded-lg px-3 py-1.5 transition-colors ${readerRange === 'week' ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'text-slate-500'}`}
+              >
+                آخر 7 أيام
+              </button>
+              <button
+                type="button"
+                onClick={() => void fetchPerformance()}
+                title="تحديث عدد الداخلين"
+                aria-label="تحديث عدد الداخلين"
+                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-emerald-700 dark:hover:bg-slate-800"
+              >
+                <RefreshCw size={14} className={performanceLoading ? 'animate-spin' : ''} />
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button type="button" onClick={() => setTypeFilter('all')} className={pill(typeFilter === 'all')}>الكل</button>
-            <button type="button" onClick={() => setTypeFilter('news')} className={pill(typeFilter === 'news')}>أخبار</button>
-            <button type="button" onClick={() => setTypeFilter('alert')} className={pill(typeFilter === 'alert')}>تنبيهات</button>
-            <button type="button" onClick={() => setTypeFilter('feature')} className={pill(typeFilter === 'feature')}>جديد الموقع</button>
-            <span className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
-            <button type="button" onClick={() => setStatusFilter('all')} className={pill(statusFilter === 'all')}>الكل</button>
-            <button type="button" onClick={() => setStatusFilter('visible')} className={pill(statusFilter === 'visible')}>ظاهر</button>
-            <button type="button" onClick={() => setStatusFilter('hidden')} className={pill(statusFilter === 'hidden')}>مخفي</button>
+
+          <div className="grid grid-cols-3 border-y border-slate-100 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950/30">
+            <div className="p-3 text-center">
+              <p className="text-lg font-black tabular-nums text-slate-900 dark:text-white">{visibleNews}</p>
+              <p className="text-[10px] font-bold text-slate-500">منشور</p>
+            </div>
+            <div className="border-x border-slate-200 p-3 text-center dark:border-slate-800">
+              <p className="text-lg font-black tabular-nums text-slate-900 dark:text-white">{hiddenNews}</p>
+              <p className="text-[10px] font-bold text-slate-500">مسودة أو مخفي</p>
+            </div>
+            <div className="p-3 text-center">
+              <p className="text-lg font-black tabular-nums text-emerald-700 dark:text-emerald-400">
+                {performanceLoading ? '…' : performance?.summary ? newsroomReaders.toLocaleString('en-US') : '—'}
+              </p>
+              <p className="text-[10px] font-bold text-slate-500">دخلوا {readerRange === 'today' ? 'اليوم' : 'خلال 7 أيام'}</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 p-4">
+            <div className="relative">
+              <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                value={query}
+                onChange={(event) => { setQuery(event.target.value); setVisibleCount(20); }}
+                placeholder="ابحث بعنوان الخبر أو خلاصته أو مصدره..."
+                className={`${inputCls} ps-9`}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button type="button" onClick={() => { setTypeFilter('all'); setVisibleCount(20); }} className={pill(typeFilter === 'all')}>كل الأنواع</button>
+              <button type="button" onClick={() => { setTypeFilter('news'); setVisibleCount(20); }} className={pill(typeFilter === 'news')}>أخبار</button>
+              <button type="button" onClick={() => { setTypeFilter('alert'); setVisibleCount(20); }} className={pill(typeFilter === 'alert')}>تنبيهات</button>
+              <button type="button" onClick={() => { setTypeFilter('feature'); setVisibleCount(20); }} className={pill(typeFilter === 'feature')}>جديد الموقع</button>
+              <span className="hidden h-5 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+              <button type="button" onClick={() => { setStatusFilter('all'); setVisibleCount(20); }} className={pill(statusFilter === 'all')}>الكل</button>
+              <button type="button" onClick={() => { setStatusFilter('visible'); setVisibleCount(20); }} className={pill(statusFilter === 'visible')}>منشور</button>
+              <button type="button" onClick={() => { setStatusFilter('hidden'); setVisibleCount(20); }} className={pill(statusFilter === 'hidden')}>مخفي</button>
+            </div>
           </div>
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[560px] overflow-y-auto">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
           {loading && (
             <div className="flex items-center justify-center gap-2 py-12 text-slate-400">
               <Loader2 size={18} className="animate-spin" />
@@ -553,14 +876,22 @@ export default function NewsManager() {
             </div>
           )}
 
-          {!loading && filtered.map((u) => (
-            <div key={u.id} className="group p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 flex justify-between gap-3 transition-colors">
+          {!loading && visibleRows.map((u) => {
+            const itemPerformance = performanceById.get(String(u.id));
+            const readers = asNumber(itemPerformance?.[readersKey]);
+            const issues = qualityIssues(u);
+            return (
+            <div key={u.id} className="group p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40">
               <div className="flex items-start gap-3 min-w-0">
-                {u.image && (
+                {u.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={u.image} alt={u.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                  <img src={u.image} alt={u.title} className="h-16 w-16 rounded-xl object-cover flex-shrink-0 sm:h-20 sm:w-24" />
+                ) : (
+                  <span className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-300 dark:bg-slate-800 dark:text-slate-600 sm:h-20 sm:w-24">
+                    <ImageOff size={20} />
+                  </span>
                 )}
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${TYPE_CHIP[u.type] || TYPE_CHIP.news}`}>
                       {TYPE_LABEL[u.type] || u.type}
@@ -579,14 +910,46 @@ export default function NewsManager() {
                     )}
                     <span className="text-xs text-slate-400 tabular-nums" dir="ltr">{u.date}</span>
                   </div>
-                  <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 truncate">{u.title}</h4>
+                  <h4 className="font-black text-sm leading-relaxed text-slate-800 dark:text-slate-100 line-clamp-2">{u.title}</h4>
                   {u.summary && (
-                    <p dir="auto" className="text-xs text-slate-400 dark:text-slate-400 mt-0.5 line-clamp-1 [unicode-bidi:plaintext]">{stripHtml(u.summary)}</p>
+                    <p dir="auto" className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 [unicode-bidi:plaintext]">{stripHtml(u.summary)}</p>
                   )}
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+                      <Users size={12} />
+                      {performanceLoading ? '…' : `دخلوا ${readers.toLocaleString('en-US')}`}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-slate-400">
+                      <CalendarDays size={12} />
+                      {readerRange === 'today' ? 'اليوم' : 'آخر 7 أيام'}
+                    </span>
+                    {issues.length > 0 && (
+                      <span className="text-amber-700 dark:text-amber-400">ناقص: {issues.join('، ')}</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
+                {u.active ? (
+                  <a
+                    href={`/updates/${u.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="فتح صفحة الخبر"
+                    aria-label="فتح صفحة الخبر"
+                    className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                ) : (
+                  <span
+                    title="انشر الخبر أولاً لفتح صفحته العامة"
+                    className="cursor-not-allowed rounded-xl bg-slate-50 p-2 text-slate-300 dark:bg-slate-800 dark:text-slate-600"
+                  >
+                    <ExternalLink size={16} />
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => toggleActive(u)}
@@ -600,12 +963,13 @@ export default function NewsManager() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => startEdit(u)}
+                  onClick={() => void startEdit(u)}
+                  disabled={editingLoading === u.id}
                   title="تعديل"
                   aria-label="تعديل"
                   className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <Pencil size={16} />
+                  {editingLoading === u.id ? <Loader2 size={16} className="animate-spin" /> : <Pencil size={16} />}
                 </button>
                 <button
                   type="button"
@@ -618,14 +982,26 @@ export default function NewsManager() {
                 </button>
               </div>
             </div>
-          ))}
+          )})}
 
-          {!loading && filtered.length === 0 && (
+          {!loading && sorted.length === 0 && (
             <div className="text-center py-12">
               <Newspaper size={32} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
               <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">
                 {updates.length === 0 ? 'لا توجد أخبار بعد — انشر أول خبر من الأعلى.' : 'لا نتائج مطابقة للفلاتر.'}
               </p>
+            </div>
+          )}
+
+          {!loading && visibleCount < sorted.length && (
+            <div className="p-4 text-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((count) => count + 20)}
+                className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-black text-slate-700 transition-colors hover:border-emerald-400 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-200"
+              >
+                عرض أخبار أقدم ({sorted.length - visibleCount})
+              </button>
             </div>
           )}
         </div>

@@ -80,6 +80,21 @@ async function getSupabase() {
 
 type UpdateRow = { [key: string]: any };
 
+function getUpdateKeywords(data: UpdateRow): string[] {
+    const stored = Array.isArray(data.seo_keywords)
+        ? data.seo_keywords
+        : typeof data.seo_keywords === 'string'
+            ? data.seo_keywords.split(/[,،\n]/)
+            : [];
+
+    return Array.from(new Set([
+        ...stored.map((keyword: unknown) => String(keyword).trim()).filter(Boolean),
+        CATEGORY_LABELS[data.category] || 'أخبار تركيا',
+        'أخبار العرب في تركيا',
+        'أخبار السوريين في تركيا',
+    ])).slice(0, 12);
+}
+
 const fetchUpdateData = cache(async (id: string): Promise<UpdateRow | null> => {
     const client = await getSupabase();
     if (!client) return null;
@@ -110,18 +125,24 @@ export async function generateMetadata(
     if (!data) notFound();
 
     const canonicalUrl = `${SITE_CONFIG.siteUrl}/updates/${id}`;
-    const description = plainTextExcerpt(data.summary || data.content, 200) || data.title;
+    const seoTitle = plainTextExcerpt(data.seo_title || data.title, 120) || data.title;
+    const description = plainTextExcerpt(
+        data.seo_description || data.summary || data.content,
+        200,
+    ) || data.title;
+    const keywords = getUpdateKeywords(data);
     const socialImage = getOgImage(data.image, {
-        title: data.title,
+        title: seoTitle,
         category: 'أخبار وتحديثات',
     });
 
     return {
-        title: data.title,
-        description: plainTextExcerpt(data.summary || data.content, 160) || data.title,
+        title: seoTitle,
+        description: plainTextExcerpt(description, 180),
+        keywords,
         alternates: { canonical: canonicalUrl },
         openGraph: {
-            title: data.title,
+            title: seoTitle,
             description,
             type: 'article',
             url: canonicalUrl,
@@ -131,7 +152,7 @@ export async function generateMetadata(
         },
         twitter: {
             card: 'summary_large_image',
-            title: data.title,
+            title: seoTitle,
             description,
             images: [socialImage],
         },
@@ -174,13 +195,15 @@ export default async function UpdateDetailPage(
             const relatedResponse = await retrySupabaseQuery('related updates', () =>
                 client
                     .from('updates')
-                    .select('id, title, type, date, image')
+                    .select('id, title, type, date, image, category, summary')
                     .eq('active', true)
                     .neq('id', id)
                     .order('date', { ascending: false })
-                    .limit(4),
+                    .limit(8),
             );
-            relatedUpdates = relatedResponse.data;
+            relatedUpdates = (relatedResponse.data || [])
+                .sort((a, b) => Number(b.category === update.category) - Number(a.category === update.category))
+                .slice(0, 4);
         }
     } catch (error) {
         logger.warn('related updates failed', error);
@@ -195,7 +218,12 @@ export default async function UpdateDetailPage(
     const updateUrl = `${SITE_CONFIG.siteUrl}/updates/${id}`;
     const publishedISO = toISODate(update.created_at || update.date || '');
     const modifiedISO = toISODate(update.date || update.created_at || '');
-    const description = update.summary || plainContent.substring(0, 200) || update.title;
+    const seoTitle = plainTextExcerpt(update.seo_title || update.title, 120) || update.title;
+    const description = plainTextExcerpt(
+        update.seo_description || update.summary || plainContent,
+        200,
+    ) || update.title;
+    const seoKeywords = getUpdateKeywords(update);
     const imageUrl = update.image
         ? (update.image.startsWith('http') ? update.image : `${SITE_CONFIG.siteUrl}${update.image}`)
         : getOgImage(undefined, { title: update.title, category: 'أخبار وتحديثات' });
@@ -203,8 +231,13 @@ export default async function UpdateDetailPage(
     const articleSchema = {
         '@context': 'https://schema.org',
         '@type': update.type === 'news' ? 'NewsArticle' : 'Article',
+        url: updateUrl,
         headline: update.title,
+        ...(seoTitle !== update.title ? { alternativeHeadline: seoTitle } : {}),
         description,
+        keywords: seoKeywords.join(', '),
+        articleSection: CATEGORY_LABELS[update.category] || 'أخبار تركيا',
+        isAccessibleForFree: true,
         datePublished: publishedISO,
         dateModified: modifiedISO,
         image: {
@@ -228,6 +261,7 @@ export default async function UpdateDetailPage(
             '@type': 'WebPage',
             '@id': updateUrl,
         },
+        thumbnailUrl: imageUrl,
         inLanguage: 'ar',
     };
 
@@ -291,6 +325,11 @@ export default async function UpdateDetailPage(
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-black leading-[1.5] text-balance">
                         {bindNumbersToWords(update.title)}
                     </h1>
+                    {update.summary && (
+                        <p dir="auto" className="mt-4 max-w-3xl text-sm leading-[1.9] text-white/75 sm:text-base [unicode-bidi:plaintext]">
+                            {stripHtml(update.summary)}
+                        </p>
+                    )}
                 </div>
             </div>
 

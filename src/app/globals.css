@@ -833,3 +833,19 @@ h3:not([class*="leading-"]) {
    they carry `bg-emerald-700` with white text (5.55:1) and are set in the
    markup, not here. */
 :root:not(.dark) .text-emerald-600 { color: #047857; }
+
+@keyframes service-provider-invite-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+
+.service-provider-invite-pulse {
+  animation: service-provider-invite-breathe 1.7s ease-in-out 3;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-provider-invite-pulse {
+    animation: none;
+  }
+}

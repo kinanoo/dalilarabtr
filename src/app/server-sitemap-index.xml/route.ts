@@ -20,6 +20,8 @@ export async function GET() {
     `${baseUrl}/sitemap-zones.xml`,
     `${baseUrl}/sitemap-services.xml`,
     `${baseUrl}/sitemap-updates.xml`,
+    // Time-sensitive Google News feed (only stories from the last two days).
+    `${baseUrl}/sitemap-news.xml`,
     `${baseUrl}/sitemap-static.xml`,
     // «أين يقع؟» — the /places hub + one page per consulate / embassy / office
     `${baseUrl}/sitemap-places.xml`,

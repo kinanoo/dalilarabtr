@@ -3,7 +3,7 @@ import { supabase, withTimeout } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 
 /**
- * /feed.xml — RSS 2.0 feed of the latest 50 published articles.
+ * /feed.xml — RSS 2.0 feed of the latest 50 articles and news items.
  *
  * Why we expose this:
  *   - Telegram bots, IFTTT/Zapier-style automations, and Slack/Discord
@@ -28,6 +28,8 @@ export const revalidate = 600;
 
 const PUBLIC_ARTICLE_FIELDS =
     'id, slug, title, intro, category, published_at, last_update, image';
+const PUBLIC_UPDATE_FIELDS =
+    'id, title, summary, category, date, created_at, image';
 
 // RFC 822 / 1123 date format required by RSS 2.0.
 // `Date.toUTCString()` returns exactly this format — no extra library needed.
@@ -54,22 +56,42 @@ export async function GET() {
     const feedUrl = `${siteUrl}/feed.xml`;
     const buildDate = rfc822(new Date());
 
-    let items: Array<Record<string, unknown>> = [];
+    let items: Array<Record<string, unknown> & { kind: 'article' | 'update'; sortDate?: string }> = [];
     try {
         if (supabase) {
-            const result = await withTimeout(
-                supabase
+            const [articlesResult, updatesResult] = await Promise.all([
+                withTimeout(supabase
                     .from('articles')
                     .select(PUBLIC_ARTICLE_FIELDS)
                     .eq('active', true)
                     .eq('status', 'approved')
                     .order('published_at', { ascending: false })
-                    .limit(50)
-            );
-            // withTimeout returns the resolved query response (or null on timeout).
-            // The query response itself is { data, error, ... }.
-            const data = (result as { data?: Array<Record<string, unknown>> } | null)?.data;
-            items = data || [];
+                    .limit(50)),
+                withTimeout(supabase
+                    .from('updates')
+                    .select(PUBLIC_UPDATE_FIELDS)
+                    .eq('active', true)
+                    .order('date', { ascending: false })
+                    .order('created_at', { ascending: false })
+                    .limit(50)),
+            ]);
+
+            const articles = (articlesResult as { data?: Array<Record<string, unknown>> } | null)?.data || [];
+            const updates = (updatesResult as { data?: Array<Record<string, unknown>> } | null)?.data || [];
+            items = [
+                ...articles.map((row) => ({
+                    ...row,
+                    kind: 'article' as const,
+                    sortDate: String(row.published_at || row.last_update || ''),
+                })),
+                ...updates.map((row) => ({
+                    ...row,
+                    kind: 'update' as const,
+                    sortDate: String(row.created_at || row.date || ''),
+                })),
+            ]
+                .sort((a, b) => String(b.sortDate || '').localeCompare(String(a.sortDate || '')))
+                .slice(0, 50);
         }
     } catch {
         // Empty channel is a valid RSS document — better than 500.
@@ -77,16 +99,23 @@ export async function GET() {
 
     const itemXml = items
         .map((a) => {
+            const isUpdate = a.kind === 'update';
             const slug = (a.slug as string) || (a.id as string);
-            const link = `${siteUrl}/article/${slug}`;
-            const title = xmlEscape((a.title as string) || 'مقال');
-            const cat = xmlEscape((a.category as string) || 'دليل');
-            const pubDate = rfc822((a.published_at as string) || (a.last_update as string));
+            const link = isUpdate ? `${siteUrl}/updates/${slug}` : `${siteUrl}/article/${slug}`;
+            const title = xmlEscape((a.title as string) || (isUpdate ? 'خبر' : 'مقال'));
+            const cat = xmlEscape((a.category as string) || (isUpdate ? 'أخبار تركيا' : 'دليل'));
+            const pubDate = rfc822(
+                isUpdate
+                    ? ((a.created_at as string) || (a.date as string))
+                    : ((a.published_at as string) || (a.last_update as string)),
+            );
             // intro can contain HTML — CDATA-wrap it instead of escaping.
             // The intro field is curated by us so it's safe; we still strip
             // any literal "]]>" sequence which would close the CDATA early.
-            const intro = String(a.intro || '').replace(/]]>/g, ']]]]><![CDATA[>');
-            const image = (a.image as string) || '';
+            const intro = String(isUpdate ? (a.summary || '') : (a.intro || ''))
+                .replace(/]]>/g, ']]]]><![CDATA[>');
+            const rawImage = (a.image as string) || '';
+            const image = rawImage && !rawImage.startsWith('http') ? `${siteUrl}${rawImage}` : rawImage;
             const enclosure = image
                 ? `<enclosure url="${xmlEscape(image)}" type="image/jpeg" />`
                 : '';
@@ -109,7 +138,7 @@ export async function GET() {
     <title>${xmlEscape(SITE_CONFIG.name || 'دليل العرب والسوريين في تركيا')}</title>
     <link>${xmlEscape(siteUrl)}</link>
     <atom:link href="${xmlEscape(feedUrl)}" rel="self" type="application/rss+xml" />
-    <description>أحدث المقالات والأدلّة العملية للسوريين والعرب في تركيا.</description>
+    <description>أحدث الأخبار والقرارات والمقالات والأدلّة العملية للسوريين والعرب في تركيا.</description>
     <language>ar</language>
     <lastBuildDate>${buildDate}</lastBuildDate>
     <ttl>30</ttl>

@@ -42,7 +42,6 @@ async function getDirectory() {
             return {
                 rows: [] as DirectoryProvider[],
                 total: 0,
-                verifiedCount: 0,
                 cityCounts: {},
                 categoryCounts: {},
                 popularSearches: [],
@@ -89,7 +88,6 @@ async function getDirectory() {
         return {
             rows: [] as DirectoryProvider[],
             total: 0,
-            verifiedCount: 0,
             cityCounts: {},
             categoryCounts: {},
             popularSearches: [],
@@ -101,7 +99,6 @@ export default async function ServicesPage() {
     const {
         rows,
         total,
-        verifiedCount,
         cityCounts,
         categoryCounts,
         popularSearches,
@@ -238,7 +235,6 @@ export default async function ServicesPage() {
             <ServicesClient
                 initialServices={rows}
                 initialTotal={total}
-                verifiedCount={verifiedCount}
                 cityCounts={cityCounts}
                 categoryCounts={categoryCounts}
                 initialPopularSearches={popularSearches}

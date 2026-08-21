@@ -6,14 +6,53 @@ import { AlertTriangle, ArrowRight, Briefcase, CheckCircle2, ChevronLeft, MapPin
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 import logger from '@/lib/logger';
-import AddServiceBanner from '@/components/services/AddServiceBanner';
+import DeferredAddServiceBanner from '@/components/services/DeferredAddServiceBanner';
 import ProviderCard, { type ProviderCardData } from '@/components/services/ProviderCard';
 import { categoryBySlug, categoryForName, type ServiceCategory } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import { cityBySlug, citySlugForName, type TRCity } from '@/lib/turkishCities';
 import { displayServiceProfession } from '@/lib/serviceText';
+import { isValidExplicitWhatsApp } from '@/lib/serviceProviderQuality';
 
 export const revalidate = 600;
+
+/**
+ * Pre-render the busiest real category/city combinations without creating
+ * empty SEO pages. Less common valid combinations remain available on demand.
+ */
+export async function generateStaticParams(): Promise<Array<{ slug: string; city: string }>> {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+        .from('service_providers')
+        .select('category, city, whatsapp')
+        .eq('status', 'approved')
+        .not('whatsapp', 'is', null)
+        .neq('whatsapp', '')
+        .limit(2000);
+
+    if (error || !data) return [];
+
+    const counts = new Map<string, { slug: string; city: string; count: number }>();
+    for (const provider of data) {
+        if (!isValidExplicitWhatsApp(provider.whatsapp)) continue;
+        const category = categoryForName(provider.category);
+        const city = citySlugForName(provider.city);
+        if (!category || !city) continue;
+        const key = `${category.slug}:${city}`;
+        const current = counts.get(key);
+        counts.set(key, {
+            slug: category.slug,
+            city,
+            count: (current?.count || 0) + 1,
+        });
+    }
+
+    return Array.from(counts.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 80)
+        .map(({ slug, city }) => ({ slug, city }));
+}
 
 interface Row extends ProviderCardData { category: string | null; }
 
@@ -277,7 +316,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                 </div>
 
                 {providers.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {providers.map((p) => <ProviderCard key={p.id} p={p} />)}
                     </div>
                 )}
@@ -357,7 +396,7 @@ export default async function CategoryCityPage(props: { params: Promise<{ slug: 
                 )}
 
                 <div className="mt-10">
-                    <AddServiceBanner />
+                    <DeferredAddServiceBanner />
                 </div>
 
                 <div className="mt-8 flex flex-wrap gap-3">

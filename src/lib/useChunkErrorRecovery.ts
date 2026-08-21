@@ -30,7 +30,7 @@ import { useEffect, useState } from 'react';
 
 // Message shapes browsers use when a dynamic import or chunk fetch fails.
 // Chrome, Firefox and Safari each word it differently, and webpack adds its own.
-const CHUNK_ERROR = /ChunkLoadError|Loading chunk [\w-]+ failed|Loading CSS chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|'text\/html' is not a valid JavaScript MIME type|Failed to load resource|Failed to fetch|fetch failed|NetworkError|Load failed/i;
+const CHUNK_ERROR = /ChunkLoadError|Loading chunk [\w-]+ failed|Loading CSS chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|'text\/html' is not a valid JavaScript MIME type/i;
 
 const WINDOW_MS = 30_000;
 
@@ -41,6 +41,8 @@ export function isChunkLoadError(error: unknown): boolean {
 }
 
 type RecoverableError = { digest?: string; message?: string; name?: string };
+
+export type NavigationRecoveryMethod = 'retry' | 'reload' | null;
 
 export function isLikelyNavigationError(error: unknown): boolean {
     if (!error || typeof error !== 'object') return false;
@@ -56,15 +58,30 @@ export function isLikelyNavigationError(error: unknown): boolean {
 }
 
 /**
+ * Pick the least disruptive recovery that can solve the failure.
+ *
+ * A stale deployment chunk cannot be restored by React's `reset()` because
+ * the old module registry is still in memory, so it needs one document load.
+ * A redacted RSC digest or a short server/network failure should instead retry
+ * the route first. Reloading those errors immediately duplicates page work and
+ * makes a momentary upstream hiccup look like a broken site.
+ */
+export function getNavigationRecoveryMethod(error: unknown): NavigationRecoveryMethod {
+    if (!isLikelyNavigationError(error)) return null;
+    return isChunkLoadError(error) ? 'reload' : 'retry';
+}
+
+/**
  * Tries one clean document load before an error page is shown to the reader.
  * Returns true while that recovery is in progress so the boundary can render a
  * calm loading state instead of flashing a red failure screen.
  */
-export function useChunkErrorRecovery(error: unknown): boolean {
-    const [recovering, setRecovering] = useState(() => isLikelyNavigationError(error));
+export function useChunkErrorRecovery(error: unknown, reset?: () => void): boolean {
+    const [recovering, setRecovering] = useState(() => getNavigationRecoveryMethod(error) !== null);
 
     useEffect(() => {
-        if (!isLikelyNavigationError(error) || typeof window === 'undefined') return;
+        const method = getNavigationRecoveryMethod(error);
+        if (!method || typeof window === 'undefined') return;
 
         const stopRecoveryOnNextFrame = () => {
             const timer = window.setTimeout(() => setRecovering(false), 0);
@@ -90,10 +107,17 @@ export function useChunkErrorRecovery(error: unknown): boolean {
         }
 
         // Give the boundary one paint so the visitor sees a neutral recovery
-        // state, then bypass the client router/module registry completely.
-        const timer = window.setTimeout(() => window.location.reload(), 80);
+        // state. Retry the route for transient RSC/server failures; only a
+        // genuine stale chunk bypasses the module registry with a hard reload.
+        const timer = window.setTimeout(() => {
+            if (method === 'retry' && reset) {
+                reset();
+                return;
+            }
+            window.location.reload();
+        }, 80);
         return () => window.clearTimeout(timer);
-    }, [error]);
+    }, [error, reset]);
 
     return recovering;
 }

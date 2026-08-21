@@ -11,7 +11,7 @@ import { SITE_CONFIG } from '@/lib/config';
 import { SchemaScript } from '@/lib/schemaOrg';
 import ZoomableImage from '@/components/ui/ZoomableImage';
 
-const TAGLINE = 'ما الذي تغيّر في تركيا؟ قرارات وتعديلات وأخبار موثّقة تهمّ العرب والسوريين.';
+const TAGLINE = 'آخر القرارات والتعديلات والأخبار التي تهم العرب والسوريين في تركيا، بخلاصة واضحة ومصدر يمكن الرجوع إليه.';
 
 // ── Fixed UI categories (the value stored in updates.category) ──
 const CATEGORIES = [
@@ -289,26 +289,31 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
   const EmptyIcon = activeTab === 'alerts' ? AlertTriangle : activeTab === 'site' ? Rss : Newspaper;
 
   return (
-    <section className="px-4 py-8 sm:py-10">
+    <section className="px-4 py-6 sm:py-10">
       <SchemaScript schema={schema} />
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
 
         {/* Page header */}
-        <header className="mb-6 pb-5 border-b border-slate-200 dark:border-slate-800">
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
-            أخبار تركيا
-          </h1>
-          <p className="mt-2 min-h-[1.25rem] text-sm font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-            {todayLine && (
-              <>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" aria-hidden />
-                {todayLine}
-              </>
-            )}
-          </p>
-          <p className="mt-2 text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
-            {TAGLINE}
-          </p>
+        <header className="mb-7 border-b border-slate-200 pb-6 dark:border-slate-800">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="max-w-3xl">
+              <p className="mb-2 text-xs font-black text-emerald-700 dark:text-emerald-400">غرفة الأخبار</p>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white">
+                أخبار تركيا للعرب والسوريين
+              </h1>
+              <p className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+                {TAGLINE}
+              </p>
+            </div>
+            <p className="flex min-h-[1.25rem] items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 md:pb-1">
+              {todayLine && (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" aria-hidden />
+                  آخر متابعة: {todayLine}
+                </>
+              )}
+            </p>
+          </div>
         </header>
 
         {/* Fresh alerts band (alerts from the last 14 days) */}
@@ -342,8 +347,20 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
           </div>
         )}
 
+        {/* Search — the fastest route for a growing archive. */}
+        <div className="relative mb-4">
+          <Search size={17} className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="ابحث بعنوان قرار أو موضوع..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(20); }}
+            className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pe-4 ps-11 text-sm shadow-sm transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900"
+          />
+        </div>
+
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-4" role="tablist" aria-label="أقسام الأخبار">
+        <div className="flex flex-wrap gap-2 mb-3" role="tablist" aria-label="أقسام الأخبار">
           {TABS.map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.key;
@@ -374,7 +391,7 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
 
         {/* Category chips — news tab only */}
         {activeTab === 'news' && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
+          <div className="flex flex-wrap gap-1.5 mb-6 border-b border-slate-200 pb-5 dark:border-slate-800">
             {[{ key: 'all', label: 'الكل' }, ...CATEGORIES].map(cat => {
               const count = categoryCounts[cat.key] || 0;
               const active = activeCategory === cat.key;
@@ -402,21 +419,9 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
           </div>
         )}
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="ابحث في الأخبار..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(20); }}
-            className="w-full ps-9 pe-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all placeholder:text-slate-400"
-          />
-        </div>
-
         {/* Lead story */}
         {showLead && leadStory && (
-          <article className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700">
+          <article className={`mb-10 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700 ${leadStory.image ? 'md:grid md:grid-cols-[1.1fr_1fr]' : ''}`}>
               {leadStory.image && (
                 <ZoomableImage
                   src={leadStory.image}
@@ -424,11 +429,11 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                   sizes="(max-width: 768px) 100vw, 768px"
                   priority
                   hint="label"
-                  containerClassName="h-52 w-full rounded-none sm:h-72"
+                  containerClassName="h-56 w-full rounded-none sm:h-72 md:h-full md:min-h-[360px]"
                   imageClassName="object-cover object-center"
                 />
               )}
-              <Link href={updateHrefOf(leadStory)} className="group block p-5 sm:p-7">
+              <Link href={updateHrefOf(leadStory)} className="group flex min-h-full flex-col justify-center p-5 sm:p-7 md:p-9">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                     {CATEGORY_LABELS[leadStory.category] || CATEGORY_LABELS.general}
@@ -439,11 +444,11 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
                     </span>
                   )}
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-[1.6] group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-[1.6] group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                   {leadStory.title}
                 </h2>
                 {excerptOf(leadStory, 200) && (
-                  <p dir="auto" className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 [unicode-bidi:plaintext]">
+                  <p dir="auto" className="mt-3 text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-[1.9] line-clamp-4 [unicode-bidi:plaintext]">
                     {excerptOf(leadStory, 200)}
                   </p>
                 )}
@@ -481,16 +486,16 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
             {activeTab === 'news' ? (
               newsGroups.map(group => (
                 <section key={group.label} className="mb-8 last:mb-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                  <div className="flex items-center gap-3 mb-4">
+                    <h2 className="text-base font-black text-slate-800 dark:text-slate-100 whitespace-nowrap">
                       {group.label}
                     </h2>
                     <span className="text-[11px] text-slate-400 font-bold">{group.items.length}</span>
                     <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" aria-hidden />
                   </div>
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {group.items.map((item: any) => (
-                      <NewsRow key={item.id} item={item} />
+                      <NewsCard key={item.id} item={item} />
                     ))}
                   </div>
                 </section>
@@ -541,13 +546,25 @@ export default function UpdatesClient({ initialUpdates }: { initialUpdates?: any
   );
 }
 
-// ── Feed row: real news (editorial list row, no timeline line) ──
-function NewsRow({ item }: { item: any }) {
+// ── News card: enough context to decide, without turning the archive into
+// full article copies. The whole text area opens the update; the image keeps
+// its independent zoom behaviour.
+function NewsCard({ item }: { item: any }) {
   const excerpt = excerptOf(item, 140);
   return (
-    <article className="-mx-2 flex items-start gap-4 rounded-xl px-2 py-4 transition-colors hover:bg-white dark:hover:bg-slate-900/60">
-      <Link href={updateHrefOf(item)} className="group min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+    <article className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-800">
+      {item.image && (
+        <ZoomableImage
+          src={item.image}
+          alt={item.title || 'صورة الخبر'}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          hint="none"
+          containerClassName="h-44 w-full rounded-none"
+          imageClassName="object-cover object-center"
+        />
+      )}
+      <Link href={updateHrefOf(item)} className="block p-5">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
             {CATEGORY_LABELS[item.category] || CATEGORY_LABELS.general}
           </span>
@@ -555,25 +572,25 @@ function NewsRow({ item }: { item: any }) {
             <Clock size={10} />
             {relativeOrAbsolute(item.sortDate)}
           </time>
+          {sourceLabel(item) && (
+            <span dir="auto" className="max-w-[12rem] truncate text-[10px] font-bold text-slate-400 [unicode-bidi:plaintext]">
+              {sourceLabel(item)}
+            </span>
+          )}
         </div>
-        <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+        <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 leading-[1.7] line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
           {item.title}
         </h3>
         {excerpt && (
-          <p dir="auto" className="mt-1 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 [unicode-bidi:plaintext]">
+          <p dir="auto" className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-[1.8] line-clamp-3 [unicode-bidi:plaintext]">
             {excerpt}
           </p>
         )}
+        <span className="mt-4 inline-flex items-center gap-1 text-xs font-black text-emerald-700 dark:text-emerald-400">
+          اقرأ التفاصيل
+          <ArrowLeft size={12} />
+        </span>
       </Link>
-      {item.image && (
-        <ZoomableImage
-          src={item.image}
-          alt={item.title || 'صورة الخبر'}
-          sizes="96px"
-          containerClassName="h-[72px] w-24 flex-shrink-0 rounded-lg"
-          imageClassName="object-cover"
-        />
-      )}
     </article>
   );
 }
