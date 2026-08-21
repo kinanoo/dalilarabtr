@@ -18,12 +18,36 @@ import { displayServiceProfession } from '@/lib/serviceText';
 import {
     isIndexableServiceProvider,
     isPublicServiceProvider,
+    isValidExplicitWhatsApp,
     normalizeWhatsAppNumber,
     publicServiceDescription,
 } from '@/lib/serviceProviderQuality';
 import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
 
 export const revalidate = 60;
+
+/**
+ * Pre-render contactable listings during deployment. Newly approved slugs
+ * still render on demand, while established pages avoid a cold database read
+ * before the visitor sees their first response.
+ */
+export async function generateStaticParams(): Promise<Array<{ id: string }>> {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+        .from('service_providers')
+        .select('id, slug, whatsapp')
+        .eq('status', 'approved')
+        .not('whatsapp', 'is', null)
+        .neq('whatsapp', '')
+        .limit(1000);
+
+    if (error || !data) return [];
+
+    return data
+        .filter((provider) => isValidExplicitWhatsApp(provider.whatsapp))
+        .map((provider) => ({ id: provider.slug || provider.id }));
+}
 
 const safeExternalUrl = (value: unknown): string | null => {
     if (typeof value !== 'string' || !value.trim()) return null;

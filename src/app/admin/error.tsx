@@ -15,7 +15,7 @@ export default function AdminError({ error, reset }: { error: Error & { digest?:
     }, [error]);
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the admin do it. See useChunkErrorRecovery.
-    const recovering = useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error, reset);
 
     if (recovering) return <PageRecovery />;
 

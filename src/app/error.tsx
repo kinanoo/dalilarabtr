@@ -19,7 +19,7 @@ export default function Error({
     }, [error]);
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the reader do it. See useChunkErrorRecovery.
-    const recovering = useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error, reset);
 
     if (recovering) {
         return <PageRecovery minHeightClass="min-h-[70vh]" />;

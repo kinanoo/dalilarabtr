@@ -6,7 +6,7 @@ import { Briefcase, MapPin, ArrowRight, CheckCircle2, AlertTriangle, ChevronLeft
 import { supabase } from '@/lib/supabaseClient';
 import { SITE_CONFIG } from '@/lib/config';
 import logger from '@/lib/logger';
-import AddServiceBanner from '@/components/services/AddServiceBanner';
+import DeferredAddServiceBanner from '@/components/services/DeferredAddServiceBanner';
 import ProviderCard, { type ProviderCardData } from '@/components/services/ProviderCard';
 import {
     SERVICE_CATEGORIES, POPULAR_CITIES, categoryBySlug, type ServiceCategory,
@@ -161,8 +161,6 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                 </div>
             </section>
 
-            <AddServiceBanner />
-
             <section className="max-w-screen-2xl mx-auto px-4 py-12 w-full">
                 <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-6">
                     {providers.length > 0
@@ -244,6 +242,10 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                             </Link>
                         ))}
                     </div>
+                </div>
+
+                <div className="mt-12">
+                    <DeferredAddServiceBanner />
                 </div>
 
                 <div className="mt-8">

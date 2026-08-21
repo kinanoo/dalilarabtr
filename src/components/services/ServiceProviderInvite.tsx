@@ -10,7 +10,12 @@ import {
   SERVICE_PROVIDER_INVITE_STORAGE_KEY,
 } from '@/lib/serviceProviderInvite';
 
-const SHOW_DELAY_MS = 5000;
+// The invitation is valuable after someone has actually explored the
+// directory. Showing a full-screen dialog while the first screen is still
+// settling turns the dialog itself into the page's LCP and interrupts the
+// visitor before they have seen a single service.
+const SHOW_DELAY_AFTER_EXPLORATION_MS = 900;
+const EXPLORATION_SCROLL_Y = 420;
 
 export default function ServiceProviderInvite() {
   const [mounted, setMounted] = useState(false);
@@ -31,7 +36,9 @@ export default function ServiceProviderInvite() {
 
     let frame = 0;
     const controller = new AbortController();
-    const timer = window.setTimeout(async () => {
+    let timer: number | undefined;
+
+    const showAfterExploration = async () => {
       let show = true;
       let suppressUntil = Date.now() + SERVICE_PROVIDER_INVITE_COOLDOWN_MS;
 
@@ -60,10 +67,22 @@ export default function ServiceProviderInvite() {
       if (!show || controller.signal.aborted) return;
       setMounted(true);
       frame = window.requestAnimationFrame(() => setVisible(true));
-    }, SHOW_DELAY_MS);
+    };
+
+    const onExplore = () => {
+      if (window.scrollY < EXPLORATION_SCROLL_Y) return;
+      window.removeEventListener('scroll', onExplore);
+      timer = window.setTimeout(() => void showAfterExploration(), SHOW_DELAY_AFTER_EXPLORATION_MS);
+    };
+
+    // The component remains idle until the visitor scrolls into the results.
+    // This avoids a network request and a modal during the critical load path.
+    window.addEventListener('scroll', onExplore, { passive: true });
+    onExplore();
 
     return () => {
-      window.clearTimeout(timer);
+      window.removeEventListener('scroll', onExplore);
+      if (timer) window.clearTimeout(timer);
       window.cancelAnimationFrame(frame);
       controller.abort();
     };

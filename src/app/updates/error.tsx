@@ -11,7 +11,7 @@ export default function ArticleError({ error, reset }: { error: Error & { digest
     useEffect(() => { logger.error(error); }, [error]);
     // A failed chunk fetch is transient, not a broken page — reload once
     // instead of making the reader do it. See useChunkErrorRecovery.
-    const recovering = useChunkErrorRecovery(error);
+    const recovering = useChunkErrorRecovery(error, reset);
 
     if (recovering) return <PageRecovery />;
 

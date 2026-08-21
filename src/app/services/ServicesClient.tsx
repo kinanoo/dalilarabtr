@@ -8,8 +8,8 @@ import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
 import CategoryFilterDialog from '@/components/services/CategoryFilterDialog';
 import ProviderCard from '@/components/services/ProviderCard';
-import AddServiceBanner from '@/components/services/AddServiceBanner';
 import ServiceProviderInvite from '@/components/services/ServiceProviderInvite';
+import DeferredAddServiceBanner from '@/components/services/DeferredAddServiceBanner';
 import {
   DIRECTORY_PAGE_SIZE,
   type DirectoryPopularSearch,
@@ -19,7 +19,6 @@ import {
 interface ServicesClientProps {
   initialServices?: DirectoryProvider[];
   initialTotal?: number;
-  verifiedCount?: number;
   cityCounts?: Record<string, number>;
   categoryCounts?: Record<string, number>;
   initialPopularSearches?: DirectoryPopularSearch[];
@@ -810,7 +809,7 @@ export default function ServicesClient({
         </div>
       </section>
 
-      <AddServiceBanner />
+      <DeferredAddServiceBanner />
 
       <ServiceProviderInvite />
 
