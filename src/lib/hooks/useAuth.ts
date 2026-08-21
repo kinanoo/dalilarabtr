@@ -13,9 +13,7 @@ function initAuth() {
     if (initialized) return;
     initialized = true;
 
-    // Lazy import keeps supabase-js out of the first-load JS: useAuth is in
-    // the Navbar (= every page), so a static import here was site-wide weight.
-    getSupabase().then((supabase) => {
+    const connect = () => getSupabase().then((supabase) => {
         if (!supabase) {
             sharedUser = null;
             subscribers.forEach(cb => cb(null));
@@ -32,6 +30,25 @@ function initAuth() {
             subscribers.forEach(cb => cb(sharedUser!));
         });
     });
+
+    // A returning signed-in member should see their account immediately.
+    // Anonymous visitors do not need the 60KB+ Supabase SDK during LCP, so
+    // attach the auth listener only after the page has settled.
+    let hasStoredSession = false;
+    try {
+        hasStoredSession = Object.keys(localStorage).some((key) =>
+            /^sb-.+-auth-token$/.test(key),
+        );
+    } catch {
+        // Storage may be disabled; the delayed connection remains safe.
+    }
+
+    if (hasStoredSession) {
+        void connect();
+        return;
+    }
+
+    window.setTimeout(() => void connect(), 8000);
 }
 
 export function useAuth() {

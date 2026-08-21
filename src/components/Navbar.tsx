@@ -8,7 +8,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { SITE_CONFIG } from '@/lib/config';
 import { SECTIONS_MENU, LATEST_UPDATES_VERSION, UPDATES_STORAGE_KEY, TOOLS_MENU } from '@/lib/constants';
-import { fetchRemoteUpdatesVersion } from '@/lib/remoteData';
 import {
   Menu, X, ChevronDown, ChevronLeft,
   Home, Briefcase, FileText, Info, Building2, Smartphone,
@@ -276,30 +275,16 @@ export default function Navbar() {
   }, [siteConfig]);
 
   useEffect(() => {
-    let mounted = true;
-    // Delay non-critical remote version check to avoid blocking initial render
-    const timer = setTimeout(() => {
-      fetchRemoteUpdatesVersion()
-        .then((v) => {
-          if (!mounted) return;
-          if (v) setCurrentUpdatesVersion(v);
-        })
-        .catch(() => {
-          // ignore
-        });
-    }, 3000);
+    const remoteVersion = siteConfig?.updatesVersion;
+    if (remoteVersion) setCurrentUpdatesVersion(remoteVersion);
 
     try {
       const lastSeen = localStorage.getItem(UPDATES_STORAGE_KEY) || '';
-      setHasNewUpdates(lastSeen !== currentUpdatesVersion);
+      setHasNewUpdates(lastSeen !== (remoteVersion || currentUpdatesVersion));
     } catch {
       // ignore
     }
-    return () => {
-      mounted = false;
-      clearTimeout(timer);
-    };
-  }, [currentUpdatesVersion]);
+  }, [currentUpdatesVersion, siteConfig?.updatesVersion]);
 
   useEffect(() => {
     if (!pathname) return;
