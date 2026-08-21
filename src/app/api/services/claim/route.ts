@@ -32,7 +32,8 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => null) as Record<string, unknown> | null;
-    if (!body || clean(body.website, 100)) return NextResponse.json({ ok: true });
+    if (!body) return NextResponse.json({ error: 'bad_request' }, { status: 400 });
+    if (clean(body.website, 100)) return NextResponse.json({ ok: true });
 
     const providerId = clean(body.providerId, 120);
     const claimantName = clean(body.claimantName, 120);
