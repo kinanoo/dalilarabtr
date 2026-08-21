@@ -88,7 +88,10 @@ BEGIN
     ('/article/deportation-centers-rights')
   ) AS old_links(path)
   WHERE a.status = 'approved'
-    AND position(old_links.path IN a.details) > 0;
+    -- Match an actual href target, not a substring inside the NEW URL.
+    -- Example: /article/student-residence is legitimately contained in
+    -- /article/tourist-vs-student-residence-2025.
+    AND a.details ~ ('href=["'']' || old_links.path || '(["''?#])');
 
   IF english_categories <> 0 THEN
     RAISE EXCEPTION 'taxonomy verification failed: % English categories remain', english_categories;
