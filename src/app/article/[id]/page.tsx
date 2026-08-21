@@ -135,7 +135,7 @@ const fetchArticleData = cache(async (slug: string) => {
     // sitemap-tags.xml kept submitting those hubs to Google — every tag page was
     // an orphan. It is also the only topical (non-boilerplate) internal link an
     // article carries.
-    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, tags';
+    const articleFields = 'id, title, slug, category, intro, details, steps, documents, tips, fees, warning, source, image, seo_title, seo_description, seo_keywords, created_at, last_update, status, tags, audience_note, editorial_status, reviewed_at, change_summary';
 
     const bySlug = await retrySupabaseQuery('article detail by slug', () =>
       client
@@ -196,6 +196,10 @@ const fetchArticleData = cache(async (slug: string) => {
         // builds a NEW object, so selecting the column is not enough — a field
         // omitted here never reaches the view.
         tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+        audienceNote: data.audience_note || '',
+        editorialStatus: data.editorial_status || '',
+        reviewedAt: data.reviewed_at ? new Date(data.reviewed_at).toISOString().split('T')[0] : '',
+        changeSummary: data.change_summary || '',
       };
     }
   }

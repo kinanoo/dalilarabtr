@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tags, FileText, Link as LinkIcon, AlertCircle, Clock, Search, Settings2, ExternalLink, Sparkles, Flame, ListChecks } from 'lucide-react';
+import { Tags, FileText, Link as LinkIcon, AlertCircle, Clock, Search, Settings2, ExternalLink, Sparkles, Flame, ListChecks, ShieldCheck } from 'lucide-react';
 import { Field } from '../ui/Field';
 import { inputStyles, ltrInputStyles } from '../ui/styles';
 import { ArrayInput } from '../ui/ArrayInput';
@@ -63,6 +63,10 @@ interface ExtendedArticleForm extends Partial<ArticleForm> {
     // accepted; the editor prefers `last_update` on read and writes
     // to that key so upsert() can pass it through unchanged.
     last_update?: string;
+    audience_note?: string;
+    editorial_status?: string;
+    reviewed_at?: string;
+    change_summary?: string;
 }
 
 interface ArticleEditorProps {
@@ -72,7 +76,6 @@ interface ArticleEditorProps {
     // both of which need to be compatible with this prop. A narrow
     // ExtendedArticleForm parameter would fail to match either. The runtime
     // shape is whatever the editor merges via {...form, …} — same as before.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setForm: (data: any) => void;
 }
 
@@ -610,7 +613,7 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                     aria-expanded={workflowOpen}
                 >
                     <Settings2 size={16} className="text-emerald-600" />
-                    حالة النشر + تاريخ آخر تعديل
+                    النشر + الثقة التحريرية
                     <span className="text-xs font-normal text-slate-400">
                         ({workflowOpen ? 'إخفاء' : 'عرض'})
                     </span>
@@ -641,6 +644,42 @@ export const ArticleEditor = ({ form, setForm }: ArticleEditorProps) => {
                                 // so upsert() matches the DB schema directly.
                                 value={(form.last_update || form.lastUpdate || '').split('T')[0]}
                                 onChange={e => setForm({ ...form, last_update: e.target.value, lastUpdate: undefined })}
+                            />
+                        </Field>
+
+                        <Field label="الفئة التي تنطبق عليها التعليمات" icon={ShieldCheck} note="مثال: حاملو الكملك في الولاية المسجّلين فيها">
+                            <input
+                                className={inputStyles}
+                                value={form.audience_note || ''}
+                                onChange={e => setForm({ ...form, audience_note: e.target.value })}
+                                placeholder="اتركه فارغاً إن لم تُحسم الفئة"
+                            />
+                        </Field>
+
+                        <Field label="حالة المراجعة" icon={Settings2} note="لا تكتب تم التحقق إلا بعد مراجعة المصدر فعلاً">
+                            <input
+                                className={inputStyles}
+                                value={form.editorial_status || ''}
+                                onChange={e => setForm({ ...form, editorial_status: e.target.value })}
+                                placeholder="مثال: تم التحقق من المصدر الرسمي"
+                            />
+                        </Field>
+
+                        <Field label="تاريخ التحقق الفعلي" icon={Clock} note="مستقل عن تاريخ تعديل النص">
+                            <input
+                                type="date"
+                                className={ltrInputStyles}
+                                value={(form.reviewed_at || '').split('T')[0]}
+                                onChange={e => setForm({ ...form, reviewed_at: e.target.value })}
+                            />
+                        </Field>
+
+                        <Field label="ماذا تغيّر؟" icon={FileText} note="جملة قصيرة تظهر للقارئ">
+                            <input
+                                className={inputStyles}
+                                value={form.change_summary || ''}
+                                onChange={e => setForm({ ...form, change_summary: e.target.value })}
+                                placeholder="مثال: تحديث رابط الحجز وخطوات الموعد"
                             />
                         </Field>
                     </div>

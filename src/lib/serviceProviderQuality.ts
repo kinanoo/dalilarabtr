@@ -64,7 +64,10 @@ export function isPublicServiceProvider(provider: PublicProviderCandidate): bool
 }
 
 export function isIndexableServiceProvider(provider: PublicProviderCandidate): boolean {
-    return isPublicServiceProvider(provider);
+    // The listing can remain useful and reachable with only a valid WhatsApp
+    // number, but a near-empty/synthetic detail page should not compete in
+    // Google. Category and city hubs still expose every contactable provider.
+    return isPublicServiceProvider(provider) && publicServiceDescription(provider.description).length >= 80;
 }
 
 export function serviceProviderQualityIssues(provider: PublicProviderCandidate): string[] {

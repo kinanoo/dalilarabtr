@@ -2,6 +2,9 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import logger from '@/lib/logger';
+import { encryptIntegrationSecret } from '@/lib/googleSearchConsole';
+
+export const runtime = 'nodejs';
 
 /**
  * GET /api/auth/google/callback?code=xxx&state=xxx
@@ -30,6 +33,7 @@ export async function GET(request: NextRequest) {
 
     // ── Verify CSRF state ──
     let next = '/dashboard';
+    let searchConsole = false;
     try {
         const stateData = JSON.parse(
             Buffer.from(stateB64, 'base64url').toString()
@@ -41,6 +45,7 @@ export async function GET(request: NextRequest) {
         // Validate redirect target — whitelist safe prefixes (prevent open redirect)
         const SAFE_PREFIXES = ['/dashboard', '/admin', '/bookmarks', '/services', '/faq', '/codes', '/tools', '/updates', '/category', '/consultant', '/article'];
         const rawNext = stateData.next || '/dashboard';
+        searchConsole = stateData.searchConsole === true;
         if (typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//') && SAFE_PREFIXES.some(p => rawNext === p || rawNext.startsWith(p + '/'))) {
             next = rawNext;
         }
@@ -132,8 +137,20 @@ export async function GET(request: NextRequest) {
             role: 'member',
         });
     } else if (profile.role === 'admin') {
+        if (searchConsole && typeof tokens.refresh_token === 'string' && tokens.refresh_token) {
+            const { error: integrationError } = await serviceClient.from('site_integrations').upsert({
+                name: 'google_search_console_refresh_token',
+                encrypted_value: encryptIntegrationSecret(tokens.refresh_token),
+                updated_by: user.id,
+                updated_at: new Date().toISOString(),
+            });
+            if (integrationError) {
+                logger.error('Search Console token storage failed:', integrationError);
+                return NextResponse.redirect(`${origin}/admin?gsc=storage_failed`);
+            }
+        }
         // Override redirect for admins
-        response.headers.set('location', `${origin}/admin`);
+        response.headers.set('location', `${origin}/admin${searchConsole ? '?gsc=connected' : ''}`);
     }
 
     return response;

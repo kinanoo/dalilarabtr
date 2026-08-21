@@ -34,6 +34,10 @@ interface ArticleFormData {
     seo_title?: string;
     seo_description?: string;
     seo_keywords?: string[];
+    audience_note?: string;
+    editorial_status?: string;
+    reviewed_at?: string;
+    change_summary?: string;
     [key: string]: string | string[] | boolean | undefined;
 }
 

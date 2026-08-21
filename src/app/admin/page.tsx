@@ -8,6 +8,7 @@ import SitePulse from '@/components/admin/SitePulse';
 import ContentPerformance from '@/components/admin/ContentPerformance';
 import SitePerformance from '@/components/admin/SitePerformance';
 import SearchNeeds from '@/components/admin/SearchNeeds';
+import SearchConsoleOpportunities from '@/components/admin/SearchConsoleOpportunities';
 
 export default function AdminDashboard() {
   // One-click site-wide cache purge. Content published via SQL (the owner's
@@ -76,6 +77,8 @@ export default function AdminDashboard() {
 
       {/* What visitors ask for, especially the searches with no answer. */}
       <SearchNeeds />
+
+      <SearchConsoleOpportunities />
 
       {/* Technical health stays compact until details are requested. */}
       <SitePerformance />

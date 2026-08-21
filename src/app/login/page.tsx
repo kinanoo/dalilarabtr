@@ -15,19 +15,26 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [infoMessage, setInfoMessage] = useState('');
     const router = useRouter();
+    const [nextPath, setNextPath] = useState('/dashboard');
 
     useEffect(() => {
+        let timer: number | undefined;
         try {
             const params = new URLSearchParams(window.location.search);
             const msg = params.get('message');
-            if (msg) setInfoMessage(msg);
+            const requested = params.get('next');
+            timer = window.setTimeout(() => {
+                if (msg) setInfoMessage(msg);
+                if (requested && requested.startsWith('/') && !requested.startsWith('//')) setNextPath(requested);
+            }, 0);
         } catch {}
+        return () => { if (timer) window.clearTimeout(timer); };
     }, []);
 
     const supabase = getAuthClient();
 
     const handleGoogleLogin = () => {
-        window.location.href = '/api/auth/google?next=/dashboard';
+        window.location.href = `/api/auth/google?next=${encodeURIComponent(nextPath)}`;
     };
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -66,7 +73,7 @@ export default function LoginPage() {
             }
 
             toast.success('تم تسجيل الدخول بنجاح');
-            router.push('/dashboard');
+            router.push(nextPath);
             router.refresh();
         }
     };

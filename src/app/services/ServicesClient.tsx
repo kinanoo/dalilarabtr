@@ -2,19 +2,23 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Search, MapPin, Briefcase, X, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, Sparkles, Stethoscope, Home, Truck, GraduationCap, HelpCircle, RefreshCw, CircleAlert } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
 import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
-import CategoryFilterDialog from '@/components/services/CategoryFilterDialog';
 import ProviderCard from '@/components/services/ProviderCard';
-import ServiceProviderInvite from '@/components/services/ServiceProviderInvite';
 import DeferredAddServiceBanner from '@/components/services/DeferredAddServiceBanner';
+import DeferredServiceProviderInvite from '@/components/services/DeferredServiceProviderInvite';
 import {
   DIRECTORY_PAGE_SIZE,
   type DirectoryPopularSearch,
   type DirectoryProvider,
 } from '@/lib/serviceDirectory';
+
+// Neither dialog is needed to paint or use the first screen. Splitting them
+// keeps modal/portal code out of the critical services bundle.
+const CategoryFilterDialog = dynamic(() => import('@/components/services/CategoryFilterDialog'));
 
 interface ServicesClientProps {
   initialServices?: DirectoryProvider[];
@@ -543,13 +547,15 @@ export default function ServicesClient({
         </div>
       </section>
 
-      <CategoryFilterDialog
-        open={filtersOpen}
-        value={activeCategory}
-        options={categoryFilterOptions}
-        onChange={applyCategory}
-        onClose={() => setFiltersOpen(false)}
-      />
+      {filtersOpen && (
+        <CategoryFilterDialog
+          open
+          value={activeCategory}
+          options={categoryFilterOptions}
+          onChange={applyCategory}
+          onClose={() => setFiltersOpen(false)}
+        />
+      )}
 
       {/* Results */}
       <section id="svc-results" className="mx-auto w-full max-w-7xl scroll-mt-4 px-4 pb-8 pt-4 md:pb-10">
@@ -811,7 +817,7 @@ export default function ServicesClient({
 
       <DeferredAddServiceBanner />
 
-      <ServiceProviderInvite />
+      <DeferredServiceProviderInvite />
 
       {directoryGuideLinks.length > 0 && (
         <section className="mx-auto max-w-screen-2xl px-4 pb-4 pt-1 w-full">

@@ -23,6 +23,7 @@ import {
     publicServiceDescription,
 } from '@/lib/serviceProviderQuality';
 import { retrySupabaseQuery, throwSupabaseQueryError } from '@/lib/supabaseQuery';
+import ProviderClaimForm from '@/components/services/ProviderClaimForm';
 
 export const revalidate = 60;
 
@@ -431,6 +432,7 @@ export default async function ServiceDetailsPage(
                             url={`${SITE_CONFIG.siteUrl}/services/${canonicalId}`}
                         />
                     </div>
+                    <ProviderClaimForm providerId={String(provider.id)} />
 
                     {(websiteUrl || mapUrl || provider.address_details) && (
                         <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">

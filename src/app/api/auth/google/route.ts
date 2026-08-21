@@ -13,6 +13,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
     const { searchParams, origin } = new URL(request.url);
     const next = searchParams.get('next') || '/dashboard';
+    const searchConsole = searchParams.get('mode') === 'search-console';
 
     const clientId = process.env.GOOGLE_CLIENT_ID;
 
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     // CSRF protection: random state stored in httpOnly cookie
     const csrf = crypto.randomUUID();
-    const statePayload = JSON.stringify({ csrf, next });
+    const statePayload = JSON.stringify({ csrf, next, searchConsole });
     const stateB64 = Buffer.from(statePayload).toString('base64url');
 
     const redirectUri = `${origin}/api/auth/google/callback`;
@@ -34,9 +35,12 @@ export async function GET(request: NextRequest) {
         client_id: clientId,
         redirect_uri: redirectUri,
         response_type: 'code',
-        scope: 'openid email profile',
+        scope: searchConsole
+            ? 'openid email profile https://www.googleapis.com/auth/webmasters.readonly'
+            : 'openid email profile',
         state: stateB64,
-        prompt: 'select_account',
+        prompt: searchConsole ? 'consent' : 'select_account',
+        ...(searchConsole ? { access_type: 'offline' } : {}),
     });
 
     const response = NextResponse.redirect(

@@ -30,7 +30,7 @@
 
 import type { ArticleStep } from '@/lib/types';
 import { getOfficialSourceUrls } from '@/lib/externalLinks';
-import { FileText, CheckCircle, AlertTriangle, ListOrdered, Sparkles, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, RefreshCw, ShieldCheck } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ListOrdered, Lightbulb, Coins, Info, ExternalLink, ChevronDown, Clock, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import ShareMenu from './ShareMenu';
 import BookmarkButton from './BookmarkButton';
@@ -64,6 +64,10 @@ export type ArticleViewData = {
   source?: string;
   image?: string;
   tags?: string[];
+  audienceNote?: string;
+  editorialStatus?: string;
+  reviewedAt?: string;
+  changeSummary?: string;
 };
 
 // All article images (hero + the ones embedded in the body), deduped, WITH
@@ -152,7 +156,7 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
           items={[
             { name: 'الدليل', href: '/directory' },
             ...(article.category ? (() => {
-              const categorySlug = Object.entries(CATEGORY_SLUGS).find(([_, name]) => name === article.category)?.[0];
+              const categorySlug = Object.entries(CATEGORY_SLUGS).find(([, name]) => name === article.category)?.[0];
               return categorySlug
                 ? [{ name: article.category, href: `/category/${categorySlug}` }]
                 : [{ name: article.category, href: '/directory' }];
@@ -286,8 +290,9 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
                   the light content surface, where a scam-wary reader verifies
                   credibility by checking recency + source. Reuses the values
                   already computed for the dark hero (no new data/imports). */}
-              {(article.lastUpdate || officialSources.length > 0) && (
-                <div className="flex flex-wrap items-center gap-2 -mt-1">
+              {(article.lastUpdate || officialSources.length > 0 || article.audienceNote || article.editorialStatus) && (
+                <div className="-mt-1 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+                  <div className="flex flex-wrap items-center gap-2">
                   {article.lastUpdate && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
                       <Clock size={13} />
@@ -299,6 +304,24 @@ export default function ArticleView({ article, slug, showViewCounts = false, chi
                       <ExternalLink size={13} />
                       مصدر رسمي
                     </a>
+                  )}
+                  {article.editorialStatus && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                      <ShieldCheck size={13} />
+                      {article.editorialStatus}
+                      {article.reviewedAt ? `: ${article.reviewedAt}` : ''}
+                    </span>
+                  )}
+                  </div>
+                  {article.audienceNote && (
+                    <p className="mt-2 text-sm font-bold leading-6 text-slate-700 dark:text-slate-200">
+                      <span className="text-slate-500 dark:text-slate-400">ينطبق على: </span>{article.audienceNote}
+                    </p>
+                  )}
+                  {article.changeSummary && (
+                    <p className="mt-1 text-xs font-medium leading-5 text-slate-500 dark:text-slate-400">
+                      آخر تغيير: {article.changeSummary}
+                    </p>
                   )}
                 </div>
               )}

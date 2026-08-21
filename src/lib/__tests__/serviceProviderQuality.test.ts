@@ -29,10 +29,14 @@ describe('service provider publication quality', () => {
         expect(publicServiceDescription(description)).toBe('');
     });
 
-    it('does not require a description to publish or index a reachable provider', () => {
+    it('publishes a reachable provider but indexes only a substantive profile', () => {
         expect(isPublicServiceProvider({ whatsapp: '+905551234567' })).toBe(true);
-        expect(isIndexableServiceProvider({ whatsapp: '+905551234567' })).toBe(true);
-        expect(isIndexableServiceProvider({ whatsapp: '+905551234567', description: 'وصف قصير' })).toBe(true);
+        expect(isIndexableServiceProvider({ whatsapp: '+905551234567' })).toBe(false);
+        expect(isIndexableServiceProvider({ whatsapp: '+905551234567', description: 'وصف قصير' })).toBe(false);
+        expect(isIndexableServiceProvider({
+            whatsapp: '+905551234567',
+            description: 'نقدم خدمة مهنية واضحة تشمل شرح نطاق العمل وطريقة التواصل والمواعيد والمناطق التي نخدمها، مع توضيح ما يحتاجه العميل قبل بدء الطلب ومتابعته حتى الإنجاز.',
+        })).toBe(true);
         expect(publicServiceDescription('وصف قصير')).toBe('وصف قصير');
     });
 });
