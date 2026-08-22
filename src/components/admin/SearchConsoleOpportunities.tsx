@@ -52,8 +52,8 @@ export default function SearchConsoleOpportunities() {
 
       {!loading && data?.configured === false && (
         <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs font-bold leading-6 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-          <p>اربط حساب Search Console مرة واحدة لتظهر فرص النمو هنا تلقائياً. لا تُعرض هذه البيانات للزوار.</p>
-          <Link prefetch={false} href="/api/auth/google?next=/admin&mode=search-console" className="mt-2 inline-flex min-h-10 items-center rounded-lg bg-amber-900 px-4 text-white">ربط Search Console</Link>
+          <p>امنح الموقع إذن قراءة Search Console مرة واحدة. سيبقى دخول الأدمن الحالي كما هو، ولن يتحول حساب Google إلى عضو في الموقع.</p>
+          <Link prefetch={false} href="/api/auth/google?next=/admin&mode=search-console" className="mt-2 inline-flex min-h-10 items-center rounded-lg bg-amber-900 px-4 text-white">منح إذن غوغل</Link>
         </div>
       )}
       {!loading && data?.configured && (
