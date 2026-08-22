@@ -18,6 +18,7 @@ const staticPages = [
   { path: '/disclaimer', priority: 0.3 },
   { path: '/copyright', priority: 0.3 },
   { path: '/important-links', priority: 0.6 },
+  { path: '/today', priority: 0.9 },
   { path: '/sources', priority: 0.5 },
   { path: '/forms', priority: 0.7 },
   { path: '/request', priority: 0.6 },

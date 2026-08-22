@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import logger from '@/lib/logger';
 import { encryptIntegrationSecret } from '@/lib/googleSearchConsole';
+import { requireAdmin } from '@/lib/api/adminAuth';
 
 export const runtime = 'nodejs';
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
     // ── Verify CSRF state ──
     let next = '/dashboard';
     let searchConsole = false;
+    let expectedAdminUserId: string | null = null;
     try {
         const stateData = JSON.parse(
             Buffer.from(stateB64, 'base64url').toString()
@@ -46,6 +48,7 @@ export async function GET(request: NextRequest) {
         const SAFE_PREFIXES = ['/dashboard', '/admin', '/bookmarks', '/services', '/faq', '/codes', '/tools', '/updates', '/category', '/consultant', '/article'];
         const rawNext = stateData.next || '/dashboard';
         searchConsole = stateData.searchConsole === true;
+        expectedAdminUserId = typeof stateData.adminUserId === 'string' ? stateData.adminUserId : null;
         if (typeof rawNext === 'string' && rawNext.startsWith('/') && !rawNext.startsWith('//') && SAFE_PREFIXES.some(p => rawNext === p || rawNext.startsWith(p + '/'))) {
             next = rawNext;
         }
@@ -70,6 +73,37 @@ export async function GET(request: NextRequest) {
     if (!tokens.id_token) {
         logger.error('Google token exchange failed:', tokens);
         return NextResponse.redirect(`${origin}/login?error=token_failed`);
+    }
+
+    // Search Console authorization is deliberately separate from site login.
+    // Keep the current admin session untouched and store only Google's refresh
+    // token. This avoids replacing the admin with an unrelated Google member.
+    if (searchConsole) {
+        const gate = await requireAdmin();
+        if (!gate.ok || !expectedAdminUserId || gate.userId !== expectedAdminUserId) {
+            return NextResponse.redirect(`${origin}/admin/login?next=${encodeURIComponent('/admin?gsc=session_expired')}`);
+        }
+        if (typeof tokens.refresh_token !== 'string' || !tokens.refresh_token) {
+            return NextResponse.redirect(`${origin}/admin?gsc=missing_refresh_token`);
+        }
+        const { error: integrationError } = await gate.svc.from('site_integrations').upsert({
+            name: 'google_search_console_refresh_token',
+            encrypted_value: encryptIntegrationSecret(tokens.refresh_token),
+            updated_by: gate.userId,
+            updated_at: new Date().toISOString(),
+        });
+        if (integrationError) {
+            logger.error('Search Console token storage failed:', integrationError);
+            return NextResponse.redirect(`${origin}/admin?gsc=storage_failed`);
+        }
+        const connected = NextResponse.redirect(`${origin}/admin?gsc=connected`);
+        connected.cookies.set('google_oauth_state', '', {
+            httpOnly: true,
+            secure: true,
+            maxAge: 0,
+            path: '/',
+        });
+        return connected;
     }
 
     // ── Create Supabase session from Google ID token ──
@@ -137,20 +171,8 @@ export async function GET(request: NextRequest) {
             role: 'member',
         });
     } else if (profile.role === 'admin') {
-        if (searchConsole && typeof tokens.refresh_token === 'string' && tokens.refresh_token) {
-            const { error: integrationError } = await serviceClient.from('site_integrations').upsert({
-                name: 'google_search_console_refresh_token',
-                encrypted_value: encryptIntegrationSecret(tokens.refresh_token),
-                updated_by: user.id,
-                updated_at: new Date().toISOString(),
-            });
-            if (integrationError) {
-                logger.error('Search Console token storage failed:', integrationError);
-                return NextResponse.redirect(`${origin}/admin?gsc=storage_failed`);
-            }
-        }
         // Override redirect for admins
-        response.headers.set('location', `${origin}/admin${searchConsole ? '?gsc=connected' : ''}`);
+        response.headers.set('location', `${origin}/admin`);
     }
 
     return response;

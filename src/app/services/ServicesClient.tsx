@@ -1,15 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Search, MapPin, Briefcase, X, ChevronRight, ChevronLeft, BadgeCheck, TrendingUp, SlidersHorizontal, Sparkles, Stethoscope, Home, Truck, GraduationCap, HelpCircle, RefreshCw, CircleAlert } from 'lucide-react';
+import { Search, MapPin, Briefcase, X, ChevronRight, ChevronLeft, BadgeCheck, SlidersHorizontal, Sparkles, Stethoscope, Home, Truck, GraduationCap, RefreshCw, CircleAlert } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '@/lib/serviceCategories';
-import { catIcon } from '@/lib/serviceCategoryIcons';
 import CityFilter from '@/components/services/CityFilter';
 import ProviderCard from '@/components/services/ProviderCard';
-import DeferredAddServiceBanner from '@/components/services/DeferredAddServiceBanner';
-import DeferredServiceProviderInvite from '@/components/services/DeferredServiceProviderInvite';
 import {
   DIRECTORY_PAGE_SIZE,
   type DirectoryPopularSearch,
@@ -119,25 +115,6 @@ type SearchSuggestion = {
   category: string;
   city?: string;
 };
-
-const SERVICES_FAQS = [
-  {
-    question: 'كيف أجد مقدم خدمة عربي في تركيا؟',
-    answer: 'اكتب نوع الخدمة أو اختر المدينة والمهنة، ثم افتح بطاقة مقدم الخدمة للتواصل عبر واتساب أو الاتصال.',
-  },
-  {
-    question: 'هل كل الخدمات في الدليل باللغة العربية؟',
-    answer: 'يعرض الدليل مقدمي خدمات يعرّفون عن خدماتهم بالعربية أو يستهدفون الجمهور العربي في تركيا.',
-  },
-  {
-    question: 'كيف أتحقق قبل التعامل مع مقدم الخدمة؟',
-    answer: 'راجع التفاصيل، اسأل عن السعر والخطوات كتابة، ولا تدفع كامل المبلغ مسبقاً قبل التأكد من الخدمة والاتفاق.',
-  },
-  {
-    question: 'هل يمكن البحث حسب المدينة والمهنة معاً؟',
-    answer: 'نعم. اختر المدينة والمهنة من الصفحة أو افتح روابط الأدلة الجاهزة حسب المدينة والمهنة.',
-  },
-];
 
 export default function ServicesClient({
   initialServices = [],
@@ -345,7 +322,6 @@ export default function ServicesClient({
       }))
       .filter((category) => category.count > 0),
   ];
-  const directoryGuideLinks = popularSearches.slice(0, 24);
   const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
     const rawQuery = searchQuery.trim();
     const normalizedQuery = normalizeSuggestionText(rawQuery);
@@ -460,7 +436,10 @@ export default function ServicesClient({
               <Sparkles size={14} />
               خدمات العرب في تركيا
             </span>
-            <h1 className="mt-2 text-[26px] font-black leading-tight tracking-normal text-slate-950 sm:text-4xl dark:text-white">
+            <h1
+              className="mt-2 text-[26px] font-black leading-tight tracking-normal text-slate-950 sm:text-4xl dark:text-white"
+              style={{ fontFamily: "Arial, 'Segoe UI', Tahoma, sans-serif" }}
+            >
               دليل المهن والخدمات العربية في تركيا
             </h1>
             <p className="mx-auto mt-2 max-w-3xl text-sm font-bold leading-6 text-slate-600 sm:text-base dark:text-slate-300">
@@ -783,118 +762,6 @@ export default function ServicesClient({
             )}
           </>
         )}
-      </section>
-
-      <section className="mx-auto max-w-screen-2xl px-4 pb-5 pt-1 w-full">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col gap-1">
-            <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-900 dark:text-slate-100">
-              <HelpCircle size={18} className="text-emerald-600" />
-              أسئلة سريعة قبل التواصل
-            </h2>
-            <p className="text-xs font-bold leading-6 text-slate-500 dark:text-slate-400">
-              معلومات مختصرة تساعدك تختار الخدمة وتتواصل بأمان.
-            </p>
-          </div>
-          <div className="mt-4 grid gap-2 md:grid-cols-2">
-            {SERVICES_FAQS.map((item) => (
-              <details
-                key={item.question}
-                className="group rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-slate-800 dark:text-slate-100">
-                  <span>{item.question}</span>
-                  <ChevronLeft size={16} className="shrink-0 text-slate-400 transition group-open:-rotate-90 group-open:text-emerald-600" />
-                </summary>
-                <p className="mt-2 text-xs font-bold leading-6 text-slate-600 dark:text-slate-300">
-                  {item.answer}
-                </p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <DeferredAddServiceBanner />
-
-      <DeferredServiceProviderInvite />
-
-      {directoryGuideLinks.length > 0 && (
-        <section className="mx-auto max-w-screen-2xl px-4 pb-4 pt-1 w-full">
-          <details className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-              <span className="min-w-0">
-                <span className="inline-flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 sm:text-base">
-                  <TrendingUp size={18} className="text-emerald-600" />
-                  أدلة سريعة حسب المدينة والمهنة
-                </span>
-                <span className="mt-1 block text-xs font-bold leading-5 text-slate-500 dark:text-slate-400">
-                  روابط مرتبة لمن يبحث مباشرة مثل: أطباء في إسطنبول، مترجمون في مرسين، محامون في عنتاب.
-                </span>
-              </span>
-              <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600 group-open:hidden dark:bg-slate-800 dark:text-slate-300">
-                فتح
-              </span>
-              <span className="hidden shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-600 group-open:inline-flex dark:bg-slate-800 dark:text-slate-300">
-                إخفاء
-              </span>
-            </summary>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {directoryGuideLinks.map((item) => (
-                <Link
-                  key={`guide-${item.citySlug}-${item.categorySlug}`}
-                  href={`/services/category/${item.categorySlug}/${item.citySlug}`}
-                  className="inline-flex min-h-9 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-black text-slate-700 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20"
-                >
-                  <span>{item.categoryLabel} في {item.city}</span>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-500 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">
-                    {item.count}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </details>
-        </section>
-      )}
-
-      {/* Browse every profession — crawlable links to each landing page (each
-          carries its own guide), and a full directory for users. Rendered in
-          the server HTML so Google discovers all category pages from /services. */}
-      <section className="mx-auto max-w-screen-2xl px-4 pb-10 pt-5 w-full">
-        <details className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-2 text-base font-black text-slate-800 dark:text-slate-100">
-              <Briefcase size={18} className="text-emerald-600" />
-              تصفّح كل المهن والخدمات
-            </span>
-            <span className="text-xs font-black text-slate-500 group-open:hidden">فتح القائمة</span>
-            <span className="hidden text-xs font-black text-slate-500 group-open:inline">إخفاء</span>
-          </summary>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {SERVICE_CATEGORIES.map((c) => {
-              const Icon = catIcon(c.slug);
-              return (
-                <Link
-                  key={c.slug}
-                  href={`/services/category/${c.slug}`}
-                  className="group/link flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:border-emerald-300 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-emerald-700 dark:hover:bg-slate-900"
-                >
-                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 ring-1 ring-slate-200 transition group-hover/link:bg-emerald-700 group-hover/link:text-white dark:bg-slate-900 dark:text-emerald-300 dark:ring-slate-800">
-                    <Icon size={17} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-[13px] font-black leading-tight text-slate-800 dark:text-slate-100">{c.labelAr}</span>
-                    <span className="block truncate text-[10px] font-bold leading-tight text-slate-400 dark:text-slate-400">
-                      {liveCategoryCounts[c.name]
-                        ? `${liveCategoryCounts[c.name]} نتيجة`
-                        : c.blurb}
-                    </span>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </details>
       </section>
 
     </div>

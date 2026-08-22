@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BarChart3, Gauge, LayoutDashboard, RefreshCw, SearchCheck } from 'lucide-react';
 import { GlobalSearch } from '@/components/admin/GlobalSearch';
 import { ActionCenter } from '@/components/admin/ActionCenter';
 import SitePulse from '@/components/admin/SitePulse';
@@ -11,6 +11,14 @@ import SearchNeeds from '@/components/admin/SearchNeeds';
 import SearchConsoleOpportunities from '@/components/admin/SearchConsoleOpportunities';
 
 export default function AdminDashboard() {
+  type DashboardTab = 'overview' | 'content' | 'growth' | 'technical';
+  const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('gsc')) setActiveTab('growth');
+  }, []);
+
   // One-click site-wide cache purge. Content published via SQL (the owner's
   // normal flow) bypasses the editors' auto-revalidate, so without this the
   // only site-scope purge was a side effect of saving settings — a button
@@ -34,6 +42,13 @@ export default function AdminDashboard() {
     setPurge(ok ? 'ok' : 'fail');
     setTimeout(() => setPurge('idle'), 5000);
   }
+
+  const tabs: Array<{ id: DashboardTab; label: string; note: string; icon: typeof LayoutDashboard }> = [
+    { id: 'overview', label: 'الآن', note: 'المهام وحركة الموقع', icon: LayoutDashboard },
+    { id: 'content', label: 'المحتوى', note: 'ما يقرأه ويبحث عنه الزوار', icon: BarChart3 },
+    { id: 'growth', label: 'نمو غوغل', note: 'Search Console الأسبوعي', icon: SearchCheck },
+    { id: 'technical', label: 'الصحة التقنية', note: 'السرعة والأخطاء', icon: Gauge },
+  ];
 
   return (
     <div className="p-3 sm:p-5 max-w-7xl mx-auto space-y-4">
@@ -66,22 +81,54 @@ export default function AdminDashboard() {
           </button>
       </div>
 
-      {/* 1. Pending tasks — the reason to open the dashboard, so it leads. */}
-      <ActionCenter />
+      <section aria-label="أقسام ملخص الموقع" className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const selected = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                aria-pressed={selected}
+                className={`flex min-h-16 items-center gap-3 rounded-xl px-3 text-start transition active:scale-[0.99] ${selected
+                  ? 'bg-slate-900 text-white shadow-md dark:bg-emerald-600 dark:text-slate-950'
+                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800'
+                }`}
+              >
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${selected ? 'bg-white/12' : 'bg-white text-emerald-700 shadow-sm dark:bg-slate-900 dark:text-emerald-300'}`}>
+                  <Icon size={18} />
+                </span>
+                <span className="min-w-0">
+                  <strong className="block text-sm font-black">{tab.label}</strong>
+                  <span className={`mt-0.5 block truncate text-[10px] font-bold ${selected ? 'text-white/70 dark:text-slate-950/65' : 'text-slate-400'}`}>{tab.note}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
-      {/* 2. Site pulse — live traffic + growth. */}
-      <SitePulse />
+      <div role="region" aria-live="polite" className="space-y-4">
+        {activeTab === 'overview' && (
+          <>
+            <ActionCenter />
+            <SitePulse />
+          </>
+        )}
 
-      {/* Which published items actually attracted people. */}
-      <ContentPerformance />
+        {activeTab === 'content' && (
+          <>
+            <ContentPerformance />
+            <SearchNeeds />
+          </>
+        )}
 
-      {/* What visitors ask for, especially the searches with no answer. */}
-      <SearchNeeds />
+        {activeTab === 'growth' && <SearchConsoleOpportunities />}
 
-      <SearchConsoleOpportunities />
-
-      {/* Technical health stays compact until details are requested. */}
-      <SitePerformance />
+        {activeTab === 'technical' && <SitePerformance />}
+      </div>
 
     </div>
   );

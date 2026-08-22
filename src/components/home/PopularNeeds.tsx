@@ -233,9 +233,14 @@ export default function PopularNeeds() {
   return (
     <section aria-labelledby="popular-needs-title">
       <div className="mb-5">
-        <div className="mb-2 flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-400">
-          <Sparkles size={17} aria-hidden="true" />
-          مركز الأدوات اليومية
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-400">
+            <Sparkles size={17} aria-hidden="true" />
+            مركز الأدوات اليومية
+          </div>
+          <Link href="/today" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 text-xs font-black text-emerald-800 transition hover:bg-emerald-50 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-300">
+            افتح مركز اليوم <ArrowLeft size={14} />
+          </Link>
         </div>
         <h2 id="popular-needs-title" className="text-3xl font-black text-slate-900 dark:text-white sm:text-4xl">
           ماذا تحتاج الآن؟
